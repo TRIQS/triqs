@@ -66,7 +66,13 @@ namespace cpp2py {
     }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref x  = borrowed(ob);
+      static pyref cls = pyref::get_class("pytriqs.gf", "MeshProduct", true);
+
+      // first check it is a MeshProduct
+      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      pyref x = borrowed(ob);
+
+      // check conversion of the mesh list
       pyref ml = x.attr("_mlist");
       return mtuple_conv::is_convertible(ml, raise_exception);
     }
@@ -187,22 +193,23 @@ namespace cpp2py {
 
     static void _set_err(PyObject *p, const char *X, std::string const &C) {
       using namespace std::string_literals;
-      std::string err = "Cpp2py converter: Python to C++ :\n"s + "  ... Conversion of a gf from Python to C++ "
+      std::string err = "Cpp2py converter: Python to C++ :\n"s + "  ... Conversion of a Gf from Python to C++ "
          + triqs::utility::typeid_name<triqs::gfs::gf_view<M, T>>() + "\n  ... Cannot convert the "s + X
-         + " of gf from Python type :  " + p->ob_type->tp_name + " to the C++ type " + C;
+         + " of Gf from Python type :  " + p->ob_type->tp_name + " to the C++ type " + C;
       PyErr_SetString(PyExc_TypeError, err.c_str());
     }
 
     // ----------------------------------------------
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
+      static pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
+
       // first check it is a Gf
-      if (not pyref::check_is_instance(ob, "pytriqs.gf", "Gf", raise_exception)) return false;
+      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       pyref x = borrowed(ob);
 
-      // check the mesh, data, sing
+      // check the mesh, data, indices
       pyref m = x.attr("_mesh");
-
       if (!py_converter<mesh_t>::is_convertible(m, false)) {
         if (raise_exception) _set_err(m, "mesh", triqs::utility::typeid_name<mesh_t>());
         return false;
@@ -265,20 +272,37 @@ namespace cpp2py {
 
     // ----------------------------------------------
 
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::module("pytriqs.gf").attr("BlockGf");
-      if (cls.is_null()) CPP2PY_RUNTIME_ERROR << "Cannot find the pytriqs.gf.BlockGf";
-      int i = PyObject_IsInstance(ob, cls);
-      if (i == -1) { // an error has occurred
-        i = 0;
-        if (!raise_exception) PyErr_Clear();
-      }
-      if ((i == 0) && (raise_exception)) PyErr_SetString(PyExc_TypeError, "The object is not a BlockGf");
+    static void _set_err(PyObject *p, const char *X, std::string const &C) {
+      using namespace std::string_literals;
+      std::string err = "Cpp2py converter: Python to C++ :\n"s + "  ... Conversion of a BlockGf from Python to C++ "
+         + triqs::utility::typeid_name<c_type>() + "\n  ... Cannot convert the "s + X
+         + " of BlockGf from Python type :  " + p->ob_type->tp_name + " to the C++ type " + C;
+      PyErr_SetString(PyExc_TypeError, err.c_str());
+    }
 
-      pyref x     = borrowed(ob);
+    // ----------------------------------------------
+
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      static pyref cls = pyref::get_class("pytriqs.gf", "BlockGf", true);
+
+      // first check it is a BlockGf
+      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      pyref x = borrowed(ob);
+
+      // check the gfs and indicies
+      pyref gfs = x.attr("_BlockGf__GFlist");
+      if (!py_converter<std::vector<gf_view_type>>::is_convertible(gfs, false)){
+        if (raise_exception) _set_err(gfs, "_BlockGf__GFlist", triqs::utility::typeid_name<std::vector<gf_view_type>>());
+	return false;
+      }
+
       pyref names = x.attr("_BlockGf__indices");
-      pyref gfs   = x.attr("_BlockGf__GFlist");
-      return (i && py_converter<std::vector<gf_view_type>>::is_convertible(gfs, raise_exception) && py_converter<std::vector<std::string>>::is_convertible(names, raise_exception));
+      if (!py_converter<std::vector<std::string>>::is_convertible(names, false)){
+        if (raise_exception) _set_err(names, "_BlockGf__indices", triqs::utility::typeid_name<std::vector<std::string>>());
+	return false;
+      }
+
+      return true;
     }
 
     // ----------------------------------------------
