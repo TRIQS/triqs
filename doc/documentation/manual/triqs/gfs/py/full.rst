@@ -202,7 +202,7 @@ HDF5
 
 BlockGf are hdf-compatible with the following HDF5 data scheme
 
-The BlockGf(TRIQS_HDF5_data_scheme = "BlockGf") is decomposed in the following objects: 
+The BlockGf(Format = "BlockGf") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

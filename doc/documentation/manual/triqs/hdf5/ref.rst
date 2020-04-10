@@ -27,7 +27,7 @@ Let us first document :class:`HDFArchive`.
 HDFArchive
 =======================================
 
-.. autoclass::  pytriqs.archive.HDFArchive
+.. autoclass::  h5.HDFArchive
 
 
 
@@ -183,12 +183,12 @@ at the node corresponding to the object in the file.
 
 For a given class `Cls`, the `HDF5_data_scheme` is `Cls._hdf5_data_scheme_` if it exists or the name of the class `Cls.__name__`.
 The `HDF5_data_scheme` of a class must be registered in order for :class:`HDFArchive` to properly reconstruct the object when rereading.
-The class is registered using the module `hdf_archive_schemes` ::
+The class is registered using the module `formats` ::
 
  class myclass :
    pass #....
    
- from h5.hdf_archive_schemes import register_class
+ from h5.formats import register_class
  register_class (myclass)
 
 The function is 

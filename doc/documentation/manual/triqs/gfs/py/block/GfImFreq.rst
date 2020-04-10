@@ -20,7 +20,7 @@ Reference
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GfImFreq (TRIQS_HDF5_data_scheme= "GfImFreq") is decomposed in the following objects: 
+The GfImFreq (Format= "GfImFreq") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

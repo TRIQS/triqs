@@ -20,7 +20,7 @@ Reference
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^
 
-The GfLegendre (TRIQS_HDF5_data_scheme= "GfLegendre") is decomposed in the following objects: 
+The GfLegendre (Format= "GfLegendre") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
