@@ -353,7 +353,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block_gf::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
         int s            = block_names.size();
@@ -706,7 +706,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block_gf_view::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
         int s            = block_names.size();
@@ -1008,7 +1008,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block_gf_const_view::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
         int s            = block_names.size();
@@ -1355,7 +1355,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block2_gf::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
         auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
@@ -1710,7 +1710,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block2_gf_view::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
         auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
@@ -2011,7 +2011,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = block2_gf_const_view::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
         auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");

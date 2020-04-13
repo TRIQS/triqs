@@ -528,7 +528,7 @@ namespace triqs {
         auto tag_file     = read_hdf5_format(gr);
         auto tag_expected = MAKO_GF::hdf5_format();
         if (tag_file != tag_expected)
-          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the Format tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
         // mako %if ARITY == 1 :
         auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");

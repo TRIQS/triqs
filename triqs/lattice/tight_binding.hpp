@@ -94,7 +94,7 @@ namespace triqs {
       // Function that writes the solver_core to hdf5 file
       friend void h5_write(h5::group g, std::string subgroup_name, tight_binding const &tb) {
         auto grp = g.create_group(subgroup_name);
-        h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", tight_binding::hdf5_format());
+        write_hdf5_format(grp, tb);
         h5_write(grp, "bravais_lattice", tb.bl_);
         h5_write(grp, "displ_vec", tb.displ_vec_);
         h5_write(grp, "overlap_mat_vec", tb.overlap_mat_vec_);
