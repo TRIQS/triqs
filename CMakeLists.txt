@@ -91,13 +91,11 @@ add_compile_options($<$<CONFIG:Debug>:-Og>)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 #---------------------------------------------------------------------
-# Cpp2Py
-# Only when Python is supported
+# Python
 #---------------------------------------------------------------------
 
 option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
- add_subdirectory(cpp2py)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
 endif (PythonSupport)
 
