@@ -15,7 +15,9 @@ def assert_gfs_are_close(a, b, precision = 1.e-6):
 def assert_block_gfs_are_close(a, b, precision = 1.e-6):
     assert len(a) == len(b), "Block GFs have different number of blocks"
     for (nx,x),(ny,y) in zip(a,b):
-      assert_gfs_are_close(x, y, precision)
+        # first check if the names of the two blocks match
+        assert nx == ny, "block name {} does not match {}".format(nx,ny)
+        assert_gfs_are_close(x, y, precision)
 
 def assert_block2_gfs_are_close(a, b, precision = 1.e-6):
     assert_block_gfs_are_close(a, b, precision)
