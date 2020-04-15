@@ -37,6 +37,7 @@ namespace triqs {
     template <typename X, typename Y> void assert_block_gfs_are_close(X const &x, Y const &y, double precision) {
 
       if (x.size() != y.size()) TRIQS_RUNTIME_ERROR << "Block GFs have different number of blocks";
+      if (x.block_names() != y.block_names()) TRIQS_RUNTIME_ERROR << "Block GFs have different block_names";
       for (int u = 0; u < x.size(); ++u) assert_gfs_are_close(x[u], y[u], precision);
     }
 
@@ -44,6 +45,7 @@ namespace triqs {
     template <typename X, typename Y> void assert_block2_gfs_are_close(X const &x, Y const &y, double precision) {
 
       if (x.size() != y.size()) TRIQS_RUNTIME_ERROR << "Block2 GFs have different number of blocks";
+      if (x.block_names() != y.block_names()) TRIQS_RUNTIME_ERROR << "Block2 GFs have different block_names";
       for (int i = 0; i < x.size1(); ++i)
         for (int j = 0; j < x.size2(); ++j) assert_gfs_are_close(x(i, j), y(i, j), precision);
     }
