@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import glob
+import re
+
+# Ignore these files
+ignore_lst = [".git/", "port.py"]
+
+repl_dict = {
+        "pytriqs.archive": "h5",
+        "pytriqs.archive.hdf_archive": "h5.archive",
+        "hdf_archive_schemes": "formats",
+        "triqs::h5": "h5",
+        "triqs/h5.hpp": "h5/h5.hpp",
+        "triqs/utility/variant.hpp": "variant",
+        "hdf5_scheme": "hdf5_format",
+        "TRIQS_HDF5_data_scheme": "Format",
+        "#include <triqs/cpp2py_converters/h5.hpp>\n": "",
+        "H5F_ACC_TRUNC": "'w'",
+        "H5F_ACC_RDWR": "'a'", 
+        "H5F_ACC_RDONLY": "'r'", 
+        "PYTHON_INTERPRETER": "PYTHON_EXECUTABLE"
+        # r"(\d)_j": r"\1i"
+        }
+# :bufdo :%s#\(\w *\)/\( *[Nn0-9]\)#\1//\2#gc
+
+file_endings = [".py", ".py.in", ".ipynb", ".cpp", ".hpp", ".cxx", ".rst", ".txt"]
+
+# Choose the current working directory as the porting root dir
+port_root = os.getcwd()
+
+# Recurse over all subdirectories and files
+for root, dirs, files in os.walk(port_root):
+
+    for fname in files:
+        # Make sure that one of the file endings matches
+        if not any([fname.endswith(ending) for ending in file_endings]):
+            continue
+
+        # Make path absolute
+        fpath = os.path.join(root, fname)
+
+        # Ignore certain files / directories
+        if any(it in fpath for it in ignore_lst):
+            continue
+
+        if os.path.isfile(fpath):
+
+            # Replace port and APP4TRIQS in all files
+            with open(fpath, 'r') as f:
+                s = f.read()
+
+            # Execute all replacements
+            for old, new in list(repl_dict.items()):
+                s = re.sub(old, new, s)
+
+            # Write the updated file
+            with open(fpath, 'w') as f:
+                f.write(s)
