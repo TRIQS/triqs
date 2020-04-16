@@ -1,4 +1,4 @@
-#include "./nda_test_common.hpp"
+#include "./array_test_common.hpp"
 
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include "triqs/arrays/blas_lapack/gtsv.hpp"

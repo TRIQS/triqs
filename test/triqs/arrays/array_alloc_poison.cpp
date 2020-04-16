@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2015 by O. Parcollet
+ * Copyright (C) 2011 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,18 +18,29 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./nda_test_common.hpp"
+#include "./array_test_common.hpp"
+static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 
-// alone because it is quite long to run ... (exception ....)
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#include <sanitizer/asan_interface.h>
+#endif
+#endif
 
-TEST(Array, BoundCheck) {
+TEST(Array, Poison) {
 
-  array<long, 2> A(2, 3);
+  long *p;
+  {
+    array<long, 2> A(3, 3);
+    A() = 3;
+    p   = &(A(0, 0));
+  }
 
-  EXPECT_THROW(A(0, 3), key_error);
-  EXPECT_THROW(A(range(0, 4), 2), key_error);
-  EXPECT_THROW(A(range(10, 14), 2), key_error);
-  EXPECT_THROW(A(range(), 5), key_error);
-  EXPECT_THROW(A(0, 3), key_error);
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  EXPECT_EQ(__asan_address_is_poisoned(p), 1);
+#endif
+#endif
 }
+
 MAKE_MAIN;

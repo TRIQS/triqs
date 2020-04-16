@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./nda_test_common.hpp"
+#include "./array_test_common.hpp"
 
 #include <triqs/arrays/blas_lapack/gemm.hpp>
 #include <triqs/arrays/blas_lapack/gemv.hpp>

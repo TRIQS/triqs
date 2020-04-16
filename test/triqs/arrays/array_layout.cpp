@@ -1,4 +1,4 @@
-#include "./nda_test_common.hpp"
+#include "./array_test_common.hpp"
 
 // ==============================================================
 

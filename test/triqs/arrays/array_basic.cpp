@@ -1,4 +1,4 @@
-#include "./nda_test_common.hpp"
+#include "./array_test_common.hpp"
 
 static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 static_assert(is_scalar_for<int, matrix<std::complex<double>>>::type::value == 1, "oops");
