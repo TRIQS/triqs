@@ -42,7 +42,7 @@ namespace triqs {
     template <typename T, int Rank> class mini_vector {
       T _data[(Rank != 0 ? Rank : 1)];
       friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("_data", _data); }
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_data; }
       void init() {
         for (int i = 0; i < Rank; ++i) _data[i] = 0;
       }

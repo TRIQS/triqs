@@ -73,9 +73,9 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("n_max", Nmax);
-        ar &TRIQS_MAKE_NVP("names", _names);
-        ar &TRIQS_MAKE_NVP("names_inv", _inv_names);
+        ar &Nmax;
+        ar &_names;
+        ar &_inv_names;
       }
     };
   } // namespace gfs

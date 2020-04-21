@@ -222,13 +222,13 @@ namespace triqs {
     @param version Archive format version tag
    */
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("a", a);
-        ar &TRIQS_MAKE_NVP("b", b);
-        ar &TRIQS_MAKE_NVP("n_bins", n_bins);
-        ar &TRIQS_MAKE_NVP("data", _data);
-        ar &TRIQS_MAKE_NVP("n_data_pts", _n_data_pts);
-        ar &TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
-        ar &TRIQS_MAKE_NVP("step", _step);
+        ar &a;
+        ar &b;
+        ar &n_bins;
+        ar &_data;
+        ar &_n_data_pts;
+        ar &_n_lost_pts;
+        ar &_step;
       }
     };
 

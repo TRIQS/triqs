@@ -98,10 +98,18 @@ namespace triqs {
       //  What about f ? Not serialized at the moment.
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("Nmax", Nmax) & TRIQS_MAKE_NVP("N", N) & TRIQS_MAKE_NVP("n_opts", n_opts)
-           & TRIQS_MAKE_NVP("n_opts_max_before_check", n_opts_max_before_check) & TRIQS_MAKE_NVP("singular_threshold", singular_threshold)
-           & TRIQS_MAKE_NVP("det", det) & TRIQS_MAKE_NVP("sign", sign) & TRIQS_MAKE_NVP("Minv", mat_inv) & TRIQS_MAKE_NVP("row_num", row_num)
-           & TRIQS_MAKE_NVP("col_num", col_num) & TRIQS_MAKE_NVP("x_values", x_values) & TRIQS_MAKE_NVP("y_values", y_values);
+        ar &Nmax;
+        ar &N;
+        ar &n_opts;
+        ar &n_opts_max_before_check;
+        ar &singular_threshold;
+        ar &det;
+        ar &sign;
+        ar &mat_inv;
+        ar &row_num;
+        ar &col_num;
+        ar &x_values;
+        ar &y_values;
       }
 
       /// Write into HDF5

@@ -40,7 +40,6 @@ namespace boost {
     class access;
   }
 } // namespace boost
-#define TRIQS_MAKE_NVP(NAME, X) X
 
 // missing complex * int and in * complex
 #include <triqs/utility/complex_ops.hpp>
