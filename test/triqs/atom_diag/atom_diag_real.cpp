@@ -5,12 +5,16 @@
 #include <triqs/atom_diag/gf.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/h5.hpp>
+#include <triqs/h5/serialization.hpp>
 
 #include "./hamiltonian.hpp"
 
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;
+using namespace triqs::h5;
 using namespace triqs::atom_diag;
+
+using atom_diag_real = triqs::atom_diag::atom_diag<false>;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
@@ -28,7 +32,7 @@ TEST(atom_diag_real, QuantumNumbers) {
   auto N    = N_up + N_dn;
 
   // Partition with total number of particles
-  auto ad1 = triqs::atom_diag::atom_diag<false>(h, fops, {N});
+  auto ad1 = atom_diag_real(h, fops, {N});
 
 #ifndef GENERATE_REF_H5
   vector<int> sp_dim_ref;
@@ -51,7 +55,7 @@ TEST(atom_diag_real, QuantumNumbers) {
   }
 
   // Partition with N_up and N_dn
-  auto ad2 = triqs::atom_diag::atom_diag<false>(h, fops, {N_up, N_dn});
+  auto ad2 = atom_diag_real(h, fops, {N_up, N_dn});
 
 #ifndef GENERATE_REF_H5
   h5_read(ref_file, "/QuantumNumbers/N_up_N_dn/sp_dims", sp_dim_ref);
@@ -92,12 +96,27 @@ TEST(atom_diag_real, Vacuum) {
   fundamental_operator_set fops;
   fops.insert("up");
   fops.insert("dn");
-  auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
+  auto ad = atom_diag_real(h, fops);
 
   EXPECT_EQ(1, ad.get_vacuum_subspace_index());
   auto vac = ad.get_vacuum_state();
   EXPECT_NEAR(1, dot(vac, vac), 1e-14);
   for (auto s : {"up", "dn"}) EXPECT_NEAR(0, dot(vac, act(n(s), vac, ad)), 1e-14);
+}
+
+TEST(atom_diag_real, Serialization) {
+  auto h = 2.0 * (n("up") - 0.5) * (n("dn") - 0.5);
+  h += 0.3 * (c_dag("up") * c("dn") + c_dag("dn") * c("up"));
+  h += 0.1 * (c_dag("up") * c_dag("dn") - c("up") * c("dn"));
+
+  fundamental_operator_set fops;
+  fops.insert("up");
+  fops.insert("dn");
+  auto ad = atom_diag_real(h, fops);
+
+  auto ser = serialize(ad);
+  auto ser2 = serialize(deserialize<atom_diag_real>(ser));
+  EXPECT_EQ(ser, ser2);
 }
 
 TEST(atom_diag_real, Autopartition) {
@@ -110,7 +129,7 @@ TEST(atom_diag_real, Autopartition) {
   double t  = 0.2;
   auto h    = make_hamiltonian<many_body_operator_real>(mu, U, J, b, t);
 
-  auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
+  auto ad = atom_diag_real(h, fops);
 
   using triqs::hilbert_space::hilbert_space;
 #ifndef GENERATE_REF_H5
@@ -248,7 +267,7 @@ TEST(atom_diag_real, Functions) {
 
   auto h = make_hamiltonian<many_body_operator_real>(mu, U, J, b, t);
 
-  auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
+  auto ad = atom_diag_real(h, fops);
 
   // Partition function
   double z = partition_function(ad, beta);
@@ -318,7 +337,7 @@ TEST(atom_diag_real, Functions) {
   unsigned int n_l = 25;
   int n_w          = 1000;
 
-  triqs::atom_diag::excluded_states_t excluded_states = {{1, 0}, {1, 1}, {3, 0}, {3, 1}, {3, 2}, {3, 3}};
+  excluded_states_t excluded_states = {{1, 0}, {1, 1}, {3, 0}, {3, 1}, {3, 2}, {3, 3}};
   auto G_tau                                          = atomic_g_tau(ad, beta, gf_struct, n_tau, excluded_states);
   auto G_iw                                           = atomic_g_iw(ad, beta, gf_struct, n_iw, excluded_states);
   auto G_l                                            = atomic_g_l(ad, beta, gf_struct, n_l, excluded_states);
