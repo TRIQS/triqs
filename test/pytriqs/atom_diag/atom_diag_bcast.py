@@ -1,6 +1,5 @@
 from pytriqs.operators import *
 from pytriqs.gf import *
-from pytriqs.archive import *
 from pytriqs.atom_diag import *
 from pytriqs.utility.comparison_tests import *
 import numpy as np
@@ -47,16 +46,11 @@ G_iw = atomic_g_iw(ad, beta, gf_struct, 100)
 G_l = atomic_g_l(ad, beta, gf_struct, 20)
 G_w = atomic_g_w(ad, beta, gf_struct, (-2, 2), 400, 0.01)
 
-# HDF5
-if mpi.is_master_node():
-    with HDFArchive('atom_diag_bcast.h5', 'w') as ar:
-        ar['ad'] = ad
-
-
 ad_bcast = None
 if mpi.is_master_node():
-    with HDFArchive('atom_diag_bcast.h5', 'r') as ar:
-        ad_bcast = ar['ad']
+        ad_bcast = ad
+else:
+    ad = None
 
 ad_bcast = mpi.bcast(ad_bcast)
 
