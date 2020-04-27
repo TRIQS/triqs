@@ -1,5 +1,3 @@
-SET(PythonBuildExecutable ${PYTHON_INTERPRETER})
-
 # runs a c++ test
 # if there is a .ref file a comparison test is done
 # Example: add_cpp_test(my_code)
@@ -40,14 +38,22 @@ endmacro(add_cpp_test)
 # runs a python test
 # Example: add_python_test(my_script)
 #   where my_script.py is the script
-macro(add_python_test testname)
+function(add_python_test)
+  cmake_parse_arguments(ARG "" "" "MPI_NUMPROC" ${ARGN})
 
- set(testname ${testname})
- add_test(py_${testname} ${PythonBuildExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py)
- set_property(TEST py_${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH})
+  set(testfile ${ARGV0}.py)
+  set(testname py_${ARGV0})
+  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH})
+  if(SANITIZER_RT_PRELOAD)
+    list(APPEND testenv ${SANITIZER_RT_PRELOAD})
+  endif()
 
- if(SANITIZER_RT_PRELOAD)
-   set_property(TEST py_${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
- endif()
+  foreach(NP ${ARG_MPI_NUMPROC})
+    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+    set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT ${testenv})
+  endforeach()
 
-endmacro(add_python_test)
+  add_test(${testname} ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV0}.py)
+  set_property(TEST ${testname} PROPERTY ENVIRONMENT ${testenv})
+
+endfunction(add_python_test)
