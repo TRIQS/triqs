@@ -29,6 +29,16 @@ namespace triqs {
       _step = (n_bins - 1) / (b - a);
     }
 
+    bool histogram::operator==(histogram const &h) const {
+      return this->a == h.a &&                 //
+         this->b == h.b &&                     //
+         this->n_bins == h.n_bins &&           //
+         this->_data == h._data &&             //
+         this->_n_data_pts == h._n_data_pts && //
+         this->_n_lost_pts == h._n_lost_pts && //
+         this->_step == h._step;
+    }
+
     histogram &histogram::operator<<(double x) {
       if ((x < a) || (x > b))
         ++_n_lost_pts;

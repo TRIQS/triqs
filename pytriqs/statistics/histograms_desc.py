@@ -26,6 +26,7 @@ c = class_(
         c_type_absolute = "triqs::statistics::histogram",
         is_printable = True,
         hdf5 = True,
+        comparisons = "==",
         arithmetic = "add_only",
         serializable = "tuple",
         doc = "This class serves to sample a continuous random variable, and to 'bin' it. "
