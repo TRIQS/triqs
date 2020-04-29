@@ -40,9 +40,14 @@ set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 # include the exported dependencies of the triqs project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
-# include the exported targets of this project 
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/nda/nda-targets.cmake)
+# Find the target dependencies
+include(CMakeFindDependencyMacro)
+find_dependency(itertools)
+find_dependency(mpi)
+find_dependency(h5)
+find_dependency(nda)
+
+# Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
