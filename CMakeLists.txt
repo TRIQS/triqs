@@ -29,17 +29,17 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 
-# nasty policy for escaping in string....
-# cmake_policy(SET CMP0011 OLD)
-cmake_policy(SET CMP0005 NEW)
-cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
+# CMake Policy Settings
+cmake_policy(SET CMP0003 NEW) # cmake --help-policy CMP0003
+cmake_policy(SET CMP0005 NEW) # Escaping of Preprocessor definition values
 cmake_policy(SET CMP0018 NEW) # Automatically add -fPIC when necessary
+cmake_policy(SET CMP0057 NEW) # IN_LIST keyword for if(..)
 
 #---------------------------------------------------------------------
 # Start project
 #---------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
 project(TRIQS VERSION 2.2.1 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
