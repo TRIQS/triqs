@@ -72,15 +72,6 @@ if (NOT _CXX_OK)
 endif()
 
 #---------------------------------------------------------------------
-# Shared lib (static : not checked).
-#---------------------------------------------------------------------
-
-# FIXME : static is not checked by CI : do we what to keep it ?
-set(BUILD_SHARED_LIBS ON)
-#option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-string(COMPARE EQUAL ${BUILD_SHARED_LIBS}  "OFF" TRIQS_BUILD_STATIC)
-
-#---------------------------------------------------------------------
 # Build type : Release or debug
 #---------------------------------------------------------------------
 
@@ -93,18 +84,10 @@ add_compile_options($<$<CONFIG:Debug>:-Og>)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 #---------------------------------------------------------------------
-# Python
+# Shared or dynamic library
 #---------------------------------------------------------------------
 
-option(PythonSupport "Build with Python support" ON)
-if (PythonSupport)
- set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
-endif (PythonSupport)
-
-#---------------------------------------------------------------------
-# NDA
-#---------------------------------------------------------------------
-add_subdirectory(nda)
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 
 #---------------------------------------------------------------------
 # log info
@@ -176,11 +159,11 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   endforeach()
 endif()
 
-# -----------------------------------------------------------------------------
-# Common option for all targets below (triqs lib, test, pytriqs, doc examples)
-# -----------------------------------------------------------------------------
- 
-include_directories (${PROJECT_SOURCE_DIR})  # to have <triqs/....>
+#---------------------------------------------------------------------
+# External Dependencies (nda, h5, itertools, gtest, ...)
+#---------------------------------------------------------------------
+
+add_subdirectory(deps)
 
 #------------------------
 # triqs library
@@ -188,20 +171,16 @@ include_directories (${PROJECT_SOURCE_DIR})  # to have <triqs/....>
 
 add_subdirectory(triqs)
 
-#------------------------------
-# install the itertools and mpi headers
-#------------------------------
-
-install(DIRECTORY itertools mpi DESTINATION include FILES_MATCHING PATTERN "*.hpp")
-
 #---------------------------------------------------------------------
-# pytriqs modules 
+# Python modules 
 #---------------------------------------------------------------------
 
-if (PythonSupport)
+option(PythonSupport "Build with Python support" ON)
+if(PythonSupport)
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
  message( STATUS "-------- Preparing python extension modules  -------------")
  add_subdirectory(pytriqs)
-endif (PythonSupport)
+endif()
 
 #------------------------
 # tests
@@ -210,7 +189,7 @@ endif (PythonSupport)
 enable_testing()
 
 option(Build_Tests "Build the tests of the library " ON)
-if (Build_Tests)
+if(Build_Tests)
  message(STATUS "-------- Preparing tests  -------------")
  add_subdirectory(test)
 endif()
@@ -241,8 +220,6 @@ mark_as_advanced(BIND_FORTRAN_LOWERCASE)
 if (BIND_FORTRAN_LOWERCASE)
  set(TRIQS_BIND_FORTRAN_LOWERCASE OFF )
 endif (BIND_FORTRAN_LOWERCASE)
-
-# 
 
 #---------------------------------------
 # TRIQSConfig

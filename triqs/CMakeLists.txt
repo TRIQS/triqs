@@ -15,30 +15,36 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
 
 # ---------------------------------
-#  Define triqs target 
+#  Define and configure the triqs target 
 # ---------------------------------
 
 add_library(triqs ${ALLSOURCES} ${CMAKE_CURRENT_BINARY_DIR}/git_hash.cpp)
 set_property(TARGET triqs PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR})
 
-# first options
-target_link_libraries(triqs PRIVATE cpp2py python_and_numpy)
+# Include dirs
+target_include_directories(triqs PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
+target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
-# ---------------------------------
-# C++ standard and compiler details
-# ---------------------------------
-
-target_compile_options(triqs PUBLIC
-  -std=c++17
-  $<$<CXX_COMPILER_ID:GNU>:-fconcepts>
+# Compile Options
+target_compile_options(triqs
+  PUBLIC
+    -std=c++17
+    $<$<CXX_COMPILER_ID:GNU>:-fconcepts>
 )
 
+# Compile Definitions
+option(CHECK_MEMORY "Turn on memory check" OFF)
+target_compile_definitions(triqs
+  PUBLIC
+    $<$<CONFIG:Debug>:TRIQS_DEBUG>
+    $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+    $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_DEBUG_COUNT_MEMORY>
+    $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_CHECK_WEAK_REFS>
+)
+
+# This choice should be up to the user..
 if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
  target_compile_options(triqs PUBLIC -stdlib=libc++)
-endif()
-
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  target_compile_definitions(triqs PRIVATE TRIQS_DEBUG NDA_DEBUG)
 endif()
 
 # enforce color diagnostics ?
@@ -46,40 +52,37 @@ endif()
 # clang :  -fcolor-diagnostics 
 
 # ---------------------------------
-# Turn the memory check
-# These options must be activated for 
-# the lib AND any code using it or they will give false positive
-# hence PUBLIC
+# Link Dependencies
 # ---------------------------------
 
-option(CHECK_MEMORY "Turn on memory check" OFF)
-if(CHECK_MEMORY)
-target_compile_definitions(triqs PUBLIC TRIQS_ARRAYS_DEBUG_COUNT_MEMORY TRIQS_ARRAYS_CHECK_WEAK_REFS)
-endif()
-
-# ---------------------------------
 # RT on linux only
-# ---------------------------------
+target_link_libraries(triqs PUBLIC $<$<PLATFORM_ID:Linux>:-lrt>)
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- target_link_libraries (triqs PUBLIC -lrt)
-endif()
+# Cpp2PY
+# C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
+# for use of BUILD_INTERFACE
+target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:cpp2py>)
 
-# ---------------------------------
-# MPI
-# ---------------------------------
-target_link_libraries(triqs PUBLIC mpi_interface)
+# Python and Numpy
+target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:python_and_numpy>)
 
-# ---------------------------------
+# NDA
+target_link_libraries(triqs PUBLIC nda_c)
+
+# MPI Interface
+target_link_libraries(triqs PUBLIC mpi_c)
+
+# H5 Interface
+target_link_libraries(triqs PUBLIC h5_c)
+
+# Itertools
+target_link_libraries(triqs PUBLIC itertools_c)
+
 # HDF5
-# ---------------------------------
-target_link_libraries(triqs PUBLIC h5_interface)
 target_link_libraries(triqs PRIVATE hdf5)
 
-# ---------------------------------
-# Itertools 
-# ---------------------------------
-target_link_libraries(triqs PUBLIC itertools_c)
+# blas_lapack
+target_link_libraries(triqs PUBLIC blas_lapack)
 
 # ---------------------------------
 # Boost
@@ -96,27 +99,6 @@ target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(triqs PUBLIC boost)
 install(TARGETS boost EXPORT triqs-dependencies)
-
-# ---------------------------------
-# max_align_t bug detection
-# ---------------------------------
-
-message(STATUS "-------- Misc -------------")
-
-# should be move to config.h ?
-try_compile(_max_align_t_is_correct ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
-if(NOT _max_align_t_is_correct)
- MESSAGE(STATUS "Adding workaround for max_align_t bug (in clang normally)")
- target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
-else ()
-  MESSAGE(STATUS "Checked max_align_t. No workaround needed")
-endif()
-
-# ---------------------------------
-# Lapack
-# ---------------------------------
-target_link_libraries(triqs PUBLIC blas_lapack)
-#install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 # ---------------------------------
 # GMP
@@ -146,8 +128,21 @@ install(TARGETS fftw EXPORT triqs-dependencies)
 # remove the possible horrible pthread bug on os X !!( on gcc, old, before clang... is it really needed now ???)
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- target_compile_options(triqs PUBLIC -pthread)
+target_compile_options(triqs PUBLIC $<$<PLATFORM_ID:Darwin>:-pthread>)
+
+# ---------------------------------
+# max_align_t bug detection
+# ---------------------------------
+
+message(STATUS "-------- Misc -------------")
+
+# should be move to config.h ?
+try_compile(_max_align_t_is_correct ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
+if(NOT _max_align_t_is_correct)
+  message(STATUS "Adding workaround for max_align_t bug (in clang normally)")
+  target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
+else()
+  message(status "Checked max_align_t. No workaround needed")
 endif()
 
 # ---------------------------------
@@ -167,15 +162,6 @@ if(MSAN)
   target_compile_options(triqs PUBLIC -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
   target_link_libraries(triqs PUBLIC "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
 endif()
-
-# ---------------------------------
-# Triqs header include directories
-# ---------------------------------
-
-# Add the directories where the triqs headers are located to the triqs target interface
-target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
-target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
-
 
 # ---------------------------------
 # Generate Compiler Wrapper
