@@ -10,15 +10,6 @@ Switch to the latest development branch of your application which should be comp
 We suggest your create a new branch called e.g. `py3`. After each of the steps below, commit your changes with a proper message.
 
 
-## CMake 
-
-When linking c++2py python modules against other targets with the `target_link_libraries` command, be sure to provide the keyword `PRIVATE`
-```cmake
-target_link_libraries(module_name PRIVATE link_target)
-```
-This line will most commonly have to be corrected in the `python/appname/CMakeLists.txt` file.
-
-
 ## Port your Python files to Python 3
 
 The 2to3 tool allows for easy and convenient porting of Python files to Python 3.
