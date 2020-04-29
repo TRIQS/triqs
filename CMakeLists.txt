@@ -40,7 +40,7 @@ cmake_policy(SET CMP0057 NEW) # IN_LIST keyword for if(..)
 #---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
-project(TRIQS VERSION 2.2.1 LANGUAGES C CXX)
+project(TRIQS VERSION 3.0.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ## C & C++ Headers
