@@ -78,11 +78,27 @@ target_link_libraries(triqs PUBLIC h5::h5_c)
 # HDF5 (still used explicitly in many_body_operator)
 target_link_libraries(triqs PRIVATE h5::hdf5)
 
-# NDA
-target_link_libraries(triqs PUBLIC nda::nda_c)
+## NDA
+#target_link_libraries(triqs PUBLIC nda::nda_c)
 
-# blas_lapack
-target_link_libraries(triqs PUBLIC nda::blas_lapack)
+## blas_lapack
+#target_link_libraries(triqs PUBLIC nda::blas_lapack)
+
+# ========= Blas / Lapack ==========
+
+message(STATUS "-------- Lapack detection -------------")
+
+find_package(LAPACK REQUIRED)
+
+# Create an interface target
+add_library(blas_lapack INTERFACE)
+list(REMOVE_DUPLICATES LAPACK_LIBRARIES)
+target_link_libraries(blas_lapack INTERFACE ${LAPACK_LIBRARIES})
+target_compile_options(blas_lapack INTERFACE ${LAPACK_LINKER_FLAGS})
+
+# Link against interface target and export
+target_link_libraries(triqs PUBLIC blas_lapack)
+install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 # ---------------------------------
 # Boost

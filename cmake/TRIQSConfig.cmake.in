@@ -45,7 +45,7 @@ include(CMakeFindDependencyMacro)
 find_dependency(itertools)
 find_dependency(mpi)
 find_dependency(h5)
-find_dependency(nda)
+#find_dependency(nda)
 
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)

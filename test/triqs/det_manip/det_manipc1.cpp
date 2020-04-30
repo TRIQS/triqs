@@ -3,7 +3,7 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/asserts.hpp>
 #include <iostream>
-#include <nda/std_addons/complex.hpp>
+#include <triqs/std_addons/complex.hpp>
 
 struct fun {
 
