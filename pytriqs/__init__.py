@@ -20,9 +20,7 @@
 #
 ################################################################################
 
-from cpp2py import Cpp2pyInfoBase
-
-class Cpp2pyInfo(Cpp2pyInfoBase):
+class Cpp2pyInfo:
 
     table_imports = {
         'triqs::gfs::' : 'pytriqs.gf',
