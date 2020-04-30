@@ -44,7 +44,7 @@ macro(add_python_test testname)
 
  set(testname ${testname})
  add_test(py_${testname} ${PythonBuildExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py)
- set_property(TEST py_${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:${NDA_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+ set_property(TEST py_${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:${NDA_BINARY_DIR}/python:${H5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
 
  if(SANITIZER_RT_PRELOAD)
    set_property(TEST py_${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
