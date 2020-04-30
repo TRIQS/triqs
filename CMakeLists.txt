@@ -84,6 +84,15 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 
+#------------------------
+# tests option
+#------------------------
+
+option(Build_Tests "Build tests" ON)
+if(Build_Tests)
+  enable_testing()
+endif()
+
 #---------------------------------------------------------------------
 # log info
 #---------------------------------------------------------------------
@@ -178,12 +187,9 @@ if(PythonSupport)
 endif()
 
 #------------------------
-# tests
+# build tests
 #------------------------
 
-enable_testing()
-
-option(Build_Tests "Build the tests of the library " ON)
 if(Build_Tests)
  message(STATUS "-------- Preparing tests  -------------")
  add_subdirectory(test)
