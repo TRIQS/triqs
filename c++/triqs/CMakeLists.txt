@@ -82,6 +82,9 @@ target_link_libraries(triqs PUBLIC h5::h5_c)
 # HDF5 (still used explicitly in many_body_operator)
 target_link_libraries(triqs PRIVATE h5::hdf5)
 
+# NDA
+target_link_libraries(triqs PUBLIC nda_c)
+
 ## NDA
 #target_link_libraries(triqs PUBLIC nda::nda_c)
 
@@ -187,15 +190,6 @@ if(MSAN)
   target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:msan>)
 endif()
 
-# ---------------------------------
-# Build the triqs_py library
-# ---------------------------------
-
-add_library(triqs_py arrays/python/numpy_extractor.cpp)
-set_property(TARGET triqs_py PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR})
-# C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
-# for use of BUILD_INTERFACE
-target_link_libraries(triqs_py PUBLIC triqs cpp2py::python_and_numpy $<BUILD_INTERFACE:cpp2py::cpp2py>)
 
 # ---------------------------------
 # Generate Compiler Wrapper
@@ -214,7 +208,7 @@ configure_file(triqs++.in triqs++ @ONLY)
 # ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
-install(TARGETS triqs triqs_py DESTINATION lib EXPORT triqs-targets)
+install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
