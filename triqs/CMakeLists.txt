@@ -152,15 +152,19 @@ endif()
 # Sanitizer Options already defined in NDA
 
 if(ASAN)
-  target_link_libraries(triqs PUBLIC asan)
+  target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:asan>)
 endif()
 if(UBSAN)
-  target_link_libraries(triqs PUBLIC ubsan)
+  target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:ubsan>)
 endif()
 
 if(MSAN)
-  target_compile_options(triqs PUBLIC -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
-  target_link_libraries(triqs PUBLIC "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
+  if(NOT TARGET msan)
+    add_library(msan INTERFACE)
+    target_compile_options(msan INTERFACE -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
+    target_link_libraries(msan INTERFACE "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
+  endif()
+  target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:msan>)
 endif()
 
 # ---------------------------------
