@@ -41,6 +41,9 @@ else()
     message(FATAL_ERROR "Build_Deps option should be either 'Never', 'Always' or 'IfNotFound'")
   endif()
   set(Build_Deps ${Build_Deps} CACHE STRING "Do we build dependencies from source? [Never/Always/IfNotFound]")
+  if(NOT Build_Deps STREQUAL "Always" AND (ASAN OR UBSAN))
+    message(WARNING "For builds with llvm sanitizers (ASAN/UBSAN) it is recommended to use -DBuild_Deps=Always to avoid false positives.")
+  endif()
 endif()
 
 # -- GTest --
