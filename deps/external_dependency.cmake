@@ -63,7 +63,7 @@ function(external_dependency)
   else()
     message(FATAL_ERROR "Could not find or build dependency ${ARGV0}")
   endif()
-
+  message(STATUS " =============== End ${ARGV0} Configuration =============== ")
   set_property(GLOBAL PROPERTY ${ARGV0}_FOUND TRUE)
 
 endfunction()
