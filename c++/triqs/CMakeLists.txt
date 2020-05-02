@@ -93,19 +93,19 @@ target_link_libraries(triqs PUBLIC nda_c)
 
 # ========= Blas / Lapack ==========
 
-message(STATUS "-------- Lapack detection -------------")
+#message(STATUS "-------- Lapack detection -------------")
 
-find_package(LAPACK REQUIRED)
+#find_package(LAPACK REQUIRED)
 
-# Create an interface target
-add_library(blas_lapack INTERFACE)
-list(REMOVE_DUPLICATES LAPACK_LIBRARIES)
-target_link_libraries(blas_lapack INTERFACE ${LAPACK_LIBRARIES})
-target_compile_options(blas_lapack INTERFACE ${LAPACK_LINKER_FLAGS})
+## Create an interface target
+#add_library(blas_lapack INTERFACE)
+#list(REMOVE_DUPLICATES LAPACK_LIBRARIES)
+#target_link_libraries(blas_lapack INTERFACE ${LAPACK_LIBRARIES})
+#target_compile_options(blas_lapack INTERFACE ${LAPACK_LINKER_FLAGS})
 
-# Link against interface target and export
-target_link_libraries(triqs PUBLIC blas_lapack)
-install(TARGETS blas_lapack EXPORT triqs-dependencies)
+## Link against interface target and export
+#target_link_libraries(triqs PUBLIC blas_lapack)
+#install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 # ---------------------------------
 # Boost

@@ -22,33 +22,10 @@
 // for python code generator, we need to know what to include...
 #define TRIQS_INCLUDED_ARRAYS
 
-// The basic classes
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
+#include <h5/h5.hpp>
+#include <nda/nda.hpp>
 
-//
-#include <triqs/arrays/functional/map.hpp>
-#include <triqs/arrays/functional/fold.hpp>
-#include <triqs/arrays/math_functions.hpp>
-#include <triqs/arrays/algorithms.hpp>
+namespace triqs::arrays { 
 
-// HDF5 interface
-#include <triqs/arrays/h5.hpp>
-
-// proxy
-#include <triqs/arrays/proxy.hxx>
-
-// Regrouping indices
-#include <triqs/arrays/group_indices.hpp>
-
-// Reinterpretation of nx1x1 array and co
-#include <triqs/arrays/reinterpret.hpp>
-
-// Linear algebra ?? Keep here ?
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-
-#include <triqs/arrays/mpi.hpp>
-
-// immutable_array
-#include <triqs/arrays/make_immutable_array.hpp>
+  using namespace nda;
+}

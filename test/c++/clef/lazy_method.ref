@@ -1,4 +1,0 @@
-Clef expression     : (apply_method:my_method(Obj, _2) + (2 * _1))
-Complete evaluation : 4
-Partial evaluation  : (2 + (2 * _1))
-Complete evalution  : 8

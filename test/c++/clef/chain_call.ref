@@ -1,7 +1,0 @@
-expr = F2_vec(_4)(_1, _2)
-(tql::eval(expr, x_ = 2, y_ = 3, i_ = 0)) ---> 23
-(tql::eval(expr, x_ = 2)) ---> F2_vec(_4)(2, _2)
-(tql::eval(expr, x_ = 2, i_ = 1)) ---> F2(2, _2)
-(tql::eval(expr, x_ = 2, y_ = 3)) ---> F2_vec(_4)(2, 3)
-(tql::eval(tql::eval(expr, x_ = 2, y_ = 3), i_ = 0)) ---> 23
--------------
