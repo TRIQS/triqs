@@ -120,12 +120,12 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
     gf_view_type = gf_type +  '_view'
 
     # is_gf_hermitian
-    m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
-    m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-12)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-12)"%gf_type)
 
     # is_gf_real_in_tau
-    m.add_function("bool is_gf_real_in_tau(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
-    m.add_function("bool is_gf_real_in_tau(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
+    m.add_function("bool is_gf_real_in_tau(%s<imfreq, scalar_valued> g, double tolerance = 1.e-12)"%gf_type)
+    m.add_function("bool is_gf_real_in_tau(%s<imfreq, matrix_valued> g, double tolerance = 1.e-12)"%gf_type)
 
 
 # ---------------------- Fourier functionality --------------------

@@ -68,13 +68,13 @@ namespace triqs::gfs {
    * $G[\tau](i,j,k,l) == \frac{1}{2} ( G[\tau](i,j,k,l) + conj(G[\tau](k,l,i,j)) )$
    *
    * @param g The Green function object to check the symmetry for
-   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-13]
+   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-12]
    *
    * @tparam The Green function type
    *
    * @return true iif the fundamental property holds for all points of the mesh
    */
-  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-12) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using var_t    = typename std::decay_t<G>::variable_t;
@@ -118,7 +118,7 @@ namespace triqs::gfs {
     }
   }
   /// This function is identical to is_gf_hermitian
-  template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) { return is_gf_hermitian<G>(g, tolerance); }
+  template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-12) { return is_gf_hermitian<G>(g, tolerance); }
 
   /**
    * Symmetrize a Green function object to fullfill fundamental Green function properties.
