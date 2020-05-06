@@ -32,7 +32,7 @@ namespace triqs {
 
     // ---------------------- array_view  --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank, void>, nda::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::array_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank, void>, triqs::arrays::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::array_view>
 
     template <typename ValueType, int Rank, char B_S, bool IsConst>
     class array_view : Tag::array_view, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
@@ -116,7 +116,7 @@ namespace triqs {
 
     //------------------------------- array ---------------------------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank>, nda::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::array_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank>, triqs::arrays::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::array_view>
 
     template <typename ValueType, int Rank> class array : Tag::array, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
       public:
@@ -154,7 +154,7 @@ namespace triqs {
 #endif
 
       // Makes a true (deep) copy of the data.
-      array(const array &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
+      array(const array &X) : IMPL_TYPE(X.indexmap(), triqs::arrays::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       // Move
       explicit array(array &&X) noexcept { this->swap_me(X); }
@@ -317,7 +317,7 @@ namespace triqs {
         return T{0};
       else
         return array<T, R>(typename array<T, R>::indexmap_type::domain_type{len},
-                           typename array<T, R>::storage_type(len.product_of_elements(), nda::mem::init_zero));
+                           typename array<T, R>::storage_type(len.product_of_elements(), triqs::arrays::mem::init_zero));
     }
     /// Variadic version of triqs::arrays::zeros taking integer types
     template <typename T, typename INT, typename... INTS> auto zeros(INT i, INTS... js) {

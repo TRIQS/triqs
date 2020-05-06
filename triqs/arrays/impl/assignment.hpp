@@ -133,7 +133,7 @@ namespace triqs {
             TRIQS_RUNTIME_ERROR << "Size mismatch in operation " << OP << " : LHS " << lhs << " \n RHS = " << rhs;
 #endif
           if ((false && (OP == 'E') && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap()))) {
-	    nda::mem::memcopy(lhs.data_start(), rhs.data_start(), rhs.indexmap().domain().number_of_elements());
+	    triqs::arrays::mem::memcopy(lhs.data_start(), rhs.data_start(), rhs.indexmap().domain().number_of_elements());
           } else {
             foreach (lhs, *this)
               ;

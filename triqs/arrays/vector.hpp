@@ -33,7 +33,7 @@ namespace triqs {
 
     // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, triqs::arrays::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::vector_view>
 
     /** */
     template <typename ValueType, char B_S, bool IsConst>
@@ -110,7 +110,7 @@ namespace triqs {
     template <typename ValueType> using vector_const_view = vector_view<ValueType,'B', true>;
 
 // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, triqs::arrays::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::vector_view>
 
     template <typename ValueType> class vector : Tag::vector, TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
       public:
@@ -137,7 +137,7 @@ namespace triqs {
       }
 
       /** Makes a true (deep) copy of the data. */
-      vector(const vector &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
+      vector(const vector &X) : IMPL_TYPE(X.indexmap(), triqs::arrays::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       /**
    * Build a new vector from X.domain() and fill it with by evaluating X. X can be :

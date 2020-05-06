@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace nda::mem {
+namespace triqs::arrays::mem {
 
   // FIXME : This is only for assignment. Move it.
   template <typename T1, typename T2> void memcopy(T1 * p1, const T2 * p2, size_t size) {
@@ -18,4 +18,4 @@ namespace nda::mem {
     }
   }
 
-} // namespace nda::mem
+} // namespace triqs::arrays::mem

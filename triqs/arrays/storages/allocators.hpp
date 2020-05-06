@@ -37,7 +37,7 @@
 #endif
 #endif
 
-namespace nda::allocators {
+namespace triqs::arrays::allocators {
 
   // ------------------------  Utility -------------
 
@@ -181,7 +181,7 @@ namespace nda::allocators {
     }
 
     //bool owns(blk_t b) const noexcept { return b.ptr >= d and b.ptr < d + Size; }
-  }; // namespace nda::allocators
+  }; // namespace triqs::arrays::allocators
   // -------------------------  Stack allocator ----------------------------
   //
   // Allocates on a fixed size stack, FIFO style
@@ -383,4 +383,4 @@ namespace nda::allocators {
     auto const &histogram() const noexcept { return hist; }
   };
 
-} // namespace nda::allocators
+} // namespace triqs::arrays::allocators

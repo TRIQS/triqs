@@ -49,7 +49,7 @@ namespace triqs {
   bool memory_layout_is_c() const { return this->indexmap().strides()[0] >= this->indexmap().strides()[1]; }                                         \
   bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<2>, nda::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::matrix_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<2>, triqs::arrays::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::matrix_view>
 
     template <typename ValueType, char B_S, bool IsConst>
     class matrix_view : Tag::matrix_view, TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
@@ -122,7 +122,7 @@ namespace triqs {
     template <typename ValueType> using matrix_const_view = matrix_view<ValueType, 'B', true>;
 
 // ---------------------- matrix --------------------------------
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<2>, nda::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::matrix_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<2>, triqs::arrays::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::matrix_view>
 
     template <typename ValueType> class matrix : Tag::matrix, TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
       public:
@@ -148,7 +148,7 @@ namespace triqs {
       matrix(mini_vector<size_t, 2> const &sha, memory_layout_t<2> ml = memory_layout_t<2>{}) : IMPL_TYPE(indexmap_type(sha, ml)) {}
 
       /** Makes a true (deep) copy of the data. */
-      matrix(const matrix &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
+      matrix(const matrix &X) : IMPL_TYPE(X.indexmap(), triqs::arrays::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       // from a temporary storage and an indexmap. Used for reshaping a temporary array
       explicit matrix(typename indexmap_type::domain_type const &dom, storage_type &&sto, memory_layout_t<2> ml = memory_layout_t<2>{})

@@ -27,7 +27,7 @@
 #include <limits>
 #include "./../../utility/macros.hpp"
 
-namespace nda::mem {
+namespace triqs::arrays::mem {
 
   // -------------- ref count table -----------------------
 
@@ -101,4 +101,4 @@ namespace nda::mem {
       return _refcounts[id] == 0;
     }
   };
-} // namespace nda::mem
+} // namespace triqs::arrays::mem

@@ -61,7 +61,7 @@ namespace cpp2py {
                             << "\nfrom the python object \n"
                             << triqs::arrays::numpy_interface::object_to_string(ob) << "\nThe error was :\n " << E.error;
       auto indexmap_ = typename ArrayType::indexmap_type{E.lengths, E.strides, 0};
-      auto storage_  = nda::mem::make_handle<typename ArrayType::value_type> (E.numpy_obj);
+      auto storage_  = triqs::arrays::mem::make_handle<typename ArrayType::value_type> (E.numpy_obj);
 
       //return ArrayType(indexmap_, storage_);
       return ArrayType(typename ArrayType::view_type{indexmap_, storage_}); // FIXME : simplify with a better constructor to avoid the view

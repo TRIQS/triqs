@@ -38,7 +38,7 @@ namespace triqs {
        : public std::iterator<std::forward_iterator_tag,
                               std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>> {
 
-      nda::mem::handle<typename StorageType::value_type, 'B'> storage_;
+      triqs::arrays::mem::handle<typename StorageType::value_type, 'B'> storage_;
       IndexMapIterator it;
 
       public:

@@ -28,7 +28,7 @@
 #include <numpy/arrayobject.h>
 #include <cpp2py/pyref.hpp>
 
-namespace nda::mem {
+namespace triqs::arrays::mem {
 
   // -------------  make_handle ------------
 
@@ -61,7 +61,7 @@ namespace nda::mem {
 
   // Properly delete the handle<T, 'S'> in a PyCapsule
   template <typename T> static void delete_pycapsule(PyObject *capsule) {
-    handle<T, 'S'> *handle = static_cast<nda::mem::handle<T, 'S'> *>(PyCapsule_GetPointer(capsule, "guard"));
+    handle<T, 'S'> *handle = static_cast<triqs::arrays::mem::handle<T, 'S'> *>(PyCapsule_GetPointer(capsule, "guard"));
     //std::cerr << "decapsulate : "<< handle->id << "  "<< handle->data << "  nrefs" << handle->nref() << "\n";
     delete handle;
   }
@@ -75,9 +75,9 @@ namespace nda::mem {
   }
 
   template <typename T> PyObject *make_pycapsule(handle<T, 'B'> const &h) {
-    if (h.parent() == nullptr) throw std::runtime_error("Can not return to python a view on something else than an nda::array");
+    if (h.parent() == nullptr) throw std::runtime_error("Can not return to python a view on something else than an triqs::arrays::array");
     void *keep = new handle<T, 'S'>{*h.parent()}; // a new reference
     return PyCapsule_New(keep, "guard", &delete_pycapsule<T>);
   }
 
-} // namespace nda::mem
+} // namespace triqs::arrays::mem

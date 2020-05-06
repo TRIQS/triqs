@@ -22,11 +22,11 @@
  ******************************************************************************/
 #pragma once
 
-namespace nda::allocators {
+namespace triqs::arrays::allocators {
 
   // ------------------------ The memory block with its size  -------------
   struct blk_t {
     char *ptr = nullptr;
     size_t s  = 0;
   };
-} // namespace nda::allocators
+} // namespace triqs::arrays::allocators

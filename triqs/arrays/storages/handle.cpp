@@ -4,12 +4,12 @@
 #include "./handle.hpp"
 #include "./allocators.hpp"
 
-namespace nda::mem {
+namespace triqs::arrays::mem {
 
   // The global table of reference counters
   rtable_t globals::rtable;
 
-  // The allocator type for nda::mem::handle has to be fixed in the library
+  // The allocator type for triqs::arrays::mem::handle has to be fixed in the library
   // as combining different allocator types can lead to problems
 
   //using allocator_base_t = allocators::segregator<8*100, allocators::multiple_bucket<8*100>, allocators::mallocator>;
@@ -33,4 +33,4 @@ namespace nda::mem {
     }
   }
   void deallocate(allocators::blk_t b) { alloc.deallocate(b); }
-} // namespace nda::mem
+} // namespace triqs::arrays::mem

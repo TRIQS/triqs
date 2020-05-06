@@ -28,7 +28,7 @@
 #include "./blk.hpp"
 #include "./rtable.hpp"
 
-namespace nda::mem {
+namespace triqs::arrays::mem {
 
   // -------------- Traits ---------------------------
 
@@ -88,7 +88,7 @@ namespace nda::mem {
     friend handle<T, 'S'>;
 
     void decref() noexcept {
-      static_assert(std::is_nothrow_destructible_v<T>, "nda::mem::handle requires the value_type to have a non-throwing constructor");
+      static_assert(std::is_nothrow_destructible_v<T>, "triqs::arrays::mem::handle requires the value_type to have a non-throwing constructor");
       if (is_null()) return;
 
       // Check if the memory is shared and still pointed to
@@ -214,7 +214,7 @@ namespace nda::mem {
   // ------------------  Shared -------------------------------------
 
   template <typename T> struct handle<T, 'S'> {
-    static_assert(std::is_nothrow_destructible_v<T>, "nda::mem::handle requires the value_type to have a non-throwing constructor");
+    static_assert(std::is_nothrow_destructible_v<T>, "triqs::arrays::mem::handle requires the value_type to have a non-throwing constructor");
 
     private:
     T *_data     = nullptr; // Pointer to the start of the memory block
@@ -376,4 +376,4 @@ namespace nda::mem {
     long size() const noexcept { return _size; }
   };
 
-} // namespace nda::mem
+} // namespace triqs::arrays::mem

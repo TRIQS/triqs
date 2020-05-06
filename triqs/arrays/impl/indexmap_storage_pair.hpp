@@ -108,7 +108,7 @@ namespace triqs {
 
       template <typename InitLambda>
       explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda &&lambda) : indexmap_(std::move(IM)), storage_() {
-        storage_ = StorageType(indexmap_.domain().number_of_elements(), nda::mem::do_not_initialize); // DO NOT construct the element of the array
+        storage_ = StorageType(indexmap_.domain().number_of_elements(), triqs::arrays::mem::do_not_initialize); // DO NOT construct the element of the array
         _foreach_on_indexmap(indexmap_, [&](auto const &... x) { storage_.init_raw(indexmap_(x...), lambda(x...)); });
       }
 
@@ -326,7 +326,7 @@ namespace triqs {
 
       template <typename Xtype> void resize_and_clone_data(Xtype const &X) {
         indexmap_ = X.indexmap();
-        storage_  = nda::mem::handle<value_type, 'R'>{X.storage()}; // clone();
+        storage_  = triqs::arrays::mem::handle<value_type, 'R'>{X.storage()}; // clone();
       }
 
       //  BOOST Serialization
