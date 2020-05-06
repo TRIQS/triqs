@@ -82,7 +82,7 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 # Shared or dynamic library
 #---------------------------------------------------------------------
 
-option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 
 #------------------------
 # tests option
