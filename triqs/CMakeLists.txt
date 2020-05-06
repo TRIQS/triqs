@@ -66,23 +66,23 @@ target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:cpp2py>)
 # Python and Numpy
 target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:python_and_numpy>)
 
-# NDA
-target_link_libraries(triqs PUBLIC nda_c)
+# Itertools
+target_link_libraries(triqs PUBLIC itertools::itertools_c)
 
 # MPI Interface
-target_link_libraries(triqs PUBLIC mpi_c)
+target_link_libraries(triqs PUBLIC mpi::mpi_c)
 
 # H5 Interface
-target_link_libraries(triqs PUBLIC h5_c)
+target_link_libraries(triqs PUBLIC h5::h5_c)
 
-# Itertools
-target_link_libraries(triqs PUBLIC itertools_c)
+# HDF5 (still used explicitly in many_body_operator)
+target_link_libraries(triqs PRIVATE h5::hdf5)
 
-# HDF5
-target_link_libraries(triqs PRIVATE hdf5)
+# NDA
+target_link_libraries(triqs PUBLIC nda::nda_c)
 
 # blas_lapack
-target_link_libraries(triqs PUBLIC blas_lapack)
+target_link_libraries(triqs PUBLIC nda::blas_lapack)
 
 # ---------------------------------
 # Boost
