@@ -22,10 +22,10 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
 
 .. code-block::  python
 
-   from pytriqs.gf import *
-   from pytriqs.operators import *
+   from triqs.gf import *
+   from triqs.operators import *
    from h5 import *
-   import pytriqs.utility.mpi as mpi
+   import triqs.utility.mpi as mpi
    from triqs_cthyb import Solver
 
    # Parameters of the model

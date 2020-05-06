@@ -1,5 +1,5 @@
-from pytriqs.plot.mpl_interface import oplot
-from pytriqs.gf import GfImFreq, Omega, inverse
+from triqs.plot.mpl_interface import oplot
+from triqs.gf import GfImFreq, Omega, inverse
 
 g = GfImFreq(indices = [0], beta = 300, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )
@@ -8,7 +8,7 @@ g << inverse( Omega + 0.5 )
 # The green function for omega \in [0,0.2]
 X,Y = g.x_data_view (x_window = (0,0.2), flatten_y = True )
 
-from pytriqs.fit import Fit, linear, quadratic
+from triqs.fit import Fit, linear, quadratic
 
 fitl = Fit ( X,Y.imag, linear )
 fitq = Fit ( X,Y.imag, quadratic )

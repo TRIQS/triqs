@@ -30,10 +30,10 @@ and lets you organize your work as you wish.
 TRIQS code version
 ------------------
 
-The tiny module ``pytriqs.version`` contains various pieces of information
+The tiny module ``triqs.version`` contains various pieces of information
 configured automatically at compile time ::
 
- from pytriqs.version import *
+ from triqs.version import *
 
  version    # The version of the TRIQS library
  release    # The release number of the library
@@ -54,7 +54,7 @@ simply by putting it in the HDFArchive, e.g. ::
   Results = HDFArchive("solution.h5",'w')
   Results["G"] = S.G # save the results
   
-  import sys, pytriqs.version as version
+  import sys, triqs.version as version
   Results.create_group("log")
   log = Results["log"]
   log["code_version"] = version.release
@@ -74,7 +74,7 @@ In such situation, one can simply use the `inspect` module of the python standar
    # run...
    # save...
    # Ok, I need to save common too !
-   import inspect,sys, pytriqs.version as version
+   import inspect,sys, triqs.version as version
    log = Results.create_group("log")
    log["code_version"] = version.release
    log["script"] = open(sys.argv[0]).read()

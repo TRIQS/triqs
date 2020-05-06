@@ -1,5 +1,5 @@
-from pytriqs.gf import *
-from pytriqs.plot.mpl_interface import *
+from triqs.gf import *
+from triqs.plot.mpl_interface import *
 from numpy import *
 import os
 

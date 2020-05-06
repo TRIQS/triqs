@@ -1,8 +1,8 @@
-from pytriqs.gf import *
-from pytriqs.operators import *
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
+from triqs.gf import *
+from triqs.operators import *
+from triqs.operators.util.hamiltonians import h_int_kanamori
 from h5 import HDFArchive
-from pytriqs.atom_diag import *
+from triqs.atom_diag import *
 import numpy as np
 from itertools import product
 

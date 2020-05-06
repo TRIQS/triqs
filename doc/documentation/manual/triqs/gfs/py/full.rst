@@ -29,7 +29,7 @@ are separated into 2 eg and 3 t2g bands. We therefore first construct the 2
 corresponding block Green's functions (in Matsubara frequencies for example)
 and group these blocks into a full Green's function `G` with::
 
-  from pytriqs.gf import *
+  from triqs.gf import *
   g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
   g2 = GfImFreq(indices = ['t2g1','t2g2','t2g3'], beta = 50, n_points = 1000, name = "t2gBlock")
   G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
@@ -55,7 +55,7 @@ These names will be used when we try to access a particular block, for example :
 Reference 
 ----------------
 
-.. autoclass:: pytriqs.gf.BlockGf
+.. autoclass:: triqs.gf.BlockGf
   :members: copy, copy_from
 
 
@@ -188,7 +188,7 @@ Green's functions are `picklable`, i.e. they support the standard python seriali
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.utility import mpi
+     from triqs.utility import mpi
      mpi.send(G, destination)
 
 .. warning::

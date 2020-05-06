@@ -1,6 +1,6 @@
 .. index:: Random number generator
 
-.. module:: pytriqs.random_generator
+.. module:: triqs.random_generator
 
 .. _random_generator:
 
@@ -16,7 +16,7 @@ Usage
 
 The generator is constructed from a name (the name of the boost generator) and a seed::
 
-  from pytriqs.random_generator import *
+  from triqs.random_generator import *
   r = RandomGenerator("mt19937", 237849)
 
 A list of available random generators is obtained with::
@@ -43,7 +43,7 @@ Here's a simple example showing how to use the generator.
 Complete documentation/manual/triqs
 ------------------
 
-.. autoclass:: pytriqs.random_generator.RandomGenerator
+.. autoclass:: triqs.random_generator.RandomGenerator
   :members:
 
-.. autofunction:: pytriqs.random_generator.random_generator_names_list
+.. autofunction:: triqs.random_generator.random_generator_names_list

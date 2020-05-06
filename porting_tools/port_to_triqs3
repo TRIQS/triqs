@@ -11,6 +11,7 @@ ignore_lst = [".git/", "port.py"]
 repl_dict = {
         "pytriqs.archive": "h5",
         "pytriqs.archive.hdf_archive": "h5.archive",
+        "pytriqs": "triqs",
         "hdf_archive_schemes": "formats",
         "triqs::h5": "h5",
         "triqs/h5.hpp": "h5/h5.hpp",

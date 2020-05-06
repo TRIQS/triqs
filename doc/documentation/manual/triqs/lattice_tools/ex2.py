@@ -1,6 +1,6 @@
 from numpy import array, zeros
 import math 
-from pytriqs.lattice.tight_binding import *
+from triqs.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL_1 = BravaisLattice(units = [(1,0,0), (0,1,0) ], orbital_positions= [(0,0,0)] )

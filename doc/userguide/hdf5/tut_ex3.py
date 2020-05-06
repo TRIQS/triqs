@@ -1,5 +1,5 @@
-from pytriqs.gf import GfReFreq
-from pytriqs.gf.descriptors import SemiCircular
+from triqs.gf import GfReFreq
+from triqs.gf.descriptors import SemiCircular
 from h5 import HDFArchive
 import numpy
 

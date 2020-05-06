@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.GfReFreq
+.. autoclass:: triqs.gf.GfReFreq
   :members: set_from_fourier, inverse_fourier, transpose, conjugate, set_from_pade
 
 .. warning::

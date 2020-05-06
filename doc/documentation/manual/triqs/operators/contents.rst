@@ -1,6 +1,6 @@
 .. index:: Second-quantization operators
 
-.. module:: pytriqs.operators
+.. module:: triqs.operators
 
 .. _operators:
 

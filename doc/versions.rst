@@ -42,7 +42,7 @@ either:
 * Read the content of the ``version.hpp`` file which is in the
   ``path_to_install_directory/include/triqs/`` diretory.
 
-* Run ``pytriqs`` and type the following commands::
+* Run ``triqs`` and type the following commands::
 
-    from pytriqs.version import *
+    from triqs.version import *
     show_version()

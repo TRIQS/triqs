@@ -259,16 +259,16 @@ Python
 
 .. highlight:: python
 
-Python wrapper for ``many_body_operator`` class is called ``Operator``. It is found in module ``pytriqs.operators.operators`` : ::
+Python wrapper for ``many_body_operator`` class is called ``Operator``. It is found in module ``triqs.operators.operators`` : ::
 
-    from pytriqs.operators.operators import Operator, c, c_dag, n
+    from triqs.operators.operators import Operator, c, c_dag, n
 
 It corresponds to a specialized version of ``many_body_operator_generic``: ``real_or_complex`` as the scalar type and two indices.
 All arithmetic operations implemented in C++ are also available in Python as well as special methods ``__repr__()`` and ``__str__()``.
 
 .. code-block:: python
 
-    from pytriqs.operators.operators import *
+    from triqs.operators.operators import *
     from itertools import product
 
     C_list = [c(1,0),c(2,0)]

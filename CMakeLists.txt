@@ -127,7 +127,7 @@ message(STATUS "Hostname : ${TRIQS_HOSTNAME}")
 message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
 
 # Compile a small file with the hash
-configure_file(./cmake/git_hash.cpp.in triqs/git_hash.cpp @ONLY)
+configure_file(./cmake/git_hash.cpp.in c++/triqs/git_hash.cpp @ONLY)
 
 # ---------------------------------
 # RPATH setting
@@ -173,7 +173,7 @@ add_subdirectory(deps)
 # triqs library
 #------------------------
 
-add_subdirectory(triqs)
+add_subdirectory(c++/triqs)
 
 #---------------------------------------------------------------------
 # Python modules 
@@ -183,7 +183,7 @@ option(PythonSupport "Build with Python support" ON)
 if(PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
  message( STATUS "-------- Preparing python extension modules  -------------")
- add_subdirectory(pytriqs)
+ add_subdirectory(python/triqs)
 endif()
 
 #------------------------

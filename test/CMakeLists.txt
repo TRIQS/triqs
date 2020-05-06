@@ -11,9 +11,9 @@ macro(add_all_subdirectories_with_cmakelist)
  endforeach(f ${ALLSUBS}) 
 endmacro(add_all_subdirectories_with_cmakelist)
 
-add_subdirectory(triqs)
+add_subdirectory(c++)
 
 if(PythonSupport)
- add_subdirectory(pytriqs)
+ add_subdirectory(python)
  add_subdirectory(cpp2py)
 endif()

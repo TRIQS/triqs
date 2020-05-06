@@ -1,8 +1,8 @@
-from pytriqs.gf.multivar import *
-from pytriqs.gf import *
-from pytriqs.lattice import *
-from pytriqs.lattice.tight_binding import *
-from pytriqs.plot.mpl_interface import *
+from triqs.gf.multivar import *
+from triqs.gf import *
+from triqs.lattice import *
+from triqs.lattice.tight_binding import *
+from triqs.plot.mpl_interface import *
 from matplotlib.pyplot import *
 from numpy import cos, pi
 

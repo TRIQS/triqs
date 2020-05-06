@@ -1,7 +1,7 @@
-pytriqs
+triqs
 -------
 
-.. _pytriqs:
+.. _triqs:
 
-.. automodule:: pytriqs
+.. automodule:: triqs
    :members:
