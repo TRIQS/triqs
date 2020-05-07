@@ -84,6 +84,18 @@ chmod u+x port_to_triqs3
 ./port_to_triqs3
 ```
 
+Finally, adjust the version of your project in the top-level CMakeLists.txt file to e.g. `3.0.0`
+
+```cmake
+project(APPNAME VERSION 3.0.0 LANGUAGES C CXX)
+```
+
+and make sure that version `3.0.0` of TRIQS is detected
+
+```cmake
+find_package(TRIQS 3.0 REQUIRED)
+```
+
 Review all changes and commit them.
 
 
