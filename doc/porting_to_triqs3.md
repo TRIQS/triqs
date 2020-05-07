@@ -81,7 +81,7 @@ that you can download and run in the top-level directory of your respository.
 ```bash
 wget https://raw.githubusercontent.com/TRIQS/triqs/py3/porting_tools/port_to_triqs3
 chmod u+x port_to_triqs3
-./port_triqs3
+./port_to_triqs3
 ```
 
 Review all changes and commit them.
