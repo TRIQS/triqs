@@ -232,12 +232,12 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY)
  # I assume there is a basic python available
- EXECUTE_PROCESS(COMMAND python -c  "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
+ EXECUTE_PROCESS(COMMAND python -c  "import re;open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
 endif()
 
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
 
 #------------------------
 # Test macros
@@ -246,25 +246,25 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTI
 configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
 configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
+install(FILES ${PROJECT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
+install(FILES ${PROJECT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
 
 #--------------------------------------------------------
 #   Remind the user how to set up his/her variables
 #--------------------------------------------------------
 
 # Configure and install the file to source to setup the environment variables 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqsvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/triqsvars.sh.in ${PROJECT_BINARY_DIR}/triqsvars.sh @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/triqs.modulefile.in ${PROJECT_BINARY_DIR}/triqs.modulefile @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+install(FILES ${PROJECT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
 MESSAGE(STATUS "***************************************************************")
 MESSAGE(STATUS "* Use :                                                        ")
 MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 if(DEFINED ENV{MODULEPATH})
   MESSAGE(STATUS "*                                                              ")
-  MESSAGE(STATUS "* Consider copying ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile")
+  MESSAGE(STATUS "* Consider copying ${PROJECT_BINARY_DIR}/triqs.modulefile")
   MESSAGE(STATUS "*   into your environment module directories                   ")
 endif()
 MESSAGE(STATUS "***************************************************************")

@@ -2,7 +2,6 @@ find_package(Test)
 enable_testing()
 
 option(TESTS_C_WITH_VALGRIND "Run all the tests also through valgrind" OFF)
-include_directories(${CMAKE_SOURCE_DIR}/google_test)
 
 macro(all_tests)
 
