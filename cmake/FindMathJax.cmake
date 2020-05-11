@@ -21,7 +21,7 @@ endif()
 
 if(MATHJAX_PATH STREQUAL MATHJAX_PATH-NOTFOUND)
   message(STATUS "No local Mathjax found! Falling back to URL")
-  set(MATHJAX_PATH "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5" CACHE STRING "Root Path of MathJax" FORCE)
+  set(MATHJAX_PATH "https://raw.githubusercontent.com/mathjax/MathJax/2.7.8" CACHE STRING "Root Path of MathJax" FORCE)
 endif()
 
 mark_as_advanced(MATHJAX_PATH)
