@@ -42,10 +42,10 @@ include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
 # Find the target dependencies
 include(CMakeFindDependencyMacro)
-find_dependency(itertools)
-find_dependency(mpi)
-find_dependency(h5)
-#find_dependency(nda)
+find_dependency(itertools HINTS @CMAKE_INSTALL_PREFIX@)
+find_dependency(mpi HINTS @CMAKE_INSTALL_PREFIX@)
+find_dependency(h5 HINTS @CMAKE_INSTALL_PREFIX@)
+#find_dependency(nda HINTS @CMAKE_INSTALL_PREFIX@)
 
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
