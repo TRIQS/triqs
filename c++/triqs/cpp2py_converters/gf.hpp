@@ -84,6 +84,9 @@ namespace cpp2py {
     }
   };
 
+  template<typename M, typename V = void> constexpr bool has_weights = false;
+  template<typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())> > = true;
+
   // Converter of mesh_point
   template <typename M> struct py_converter<triqs::gfs::mesh_point<M>> {
 
@@ -94,16 +97,22 @@ namespace cpp2py {
       static pyref cls = pyref::get_class("triqs.gf", "MeshPoint", /* raise_exception */ true);
       if (cls.is_null()) return NULL;
 
-      pyref val = convert_to_python(static_cast<typename c_type::cast_t>(p));
-      if (val.is_null()) return NULL;
-
-      //pyref idx   = convert_to_python(p.index());
-      //if (idx.is_null()) return NULL;
-
       pyref lidx = convert_to_python(p.linear_index());
       if (lidx.is_null()) return NULL;
 
-      return PyObject_Call(cls, pyref::make_tuple(lidx, val), NULL);
+      pyref idx = convert_to_python(p.index());
+      if (idx.is_null()) return NULL;
+
+      pyref val = convert_to_python(static_cast<typename c_type::cast_t>(p));
+      if (val.is_null()) return NULL;
+
+      if constexpr(has_weights<M>){
+        pyref weight = convert_to_python(p.weight());
+        if (weight.is_null()) return NULL;
+        return PyObject_Call(cls, pyref::make_tuple(lidx, idx, val, weight), NULL);
+      }
+
+      return PyObject_Call(cls, pyref::make_tuple(lidx, idx, val), NULL);
     }
   };
 

@@ -28,10 +28,12 @@ class MeshValueGenerator:
 
 class MeshPoint :
 
-    def __init__(self, linear_index, value = None):
+    def __init__(self, linear_index, index = None, value = None, weight = None):
         """ None : a mesh point just to use in the G[...] """
-        #print "Args", linear_index, value
-        self.linear_index, self.value = linear_index, value
+        self.linear_index = linear_index
+        self.index = index
+        self.value = value
+        self.weight = weight
 
     def _get_val(self, x):
         return (x.value if hasattr(x, 'value') else x)
