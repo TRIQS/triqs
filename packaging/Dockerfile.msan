@@ -23,7 +23,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-doc \
       python-clang-${LLVM} \
       python-dev \
-      python-h5py \
       python-mako \
       python-matplotlib \
       python-mpi4py \

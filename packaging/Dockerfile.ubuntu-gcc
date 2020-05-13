@@ -19,7 +19,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-common \
       openmpi-doc \
       python3-dev \
-      python3-h5py \
       python3-mako \
       python3-matplotlib \
       python3-mpi4py \
