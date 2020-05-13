@@ -2,9 +2,7 @@
 FROM flatironinstitute/triqs:base
 
 COPY requirements.txt /src/triqs/requirements.txt
-# Install numpy first to prevent h5py from pulling in a newer version first
-RUN pip3 install `grep numpy /src/triqs/requirements.txt` && \
-    pip3 install -r /src/triqs/requirements.txt
+RUN pip3 install -r /src/triqs/requirements.txt
 
 RUN useradd -m build
 

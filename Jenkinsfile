@@ -60,9 +60,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         sh """#!/bin/bash -ex
           python3 -m venv $installDir
-          # install numpy first to deps (h5py) find it
-          pip3 install numpy
-          DYLD_LIBRARY_PATH=\$BREW/lib pip3 install --no-binary=h5py,mpi4py -U -r $workDir/requirements.txt
+          DYLD_LIBRARY_PATH=\$BREW/lib pip3 install --no-binary=mpi4py -U -r $workDir/requirements.txt
         """
 
         sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=IfNotFound -DPYTHON_EXECUTABLE=$installDir/bin/python3"
