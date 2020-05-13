@@ -1,6 +1,6 @@
 #FROM flatironinstitute/triqs:base
 # Dockerfile.ubuntu-clang with LLVM=9
-FROM ubuntu:bionic
+FROM ubuntu:focal
 ARG LLVM=9
 
 # This platform includes dependencies for building docs
@@ -17,7 +17,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
       libfftw3-dev \
-      libgfortran3 \
+      libgfortran4 \
       libgmp-dev \
       libhdf5-dev \
       liblapack-dev \
@@ -25,17 +25,17 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
-      python-clang-${LLVM} \
-      python-dev \
-      python-h5py \
-      python-mako \
-      python-matplotlib \
-      python-mpi4py \
-      python-numpy \
-      python-pip \
-      python-scipy \
-      python-sphinx \
-      python-nbsphinx
+      python3-clang-${LLVM} \
+      python3-dev \
+      python3-h5py \
+      python3-mako \
+      python3-matplotlib \
+      python3-mpi4py \
+      python3-numpy \
+      python3-pip \
+      python3-scipy \
+      python3-sphinx \
+      python3-nbsphinx
 
 ENV CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
@@ -43,8 +43,8 @@ RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60
 # Dockerfile.build with sanitization enabled
 COPY requirements.txt /src/triqs/requirements.txt
 # Install numpy first to prevent h5py from pulling in a newer version first
-RUN pip install `grep numpy /src/triqs/requirements.txt` && \
-    pip install -r /src/triqs/requirements.txt
+RUN pip3 install `grep numpy /src/triqs/requirements.txt` && \
+    pip3 install -r /src/triqs/requirements.txt
 
 RUN useradd -m build
 
@@ -54,11 +54,11 @@ ENV SRC=/src \
     PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
     CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
 
-COPY . ${SRC}/triqs
+COPY --chown=build . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
-RUN chown -R build ${SRC}/triqs .
+RUN chown build .
 USER build
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DASAN=ON -DUBSAN=ON && make -j2
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=IfNotFound -DCLANG_OPT="$CXXFLAGS" -DASAN=ON -DUBSAN=ON && make -j2
 RUN ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer ASAN_OPTIONS=symbolize=1:detect_leaks=0 UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
 USER root
 RUN make install
