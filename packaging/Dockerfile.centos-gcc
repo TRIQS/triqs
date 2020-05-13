@@ -1,11 +1,12 @@
-FROM centos:7
+FROM centos:8
 
-RUN yum -y install centos-release-scl epel-release && yum -y update && \
-    yum -y install \
+RUN dnf -y install dnf-plugins-core epel-release && \
+    dnf config-manager --set-enabled PowerTools && \
+    dnf -y update && \
+    dnf -y install \
       blas-devel \
       boost-devel \
       cmake3 \
-      devtoolset-7-gcc-c++ \
       fftw-devel \
       gcc-c++ \
       gcc-gfortran \
@@ -14,15 +15,19 @@ RUN yum -y install centos-release-scl epel-release && yum -y update && \
       hdf5-devel \
       lapack-devel \
       make \
-      mpi4py-openmpi \
       openmpi-devel \
-      python-devel \
-      python-mako \
-      python-pip \
-      python-subprocess32 \
-      python-virtualenv \
-      pytz \
-      && \
-    ln -s cmake3 /usr/bin/cmake
-ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:${PATH}:/usr/lib64/openmpi/bin PYTHONPATH=/usr/lib64/python2.7/site-packages/openmpi \
-    CC=/opt/rh/devtoolset-7/root/usr/bin/gcc CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
+      python3-devel \
+      python3-mako \
+      python3-matplotlib \
+      python3-mpi4py-openmpi \
+      python3-numpy \
+      python3-pip \
+      python3-pytz \
+      python3-scipy \
+      python3-virtualenv
+
+# for openmpi
+ENV PATH=/usr/lib64/openmpi/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/lib64/openmpi/lib \
+    PKG_CONFIG_PATH=/usr/lib64/openmpi/lib/pkgconfig \
+    MPI_PYTHON3_SITEARCH=/usr/lib64/python3.6/site-packages/openmpi
