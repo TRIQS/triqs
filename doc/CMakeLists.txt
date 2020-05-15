@@ -33,18 +33,20 @@ set(NAMESPACES
 
 # Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
 add_custom_target(docs_cpp2rst)
-extract_flags(triqs)
+extract_flags(triqs BUILD_INTERFACE)
 separate_arguments(triqs_CXXFLAGS)
 add_custom_command(
   TARGET docs_cpp2rst
   COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
-  ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
-  ${NAMESPACES}
-  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  -I${PROJECT_SOURCE_DIR}
-  -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
-  --cxxflags="${triqs_CXXFLAGS}"
+  COMMAND
+    PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH}
+    ${CPP2PY_BINARY_DIR}/bin/c++2rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
+    ${NAMESPACES}
+    --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
+    -I${PROJECT_SOURCE_DIR}
+    -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
+    --cxxflags="${triqs_CXXFLAGS}"
 )
 
 # --------------------------------------------------------

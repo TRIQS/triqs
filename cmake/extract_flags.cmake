@@ -51,7 +51,13 @@ macro(get_property_recursive)
 endmacro()
 
 # Recursively fetch all compiler flags attached to the interface of a target
-macro(extract_flags target)
+macro(extract_flags)
+
+  cmake_parse_arguments(ARG "BUILD_INTERFACE" "" "" ${ARGN})
+
+  set(target ${ARGV0})
+  unset(${target}_CXXFLAGS)
+  unset(${target}_LDFLAGS)
 
   get_property_recursive(opts TARGET ${target} PROPERTY INTERFACE_COMPILE_OPTIONS)
   foreach(opt ${opts})
@@ -84,8 +90,13 @@ macro(extract_flags target)
   endforeach()
 
   # We have to replace generator expressions explicitly
-  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_LDFLAGS "${${target}_LDFLAGS}")
-  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  if(ARG_BUILD_INTERFACE)
+    string(REGEX REPLACE "\\$<BUILD_INTERFACE:([^ ]*)>" "\\1" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+    string(REGEX REPLACE "\\$<BUILD_INTERFACE:([^ ]*)>" "\\1" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  else()
+    string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+    string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  endif()
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
 endmacro()
