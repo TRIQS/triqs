@@ -21,6 +21,7 @@
 #pragma once
 
 #include <vector>
+#include <climits>
 #include "../atom_diag.hpp"
 
 using namespace triqs::hilbert_space;
