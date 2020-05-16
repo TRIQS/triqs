@@ -5,7 +5,13 @@ def keepInstall = !env.BRANCH_NAME.startsWith("PR-")
 
 properties([
   disableConcurrentBuilds(),
-  buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30'))
+  buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30')),
+  pipelineTriggers([
+    upstream(
+      threshold: 'SUCCESS',
+      upstreamProjects: '/TRIQS/cpp2py/master,/TRIQS/itertools/unstable,/TRIQS/mpi/unstable,/TRIQS/h5/unstable'
+    )
+  ])
 ])
 
 /* map of all builds to run, populated below */
