@@ -18,18 +18,21 @@ m.add_using("namespace triqs::gfs")
 # ---------------------- make_hermitian, make_real_in_tau --------------------
 for gf_type in ["gf", "block_gf", "block2_gf"]:
     gf_view_type = gf_type +  '_view'
-    # make_hermitian
+    # make_hermitian imfreq
     m.add_function("%s<imfreq, scalar_valued> make_hermitian(%s<imfreq, scalar_valued> g)"%(gf_type, gf_view_type),
-                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G[iw] = G[-iw]*)")
     m.add_function("%s<imfreq, matrix_valued> make_hermitian(%s<imfreq, matrix_valued> g)"%(gf_type, gf_view_type),
                 doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+    m.add_function("%s<imfreq, tensor_valued<4>> make_hermitian(%s<imfreq, tensor_valued<4>> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ijkl[iw] = G_klij[-iw]*)")
 
-    # make_real_in_tau
-    m.add_function("%s<imfreq, scalar_valued> make_real_in_tau(%s<imfreq, scalar_valued> g)"%(gf_type, gf_view_type),
-                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
-    m.add_function("%s<imfreq, matrix_valued> make_real_in_tau(%s<imfreq, matrix_valued> g)"%(gf_type, gf_view_type),
-                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
-
+    # make_hermitian imtime
+    m.add_function("%s<imtime, scalar_valued> make_hermitian(%s<imtime, scalar_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in imaginary time, to ensure its hermiticity (G[tau] = G[tau]*)")
+    m.add_function("%s<imtime, matrix_valued> make_hermitian(%s<imtime, matrix_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in imaginary time, to ensure its hermiticity (G_ij[tau] = G_ji[tau]*)")
+    m.add_function("%s<imtime, tensor_valued<4>> make_hermitian(%s<imtime, tensor_valued<4>> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in imaginary time, to ensure its hermiticity (G_ijkl[tau] = G_klij[tau]*)")
 
 # ---------------------- make_gf_from_fourier --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
