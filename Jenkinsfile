@@ -74,7 +74,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           DYLD_LIBRARY_PATH=\$BREW/lib pip3 install --no-binary=mpi4py -U -r $workDir/requirements.txt
         """
 
-        sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always -DPYTHON_EXECUTABLE=$installDir/bin/python3"
+        sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always"
         sh "make -j3"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
