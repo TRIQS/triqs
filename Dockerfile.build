@@ -4,7 +4,7 @@ FROM flatironinstitute/triqs:base
 COPY requirements.txt /src/triqs/requirements.txt
 RUN pip3 install -r /src/triqs/requirements.txt
 
-RUN useradd -m build
+RUN useradd -u 993 -m build
 
 ENV SRC=/src \
     BUILD=/home/build \
@@ -19,6 +19,6 @@ WORKDIR ${BUILD}/triqs
 RUN chown build .
 USER build
 ARG BUILD_DOC=0
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DPYTHON_EXECUTABLE=/usr/bin/python3 -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 && make test CTEST_OUTPUT_ON_FAILURE=1
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DPYTHON_EXECUTABLE=/usr/bin/python3 -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2
 USER root
 RUN make install

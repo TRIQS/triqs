@@ -32,6 +32,11 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       """
       /* build and tag */
       def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg BUILD_DOC=${platform==documentationPlatform} .")
+      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+        img.inside() {
+          sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
+        }
+      }
       if (!keepInstall) {
         sh "docker rmi --no-prune ${img.imageName()}"
       }
@@ -71,7 +76,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
         sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always -DPYTHON_EXECUTABLE=$installDir/bin/python3"
         sh "make -j3"
-        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') { try {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
