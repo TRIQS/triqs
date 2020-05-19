@@ -31,4 +31,5 @@ RUN dnf -y install dnf-plugins-core epel-release && \
 ENV PATH=/usr/lib64/openmpi/bin:${PATH} \
     LD_LIBRARY_PATH=/usr/lib64/openmpi/lib \
     PKG_CONFIG_PATH=/usr/lib64/openmpi/lib/pkgconfig \
-    MPI_PYTHON3_SITEARCH=/usr/lib64/python3.6/site-packages/openmpi
+    MPI_PYTHON3_SITEARCH=/usr/lib64/python3.6/site-packages/openmpi \
+    OMPI_MCA_btl=^uct
