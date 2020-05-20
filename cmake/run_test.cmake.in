@@ -46,7 +46,8 @@ if (reference)
  )
 
  if(not_successful)
-  message(SEND_ERROR "Output does not match for test '${name}': ${err}; ${out}; shell output: ${not_successful}!")
+  execute_process(COMMAND diff ${name}.out ${reference} OUTPUT_VARIABLE diff)
+  message(SEND_ERROR "Output does not match for test '${name}': ${err}\n File Differences: \n${diff}")
  endif(not_successful)
 
 endif(reference)
