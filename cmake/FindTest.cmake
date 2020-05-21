@@ -25,6 +25,8 @@ macro(add_cpp_test testname)
    -Dreference=${testref}
    -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
+  # Avoid mpi warning messages for ref-file based tests
+  set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT OMPI_MCA_btl_base_warn_component_unused=0)
  else()
   add_test(${testname_}${ARGN} ${testcmd})
  endif()
