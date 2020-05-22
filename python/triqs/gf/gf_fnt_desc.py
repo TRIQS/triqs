@@ -119,9 +119,15 @@ m.add_function("void enforce_discontinuity(gf_view<triqs::gfs::legendre, matrix_
 for gf_type in ["gf", "block_gf", "block2_gf"]:
     gf_view_type = gf_type +  '_view'
 
-    # is_gf_hermitian
+    # is_gf_hermitian imfreq
     m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-12)"%gf_type)
     m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-12)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imfreq, tensor_valued<4>> g, double tolerance = 1.e-12)"%gf_type)
+
+    # is_gf_hermitian imtime
+    m.add_function("bool is_gf_hermitian(%s<imtime, scalar_valued> g, double tolerance = 1.e-12)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imtime, matrix_valued> g, double tolerance = 1.e-12)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imtime, tensor_valued<4>> g, double tolerance = 1.e-12)"%gf_type)
 
     # is_gf_real_in_tau
     m.add_function("bool is_gf_real_in_tau(%s<imfreq, scalar_valued> g, double tolerance = 1.e-12)"%gf_type)

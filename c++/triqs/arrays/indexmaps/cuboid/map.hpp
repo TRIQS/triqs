@@ -151,9 +151,9 @@ namespace triqs {
           //  BOOST Serialization
           friend class boost::serialization::access;
           template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-            ar &TRIQS_MAKE_NVP("domain", mydomain);
-            ar &TRIQS_MAKE_NVP("strides", strides_);
-            ar &TRIQS_MAKE_NVP("start_shift", start_shift_);
+            ar &mydomain;
+            ar &strides_;
+            ar &start_shift_;
           }
           // for construction
           // TODO : use tupletools

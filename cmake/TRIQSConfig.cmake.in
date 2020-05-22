@@ -54,7 +54,7 @@ MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${
 
 # Check compiler
 if(NOT CMAKE_CXX_COMPILER STREQUAL TRIQS_CXX_COMPILER)
-  message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile TRIQS!\n  -- CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}\n  -- TRIQS_CXX_COMPILER: ${TRIQS_CXX_COMPILER}")
+  message(WARNING "For your own safety, you should use the same compiler as the one used to compile TRIQS!\n  -- CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}\n  -- TRIQS_CXX_COMPILER: ${TRIQS_CXX_COMPILER}")
 endif()
 
 # Documentation

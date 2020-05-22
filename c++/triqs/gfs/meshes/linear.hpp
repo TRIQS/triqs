@@ -136,11 +136,11 @@ namespace triqs {
 
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("domain", _dom);
-        ar &TRIQS_MAKE_NVP("xmin", xmin);
-        ar &TRIQS_MAKE_NVP("xmax", xmax);
-        ar &TRIQS_MAKE_NVP("del", del);
-        ar &TRIQS_MAKE_NVP("size", L);
+        ar &_dom;
+        ar &xmin;
+        ar &xmax;
+        ar &del;
+        ar &L;
       }
 
       // -------------------- print  -------------------

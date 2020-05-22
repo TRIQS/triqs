@@ -56,6 +56,7 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
         c_type = c_type,
         is_printable = True,
         hdf5 = True,
+        serializable = "h5",
         doc = "Lightweight exact diagonalization solver (%s version)" % c_py
     )
 

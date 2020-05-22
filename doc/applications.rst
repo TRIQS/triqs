@@ -82,6 +82,16 @@ For publications based on results produced with this application please cite `Co
 
 *Homepage*: `<https://triqs.github.io/w2dynamics_interface/>`_
 
+**Interface to the NRG Ljubljana impurity solver**
+--------------------------------------------------
+
+This application provides an interface to the numerical renormalization group
+impurity solver `NRG Ljubljana <http://nrgljubljana.ijs.si>`_.
+
+For publications based on results produced with this application please cite `Phys. Rev. B 79, 085106 (2009) <https://doi.org/10.1103/PhysRevB.79.085106>`_
+
+*Homepage*: `<https://triqs.github.io/nrgljubljana_interface/>`_
+
 
 .. _abinitio_tools:
 

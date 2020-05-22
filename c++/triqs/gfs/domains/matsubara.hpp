@@ -114,8 +114,8 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("beta", beta);
-        ar &TRIQS_MAKE_NVP("statistic", statistic);
+        ar &beta;
+        ar &statistic;
       }
       friend std::ostream &operator<<(std::ostream &sout, matsubara_domain const &d) {
         return sout << "Matsubara domain with beta = " << d.beta << ", statistic = " << d.statistic;

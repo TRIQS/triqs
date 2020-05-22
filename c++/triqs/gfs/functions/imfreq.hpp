@@ -48,8 +48,9 @@ namespace triqs::gfs {
   }
 
   /// Make a const view of the positive frequency part of the function
-  template <typename G> view_or_type_t<G> positive_freq_view(G &&g) {
+  template <typename G> view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g) REQUIRES(is_gf_v<G>) {
     static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
+    static_assert(std::decay_t<G>::is_view or std::is_lvalue_reference_v<G>, "Cannot construct a positive_freq_view from a temporary gf");
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1

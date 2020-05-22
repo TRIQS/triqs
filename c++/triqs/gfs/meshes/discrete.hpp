@@ -111,7 +111,7 @@ namespace triqs {
       // -------------------- boost serialization -------------------
 
       friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("domain", _dom); }
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_dom; }
 
       // -------------------- print  -------------------
 

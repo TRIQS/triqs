@@ -121,7 +121,9 @@ namespace triqs {
 
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("n", n) & TRIQS_MAKE_NVP("val", val) & TRIQS_MAKE_NVP("beta", beta);
+        ar &n;
+        ar &val;
+        ar &beta;
       }
 
       /// Write into HDF5

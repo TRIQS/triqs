@@ -4,13 +4,19 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
+
 #include <h5/h5.hpp>
+#include <h5/serialization.hpp>
 
 #include "./hamiltonian.hpp"
 
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;
 using namespace triqs::atom_diag;
+
+using namespace h5;
+
+using atom_diag_cplx = triqs::atom_diag::atom_diag<true>;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
@@ -28,7 +34,7 @@ TEST(atom_diag_complex, QuantumNumbers) {
   auto N    = N_up + N_dn;
 
   // Partition with total number of particles
-  auto ad1 = triqs::atom_diag::atom_diag<true>(h, fops, {N});
+  auto ad1 = atom_diag_cplx(h, fops, {N});
 
 #ifndef GENERATE_REF_H5
   vector<int> sp_dim_ref;
@@ -51,7 +57,7 @@ TEST(atom_diag_complex, QuantumNumbers) {
   }
 
   // Partition with N_up and N_dn
-  auto ad2 = triqs::atom_diag::atom_diag<true>(h, fops, {N_up, N_dn});
+  auto ad2 = atom_diag_cplx(h, fops, {N_up, N_dn});
 
 #ifndef GENERATE_REF_H5
   h5_read(ref_file, "/QuantumNumbers/N_up_N_dn/sp_dims", sp_dim_ref);
@@ -92,12 +98,27 @@ TEST(atom_diag_complex, Vacuum) {
   fundamental_operator_set fops;
   fops.insert("up");
   fops.insert("dn");
-  auto ad = triqs::atom_diag::atom_diag<true>(h, fops);
+  auto ad = atom_diag_cplx(h, fops);
 
   EXPECT_EQ(1, ad.get_vacuum_subspace_index());
   auto vac = ad.get_vacuum_state();
   EXPECT_COMPLEX_NEAR(1, dotc(vac, vac), 1e-14);
   for (auto s : {"up", "dn"}) EXPECT_COMPLEX_NEAR(0, dotc(vac, act(n(s), vac, ad)), 1e-14);
+}
+
+TEST(atom_diag_complex, Serialization) {
+  auto h = 2.0 * (n("up") - 0.5) * (n("dn") - 0.5);
+  h += 0.3 * (c_dag("up") * c("dn") + c_dag("dn") * c("up"));
+  h += 0.1i * (c_dag("up") * c_dag("dn") + c("up") * c("dn"));
+
+  fundamental_operator_set fops;
+  fops.insert("up");
+  fops.insert("dn");
+  auto ad = atom_diag_cplx(h, fops);
+
+  auto ser = serialize(ad);
+  auto ser2 = serialize(deserialize<atom_diag_cplx>(ser));
+  EXPECT_EQ(ser, ser2);
 }
 
 TEST(atom_diag_complex, Autopartition) {
@@ -110,7 +131,7 @@ TEST(atom_diag_complex, Autopartition) {
   dcomplex t  = 0.2i;
   auto h      = make_hamiltonian<many_body_operator_complex>(mu, U, J, b, t);
 
-  auto ad = triqs::atom_diag::atom_diag<true>(h, fops);
+  auto ad = atom_diag_cplx(h, fops);
 
   using triqs::hilbert_space::hilbert_space;
 #ifndef GENERATE_REF_H5
@@ -247,7 +268,7 @@ TEST(atom_diag_complex, Functions) {
 
   auto h = make_hamiltonian<many_body_operator_complex>(mu, U, J, b, t);
 
-  auto ad = triqs::atom_diag::atom_diag<true>(h, fops);
+  auto ad = atom_diag_cplx(h, fops);
 
   // Partition function
   double z = partition_function(ad, beta);

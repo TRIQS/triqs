@@ -1,6 +1,44 @@
 Version 3.0.0
 =============
 
+Version 2.2.2
+=============
+
+TRIQS Version 2.2.2 introduces various smaller bug fixes
+and adjustments to the documentation. In particular we
+now provide a section on the newly added Anaconda packages
+on the install page. These packages are the recommended
+way to set up TRIQS on Mac OS.
+We further removed the dependence of TRIQS on any of the
+compiled parts of the boost library.
+
+A more detailed description of the changes is provided below.
+
+doc
+---
+* Add NRGLjubjana_interface to the list of impurity solvers
+* Updated Applications page to include new hubbardi version 2.2
+* Add section on Anaconda packages to install page
+* Fix CC/CXX export commands in osx install instructions
+
+gf
+--
+* Fix construction of gf_indices in various places
+
+cmake
+-----
+* Remove dependence on Boost serialization
+* Add macro add_mpi_test to improve compatibility against mpich
+* Allow a compiler different from TRIQS, but explicitly warn the user
+
+General
+-------
+* Fix error in triqs++ ld flags
+* Disable stacktrace in OSX error messages due to problems with Mac OS 10.15 (Catalina)
+* Fix bug in return type of positive_freq_view(gf&) and add test
+* Fix bug in lattice tools dos function
+* Remove redundant headers boost_serialization.hpp and serialization.hpp
+
 
 Version 2.2.1
 =============

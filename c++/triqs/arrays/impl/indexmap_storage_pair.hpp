@@ -332,8 +332,8 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("storage", this->storage_);
-        ar &TRIQS_MAKE_NVP("indexmap", this->indexmap_);
+        ar & this->storage_;
+        ar & this->indexmap_;
       }
 
       // pretty print of the array

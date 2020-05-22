@@ -81,10 +81,10 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("dim", dim_);
-        ar &TRIQS_MAKE_NVP("units", units_);
-        ar &TRIQS_MAKE_NVP("atom_orb_pos", atom_orb_pos);
-        ar &TRIQS_MAKE_NVP("atom_orb_name", atom_orb_name);
+        ar &dim_;
+        ar &units_;
+        ar &atom_orb_pos;
+        ar &atom_orb_name;
       }
 
       private:

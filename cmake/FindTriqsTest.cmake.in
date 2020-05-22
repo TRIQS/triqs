@@ -1,10 +1,10 @@
-SET(PythonBuildExecutable @PYTHON_EXECUTABLE@)
+set(PYTHON_EXECUTABLE @PYTHON_EXECUTABLE@)
 
 # runs a c++ test
 # if there is a .ref file a comparison test is done
 # Example: add_cpp_test(my_code)
 #   where my_code is the cpp executable my_code.ref is the expected output
-macro(triqs_add_cpp_test testname)
+function(triqs_add_cpp_test testname)
  enable_testing()
 
  set(testcmd ${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN})
@@ -27,6 +27,8 @@ macro(triqs_add_cpp_test testname)
    -Dreference=${testref}
    -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
   )
+  # Avoid mpi warning messages for ref-file based tests
+  set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT OMPI_MCA_btl_base_warn_component_unused=0)
  else()
   add_test(${testname_}${ARGN} ${testcmd})
  endif()
@@ -35,60 +37,42 @@ macro(triqs_add_cpp_test testname)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
  endif(TEST_MPI_NUMPROC)
 
-endmacro(triqs_add_cpp_test)
+endfunction(triqs_add_cpp_test)
 
 # runs a python test
-# if there is a .ref file a comparison test is done
 # Example: add_python_test(my_script)
-#   where my_script.py is the script and my_script.ref is the expected output
-macro(triqs_add_python_test testname)
- enable_testing()
+#   where my_script.py is the script
+function(triqs_add_python_test)
+  cmake_parse_arguments(ARG "" "" "MPI_NUMPROC" ${ARGN})
 
- set(testcmd ${PythonBuildExecutable})
- set(testref ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+  set(testfile ${ARGV0}.py)
+  set(testname py_${ARGV0})
+  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:${NDA_BINARY_DIR}/python:${H5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+  if(SANITIZER_RT_PRELOAD)
+    list(APPEND testenv ${SANITIZER_RT_PRELOAD})
+  endif()
 
- if(EXISTS ${testref})
-  file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-  add_test(${testname}
-   ${CMAKE_COMMAND}
-   -Dname=${testname}
-   -Dcmd=${testcmd}
-   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -Dreference=${testref}
-   -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
-  )
- else()
-  add_test(${testname}
-   ${CMAKE_COMMAND}
-   -Dname=${testname}
-   -Dcmd=${testcmd}
-   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
-  )
- endif()
+  foreach(NP ${ARG_MPI_NUMPROC})
+    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+    set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT ${testenv})
+  endforeach()
 
- if(TEST_MPI_NUMPROC)
-  set_tests_properties(${testname} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
- endif(TEST_MPI_NUMPROC)
+  add_test(${testname} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+  set_property(TEST ${testname} PROPERTY ENVIRONMENT ${testenv})
 
- if(SANITIZER_RT_PRELOAD)
-   set_property(TEST ${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
- endif()
-
-endmacro(triqs_add_python_test)
+endfunction(triqs_add_python_test)
 
 
 # add all the cpp tests in the current directory
-macro(triqs_add_all_cpp_tests_in_current_dir)
- FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
- FOREACH(TestName1 ${TestList})
-  STRING(REPLACE ".cpp" "" TestName ${TestName1})
+function(triqs_add_all_cpp_tests_in_current_dir)
+ file(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+ foreach(TestName1 ${TestList})
+  string(REPLACE ".cpp" "" TestName ${TestName1})
   add_executable(${TestName} ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp)
   triqs_set_rpath_for_target(${TestName})
   triqs_add_cpp_test(${TestName})
   if(TESTS_C_WITH_VALGRIND)
    add_test(${TestName}_valgrind valgrind --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/${TestName})
   endif()
- ENDFOREACH(TestName1 ${TestList})
-endmacro()
-
+ endforeach(TestName1 ${TestList})
+endfunction()

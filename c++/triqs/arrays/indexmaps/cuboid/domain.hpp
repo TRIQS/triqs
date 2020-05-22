@@ -39,7 +39,7 @@ namespace triqs {
           using n_uple = mini_vector<size_t, Rank>;
           n_uple lengths_;
           friend class boost::serialization::access;
-          template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("dimensions", lengths_); }
+          template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &lengths_; }
 
           public:
           static constexpr unsigned int rank = Rank;

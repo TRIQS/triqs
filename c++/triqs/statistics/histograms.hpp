@@ -205,6 +205,14 @@ namespace triqs {
    */
       friend void h5_read(h5::group g, std::string const &name, histogram &h);
 
+      /// Comparison operator
+      /**
+    @param h Histogram to be compared
+    @return True iff both Histograms are equal, else False
+   */
+      bool operator==(histogram const &h) const;
+      inline bool operator!=(histogram const &h) const { return not (*this == h); }
+
       /// Output stream insertion
       /**
     @param os Reference to an output stream
@@ -222,13 +230,13 @@ namespace triqs {
     @param version Archive format version tag
    */
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &TRIQS_MAKE_NVP("a", a);
-        ar &TRIQS_MAKE_NVP("b", b);
-        ar &TRIQS_MAKE_NVP("n_bins", n_bins);
-        ar &TRIQS_MAKE_NVP("data", _data);
-        ar &TRIQS_MAKE_NVP("n_data_pts", _n_data_pts);
-        ar &TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
-        ar &TRIQS_MAKE_NVP("step", _step);
+        ar &a;
+        ar &b;
+        ar &n_bins;
+        ar &_data;
+        ar &_n_data_pts;
+        ar &_n_lost_pts;
+        ar &_step;
       }
     };
 
@@ -239,7 +247,7 @@ namespace triqs {
    @param h Histogram to be normalised
    @return Probability density function
   */
-    histogram pdf(histogram const &h) {
+    inline histogram pdf(histogram const &h) {
       auto pdf = h;
       pdf._data /= double(h.n_data_pts());
       return pdf;
@@ -250,7 +258,7 @@ namespace triqs {
    @param h Histogram to be integrated and normalised
    @return Cumulative distribution function
   */
-    histogram cdf(histogram const &h) {
+    inline histogram cdf(histogram const &h) {
       auto cdf = h;
       for (int i = 1; i < h.size(); ++i) cdf._data[i] += cdf._data[i - 1];
       cdf._data /= double(h.n_data_pts());

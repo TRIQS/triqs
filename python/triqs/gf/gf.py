@@ -361,13 +361,13 @@ class Gf(metaclass=AddMethod):
 
     def __setitem__(self, key, val):
 
-        # Only one argument. Must be a mesh point
-        if not isinstance(key, tuple):
+        # Only one argument and not a slice. Must be a mesh point, Idx
+        if not isinstance(key, (tuple, slice)):
             assert isinstance(key, (MeshPoint, Idx))
             self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)] = val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
-        elif all(isinstance(x, (MeshPoint, Idx)) for x in key):
+        elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
             self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in zip(key,self._mesh._mlist))] = val
 

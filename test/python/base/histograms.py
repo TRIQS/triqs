@@ -68,15 +68,8 @@ with HDFArchive("histograms.h5",'w') as arch:
     arch["hi1"] = hi1
     arch["hd1"] = hd1
 with HDFArchive("histograms.h5",'r') as arch:
-    assert(hi1.n_data_pts == arch["hi1"].n_data_pts)
-    assert(hi1.n_lost_pts == arch["hi1"].n_lost_pts)
-    assert(hi1.limits == arch["hi1"].limits)
-    assert_arrays_are_close(hi1.data, arch["hi1"].data)
-
-    assert(hd1.n_data_pts == arch["hd1"].n_data_pts)
-    assert(hd1.n_lost_pts == arch["hd1"].n_lost_pts)
-    assert(hd1.limits == arch["hd1"].limits)
-    assert_arrays_are_close(hd1.data, arch["hd1"].data)
+    assert(arch["hi1"] == hi1)
+    assert(arch["hd1"] == hd1)
 
 # Test PDF
 pdf_hi1 = pdf(hi1)
