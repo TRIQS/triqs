@@ -47,11 +47,14 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
       checkout scm
 
+      def hdf5 = "${env.BREW}/opt/hdf5@1.10"
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
-          "C_INCLUDE_PATH=${env.BREW}/include",
-          "CPLUS_INCLUDE_PATH=$installDir/include:${env.BREW}/include",
-          "LIBRARY_PATH=$installDir/lib:${env.BREW}/lib",
+          "HDF5_ROOT=$hdf5",
+          "C_INCLUDE_PATH=$hdf5/include:${env.BREW}/include",
+          "CPLUS_INCLUDE_PATH=$installDir/include:$hdf5/include:${env.BREW}/include",
+          "LIBRARY_PATH=$installDir/lib:$hdf5/lib:${env.BREW}/lib",
+          "LD_LIBRARY_PATH=$hdf5/lib",
           "CMAKE_PREFIX_PATH=$installDir/lib/cmake/triqs"]) {
         deleteDir()
         sh """#!/bin/bash -ex
