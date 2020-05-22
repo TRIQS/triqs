@@ -55,6 +55,14 @@ external_dependency(Cpp2Py
   EXCLUDE_FROM_ALL
 )
 
+# -- GTest --
+external_dependency(GTest
+  GIT_REPO https://github.com/google/googletest
+  GIT_TAG release-1.10.0
+  BUILD_ALWAYS
+  EXCLUDE_FROM_ALL
+)
+
 # -- itertools --
 external_dependency(itertools
   GIT_REPO https://github.com/TRIQS/itertools
@@ -78,11 +86,3 @@ external_dependency(h5
   #GIT_REPO https://github.com/TRIQS/nda
   #GIT_TAG unstable
 #)
-
-# -- GTest --
-external_dependency(GTest
-  GIT_REPO https://github.com/google/googletest
-  GIT_TAG release-1.10.0
-  BUILD_ALWAYS
-  EXCLUDE_FROM_ALL
-)
