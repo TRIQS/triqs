@@ -19,14 +19,14 @@
 
 #pragma once
 #include <itertools/itertools.hpp>
-#include <triqs/arrays/blas_lapack/gelss.hpp>
+#include <triqs/arrays.hpp>
+#include <nda/linalg/gelss_worker.hpp>
 
 namespace triqs::mesh {
 
   class imfreq;
 
   using arrays::array_const_view;
-  using itertools::range;
 
   //----------------------------------------------------------------------------------------------
   // construct the Vandermonde matrix
@@ -52,13 +52,13 @@ namespace triqs::mesh {
     // same algo for both cases below
     auto compute = [&A, om](auto res) { // copy, in fact rvalue
       dcomplex z = 1;
-      long N     = first_dim(A);
+      long N     = A.extent(0);
       for (int n = 0; n < N; ++n, z /= om) res += A(n, arrays::ellipsis()) * z;
       return std::move(res);
     };
 
     if constexpr (R > 1) {
-      return compute(arrays::zeros<dcomplex>(A.indexmap().lengths().front_pop()));
+      return compute(arrays::zeros<dcomplex>(stdutil::front_pop(A.indexmap().lengths())));
     } else {
       return compute(dcomplex{0});
     }
@@ -73,8 +73,8 @@ namespace triqs::mesh {
     const bool _adjust_order;
     const int _expansion_order;
     const double _rcond = 1e-8;
-    std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, max_order + 1> _lss;
-    std::array<std::unique_ptr<const arrays::lapack::gelss_cache_hermitian>, max_order + 1> _lss_hermitian;
+    std::array<std::unique_ptr<const arrays::lapack::gelss_worker<dcomplex>>, max_order + 1> _lss;
+    std::array<std::unique_ptr<const arrays::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
 
@@ -141,7 +141,7 @@ namespace triqs::mesh {
     template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_fixed_moments) {
 
       using namespace arrays::lapack;
-      using cache_t = std::conditional_t<enforce_hermiticity, gelss_cache_hermitian, gelss_cache<dcomplex>>;
+      using cache_t = std::conditional_t<enforce_hermiticity, gelss_worker_hermitian, gelss_worker<dcomplex>>;
 
       // Calculate the indices to fit on
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
@@ -155,7 +155,7 @@ namespace triqs::mesh {
         _vander = vander(C, _expansion_order);
       }
 
-      if (n_fixed_moments + 1 > first_dim(_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
+      if (n_fixed_moments + 1 > _vander.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
 
       auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range(), range(n_fixed_moments, n + 1))); };
 
@@ -166,9 +166,9 @@ namespace triqs::mesh {
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
         lss[n_fixed_moments].reset();
         // Ensure that |m.omega_max()|^(1-N) > 10^{-16}
-        int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
+        long n_max = std::min<long>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
         // We use at least two times as many data-points as we have moments to fit
-        n_max = std::min(size_t(n_max), first_dim(_vander) / 2);
+        n_max = std::min(n_max, _vander.extent(0) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {
           auto ptr = l(n);
           if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
@@ -191,8 +191,8 @@ namespace triqs::mesh {
      * @param known_moments  Array of the known_moments
      * */
     // FIXME : nda : use dynamic Rank here.
-    template <bool enforce_hermiticity = false, typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
+    template <int N, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
+    std::pair<arrays::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
                                                       array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
 
       if (enforce_hermiticity and not inner_matrix_dim.has_value())
@@ -202,7 +202,7 @@ namespace triqs::mesh {
       if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
 
       // If not set, build least square solver for for given number of known moments
-      int n_fixed_moments = first_dim(known_moments);
+      int n_fixed_moments = known_moments.extent(0);
       if (n_fixed_moments > _expansion_order) return {known_moments, 0.0};
 
       auto &lss = get_lss<enforce_hermiticity>();
@@ -215,20 +215,39 @@ namespace triqs::mesh {
       using triqs::arrays::ellipsis;
 
       // The values of the Green function. Swap relevant mesh to front
-      auto g_data_swap_idx = rotate_index_view(g_data, n);
+      auto g_data_swap_idx = rotate_index_view<N>(g_data);
       auto const &imp      = g_data_swap_idx.indexmap();
       long ncols           = imp.size() / imp.lengths()[0];
 
+      //PRINT(g_data.shape());
+      //PRINT(g_data_swap_idx.shape());
+      
       // We flatten the data in the target space and remaining mesh into the second dim
-      arrays::matrix<dcomplex> g_mat(first_dim(_vander), ncols);
+      arrays::matrix<dcomplex> g_mat(_vander.extent(0), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       for (auto [i, n] : enumerate(_fit_idx_lst)) {
         if constexpr (R == 1)
           g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
         else
-          for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) g_mat(i, j) = x;
+          for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) {
+            //PRINT(g_mat.shape());
+            //PRINT(i);PRINT(j);
+            //PRINT(g_data_swap_idx.shape());
+            //PRINT(g_data.shape());
+            //PRINT(g_mat(i, j));
+            //PRINT(m.index_to_linear(n));
+            //PRINT(x);
+            g_mat(i, j) = x;
+          }
       }
+      //PRINT(g_mat.shape());
+      //PRINT(g_mat(5, 56));
+      //PRINT(g_mat(range(), 0));
+      //PRINT(g_mat(range(), 56));
+      //PRINT(max_element(abs(g_mat)));
+
+     //PRINT (n_fixed_moments);
 
       // If an array with known_moments was passed, flatten the array into a matrix
       // just like g_data. Then account for the proper shift in g_mat
@@ -252,8 +271,17 @@ namespace triqs::mesh {
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -= _vander(range(), range(n_fixed_moments)) * km_mat;
+        g_mat -=  _vander(range(), range(n_fixed_moments)) * km_mat;
+      
+	//PRINT(km_mat);
+     // PRINT(km_mat.shape());
       }
+      //PRINT(max_element(abs(g_mat)));
+
+      //PRINT(g_mat.shape());
+      //PRINT(g_mat(range(), 0));
+      //PRINT(g_mat(range(), 56));
+
 
       // Call least square solver
       auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, inner_matrix_dim); // coef + error
@@ -264,36 +292,43 @@ namespace triqs::mesh {
         double z      = 1.0;
         double om_max = std::abs(m.omega_max());
         for (int i : range(n_fixed_moments)) z *= om_max;
-        for (int i : range(first_dim(a_mat))) {
+        for (int i : range(a_mat.extent(0))) {
           a_mat(i, range()) *= z;
           z *= om_max;
         }
       }
-
+      //PRINT(a_mat.shape());
+      //PRINT(a_mat(range(), 0));
+      //PRINT(a_mat(range(), 56));
       // === Reinterpret the result as an R-dimensional array according to initial shape and return together with the error
 
       using r_t = arrays::array<dcomplex, R>; // return type
       auto lg   = g_data_swap_idx.indexmap().lengths();
+//      PRINT(lg);
 
       // Index map for the view on the a_mat result
       lg[0]     = n_moments - n_fixed_moments;
-      auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
+      auto imp1 = typename r_t::layout_t{lg};
+      //auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
 
       // Index map for the full result
       lg[0]    = n_moments;
-      auto res = r_t(typename r_t::indexmap_type::domain_type{lg});
+      auto res = r_t(lg);
 
       if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = known_moments;
-      res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
+      res(range(n_fixed_moments, n_moments), ellipsis()) = nda::array_view<dcomplex, R>{imp1, a_mat.storage()};
+      //res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
 
       return {std::move(res), epsilon};
     }
 
-    template <typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
+    //--------------------
+
+    template <int N, typename M, int R, int R2 = R>
+    std::pair<arrays::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
                                                                 array_const_view<dcomplex, R2> known_moments,
                                                                 std::optional<long> inner_matrix_dim = {}) {
-      return fit<true, M, R, R2>(m, g_data, n, normalize, known_moments, inner_matrix_dim);
+      return fit<N, true, M, R, R2>(m, g_data, normalize, known_moments, inner_matrix_dim);
     }
   };
 

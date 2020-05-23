@@ -33,11 +33,8 @@ namespace triqs::gfs {
   using arrays::matrix;
   using arrays::matrix_const_view;
   using arrays::matrix_view;
-  using arrays::memory_layout_t;
-  using arrays::mini_vector;
 
-  using itertools::range;
-  using triqs::make_clone;
+  using nda::range;
   using utility::factory;
 
   // Using from mesh namespace
@@ -57,6 +54,11 @@ namespace triqs::gfs {
 
   // gf_evaluator regroup functions to evaluate the function.
   template <typename Mesh, typename Target> struct gf_evaluator;
+
+  // the policy
+  struct default_evaluator {
+    template <typename Mesh, typename Target> using evaluator_t = gf_evaluator<Mesh, Target>;
+  };
 
   /*----------------------------------------------------------
    *  HDF5

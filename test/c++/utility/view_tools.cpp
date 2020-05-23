@@ -25,7 +25,7 @@ using namespace triqs::gfs;
 using namespace std::complex_literals;
 
 template <typename T> struct check {
-  static_assert(std::is_same<typename T::view_type, view_or_type_t<T>>::value, "err");
+//  static_assert(std::is_same<typename T::view_type, view_or_type_t<T>>::value, "err");
   static_assert(std::is_same<typename T::regular_type, regular_t<T>>::value, "err");
 };
 

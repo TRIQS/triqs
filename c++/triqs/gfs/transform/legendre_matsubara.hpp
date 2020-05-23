@@ -79,7 +79,7 @@ namespace triqs::gfs {
     // I set Nt time bins. This is ugly, one day we must code the direct
     // transformation without going through imaginary time
     int Nt  = 50000;
-    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.domain(), Nt}, gw.data().shape().front_pop()};
+    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.domain(), Nt}, stdutil::front_pop(gw.data().shape())};
 
     // We first transform to imaginary time because it's been coded with the knowledge of the tails
     gt() = fourier(gw);

@@ -22,6 +22,25 @@
 
 namespace triqs::gfs {
 
+  // FIXME : refactor this ?
+  // fIXME : THe layout has to be deducted and C layout -> C Stride 
+  /// make_const_view
+  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf<M, T, L, E> const &g) { return {g}; }
+
+  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_view<M, T, L, E> g) { return {g}; }
+
+  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_const_view<M, T, L, E> g) {
+    //return g;
+  //}
+
+  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf<M, T> const &g) { return {g}; }
+
+  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_view<M, T> g) { return {g}; }
+
+  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_const_view<M, T> g) {
+    return g;
+  }
+
   using triqs::arrays::array_const_view;
 
   /*------------------------------------------------------------------------------------------------------
@@ -41,13 +60,15 @@ namespace triqs::gfs {
    * @return A pair of the tail object and the fitting error
    * @example triqs/gfs/fit_tail.cpp
    */
-  template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
+  template <int N = 0, typename G, typename A = typename G::const_view_type::data_t>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
     if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
-      return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
+      return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true,
+                                                 make_array_const_view(known_moments));
     } else { // single mesh
-      return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+      return g.mesh().get_tail_fitter().template fit<0>(g.mesh(), make_array_const_view(g.data()), true,
+                                                        make_array_const_view(known_moments));
     }
   }
 
@@ -98,9 +119,10 @@ namespace triqs::gfs {
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
     if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
-      return m.get_tail_fitter().fit_hermitian(m, make_const_view(g.data()), N, true, make_const_view(known_moments), inner_matrix_dim);
+      return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
-      return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments), inner_matrix_dim);
+      return g.mesh().get_tail_fitter().template fit_hermitian<0>(g.mesh(), make_const_view(g.data()), true, make_const_view(known_moments),
+                                                                  inner_matrix_dim);
     }
   }
 
@@ -128,8 +150,9 @@ namespace triqs::gfs {
   }
 
   // Tail-fit without normalization, returns moments rescaled by maximum frequency:  a_n * omega_max^n
-  template <template <typename, typename> typename G, typename V, typename T> auto fit_tail_no_normalize(G<V, T> const &g) {
-    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, false, array_const_view<dcomplex, G<V, T>::data_rank>{});
+  template <template <typename, typename, typename...> typename G, typename V, typename T, typename... U>
+  auto fit_tail_no_normalize(G<V, T, U...> const &g) {
+    return g.mesh().get_tail_fitter().template fit<0>(g.mesh(), make_array_const_view(g.data()), false, array_const_view<dcomplex, G<V, T, U...>::data_rank>{});
   }
 
   /**
@@ -145,7 +168,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G> auto make_zero_tail(G const &g, int n_moments = 10) {
     if constexpr (is_gf_v<G>) { // gf[_const][_view]<V, T>
-      auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
+      auto sh = rotate_index_view<N>(make_const_view(g.data())).shape();
       sh[0]   = n_moments;
       return arrays::zeros<dcomplex>(sh);
     } else if constexpr (is_block_gf_v<G>) { // block[2]_gf[_const][_view]<V, T>
@@ -180,7 +203,7 @@ namespace triqs::gfs {
   template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
     static_assert(std::is_same_v<typename std::decay_t<G>::target_t, scalar_valued>,
                   "slice_target_to_scalar : the result is not a scalar valued function");
-    return g.apply_on_data([](auto &&d) { return reinterpret_array_add_1x1(d); });
+    return g.apply_on_data([](auto &&d) { return reinterpret_add_fast_dims_of_size_one<2>(d); });
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -188,22 +211,16 @@ namespace triqs::gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
   // auxiliary function : invert the data : one function for all matrix valued gf (save code).
-  template <typename A3> void _gf_invert_data_in_place(A3 &&a) {
-    auto dom = a(ellipsis(), 0, 0).indexmap().domain();
-    auto f   = [&a, _ = itertools::range()](auto... x) { return a(x..., _, _); };
-    for (auto ind : dom) {
-      auto v = make_matrix_view(triqs::tuple::apply(f, ind));
-      v      = triqs::arrays::inverse(v);
-    }
+  template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
+    auto &a           = g.data();
+    auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
+    nda::for_each(mesh_lengths, [&a, _ = nda::range()](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
   }
 
-  template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) { _gf_invert_data_in_place(g.data()); }
-
-  template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> const &g) {
-    auto res                    = g;
-    gf_view<M, matrix_valued> v = res;
-    invert_in_place(v);
-    return res;
+  // FIXME : 2 overloads :  or PASS BY VALUE
+  template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {
+    invert_in_place(g());
+    return std::move(g);
   }
 
   // FIXME  : unncessary copies
@@ -265,14 +282,14 @@ namespace triqs::gfs {
   //
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, itertools::range(), itertools::range());
+      matrix_view<T> v = a(i, nda::range(), nda::range());
       v                = v * r;
     }
   }
 
   template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, itertools::range(), itertools::range());
+      matrix_view<T> v = a(i, nda::range(), nda::range());
       v                = l * v;
     }
   }
@@ -294,7 +311,7 @@ namespace triqs::gfs {
 
   template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A &a, M const &l, B const &b, M const &r) {
     auto tmp = matrix<typename M::value_type>(second_dim(b), second_dim(r));
-    auto _   = itertools::range{};
+    auto _   = nda::range{};
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       auto rhs_v = make_matrix_view(b(i, _, _));
       auto lhs_v = make_matrix_view(a(i, _, _));

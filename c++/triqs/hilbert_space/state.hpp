@@ -25,7 +25,6 @@
 #include <boost/operators.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/arrays.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
 #include "hilbert_space.hpp"
 
 namespace triqs {
@@ -241,7 +240,7 @@ namespace triqs {
       /**
    @param hs Hilbert space the new state belongs to
   */
-      state(HilbertSpace const &hs) : hs_p(&hs), ampli(hs.size(), 0.0) {}
+      state(HilbertSpace const &hs) : hs_p(&hs), ampli(nda::zeros<ScalarType>(hs.size())) {}
 
       /// Return the dimension of the associated Hilbert space
       /**
@@ -308,7 +307,7 @@ namespace triqs {
    @param s2 Second state to multiply
    @return Value of the scalar product
   */
-      friend value_type dot_product(state const &s1, state const &s2) { return dotc(s1.ampli, s2.ampli); }
+      friend value_type dot_product(state const &s1, state const &s2) { return nda::blas::dotc(s1.ampli, s2.ampli); }
 
       /// Apply a callable object to all amplitudes of a state
       /**

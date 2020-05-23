@@ -18,12 +18,9 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include <triqs/clef.hpp>
 
 inline bool kronecker(int i, int j) { return i == j; }
 
-namespace triqs {
-  namespace clef {
-    TRIQS_CLEF_MAKE_FNT_LAZY(kronecker);
-  }
-} // namespace triqs
+namespace nda::clef {
+ CLEF_MAKE_FNT_LAZY(kronecker);
+}

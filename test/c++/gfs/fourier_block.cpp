@@ -29,7 +29,7 @@ template <int TARGET_RANK> void test_fourier() {
   int N_tau                 = 6 * N_iw + 1;
   std::vector<double> E_vec = {1.0, 2.0, -4.0}; // Poles
 
-  mini_vector<size_t, TARGET_RANK> shape{};
+  std::array<long, TARGET_RANK> shape{};
 
   if constexpr (TARGET_RANK == 2) // Matrix_valued
     shape = make_shape(2, 2);

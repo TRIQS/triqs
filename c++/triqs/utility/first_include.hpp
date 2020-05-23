@@ -18,6 +18,7 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <complex>
 
 #if defined __GNUC__ && !defined __clang__
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
@@ -29,6 +30,8 @@
 // workaround an error in gcc stdlib, but corrected in clang 3.4.2
 typedef long double max_align_t;
 #endif
+
+using dcomplex = std::complex<double>;
 
 // disable std::auto_ptr (disabled in c++17) usage in boost
 #define BOOST_NO_AUTO_PTR

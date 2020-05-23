@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/clef.hpp>
 #include <triqs/mesh/details/mesh_tools.hpp>
 
 namespace triqs::gfs {
@@ -52,7 +51,7 @@ namespace triqs::gfs {
 
   template <typename M> tuple_com<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {std::make_tuple(i, std::move(m))}; }
 
-  template <typename T, int n, typename X> tuple_com<mini_vector<T, n>, X> operator,(mini_vector<T, n> const &v, X const &x) {
+  template <typename T, int n, typename X> tuple_com<std::array<T, n>, X> operator,(std::array<T, n> const &v, X const &x) {
     return {std::make_tuple(v, x)};
   }
   template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const &m, X const &x) { return {std::make_tuple(m, x)}; }
@@ -69,31 +68,31 @@ namespace triqs::gfs {
 
 } // namespace triqs::mesh
 
-namespace triqs::clef {
+namespace nda::clef {
 
-  template <int N, typename X> gfs::tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
+  template <int N, typename X> triqs::gfs::tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
 
   // placeholder, mesh_point a:sorbs argument in a tuple_com
-  template <int N, typename X> gfs::tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) {
+  template <int N, typename X> triqs::gfs::tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) {
     return {std::make_tuple(p, std::forward<X>(x))};
   }
 
   // tuple_com is lazy if any of T is.
-  template <typename... T> struct is_any_lazy<gfs::tuple_com<T...>> : is_any_lazy<T...> {};
+  template <typename... T> constexpr bool is_any_lazy<triqs::gfs::tuple_com<T...>> = is_any_lazy<T...>;
 
   // The case A[x_,y_] = RHS : we form the function (make_function) and call auto_assign (by ADL)
-  template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, gfs::tuple_com<_ph<Is>...>> &&ex, RHS &&rhs) {
-    triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+  template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, triqs::gfs::tuple_com<_ph<Is>...>> &&ex, RHS &&rhs) {
+    clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
   }
 
   // tuple_com can be evaluated
-  template <typename... T, typename... Contexts> struct evaluator<gfs::tuple_com<T...>, Contexts...> {
+  template <typename... T, typename... Contexts> struct evaluator<triqs::gfs::tuple_com<T...>, Contexts...> {
     static constexpr bool is_lazy = false;
-    FORCEINLINE decltype(auto) operator()(gfs::tuple_com<T...> const &tu, Contexts const &... contexts) const {
+    FORCEINLINE decltype(auto) operator()(triqs::gfs::tuple_com<T...> const &tu, Contexts const &... contexts) const {
       auto l  = [&contexts...](auto &&y) -> decltype(auto) { return eval(y, contexts...); };
       auto _t = triqs::tuple::map(l, tu._t);
       return triqs::gfs::make_tuple_com_from_tuple(std::move(_t));
     }
   };
 
-} // namespace triqs::clef
+}

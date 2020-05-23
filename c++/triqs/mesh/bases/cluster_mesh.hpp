@@ -50,15 +50,15 @@ namespace triqs::mesh {
    * @param inv_n inverse $N^{-1}$ of the periodization matrix
    * @return the dimensions of the parallelepiped unit cell
    */
-  utility::mini_vector<int, 3> find_cell_dims(arrays::matrix<double> const &inv_n);
+  std::array<long, 3> find_cell_dims(arrays::matrix<double> const &inv_n);
 
   /// A lattice point
   struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, arrays::vector<double>> {
-    utility::mini_vector<long, 3> index;
+    std::array<long, 3> index;
     arrays::matrix<double> units; // unit vectors
 
     lattice_point() : index({0, 0, 0}), units(arrays::make_unit_matrix<double>(3)) {}
-    lattice_point(utility::mini_vector<long, 3> const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
+    lattice_point(std::array<long, 3>  const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
     using cast_t = arrays::vector<double>;
     operator cast_t() const {
       cast_t M(3);
@@ -75,7 +75,7 @@ namespace triqs::mesh {
 
     matrix<double> units;
     matrix<int> periodization_matrix;
-    utility::mini_vector<int, 3> dims; // the size in each dimension
+    std::array<long, 3> dims; // the size in each dimension
     size_t _size;
     long s1, s2;
 
@@ -103,7 +103,7 @@ namespace triqs::mesh {
 
     int rank() const { return (dims[2] > 1 ? 3 : (dims[1] > 1 ? 2 : 1)); }
 
-    utility::mini_vector<int, 3> get_dimensions() const { return dims; }
+    std::array<long, 3> get_dimensions() const { return dims; }
 
     /// ---------- Model the domain concept  ---------------------
     using domain_t = cluster_mesh;
@@ -112,7 +112,7 @@ namespace triqs::mesh {
 
     /// ----------- Model the mesh concept  ----------------------
 
-    using index_t        = utility::mini_vector<long, 3>;
+    using index_t        = std::array<long, 3>;
     using linear_index_t = long;
 
     /// Reduce index modulo to the lattice.

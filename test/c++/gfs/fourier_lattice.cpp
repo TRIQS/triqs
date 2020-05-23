@@ -27,7 +27,7 @@ template <int TARGET_RANK> void test_fourier() {
   double beta = 1;
   int N_k     = 2;
 
-  mini_vector<size_t, TARGET_RANK> shape{};
+  std::array<long, TARGET_RANK> shape{};
 
   if constexpr (TARGET_RANK == 2) // Matrix_valued
     shape = make_shape(2, 2);

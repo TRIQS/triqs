@@ -59,7 +59,7 @@ namespace triqs {
       corr() = 0;
       for (auto const &l : gl.mesh()) corr += t(l.index()) * gl[l];
 
-      auto _ = itertools::range{};
+      auto _ = nda::range{};
       for (auto const &l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
     }
 

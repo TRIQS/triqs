@@ -23,7 +23,7 @@
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
+//#include <triqs/arrays/blas_lapack/dot.hpp>
 
 #include <h5/h5.hpp>
 #include <h5/serialization.hpp>
@@ -37,6 +37,7 @@ using namespace triqs::atom_diag;
 using namespace h5;
 
 using atom_diag_real = triqs::atom_diag::atom_diag<false>;
+using nda::blas::dot;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
@@ -347,7 +348,7 @@ TEST(atom_diag_real, Functions) {
   auto vac = ad.get_vacuum_state();
   auto op  = c_dag("dn", 0) * c_dag("dn", 1) * c_dag("dn", 2) * c_dag("up", 0) * c_dag("up", 1) * c_dag("up", 2);
 
-  vector<double> st_ref(ad.get_full_hilbert_space_dim(), 0);
+  vector<double> st_ref(nda::zeros<double>(ad.get_full_hilbert_space_dim()));
   st_ref(63) = 1;
   auto st    = act(op, vac, ad);
   EXPECT_ARRAY_NEAR(st_ref, st);

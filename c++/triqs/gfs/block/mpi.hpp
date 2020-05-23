@@ -56,7 +56,7 @@ namespace triqs::gfs {
   template <typename V, typename T, int Arity>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T, Arity>> mpi_reduce(block_gf<V, T, Arity> const &a, mpi::communicator c = {}, int root = 0,
                                                                    bool all = false, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, all, op};
+    return {block_gf_const_view<V, T>{a}, c, root, all, op};
   }
 
   /**
@@ -74,7 +74,7 @@ namespace triqs::gfs {
   template <typename V, typename T, int Arity, bool IsConst>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T, Arity>> mpi_reduce(block_gf_view<V, T, Arity, IsConst> const &a, mpi::communicator c = {},
                                                                     int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, all, op};
+    return {block_gf_view<V, T, Arity>{a}, c, root, all, op};
   }
 
 } // namespace triqs::gfs

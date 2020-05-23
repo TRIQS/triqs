@@ -23,12 +23,8 @@ using namespace triqs::gfs;
 
 TEST(Gf, SimpleAssign) {
 
-  using A = triqs::arrays::array_proxy<triqs::arrays::array<std::complex<double>, 3> &, long>;
 
   static_assert(std::is_constructible<std::complex<double>, matsubara_freq>::value, "oops");
-  static_assert(triqs::arrays::is_scalar_or_convertible<matsubara_freq>::value, "oops2");
-  static_assert(triqs::arrays::is_scalar_for<std::complex<double>, A>::value, "oops2");
-  static_assert(triqs::arrays::is_scalar_for<matsubara_freq, A>::value, "oops2");
 
   triqs::clef::placeholder<0> om_;
   auto g  = gf<imfreq>{{10, Fermion, 10}, {2, 2}};

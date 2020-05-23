@@ -28,7 +28,7 @@ namespace triqs::gfs {
    * This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
    * using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
    */
-  template <typename T> gf<mesh::imfreq, T> make_gf_from_real_gf(gf_const_view<mesh::imfreq, T> g) {
+  template <typename T, typename Layout> gf<mesh::imfreq, T> make_gf_from_real_gf(gf_const_view<mesh::imfreq, T, Layout> g) {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
     auto sh         = dat.shape();
@@ -180,7 +180,7 @@ namespace triqs::gfs {
 
   // ------------------------------------------------------------------------------------------------------
 
-  template <template <typename, typename> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
+  template <template <typename, typename, typename ...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
     auto iw_mesh = mesh::imfreq{g.mesh().domain().beta, Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
@@ -204,7 +204,7 @@ namespace triqs::gfs {
 
   // FIXME For backward compatibility only
   // Fit_tail on a window
-  template <template <typename, typename> typename G, typename T>
+  template <template <typename, typename, typename ...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();

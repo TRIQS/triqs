@@ -20,7 +20,7 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
 
-using index_t = utility::mini_vector<int, 3>;
+using index_t = std::array<long, 3>;
 using K_t     = std::array<double, 3>;
 
 TEST(Gfs, cyclat) {

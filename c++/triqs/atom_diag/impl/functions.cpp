@@ -136,7 +136,7 @@ namespace triqs {
         for (auto const &x : op) {
           auto b_m = matrix_element_of_monomial(atom, x.monomial, sp);
           if (b_m.first != sp) continue;
-          for (int i = 0; i < dim; ++i) result.back()[i] += real(x.coef * b_m.second(i, i));
+          for (int i = 0; i < dim; ++i) result.back()[i] += std::real(x.coef * b_m.second(i, i));
         }
       }
       return result;

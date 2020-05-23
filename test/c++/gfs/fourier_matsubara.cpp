@@ -28,7 +28,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   int N_tau   = 10000;
   double E    = -1;
 
-  mini_vector<size_t, TARGET_RANK> shape{};
+  std::array<long, TARGET_RANK> shape{};
 
   if constexpr (TARGET_RANK == 2) // Matrix_valued
     shape = make_shape(2, 2);

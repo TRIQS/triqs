@@ -28,27 +28,29 @@ namespace triqs::gfs {
      *
      * @include triqs/gfs.hpp
      */
-  template <typename Mesh, typename Target> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <typename Mesh, typename Target, typename Layout, typename EvalPolicy>
+  class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    using this_t = gf_const_view<Mesh, Target>; // used in common code
-    
+    using this_t = gf_const_view<Mesh, Target, Layout, EvalPolicy>; // used in common code
+
     public:
     static constexpr bool is_view  = true;
     static constexpr bool is_const = true;
 
-    using mutable_view_type = gf_view<Mesh, Target>;
+    using mutable_view_type = gf_view<Mesh, Target, Layout, EvalPolicy>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<Mesh, Target>;
+    using const_view_type = gf_const_view<Mesh, Target, Layout, EvalPolicy>;
 
     /// Associated (non const) view type
-    using view_type = gf_const_view<Mesh, Target>;
+    using view_type = gf_const_view<Mesh, Target, Layout, EvalPolicy>;
 
     /// Associated regular type (gf<....>)
-    using regular_type = gf<Mesh, Target>;
+    using regular_type = gf<Mesh, Target>; // FIXME : find the Layout
+    //using regular_type = gf<Mesh, Target, Layout, EvalPolicy>;
 
     /// The associated real type
-    using real_t = gf_const_view<Mesh, typename Target::real_t>;
+    using real_t = gf_const_view<Mesh, typename Target::real_t, Layout, EvalPolicy>;
 
     /// Template type
     using target_t = Target;
@@ -67,7 +69,7 @@ namespace triqs::gfs {
     using linear_mesh_index_t = typename mesh_t::linear_index_t;
 
     using indices_t   = gf_indices;
-    using evaluator_t = gf_evaluator<Mesh, Target>;
+    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh, Target>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
@@ -78,18 +80,11 @@ namespace triqs::gfs {
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
 
-    using data_regular_t    = arrays::array<scalar_t, data_rank>;
-    using data_view_t       = typename data_regular_t::view_type;
-    using data_const_view_t = typename data_regular_t::const_view_type;
-
     /// Type of the data array
-    using data_t = data_const_view_t;
-
-    /// Type of the memory layout
-    using data_memory_layout_t = memory_layout_t<data_rank>;
+    using data_t = nda::basic_array_view<const scalar_t, data_rank, Layout>;
 
     // FIXME : std::array with NDA
-    using target_shape_t = arrays::mini_vector<int, Target::rank>;
+    using target_shape_t = std::array<long, Target::rank>;
 
     struct target_and_shape_t {
       target_shape_t _shape;
@@ -137,14 +132,14 @@ namespace triqs::gfs {
     auto const &data_shape() const { return _data.shape(); }
 
     // FIXME : No doc : internal only ? for make_gf
-    target_and_shape_t target() const { return target_and_shape_t{_data.shape().template front_mpop<arity>()}; } // drop arity dims
+    target_and_shape_t target() const { return target_and_shape_t{stdutil::front_mpop<arity>(_data.shape())}; } // drop arity dims
 
     /**
      * Shape of the target
      *
      * @category Accessors
      */
-    arrays::mini_vector<int, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
+    std::array<long, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
 
     /**
      * Generator for the indices of the target space
@@ -152,13 +147,6 @@ namespace triqs::gfs {
      * @category Accessors
      */
     auto target_indices() const { return itertools::product_range(target().shape()); }
-
-    /** 
-     * Memorylayout of the data
-     *
-     * @category Accessors
-     */
-    memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
     /// Indices of the Green function (for Python only)
     indices_t const &indices() const { return _indices; }
@@ -168,17 +156,13 @@ namespace triqs::gfs {
     data_t _data;
     indices_t _indices;
 
-    using dproxy_t = details::_data_proxy<Target>;
-
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-
-    template <typename G> gf_const_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()),  _indices(x.indices()) {}
+    template <typename G> gf_const_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
 
     template <typename M, typename D>
-    gf_const_view(impl_tag, M &&m, D &&dat, indices_t ind)
-       : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
+    gf_const_view(impl_tag, M &&m, D &&dat, indices_t ind) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
       if (!(_indices.empty() or _indices.has_shape(target_shape()))) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
     }
 
@@ -196,8 +180,8 @@ namespace triqs::gfs {
       swap(this->_data, b._data);
       swap(this->_indices, b._indices);
     }
-    public:
 
+    public:
     // ---------------  Constructors --------------------
 
     /// Empty view, not binded to anything

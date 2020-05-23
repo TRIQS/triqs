@@ -22,7 +22,6 @@
 using namespace triqs::clef;
 using namespace triqs::lattice;
 using triqs::clef::placeholder;
-using triqs::utility::mindex;
 
 template <typename Function, typename Mesh> auto sum_gf(Function const &f, Mesh const &m) {
   auto res = make_matrix(0 * f(*(m.begin())));
@@ -31,8 +30,8 @@ template <typename Function, typename Mesh> auto sum_gf(Function const &f, Mesh 
   return res;
 }
 
-namespace triqs::clef {
-  TRIQS_CLEF_MAKE_FNT_LAZY(sum_gf);
+namespace nda::clef {
+  CLEF_MAKE_FNT_LAZY(sum_gf);
 }
 
 placeholder<0> k_;

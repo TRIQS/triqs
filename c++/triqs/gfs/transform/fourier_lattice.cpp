@@ -44,11 +44,13 @@ namespace triqs::gfs {
         break;
       }
 
-    auto g_out    = gf_vec_t<M1>{out_mesh, g_in.target_shape()[0]};
+    auto g_out    = gf_vec_t<M1>{out_mesh, std::array{g_in.target_shape()[0]}};
     long n_others = second_dim(g_in.data());
 
     auto dims = g_in.mesh().get_dimensions();
-    _fourier_base(g_in.data(), g_out.data(), dims.size(), dims.ptr(), n_others, fftw_backward_forward);
+    auto dims_int = stdutil::make_std_array<int>(dims);
+
+    _fourier_base(g_in.data(), g_out.data(), dims.size(), dims_int.data(), n_others, fftw_backward_forward);
 
     return std::move(g_out);
   }

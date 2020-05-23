@@ -36,7 +36,7 @@ class MpiGf : public ::testing::Test {
     g1 = gf<imfreq>{{beta, Fermion, Nfreq}, {1, 1}};
     g1(w_) << 1 / (w_ + 1);
 
-    d = make_clone(g1.data());
+    d = array<dcomplex, 3>{g1.data()};
     for (int u = 0; u < world.size(); ++u) {
       auto se = itertools::chunk_range(0, 2 * Nfreq, world.size(), u);
       d(range(se.first, se.second), 0, 0) *= (1 + u);

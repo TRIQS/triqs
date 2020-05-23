@@ -18,9 +18,8 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, tayral
 
 #include "./bravais_lattice.hpp"
-#include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/linalg/cross_product.hpp>
+#include <nda/lapack.hpp>
+#include <nda/linalg/cross_product.hpp>
 namespace triqs {
   namespace lattice {
 
@@ -28,9 +27,12 @@ namespace triqs {
 
     bravais_lattice::bravais_lattice(matrix<double> const &units__, std::vector<r_t> atom_orb_pos_, std::vector<std::string> atom_orb_name_)
        : units_(3, 3), atom_orb_pos(atom_orb_pos_), atom_orb_name(atom_orb_name_) {
+      using nda::blas::dot;
+      using nda::linalg::cross_product;
+
       dim_ = first_dim(units__);
       if ((dim_ < 1) || (dim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
-      using itertools::range;
+      //using itertools::range;
       auto r       = range(0, dim_);
       units_()     = 0;
       units_(r, r) = units__(r, r);

@@ -41,6 +41,9 @@ namespace triqs::gfs {
     // we use i = I%N1, j = (I% N1N2) /N1, k = (I%N1N2N3)/N1N2 to obtain all values of (i,j, k) (for k the % is useless...)
 
     template <size_t... Is, typename G, typename A1> FORCEINLINE auto _multivar_eval_impl(std::index_sequence<Is...>, G const &g, A1 const &a1) {
+      //PRINT(a1[0].second);
+      //PRINT(a1[1].second);
+     // ((a1[Is].second * slice_or_access(g, a1[Is].first)) + ...).soso;
       return ((a1[Is].second * slice_or_access(g, a1[Is].first)) + ...);
     }
 

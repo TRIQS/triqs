@@ -18,7 +18,6 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #include "./many_body_operator.hpp"
-#include "./../utility/mini_vector.hpp"
 #include <h5/h5.hpp>
 #include <hdf5.h>
 
@@ -142,8 +141,8 @@ namespace triqs {
       h5::dataspace dspace = H5Dget_space(ds);
 
       // recover the dimension: must be of rank 1
-      utility::mini_vector<hsize_t, 1> dims_out;
-      int ndims = H5Sget_simple_extent_dims(dspace, dims_out.ptr(), NULL);
+      std::array<hsize_t, 1> dims_out;
+      int ndims = H5Sget_simple_extent_dims(dspace, dims_out.data(), NULL);
       if (ndims != 1)
         TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "
                             << ndims;

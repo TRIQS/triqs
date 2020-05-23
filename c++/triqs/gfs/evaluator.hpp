@@ -67,7 +67,7 @@ namespace triqs::gfs {
       auto res   = arrays::zeros<dcomplex>(g.target_shape()); // a new array
 
       dcomplex z = 1.0;
-      for (int n : range(first_dim(tail))) {
+      for (int n : range(tail.extent(0))) {
         res += tail(n, ellipsis()) * z;
         z = z * x;
       }
@@ -92,7 +92,7 @@ namespace triqs::gfs {
       static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
 
       using r1_t = decltype(evaluate(g, std::forward<Args>(args)...));
-
+ 
       if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
         return evaluate(g, std::forward<Args>(args)...);
       } else {

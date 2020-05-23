@@ -104,7 +104,7 @@ namespace triqs::gfs {
      *  RHS can be anything with .block_names() and [n] -> gf or a scalar
      */
     template <typename RHS> block_gf_view &operator=(RHS const &rhs) REQUIRES(not IsConst) {
-      if constexpr (not arrays::is_scalar<RHS>::value) {
+      if constexpr (not nda::is_scalar_v<RHS>) {
         if (!(size() == rhs.size())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
         _assign_impl(rhs);
       } else {

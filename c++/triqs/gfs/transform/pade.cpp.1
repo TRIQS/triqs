@@ -35,7 +35,7 @@ namespace triqs {
 
       gr() = 0.0;
 
-      auto sh = gw.data().shape().front_pop();
+      auto sh = stdutil::front_pop(gw.data().shape());
       int N1 = sh[0], N2 = sh[1];
       for (int n1 = 0; n1 < N1; n1++) {
         for (int n2 = 0; n2 < N2; n2++) {

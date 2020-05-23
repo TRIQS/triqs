@@ -21,6 +21,7 @@
 #pragma once
 
 #include <mpi/mpi.hpp>
+#include "./macros.hpp"
 #include "./stack_trace.hpp"
 #include <exception>
 #include <string>
@@ -31,9 +32,9 @@
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error, "runtime error")
 #define TRIQS_KEYBOARD_INTERRUPT TRIQS_ERROR(triqs::keyboard_interrupt, "Ctrl-C")
 #define TRIQS_ASSERT(X)                                                                                                                              \
-  if (!(X)) TRIQS_RUNTIME_ERROR << BOOST_PP_STRINGIZE(X);
+  if (!(X)) TRIQS_RUNTIME_ERROR << AS_STRING(X);
 #define TRIQS_ASSERT2(X, ...)                                                                                                                        \
-  if (!(X)) TRIQS_RUNTIME_ERROR << BOOST_PP_STRINGIZE(X) << "\n " << __VA_ARGS__;
+  if (!(X)) TRIQS_RUNTIME_ERROR << AS_STRING(X) << "\n " << __VA_ARGS__;
 
 namespace triqs {
 

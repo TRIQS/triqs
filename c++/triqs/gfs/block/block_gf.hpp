@@ -228,8 +228,10 @@ namespace triqs::gfs {
      * @param l The lazy object returned by reduce
      */
     block_gf &operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
+      
       _block_names = l.rhs.block_names();
       _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+
       return *this;
       // reduce of vector produces a new vector of gf, so it is fine here
     }

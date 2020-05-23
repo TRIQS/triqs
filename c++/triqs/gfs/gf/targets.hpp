@@ -101,6 +101,6 @@ namespace triqs {
 
     // Given an array A, compute the target, with A::rank - nvar
     template <typename A, int nvar>
-    using target_from_array = typename _target_from_type_rank<typename std::decay_t<A>::value_type, std::decay_t<A>::rank - nvar>::type;
+    using target_from_array = typename _target_from_type_rank<typename std::decay_t<typename std::decay_t<A>::value_type>, std::decay_t<A>::rank - nvar>::type;
   } // namespace gfs
 } // namespace triqs

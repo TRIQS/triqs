@@ -37,7 +37,7 @@ TEST(atom_diag, HDF5) {
   h5::file f_real("ad_real.h5", 'r');
   EXPECT_NO_THROW(h5_read(f_real, "ad", ad_complex));
   h5::file f_complex("ad_complex.h5", 'r');
-  EXPECT_THROW(h5_read(f_complex, "ad", ad_real), triqs::runtime_error);
+  EXPECT_THROW(h5_read(f_complex, "ad", ad_real), nda::runtime_error);
 }
 
 TEST(atom_diag, HDF5_empty) {

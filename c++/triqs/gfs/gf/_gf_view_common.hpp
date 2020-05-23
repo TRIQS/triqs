@@ -24,7 +24,7 @@ template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
     return const_view_type{*this};
   else {
     static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
       return clef::make_expr_call(*this, std::forward<Args>(args)...);
     else
       return evaluator_t()(*this, std::forward<Args>(args)...);
@@ -35,7 +35,7 @@ template <typename... Args> decltype(auto) operator()(Args &&... args) & {
     return view_type{*this};
   else {
     static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
       return clef::make_expr_call(*this, std::forward<Args>(args)...);
     else
       return evaluator_t()(*this, std::forward<Args>(args)...);
@@ -46,7 +46,7 @@ template <typename... Args> decltype(auto) operator()(Args &&... args) && {
     return view_type{std::move(*this)};
   else {
     static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
       return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
     else
       return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
@@ -55,41 +55,73 @@ template <typename... Args> decltype(auto) operator()(Args &&... args) && {
 
 // ------------- All the [] operators without lazy arguments -----------------------------
 
+private:
+#ifdef NDA_ENFORCE_BOUNDCHECK
+static constexpr bool has_no_boundcheck = false;
+#else
+static constexpr bool has_no_boundcheck = true;
+#endif
+
+// Self can not be a rvalue, since we return a view !
+// similar coding as for nda
+template <typename Self> FORCEINLINE static decltype(auto) call_data(Self &&self, long i) noexcept(has_no_boundcheck) {
+  return data_t::template call<(target_t::is_matrix ? 'M' : 'A'), false>(std::forward<Self>(self)._data, i, ellipsis{});
+}
+
+template <typename Self, auto... Is, typename Tu>
+FORCEINLINE static decltype(auto) call_data_impl(Self &&self, std::index_sequence<Is...>, Tu const &tu) noexcept(has_no_boundcheck) {
+  return data_t::template call<(target_t::is_matrix ? 'M' : 'A'), false>(std::forward<Self>(self)._data, std::get<Is>(tu)..., ellipsis{});
+}
+
+template <typename Self, typename... T>
+FORCEINLINE static decltype(auto) call_data(Self &&self, std::tuple<T...> const &tu) noexcept(has_no_boundcheck) {
+  return call_data_impl(std::forward<Self>(self), std::make_index_sequence<sizeof...(T)>{}, tu);
+}
+
+public:
 // pass a index_t of the mesh
 decltype(auto) operator[](mesh_index_t const &arg) {
   EXPECTS(_mesh.is_within_boundary(arg));
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(arg));
+  return call_data(*this, _mesh.index_to_linear(arg));
 }
-decltype(auto) operator[](mesh_index_t const &arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+
+decltype(auto) operator[](mesh_index_t const &arg) const {
+  EXPECTS(_mesh.is_within_boundary(arg));
+  return call_data(*this, _mesh.index_to_linear(arg));
+}
 
 // pass a mesh_point of the mesh
 decltype(auto) operator[](mesh_point_t const &x) {
 #ifdef TRIQS_DEBUG
   if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
-  return dproxy_t::invoke(_data, x.linear_index());
+  return call_data(*this, x.linear_index());
 }
 
 decltype(auto) operator[](mesh_point_t const &x) const {
 #ifdef TRIQS_DEBUG
   if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
-  return dproxy_t::invoke(_data, x.linear_index());
+  return call_data(*this, x.linear_index());
 }
 
+private:
+using cp_worker = mesh::closest_point<Mesh, Target>;
+
+public:
 // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
 template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh::closest_point<Mesh, Target>::invoke(this->mesh(), p)));
+  return call_data(*this, _mesh.index_to_linear(cp_worker::invoke(_mesh, p)));
 }
 template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh::closest_point<Mesh, Target>::invoke(this->mesh(), p)));
+  return call_data(*this, _mesh.index_to_linear(cp_worker::invoke(_mesh, p)));
 }
 
 // -------------- operator [] with tuple_com. Distinguich the lazy and non lazy case
 public:
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & {
   static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
@@ -100,7 +132,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & 
 
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) const & {
   static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
@@ -111,7 +143,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) co
 
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) && {
   static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
     return clef::make_expr_subscript(std::move(*this), tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
@@ -122,43 +154,34 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) &&
 
 // ------------- [] with lazy arguments -----------------------------
 
-template <typename Arg> clef::make_expr_subscript_t<this_t const &, Arg> operator[](Arg &&arg) const & {
+template <typename Arg> auto operator[](Arg &&arg) const &REQUIRES(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> clef::make_expr_subscript_t<this_t &, Arg> operator[](Arg &&arg) & {
+template <typename Arg> auto operator[](Arg &&arg) & REQUIRES(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> clef::make_expr_subscript_t<this_t, Arg> operator[](Arg &&arg) && {
+template <typename Arg> auto operator[](Arg &&arg) && REQUIRES(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
 }
 
 // --------------------- A direct access to the grid point --------------------------
 
-//template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
-  //return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-//}
-
-//template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
-  //return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-//}
-
 template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+  return call_data(*this, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
 }
 
 template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) const {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+  return call_data(*this, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
 }
 
 template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) {
-  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+  return call_data(*this, linear_mesh_index_t(std::forward<Args>(args)...));
 }
 
 template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) const {
-  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-
+  return call_data(*this, linear_mesh_index_t(std::forward<Args>(args)...));
 }
 
 //----------------------------- HDF5 -----------------------------

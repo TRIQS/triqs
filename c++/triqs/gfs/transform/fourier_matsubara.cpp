@@ -96,6 +96,7 @@ namespace triqs::gfs {
 
   gf_vec_t<imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
 
+  //PRINT(max_element(abs(gt.data())));
     arrays::array<dcomplex, 2> tail;
 
     if (known_moments.is_empty()) {
@@ -171,9 +172,11 @@ namespace triqs::gfs {
       for (auto const &t : gt.mesh())
         _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
+  //PRINT(max_element(abs(_gin)));
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
+  //PRINT(max_element(abs(_gout)));
 
     auto gw = gf_vec_t<imfreq>{iw_mesh, {int(n_others)}};
 
@@ -182,6 +185,9 @@ namespace triqs::gfs {
     auto corr = -0.5 * fact * (gt[0] + m1 + (is_fermion ? 1 : -1) * gt[L]);
     for (auto const &w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + corr + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
 
+
+  //PRINT(max_element(abs(gw.data())));
+    
     return std::move(gw);
   }
 
@@ -189,6 +195,7 @@ namespace triqs::gfs {
 
   gf_vec_t<imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<imfreq> gw, arrays::array_const_view<dcomplex, 2> known_moments) {
 
+ // PRINT(max_element(abs(gw.data())));
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
     arrays::array_const_view<dcomplex, 2> tail;
@@ -267,6 +274,7 @@ namespace triqs::gfs {
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);
 
+//  PRINT(max_element(abs(gt.data())));
     return std::move(gt);
   }
 

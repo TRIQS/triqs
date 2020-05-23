@@ -18,6 +18,8 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include "./macros.hpp"
+
 namespace triqs {
   namespace utility {
 

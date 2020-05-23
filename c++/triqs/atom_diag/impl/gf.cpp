@@ -63,7 +63,7 @@ namespace triqs {
       int n_sp = atom.n_subspaces();
       for (int A = 0; A < n_sp; ++A) {
         int sp_dim = atom.get_subspace_dim(A);
-        weights.emplace_back(sp_dim, 0);
+        weights.emplace_back(nda::zeros<double>(sp_dim));
         for (int ia = 0; ia < sp_dim; ++ia) {
           double w       = std::exp(-beta * atom.get_eigenvalue(A, ia));
           weights[A](ia) = w;

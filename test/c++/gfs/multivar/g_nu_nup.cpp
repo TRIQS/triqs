@@ -24,14 +24,14 @@ TEST(Gf, G_nu_nup) {
 
   double beta = 1;
 
-  auto G = gf<prod<imfreq, imfreq>, tensor_valued<4>>{
-     {{beta, Fermion, 100}, {beta, Fermion, 100}}, {2, 2, 2, 2}, make_memory_layout(0, 2, 3, 1, 4, 5)};
-
-  auto sh = triqs::arrays::memory_layout_t<6>{triqs::utility::mini_vector<int, 6>{0, 2, 3, 1, 4, 5}};
-  EXPECT_EQ(G.data().indexmap().memory_layout(), sh);
+  // FIXME : no sanitizer bug if regular order
+  //auto G = gf<prod<imfreq, imfreq>, tensor_valued<4>>{
+  auto G = gf<prod<imfreq, imfreq>, tensor_valued<4>, nda::basic_layout<0, nda::encode(std::array{0, 2, 3, 1, 4, 5}), layout_prop_e::contiguous>>{
+     {{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2, 2, 2}};
 
   placeholder<0> nu_;
   placeholder<1> nup_;
+
 
   G(nu_, nup_) << 1 / (nu_ + nup_ + 1);
 
@@ -40,6 +40,7 @@ TEST(Gf, G_nu_nup) {
   EXPECT_CLOSE(res1, res);
   rw_h5(G, "ess_g_nu_nup.h5", "g");
 }
+//--------------------------------------------------------------------
 
 TEST(GfCartesian, H5_RW_Evaluator) {
   double beta = 1;
@@ -65,7 +66,7 @@ TEST(BlockGfCartesian, H5_RW_Evaluator) {
   auto g      = gf<prod<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1, 1}};
   g()         = 2;
   auto G      = make_block_gf({"up"}, {g});
-  //EXPECT_ARRAY_NEAR(get_target_shape(G[0]), mini_vector<size_t,2>{1,1});
+  //EXPECT_ARRAY_NEAR(get_target_shape(G[0]), std::array<long,2>{1,1});
   h5::file file("g_nu_nup.h5", 'w');
   h5_write(file, "G", G);
 
@@ -128,5 +129,4 @@ TEST(BlockGf, H5_RW_Evaluator) {
   EXPECT_ARRAY_NEAR(G[0](W10), G2[0](W10));
   EXPECT_ARRAY_NEAR(g(W10), g2(W10));
 }
-
 MAKE_MAIN;

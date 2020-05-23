@@ -24,9 +24,7 @@
 #include <vector>
 #include <map>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/h5.hpp>
+#include <triqs/arrays.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/hilbert_space/hilbert_space.hpp>

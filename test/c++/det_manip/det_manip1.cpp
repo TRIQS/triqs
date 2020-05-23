@@ -19,9 +19,9 @@
 
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
 #include <iostream>
+#include "./old_test_tool.hpp"
 
 struct fun {
 
@@ -63,6 +63,7 @@ struct test {
 
 //#define PRINT_ALL
   void check() {
+    std::cerr << "---- check --- "<<std::endl;
 #ifndef PRINT_ALL
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
 #else
@@ -70,9 +71,13 @@ struct test {
               << D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix())) << std::endl;
     std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << D.determinant() << std::endl;
 #endif
-    assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
+    auto diff = nda::matrix<double>( inverse(D.matrix())- D.inverse_matrix());
+    //std::cerr  << diff <<std::endl;
+    //std::cerr  << max_element(abs(diff)) <<std::endl;
     triqs::arrays::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
+    assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
+    std::cerr << "---- end check --- "<<std::endl;
   }
 
   void run() {
@@ -80,6 +85,7 @@ struct test {
     for (size_t i = 0; i < 5000; ++i) {
       std::cerr << " ------------------------------------------------" << std::endl;
       std::cerr << " i = " << i << " size = " << D.size() << std::endl;
+      //std::cerr  << D.matrix() <<std::endl;
       // choose a move
       size_t s = D.size();
       size_t i0, j0, i1, j1;
@@ -90,11 +96,13 @@ struct test {
 
       switch (RNG((s > 10 ? 7 : 1))) {
         case 0:
+          std::cerr << " Insert1" << std::endl;
           x = RNG(10.0), y = RNG(10.0);
           std::cerr << " x,y = " << x << "  " << y << std::endl;
           detratio = D.try_insert(RNG(s), RNG(s), x, y);
           break;
         case 1:
+          std::cerr << " Remove1" << std::endl;
           if (s > 0) detratio = D.try_remove(RNG(s), RNG(s));
           break;
         case 2:

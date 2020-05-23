@@ -38,7 +38,7 @@ template <int TARGET_RANK> void test_fourier() {
   auto iW_mesh   = mesh::imfreq{beta, Boson, N_iW};
   auto prod_mesh = k_mesh * iW_mesh * iw_mesh;
 
-  mini_vector<size_t, TARGET_RANK> shape{};
+  std::array<long, TARGET_RANK> shape{};
 
   if constexpr (TARGET_RANK == 2) // Matrix_valued
     shape = make_shape(2, 2);

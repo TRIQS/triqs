@@ -187,7 +187,7 @@ namespace triqs {
       h5_read(gr, "annihilation_connection", ad.annihilation_connection);
 
       auto read_sparse = [&](std::string na, std::vector<std::vector<matrix_t>> &Mvv) {
-        Mvv.resize(first_dim(ad.creation_connection), std::vector<matrix_t>(second_dim(ad.creation_connection)));
+        Mvv.resize(ad.creation_connection.extent(0), std::vector<matrix_t>(ad.creation_connection.extent(1)));
         auto gr2 = gr.open_group(na);
         for (auto s : gr2.get_all_dataset_names()) {
           std::stringstream ss(s);

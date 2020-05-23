@@ -24,7 +24,7 @@ namespace triqs::gfs {
 
   void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int *dims, int fftw_count, int fftw_backward_forward) {
 
-    auto in_fft  = reinterpret_cast<fftw_complex *>(in.data_start());
+    auto in_fft  = reinterpret_cast<fftw_complex *>(const_cast<dcomplex*>(in.data_start()));
     auto out_fft = reinterpret_cast<fftw_complex *>(out.data_start());
 
     auto p = fftw_plan_many_dft(rank,                        // rank

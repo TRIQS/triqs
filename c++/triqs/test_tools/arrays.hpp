@@ -31,8 +31,8 @@
 #include <iostream>
 #include <sstream>
 #include <gtest/gtest.h>
-
-using namespace triqs::arrays;
+#include <nda/gtest_tools.hpp>
+#include <nda/clef/adapters/math.hpp>
 
 #if H5_VERSION_GE(1, 8, 9)
 #include <h5/serialization.hpp>
@@ -40,13 +40,6 @@ using namespace triqs::arrays;
 
 using dcomplex = std::complex<double>;
 using triqs::clef::placeholder;
-
-// print a vector ?
-//template <typename T>
-//std::ostream & operator << (std::ostream & out, std::vector<T> const & v) {
-//for (size_t i =0; i<v.size(); ++i) out<< v[i];
-//return out;
-//}
 
 // Check that 'cout << Y' prints X
 #define EXPECT_PRINT(X, Y)                                                                                                                           \
@@ -69,69 +62,7 @@ using triqs::clef::placeholder;
     return RUN_ALL_TESTS();                                                                                                                          \
   }
 
-// Complex are close
-template <typename X, typename Y>::testing::AssertionResult complex_are_close(X const &x, Y const &y, double precision = 1.e-10) {
-  using std::abs;
-  if (abs(x - y) < precision)
-    return ::testing::AssertionSuccess();
-  else
-    return ::testing::AssertionFailure() << "abs(x-y) = " << abs(x - y) << "\n X = " << x << "\n Y = " << y;
-}
-
-#define EXPECT_COMPLEX_NEAR(X, ...) EXPECT_TRUE(complex_are_close(X, __VA_ARGS__))
-
 // Arrays are equal
-template <typename X, typename Y>::testing::AssertionResult array_are_equal(X const &x, Y const &y) {
-  if (x.domain() != y.domain())
-    return ::testing::AssertionFailure() << "Comparing two arrays of different size "
-                                         << "\n X = " << x << "\n Y = " << y;
-
-  if (x.domain().number_of_elements() == 0 || max_element(abs(x - y)) == 0)
-    return ::testing::AssertionSuccess();
-  else
-    return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x - y)) << "\n X = " << x << "\n Y = " << y;
-}
-
-#define EXPECT_EQ_ARRAY(X, Y) EXPECT_TRUE(array_are_equal(X, Y));
-#define EXPECT_ARRAY_EQ(X, Y) EXPECT_TRUE(array_are_equal(X, Y));
-
-// Arrays are close
-template <typename X, typename Y>::testing::AssertionResult array_are_close(X const &x1, Y const &y1, double precision = 1.e-10) {
-  triqs::arrays::array<typename X::value_type, X::rank> x = x1;
-  triqs::arrays::array<typename X::value_type, X::rank> y = y1;
-  if (x.domain() != y.domain())
-    return ::testing::AssertionFailure() << "Comparing two arrays of different size "
-                                         << "\n X = " << x << "\n Y = " << y;
-
-  if (x.domain().number_of_elements() == 0 || max_element(abs(x - y)) < precision)
-    return ::testing::AssertionSuccess();
-  else
-    return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x - y)) << "\n X = " << x << "\n Y = " << y;
-}
-
-#define EXPECT_ARRAY_NEAR(X, ...) EXPECT_TRUE(array_are_close(X, __VA_ARGS__))
-
-// Arrays is almost 0
-template <typename X>::testing::AssertionResult array_almost_zero(X const &x1) {
-  double precision                                        = 1.e-10;
-  triqs::arrays::array<typename X::value_type, X::rank> x = x1;
-
-  if (x.domain().number_of_elements() == 0 || max_element(abs(x)) < precision)
-    return ::testing::AssertionSuccess();
-  else
-    return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x)) << "\n X = " << x;
-}
-
-#define EXPECT_ARRAY_ZERO(X) EXPECT_TRUE(array_almost_zero(X))
-//
-template <typename X, typename Y>::testing::AssertionResult generic_are_near(X const &x, Y const &y) {
-  double precision = 1.e-12;
-  using std::abs;
-  if (abs(x - y) > precision)
-    return ::testing::AssertionFailure() << "X = " << x << " and Y = " << y << " are different. \n Difference is : " << abs(x - y);
-  return ::testing::AssertionSuccess();
-}
-#define EXPECT_CLOSE(X, Y) EXPECT_TRUE(generic_are_near(X, Y));
 
 // ------------------  HDF5 --------------------
 //

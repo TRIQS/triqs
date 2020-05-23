@@ -135,6 +135,7 @@ TEST(Gf, PhNoInfinity_tau) {
   double beta = 1, a = 1;
   auto g = gf<imtime, matrix_valued>{{beta, Fermion, 10000}, {2, 2}};
 
+  using std::exp;
   //triqs::clef::placeholder<0> tau_; // would not compile
   triqs::clef::placeholder_prime<0> tau_;
   g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));

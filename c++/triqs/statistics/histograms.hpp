@@ -20,7 +20,9 @@
 
 #pragma once
 #include <h5/h5.hpp>
+#include <triqs/utility/macros.hpp>
 #include <triqs/arrays.hpp>
+#include <nda/mpi.hpp>
 #include <ostream>
 
 namespace triqs {
@@ -58,7 +60,7 @@ namespace triqs {
     @param a Left end of the sampling range
     @param b Right end of the sampling range
    */
-      histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(n_bins, 0) { _init(); }
+      histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(nda::zeros<double>(n_bins)) { _init(); }
 
       /// Constructor
       /**
@@ -68,7 +70,7 @@ namespace triqs {
     @param b Right end of the sampling range
     @param n_bins Number of bins
    */
-      histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(n_bins, 0) { _init(); }
+      histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(nda::zeros<double>(n_bins)) { _init(); }
 
       /// Default constructor
       histogram() = default;
@@ -221,9 +223,6 @@ namespace triqs {
    */
       friend std::ostream &operator<<(std::ostream &os, histogram const &h);
 
-      /// BOOST Serialization
-      friend class boost::serialization::access;
-      /// Serialization
       /**
     @tparam Archive Archive type for serialization
     @param ar Archive object to serialize to/deserialize from

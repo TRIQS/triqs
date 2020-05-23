@@ -47,7 +47,7 @@ namespace triqs {
       gf_indices(vv_t x) : _data(std::move(x)) {}
 
       /// from a shape, make a list of indices '0,1,2,...,r' in all dimensions
-      template <int R, typename Int> gf_indices(arrays::mini_vector<Int, R> const &shape) {
+      template <auto R> gf_indices(std::array<long, R> const &shape) {
         _data.reserve(R);
         for (int i = 0; i < R; i++) _data.push_back(make_vt(shape[i]));
       }
@@ -85,7 +85,7 @@ namespace triqs {
       }
 
       /// True iif the gf_indices is not empty and has the shape sh
-      template <int R, typename Int> bool has_shape(arrays::mini_vector<Int, R> const &sh) {
+      template <auto R, typename Int> bool has_shape(std::array<Int, R> const &sh) {
         if (empty()) return false;
         if (_data.size() != R) return false;
         for (int i = 0; i < R; i++)
@@ -112,9 +112,6 @@ namespace triqs {
       friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices const &g);
       friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices &g);
 
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_data; }
-
       friend std::ostream &operator<<(std::ostream &out, gf_indices const &x) {
 	for(auto const & v: x.data()){
 	  out << "[";
@@ -128,7 +125,7 @@ namespace triqs {
       // ------------------  implement slicing -------------------------
       private:
       // slice one vector with the range r
-      int slice_one_vec(vv_t &v_out, v_t const &v_in, itertools::range const &r) const {
+      int slice_one_vec(vv_t &v_out, v_t const &v_in, nda::range const &r) const {
         v_t res;
         for (auto i : r) res.push_back(v_in[i]);
         v_out.push_back(res);
@@ -145,7 +142,7 @@ namespace triqs {
       }
 
       public:
-      /// Slicing. R are expected to be itertools::range
+      /// Slicing. R are expected to be nda::range
       template <typename... R> friend gf_indices slice(gf_indices const &gi, R const &... r) {
         if (gi.empty()) return {};
         if (gi.rank() != sizeof...(R)) TRIQS_RUNTIME_ERROR << " Incorrect slicing of indices ";

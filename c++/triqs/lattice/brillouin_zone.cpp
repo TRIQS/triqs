@@ -18,16 +18,18 @@
 // Authors: Michel Ferrero, Nils Wentzell, tayral
 
 #include "./brillouin_zone.hpp"
-#include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/linalg/cross_product.hpp>
+#include <nda/blas.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
+#include <nda/linalg/cross_product.hpp>
 namespace triqs {
   namespace lattice {
 
     const double almost_zero = 1e-10;
 
     brillouin_zone::brillouin_zone(bravais_lattice const &bl_) : lattice_(bl_), K_reciprocal(3, 3) {
-      using itertools::range;
+      using nda::blas::dot;
+      using nda::linalg::cross_product;
+
       auto _       = range{};
       auto Units   = lattice().units();
       double delta = dot(Units(0, _), cross_product(Units(1, _), Units(2, _)));

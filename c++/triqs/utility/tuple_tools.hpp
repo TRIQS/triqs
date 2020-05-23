@@ -22,7 +22,6 @@
 #include <triqs/utility/macros.hpp>
 #include <tuple>
 #include <ostream>
-#include "./mini_vector.hpp"
 
 // Implementation of a generic zip of N tuple-like objects (requires only std::get to be overloaded)
 namespace triqs {

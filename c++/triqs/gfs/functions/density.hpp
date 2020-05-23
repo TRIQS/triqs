@@ -51,11 +51,11 @@ namespace triqs {
     // General Version for Block Gf
     // ------------------------------------------------------
 
-    template <typename BGf, int R>
-    auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) REQUIRES(is_block_gf_v<BGf>) {
+    template <typename BGf, int R> auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) REQUIRES(is_block_gf_v<BGf>) {
 
       using mesh_t = typename BGf::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::refreq>, "Density Function must be called with either an imfreq or a refreq Green Function");
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::refreq>,
+                    "Density Function must be called with either an imfreq or a refreq Green Function");
 
       using r_t = decltype(density(gin[0], known_moments[0]));
       std::vector<r_t> dens_vec;
@@ -66,9 +66,9 @@ namespace triqs {
       return dens_vec;
     }
 
-  } // namespace gfs
-
-  namespace clef {
-    TRIQS_CLEF_MAKE_FNT_LAZY(density);
-  }
+  } 
 } // namespace triqs
+
+namespace nda::clef {
+  TRIQS_CLEF_MAKE_FNT_LAZY(density);
+}
