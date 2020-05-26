@@ -17,6 +17,7 @@ repl_dict = {
         "triqs/h5/serialization\.hpp": "h5/serialization.hpp",
         "triqs/h5.*\.hpp": "h5/h5.hpp",
         "triqs/utility/variant\.hpp": "variant",
+        "<cpp2py.hpp>": "<cpp2py/cpp2py.hpp>",
         "hdf5_scheme": "hdf5_format",
         "TRIQS_HDF5_data_scheme": "Format",
         "#include <triqs/cpp2py_converters/h5\.hpp>\n": "",
