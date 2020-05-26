@@ -23,8 +23,8 @@ To update your files **in-place** without the creation of backups
 you can run the following two commands at the top-level of your repository.
 
 ```bash
-find -name "*.py" -exec 2to3 {} \;
-find -name "*.py.in" -exec 2to3 {} \;
+find . -name "*.py" -exec 2to3 -w -n {} \;
+find . -name "*.py.in" -exec 2to3 -w -n {} \;
 ```
 
 Review all changes and commit them.

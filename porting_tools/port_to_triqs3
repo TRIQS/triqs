@@ -9,16 +9,17 @@ import re
 ignore_lst = [".git/", "port.py"]
 
 repl_dict = {
-        "pytriqs.archive": "h5",
-        "pytriqs.archive.hdf_archive": "h5.archive",
+        "pytriqs\.archive": "h5",
+        "pytriqs\.archive\.hdf_archive": "h5.archive",
         "pytriqs": "triqs",
         "hdf_archive_schemes": "formats",
         "triqs::h5": "h5",
-        "triqs/h5.hpp": "h5/h5.hpp",
-        "triqs/utility/variant.hpp": "variant",
+        "triqs/h5/serialization\.hpp": "h5/serialization.hpp",
+        "triqs/h5.*\.hpp": "h5/h5.hpp",
+        "triqs/utility/variant\.hpp": "variant",
         "hdf5_scheme": "hdf5_format",
         "TRIQS_HDF5_data_scheme": "Format",
-        "#include <triqs/cpp2py_converters/h5.hpp>\n": "",
+        "#include <triqs/cpp2py_converters/h5\.hpp>\n": "",
         "H5F_ACC_TRUNC": "'w'",
         "H5F_ACC_RDWR": "'a'", 
         "H5F_ACC_RDONLY": "'r'", 
