@@ -51,7 +51,8 @@ RUN useradd -m build
 ENV SRC=/src \
     BUILD=/home/build \
     INSTALL=/usr/local \
-    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
+    PYTHONPATH=/usr/local/lib/python3.8/site-packages \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs
 
 COPY --chown=build . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs

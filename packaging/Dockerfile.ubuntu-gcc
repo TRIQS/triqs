@@ -27,4 +27,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV CC=gcc CXX=g++
+ENV PYTHON_VERSION=3.6 \
+    CC=gcc CXX=g++

@@ -70,6 +70,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "CPLUS_INCLUDE_PATH=$installDir/include:$hdf5/include:${env.BREW}/include",
           "LIBRARY_PATH=$installDir/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
+          "PYTHONPATH=$installDir/lib/python3.7/site-packages",
           "CMAKE_PREFIX_PATH=$installDir/lib/cmake/triqs"]) {
         deleteDir()
         sh """#!/bin/bash -ex
