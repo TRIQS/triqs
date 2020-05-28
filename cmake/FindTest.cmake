@@ -45,7 +45,7 @@ function(add_python_test)
 
   set(testfile ${ARGV0}.py)
   set(testname py_${ARGV0})
-  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${NDA_BINARY_DIR}/python:${H5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
   if(SANITIZER_RT_PRELOAD)
     list(APPEND testenv ${SANITIZER_RT_PRELOAD})
   endif()
