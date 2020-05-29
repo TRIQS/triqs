@@ -127,7 +127,7 @@ class HilbertTransform:
                 assert 0, "field cannot be added to the Green function blocks !. Cf Doc"
 
         def HT(res):
-            import pytriqs.utility.mpi as mpi
+            import triqs.utility.mpi as mpi
             # First compute the eps_hat array
             eps_hat = epsilon_hat(self.dos.eps) if epsilon_hat else numpy.array( [ x* numpy.identity (N1) for x in self.dos.eps] )
             assert eps_hat.shape[0] == self.dos.eps.shape[0], "epsilon_hat function behaves incorrectly"
