@@ -21,8 +21,8 @@ configure_file(magic.py.in magic.py @ONLY)
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
-# all targets below link to triqs
-link_libraries(triqs)
+# all targets below link to triqs and triqs_py
+link_libraries(triqs triqs_py)
 
 # Remove some warnings on clang and gcc for Python ?
 If("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")

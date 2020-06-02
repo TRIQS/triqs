@@ -12,7 +12,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 # ---------------------------------
 
 # all .cpp files to get the dependencies
-FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
+file(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
+list(REMOVE_ITEM ALLSOURCES arrays/python/numpy_extractor.cpp)
 
 # ---------------------------------
 #  Define and configure the triqs target 
@@ -57,14 +58,6 @@ endif()
 
 # RT on linux only
 target_link_libraries(triqs PUBLIC $<$<PLATFORM_ID:Linux>:-lrt>)
-
-# Cpp2PY
-# C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
-# for use of BUILD_INTERFACE
-target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:cpp2py>)
-
-# Python and Numpy
-target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:python_and_numpy>)
 
 # Itertools
 target_link_libraries(triqs PUBLIC itertools::itertools_c)
@@ -182,6 +175,15 @@ if(MSAN)
   endif()
   target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:msan>)
 endif()
+
+# ---------------------------------
+# Generate the triqs_py target
+# ---------------------------------
+
+add_library(triqs_py arrays/python/numpy_extractor.cpp)
+# C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
+# for use of BUILD_INTERFACE
+target_link_libraries(triqs_py PUBLIC triqs python_and_numpy $<BUILD_INTERFACE:cpp2py>)
 
 # ---------------------------------
 # Generate Compiler Wrapper
