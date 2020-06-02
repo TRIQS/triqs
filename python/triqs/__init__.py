@@ -28,7 +28,8 @@ class Cpp2pyInfo:
         'triqs::lattice' : 'triqs.lattice',
         'triqs::statistics::histogram' : 'triqs.statistics.histograms',
         'triqs::atom_diag::' : 'triqs.atom_diag',
-        'mpi::' : 'triqs.utility.mpi'
+        'mpi::' : 'triqs.utility.mpi',
+        'h5::' : 'h5._h5py'
         }
 
     _table_converters = {
