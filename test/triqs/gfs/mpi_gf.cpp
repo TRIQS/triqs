@@ -141,7 +141,7 @@ TEST_F(MpiGf, ReduceBlockView) {
 //auto g10 = gf<imfreq>{{beta, Fermion, Nfreq}, {1, 1}};
 //g10(w_) << 1 / (w_ + 1);
 
-//auto m  = mpi::scatter(gf_mesh<imfreq>{beta, Fermion, Nfreq}, world, 0);
+//auto m  = mpi::scatter(mesh::imfreq{beta, Fermion, Nfreq}, world, 0);
 //auto g3 = gf<imfreq>{m, {1, 1}};
 //auto g4 = gf<imfreq>{m, {1, 1}};
 //g3(w_) << 1 / (w_ + 1);

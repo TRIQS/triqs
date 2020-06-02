@@ -24,12 +24,10 @@
 #define TRIQS_INCLUDED_GF
 
 // the meshes
-#include "./gfs/meshes.hpp"
-
-// debug
-#include "./gfs/debug.hpp"
+#include "./mesh.hpp"
 
 // the targets
+#include "./gfs/gf/defs.hpp"
 #include "./gfs/gf/targets.hpp"
 
 // gf class and its mechanisms
@@ -38,10 +36,11 @@
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
+#include "./gfs/gf/slice_or_access.hpp"
+#include "./gfs/gf/evaluate.hpp"
 
 // multivar
-#include "./gfs/meshes/product.hpp"
-#include "./gfs/gf/partial_eval.hpp"
+#include "./mesh/prod.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"
@@ -61,14 +60,28 @@
 #include "./gfs/h5.hpp"
 
 // functions
-#include "./gfs/functions/closest_mesh_pt.hpp"
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
 #include "./gfs/functions/imtime.hpp"
-#include "./gfs/functions/product.hpp"
 #include "./gfs/functions/legendre.hpp"
 #include "./gfs/functions/density.hpp"
 
 // fourier
 #include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
+
+
+//----------------------------------------------------------------
+// Backward compatibility :  aliases, etc..
+//----------------------------------------------------------------
+namespace triqs::gfs {
+
+  template <typename M, typename Requires = std::enable_if_t<mesh::models_mesh_concept_v<M>>>
+  using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
+
+  // Get shape of the data or of the target
+  template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }
+  template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
+
+} // namespace triqs::gfs
+

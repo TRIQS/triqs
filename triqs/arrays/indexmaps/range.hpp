@@ -40,4 +40,6 @@ namespace triqs::arrays {
   inline int operator*(ellipsis, int) { return 0; }
   inline int operator*(int, ellipsis) { return 0; }
 
+  struct range_all : range{};
+
 } // namespace triqs::arrays

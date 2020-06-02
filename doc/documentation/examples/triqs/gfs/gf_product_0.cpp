@@ -1,13 +1,14 @@
 #include <triqs/gfs.hpp>
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 using triqs::clef::placeholder;
 int main() {
   double beta = 1, tmin = 0, tmax = 1.0;
   int n_re_time = 100, n_im_time = 100;
 
-  using g_t_tau_s = gf<cartesian_product<retime, imtime>, scalar_valued>;
-  using g_t_tau_m = gf<cartesian_product<retime, imtime>, matrix_valued>;
-  using g_t_tau_t = gf<cartesian_product<retime, imtime>, tensor_valued<3>>;
+  using g_t_tau_s = gf<prod<retime, imtime>, scalar_valued>;
+  using g_t_tau_m = gf<prod<retime, imtime>, matrix_valued>;
+  using g_t_tau_t = gf<prod<retime, imtime>, tensor_valued<3>>;
 
   // a scalar valued function
   auto m1 = gf_mesh<retime>{tmin, tmax, n_re_time};

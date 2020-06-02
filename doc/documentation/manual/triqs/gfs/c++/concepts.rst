@@ -83,9 +83,6 @@ PureFunctionOnDomain
 * NB: Note that the return type of the function is *NOT* part of the concept, 
   it has to be deduced by the compiler (using C++11 decltype, std::result_of, eg..).
 
-.. note:: 
-   Probably domain_t should also be deduced from the return type of domain ... TO BE CORRECTED
-
 
 .. _Concept_Mesh:
 
@@ -96,7 +93,7 @@ Mesh
   It does not really need to be a mesh: e.g. if the function is represented on a polynomial basis, 
   it is the parameters of this representation (max number of coordinates, e.g.)
 
-* **Refines**: RegularType,  H5-serializable, Printable.
+* **Refines**: RegularType,  H5-serializable
 
 * **Definition**: 
   

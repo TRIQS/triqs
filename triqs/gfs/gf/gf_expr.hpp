@@ -32,8 +32,8 @@ namespace triqs {
 
       // a wrapper for scalars
       template <typename S> struct scalar_wrap {
-        using variable_t = void;
-        using target_t   = void;
+        using mesh_t   = void;
+        using target_t = void;
         S s;
         template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
         no_mesh_t mesh() const { return {}; } // Fake for combine_mesh
@@ -46,42 +46,41 @@ namespace triqs {
       template <typename Tag, typename M> M combine_mesh(M const &m, no_mesh_t) { return m; }
       template <typename Tag, typename M> M combine_mesh(no_mesh_t, M const &m) { return m; }
 
-      template <typename Tag, typename T> gf_mesh<T> combine_mesh(gf_mesh<T> const &l, gf_mesh<T> const &r) {
+      template <typename Tag, typename M> M combine_mesh(M const &l, M const &r) {
         if (!(l == r))
-          TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
+          TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;
         return l;
       }
       // special case for imtime
 
-      template <typename Tag> gf_mesh<imtime> combine_mesh(gf_mesh<imtime> const &l, gf_mesh<imtime> const &r) {
+      template <typename Tag> mesh::imtime combine_mesh(mesh::imtime const &l, mesh::imtime const &r) {
 
         // FIXME C++17 constexpr
         if (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) {
           bool eq = (std::abs(l.domain().beta - r.domain().beta) < 1.e-15) and (l.size() == r.size());
           if (!eq)
-            TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
+            TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;
 
           // compute the stat of the product, divide.
           int s               = (int(l.domain().statistic) + int(r.domain().statistic)) % 2;
           statistic_enum stat = (s == 0 ? Boson : Fermion);
-          return gf_mesh<imtime>{{l.domain().beta, stat}, l.size()};
+          return mesh::imtime{{l.domain().beta, stat}, l.size()};
         } else {
           if (!(l == r))
-            TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
+            TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;
           return l;
         }
       }
 
-      // special case of cartesian_product of meshes
+      // special case of prod of mesh
       namespace details {
         template <typename Tag, typename... M, size_t... Is>
-        gf_mesh<cartesian_product<M...>> combine_mesh_impl_cp(std::index_sequence<Is...>, gf_mesh<cartesian_product<M...>> const &l,
-                                                              gf_mesh<cartesian_product<M...>> const &r) {
+        mesh::prod<M...> combine_mesh_impl_cp(std::index_sequence<Is...>, mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
           return {combine_mesh<Tag>(std::get<Is>(l), std::get<Is>(r))...};
         }
       } // namespace details
       template <typename Tag, typename... M>
-      gf_mesh<cartesian_product<M...>> combine_mesh(gf_mesh<cartesian_product<M...>> const &l, gf_mesh<cartesian_product<M...>> const &r) {
+      mesh::prod<M...> combine_mesh(mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
         return details::combine_mesh_impl_cp<Tag>(std::index_sequence_for<M...>{}, l, r);
       }
 
@@ -119,11 +118,11 @@ namespace triqs {
     } // namespace gfs_expr_tools
 
     template <typename Tag, typename L, typename R> struct gf_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
-      using L_t        = typename std::remove_reference<L>::type;
-      using R_t        = typename std::remove_reference<R>::type;
-      using variable_t = typename gfs_expr_tools::_or_<typename L_t::variable_t, typename R_t::variable_t>::type;
-      using target_t   = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
-      static_assert(!std::is_same<variable_t, void>::value, "Cannot combine two gf expressions with different variables");
+      using L_t      = typename std::remove_reference<L>::type;
+      using R_t      = typename std::remove_reference<R>::type;
+      using mesh_t   = typename gfs_expr_tools::_or_<typename L_t::mesh_t, typename R_t::mesh_t>::type;
+      using target_t = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
+      static_assert(!std::is_same<mesh_t, void>::value, "Cannot combine two gf expressions with different variables");
       static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
 
       L l;
@@ -148,9 +147,9 @@ namespace triqs {
     // -------------------------------------------------------------------
     // a special case : the unary operator !
     template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
-      using L_t        = typename std::remove_reference<L>::type;
-      using variable_t = typename L_t::variable_t;
-      using target_t   = typename L_t::target_t;
+      using L_t      = typename std::remove_reference<L>::type;
+      using mesh_t   = typename L_t::mesh_t;
+      using target_t = typename L_t::target_t;
 
       L l;
       template <typename LL> gf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
@@ -172,7 +171,7 @@ namespace triqs {
 // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2)                                                                                                     \
   template <typename A1, typename A2>                                                                                                                \
-  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value, gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>>>    \
+  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value, gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>>>      \
   operator OP(A1 &&a1, A2 &&a2) {                                                                                                                    \
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
   }
@@ -196,8 +195,8 @@ namespace triqs {
     // we implement them trivially.
 
 #define DEFINE_OPERATOR(OP1, OP2)                                                                                                                    \
-  template <typename Var, typename Target, typename T> void operator OP1(gf_view<Var, Target> g, T const &x) { g = g OP2 x; }                        \
-  template <typename Var, typename Target, typename T> void operator OP1(gf<Var, Target> &g, T const &x) { g = g OP2 x; }
+  template <typename Mesh, typename Target, typename T> void operator OP1(gf_view<Mesh, Target> g, T const &x) { g = g OP2 x; }                        \
+  template <typename Mesh, typename Target, typename T> void operator OP1(gf<Mesh, Target> &g, T const &x) { g = g OP2 x; }
 
     DEFINE_OPERATOR(+=, +);
     DEFINE_OPERATOR(-=, -);

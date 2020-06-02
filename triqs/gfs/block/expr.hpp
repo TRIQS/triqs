@@ -30,8 +30,8 @@ namespace triqs {
 
       // a wrapper for scalars
       template <typename S> struct scalar_wrap {
-        using variable_t = void;
-        using target_t   = void;
+        using mesh_t   = void;
+        using target_t = void;
         S s;
         int size() const { return -1; }
         int size1() const { return -1; }
@@ -55,11 +55,11 @@ namespace triqs {
     template <typename Tag, typename L, typename R> struct bgf_expr : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       // just checking consistency
-      using L_t        = std::decay_t<L>;
-      using R_t        = std::decay_t<R>;
-      using variable_t = typename details_bgfs_expr::same_or_void<typename L_t::variable_t, typename R_t::variable_t>::type;
-      using target_t   = typename details_bgfs_expr::same_or_void<typename L_t::target_t, typename R_t::target_t>::type;
-      static_assert(!std::is_same<variable_t, void>::value, "Cannot combine two gf expressions with different variables");
+      using L_t      = std::decay_t<L>;
+      using R_t      = std::decay_t<R>;
+      using mesh_t   = typename details_bgfs_expr::same_or_void<typename L_t::mesh_t, typename R_t::mesh_t>::type;
+      using target_t = typename details_bgfs_expr::same_or_void<typename L_t::target_t, typename R_t::target_t>::type;
+      static_assert(!std::is_same<mesh_t, void>::value, "Cannot combine two gf expressions with different variables");
       static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
 
       L l;
@@ -86,9 +86,9 @@ namespace triqs {
     // -------------------------------------------------------------------
     // a special case : the unary operator !
     template <typename L> struct bgf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
-      using L_t        = std::decay_t<L>;
-      using variable_t = typename L_t::variable_t;
-      using target_t   = typename L_t::target_t;
+      using L_t      = std::decay_t<L>;
+      using mesh_t   = typename L_t::mesh_t;
+      using target_t = typename L_t::target_t;
 
       L l;
       template <typename LL> bgf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
@@ -106,8 +106,8 @@ namespace triqs {
 // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2)                                                                                                     \
   template <typename A1, typename A2>                                                                                                                \
-  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value,                                                                                         \
-                     bgf_expr<utility::tags::TAG, details_bgfs_expr::node_t<A1>, details_bgfs_expr::node_t<A2>>>                                     \
+  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value,                                                                                           \
+                   bgf_expr<utility::tags::TAG, details_bgfs_expr::node_t<A1>, details_bgfs_expr::node_t<A2>>>                                       \
   operator OP(A1 &&a1, A2 &&a2) {                                                                                                                    \
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
   }

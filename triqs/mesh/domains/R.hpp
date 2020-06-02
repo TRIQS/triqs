@@ -19,18 +19,16 @@
  *
  ******************************************************************************/
 #pragma once
-namespace triqs {
-  namespace gfs {
 
-    template <typename... Domains> struct domain_product {
-      using point_t = std::tuple<typename Domains::point_t...>;
-      std::tuple<Domains...> domains;
-      domain_product() = default;
-      domain_product(std::tuple<Domains...> const &dom_tpl) : domains(dom_tpl) {}
-      domain_product(std::tuple<Domains...> &&dom_tpl) : domains(std::move(dom_tpl)) {}
-      domain_product(Domains const &... doms) : domains(doms...) {}
-      friend bool operator==(domain_product const &D1, domain_product const &D2) { return D1.domains == D2.domains; }
-      // implement boost serializable, hdf5 if needed... (done at the mesh level).
-    };
-  } // namespace gfs
-} // namespace triqs
+namespace triqs::mesh {
+
+  /// The domain
+  struct R_domain {
+    using point_t = double;
+    bool operator==(R_domain const &D) const { return true; }
+    friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const &d) {}
+    friend void h5_read(h5::group fg, std::string subgroup_name, R_domain &d) {}
+    friend class boost::serialization::access;
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
+  };
+} // namespace triqs::mesh

@@ -14,11 +14,11 @@ TEST(Gf, r_k) {
   placeholder<0> k_;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto gk = gf<brillouin_zone>{{bz, N}, {S, S}};
+  auto gk = gf<b_zone>{{bz, N}, {S, S}};
 
   gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
 
-  auto gr = gf<cyclic_lattice>{{N, N}, {S, S}};
+  auto gr = gf<cyclat>{{N, N}, {S, S}};
 
   gr() = fourier(gk); // ADD Security if gf =
 
@@ -31,7 +31,7 @@ TEST(Gf, r_k) {
   EXPECT_ARRAY_NEAR(gk.data(), gk2.data());
 
   // check gr
-  auto gr_test           = gf<cyclic_lattice>{{N, N}, {S, S}};
+  auto gr_test           = gf<cyclat>{{N, N}, {S, S}};
   gr_test[{1, 0, 0}]     = -1;
   gr_test[{N - 1, 0, 0}] = -1;
   gr_test[{0, 1, 0}]     = -1;

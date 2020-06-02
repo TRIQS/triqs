@@ -111,7 +111,7 @@ TEST(Gfs, FourierMatsubaraAllFreq) {
   double beta = 1;
   int N_iw    = 10000;
   double E    = 1;
-  auto Gw1    = gf<imfreq>{{beta, Fermion, N_iw, matsubara_mesh_opt::positive_frequencies_only}, {2, 2}};
+  auto Gw1    = gf<imfreq>{{beta, Fermion, N_iw, mesh::imfreq::option::positive_frequencies_only}, {2, 2}};
   Gw1(iw_) << 1 / (iw_ - E);
   auto Gt1 = gf<imtime>{{beta, Fermion, 2 * N_iw + 1}, {2, 2}};
   ASSERT_THROW(Gt1() = fourier(Gw1), triqs::runtime_error);

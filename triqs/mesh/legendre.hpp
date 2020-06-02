@@ -19,18 +19,22 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./domains/legendre.hpp"
+#include "./discrete.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    /// The domain
-    struct R_domain {
-      using point_t = double;
-      bool operator==(R_domain const &D) const { return true; }
-      friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const &d) {}
-      friend void h5_read(h5::group fg, std::string subgroup_name, R_domain &d) {}
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
-    };
-  } // namespace gfs
-} // namespace triqs
+  ///
+  struct legendre : discrete<legendre_domain> {
+    using B = discrete<legendre_domain>;
+
+    legendre() = default;
+    legendre(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
+
+    static std::string hdf5_scheme() { return "MeshLegendre"; }
+
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) { h5_read_impl(fg, subgroup_name, m, "MeshLegendre"); }
+  };
+} // namespace triqs::mesh

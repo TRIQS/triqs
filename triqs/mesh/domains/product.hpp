@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012-2013 by O. Parcollet
+ * Copyright (C) 2012 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,23 +19,16 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./segment.hpp"
+namespace triqs::mesh {
 
-namespace triqs {
-  namespace gfs {
-
-    struct retime {};
-
-    template <> struct gf_mesh<retime> : segment_mesh {
-      using var_t = retime;
-      using segment_mesh::segment_mesh;
-      // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-
-      static std::string hdf5_scheme() { return "MeshReTime"; }
-
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
-
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
-    };
-  } // namespace gfs
-} // namespace triqs
+  template <typename... Domains> struct domain_product {
+    using point_t = std::tuple<typename Domains::point_t...>;
+    std::tuple<Domains...> domains;
+    domain_product() = default;
+    domain_product(std::tuple<Domains...> const &dom_tpl) : domains(dom_tpl) {}
+    domain_product(std::tuple<Domains...> &&dom_tpl) : domains(std::move(dom_tpl)) {}
+    domain_product(Domains const &... doms) : domains(doms...) {}
+    friend bool operator==(domain_product const &D1, domain_product const &D2) { return D1.domains == D2.domains; }
+    // implement boost serializable, hdf5 if needed... (done at the mesh level).
+  };
+} // namespace triqs::mesh

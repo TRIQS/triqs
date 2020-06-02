@@ -4,7 +4,7 @@ using namespace triqs::gfs;
 
 TEST(Gf, SimpleAssign) {
 
-  auto g7 = gf<cartesian_product<imtime, imtime>, tensor_valued<3>>{{{10.0, Fermion, 50}, {10.0, Boson, 50}}, {3, 3, 3}};
+  auto g7 = gf<prod<imtime, imtime>, tensor_valued<3>>{{{10.0, Fermion, 50}, {10.0, Boson, 50}}, {3, 3, 3}};
   auto g8 = gf<imtime>{{10.0, Fermion, 50}, {3, 3}};
 
   auto bg = make_block_gf({g7, g7, g7});

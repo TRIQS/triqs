@@ -22,93 +22,68 @@
 
 #include "../../arrays.hpp"
 
-namespace triqs {
-  namespace gfs {
-    using arrays::array;
-    using arrays::array_view;
-    using arrays::make_shape;
-    using arrays::matrix;
-    using arrays::matrix_const_view;
-    using arrays::matrix_view;
-    using itertools::range;
-    using triqs::make_clone;
-    using utility::factory;
-    using dcomplex = std::complex<double>;
-    using arrays::ellipsis;
-    using arrays::make_shape;
-    using arrays::mini_vector;
-    using itertools::range;
+namespace triqs::gfs {
 
-    /*----------------------------------------------------------
-  *   Useful metafunctions, traits
-  *--------------------------------------------------------*/
+  /// FIXME CLEAN THIS
+  using dcomplex = std::complex<double>;
 
-    // Get the number of variables
-    template <typename Var> struct get_n_variables { static const int value = 1; };
+  using arrays::array;
+  using arrays::array_view;
+  using arrays::ellipsis;
+  using arrays::make_shape;
+  using arrays::matrix;
+  using arrays::matrix_const_view;
+  using arrays::matrix_view;
+  using arrays::memory_layout_t;
+  using arrays::mini_vector;
 
-    /*----------------------------------------------------------
-  *  Evaluator
-  *--------------------------------------------------------*/
+  using itertools::range;
+  using triqs::make_clone;
+  using utility::factory;
 
-    // gf_evaluator regroup functions to evaluate the function.
-    template <typename Var, typename Target> struct gf_evaluator;
+  // Using from mesh namespace
+  using mesh::_long;
+  using mesh::all_t;
+  using mesh::Boson;
+  using mesh::closest_mesh_pt;
+  using mesh::closest_pt_wrap;
+  using mesh::Fermion;
+  using mesh::get_n_variables;
+  using mesh::matsubara_freq;
+  using mesh::statistic_enum;
 
-    /*----------------------------------------------------------
-  *  closest_point mechanism
-  *  This trait will contain the specialisation to get
-  *  the closest point ...
-  *--------------------------------------------------------*/
-    template <typename Var, typename Target> struct gf_closest_point;
+  /*----------------------------------------------------------
+   *  Evaluator
+   *--------------------------------------------------------*/
 
-    // implementation
-    template <typename... T> struct closest_pt_wrap;
+  // gf_evaluator regroup functions to evaluate the function.
+  template <typename Mesh, typename Target> struct gf_evaluator;
 
-    template <typename T> struct closest_pt_wrap<T> : tag::mesh_point {
-      T value;
-      template <typename U> explicit closest_pt_wrap(U &&x) : value(std::forward<U>(x)) {}
-    };
+  /*----------------------------------------------------------
+   *  HDF5
+   *  Traits to read/write in hdf5 files.
+   *  Can be specialized for some case (Cf block). Defined below
+   *--------------------------------------------------------*/
 
-    template <typename T1, typename T2, typename... Ts> struct closest_pt_wrap<T1, T2, Ts...> : tag::mesh_point {
-      std::tuple<T1, T2, Ts...> value_tuple;
-      template <typename... U> explicit closest_pt_wrap(U &&... x) : value_tuple(std::forward<U>(x)...) {}
-    };
+  template <typename Mesh, typename Target> struct gf_h5_rw;
 
-    template <typename... T> closest_pt_wrap<T...> closest_mesh_pt(T &&... x) { return closest_pt_wrap<T...>{std::forward<T>(x)...}; }
+  /*------------------------------------------------------------------------------------------------------
+   *                                  For mpi lazy
+   *-----------------------------------------------------------------------------------------------------*/
 
-    /*----------------------------------------------------------
-  *  HDF5
-  *  Traits to read/write in hdf5 files.
-  *  Can be specialized for some case (Cf block). Defined below
-  *--------------------------------------------------------*/
+  // A small lazy tagged class
+  template <typename Tag, typename T> struct mpi_lazy {
+    T rhs;
+    mpi::communicator c;
+    int root;
+    bool all;
+  };
 
-    template <typename Var, typename Target> struct gf_h5_rw;
-
-    /*----------------------------------------------------------
-  *  Get shape of the data or of the target
-  *--------------------------------------------------------*/
-
-    template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }
-
-    template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
-
-    /*------------------------------------------------------------------------------------------------------
- *                                  For mpi lazy
- *-----------------------------------------------------------------------------------------------------*/
-
-    // A small lazy tagged class
-    template <typename Tag, typename T> struct mpi_lazy {
-      T rhs;
-      mpi::communicator c;
-      int root;
-      bool all;
-    };
-
-    template <typename T> struct mpi_lazy<mpi::tag::reduce, T> {
-      T rhs;
-      mpi::communicator c;
-      int root;
-      bool all;
-      MPI_Op op;
-    };
-  } // namespace gfs
-} // namespace triqs
+  template <typename T> struct mpi_lazy<mpi::tag::reduce, T> {
+    T rhs;
+    mpi::communicator c;
+    int root;
+    bool all;
+    MPI_Op op;
+  };
+} // namespace triqs::gfs

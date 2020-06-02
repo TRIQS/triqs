@@ -19,25 +19,18 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./bases/segment.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    //-------------------------------------------------------
-    // closest mesh point on the grid
-    // ------------------------------------------------------
+  struct retime : segment_mesh {
+    using segment_mesh::segment_mesh;
+    // template <typename... T> retime(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
-    template <typename... Ms, typename Target> struct gf_closest_point<cartesian_product<Ms...>, Target> {
-      using index_t = typename gf_mesh<cartesian_product<Ms...>>::index_t;
+    static std::string hdf5_scheme() { return "MeshReTime"; }
 
-      template <typename M, typename... T, size_t... Is>
-      static index_t _impl(M const &m, closest_pt_wrap<T...> const &p, std::index_sequence<Is...>) {
-        return index_t(gf_closest_point<Ms, Target>::invoke(std::get<Is>(m), closest_pt_wrap<T>{std::get<Is>(p.value_tuple)})...);
-      }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
 
-      template <typename M, typename... T> static index_t invoke(M const &m, closest_pt_wrap<T...> const &p) {
-        return _impl(m, p, std::index_sequence_for<T...>{});
-      }
-    };
-  } // namespace gfs
-} // namespace triqs
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
+  };
+} // namespace triqs::mesh
