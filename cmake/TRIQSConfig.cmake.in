@@ -42,6 +42,7 @@ include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
 # Find the target dependencies
 include(CMakeFindDependencyMacro)
+find_dependency(Cpp2Py HINTS @CMAKE_INSTALL_PREFIX@)
 find_dependency(itertools HINTS @CMAKE_INSTALL_PREFIX@)
 find_dependency(mpi HINTS @CMAKE_INSTALL_PREFIX@)
 find_dependency(h5 HINTS @CMAKE_INSTALL_PREFIX@)
