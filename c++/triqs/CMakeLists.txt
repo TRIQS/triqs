@@ -177,10 +177,11 @@ if(MSAN)
 endif()
 
 # ---------------------------------
-# Generate the triqs_py target
+# Build the triqs_py library
 # ---------------------------------
 
 add_library(triqs_py arrays/python/numpy_extractor.cpp)
+set_property(TARGET triqs_py PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR})
 # C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 # for use of BUILD_INTERFACE
 target_link_libraries(triqs_py PUBLIC triqs python_and_numpy $<BUILD_INTERFACE:cpp2py>)
@@ -202,7 +203,7 @@ configure_file(triqs++.in triqs++ @ONLY)
 # ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
-install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
+install(TARGETS triqs triqs_py DESTINATION lib EXPORT triqs-targets)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
