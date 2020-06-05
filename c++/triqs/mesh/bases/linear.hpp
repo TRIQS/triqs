@@ -137,7 +137,7 @@ namespace triqs::mesh {
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_scheme_as_string(gr, _type);
+      write_hdf5_format_as_string(gr, _type);
       h5_write(gr, "domain", m.domain());
       h5_write(gr, "min", m.xmin);
       h5_write(gr, "max", m.xmax);
@@ -147,7 +147,7 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear_mesh &m, const char *tag_expected) {
       h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_scheme_as_string(gr, tag_expected, true);
+      assert_hdf5_format_as_string(gr, tag_expected, true);
       typename linear_mesh::domain_t dom;
       double a, b;
       long L;
@@ -162,11 +162,11 @@ namespace triqs::mesh {
 
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &TRIQS_MAKE_NVP("domain", _dom);
-      ar &TRIQS_MAKE_NVP("xmin", xmin);
-      ar &TRIQS_MAKE_NVP("xmax", xmax);
-      ar &TRIQS_MAKE_NVP("del", del);
-      ar &TRIQS_MAKE_NVP("size", L);
+      ar &_dom;
+      ar &xmin;
+      ar &xmax;
+      ar &del;
+      ar &L;
     }
 
     // -------------------- print  -------------------

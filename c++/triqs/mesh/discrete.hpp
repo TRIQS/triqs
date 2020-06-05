@@ -90,14 +90,14 @@ namespace triqs::mesh {
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string subgroup_name, discrete const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_scheme_as_string(gr, _type);
+      write_hdf5_format_as_string(gr, _type);
       h5_write(gr, "domain", m.domain());
     }
 
     /// Read from HDF5
     friend void h5_read_impl(h5::group fg, std::string subgroup_name, discrete &m, const char *tag_expected) {
       h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_scheme_as_string(gr, tag_expected, true);
+      assert_hdf5_format_as_string(gr, tag_expected, true);
       typename discrete::domain_t dom;
       h5_read(gr, "domain", dom);
       m = discrete(std::move(dom));
@@ -110,7 +110,7 @@ namespace triqs::mesh {
     // -------------------- boost serialization -------------------
 
     friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("domain", _dom); }
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_dom; }
 
     // -------------------- print  -------------------
 

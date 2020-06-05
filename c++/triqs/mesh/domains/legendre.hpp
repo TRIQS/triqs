@@ -59,9 +59,9 @@ namespace triqs::mesh {
     //  BOOST Serialization
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &TRIQS_MAKE_NVP("n_max", Nmax);
-      ar &TRIQS_MAKE_NVP("beta", beta);
-      ar &TRIQS_MAKE_NVP("statistic", statistic);
+      ar &Nmax;
+      ar &beta;
+      ar &statistic;
     }
   };
 } // namespace triqs::mesh

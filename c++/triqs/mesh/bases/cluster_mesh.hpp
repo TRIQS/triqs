@@ -180,7 +180,7 @@ namespace triqs::mesh {
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string subgroup_name, cluster_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_scheme_as_string(gr, _type);
+      write_hdf5_format_as_string(gr, _type);
       h5_write(gr, "units", m.units);
       h5_write(gr, "periodization_matrix", m.periodization_matrix);
     }
@@ -188,7 +188,7 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read_impl(h5::group fg, std::string subgroup_name, cluster_mesh &m, const char *_type) {
       h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_scheme_as_string(gr, _type, true);
+      assert_hdf5_format_as_string(gr, _type, true);
       auto units                = h5::h5_read<matrix<double>>(gr, "units");
       auto periodization_matrix = h5::h5_read<matrix<int>>(gr, "periodization_matrix");
       m                         = cluster_mesh(units, periodization_matrix);

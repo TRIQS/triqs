@@ -167,12 +167,12 @@ namespace triqs::mesh {
 
     // -------------------- HDF5 -------------------
 
-    static std::string hdf5_scheme() { return "MeshProduct"; }
+    static std::string hdf5_format() { return "MeshProduct"; }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string subgroup_name, prod const &m) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_scheme(gr, m);
+      write_hdf5_format(gr, m);
       auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
@@ -180,7 +180,7 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string subgroup_name, prod &m) {
       h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_scheme(gr, m, true);
+      assert_hdf5_format(gr, m, true);
       auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
@@ -189,7 +189,7 @@ namespace triqs::mesh {
 
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      auto l = [&ar](int N, auto &m) { ar &TRIQS_MAKE_NVP("MeshComponent" + std::to_string(N), m); };
+      auto l = [&ar](int N, auto &m) { ar &m; };
       triqs::tuple::for_each_enumerate(m_tuple, l);
     }
 
