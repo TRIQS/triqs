@@ -1,6 +1,71 @@
 Version 3.0.0
 =============
 
+Green function meshes (C++ only)
+--------------------------------
+
+* The Green functions are now templated directly on the mesh, while the previous tags have been removed.
+  This has little consequence in practice, except for the special case of brillouin_zone (cf below).
+
+* The meshes are regrouped in triqs::mesh namespace
+
+* Some meshes have been abbreviated (with backward compat. aliases).
+
+Before we had : 
+
+```cpp
+ auto m = gf_mesh<imfreq>{....};
+ auto g = gf<imfreq>{m, {1,1}};
+```
+
+Now we have simply
+
+```cpp
+ auto m = mesh::imfreq{....};
+ auto g = gf<imfreq>{m, {1,1}}; // as before
+```
+
+* Due to a name collision, the mesh over brillouin_zone has been renamed `b_zone`.
+  So now : 
+
+  * brillouin_zone is the triqs::lattice::brillouin_zone representing the Brillouin Zone
+  * triqs::mesh::b_zone is the mesh on such object
+
+Before : 
+```cpp
+  auto m= gf_mesh<brillouin_zone>{....};
+  auto g = gf<cartesian_product<brillouin_zone,imfreq>> {{m, ...}, ....}; 
+```
+Now : 
+
+```cpp
+  auto m= mesh::b_zone{....};
+  auto g = gf<prod<b_zone,imfreq>>{{m, ...}, ....}; 
+```
+
+* Backward compatibility help : 
+
+ * gf_mesh<T> is aliased to T, with deprecation.
+
+ * Regex Vim to replace the gf_mesh : 
+  ```
+  :bufdo %s/gf_mesh<\(.\{-}\)>/mesh::\1/gce|w 
+  ```
+ 
+* brillouin_zone : the codes have to be modified manually (Find/Replace with confirm. Replace only in gf/gf_mesh template).
+
+ * Aliases are provided for cartesian_product (renamed prod), cyclic_lattice (renamed torus)
+   but it does not take care of the direct construction, which has to be modified. 
+
+```
+   auto m = cartesian_product {mesh1, mesh2};
+```
+   can be rewritten simply
+```
+   auto m = mesh1 * mesh2; // Simpler
+   auto m = prod {mesh1, mesh2}; // Ok too.
+```
+
 Version 2.2.2
 =============
 
@@ -38,6 +103,7 @@ General
 * Fix bug in return type of positive_freq_view(gf&) and add test
 * Fix bug in lattice tools dos function
 * Remove redundant headers boost_serialization.hpp and serialization.hpp
+=======
 
 
 Version 2.2.1

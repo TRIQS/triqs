@@ -20,27 +20,39 @@
  ******************************************************************************/
 #pragma once
 
-#include "../utility/first_include.hpp"
-
 #include <vector>
 #include <utility>
 
-#include "../utility/factory.hpp"
-#include "../utility/tuple_tools.hpp"
-#include "../utility/macros.hpp"
-#include "../utility/view_tools.hpp"
-#include "../utility/expression_template_tools.hpp"
-#include "../arrays.hpp"
-#include "../std_addons/complex.hpp"
+#include "utility/factory.hpp"
+#include "utility/tuple_tools.hpp"
+#include "utility/macros.hpp"
+#include "utility/view_tools.hpp"
+#include "utility/expression_template_tools.hpp"
+#include "arrays.hpp"
+#include "std_addons/complex.hpp"
+
 #include <mpi/vector.hpp>
 
-#include "./meshes/multivar_eval.hpp"
+#include "./mesh/imtime.hpp"
+#include "./mesh/imfreq.hpp"
+#include "./mesh/retime.hpp"
+#include "./mesh/refreq.hpp"
+#include "./mesh/legendre.hpp"
+#include "./mesh/b_zone.hpp"
+#include "./mesh/torus.hpp"
+#include "./mesh/prod.hpp"
 
-#include "./meshes/imtime.hpp"
-#include "./meshes/imfreq.hpp"
-#include "./meshes/retime.hpp"
-#include "./meshes/refreq.hpp"
-#include "./meshes/legendre.hpp"
-#include "./domains/R.hpp"
-#include "../lattice/gf_mesh_brillouin_zone.hpp"
-#include "../lattice/gf_mesh_cyclic_lattice.hpp"
+#include "./mesh/details/debug.hpp"
+#include "./mesh/details/closest_mesh_pt.hpp"
+
+// Backward compat alias
+
+namespace triqs::mesh {
+
+  using cyclat = torus;
+  using cyclic_lattice = torus;
+
+  template<typename ...T> using cartesian_product = prod<T...>;
+
+}
+

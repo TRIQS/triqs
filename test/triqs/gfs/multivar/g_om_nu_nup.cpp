@@ -6,7 +6,7 @@ TEST(Gf, G_om_nu_nup) {
   double beta = 1;
 
   auto G =
-     gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{{{beta, Boson, 3}, {beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2, 2, 2}};
+     gf<prod<imfreq, imfreq, imfreq>, tensor_valued<4>>{{{beta, Boson, 3}, {beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2, 2, 2}};
 
   // try to assign to expression
   placeholder<2> om_;

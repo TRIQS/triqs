@@ -62,7 +62,7 @@ namespace triqs {
  * @include triqs/atom_diag/gf.hpp
  */
     template <bool Complex>
-    block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imtime> const &mesh);
+    block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh);
 
     /// The atomic imaginary time Green's function, possibly with excluded states (none by default)
     /**
@@ -89,7 +89,7 @@ namespace triqs {
  * @include triqs/atom_diag/gf.hpp
  */
     template <bool Complex>
-    block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imfreq> const &mesh);
+    block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imfreq const &mesh);
 
     /// The atomic Matsubara Green's function, possibly with excluded states (none by default)
     /**
@@ -116,7 +116,7 @@ namespace triqs {
  * @include triqs/atom_diag/gf.hpp
  */
     template <bool Complex>
-    block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<legendre> const &mesh);
+    block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh);
 
     /// The atomic Green's function in Legendre basis, possibly with excluded states (none by default)
     /**
@@ -144,7 +144,7 @@ namespace triqs {
  * @include triqs/atom_diag/gf.hpp
  */
     template <bool Complex>
-    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<refreq> const &mesh,
+    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh,
                                 double broadening = 0);
 
     /// The atomic retarded Green's function, possibly with excluded states (none by default)

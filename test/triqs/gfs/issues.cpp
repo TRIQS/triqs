@@ -87,13 +87,13 @@ TEST(Gf, Issue319) {
   int dim     = 2;
   int rank    = 0; //world.rank();
 
-  gf<cartesian_product<imfreq, imfreq, imfreq>> g4_w{{{beta, Fermion, n_iw}, {beta, Fermion, n_iw}, {beta, Boson, 25}}, {dim, dim}};
+  gf<prod<imfreq, imfreq, imfreq>> g4_w{{{beta, Fermion, n_iw}, {beta, Fermion, n_iw}, {beta, Boson, 25}}, {dim, dim}};
 
   auto G4_w  = make_block_gf(1, g4_w);
   auto mesh  = G4_w[0].mesh();
   auto N     = mesh.size();
   auto slice = itertools::chunk_range(0, N, 1, 0); // world.size(), world.rank());
-  auto mpg   = triqs::gfs::mesh_pt_generator<gf_mesh<cartesian_product<imfreq, imfreq, imfreq>>>(&G4_w[0].mesh());
+  auto mpg   = triqs::mesh::mesh_pt_generator<prod<imfreq, imfreq, imfreq>>(&G4_w[0].mesh());
 
   mpg += slice.first;
   mpg.to_point();

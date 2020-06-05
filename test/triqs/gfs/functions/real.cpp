@@ -7,7 +7,7 @@ TEST(Functions, RealGf) {
 
   double beta  = 1;
   int n_iw     = 100;
-  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, n_iw};
+  auto iw_mesh = mesh::imfreq{beta, Fermion, n_iw};
   auto shape   = make_shape(1, 1);
 
   // -- Build Green functions

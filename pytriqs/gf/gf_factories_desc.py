@@ -14,6 +14,7 @@ m.add_include("<triqs/cpp2py_converters.hpp>")
 
 m.add_using("namespace triqs::arrays")
 m.add_using("namespace triqs::gfs")
+m.add_using("namespace triqs::mesh")
 
 # ---------------------- make_hermitian, make_real_in_tau --------------------
 for gf_type in ["gf", "block_gf", "block2_gf"]:
@@ -78,7 +79,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                    doc ="""Create Green function from the Fourier transform of g_w""")
 
     # === Lattice Fourier
-    for Meshes in [["cyclic_lattice", "brillouin_zone"], ["brillouin_zone", "cyclic_lattice"]]:
+    for Meshes in [["cyclat", "b_zone"], ["b_zone", "cyclat"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
             gf_view_type = gf_type +  '_view'
             # make_gf_from_fourier

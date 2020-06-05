@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012-2013 by O. Parcollet
+ * Copyright (C) 2012 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,23 +19,16 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./segment.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    struct retime {};
-
-    template <> struct gf_mesh<retime> : segment_mesh {
-      using var_t = retime;
-      using segment_mesh::segment_mesh;
-      // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-
-      static std::string hdf5_format() { return "MeshReTime"; }
-
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
-
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
-    };
-  } // namespace gfs
-} // namespace triqs
+  /// The domain
+  struct R_domain {
+    using point_t = double;
+    bool operator==(R_domain const &D) const { return true; }
+    friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const &d) {}
+    friend void h5_read(h5::group fg, std::string subgroup_name, R_domain &d) {}
+    friend class boost::serialization::access;
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
+  };
+} // namespace triqs::mesh

@@ -22,9 +22,9 @@
 #include <itertools/itertools.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
 
-namespace triqs::gfs {
+namespace triqs::mesh {
 
-  struct imfreq;
+  class imfreq;
 
   using arrays::array_const_view;
   using itertools::range;
@@ -167,7 +167,7 @@ namespace triqs::gfs {
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
         lss[n_fixed_moments].reset();
         // Ensure that |m.omega_max()|^(1-N) > 10^{-16}
-	int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
+        int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
         // We use at least two times as many data-points as we have moments to fit
         n_max = std::min(size_t(n_max), first_dim(_vander) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {
@@ -198,8 +198,7 @@ namespace triqs::gfs {
 
       if (enforce_hermiticity and not inner_matrix_dim.has_value())
         TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
-      if constexpr (enforce_hermiticity)
-        static_assert(std::is_same_v<typename M::var_t, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
+      if constexpr (enforce_hermiticity) static_assert(std::is_same_v<M, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
       if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
 
@@ -213,15 +212,15 @@ namespace triqs::gfs {
       // Total number of moments
       int n_moments = lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
-      using triqs::arrays::ellipsis;
       using itertools::enumerate;
+      using triqs::arrays::ellipsis;
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = rotate_index_view(g_data, n);
       auto const &imp      = g_data_swap_idx.indexmap();
       long ncols           = imp.size() / imp.lengths()[0];
 
-      // We flatten the data in the target space and remaining meshes into the second dim
+      // We flatten the data in the target space and remaining mesh into the second dim
       arrays::matrix<dcomplex> g_mat(first_dim(_vander), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
@@ -242,8 +241,8 @@ namespace triqs::gfs {
         arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
 
         // We have to scale the known_moments by 1/Omega_max^n
-        double z = 1.0;
-	double om_max = std::abs(m.omega_max());
+        double z      = 1.0;
+        double om_max = std::abs(m.omega_max());
 
         for (int order : range(n_fixed_moments)) {
           if constexpr (R == 1)
@@ -263,8 +262,8 @@ namespace triqs::gfs {
       // === The result a_mat contains the fitted moments divided by omega_max()^n
       // Here we extract the real moments
       if (normalize) {
-        double z = 1.0;
-	double om_max = std::abs(m.omega_max());
+        double z      = 1.0;
+        double om_max = std::abs(m.omega_max());
         for (int i : range(n_fixed_moments)) z *= om_max;
         for (int i : range(first_dim(a_mat))) {
           a_mat(i, range()) *= z;
@@ -326,4 +325,4 @@ namespace triqs::gfs {
     mutable std::shared_ptr<tail_fitter> _tail_fitter;
   };
 
-} // namespace triqs::gfs
+} // namespace triqs::mesh

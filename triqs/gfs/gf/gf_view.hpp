@@ -27,41 +27,38 @@ namespace triqs::gfs {
   /**
    * The Green function container. 
    *
-   * @tparam Var      The domain of definition
+   * @tparam Mesh      The domain of definition
    * @tparam Target   The target domain
    *
    * @include triqs/gfs.hpp
    */
-  template <typename Var, typename Target> class gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <typename Mesh, typename Target> class gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    using this_t = gf_view<Var, Target>; // used in common code
+    using this_t = gf_view<Mesh, Target>; // used in common code
 
     public:
     static constexpr bool is_view  = true;
     static constexpr bool is_const = false;
 
-    using mutable_view_type = gf_view<Var, Target>;
+    using mutable_view_type = gf_view<Mesh, Target>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<Var, Target>;
+    using const_view_type = gf_const_view<Mesh, Target>;
 
     /// Associated (non const) view type
-    using view_type = gf_view<Var, Target>;
+    using view_type = gf_view<Mesh, Target>;
 
     /// Associated regular type (gf<....>)
-    using regular_type = gf<Var, Target>;
+    using regular_type = gf<Mesh, Target>;
 
     /// The associated real type
-    using real_t = gf_view<Var, typename Target::real_t>;
-
-    /// Template type
-    using variable_t = Var;
+    using real_t = gf_view<Mesh, typename Target::real_t>;
 
     /// Template type
     using target_t = Target;
 
     /// Mesh type
-    using mesh_t = gf_mesh<Var>;
+    using mesh_t = Mesh;
 
     /// Domain type
     using domain_t = typename mesh_t::domain_t;
@@ -74,13 +71,13 @@ namespace triqs::gfs {
     using linear_mesh_index_t = typename mesh_t::linear_index_t;
 
     using indices_t   = gf_indices;
-    using evaluator_t = gf_evaluator<Var, Target>;
+    using evaluator_t = gf_evaluator<Mesh, Target>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
 
     /// Arity of the function (number of variables)
-    static constexpr int arity = get_n_variables<Var>::value;
+    static constexpr int arity = get_n_variables<Mesh>::value;
 
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
@@ -115,56 +112,56 @@ namespace triqs::gfs {
     // DOC : fix data type here array<scalar_t, data_rank> to avoid multiply type in visible part
 
     /**
-        * Data array
-        *
-        * @category Accessors
-      */
+     * Data array
+     *
+     * @category Accessors
+     */
     data_t &data() & { return _data; }
 
     /**
-        * Data array (const)
-        *
-        * @category Accessors
-      */
+     * Data array (const)
+     *
+     * @category Accessors
+     */
     data_t const &data() const & { return _data; }
 
     /**
-        * Data array : move data in case of rvalue
-        *
-        * @category Accessors
-      */
+     * Data array : move data in case of rvalue
+     *
+     * @category Accessors
+     */
     data_t data() && { return std::move(_data); }
 
     /**
-      * Shape of the data
-      *
-      * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
-      * @category Accessors
-      */
+     * Shape of the data
+     *
+     * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
+     * @category Accessors
+     */
     auto const &data_shape() const { return _data.shape(); }
 
     // FIXME : No doc : internal only ? for make_gf
     target_and_shape_t target() const { return target_and_shape_t{_data.shape().template front_mpop<arity>()}; } // drop arity dims
 
     /**
-        * Shape of the target
-        *
-        * @category Accessors
-      */
+     * Shape of the target
+     *
+     * @category Accessors
+     */
     arrays::mini_vector<int, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
 
     /**
-        * Generator for the indices of the target space
-        *
-        * @category Accessors
-      */
+     * Generator for the indices of the target space
+     *
+     * @category Accessors
+     */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 
     /** 
-       * Memorylayout of the data
-       *
-       * @category Accessors
-       */
+     * Memorylayout of the data
+     *
+     * @category Accessors
+     */
     memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
     /// Indices of the Green function (for Python only)
@@ -211,16 +208,16 @@ namespace triqs::gfs {
     gf_view() = default;
 
     // NO DOC
-    gf_view(gf_const_view<Var, Target> const &g) = delete;
+    gf_view(gf_const_view<Mesh, Target> const &g) = delete;
 
     // NO DOC
-    gf_view(gf<Var, Target> const &g) = delete;
+    gf_view(gf<Mesh, Target> const &g) = delete;
 
     ///
-    gf_view(gf<Var, Target> &g) : gf_view(impl_tag2{}, g) {}
+    gf_view(gf<Mesh, Target> &g) : gf_view(impl_tag2{}, g) {}
 
     ///
-    gf_view(gf<Var, Target> &&g) noexcept : gf_view(impl_tag2{}, std::move(g)) {} // from a gf &&
+    gf_view(gf<Mesh, Target> &&g) noexcept : gf_view(impl_tag2{}, std::move(g)) {} // from a gf &&
 
     /**
        * Builds a view on top of a mesh, a data array
@@ -241,7 +238,7 @@ namespace triqs::gfs {
        *
        * @param g The const view to rebind into
        */
-    void rebind(gf_view<Var, Target> const &g) noexcept {
+    void rebind(gf_view<Mesh, Target> const &g) noexcept {
       this->_mesh = g._mesh;
       this->_data.rebind(g._data);
       this->_indices = g._indices;
@@ -274,7 +271,7 @@ namespace triqs::gfs {
     template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_view<Var, t2>;
+      using gv_t = gf_view<Mesh, t2>;
       return gv_t{_mesh, d2, fi(_indices)};
     }
 
@@ -285,7 +282,7 @@ namespace triqs::gfs {
     template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_const_view<Var, t2>;
+      using gv_t = gf_const_view<Mesh, t2>;
       return gv_t{_mesh, d2, fi(_indices)};
     }
 
@@ -299,7 +296,7 @@ namespace triqs::gfs {
     * Performs MPI reduce
     * @param l The lazy object returned by mpi::reduce
     */
-    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
     }
@@ -308,7 +305,7 @@ namespace triqs::gfs {
      * Performs MPI scatter
      * @param l The lazy object returned by reduce
      */
-    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
     }
@@ -317,7 +314,7 @@ namespace triqs::gfs {
      * Performs MPI gather
      * @param l The lazy object returned by mpi::reduce
      */
-    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
     }
@@ -343,5 +340,5 @@ namespace triqs::gfs {
  *             Delete std::swap for views, as for arrays
  *-----------------------------------------------------------------------------------------------------*/
 namespace std {
-  template <typename Var, typename Target> void swap(triqs::gfs::gf_view<Var, Target> &a, triqs::gfs::gf_view<Var, Target> &b) = delete;
+  template <typename Mesh, typename Target> void swap(triqs::gfs::gf_view<Mesh, Target> &a, triqs::gfs::gf_view<Mesh, Target> &b) = delete;
 }

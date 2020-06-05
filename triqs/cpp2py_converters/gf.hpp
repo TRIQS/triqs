@@ -25,16 +25,16 @@ namespace cpp2py {
   // domains
   // -----------------------------------
 
-  template <bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>> {};
-  template <> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain> {};
+  template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
+  template <> struct py_converter<triqs::mesh::R_domain> : py_converter_from_reductor<triqs::mesh::R_domain> {};
 
   // -----------------------------------
   // all_t mapped to all
   // -----------------------------------
 
-  template <> struct py_converter<triqs::gfs::all_t> {
+  template <> struct py_converter<triqs::mesh::all_t> {
 
-    static PyObject *c2py(triqs::gfs::all_t m) {
+    static PyObject *c2py(triqs::mesh::all_t m) {
       static pyref all = pyref::get_class("__builtin__", "all", true);
       if (all.is_null()) return NULL;
       return all.new_ref();
@@ -45,16 +45,16 @@ namespace cpp2py {
       return (all == ob);
     }
 
-    static triqs::gfs::all_t py2c(PyObject *ob) { return {}; }
+    static triqs::mesh::all_t py2c(PyObject *ob) { return {}; }
   };
 
   // -----------------------------------
   //     Mesh Product
   // -----------------------------------
 
-  template <typename... Ms> struct py_converter<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> {
+  template <typename... Ms> struct py_converter<triqs::mesh::prod<Ms...>> {
 
-    using c_type      = triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>;
+    using c_type      = triqs::mesh::prod<Ms...>;
     using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
 
     static PyObject *c2py(c_type m) {
@@ -88,9 +88,9 @@ namespace cpp2py {
   template<typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())> > = true;
 
   // Converter of mesh_point
-  template <typename M> struct py_converter<triqs::gfs::mesh_point<M>> {
+  template <typename M> struct py_converter<triqs::mesh::mesh_point<M>> {
 
-    using c_type = triqs::gfs::mesh_point<M>;
+    using c_type = triqs::mesh::mesh_point<M>;
 
     static PyObject *c2py(c_type const &p) {
 

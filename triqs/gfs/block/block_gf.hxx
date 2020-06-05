@@ -33,13 +33,13 @@ namespace triqs {
     /*----------------------------------------------------------
    *   Declaration of main types : gf, gf_view, gf_const_view
    *--------------------------------------------------------*/
-    template <typename Var, typename Target = matrix_valued> class block_gf;
-    template <typename Var, typename Target = matrix_valued> class block_gf_view;
-    template <typename Var, typename Target = matrix_valued> class block_gf_const_view;
+    template <typename Mesh, typename Target = matrix_valued> class block_gf;
+    template <typename Mesh, typename Target = matrix_valued> class block_gf_view;
+    template <typename Mesh, typename Target = matrix_valued> class block_gf_const_view;
 
-    template <typename Var, typename Target = matrix_valued> class block2_gf;
-    template <typename Var, typename Target = matrix_valued> class block2_gf_view;
-    template <typename Var, typename Target = matrix_valued> class block2_gf_const_view;
+    template <typename Mesh, typename Target = matrix_valued> class block2_gf;
+    template <typename Mesh, typename Target = matrix_valued> class block2_gf_view;
+    template <typename Mesh, typename Target = matrix_valued> class block2_gf_const_view;
 
     /// ---------------------------  traits ---------------------------------
 
@@ -60,14 +60,14 @@ namespace triqs {
     template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
 
     // Given a gf G, the corresponding block
-    template <typename G> using get_variable_t          = typename std::decay_t<G>::variable_t;
+    template <typename G> using get_mesh_t              = typename std::decay_t<G>::mesh_t;
     template <typename G> using get_target_t            = typename std::decay_t<G>::target_t;
-    template <typename G> using block_gf_of             = block_gf<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block_gf_view_of        = block_gf_view<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block_gf_const_view_of  = block_gf_const_view<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block2_gf_of            = block2_gf<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block2_gf_view_of       = block2_gf_view<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block2_gf_const_view_of = block2_gf_const_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_of             = block_gf<get_mesh_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_view_of        = block_gf_view<get_mesh_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_const_view_of  = block_gf_const_view<get_mesh_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_of            = block2_gf<get_mesh_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_view_of       = block2_gf_view<get_mesh_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_const_view_of = block2_gf_const_view<get_mesh_t<G>, get_target_t<G>>;
 
     // The trait that "marks" the Green function
     TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
@@ -104,7 +104,7 @@ namespace triqs {
     /**
    * block_gf
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block_gf :
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
@@ -113,18 +113,18 @@ namespace triqs {
       static constexpr bool is_const = false;
       static constexpr int arity     = 1;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block_gf<Var, Target>;
-      using mutable_view_type = block_gf_view<Var, Target>;
-      using view_type         = block_gf_view<Var, Target>;
-      using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Mesh, Target>;
+      using mutable_view_type = block_gf_view<Mesh, Target>;
+      using view_type         = block_gf_view<Mesh, Target>;
+      using const_view_type   = block_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block_gf<Var, typename Target::real_t>;
+      using real_t = block_gf<Mesh, typename Target::real_t>;
 
-      using g_t = gf<Var, Target>;
+      using g_t = gf<Mesh, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -197,7 +197,7 @@ namespace triqs {
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
-      template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
+      template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
 
 
       /// Construct from a vector of gf
@@ -216,7 +216,7 @@ namespace triqs {
       block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
       // Create Block Green function from Mesh and gf_struct
-      block_gf(gf_mesh<Var> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
+      block_gf(Mesh const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
 
         for (auto const &[bname, idx_lst] : gf_struct) {
           auto bl_size = idx_lst.size();
@@ -480,7 +480,7 @@ namespace triqs {
     /**
    * block_gf_view
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block_gf_view :
        is_view_tag,
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
@@ -490,18 +490,18 @@ namespace triqs {
       static constexpr bool is_const = false;
       static constexpr int arity     = 1;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block_gf<Var, Target>;
-      using mutable_view_type = block_gf_view<Var, Target>;
-      using view_type         = block_gf_view<Var, Target>;
-      using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Mesh, Target>;
+      using mutable_view_type = block_gf_view<Mesh, Target>;
+      using view_type         = block_gf_view<Mesh, Target>;
+      using const_view_type   = block_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block_gf_view<Var, typename Target::real_t>;
+      using real_t = block_gf_view<Mesh, typename Target::real_t>;
 
-      using g_t = gf_view<Var, Target>;
+      using g_t = gf_view<Mesh, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -833,7 +833,7 @@ namespace triqs {
     /**
    * block_gf_const_view
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block_gf_const_view :
        is_view_tag,
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
@@ -843,18 +843,18 @@ namespace triqs {
       static constexpr bool is_const = true;
       static constexpr int arity     = 1;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block_gf<Var, Target>;
-      using mutable_view_type = block_gf_view<Var, Target>;
-      using view_type         = block_gf_const_view<Var, Target>;
-      using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Mesh, Target>;
+      using mutable_view_type = block_gf_view<Mesh, Target>;
+      using view_type         = block_gf_const_view<Mesh, Target>;
+      using const_view_type   = block_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block_gf_const_view<Var, typename Target::real_t>;
+      using real_t = block_gf_const_view<Mesh, typename Target::real_t>;
 
-      using g_t = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Mesh, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -1135,7 +1135,7 @@ namespace triqs {
     /**
    * block2_gf
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block2_gf :
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
@@ -1144,18 +1144,18 @@ namespace triqs {
       static constexpr bool is_const = false;
       static constexpr int arity     = 2;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block2_gf<Var, Target>;
-      using mutable_view_type = block2_gf_view<Var, Target>;
-      using view_type         = block2_gf_view<Var, Target>;
-      using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Mesh, Target>;
+      using mutable_view_type = block2_gf_view<Mesh, Target>;
+      using view_type         = block2_gf_view<Mesh, Target>;
+      using const_view_type   = block2_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block2_gf<Var, typename Target::real_t>;
+      using real_t = block2_gf<Mesh, typename Target::real_t>;
 
-      using g_t = gf<Var, Target>;
+      using g_t = gf<Mesh, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1219,7 +1219,7 @@ namespace triqs {
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
-      template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
+      template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Mesh, Target>> x) : block2_gf() { operator=(x); }
 
 
       /// Constructs a n blocks with copies of g.
@@ -1488,7 +1488,7 @@ namespace triqs {
     /**
    * block2_gf_view
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block2_gf_view :
        is_view_tag,
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
@@ -1498,18 +1498,18 @@ namespace triqs {
       static constexpr bool is_const = false;
       static constexpr int arity     = 2;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block2_gf<Var, Target>;
-      using mutable_view_type = block2_gf_view<Var, Target>;
-      using view_type         = block2_gf_view<Var, Target>;
-      using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Mesh, Target>;
+      using mutable_view_type = block2_gf_view<Mesh, Target>;
+      using view_type         = block2_gf_view<Mesh, Target>;
+      using const_view_type   = block2_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block2_gf_view<Var, typename Target::real_t>;
+      using real_t = block2_gf_view<Mesh, typename Target::real_t>;
 
-      using g_t = gf_view<Var, Target>;
+      using g_t = gf_view<Mesh, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1843,7 +1843,7 @@ namespace triqs {
     /**
    * block2_gf_const_view
    */
-    template <typename Var, typename Target>
+    template <typename Mesh, typename Target>
     class block2_gf_const_view :
        is_view_tag,
        TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
@@ -1853,18 +1853,18 @@ namespace triqs {
       static constexpr bool is_const = true;
       static constexpr int arity     = 2;
 
-      using variable_t = Var;
+      using mesh_t = Mesh;
       using target_t   = Target;
 
-      using regular_type      = block2_gf<Var, Target>;
-      using mutable_view_type = block2_gf_view<Var, Target>;
-      using view_type         = block2_gf_const_view<Var, Target>;
-      using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Mesh, Target>;
+      using mutable_view_type = block2_gf_view<Mesh, Target>;
+      using view_type         = block2_gf_const_view<Mesh, Target>;
+      using const_view_type   = block2_gf_const_view<Mesh, Target>;
 
       /// The associated real type
-      using real_t = block2_gf_const_view<Var, typename Target::real_t>;
+      using real_t = block2_gf_const_view<Mesh, typename Target::real_t>;
 
-      using g_t = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Mesh, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -2293,10 +2293,12 @@ namespace triqs {
  *             Delete std::swap for views
  *-----------------------------------------------------------------------------------------------------*/
 namespace std {
-  template <typename Var, typename Target> void swap(triqs::gfs::block_gf_view<Var, Target> &a, triqs::gfs::block_gf_view<Var, Target> &b)   = delete;
-  template <typename Var, typename Target> void swap(triqs::gfs::block2_gf_view<Var, Target> &a, triqs::gfs::block2_gf_view<Var, Target> &b) = delete;
-  template <typename Var, typename Target>
-  void swap(triqs::gfs::block_gf_const_view<Var, Target> &a, triqs::gfs::block_gf_const_view<Var, Target> &b) = delete;
-  template <typename Var, typename Target>
-  void swap(triqs::gfs::block2_gf_const_view<Var, Target> &a, triqs::gfs::block2_gf_const_view<Var, Target> &b) = delete;
+  template <typename Mesh, typename Target>
+  void swap(triqs::gfs::block_gf_view<Mesh, Target> &a, triqs::gfs::block_gf_view<Mesh, Target> &b) = delete;
+  template <typename Mesh, typename Target>
+  void swap(triqs::gfs::block2_gf_view<Mesh, Target> &a, triqs::gfs::block2_gf_view<Mesh, Target> &b) = delete;
+  template <typename Mesh, typename Target>
+  void swap(triqs::gfs::block_gf_const_view<Mesh, Target> &a, triqs::gfs::block_gf_const_view<Mesh, Target> &b) = delete;
+  template <typename Mesh, typename Target>
+  void swap(triqs::gfs::block2_gf_const_view<Mesh, Target> &a, triqs::gfs::block2_gf_const_view<Mesh, Target> &b) = delete;
 } // namespace std

@@ -2,7 +2,7 @@
 using namespace triqs::gfs;
 using namespace triqs;
 
-using mesh_t              = cartesian_product<imfreq, imfreq, imfreq>;
+using mesh_t              = prod<imfreq, imfreq, imfreq>;
 using target_t            = tensor_valued<4>;
 using vertex_t            = gf<mesh_t, target_t>;
 using vertex_view_t       = gf_view<mesh_t, target_t>;

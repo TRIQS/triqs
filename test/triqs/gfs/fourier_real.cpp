@@ -24,7 +24,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
-  auto w_mesh = gf_mesh<refreq>{-w_max, w_max, Nw};
+  auto w_mesh = mesh::refreq{-w_max, w_max, Nw};
   auto Gw1    = gf<refreq, target_t>{w_mesh, shape};
 
   // === Fourier of a simple Lorentzian ===

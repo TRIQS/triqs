@@ -4,15 +4,15 @@
 using index_t = utility::mini_vector<int, 3>;
 using K_t     = std::array<double, 3>;
 
-TEST(Gfs, cyclic_lattice) {
+TEST(Gfs, cyclat) {
   double beta = 1;
   triqs::clef::placeholder<0> r_;
 
   auto bl  = bravais_lattice{make_unit_matrix<double>(2)};
-  auto m_r = gf_mesh<cyclic_lattice>{bl, 2};
+  auto m_r = mesh::cyclat{bl, 2};
   ASSERT_EQ(m_r.size(), 4);
 
-  auto Gr = gf<cyclic_lattice>{m_r, {2, 2}};
+  auto Gr = gf<cyclat>{m_r, {2, 2}};
 
   // Clef Assignment
   Gr(r_) << 1. + r_(0) + r_(1);
@@ -30,10 +30,10 @@ TEST(Gfs, brillouin_zone) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  auto m_k = mesh::b_zone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
-  auto Gk = gf<brillouin_zone, scalar_valued>{m_k}; //, {2, 2}};
+  auto Gk = gf<b_zone, scalar_valued>{m_k}; //, {2, 2}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
@@ -71,10 +71,10 @@ TEST(Gfs, brillouin_zoneMatrix) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  auto m_k = mesh::b_zone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
-  auto Gk = gf<brillouin_zone, matrix_valued>{m_k, {2, 2}};
+  auto Gk = gf<b_zone, matrix_valued>{m_k, {2, 2}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));

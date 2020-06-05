@@ -1,12 +1,13 @@
 #include <triqs/gfs.hpp>
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 using triqs::clef::placeholder;
 
 int main() {
 
   double beta = 1;
   int nw      = 100;
-  auto g2     = gf<cartesian_product<imfreq, imfreq>>{{{beta, Fermion, nw}, {beta, Fermion, nw}}, {1, 1}};
+  auto g2     = gf<prod<imfreq, imfreq>>{{{beta, Fermion, nw}, {beta, Fermion, nw}}, {1, 1}};
 
   //the shortest way to fill a gf
   placeholder<0> w_;
