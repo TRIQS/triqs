@@ -47,7 +47,7 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string subgroup_name, legendre_domain &d) {
       h5::group gr = fg.open_group(subgroup_name);
-      long n;
+      size_t n;
       double beta;
       std::string statistic = " ";
       h5_read(gr, "n_max", n);
