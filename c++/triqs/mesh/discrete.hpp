@@ -80,7 +80,7 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    std::array<std::pair<long, one_t>, 1> get_interpolation_data(long n) const { return {std::pair<long, one_t>{n, {}}}; }
+    std::array<std::pair<long, one_t>, 1> get_interpolation_data(long n) const { return std::array<std::pair<long, one_t>, 1>{std::pair<long, one_t>{n, {}}}; }
 
     // -------------------- MPI -------------------
 
