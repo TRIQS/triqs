@@ -7,6 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       gfortran \
       git \
       vim \
+      lldb-9 \
       hdf5-tools \
       libblas-dev \
       libboost-all-dev \

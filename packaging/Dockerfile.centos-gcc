@@ -12,6 +12,7 @@ RUN dnf -y install dnf-plugins-core epel-release && \
       gcc-gfortran \
       git \
       vim \
+      lldb \
       gmp-devel \
       hdf5-devel \
       lapack-devel \
