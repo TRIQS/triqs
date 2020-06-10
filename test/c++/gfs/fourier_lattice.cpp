@@ -1,4 +1,3 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
 
 // Generic Fourier test function for different ranks

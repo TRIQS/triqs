@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs.hpp>

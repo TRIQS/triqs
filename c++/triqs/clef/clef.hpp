@@ -121,9 +121,10 @@ namespace triqs {
     template <typename T, typename... Args>
     struct is_any_lazy<T, Args...> : std::integral_constant<bool, is_any_lazy<T>::value || is_any_lazy<Args...>::value> {};
 
-    template <typename T> constexpr bool ClefExpression() { return is_any_lazy<T>::value; }
+    //template <typename T> constexpr bool ClefExpression() { return is_any_lazy<T>::value; }
 
-    template <typename T> struct is_clef_expression : is_any_lazy<T> {};
+    template <typename ... T> struct is_clef_expression : is_any_lazy<T...> {};
+    template <typename ... T> constexpr bool is_clef_expression_v = is_any_lazy<T...>::value;
 
     /* ---------------------------------------------------------------------------------------------------
   * Node of the expression tree

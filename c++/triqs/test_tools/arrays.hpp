@@ -19,7 +19,11 @@
  *
  ******************************************************************************/
 #pragma once
+
+#ifndef TRIQS_DEBUG
 #define TRIQS_DEBUG
+#endif
+
 #include <mpi/mpi.hpp>
 #include <triqs/arrays.hpp>
 #include <h5/h5.hpp>

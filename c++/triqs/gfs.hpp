@@ -49,8 +49,11 @@
 #include "./gfs/evaluator.hpp"
 
 // block gf
-#include "./gfs/block/block_gf.hxx"
-#include "./gfs/block/functions.hxx"
+#include "./gfs/block/block_gf.hpp"
+#include "./gfs/block/block_gf_view.hpp"
+#include "./gfs/block/mpi.hpp"
+#include "./gfs/block/factories.hpp"
+#include "./gfs/block/functions.hpp"
 #include "./gfs/block/expr.hpp"
 #include "./gfs/block/auto_assign.hpp"
 #include "./gfs/block/map.hpp"

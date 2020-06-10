@@ -47,7 +47,9 @@ namespace boost {
 
 #ifdef TRIQS_DEBUG
 #define TRIQS_ARRAYS_DEBUG
+#ifndef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#endif
 #endif
 
 namespace triqs {

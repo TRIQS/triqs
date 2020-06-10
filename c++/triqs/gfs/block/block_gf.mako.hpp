@@ -161,23 +161,6 @@ namespace triqs {
       int size() const { return size1() * size2(); }
       // mako %endif
 
-      // mako %if ARITY == 1 :
-      // backwd compat only
-      // TO BE REMOVED IN FUTURE RELEASE
-      //
-      struct __dom {
-        MAKO_GF const *_g;
-        int size() const { return _g->size(); }
-        auto const &names() const { return _g->block_names(); }
-      };
-      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-      __dom domain() const { return {this}; }
-      TRIQS_DEPRECATED(
-         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-         "x<g.size(); ++x)")
-      itertools::range mesh() const { return itertools::range{0, size()}; }
-      // mako %endif
-
       std::string name;
 
       private:

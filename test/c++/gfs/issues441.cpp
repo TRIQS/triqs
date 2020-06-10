@@ -1,4 +1,3 @@
-#define TRIQS_DEBUG
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace triqs::gfs;

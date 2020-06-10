@@ -275,7 +275,7 @@ namespace triqs::gfs {
 
       g_vecvec.push_back(std::move(g_vec));
     }
-    return block2_gf{gin.block_names(), std::move(g_vecvec)};
+    return block2_gf_of<r_t>{gin.block_names(), std::move(g_vecvec)};
   }
 
   template <int N = 0, int... Ns, typename G, typename... Args>

@@ -1,4 +1,3 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
 
 using index_t = utility::mini_vector<int, 3>;

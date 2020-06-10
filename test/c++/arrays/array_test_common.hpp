@@ -1,4 +1,3 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/arrays.hpp>
 #include <cmath>
 #include <limits>

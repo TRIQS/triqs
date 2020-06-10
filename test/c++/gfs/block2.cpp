@@ -15,8 +15,8 @@ TEST(Block2, Base) {
   auto G_vec    = std::vector{G1, G2, G3};
   auto G_vecvec = std::vector{G_vec, G_vec};
 
-  auto B1 = block2_gf{G_vecvec};
-  auto B2 = block2_gf{B1()};
+  auto B1 = block2_gf<imfreq>{G_vecvec};
+  auto B2 = block2_gf<imfreq>{B1()};
   auto B3 = block2_gf<imfreq>({{"0", "1"}, {"0", "1", "2"}}, G_vecvec);
   auto B4 = make_block2_gf({"0", "1"}, {"0", "1", "2"}, G_vecvec);
   auto B5 = make_block2_gf(2, 1, G1);
