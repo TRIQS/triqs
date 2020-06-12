@@ -55,10 +55,10 @@ namespace triqs::gfs {
   //
   template <typename G, int n = 0> inline constexpr bool is_block_gf_v = false;
 
-  template <typename Mesh, typename Target = matrix_valued, int Arity>
+  template <typename Mesh, typename Target, int Arity>
   inline constexpr bool is_block_gf_v<block_gf<Mesh, Target, Arity>, Arity> = true;
 
-  template <typename Mesh, typename Target = matrix_valued, int Arity, bool IsConst>
+  template <typename Mesh, typename Target, int Arity, bool IsConst>
   inline constexpr bool is_block_gf_v<block_gf_view<Mesh, Target, Arity, IsConst>, Arity> = true;
 
   // FIXME : backward compat. remove this
