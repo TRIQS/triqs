@@ -61,22 +61,23 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
       def buildDir = "$tmpDir/build"
       /* install real branches in a fixed predictable place so apps can find them */
       def installDir = keepInstall ? "${env.HOME}/install/${projectName}/${env.BRANCH_NAME}/${platform}" : "$tmpDir/install"
+      def venv = installDir
 
       checkout scm
 
       def hdf5 = "${env.BREW}/opt/hdf5@1.10"
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
-          "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
+          "PATH=$venv/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
           "HDF5_ROOT=$hdf5",
           "C_INCLUDE_PATH=$hdf5/include:${env.BREW}/include",
-          "CPLUS_INCLUDE_PATH=$installDir/include:$hdf5/include:${env.BREW}/include",
-          "LIBRARY_PATH=$installDir/lib:$hdf5/lib:${env.BREW}/lib",
+          "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
+          "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
           "PYTHONPATH=$installDir/lib/python3.7/site-packages",
-          "CMAKE_PREFIX_PATH=$installDir/lib/cmake/triqs"]) {
+          "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
         deleteDir()
         sh """#!/bin/bash -ex
-          python3 -m venv $installDir
+          python3 -m venv $venv
           DYLD_LIBRARY_PATH=\$BREW/lib pip3 install -U -r $srcDir/requirements.txt
         """
 
