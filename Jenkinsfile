@@ -76,11 +76,8 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "PYTHONPATH=$installDir/lib/python3.7/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
         deleteDir()
-        sh """#!/bin/bash -ex
-          python3 -m venv $venv
-          DYLD_LIBRARY_PATH=\$BREW/lib pip3 install -U -r $srcDir/requirements.txt
-        """
-
+        sh "python3 -m venv $venv"
+        sh "DYLD_LIBRARY_PATH=\$BREW/lib pip3 install -U -r $srcDir/requirements.txt"
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always"
         sh "make -j2"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
