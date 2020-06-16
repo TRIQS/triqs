@@ -83,6 +83,10 @@ namespace triqs {
         /// Defined according to :math:`\hat H = \hat  U \mathrm{diag}(E) * \hat U^\dagger`.
         matrix_t unitary_matrix;
 
+#ifdef __cpp_impl_three_way_comparison
+        bool operator==(eigensystem_t const &) const = default;
+#endif
+
         // HDF5
         static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
 
@@ -276,7 +280,10 @@ namespace triqs {
        * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
        */
       op_block_mat_t get_op_mat(many_body_op_t const &op) const;
-      
+
+#ifdef __cpp_impl_three_way_comparison
+      bool operator==(atom_diag const &rhs) const = default;
+#endif
 
       private:
       /// ------------------  DATA  -----------------
