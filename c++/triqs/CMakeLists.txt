@@ -27,11 +27,12 @@ target_include_directories(triqs PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 # Compile Options
-target_compile_options(triqs
-  PUBLIC
-    -std=c++17
-    $<$<CXX_COMPILER_ID:GNU>:-fconcepts>
-)
+if(cxx_std_20 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  target_compile_options(triqs PUBLIC -std=c++20)
+else()
+  target_compile_options(triqs PUBLIC -std=c++17)
+endif()
+target_compile_options(triqs PUBLIC $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
 
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
