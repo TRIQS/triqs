@@ -6,6 +6,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       g++ \
       gfortran \
       git \
+      vim \
+      lldb-9 \
       hdf5-tools \
       libblas-dev \
       libboost-all-dev \
@@ -18,13 +20,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
-      python-dev \
-      python-h5py \
-      python-mako \
-      python-matplotlib \
-      python-mpi4py \
-      python-numpy \
-      python-pip \
-      python-scipy
+      python3-dev \
+      python3-mako \
+      python3-matplotlib \
+      python3-mpi4py \
+      python3-numpy \
+      python3-pip \
+      python3-scipy
 
-ENV CC=gcc CXX=g++
+ENV PYTHON_VERSION=3.6 \
+    CC=gcc CXX=g++

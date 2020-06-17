@@ -8,6 +8,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       g++ \
       gfortran \
       git \
+      vim \
       hdf5-tools \
       libblas-dev \
       libboost-all-dev \
@@ -23,7 +24,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-doc \
       python-clang-${LLVM} \
       python-dev \
-      python-h5py \
       python-mako \
       python-matplotlib \
       python-mpi4py \
@@ -53,8 +53,8 @@ RUN useradd -m build
 ENV SRC=/src \
     BUILD=/home/build \
     INSTALL=/usr/local \
-    PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
-    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
+    PYTHONPATH=/usr/local/lib/python3.8/site-packages \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs
 
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs

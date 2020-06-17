@@ -66,7 +66,6 @@ They may work (possibly with some modifications) for earlier versions of OS X.
 
     pip install --user --upgrade scipy
     pip install --user --upgrade numpy
-    pip install --user --upgrade --force-reinstall --no-binary=h5py h5py
     pip install --user --upgrade --force-reinstall --no-binary=mpi4py mpi4py
     pip install --user --upgrade matplotlib
     pip install --user --upgrade mako

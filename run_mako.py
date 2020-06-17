@@ -17,7 +17,7 @@ args = parser.parse_args()
 output = args.outputname or args.filename.replace(r'.mako','')
 tpl = Template(filename=args.filename)
 rendered = tpl.render().strip()
-print rendered
+print(rendered)
 with open(output,'w') as f:
     f.write(rendered)
 

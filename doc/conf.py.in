@@ -36,7 +36,7 @@ extensions = ['sphinx.ext.autodoc',
               ]
 
 mathjax_path = "@MATHJAX_PATH@/MathJax.js?config=default"
-print "Mathjax: ",mathjax_path
+print("Mathjax: ",mathjax_path)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@TRIQS_SOURCE_DIR@/doc/_templates']
@@ -51,8 +51,8 @@ source_suffix = '.rst'
 master_doc = 'contents'
 
 # General information about the project.
-project = u'TRIQS'
-copyright = u'2011-2017, The TRIQS collaboration'
+project = 'TRIQS'
+copyright = '2011-2017, The TRIQS collaboration'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -192,8 +192,8 @@ htmlhelp_basename = 'TRIQSdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-        ('contents', 'TRIQS.tex', ur'TRIQS Documentation',
-            ur'2011, The TRIQS collaboration', 'manual'),
+        ('contents', 'TRIQS.tex', r'TRIQS Documentation',
+            r'2011, The TRIQS collaboration', 'manual'),
         ]
 
 # The name of an image file (relative to this directory) to place at the top of

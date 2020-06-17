@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.GfReTime
+.. autoclass:: triqs.gf.GfReTime
   :members: set_from_inverse_fourier, fourier, transpose, conjugate
 
 .. warning::
@@ -20,7 +20,7 @@ Reference
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GfReTime (TRIQS_HDF5_data_scheme = "GfReTime") is decomposed in the following objects: 
+The GfReTime (Format = "GfReTime") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

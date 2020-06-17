@@ -1,7 +1,7 @@
-from pytriqs.gf.multivar import *
-from pytriqs.gf import *
-from pytriqs.archive import *
-from pytriqs.plot.mpl_interface import *
+from triqs.gf.multivar import *
+from triqs.gf import *
+from h5 import *
+from triqs.plot.mpl_interface import *
 from matplotlib.gridspec import GridSpec
 from math import pi
 

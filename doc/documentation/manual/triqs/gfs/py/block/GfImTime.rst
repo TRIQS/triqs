@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.GfImTime
+.. autoclass:: triqs.gf.GfImTime
   :members: set_from_inverse_fourier, set_from_legendre, transpose, conjugate
 
 .. warning::
@@ -20,7 +20,7 @@ Reference
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GfImTime (TRIQS_HDF5_data_scheme = "GfImTime") is decomposed in the following objects: 
+The GfImTime (Format = "GfImTime") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

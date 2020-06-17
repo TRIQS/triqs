@@ -1,6 +1,6 @@
 from test_multivar import *
-from pytriqs.archive import HDFArchive
-from pytriqs.utility.comparison_tests import *
+from h5 import HDFArchive
+from triqs.utility.comparison_tests import *
 
 gamma1 = make_vertex(1.0)
 pass_vertex(gamma1+gamma1)

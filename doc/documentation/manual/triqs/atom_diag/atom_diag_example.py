@@ -1,8 +1,8 @@
-from pytriqs.gf import *
-from pytriqs.operators import *
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
-from pytriqs.archive import HDFArchive
-from pytriqs.atom_diag import *
+from triqs.gf import *
+from triqs.operators import *
+from triqs.operators.util.hamiltonians import h_int_kanamori
+from h5 import HDFArchive
+from triqs.atom_diag import *
 import numpy as np
 from itertools import product
 
@@ -32,27 +32,27 @@ H += 0.1j * (c_dag('dn',0) * c('dn',1) - c_dag('dn',1) * c('dn',0))
 
 # Split H into blocks and diagonalize it using N_up and N_dn quantum numbers
 ad = AtomDiag(H, fops, [N_up,N_dn])
-print ad.n_subspaces # Number of invariant subspaces, 4 * 4 = 16
+print(ad.n_subspaces) # Number of invariant subspaces, 4 * 4 = 16
 
 # Now split using the total number of particles, N = N_up + N_dn
 ad = AtomDiag(H, fops, [N_up+N_dn])
-print ad.n_subspaces # 7
+print(ad.n_subspaces) # 7
 
 # Split the Hilbert space automatically
 ad = AtomDiag(H, fops)
-print ad.n_subspaces # 28
+print(ad.n_subspaces) # 28
 
 # Partition function for inverse temperature \beta=3
 beta = 3
-print partition_function(ad, beta)
+print(partition_function(ad, beta))
 
 # Equilibrium density matrix
 dm = atomic_density_matrix(ad, beta)
 
 # Expectation values of orbital double occupancies
-print trace_rho_op(dm, n('up',0) * n('dn',0), ad)
-print trace_rho_op(dm, n('up',1) * n('dn',1), ad)
-print trace_rho_op(dm, n('up',2) * n('dn',2), ad)
+print(trace_rho_op(dm, n('up',0) * n('dn',0), ad))
+print(trace_rho_op(dm, n('up',1) * n('dn',1), ad))
+print(trace_rho_op(dm, n('up',2) * n('dn',2), ad))
 
 # Atomic Green's functions
 gf_struct = [['dn',orb_names],['up',orb_names]]

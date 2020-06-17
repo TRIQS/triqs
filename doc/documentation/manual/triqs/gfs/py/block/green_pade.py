@@ -1,8 +1,8 @@
 import numpy
 from math import pi
 from cmath import sqrt, log
-from pytriqs.gf import *
-from pytriqs.gf.descriptors import Function
+from triqs.gf import *
+from triqs.gf.descriptors import Function
 
 beta = 100  # Inverse temperature
 L = 101     # Number of Matsubara frequencies used in the Pade approximation
@@ -35,6 +35,6 @@ g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name
 g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
 
 # Comparison plot
-from pytriqs.plot.mpl_interface import oplot
+from triqs.plot.mpl_interface import oplot
 oplot(gr[0,0], '-o', RI = 'S', name = "Original DOS")
 oplot(g_pade[0,0], '-x', RI = 'S', name = "Pade-reconstructed DOS")

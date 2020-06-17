@@ -1,6 +1,6 @@
 import numpy
 
-class myObject(object):
+class myObject:
   def _plot_(self, options):
     PI = numpy.pi
     xdata = numpy.arange(-PI,PI,0.1)
@@ -13,5 +13,5 @@ class myObject(object):
 
 X = myObject()
 
-from pytriqs.plot.mpl_interface import oplot
+from triqs.plot.mpl_interface import oplot
 oplot(X,'-o')

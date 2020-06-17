@@ -2,6 +2,6 @@
 Observables
 ===========
 
-.. automodule:: pytriqs.operators.util.observables
+.. automodule:: triqs.operators.util.observables
    :members:
    :member-order: bysource

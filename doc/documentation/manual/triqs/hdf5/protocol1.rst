@@ -52,7 +52,7 @@ A little example::
         return cls(D['d'],D['t'])
  
  # registering my class
- from pytriqs.archive.hdf_archive_schemes import register_class
+ from h5.formats import register_class
  register_class (myclass)
 
  # Testing it: 
@@ -62,7 +62,7 @@ A little example::
 What happens in details  ? 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~pytriqs.archive.hdf_archive.HDFArchive`/:py:class:`~pytriqs.archive.hdf_archive.HDFArchiveGroup`  `H`.
+Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~h5.hdf_archive.HDFArchive`/:py:class:`~h5.hdf_archive.HDFArchiveGroup`  `H`.
 
 * **Writing** ::
 
@@ -86,6 +86,6 @@ Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~
         
        * Cls.__factory_from_dict__(name,D) is called and returns a new object Obj of type Cls, which is returned as `res`.
    
-     * Otherwise, a new :py:class:`~pytriqs.archive.hdf_archive.HDFArchiveGroup` is constructed with `S` as root, and returned as `res`.
+     * Otherwise, a new :py:class:`~h5.hdf_archive.HDFArchiveGroup` is constructed with `S` as root, and returned as `res`.
 
    

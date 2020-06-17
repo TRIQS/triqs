@@ -1,10 +1,10 @@
-from pytriqs.gf import *
-from pytriqs.gf.descriptors import Omega
+from triqs.gf import *
+from triqs.gf.descriptors import Omega
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )
 
 # open 2 panels top (t) and bottom (b) 
-from pytriqs.plot.mpl_interface import subplots
+from triqs.plot.mpl_interface import subplots
 f, (t,b) = subplots( 2,1)
 
 #plot ...

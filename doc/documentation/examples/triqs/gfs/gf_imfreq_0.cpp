@@ -16,7 +16,7 @@ int main() {
   g1(wn_) << 1 / (wn_ + 2);
 
   // evaluation at n=3
-  std::cout << g1(3) << " == " << 1 / (1_j * M_PI / beta * (2 * 3 + 1) + 2) << std::endl;
+  std::cout << g1(3) << " == " << 1 / (1i * M_PI / beta * (2 * 3 + 1) + 2) << std::endl;
   // the high frequency expansion was automatically computed.
   // std::cout << g1.singularity() << std::endl; // a bit verbose..
 
@@ -29,5 +29,5 @@ int main() {
   g3(wn_) << 1 / (wn_ + 2);
 
   // evaluation at n=3.
-  std::cout << g3(3) << " == " << 1 / (1_j * std::acos(-1) / beta * (2 * 3 + 1) + 2) << std::endl;
+  std::cout << g3(3) << " == " << 1 / (1i * std::acos(-1) / beta * (2 * 3 + 1) + 2) << std::endl;
 }

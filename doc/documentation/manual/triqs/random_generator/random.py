@@ -1,5 +1,5 @@
-from pytriqs.random_generator import *
-from pytriqs.plot.mpl_interface import *
+from triqs.random_generator import *
+from triqs.plot.mpl_interface import *
 
 r = RandomGenerator("lagged_fibonacci607", 237489)
 l = []

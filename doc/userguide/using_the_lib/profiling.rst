@@ -39,7 +39,7 @@ One needs to install the python package `yep <https://pypi.python.org/pypi/yep>`
 
 First, run your script (``my_test.py``): ::
 
-   pytriqs -myep -v  my_test.py
+   triqs -myep -v  my_test.py
 
 Then, analyze the results (stored in `my_test.py.prof`) with ``google-pprof``: ::
 

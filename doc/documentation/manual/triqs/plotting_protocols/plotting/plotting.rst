@@ -1,7 +1,7 @@
 
 .. index:: matplotlib plotter
 
-.. module:: pytriqs.plot
+.. module:: triqs.plot
 
 .. _plotting:
 
@@ -59,7 +59,7 @@ What do we need to implement to plot an object ?
 Simply a little `_plot_` method that reduces the object to a set of curves.
 This section describes the conventions on this function.
 
-As soon as an object defines this method, it can be plotted by the `oplot` function of `pytriqs.plot.mpl_interface`.
+As soon as an object defines this method, it can be plotted by the `oplot` function of `triqs.plot.mpl_interface`.
 See example below.
 
 .. function:: _plot_( OptionsDict )

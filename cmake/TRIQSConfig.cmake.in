@@ -18,7 +18,8 @@ set(TRIQS_CXX_COMPILER_ID @CMAKE_CXX_COMPILER_ID@)
 set(TRIQS_GIT_EXECUTABLE @GIT_EXECUTABLE@)
 
 # Python Interpreter
-set(TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
+set(TRIQS_PYTHON_EXECUTABLE @PYTHON_EXECUTABLE@)
+set(TRIQS_PYTHON_INTERPRETER @PYTHON_EXECUTABLE@) # Backward Compat
 set(TRIQS_PYTHON_LIB_DEST_ROOT @PYTHON_LIB_DEST_ROOT@)
 
 # MPI executable
@@ -39,8 +40,15 @@ set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 # include the exported dependencies of the triqs project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
-# include the exported targets of this project 
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
+# Find the target dependencies
+include(CMakeFindDependencyMacro)
+find_dependency(Cpp2Py HINTS @CMAKE_INSTALL_PREFIX@)
+find_dependency(itertools HINTS @CMAKE_INSTALL_PREFIX@)
+find_dependency(mpi HINTS @CMAKE_INSTALL_PREFIX@)
+find_dependency(h5 HINTS @CMAKE_INSTALL_PREFIX@)
+#find_dependency(nda HINTS @CMAKE_INSTALL_PREFIX@)
+
+# Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
@@ -162,7 +170,7 @@ macro (triqs_build_f2py_module target_name modulename module_pyf_name filelist1)
  # ... and a special target to build vertex.so, that depends on the sources files
  add_custom_command(OUTPUT  ${modulename}.so
   COMMAND echo See `pwd`/f2pyBuild.log for logs
-  COMMAND ${TRIQS_PYTHON_INTERPRETER} temp_script.py > f2pyBuild.log 2>&1
+  COMMAND ${TRIQS_PYTHON_EXECUTABLE} temp_script.py > f2pyBuild.log 2>&1
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filelist} ${CMAKE_CURRENT_SOURCE_DIR}/${module_pyf_name}
   )
 

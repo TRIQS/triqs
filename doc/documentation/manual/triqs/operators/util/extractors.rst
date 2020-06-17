@@ -56,6 +56,6 @@ Here `indices_t` represents an operator index sequence
 Python
 ------
 
-.. automodule:: pytriqs.operators.util.extractors
+.. automodule:: triqs.operators.util.extractors
     :members:
     :member-order: bysource

@@ -33,18 +33,20 @@ set(NAMESPACES
 
 # Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
 add_custom_target(docs_cpp2rst)
-extract_flags(triqs)
+extract_flags(triqs BUILD_INTERFACE)
 separate_arguments(triqs_CXXFLAGS)
 add_custom_command(
   TARGET docs_cpp2rst
   COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
-  ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
-  ${NAMESPACES}
-  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  -I${PROJECT_SOURCE_DIR}
-  -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
-  --cxxflags="${triqs_CXXFLAGS}"
+  COMMAND
+    PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH}
+    ${CPP2PY_BINARY_DIR}/bin/c++2rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
+    ${NAMESPACES}
+    --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
+    -I${PROJECT_SOURCE_DIR}
+    -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
+    --cxxflags="${triqs_CXXFLAGS}"
 )
 
 # --------------------------------------------------------
@@ -75,7 +77,7 @@ find_package(Sphinx)
 add_custom_target(docs_sphinx ALL)
 add_custom_command(
   TARGET docs_sphinx
-  COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html
+  COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${h5_BINARY_DIR}/python:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html
 )
 
 option(Sphinx_Only "When building the documentation, skip the Python Modules and the generation of C++ Api and example outputs" OFF)

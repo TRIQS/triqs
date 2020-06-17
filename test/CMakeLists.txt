@@ -1,6 +1,3 @@
-# Build gtest from git subtree
-add_subdirectory(gtest EXCLUDE_FROM_ALL)
-
 # FIXME : TO BE REMOVED
 # add_all_subdirectories_with_cmakelist : include all subdirectory to current path
 # which contains a CMakeLists.txt file...
@@ -14,11 +11,9 @@ macro(add_all_subdirectories_with_cmakelist)
  endforeach(f ${ALLSUBS}) 
 endmacro(add_all_subdirectories_with_cmakelist)
 
-add_subdirectory(triqs)
-add_subdirectory(itertools)
-add_subdirectory(mpi)
+add_subdirectory(c++)
 
 if(PythonSupport)
- add_subdirectory(pytriqs)
+ add_subdirectory(python)
  add_subdirectory(cpp2py)
 endif()

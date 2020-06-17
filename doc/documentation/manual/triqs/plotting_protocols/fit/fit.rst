@@ -1,5 +1,5 @@
 
-.. module:: pytriqs.fit.fit
+.. module:: triqs.fit.fit
 
 Fitting data
 ====================
@@ -35,7 +35,7 @@ The Fit class is very simple and is provided for convenience, but the reader
 is encouraged to have a look through it and adapt it (it is simply a call to 
 scipy.leastsq).
 
-.. autoclass:: pytriqs.fit.Fit
+.. autoclass:: triqs.fit.Fit
   :members: 
 
 
