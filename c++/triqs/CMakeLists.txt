@@ -32,9 +32,8 @@ CHECK_CXX_COMPILER_FLAG("-std=c++20" HAS_CPP20)
 if(HAS_CPP20)
   target_compile_options(triqs PUBLIC -std=c++20)
 else()
-  target_compile_options(triqs PUBLIC -std=c++17)
+  target_compile_options(triqs PUBLIC -std=c++17 $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
 endif()
-target_compile_options(triqs PUBLIC $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
 
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
