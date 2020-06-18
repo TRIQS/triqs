@@ -116,9 +116,10 @@ TEST(atom_diag_complex, Serialization) {
   fops.insert("dn");
   auto ad = atom_diag_cplx(h, fops);
 
-  auto ser = serialize(ad);
-  auto ser2 = serialize(deserialize<atom_diag_cplx>(ser));
-  EXPECT_EQ(ser, ser2);
+  auto ad_ser = deserialize<atom_diag_cplx>(serialize(ad));
+#if __cplusplus > 201703L
+  EXPECT_EQ(ad, ad_ser);
+#endif
 }
 
 TEST(atom_diag_complex, Autopartition) {

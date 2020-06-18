@@ -83,6 +83,10 @@ namespace triqs {
         /// Defined according to :math:`\hat H = \hat  U \mathrm{diag}(E) * \hat U^\dagger`.
         matrix_t unitary_matrix;
 
+#ifdef __cpp_impl_three_way_comparison
+        bool operator==(eigensystem_t const &) const = default;
+#endif
+
         // HDF5
         static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
 
@@ -100,23 +104,22 @@ namespace triqs {
 
       /// Block matrix representation for operators
       struct op_block_mat_t {
-	op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range()) = -1; };
-	array<long, 1> connection;
-	std::vector<matrix_t> block_mat;
-	int n_blocks() const { return block_mat.size(); }
-	friend std::ostream &operator<<(std::ostream &out, op_block_mat_t const & op_mat) {
-	  out << "Operator block matrix:\n"
-	      << " n_blocks = " << op_mat.n_blocks() << "\n";
-	  for( int bidx : range(op_mat.n_blocks()) ) {
-	    auto &m = op_mat.block_mat[bidx];
-	    auto b2 = op_mat.connection(bidx);
-	    out << "Block: "
-		<< "blocks (" << bidx << ", " << b2 << ") "
-		<< "size (" << first_dim(m) << ", " << second_dim(m) << ") "
-	        << op_mat.block_mat[bidx] << "\n";
-	  }
-	  return out;
-	};
+        op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range()) = -1; };
+        array<long, 1> connection;
+        std::vector<matrix_t> block_mat;
+        int n_blocks() const { return block_mat.size(); }
+        friend std::ostream &operator<<(std::ostream &out, op_block_mat_t const &op_mat) {
+          out << "Operator block matrix:\n"
+              << " n_blocks = " << op_mat.n_blocks() << "\n";
+          for (int bidx : range(op_mat.n_blocks())) {
+            auto &m = op_mat.block_mat[bidx];
+            auto b2 = op_mat.connection(bidx);
+            out << "Block: "
+                << "blocks (" << bidx << ", " << b2 << ") "
+                << "size (" << first_dim(m) << ", " << second_dim(m) << ") " << op_mat.block_mat[bidx] << "\n";
+          }
+          return out;
+        };
       };
 
       /// Construct in an uninitialized state.
@@ -136,7 +139,7 @@ namespace triqs {
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
 
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
-      
+
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
       /**
        * This constructor uses quantum number operators to partition the Hilbert space into
@@ -267,7 +270,6 @@ namespace triqs {
        */
       matrix_t const &cdag_matrix(int op_linear_index, int sp_index) const { return cdag_matrices[op_linear_index][sp_index]; }
 
-
       /// Get block matrix representation for general operator
       /**
        * @param op Many body operator
@@ -276,7 +278,10 @@ namespace triqs {
        * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
        */
       op_block_mat_t get_op_mat(many_body_op_t const &op) const;
-      
+
+#ifdef __cpp_impl_three_way_comparison
+      bool operator==(atom_diag const &rhs) const = default;
+#endif
 
       private:
       /// ------------------  DATA  -----------------
