@@ -206,7 +206,7 @@ configure_file(triqs++.in triqs++ @ONLY)
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs triqs_py DESTINATION lib EXPORT triqs-targets)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE DESTINATION bin)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
 
