@@ -74,12 +74,12 @@ Once you are done, save and quit with `:xa`.
 ## Porting to TRIQS 3.0
 
 TRIQS 3.0 introduced a number of changes that require adjustments in TRIQS-based applications.
-These changes are summarized in the [ChangeLog](https://github.com/TRIQS/triqs/blob/py3/doc/ChangeLog.md)(NOT YET UPDATED).
-For convenient porting, we have created a [porting script](https://raw.githubusercontent.com/TRIQS/triqs/py3/porting_tools/port_to_triqs3)
+These changes are summarized in the [ChangeLog](https://github.com/TRIQS/triqs/blob/unstable/doc/ChangeLog.md)(NOT YET UPDATED).
+For convenient porting, we have created a [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3)
 that you can download and run in the top-level directory of your respository.
 
 ```bash
-wget https://raw.githubusercontent.com/TRIQS/triqs/py3/porting_tools/port_to_triqs3
+wget https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3
 chmod u+x port_to_triqs3
 ./port_to_triqs3
 ```
