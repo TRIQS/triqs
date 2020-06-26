@@ -16,10 +16,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libfftw3-dev \
       libgfortran4 \
       libgmp-dev \
-      libopenmpi-dev \
-      openmpi-bin \
-      openmpi-common \
-      openmpi-doc \
       intel-mkl \
       python3-clang-${LLVM} \
       python3-dev \
@@ -60,12 +56,14 @@ RUN update-alternatives --set liblapack.so-x86_64-linux-gnu /usr/lib/x86_64-linu
 ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
 RUN mkdir /tmp/build && cd /tmp/build && \
       tar -C /tmp -xf /tmp/CMake-hdf5-1.12.0.tar.gz && \
-      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr && make -j20 && make install && \
+      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 && make -j20 && make install && \
       rm -rf * && \
       rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
+ENV HDF5_ROOT=/opt/hdf5
 
-## OpenMPI
-#ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz /tmp/
-#RUN tar -C /tmp -xf /tmp/openmpi-4.0.4.tar.gz && cd /tmp/openmpi-4.0.4 && \
-#      ./configure --prefix=/usr --enable-shared --disable-mpi-fortran && make -j20 && make install && \
-#      cd /tmp && rm -rf /tmp/openmpi-4.0.4*
+# OpenMPI
+ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz /tmp/
+RUN tar -C /tmp -xf /tmp/openmpi-4.0.4.tar.gz && cd /tmp/openmpi-4.0.4 && \
+      ./configure --prefix=/opt/openmpi --enable-shared --enable-cxx --disable-mpi-fortran && make -j20 && make install && \
+      cd /tmp && rm -rf /tmp/openmpi-4.0.4*
+ENV MPI_ROOT=/opt/openmpi
