@@ -1,0 +1,12 @@
+diff -ru hwloc-2.2.0.orig/include/private/cpuid-x86.h hwloc-2.2.0/include/private/cpuid-x86.h
+--- hwloc-2.2.0.orig/include/private/cpuid-x86.h        2020-03-23 08:43:39.000000000 +0000
++++ hwloc-2.2.0/include/private/cpuid-x86.h     2020-06-29 18:30:48.747605911 +0000
+@@ -60,6 +60,8 @@
+   *ecx = regs[2];
+   *edx = regs[3];
+ #else /* HWLOC_HAVE_MSVC_CPUIDEX */
++  /* try to assuage msan */
++  *ebx = *edx = 0;
+   /* Note: gcc might want to use bx or the stack for %1 addressing, so we can't
+    * use them :/ */
+ #ifdef HWLOC_X86_64_ARCH

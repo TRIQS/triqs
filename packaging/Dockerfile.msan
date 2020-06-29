@@ -36,7 +36,7 @@ ADD https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSIO
 RUN mkdir /tmp/build && cd /tmp/build && \
       tar -C /tmp -xf /tmp/libcxx-${LLVM_VERSION}.src.tar.xz && \
       tar -C /tmp -xf /tmp/libcxxabi-${LLVM_VERSION}.src.tar.xz && \
-      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j20 && make install && \
+      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j10 && make install && \
       rm -rf * && \
       cmake /tmp/libcxx-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-${LLVM_VERSION}.src/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j2 install && \
       rm -rf /tmp/libcxx* /tmp/build
@@ -54,22 +54,49 @@ RUN update-alternatives --set liblapack.so-x86_64-linux-gnu /usr/lib/x86_64-linu
 
 # HDF5
 ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
-RUN mkdir /tmp/build && cd /tmp/build && \
-      tar -C /tmp -xf /tmp/CMake-hdf5-1.12.0.tar.gz && \
-      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 && make -j20 && make install && \
-      rm -rf * && \
-      rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
+RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
+      mkdir build && cd build && \
+      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 && make -j10 && make install && \
+      cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
+
+# libevent
+ADD https://github.com/libevent/libevent/releases/download/release-2.1.11-stable/libevent-2.1.11-stable.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/libevent-2.1.11-stable.tar.gz && cd libevent-2.1.11-stable && \
+      ./configure --prefix=/opt/openmpi --enable-shared && make -j10 && make install && \
+      cd /tmp && rm -rf /tmp/libevent*
 
 # hwloc
 ADD https://download.open-mpi.org/release/hwloc/v2.2/hwloc-2.2.0.tar.bz2 /tmp/
-RUN tar -C /tmp -xf /tmp/hwloc-2.2.0.tar.bz2 && cd /tmp/hwloc-2.2.0 && \
-      ./configure --prefix=/opt/openmpi --enable-shared && make -j20 && make install && \
-      cd /tmp && rm -rf /tmp/hwloc-2.2.0*
+COPY hwloc.patch /tmp/
+RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd hwloc-2.2.0 && \
+      ./configure --prefix=/opt/openmpi --enable-shared && make -j10 && make install && \
+      cd /tmp && rm -rf /tmp/hwloc*
 
 # OpenMPI
 ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.bz2 /tmp/
-RUN tar -C /tmp -xf /tmp/openmpi-4.0.4.tar.bz2 && cd /tmp/openmpi-4.0.4 && \
-      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --with-hwloc=/opt/openmpi && make -j20 && make install && \
+RUN cd /tmp && tar xf /tmp/openmpi-4.0.4.tar.bz2 && cd openmpi-4.0.4 && \
+      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j10 && make install && \
       cd /tmp && rm -rf /tmp/openmpi-4.0.4*
 ENV MPI_ROOT=/opt/openmpi
+
+# Dockerfile.build with sanitization enabled
+COPY requirements.txt /src/triqs/requirements.txt
+# Install numpy first to prevent h5py from pulling in a newer version first
+RUN pip3 install `grep numpy /src/triqs/requirements.txt` && \
+    pip3 install -r /src/triqs/requirements.txt
+
+RUN useradd -m build
+
+ENV SRC=/src \
+    BUILD=/home/build \
+    INSTALL=/usr/local \
+    PYTHONPATH=/usr/local/lib/python3.8/site-packages \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs
+
+COPY --chown=build . ${SRC}/triqs
+WORKDIR ${BUILD}/triqs
+RUN chown build .
+USER build
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMSAN=ON && make -j10
+RUN make test CTEST_OUTPUT_ON_FAILURE=1
