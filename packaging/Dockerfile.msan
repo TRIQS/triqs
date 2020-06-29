@@ -61,9 +61,15 @@ RUN mkdir /tmp/build && cd /tmp/build && \
       rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
+# hwloc
+ADD https://download.open-mpi.org/release/hwloc/v2.2/hwloc-2.2.0.tar.bz2 /tmp/
+RUN tar -C /tmp -xf /tmp/hwloc-2.2.0.tar.bz2 && cd /tmp/hwloc-2.2.0 && \
+      ./configure --prefix=/opt/openmpi --enable-shared && make -j20 && make install && \
+      cd /tmp && rm -rf /tmp/hwloc-2.2.0*
+
 # OpenMPI
-ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz /tmp/
-RUN tar -C /tmp -xf /tmp/openmpi-4.0.4.tar.gz && cd /tmp/openmpi-4.0.4 && \
-      ./configure --prefix=/opt/openmpi --enable-shared --enable-cxx --disable-mpi-fortran && make -j20 && make install && \
+ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.bz2 /tmp/
+RUN tar -C /tmp -xf /tmp/openmpi-4.0.4.tar.bz2 && cd /tmp/openmpi-4.0.4 && \
+      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --with-hwloc=/opt/openmpi && make -j20 && make install && \
       cd /tmp && rm -rf /tmp/openmpi-4.0.4*
 ENV MPI_ROOT=/opt/openmpi
