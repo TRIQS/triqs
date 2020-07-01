@@ -24,15 +24,6 @@
 #include <array>
 #include "./mesh_tools.hpp"
 
-namespace std {
-  template <typename T, size_t R> std::ostream &operator<<(std::ostream &sout, std::array<T, R> const &a) {
-    sout << '(';
-    for (int u = 0; u < R; ++u) sout << (u ? ", " : "") << a[u];
-    return sout << ')';
-  }
-
-} // namespace std
-
 namespace triqs::gfs {
 
   // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
