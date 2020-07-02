@@ -17,7 +17,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libfftw3-dev \
       libgfortran4 \
       libgmp-dev \
-      intel-mkl \
+      python-dev \
       python3-clang-${LLVM} \
       python3-dev \
       python3-mako \
@@ -48,10 +48,6 @@ ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitiz
     LDFLAGS="-fsanitize=memory" \
     MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer
 
-# Use mkl over liblapack / libblas
-RUN update-alternatives --set liblapack.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so && \
-    update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
-
 # HDF5
 ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
 RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
@@ -81,6 +77,11 @@ RUN cd /tmp && tar xf /tmp/openmpi-4.0.4.tar.bz2 && cd openmpi-4.0.4 && \
 ENV MPI_ROOT=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
 
+# Use libflame to provide blas / lapack
+RUN git clone https://github.com/Wentzell/libflame /tmp/libflame && cd /tmp/libflame && \
+      ./configure --prefix=/opt/libflame --enable-lapack2flame --enable-builtin-blas && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/libflame
+
 # Dockerfile.build with sanitization enabled
 COPY requirements.txt /src/triqs/requirements.txt
 # Install numpy first to prevent h5py from pulling in a newer version first
@@ -99,5 +100,7 @@ COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
 RUN chown -R build . ${SRC}/triqs
 USER build
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMSAN=ON && make -j${NTHREAD}
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMSAN=ON \
+    -DLAPACK_LIBRARIES=/opt/libflame/lib/libflame.a -DBLAS_LIBRARIES=/opt/libflame/lib/libflame.a && \
+    make -j${NTHREAD}
 RUN make test CTEST_OUTPUT_ON_FAILURE=1
