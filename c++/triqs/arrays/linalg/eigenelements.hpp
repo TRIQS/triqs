@@ -80,15 +80,15 @@ namespace triqs {
 
         // dispatch the implementation of invoke for T = double or complex
         void _invoke(std::false_type, char compz, matrix_view<double> mat) const { // the case double (is_complex = false)
-          char uplo = 'U';
-          TRIQS_FORTRAN_MANGLING(dsyev)(&compz, &uplo, dim, mat.data_start(), dim, ev.data_start(), work.data_start(), lwork, info);
+          char uplo[2] = {'U','\0'};
+          TRIQS_FORTRAN_MANGLING(dsyev)(&compz, uplo, dim, mat.data_start(), dim, ev.data_start(), work.data_start(), lwork, info);
           if (info) TRIQS_RUNTIME_ERROR << "eigenelements_worker :error code dsyev : " << info << " for matrix " << mat;
         }
 
         void _invoke(std::true_type, char compz, matrix_view<std::complex<double>> mat) const { // the case complex (is_complex = true)
-          char uplo = 'U';
+          char uplo[2] = {'U','\0'};
           TRIQS_FORTRAN_MANGLING(zheev)
-          (&compz, &uplo, dim, mat.data_start(), dim, ev.data_start(), work.data_start(), lwork, work2.data_start(), info);
+          (&compz, uplo, dim, mat.data_start(), dim, ev.data_start(), work.data_start(), lwork, work2.data_start(), info);
           if (info) TRIQS_RUNTIME_ERROR << "eigenelements_worker :error code zheev : " << info << " for matrix " << mat;
         }
 
