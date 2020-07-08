@@ -76,7 +76,7 @@ RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd
 # OpenMPI
 ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.bz2 /tmp/
 RUN cd /tmp && tar xf /tmp/openmpi-4.0.4.tar.bz2 && cd openmpi-4.0.4 && \
-      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
+      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/openmpi-4.0.4*
 ENV MPI_ROOT=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
