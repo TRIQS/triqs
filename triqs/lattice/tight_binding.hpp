@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -32,9 +34,12 @@ namespace triqs {
   */
     class tight_binding {
 
+      using displs_t = std::vector<std::vector<long>>;
+      using matrices_t = std::vector<matrix<dcomplex>>;
+      
       bravais_lattice bl_;
-      std::vector<std::vector<long>> displ_vec_;
-      std::vector<matrix<dcomplex>> overlap_mat_vec_;
+      displs_t displ_vec_;
+      matrices_t overlap_mat_vec_;
 
       public:
       ///
@@ -52,6 +57,9 @@ namespace triqs {
         for (int i = 0; i < n; ++i) f(tb.displ_vec_[i], tb.overlap_mat_vec_[i]);
       }
 
+      const displs_t & displacements() const { return displ_vec_; }
+      const matrices_t & matrices() const { return overlap_mat_vec_; }
+
       // a simple function on the domain brillouin_zone
       struct fourier_impl {
         tight_binding const &tb;
@@ -65,6 +73,10 @@ namespace triqs {
         template <typename K> std14::enable_if_t<!clef::is_clef_expression<K>::value, matrix<dcomplex>> operator()(K const &k) const {
           matrix<dcomplex> res(nb, nb);
           res() = 0;
+
+	  /*
+
+	  // Previous Implementation
           foreach (tb, [&](std::vector<long> const &displ, matrix<dcomplex> const &m) {
             double dot_prod = 0;
             int imax        = displ.size();
@@ -73,6 +85,25 @@ namespace triqs {
             res += m * exp(2_j * M_PI * dot_prod);
           })
             ;
+	  */
+
+#pragma omp declare reduction (+ : triqs::arrays::matrix<dcomplex> : omp_out += omp_in ) \
+  initializer(omp_priv = triqs::arrays::matrix<dcomplex>(omp_orig.shape()))
+
+#pragma omp parallel for reduction(+:res)
+	  for(int idx = 0; idx < tb.displacements().size(); idx++) {
+
+	    auto const & displ = tb.displacements()[idx];
+	    auto const & m = tb.matrices()[idx];
+	    
+            double dot_prod = 0;
+            int imax        = displ.size();
+            for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
+	    matrix<dcomplex> tmp = m * exp(2_j * M_PI * dot_prod);
+
+            res += tmp;
+	  } 
+
           return res;
         }
       };
