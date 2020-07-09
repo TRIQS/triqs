@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.GfReFreq
+.. autoclass:: triqs.gf.GfReFreq
   :members: set_from_fourier, inverse_fourier, transpose, conjugate, set_from_pade
 
 .. warning::
@@ -20,7 +20,7 @@ Reference
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GfReFreq (TRIQS_HDF5_data_scheme = "GfReFreq") is decomposed in the following objects: 
+The GfReFreq (Format = "GfReFreq") is decomposed in the following objects:
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

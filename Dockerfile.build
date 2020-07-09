@@ -1,27 +1,27 @@
 # See packaging for various base options
 FROM flatironinstitute/triqs:base
+ARG APPNAME=triqs
 
-COPY requirements.txt /src/triqs/requirements.txt
-# Install numpy first to prevent h5py from pulling in a newer version first
-RUN pip install `grep numpy /src/triqs/requirements.txt` && \
-    pip install -r /src/triqs/requirements.txt
+COPY requirements.txt /src/$APPNAME/requirements.txt
+RUN pip3 install -r /src/$APPNAME/requirements.txt
 
-RUN useradd -m build
+RUN useradd -u 993 -m build
 
 ENV SRC=/src \
     BUILD=/home/build \
     INSTALL=/usr/local \
-    PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
-    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
+    PYTHONPATH=/usr/local/lib/python$PYTHON_VERSION/site-packages \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/$APPNAME
 
 # Hacky patch for matplotlib sphinx bug (https://github.com/matplotlib/matplotlib/pull/12456?)
 RUN ln -s /src /home/src
 
-COPY . ${SRC}/triqs
-WORKDIR ${BUILD}/triqs
-RUN chown -R build ${SRC}/triqs .
+COPY --chown=build . $SRC/$APPNAME
+WORKDIR $BUILD/$APPNAME
+RUN chown build .
 USER build
 ARG BUILD_DOC=0
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 && make test CTEST_OUTPUT_ON_FAILURE=1
+ARG BUILD_ID
+RUN cmake $SRC/$APPNAME -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 || make -j1 VERBOSE=1
 USER root
 RUN make install

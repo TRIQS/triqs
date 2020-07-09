@@ -56,7 +56,7 @@ def my_import(name):
 class DotException(Exception):
     pass
 
-class InheritanceGraph(object):
+class InheritanceGraph:
     """
     Given a list of classes, determines the set of classes that
     they inherit from all the way to the root "object", and then
@@ -119,7 +119,7 @@ class InheritanceGraph(object):
             return [todoc]
         elif inspect.ismodule(todoc):
             classes = []
-            for cls in todoc.__dict__.values():
+            for cls in list(todoc.__dict__.values()):
                 if inspect.isclass(cls) and cls.__module__ == todoc.__name__:
                     classes.append(cls)
             return classes
@@ -150,7 +150,7 @@ class InheritanceGraph(object):
         for cls in classes:
             recurse(cls)
 
-        return all_classes.keys()
+        return list(all_classes.keys())
 
     def class_name(self, cls, parts=0):
         """
@@ -192,9 +192,9 @@ class InheritanceGraph(object):
         }
 
     def _format_node_options(self, options):
-        return ','.join(["%s=%s" % x for x in options.items()])
+        return ','.join(["%s=%s" % x for x in list(options.items())])
     def _format_graph_options(self, options):
-        return ''.join(["%s=%s;\n" % x for x in options.items()])
+        return ''.join(["%s=%s;\n" % x for x in list(options.items())])
 
     def generate_dot(self, fd, name, parts=0, urls={},
                      graph_options={}, node_options={},
@@ -224,7 +224,7 @@ class InheritanceGraph(object):
         fd.write(self._format_graph_options(g_options))
 
         for cls in self.all_classes:
-            if not self.show_builtins and cls in __builtins__.values():
+            if not self.show_builtins and cls in list(__builtins__.values()):
                 continue
 
             name = self.class_name(cls, parts)
@@ -239,7 +239,7 @@ class InheritanceGraph(object):
 
             # Write the edges
             for base in cls.__bases__:
-                if not self.show_builtins and base in __builtins__.values():
+                if not self.show_builtins and base in list(__builtins__.values()):
                     continue
 
                 base_name = self.class_name(base, parts)
@@ -380,7 +380,7 @@ def visit_inheritance_diagram(inner_func):
     def visitor(self, node):
         try:
             content = inner_func(self, node)
-        except DotException, e:
+        except DotException as e:
             # Insert the exception as a warning in the document
             warning = self.document.reporter.warning(str(e), line=node.line)
             warning.parent = node

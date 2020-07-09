@@ -7,10 +7,10 @@
 Welcome
 =======
 
-.. sidebar:: TRIQS 2.2
+.. sidebar:: TRIQS 3.0
 
-   This is the homepage TRIQS Version 2.2
-   For the changes in 2.2, Cf :ref:`changelog page <changelog>`
+   This is the homepage TRIQS Version 3.0
+   For the changes in 3.0, Cf :ref:`changelog page <changelog>`
 
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)

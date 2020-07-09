@@ -91,7 +91,7 @@ endif()
 # ------------------------------------
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args("Sanitizer Runtime Libraries"
+find_package_handle_standard_args("sanitizer"
   REQUIRED_VARS SANITIZER_RT_PRELOAD ${required_vars}
   FAIL_MESSAGE "Sanitizer Runtime Libraries not found! Consider installing for additional checks!"
 )

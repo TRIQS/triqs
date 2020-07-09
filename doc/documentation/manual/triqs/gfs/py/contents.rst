@@ -1,7 +1,7 @@
 
 .. index:: Green's functions
 
-.. module:: pytriqs.gf
+.. module:: triqs.gf
 
 .. _green_py:
 

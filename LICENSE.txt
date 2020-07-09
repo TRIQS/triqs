@@ -15,7 +15,7 @@ The TRIQS repository and source distributions bundle several libraries that are
 compatibly licensed.  We list the licenses and the associated files here.
 
 Name: triqs
-Files: triqs/* pytriqs/* test/* doc/* edit_tools/* packaging/* porting_tools/*
+Files: c++/* python/* test/* doc/* edit_tools/* packaging/* porting_tools/*
 License: GNU GENERAL PUBLIC LICENSE Version 3
   For details, see COPYING.txt or <https://www.gnu.org/licenses/gpl.txt>
 

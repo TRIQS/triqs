@@ -3,7 +3,7 @@ from cpp2py.wrap_generator import *
 # The module
 module = module_(full_name = "my_module", doc = " Doc of my_module ")
 
-module.add_include("<triqs/../test/cpp2py/a.hpp>")
+module.add_include("./a.hpp")
 module.add_include("<triqs/arrays.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
@@ -40,10 +40,10 @@ g.add_method(name = "m1", c_name = "m2", signature = "double (double u)", doc = 
 
 def ffg( *args, **kw) : 
     """ my doc of ffg in module """
-    print "calling ffg, with :"
-    print args
-    print self(3)
-    print kw
+    print("calling ffg, with :")
+    print(args)
+    print(self(3))
+    print(kw)
     return tuple(2*x for x in args), kw
 
 def post1(res) :
@@ -121,9 +121,9 @@ module.add_function (name = "variant_to_variant",
                      doc = "DOC of variant_to_variant")
 
 def f1(x,y):
-    print " I am in f1 ", x,y
-    print y + 1/0.2
-    print tuple([x])
+    print(" I am in f1 ", x,y)
+    print(y + 1/0.2)
+    print(tuple([x]))
     assert x>0, "an horrible error"
 
 

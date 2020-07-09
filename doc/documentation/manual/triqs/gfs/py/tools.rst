@@ -4,5 +4,5 @@ Tools for GFs
 
 .. highlight:: python
 
-.. automodule:: pytriqs.gf.tools
+.. automodule:: triqs.gf.tools
    :members:

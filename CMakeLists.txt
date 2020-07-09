@@ -3,6 +3,8 @@
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
 # Copyright (C) 2011-2017 by O. Parcollet, M. Ferrero, A. Antipov
+# Copyright (C) 2019-2020 Simons Foundation
+#    authors: N. Wentzell
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -29,18 +31,13 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 
-# nasty policy for escaping in string....
-# cmake_policy(SET CMP0011 OLD)
-cmake_policy(SET CMP0005 NEW)
-cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
-cmake_policy(SET CMP0018 NEW) # Automatically add -fPIC when necessary
-
 #---------------------------------------------------------------------
 # Start project
 #---------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project(TRIQS VERSION 2.2.1 LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
+cmake_policy(VERSION 3.3.2)
+project(TRIQS VERSION 3.0.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ## C & C++ Headers
@@ -70,15 +67,6 @@ if (NOT _CXX_OK)
 endif()
 
 #---------------------------------------------------------------------
-# Shared lib (static : not checked).
-#---------------------------------------------------------------------
-
-# FIXME : static is not checked by CI : do we what to keep it ?
-set(BUILD_SHARED_LIBS ON)
-#option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-string(COMPARE EQUAL ${BUILD_SHARED_LIBS}  "OFF" TRIQS_BUILD_STATIC)
-
-#---------------------------------------------------------------------
 # Build type : Release or debug
 #---------------------------------------------------------------------
 
@@ -87,19 +75,22 @@ if(NOT CMAKE_BUILD_TYPE)
  mark_as_advanced(CMAKE_BUILD_TYPE)
 endif()
 
-add_compile_options($<$<CONFIG:Debug>:-Og>)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 #---------------------------------------------------------------------
-# Cpp2Py
-# Only when Python is supported
+# Shared or dynamic library
 #---------------------------------------------------------------------
 
-option(PythonSupport "Build with Python support" ON)
-if (PythonSupport)
- add_subdirectory(cpp2py)
- set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
-endif (PythonSupport)
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
+
+#------------------------
+# tests option
+#------------------------
+
+option(Build_Tests "Build tests" ON)
+if(Build_Tests)
+  enable_testing()
+endif()
 
 #---------------------------------------------------------------------
 # log info
@@ -135,7 +126,7 @@ message(STATUS "Hostname : ${TRIQS_HOSTNAME}")
 message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
 
 # Compile a small file with the hash
-configure_file(./cmake/git_hash.cpp.in triqs/git_hash.cpp @ONLY)
+configure_file(./cmake/git_hash.cpp.in c++/triqs/git_hash.cpp @ONLY)
 
 # ---------------------------------
 # RPATH setting
@@ -171,41 +162,34 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   endforeach()
 endif()
 
-# -----------------------------------------------------------------------------
-# Common option for all targets below (triqs lib, test, pytriqs, doc examples)
-# -----------------------------------------------------------------------------
- 
-include_directories (${PROJECT_SOURCE_DIR})  # to have <triqs/....>
+#---------------------------------------------------------------------
+# External Dependencies (nda, h5, itertools, gtest, ...)
+#---------------------------------------------------------------------
+
+add_subdirectory(deps)
 
 #------------------------
 # triqs library
 #------------------------
 
-add_subdirectory(triqs)
-
-#------------------------------
-# install the itertools and mpi headers
-#------------------------------
-
-install(DIRECTORY itertools mpi DESTINATION include FILES_MATCHING PATTERN "*.hpp")
+add_subdirectory(c++/triqs)
 
 #---------------------------------------------------------------------
-# pytriqs modules 
+# Python modules 
 #---------------------------------------------------------------------
 
-if (PythonSupport)
+option(PythonSupport "Build with Python support" ON)
+if(PythonSupport)
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
  message( STATUS "-------- Preparing python extension modules  -------------")
- add_subdirectory(pytriqs)
-endif (PythonSupport)
+ add_subdirectory(python/triqs)
+endif()
 
 #------------------------
-# tests
+# build tests
 #------------------------
 
-enable_testing()
-
-option(Build_Tests "Build the tests of the library " ON)
-if (Build_Tests)
+if(Build_Tests)
  message(STATUS "-------- Preparing tests  -------------")
  add_subdirectory(test)
 endif()
@@ -237,8 +221,6 @@ if (BIND_FORTRAN_LOWERCASE)
  set(TRIQS_BIND_FORTRAN_LOWERCASE OFF )
 endif (BIND_FORTRAN_LOWERCASE)
 
-# 
-
 #---------------------------------------
 # TRIQSConfig
 #---------------------------------------
@@ -249,12 +231,12 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY)
  # I assume there is a basic python available
- EXECUTE_PROCESS(COMMAND python -c  "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
+ EXECUTE_PROCESS(COMMAND python -c  "import re;open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
 endif()
 
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
 
 #------------------------
 # Test macros
@@ -263,25 +245,25 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTI
 configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
 configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
+install(FILES ${PROJECT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
+install(FILES ${PROJECT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
 
 #--------------------------------------------------------
 #   Remind the user how to set up his/her variables
 #--------------------------------------------------------
 
 # Configure and install the file to source to setup the environment variables 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqsvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/triqsvars.sh.in ${PROJECT_BINARY_DIR}/triqsvars.sh @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/triqs.modulefile.in ${PROJECT_BINARY_DIR}/triqs.modulefile @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+install(FILES ${PROJECT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
 MESSAGE(STATUS "***************************************************************")
 MESSAGE(STATUS "* Use :                                                        ")
 MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 if(DEFINED ENV{MODULEPATH})
   MESSAGE(STATUS "*                                                              ")
-  MESSAGE(STATUS "* Consider copying ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile")
+  MESSAGE(STATUS "* Consider copying ${PROJECT_BINARY_DIR}/triqs.modulefile")
   MESSAGE(STATUS "*   into your environment module directories                   ")
 endif()
 MESSAGE(STATUS "***************************************************************")
@@ -299,7 +281,7 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_PACKAGE_VERSION ${TRIQS_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, libopenmpi-dev")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python3, python3-numpy, python3-mako, python3-mpi4py, python3-matplotlib, python3-scipy, libopenmpi-dev")
   SET(CPACK_DEBIAN_PACKAGE_CONFLICTS "cpp2py")
   SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   SET(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)

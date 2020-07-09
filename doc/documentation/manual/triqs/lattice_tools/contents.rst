@@ -1,6 +1,6 @@
 .. index:: lattices
 
-.. module:: pytriqs.lattice
+.. module:: triqs.lattice
 
 .. _lattice:
 

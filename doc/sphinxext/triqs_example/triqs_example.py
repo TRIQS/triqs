@@ -16,7 +16,7 @@ from sphinx.errors import SphinxError
 class TriqsExampleError(SphinxError):
     category = 'triqs_example error'
 
-class TriqsExampleRun(object):
+class TriqsExampleRun:
     #here = os.path.abspath(__file__)
     #pycon = os.path.join(os.path.dirname(here),'pycon.py')
     config = dict(
@@ -79,7 +79,7 @@ class TriqsExample(Directive):
         show_source = True 
 
         # Build the code text
-        code = u''.join(lines).strip()
+        code = ''.join(lines).strip()
         filename_clean = filename.rsplit('.',1)[0]
         if filename_clean.startswith('./') : filename_clean = filename_clean[2:]
         #print "Running the example ....",filename_clean
@@ -101,16 +101,16 @@ class TriqsExample(Directive):
         # Process output 
         if stdout:
             stdout = stdout.decode(output_encoding,'ignore')
-            out = u''.join(stdout).decode(output_encoding)
+            out = ''.join(stdout).decode(output_encoding)
         else:
             out = '' #.join(stderr).decode(output_encoding)
         
         # Get the original code with prefixes
-        code_out = u'\n'.join((code,out))
+        code_out = '\n'.join((code,out))
 
         if error : # report on console
-            print " Error in processing "
-            print code_out 
+            print(" Error in processing ")
+            print(code_out) 
 
         literal = nodes.literal_block(code_out,code_out)
         literal['language'] = 'c' 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <set>
 #include <ostream>
-#include <triqs/utility/variant.hpp>
+#include <variant>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/signal_handler.hpp>
 
@@ -115,17 +115,17 @@ struct A {
   }
 
   ///
-  static std::string hdf5_scheme() { return "Ac"; }
+  static std::string hdf5_format() { return "Ac"; }
 
   /// Write into HDF5
-  friend void h5_write(triqs::h5::group fg, std::string subgroup_name, A const &a) {
+  friend void h5_write(h5::group fg, std::string subgroup_name, A const &a) {
     auto gr = fg.create_group(subgroup_name);
-    gr.write_hdf5_scheme(a);
+    write_hdf5_format(gr, a);
     h5_write(gr, "x", a.x);
   }
 
   /// Read from HDF5
-  friend void h5_read(triqs::h5::group fg, std::string subgroup_name, A &a) {
+  friend void h5_read(h5::group fg, std::string subgroup_name, A &a) {
     auto gr = fg.open_group(subgroup_name);
     //TRIQS_RUNTIME_ERROR << "A nasty error in h5read ....";
     h5_read(gr, "x", a.x);

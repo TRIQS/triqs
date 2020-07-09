@@ -1,6 +1,6 @@
 find_package(Test)
 
-link_libraries(triqs)
+link_libraries(triqs triqs_py)
 
 # Build C extension module
 add_cpp2py_module(my_module)

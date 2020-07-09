@@ -3,7 +3,7 @@ from cpp2py.wrap_generator import *
 # The module
 module = module_(full_name = "cpp2py.test_multivar", doc = "Doc of multivar GF")
 
-module.add_include("multivar.hpp")
+module.add_include("./multivar.hpp")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 

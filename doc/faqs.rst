@@ -17,7 +17,7 @@ For example, to simply save the imaginary part of the self-energy::
 
 A more complicated example where the mesh information is also stored is::
 
-    from pytriqs.gf import *
+    from triqs.gf import *
     import numpy as np
 
     g = GfImFreq(beta=10, indices = [0,1])
@@ -38,7 +38,7 @@ Q: How do I save the triqs hash and script for debugging purposes?
 
 A: Simply add this to your script::
 
-    from pytriqs import version
+    from triqs import version
     if mpi.is_master_node():
       Results = HDFArchive(filename+".h5",'a')
       if "log" not in Results: Results.create_group("log")

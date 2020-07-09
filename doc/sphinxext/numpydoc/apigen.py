@@ -22,7 +22,7 @@ import os
 import re
 
 # Functions and classes
-class ApiDocWriter(object):
+class ApiDocWriter:
     ''' Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format'''
 
@@ -99,7 +99,7 @@ class ApiDocWriter(object):
         >>> docwriter = ApiDocWriter('sphinx')
         >>> docwriter._get_object_name("  def func():  ")
         'func'
-        >>> docwriter._get_object_name("  class Klass(object):  ")
+        >>> docwriter._get_object_name("  class Klass:  ")
         'Klass'
         >>> docwriter._get_object_name("  class Klass:  ")
         'Klass'
@@ -206,7 +206,7 @@ class ApiDocWriter(object):
         # get the names of all classes and functions
         functions, classes = self._parse_module(uri)
         if not len(functions) and not len(classes):
-            print 'WARNING: Empty -',uri  # dbg
+            print('WARNING: Empty -',uri)  # dbg
             return ''
 
         # Make a shorter version of the uri that omits the package name for

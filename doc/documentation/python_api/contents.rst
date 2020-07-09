@@ -3,6 +3,6 @@
 .. toctree::
    :maxdepth: 2
 
-   pytriqs
-   pytriqs/gf/Gf
-   pytriqs/utility/dichotomy
+   triqs
+   triqs/gf/Gf
+   triqs/utility/dichotomy

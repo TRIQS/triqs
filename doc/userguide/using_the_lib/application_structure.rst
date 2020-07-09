@@ -67,7 +67,7 @@ Install structure
 
       **INSTALL_DIR**/include/triqs/py_converters/gf.hpp (for instance)
 
-      **INSTALL_DIR**/lib/python2.7/dist-packages/pytriqs/gf/local/gf.so (for instance)
+      **INSTALL_DIR**/lib/python2.7/dist-packages/triqs/gf/local/gf.so (for instance)
 
       Your application should be installed with the following structure:
 
@@ -81,7 +81,7 @@ Install structure
 
       **INSTALL_DIR**/include/:red:`application_a`/py_converters/:blue:`module_a1`.hpp (with  includes relative to **INSTALL_DIR**/include/ i.e. starting with ":red:`application_a`/foobar/toto_a1.hpp
 
-      **INSTALL_DIR**/lib/python2.7/dist-packages/:red:`application_a`/:blue:`module_a1`.so (importable via  import :red:`application_a`.:blue:`module_a1` in a pytriqs prompt)
+      **INSTALL_DIR**/lib/python2.7/dist-packages/:red:`application_a`/:blue:`module_a1`.so (importable via  import :red:`application_a`.:blue:`module_a1` in a triqs prompt)
 
       **INSTALL_DIR**/lib/python2.7/dist-packages/:red:`application_a`/my_functions.py
 
@@ -90,7 +90,7 @@ Install structure
 Build structure
 ~~~~~~~~~~~~~~~~
 
-      **BUILD_DIR**/build_pytriqs
+      **BUILD_DIR**/build_triqs
 
       **BUILD_DIR**/c++/
 

@@ -1,7 +1,7 @@
 #FIXME PS: find appropriate place for this!
 
-from pytriqs.gf import *
-from pytriqs.plot.mpl_interface import *
+from triqs.gf import *
+from triqs.plot.mpl_interface import *
 
 g = GfImFreq(beta=100.0, indices=[0])
 d = GfImFreq(beta=100.0, indices=[0])
