@@ -64,7 +64,7 @@ RUN cd /tmp && tar xf /tmp/libevent-2.1.11-stable.tar.gz && cd libevent-2.1.11-s
 
 # hwloc
 ADD https://download.open-mpi.org/release/hwloc/v2.2/hwloc-2.2.0.tar.bz2 /tmp/
-COPY hwloc.patch /tmp/
+COPY packaging/hwloc.patch /tmp/
 RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd hwloc-2.2.0 && \
       ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/hwloc*
