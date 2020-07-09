@@ -110,4 +110,4 @@ def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  titl
 
 def use_amsmath():
     rc('text', usetex=True)
-    rc('text.latex', preamble="\usepackage{amsmath}")
+    rc('text.latex', preamble=r"\usepackage{amsmath}")
