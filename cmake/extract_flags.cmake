@@ -76,14 +76,10 @@ macro(extract_flags)
     list(REMOVE_ITEM sys_inc_dirs ${inc_dirs})
   endif()
   foreach(dir ${inc_dirs})
-    if(NOT dir STREQUAL "/usr/include")
-      set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -I${dir}")
-    endif()
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -I${dir}")
   endforeach()
   foreach(dir ${sys_inc_dirs})
-    if(NOT dir STREQUAL "/usr/include")
-      set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -isystem${dir}")
-    endif()
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -isystem${dir}")
   endforeach()
 
   get_property_recursive(libs TARGET ${target} PROPERTY INTERFACE_LINK_LIBRARIES)
@@ -117,4 +113,10 @@ macro(extract_flags)
   # Remove all remaining generator expressions
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+
+  # Filter out system directories from LDFLAGS and CXXFLAGS
+  string(REGEX REPLACE " -L/usr/lib " " " ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE " -I/usr/include " " " ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  string(REGEX REPLACE " -isystem/usr/include " " " ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+
 endmacro()
