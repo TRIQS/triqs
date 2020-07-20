@@ -1,6 +1,6 @@
-FROM ubuntu:disco
-ARG RELEASE=disco
-ARG LLVM=8
+FROM ubuntu:focal
+ARG LLVM=10
+ARG NTHREAD=10
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
@@ -9,44 +9,84 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       gfortran \
       git \
       vim \
+      lldb-${LLVM} \
       hdf5-tools \
       libblas-dev \
-      libboost-all-dev \
+      libboost-dev \
       libclang-${LLVM}-dev \
       libfftw3-dev \
-      libgfortran3 \
+      libgfortran4 \
       libgmp-dev \
-      libhdf5-dev \
-      intel-mkl \
-      libopenmpi-dev \
-      openmpi-bin \
-      openmpi-common \
-      openmpi-doc \
-      python-clang-${LLVM} \
       python-dev \
-      python-mako \
-      python-matplotlib \
-      python-mpi4py \
-      python-numpy \
-      python-scipy \
-      python-sphinx \
-      python-nbsphinx
+      python3-dev \
+      python3-clang-${LLVM} \
+      python3-mako \
+      python3-matplotlib \
+      python3-numpy \
+      python3-pip \
+      python3-scipy
 
-ENV CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.0
+ENV PYTHON_VERSION=3.8 \
+    CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.0
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
 
-ADD http://releases.llvm.org/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz /tmp/
-ADD http://releases.llvm.org/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz /tmp/
+# Build libcxx with MSAN
+ADD https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz /tmp/
+ADD https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz /tmp/
 RUN mkdir /tmp/build && cd /tmp/build && \
       tar -C /tmp -xf /tmp/libcxx-${LLVM_VERSION}.src.tar.xz && \
       tar -C /tmp -xf /tmp/libcxxabi-${LLVM_VERSION}.src.tar.xz && \
-      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=Memory && make -j2 && make install && \
+      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} && make install && \
       rm -rf * && \
-      cmake /tmp/libcxx-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-${LLVM_VERSION}.src/include -DLLVM_USE_SANITIZER=Memory && make -j2 install && \
+      cmake /tmp/libcxx-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-${LLVM_VERSION}.src/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} install && \
       rm -rf /tmp/libcxx* /tmp/build
-ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory" CFLAGS="-fsanitize=memory" LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib LDFLAGS="-fsanitize=memory"
 
-RUN update-alternatives --set liblapack.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so && \
-    update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
+# Build Environment using MSAN
+ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
+    CFLAGS="-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
+    LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib \
+    LDFLAGS="-fsanitize=memory" \
+    MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer
+
+# HDF5
+ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
+      mkdir build && cd build && \
+      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
+ENV HDF5_ROOT=/opt/hdf5
+
+# libevent
+ADD https://github.com/libevent/libevent/releases/download/release-2.1.11-stable/libevent-2.1.11-stable.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/libevent-2.1.11-stable.tar.gz && cd libevent-2.1.11-stable && \
+      ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/libevent*
+
+# hwloc
+ADD https://download.open-mpi.org/release/hwloc/v2.2/hwloc-2.2.0.tar.bz2 /tmp/
+COPY packaging/hwloc.patch /tmp/
+RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd hwloc-2.2.0 && \
+      ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/hwloc*
+
+# OpenMPI
+ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/openmpi-4.0.4.tar.bz2 && cd openmpi-4.0.4 && \
+      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/openmpi-4.0.4*
+ENV MPI_ROOT=/opt/openmpi \
+    MPICC=/opt/openmpi/bin/mpicc
+
+# Use libflame to provide blas / lapack
+RUN git clone https://github.com/Wentzell/libflame /tmp/libflame && cd /tmp/libflame && \
+      ./configure --prefix=/opt/libflame --enable-lapack2flame --enable-builtin-blas && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/libflame
+
+# Dockerfile.build with sanitization enabled
+COPY requirements.txt /src/triqs/requirements.txt
+# Install numpy first to prevent h5py from pulling in a newer version first
+RUN pip3 install `grep numpy /src/triqs/requirements.txt` && \
+    pip3 install -r /src/triqs/requirements.txt
 
 RUN useradd -m build
 
@@ -58,9 +98,9 @@ ENV SRC=/src \
 
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
-RUN chown -R build ${SRC}/triqs .
+RUN chown -R build . ${SRC}/triqs
 USER build
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" -DMSAN=1
-RUN make VERBOSE=1 -j8
-ENV MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer CTEST_OUTPUT_ON_FAILURE=1
-RUN make test || true
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMSAN=ON \
+    -DLAPACK_LIBRARIES=/opt/libflame/lib/libflame.a -DBLAS_LIBRARIES=/opt/libflame/lib/libflame.a && \
+    make -j${NTHREAD}
+RUN make test CTEST_OUTPUT_ON_FAILURE=1
