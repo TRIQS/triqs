@@ -106,6 +106,8 @@ namespace cpp2py {
 
     using is_wrapped_type = void; // to recognize
 
+    static_assert(not std::is_reference_v<T>, "Not implemented");
+
     template <typename U> static PyObject *c2py(U &&x) {
       PyTypeObject *p = get_type_ptr(typeid(T));
       if (p == nullptr) return NULL;

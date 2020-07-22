@@ -1,14 +1,21 @@
 #pragma once
 #include <set>
+#include "../traits.hpp"
 
 namespace cpp2py {
 
   template <typename K> struct py_converter<std::set<K>> {
 
-    static PyObject *c2py(std::set<K> const &s) {
+    template <typename S> static PyObject *c2py(S &&s) {
+      static_assert(is_instantiation_of_v<std::set, std::decay_t<S>>, "Logic error");
       PyObject *set = PySet_New(NULL);
       for (auto &x : s) {
-        pyref y = py_converter<K>::c2py(x);
+        pyref y;
+        if constexpr (std::is_reference_v<S>) {
+          y = convert_to_python(x);
+        } else { // s passed as rvalue
+          y = convert_to_python(std::move(x));
+        }
         if (y.is_null() or (PySet_Add(set, y) == -1)) {
           Py_DECREF(set);
           return NULL;
@@ -31,7 +38,7 @@ namespace cpp2py {
       if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to std::set"); }
       return false;
     }
- 
+
     static std::set<K> py2c(PyObject *ob) {
       std::set<K> res;
       pyref keys_it = PyObject_GetIter(ob);
