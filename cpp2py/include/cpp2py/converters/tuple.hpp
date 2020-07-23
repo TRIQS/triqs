@@ -20,13 +20,18 @@ namespace cpp2py {
       return PyTuple_Pack(sizeof...(Types), (PyObject *)(objs[Is])...);
     }
 
+    // Helper function needed due to clang v6 parameter pack issue
+    static auto py_seq_fast_get_item(PyObject *seq, Py_ssize_t i) {
+      return PySequence_Fast_GET_ITEM(seq, i);
+    }
+
     // is_convertible implementation
     template <auto... Is> static bool is_convertible_impl(PyObject *seq, bool raise_exception, std::index_sequence<Is...>) {
-      return (py_converter<std::decay_t<Types>>::is_convertible(PySequence_Fast_GET_ITEM(seq, Is), raise_exception) and ...);
+      return (py_converter<std::decay_t<Types>>::is_convertible(py_seq_fast_get_item(seq, Is), raise_exception) and ...);
     }
 
     template <auto... Is> static auto py2c_impl(PyObject *seq, std::index_sequence<Is...>) {
-      return std::make_tuple(py_converter<std::decay_t<Types>>::py2c(PySequence_Fast_GET_ITEM(seq, Is))...);
+      return std::make_tuple(py_converter<std::decay_t<Types>>::py2c(py_seq_fast_get_item(seq, Is))...);
     }
 
     public:
