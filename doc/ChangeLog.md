@@ -1,6 +1,190 @@
 Version 3.0.0
 =============
 
+TRIQS Version 3.0.0 is a major release that introduces
+compatibility against Python 3. This release further
+separates out the [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) functionality
+of the TRIQS library into their own repositories.
+Beyond that, this release fixes serveral library issues.
+A guide with instructions on how to port your application
+can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
+We further provide a detailed list of the changes below.
+
+
+Renamings
+---------
+
+The separation of various TRIQS library functionalities into their
+own repositories made it necessary into rename various Python modules
+and as well as C++ header files. In addition, we have decided to
+rename the top-level Python module of TRIQS from 'pytriqs' to 'triqs'.
+These renamings can be automated using the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs3)
+that we provide. Please refer to our [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md) for more
+detailed instructions.
+
+
+Dependency Management
+---------------------
+
+We are managing the interdependencies of the various
+library components [cpp2py](https://github.com/triqs/cpp2py), [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) using cmake.
+Per default we will build and install these components together
+with TRIQS, unless they are found in your system.
+This behavior can be altered using the additional options
+
+* `-DBuild_Deps="Always"` - Always build dependencies, do not try to find them
+* `-DBuild_Deps="Never"` - Never build dependencies, but find them instead
+
+during the cmake configuration step.
+
+
+h5py dependency
+---------------
+
+The dependency on h5py has been a source of of problems in setting up
+the TRIQS library for many users. We are glad to report that TRIQS 3
+is no longer dependent on h5py, and instead provides the necessary
+Python bindings directly in the [h5](https://github.com/triqs/h5) repository,
+which per default is built and installed together with TRIQS.
+
+
+atom_diag
+---------
+* Make python classes AtomDiagReal and AtomDiagComplex serializable using h5
+* Test h5 serialization of atom_diag real/cplx in c++
+* Allow mpi broadcasting of AtomDiag objects using the h5 serialization
+* In atom_diag h5_read / h5_write, make sure to treat all member variables
+* Add operator== for atom_diag objects for c++20 compatible compilers
+
+
+cmake
+-----
+* Bump TRIQS Version number to 3.0.0
+* Bump cmake version requirement to 3.3.2
+* Add external_dependency.cmake file with function for external dependency management
+* Make cpp2py, h5, mpi, itertools, gtest a dependency using add_external_dependency
+* Remove dependence on Boost serialization and clean cmake
+* Add deps/CMakeLists.txt file to manage dependencies
+* In extract_flags.cmake, protect extraction of -L/usr/lib and -I/usr/include
+* Extend extract_flags.cmake to treat compiler-specific generator expressions properly
+* In extract_flags allow extraction of BUILD_INTERFACE flags
+* Fix install permissions for triqs++ compiler wrapper
+* No longer add '-Og' for debug builds
+* Use -std=c++20 compiler flag if available
+* Add -fconcepts flag only for gcc in c++17 mode
+* Split off libpython-dependent code into seperate libtriqs_py library
+* Supress certain mpi warnings for ref-file based tests
+* Print file differences for failing ref-file based tests
+* Use PROJECT_SOURCE/BINARY_DIR over CMAKE_XXX_DIR
+* Use namespaced targets for dependencies mpi/itertools/h5
+* Add a warning if ASAN/UBSAN is used without Build_Deps=Always
+* Use cmake_policy(VERSION ..) over cmake_policy(SET ..)
+* Various cleanings in c++/triqs/CMakeLists.txt
+* In TRIQSConfig.cmake, properly find target dependencies with find_dependency
+* Refactor extract_flags macro and helper functions into cmake/extract_flags.cmake
+* Explicitly set CMake Policy CMP0057 and CMP0074 to NEW
+* Adjust add_python_test to take MPI_NUMPROC argument for mpi testing
+* Use PYTHON_EXECUTABLE over PYTHON_INTERPRETER to be consistent with gtest and pybind
+* Make sure to define H5_USE_110_API when compiling against hdf5 1.12
+* Consider both PKG_ROOT and PKG_BASE env variables in find-modules for NFFT, GMP, FFTW
+* Properly set MATHJAX_PATH in url fallback solution
+* Create separate targets for gmp and gmpxx and only link against the first
+* Add macro add_mpi_test and make sure test executables are found by mpich
+
+
+detmanip
+--------
+* Remove regenerate on singular det, Throw in regeneration
+
+
+doc
+---
+* Add porting guide: doc/porting_to_triqs3.md
+* added NRGLjubjana_interface to the list of impurity solvers
+* updated applications page to include new hubbardi version 2.2
+* Various smaller improvements
+* Change the Mathjax fallback solution to use version 2.7.8 @ github
+* Add advice on VERSION changes in top-level CMakeLists.txt to porting guide
+* Update documentation in histograms python module
+* Remove h5py from the list of dependencies
+* Fix various c++ and python examples after Python3 port
+* Update installation page to include Section on Anaconda packages
+* Consistently use r/w/a over old hdf5 file modes H5F_ACC_TRUNC ...
+* Change order in OSX install instructions to not use brew clang for the pip no-binary installs
+* Fix CC/CXX export commands in osx install instructions
+* Bump cmake version requirement to actual required version
+* Update link to install page in README to use latest stable version
+
+
+gf
+--
+* Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
+* Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
+* Compare block_names also in c++ functions assert_block[2]_gfs_are_close
+* Fix warning about improper np.array access pattern
+* Properly compare gf indices in tests, fix improper indices construction in various spots
+* Add comparison operators and output operators to the gf_indices type
+* Add deduction guides for gf{gf_expr} statements
+* Bugfix in block_gf(mesh, gf_struct) constructor for scalar_valued gf
+* Add imaginary time versions of make_hermitian to the pytriqs gf factories
+* Fix wrapper for make_adjoint_mesh(gf_mesh<retime>)
+* Change default tolerance of is_gf_hermitian from 1e-13 -> 1e-12
+* Fix make_hermitian and is_gf_hermitian for real-valued Green functions
+* Fix bug in return type of positive_freq_view(gf&) and add test FIX #764
+* Store block_names in block_gf and block2_gf as list of str instead of nparray
+
+
+jenkins
+-------
+* Align Dockerfiles with app4triqs skeleton
+* Install lldb debugger into ubuntu and centos base images
+* Set CC and CXX env variables in centos-gcc base image
+* Set BUILD_ID to avoid caching
+* Restore and correct PYTHONPATH for apps
+* Force hdf5 1.10 for OSX builds
+* add workaround for centos buggy openmpi
+* Mark test failures as UNSTABLE
+* Add upstream triggers for external dependencies
+* Provide vim in packaging base images for error analysis
+* Switch to centos build to centos 8
+* Update build scripts for Python3
+
+
+operators
+---------
+* Change comparison of many_body_operator_generic to const
+
+
+packaging
+---------
+* Various updates/improvements to memory sanitizer compatible Docker environment (packaging/Dockerfile.msan)
+* Generate and test debian packages for Ubuntu 20.04, adjust dependencies
+
+
+General
+-------
+* Port TRIQS and Cpp2Py from Python 2 to Python 3
+* Remove dependency on h5py package
+* Depend only on header-part of Boost library
+* Rename the pytriqs module to triqs
+* Add porting script porting_tools/port_to_triqs3
+* Split of libpython dependent part of libtriqs into seperate library libtriqs_py
+* Remove redundant headers boost_serialization.hpp and serialization.hpp
+* Remove triqs/utility/variant.hpp and use std::variant instead
+* Make sure that histograms are == comparable in both C++ and Python + Test
+* Remove redundant ostream operator<< for std::array, conflicting with nda
+* Use std::complex_literals::operatori over custom operator_j
+* Avoid use of optional.value() for improved osx compatibility
+* Disable stacktrace implementation on Mac OS due to failure on OSX10.15 (Catalina)
+* Various improvements to triqs++ compiler wrapper
+* Fix bug in error message of pytriqs/utility/h5diff.py
+* Fix issues with simultaneous execution of various c++ tests
+* Fix bug in lattice tools dos function
+* Fix: Cpp2pyInfo class no longer requires a base-class
+* Various smaller bugfixes / improvements
+
+
+
 Version 2.2.2
 =============
 
