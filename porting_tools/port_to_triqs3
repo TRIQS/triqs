@@ -13,6 +13,7 @@ repl_dict = {
         "pytriqs\.archive\.hdf_archive": "h5.archive",
         "pytriqs": "triqs",
         "hdf_archive_schemes": "formats",
+        "InverseFourier": "Fourier",
         "triqs::h5": "h5",
         "triqs/h5/serialization\.hpp": "h5/serialization.hpp",
         "triqs/h5.*\.hpp": "h5/h5.hpp",
