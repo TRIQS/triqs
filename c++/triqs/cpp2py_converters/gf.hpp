@@ -35,13 +35,13 @@ namespace cpp2py {
   template <> struct py_converter<triqs::gfs::all_t> {
 
     static PyObject *c2py(triqs::gfs::all_t m) {
-      static pyref all = pyref::get_class("__builtin__", "all", true);
+      static pyref all = pyref::get_class("builtins", "all", true);
       if (all.is_null()) return NULL;
       return all.new_ref();
     }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      static pyref all = pyref::get_class("__builtin__", "all", true);
+      static pyref all = pyref::get_class("builtins", "all", true);
       return (all == ob);
     }
 
