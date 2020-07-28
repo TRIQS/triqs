@@ -2,21 +2,21 @@ Version 3.0.0
 =============
 
 TRIQS Version 3.0.0 is a major release that introduces
-compatibility against Python 3. This release further
+compatibility with Python 3. This release further
 separates out the [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) functionality
 of the TRIQS library into their own repositories.
-Beyond that, this release fixes serveral library issues.
+Beyond that, this release fixes several library issues.
 A guide with instructions on how to port your application
 can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
-We further provide a detailed list of the changes below.
+We provide a detailed list of the changes below.
 
 
 Renamings
 ---------
 
 The separation of various TRIQS library functionalities into their
-own repositories made it necessary into rename various Python modules
-and as well as C++ header files. In addition, we have decided to
+own repositories made it necessary to rename various Python modules
+as well C++ header files. In addition, we have decided to
 rename the top-level Python module of TRIQS from 'pytriqs' to 'triqs'.
 These renamings can be automated using the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs3)
 that we provide. Please refer to our [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md) for more
@@ -28,14 +28,15 @@ Dependency Management
 
 We are managing the interdependencies of the various
 library components [cpp2py](https://github.com/triqs/cpp2py), [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) using cmake.
-Per default we will build and install these components together
+Per default cmake will pull those dependencies from their corresponding
+GitHub repositories, build them, and install these components together
 with TRIQS, unless they are found in your system.
-This behavior can be altered using the additional options
+This behavior can be altered using the additional cmake options
 
 * `-DBuild_Deps="Always"` - Always build dependencies, do not try to find them
 * `-DBuild_Deps="Never"` - Never build dependencies, but find them instead
 
-during the cmake configuration step.
+during the configuration step.
 
 
 h5py dependency
@@ -47,6 +48,26 @@ is no longer dependent on h5py, and instead provides the necessary
 Python bindings directly in the [h5](https://github.com/triqs/h5) repository,
 which per default is built and installed together with TRIQS.
 
+General
+-------
+* Port TRIQS and Cpp2Py from Python 2 to Python 3
+* Remove dependency on h5py package
+* Depend only on header-part of Boost library
+* Rename the pytriqs module to triqs
+* Add porting script porting_tools/port_to_triqs3
+* Split of libpython dependent part of libtriqs into seperate library libtriqs_py
+* Use std::complex_literals::operatori and remove custom operator_j
+* Remove redundant headers boost_serialization.hpp and serialization.hpp
+* Remove triqs/utility/variant.hpp and use std::variant instead
+* Make sure that histograms are == comparable in both C++ and Python + Test
+* Remove redundant ostream operator<< for std::array, conflicting with nda
+* Avoid use of optional.value() for improved osx compatibility
+* Disable stacktrace implementation on Mac OS due to failure on OSX10.15 (Catalina)
+* Various improvements to triqs++ compiler wrapper
+* Fix issues with simultaneous execution of various c++ tests
+* Fix bug in lattice tools dos function
+* Cpp2pyInfo class no longer requires a base-class
+* Various smaller bugfixes / improvements
 
 atom_diag
 ---------
@@ -73,7 +94,7 @@ cmake
 * Use -std=c++20 compiler flag if available
 * Add -fconcepts flag only for gcc in c++17 mode
 * Split off libpython-dependent code into seperate libtriqs_py library
-* Supress certain mpi warnings for ref-file based tests
+* Suppress certain mpi warnings for ref-file based tests
 * Print file differences for failing ref-file based tests
 * Use PROJECT_SOURCE/BINARY_DIR over CMAKE_XXX_DIR
 * Use namespaced targets for dependencies mpi/itertools/h5
@@ -159,29 +180,6 @@ packaging
 ---------
 * Various updates/improvements to memory sanitizer compatible Docker environment (packaging/Dockerfile.msan)
 * Generate and test debian packages for Ubuntu 20.04, adjust dependencies
-
-
-General
--------
-* Port TRIQS and Cpp2Py from Python 2 to Python 3
-* Remove dependency on h5py package
-* Depend only on header-part of Boost library
-* Rename the pytriqs module to triqs
-* Add porting script porting_tools/port_to_triqs3
-* Split of libpython dependent part of libtriqs into seperate library libtriqs_py
-* Remove redundant headers boost_serialization.hpp and serialization.hpp
-* Remove triqs/utility/variant.hpp and use std::variant instead
-* Make sure that histograms are == comparable in both C++ and Python + Test
-* Remove redundant ostream operator<< for std::array, conflicting with nda
-* Use std::complex_literals::operatori over custom operator_j
-* Avoid use of optional.value() for improved osx compatibility
-* Disable stacktrace implementation on Mac OS due to failure on OSX10.15 (Catalina)
-* Various improvements to triqs++ compiler wrapper
-* Fix bug in error message of pytriqs/utility/h5diff.py
-* Fix issues with simultaneous execution of various c++ tests
-* Fix bug in lattice tools dos function
-* Fix: Cpp2pyInfo class no longer requires a base-class
-* Various smaller bugfixes / improvements
 
 
 
