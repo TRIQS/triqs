@@ -39,10 +39,8 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     assert 'name_prefix' not in opt_dict, "name_prefix is deprecated"
     #if 'name' not in opt_dict: 
     #    warnings.warn("oplot REQUIRES a name = for making the legend and labels. Using self.name, but it is deprecated and WILL BE REMOVED")
-    name = opt_dict.pop('name', self.name)         # consume it
-    if not name:
-        warn("oplot of gf : no name provided !")
-    rx = opt_dict.pop('x_window', None)  # consume it
+    name = opt_dict.pop('name', self.name)
+    rx = opt_dict.pop('x_window', None)
     X = numpy.array(X).real
     sl = clip_array(X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
