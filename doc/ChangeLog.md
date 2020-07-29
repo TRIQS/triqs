@@ -1,3 +1,46 @@
+Version 2.2.3
+=============
+
+TRIQS Version 2.2.3 is a bug-fix release.
+In addition to various smaller fixes we improved
+the usability of TRIQS in conjunction with the LLVM
+Memory Sanitizer and the usability of the triqs++
+compiler-wrapper.
+
+A detailed description of the changes is provided below.
+
+General
+-------
+* In the triqs++ compiler wrapper put any additional flags before cxxflags and ldflags
+* Update memory sanitizer docker image with latest development version
+* Fix memory sanitizer positive in triqs/arrays/linalg/eigenelements.hpp
+* Remove packaging directory from dockerignore
+
+cmake
+-----
+* Fix install permissions for triqs++ compiler wrapper
+* Be sure to add -Lpath_to_install/lib to triqs++ ldflags
+* In extract_flags.cmake, protect extraction of -L/usr/lib and fix filtering of -I/usr/include
+* Extend extract_flags.cmake to treat compiler-specific generator expressions properly
+* Use extract_flags.cmake of triqs 3.0, properly protect agsinst -I/usr/include flags
+* Make sure to supress certain mpi warnings in ref-file based tests
+
+cpp2py
+------
+* Be sure to properly treat both rvalues and lvalues in c2py functions
+* Fix type usage in py_converter for integral types
+
+gf
+--
+* Properly import all mesh-types in python/triqs/gf/__init__.py
+* Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
+* Wrap make_hermitian also for tensor_valued and imtime Green functions
+
+jenkins
+-------
+* oxs: force hdf5 1.10
+
+
 Version 2.2.2
 =============
 
