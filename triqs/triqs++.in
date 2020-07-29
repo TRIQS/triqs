@@ -24,5 +24,5 @@ elif args.ldflags:
 elif args.cxxflags:
     print args.cxxflags,
 else:
-    compile_command = "@CMAKE_CXX_COMPILER@ -Wno-unused-command-line-argument %s %s %s"%(cxxflags, " ".join(additional_args), ldflags)
+    compile_command = "@CMAKE_CXX_COMPILER@ -Wno-unused-command-line-argument %s %s %s"%(" ".join(additional_args), cxxflags, ldflags)
     os.system(compile_command)
