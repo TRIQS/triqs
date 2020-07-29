@@ -4,5 +4,4 @@ ChangeLog.md
 Dockerfile.build
 Jenkinsfile
 TODO
-packaging
 .git/objects/pack
