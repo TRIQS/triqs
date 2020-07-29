@@ -8,7 +8,6 @@ TRIQS Version 3.0.0 is a major release that
 A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
 We provide a detailed list of the changes below.
 
-
 Renamings
 ---------
 
@@ -19,7 +18,6 @@ rename the top-level Python module of TRIQS from 'pytriqs' to 'triqs'.
 These renamings can be automated using the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs3)
 that we provide. Please refer to our [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md) for more
 detailed instructions.
-
 
 Dependency Management
 ---------------------
@@ -35,7 +33,6 @@ This behavior can be altered using the additional cmake options
 * `-DBuild_Deps="Never"` - Never build dependencies, but find them instead
 
 during the configuration step.
-
 
 h5py dependency
 ---------------
@@ -75,7 +72,6 @@ atom_diag
 * In atom_diag h5_read / h5_write, make sure to treat all member variables
 * Add operator== for atom_diag objects for c++20 compatible compilers
 
-
 cmake
 -----
 * Bump TRIQS Version number to 3.0.0
@@ -110,11 +106,9 @@ cmake
 * Create separate targets for gmp and gmpxx and only link against the first
 * Add macro add_mpi_test and make sure test executables are found by mpich
 
-
 detmanip
 --------
 * Remove regenerate on singular det, Throw in regeneration
-
 
 doc
 ---
@@ -134,7 +128,6 @@ doc
 * Bump cmake version requirement to actual required version
 * Update link to install page in README to use latest stable version
 
-
 gf
 --
 * Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
@@ -152,7 +145,6 @@ gf
 * Fix bug in return type of positive_freq_view(gf&) and add test FIX #764
 * Store block_names in block_gf and block2_gf as list of str instead of nparray
 
-
 jenkins
 -------
 * Align Dockerfiles with app4triqs skeleton
@@ -168,17 +160,57 @@ jenkins
 * Switch to centos build to centos 8
 * Update build scripts for Python3
 
-
 operators
 ---------
 * Change comparison of many_body_operator_generic to const
-
 
 packaging
 ---------
 * Various updates/improvements to memory sanitizer compatible Docker environment (packaging/Dockerfile.msan)
 * Generate and test debian packages for Ubuntu 20.04, adjust dependencies
 
+
+Version 2.2.3
+=============
+
+TRIQS Version 2.2.3 is a bug-fix release.
+In addition to various smaller fixes we improved
+the usability of TRIQS in conjunction with the LLVM
+Memory Sanitizer and the usability of the triqs++
+compiler-wrapper.
+
+A detailed description of the changes is provided below.
+
+General
+-------
+* In the triqs++ compiler wrapper put any additional flags before cxxflags and ldflags
+* Update memory sanitizer docker image with latest development version
+* Fix memory sanitizer positive in triqs/arrays/linalg/eigenelements.hpp
+* Remove packaging directory from dockerignore
+
+cmake
+-----
+* Fix install permissions for triqs++ compiler wrapper
+* Be sure to add -Lpath_to_install/lib to triqs++ ldflags
+* In extract_flags.cmake, protect extraction of -L/usr/lib and fix filtering of -I/usr/include
+* Extend extract_flags.cmake to treat compiler-specific generator expressions properly
+* Use extract_flags.cmake of triqs 3.0, properly protect agsinst -I/usr/include flags
+* Make sure to supress certain mpi warnings in ref-file based tests
+
+cpp2py
+------
+* Be sure to properly treat both rvalues and lvalues in c2py functions
+* Fix type usage in py_converter for integral types
+
+gf
+--
+* Properly import all mesh-types in python/triqs/gf/__init__.py
+* Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
+* Wrap make_hermitian also for tensor_valued and imtime Green functions
+
+jenkins
+-------
+* oxs: force hdf5 1.10
 
 
 Version 2.2.2
