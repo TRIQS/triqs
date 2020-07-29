@@ -252,21 +252,24 @@ install(FILES ${PROJECT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmak
 #   Remind the user how to set up his/her variables
 #--------------------------------------------------------
 
-# Configure and install the file to source to setup the environment variables 
-configure_file(${PROJECT_SOURCE_DIR}/triqsvars.sh.in ${PROJECT_BINARY_DIR}/triqsvars.sh @ONLY)
-configure_file(${PROJECT_SOURCE_DIR}/triqs.modulefile.in ${PROJECT_BINARY_DIR}/triqs.modulefile @ONLY)
+if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
 
-install(FILES ${PROJECT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
-MESSAGE(STATUS "***************************************************************")
-MESSAGE(STATUS "* Use :                                                        ")
-MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
-MESSAGE(STATUS "*   to set up the environment variables                        ") 
-if(DEFINED ENV{MODULEPATH})
-  MESSAGE(STATUS "*                                                              ")
-  MESSAGE(STATUS "* Consider copying ${PROJECT_BINARY_DIR}/triqs.modulefile")
-  MESSAGE(STATUS "*   into your environment module directories                   ")
+  # Configure and install the file to source to setup the environment variables
+  configure_file(${PROJECT_SOURCE_DIR}/triqsvars.sh.in ${PROJECT_BINARY_DIR}/triqsvars.sh @ONLY)
+  configure_file(${PROJECT_SOURCE_DIR}/triqs.modulefile.in ${PROJECT_BINARY_DIR}/triqs.modulefile @ONLY)
+
+  install(FILES ${PROJECT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+  message(STATUS "***************************************************************")
+  message(STATUS "* Use :                                                        ")
+  message(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
+  message(STATUS "*   to set up the environment variables                        ")
+  if(DEFINED ENV{MODULEPATH})
+    message(STATUS "*                                                              ")
+    message(STATUS "* Consider copying ${PROJECT_BINARY_DIR}/triqs.modulefile")
+    message(STATUS "*   into your environment module directories                   ")
+  endif()
+  message(STATUS "***************************************************************")
 endif()
-MESSAGE(STATUS "***************************************************************")
 
 #--------------------------------------------------------
 # Packaging
