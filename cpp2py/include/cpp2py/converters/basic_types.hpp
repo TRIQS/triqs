@@ -28,20 +28,23 @@ namespace cpp2py {
 
   // --- long
 
-  template <> struct py_converter<long> {
-    static PyObject *c2py(long i) { return PyInt_FromLong(i); }
-    static long py2c(PyObject *ob) { return PyInt_AsLong(ob); }
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      if (PyInt_Check(ob)) return true;
-      if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to long"); }
-      return false;
-    }
-  };
+  namespace details{
+    template <typename I> struct py_converter_impl {
+      static PyObject *c2py(I i) { return PyInt_FromLong(long(i)); }
+      static I py2c(PyObject *ob) { return I(PyInt_AsLong(ob)); }
+      static bool is_convertible(PyObject *ob, bool raise_exception) {
+        if (PyInt_Check(ob)) return true;
+        if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to integer type"); }
+        return false;
+      }
+    };
+  }
 
-  template <> struct py_converter<int> : py_converter<long> {};
-  template <> struct py_converter<unsigned int> : py_converter<long> {};
-  template <> struct py_converter<unsigned long> : py_converter<long> {};
-  template <> struct py_converter<unsigned long long> : py_converter<long> {};
+  template <> struct py_converter<long> : details::py_converter_impl<long> {};
+  template <> struct py_converter<int> : details::py_converter_impl<int> {};
+  template <> struct py_converter<unsigned int> : details::py_converter_impl<unsigned int> {};
+  template <> struct py_converter<unsigned long> : details::py_converter_impl<unsigned long> {};
+  template <> struct py_converter<unsigned long long> : details::py_converter_impl<unsigned long long> {};
 
   // --- double
 
