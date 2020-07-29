@@ -40,7 +40,7 @@ cmake_policy(SET CMP0018 NEW) # Automatically add -fPIC when necessary
 #---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project(TRIQS VERSION 2.2.2 LANGUAGES C CXX)
+project(TRIQS VERSION 2.2.3 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ## C & C++ Headers
