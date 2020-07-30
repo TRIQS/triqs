@@ -1,13 +1,11 @@
 Version 3.0.0
 =============
 
-TRIQS Version 3.0.0 is a major release that introduces
-compatibility with Python 3. This release further
-separates out the [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) functionality
-of the TRIQS library into their own repositories.
-Beyond that, this release fixes several library issues.
-A guide with instructions on how to port your application
-can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
+TRIQS Version 3.0.0 is a major release that
+* introduces compatibility with Python 3 (Python 2 no longer supported)
+* separates out the [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) functionality of the TRIQS library
+* fixes several library issues
+A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
 We provide a detailed list of the changes below.
 
 
@@ -43,7 +41,7 @@ h5py dependency
 ---------------
 
 The dependency on h5py has been a source of of problems in setting up
-the TRIQS library for many users. We are glad to report that TRIQS 3
+the TRIQS library for many users. We are glad to report that TRIQS 3.0
 is no longer dependent on h5py, and instead provides the necessary
 Python bindings directly in the [h5](https://github.com/triqs/h5) repository,
 which per default is built and installed together with TRIQS.
@@ -56,8 +54,8 @@ General
 * Rename the pytriqs module to triqs
 * Add porting script porting_tools/port_to_triqs3
 * Split of libpython dependent part of libtriqs into seperate library libtriqs_py
-* Use std::complex_literals::operatori and remove custom operator_j
 * Remove redundant headers boost_serialization.hpp and serialization.hpp
+* Use std::complex_literals::operatori and remove custom operator_j
 * Remove triqs/utility/variant.hpp and use std::variant instead
 * Make sure that histograms are == comparable in both C++ and Python + Test
 * Remove redundant ostream operator<< for std::array, conflicting with nda
