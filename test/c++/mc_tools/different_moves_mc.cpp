@@ -1,3 +1,22 @@
+// Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+// Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
+// Copyright (c) 2018-2020 Simons Foundation
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You may obtain a copy of the License at
+//     https://www.gnu.org/licenses/gpl-3.0.txt
+//
+// Authors: Laura Messio, Olivier Parcollet, Priyanka Seth, Nils Wentzell
+
 // The goal of this program is to give an example of the use of the probability for proposing a move (here, pl and pr)
 // The walker try to go towards its left with probability 2*pl/(pl+pr) (pl is given to the move_left constructor),
 //    or towards the right with probability 2*pr/(pl+pr) (pr is given to the move_right constructor).

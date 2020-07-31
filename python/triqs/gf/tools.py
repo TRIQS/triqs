@@ -1,25 +1,23 @@
-################################################################################
+# Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2015 Igor Krivenko
+# Copyright (c) 2018-2020 Simons Foundation
 #
-# TRIQS: a Toolbox for Research in Interacting Quantum Systems
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (C) 2011 by M. Ferrero, O. Parcollet
-# Copyright (C) 2019 The Simons Foundation
-# Authors: H. U.R. Strand
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# TRIQS is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
+# You may obtain a copy of the License at
+#     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# TRIQS. If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
+# Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
+
 from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
 from .block_gf import BlockGf
