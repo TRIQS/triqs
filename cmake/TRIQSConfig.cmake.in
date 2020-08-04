@@ -50,7 +50,7 @@ find_package(h5 REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
-MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
+message(STATUS "Found TRIQSConfig.cmake with version @PROJECT_VERSION@, hash = @TRIQS_GIT_HASH@, root = @CMAKE_INSTALL_PREFIX@")
 
 # Check compiler
 if(NOT CMAKE_CXX_COMPILER STREQUAL TRIQS_CXX_COMPILER)
