@@ -110,9 +110,9 @@ namespace triqs::mc_tools {
    */
     void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty = f; }
 
-    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
+    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
       report << "\nWarming up ..." << std::endl;
-      return run(n_warmup_cycles, length_cycle, stop_callback, false);
+      return run(n_warmup_cycles, length_cycle, stop_callback, false, c);
     }
 
     /**
@@ -133,9 +133,10 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init) {
+    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init,
+               mpi::communicator c = mpi::communicator{}) {
       sign = sign_init;
-      return warmup(n_warmup_cycles, length_cycle, stop_callback);
+      return warmup(n_warmup_cycles, length_cycle, stop_callback, c);
     }
 
     /**
@@ -155,14 +156,16 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
+    int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
+                   mpi::communicator c = mpi::communicator{}) {
       report << "\nAccumulating ..." << std::endl;
-      return run(n_accumulation_cycles, length_cycle, stop_callback, true);
+      return run(n_accumulation_cycles, length_cycle, stop_callback, true, c);
     }
 
-    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback) {
-      int status = warmup(n_warmup_cycles, length_cycle, stop_callback);
-      if (status == 0) status = accumulate(n_accumulation_cycles, length_cycle, stop_callback);
+    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
+                              mpi::communicator c = mpi::communicator{}) {
+      int status = warmup(n_warmup_cycles, length_cycle, stop_callback, c);
+      if (status == 0) status = accumulate(n_accumulation_cycles, length_cycle, stop_callback, c);
       return status;
     }
 
@@ -194,7 +197,7 @@ namespace triqs::mc_tools {
     private:
     // implementation
 
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure = true) {
+    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c) {
       utility::timer timer;
       timer.start();
       if (n_cycles == 0) return 0;
@@ -205,28 +208,42 @@ namespace triqs::mc_tools {
       int NC                = 0;
       double next_info_time = 0.1;
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
-        // Metropolis loop. Switch here for HeatBath, etc...
-        for (uint64_t k = 1; (k <= length_cycle); k++) {
-          if (triqs::signal_handler::received()) goto _final;
-          double r = AllMoves.attempt();
-          if (RandomGenerator() < std::min(1.0, r)) {
-            if (debug) std::cerr << " Move accepted " << std::endl;
-            sign *= AllMoves.accept();
-            if (debug) std::cerr << " New sign = " << sign << std::endl;
-          } else {
-            if (debug) std::cerr << " Move rejected " << std::endl;
-            AllMoves.reject();
+        long need_to_stop = 0; // No bool in MPI ?
+        try {
+          // Metropolis loop. Switch here for HeatBath, etc...
+          for (uint64_t k = 1; (k <= length_cycle); k++) {
+            if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
+            double r = AllMoves.attempt();
+            if (RandomGenerator() < std::min(1.0, r)) {
+              if (debug) std::cerr << " Move accepted " << std::endl;
+              sign *= AllMoves.accept();
+              if (debug) std::cerr << " New sign = " << sign << std::endl;
+            } else {
+              if (debug) std::cerr << " Move rejected " << std::endl;
+              AllMoves.reject();
+            }
+            ++config_id;
           }
-          ++config_id;
+          if (after_cycle_duty) { after_cycle_duty(); }
+          if (do_measure) {
+            nmeasures++;
+            for (auto &x : AllMeasuresAux) x();
+            AllMeasures.accumulate(sign);
+          }
+        } catch (triqs::signal_handler::exception const &) {
+          std::cerr << "mc_generic: Signal caught on node " << c.rank() << "\n" << std::endl;
+          // do nothing, let's continue
+        } catch (std::exception const &err) {
+          // log the error and node number
+          std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
+          need_to_stop = 1;
         }
-        if (after_cycle_duty) { after_cycle_duty(); }
-        if (do_measure) {
-          nmeasures++;
-          for (auto &x : AllMeasuresAux) x();
-          AllMeasures.accumulate(sign);
+        need_to_stop = mpi::all_reduce(need_to_stop, c, 0); // All nodes will be aware they need to stop
+        if (need_to_stop > 0) {                             // all nodes have the same
+          TRIQS_RUNTIME_ERROR << "mc_generic : exception on at least one node";
         }
-      // recompute fraction done
-      _final:
+
+        // recompute fraction done
         done_percent = uint64_t(floor(((NC + 1) * 100.0) / n_cycles));
         if (timer > next_info_time) {
           report << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
@@ -236,7 +253,8 @@ namespace triqs::mc_tools {
         }
         finished = NC + 1 >= n_cycles;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
-      }
+      } // end main NC loop
+
       int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
       triqs::signal_handler::stop();
       current_cycle_number += NC;
@@ -361,5 +379,5 @@ namespace triqs::mc_tools {
     MCSignType sign       = 1;
     uint64_t done_percent = 0;
     uint64_t config_id    = 0;
-  };
+  }; // namespace triqs::mc_tools
 } // namespace triqs::mc_tools

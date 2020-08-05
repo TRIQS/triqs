@@ -30,6 +30,7 @@
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
+#include <triqs/test_tools/arrays.hpp>
 triqs::arrays::array<std::complex<double>, 1> make_array(std::complex<double> c) { return {c}; };
 
 struct configuration {
@@ -42,11 +43,16 @@ struct configuration {
 //------------------------------------------------------------
 struct move_left {
   configuration *config;
-  double proba = -9;
+  double proba               = -9;
+  inline static long counter = 0;
+  mpi::communicator c; // for error test only
   triqs::mc_tools::random_generator &RND;
   move_left(configuration &config_, double pl, double pr, triqs::mc_tools::random_generator &RND_)
      : config(&config_), proba(pr / pl), RND(RND_) {} //constructor
-  double attempt() { return proba; }
+  double attempt() {
+    if ((c.rank() == 1) and counter++ == 2000) TRIQS_RUNTIME_ERROR << "A bad ERROR";
+    return proba;
+  }
   double accept() {
     config->x += -1;
     return 1;
@@ -77,7 +83,8 @@ struct compute_histo {
   configuration *config;
   triqs::arrays::array<double, 1> H; // an histogram of the positions of the walker
   long xmax;                         //maximal position registered in the histo
-  long tot;                          //number of pointsregistered inthe histogram
+  mpi::communicator world;
+  long tot; //number of pointsregistered inthe histogram
   compute_histo(configuration &config_, triqs::arrays::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
   void accumulate(double sign) {
     if (config->x + xmax >= 0 && config->x - xmax < 0) {
@@ -88,19 +95,19 @@ struct compute_histo {
   }
   void collect_results(mpi::communicator c) {
     H /= tot;
-    h5::file file("histo.h5", 'w');
-    h5_write(file, "H", H);
+    if (world.rank() == 0) {
+      h5::file file("histo.h5", 'w');
+      h5_write(file, "H", H);
+    }
   }
 };
+
+mpi::communicator world;
 
 //------------------------------------------------------------
 // MAIN
 //------------------------------------------------------------
-int main(int argc, char *argv[]) {
-
-  // initialize mpi
-  mpi::environment env(argc, argv);
-  mpi::communicator world;
+TEST(mc_generic, Base) {
 
   // greeting
   if (world.rank() == 0) std::cout << "Random walk calculation" << std::endl;
@@ -115,12 +122,14 @@ int main(int argc, char *argv[]) {
   int xmax                = floor(4 * sqrt(Length_Cycle)); // typical length of a walk
   double pl = 2.5, pr = 1;                                 //non normalized probabilities for proposing a left or right move
 
-  h5::file file("params.h5", 'w');
-  h5_write(file, "pr", pr);
-  h5_write(file, "pl", pl);
-  h5_write(file, "xmax", xmax);
-  h5_write(file, "N_Cycles", N_Cycles);
-  h5_write(file, "Length_Cycle", Length_Cycle);
+  if (world.rank() == 0) {
+    h5::file file("params.h5", 'w');
+    h5_write(file, "pr", pr);
+    h5_write(file, "pl", pl);
+    h5_write(file, "xmax", xmax);
+    h5_write(file, "N_Cycles", N_Cycles);
+    h5_write(file, "Length_Cycle", Length_Cycle);
+  }
 
   // construct a Monte Carlo loop
   triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity);
@@ -135,10 +144,21 @@ int main(int argc, char *argv[]) {
   IntMC.add_move(move_right(config, pl, pr, IntMC.get_rng()), "right move", pr);
   IntMC.add_measure(compute_histo(config, H, xmax), "histogramn measure");
 
-  // Run and collect results
-  IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
-  IntMC.collect_results(world);
+  bool stopped_by_exception = false;
 
-  h5_write(file, "Stats", IntMC.get_acceptance_rates());
-  //std::cout  << IntMC.average_sign() << std::endl;
+  try {
+    // Run and collect results
+    IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
+    IntMC.collect_results(world);
+  } catch (std::exception const &e) {
+    std::cerr << "TEST : Exception occurred. Node " << world.rank() << " is stopping cleanly" << std::endl;
+    stopped_by_exception = true;
+  }
+
+  if (world.size() == 1)
+    EXPECT_FALSE(stopped_by_exception); // one node only. Should work
+  else
+    EXPECT_TRUE(stopped_by_exception);
 }
+
+MAKE_MAIN;

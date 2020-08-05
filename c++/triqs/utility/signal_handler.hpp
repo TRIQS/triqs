@@ -21,6 +21,8 @@
 namespace triqs {
   namespace signal_handler {
 
+    class exception {};
+
     /// Start the signal handler
     void start();
 
