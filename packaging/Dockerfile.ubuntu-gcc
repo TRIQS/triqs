@@ -10,7 +10,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       lldb-9 \
       hdf5-tools \
       libblas-dev \
-      libboost-all-dev \
+      libboost-dev \
       libfftw3-dev \
       libgfortran3 \
       libgmp-dev \

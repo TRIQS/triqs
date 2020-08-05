@@ -12,7 +12,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       lldb-${LLVM} \
       hdf5-tools \
       libblas-dev \
-      libboost-all-dev \
+      libboost-dev \
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
