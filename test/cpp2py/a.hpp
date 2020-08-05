@@ -4,6 +4,7 @@
 #include <set>
 #include <ostream>
 #include <variant>
+#include <complex>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/signal_handler.hpp>
 
@@ -224,3 +225,5 @@ inline void use_fnt_iid(std::function<int(int, int, double)> f) { std::cout << "
 inline std::function<void(int, int)> make_fnt_void() {
   return [](int i, int j) { std::cout << " I am a C++ lambda : " << i << " " << j << std::endl; };
 }
+
+std::complex<double> complex_to_complex(std::complex<double> cplx){ return cplx; }

@@ -99,15 +99,17 @@ module.add_function (name = "make_matrix", signature = "matrix_view<double>(int 
 #module.add_function (name = "iter_on_range", signature = "void (range r)" , doc = "DOC ....")
 
 module.add_function (name = "make_fnt_ii", signature = {'c_name': 'make_fnt_ii', 'rtype': "std::function<int(int,int)>", 'args': []}, doc = "....")
-module.add_function (name = "make_fnt_iid", signature = {'c_name': 'make_fnt_iid', 'rtype': "std::function<int(int,int,double)>", 'args': []}, doc = "....")
+module.add_function (name = "make_fnt_iid", signature = {'c_name': 'make_fnt_iid', 'rtype': "std::function<double(int,int,double)>", 'args': []}, doc = "....")
 module.add_function (name = "make_fnt_void", signature = {'c_name': 'make_fnt_void', 'rtype': "std::function<void(int,int)>", 'args': []}, doc = "....")
 
 module.add_function (name = "use_fnt_ii", signature = "void(std::function<int(int,int)> f)", doc = "....")
-module.add_function (name = "use_fnt_iid", signature = "void(std::function<int(int,int,double)> f)", doc = "....")
+module.add_function (name = "use_fnt_iid", signature = "void(std::function<double(int,int,double)> f)", doc = "....")
 
 module.add_function (name = "map_to_mapvec", signature = "std::map<std::string,std::vector<int>>(std::map<std::string,int> m)", doc = "DOC of print_map")
 
 module.add_function (name = "set_to_set", signature = "std::set<int>(std::set<std::string> s)", doc = "DOC of set_to_set")
+
+module.add_function (name = "complex_to_complex", signature = "std::complex<double> complex_to_complex(std::complex<double> cplx)", doc = "DOC of set_to_set")
 
 for i in range(0,4):
     name = "tuple_to_tuple_%i"%i
