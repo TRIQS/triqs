@@ -110,6 +110,12 @@ c++2py -r module_name_desc.py
 Review all changes and commit them.
 
 
+## Update app4triqs skeleton
+
+If your triqs application is based on the [app4triqs](https://github.com/triqs/app4triqs) skeleton,
+please update your application as outlined [here](https://github.com/triqs/app4triqs#merging-app4triqs-skeleton-updates).
+
+
 ## Final Steps
 
 Finally you should build and test your application.
