@@ -189,7 +189,6 @@ m = make_mesh( py_type = "MeshBrillouinZone", c_tag = "brillouin_zone", index_ty
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
 m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
-m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
 
 m.add_property(name = "linear_dims",
                getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
@@ -211,7 +210,6 @@ m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
 m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
-m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
 
 m.add_property(name = "linear_dims",
                getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
