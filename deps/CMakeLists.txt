@@ -53,6 +53,10 @@ external_dependency(Cpp2Py
   GIT_TAG master
   BUILD_ALWAYS
 )
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import mpi4py" RESULT_VARIABLE failed ERROR_QUIET)
+if(failed)
+  message(FATAL_ERROR "Failed to import mpi4py Python module.")
+endif()
 
 # -- GTest --
 external_dependency(GTest
