@@ -17,7 +17,8 @@ include(external_dependency.cmake)
 #     to locate the package in the system.
 #     Skip this step if Build_Deps option is set.
 #  2. Try to find a directory containing the sources
-#     at ${CMAKE_SOURCE_DIR}/deps/name. If found
+#     at ${CMAKE_CURRENT_SOURCE_DIR}/name and
+#     ${CMAKE_SOURCE_DIR}/deps/name. If found
 #     build it as a cmake sub-project.
 #  3. If GIT_REPO is provided, git clone the sources,
 #     and build them as a cmake sub-project.
@@ -34,7 +35,7 @@ include(external_dependency.cmake)
 #                     In particular the dependency will not be installed.
 
 if(NOT DEFINED Build_Deps)
-  set(Build_Deps "Never" CACHE STRING "Do we build dependencies from source? [Never/Always/IfNotFound]")
+  set(Build_Deps "IfNotFound" CACHE STRING "Do we build dependencies from source? [Never/Always/IfNotFound]")
 else()
   set(Build_Deps_Opts "Never" "Always" "IfNotFound")
   if(NOT ${Build_Deps} IN_LIST Build_Deps_Opts)
