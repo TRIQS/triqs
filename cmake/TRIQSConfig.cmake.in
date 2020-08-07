@@ -41,11 +41,15 @@ set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
 # Find the target dependencies
-find_package(Cpp2Py REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
-find_package(itertools REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
-find_package(mpi REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
-find_package(h5 REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
-#find_package(nda REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
+function(find_dep)
+  get_property(${ARGV0}_FOUND GLOBAL PROPERTY ${ARGV0}_FOUND)
+  if(NOT ${ARGV0}_FOUND)
+    find_package(${ARGN} REQUIRED HINTS @CMAKE_INSTALL_PREFIX@)
+  endif()
+endfunction()
+find_dep(itertools 1.0)
+find_dep(mpi 1.0)
+find_dep(h5 1.0)
 
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
