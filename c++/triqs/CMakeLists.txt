@@ -153,7 +153,7 @@ if(NOT _max_align_t_is_correct)
   message(STATUS "Adding workaround for max_align_t bug (in clang normally)")
   target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
 else()
-  message(status "Checked max_align_t. No workaround needed")
+  message(STATUS "Checked max_align_t. No workaround needed")
 endif()
 
 # ---------------------------------
