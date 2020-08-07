@@ -256,8 +256,9 @@ namespace triqs::mc_tools {
         stop_it |= node_monitor.should_stop(); // if one node has requested a stop, the monitor checks, bcast the info
       }                                        // end main NC loop
 
-      int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
-      if (not node_monitor.success()) status = 3;
+      int status   = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
+      bool success = node_monitor.finalize();
+      if (not success) status = 3;
 
       triqs::signal_handler::stop();
       current_cycle_number += NC;
