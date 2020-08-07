@@ -27,6 +27,7 @@
 #include <triqs/utility/signal_handler.hpp>
 #include <triqs/utility/macros.hpp>
 #include <mpi/mpi.hpp>
+#include <mpi/monitor.hpp>
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
@@ -207,8 +208,10 @@ namespace triqs::mc_tools {
       bool stop_it = false, finished = false;
       int NC                = 0;
       double next_info_time = 0.1;
+
+      mpi::monitor node_monitor{c};
+
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
-        long need_to_stop = 0; // No bool in MPI ?
         try {
           // Metropolis loop. Switch here for HeatBath, etc...
           for (uint64_t k = 1; (k <= length_cycle); k++) {
@@ -236,11 +239,7 @@ namespace triqs::mc_tools {
         } catch (std::exception const &err) {
           // log the error and node number
           std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
-          need_to_stop = 1;
-        }
-        need_to_stop = mpi::all_reduce(need_to_stop, c, 0); // All nodes will be aware they need to stop
-        if (need_to_stop > 0) {                             // all nodes have the same
-          TRIQS_RUNTIME_ERROR << "mc_generic : exception on at least one node";
+          node_monitor.request_emergency_stop();
         }
 
         // recompute fraction done
@@ -253,9 +252,13 @@ namespace triqs::mc_tools {
         }
         finished = NC + 1 >= n_cycles;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
-      } // end main NC loop
+
+        stop_it |= node_monitor.should_stop(); // if one node has requested a stop, the monitor checks, bcast the info
+      }                                        // end main NC loop
 
       int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
+      if (not node_monitor.success()) status = 3;
+
       triqs::signal_handler::stop();
       current_cycle_number += NC;
       timer.stop();
@@ -268,8 +271,10 @@ namespace triqs::mc_tools {
       // final reporting
       if (status == 1) report << "mc_generic stops because of stop_callback";
       if (status == 2) report << "mc_generic stops because of a signal";
+      if (status == 3) report << "mc_generic stops because of an exception on at least one node";
       report << "\n" << std::endl;
 
+      if (status == 3) TRIQS_RUNTIME_ERROR << "Stopped by an exception";
       return status;
     }
 
