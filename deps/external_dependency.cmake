@@ -1,25 +1,38 @@
-###################################################################################
+# Copyright (c) 2020 Simons Foundation
 #
-# APP4TRIQS: a Toolbox for Research in Interacting Quantum Systems
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (C) 2020 Simons Foundation
-#    authors: N. Wentzell
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# APP4TRIQS is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# APP4TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# APP4TRIQS. If not, see <http://www.gnu.org/licenses/>.
-#
-###################################################################################
+# You may obtain a copy of the License at
+#     https://www.gnu.org/licenses/gpl-3.0.txt
 
+
+# Consider ROOT env variables in find_package
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+# Make sure that imported targets are always global
+get_property(IMPORTED_ALWAYS_GLOBAL GLOBAL PROPERTY IMPORTED_ALWAYS_GLOBAL)
+if(NOT IMPORTED_ALWAYS_GLOBAL)
+  function(add_library)
+    set(_args ${ARGN})
+    if ("${_args}" MATCHES ";IMPORTED")
+        list(APPEND _args GLOBAL)
+    endif()
+    _add_library(${_args})
+  endfunction()
+  set_property(GLOBAL PROPERTY IMPORTED_ALWAYS_GLOBAL TRUE)
+endif()
+
+# Define External Dependency Function
 function(external_dependency)
   cmake_parse_arguments(ARG "EXCLUDE_FROM_ALL;BUILD_ALWAYS" "VERSION;GIT_REPO;GIT_TAG" "" ${ARGN})
 
@@ -34,7 +47,7 @@ function(external_dependency)
   if(NOT ARG_BUILD_ALWAYS AND NOT Build_Deps STREQUAL "Always")
     find_package(${ARGV0} ${ARG_VERSION} QUIET HINTS ${CMAKE_INSTALL_PREFIX})
     if(${ARGV0}_FOUND)
-      message(STATUS "Found dependency ${ARGV0} in system")
+      message(STATUS "Found dependency ${ARGV0} in system ${${ARGV0}_ROOT}")
       return()
     elseif(Build_Deps STREQUAL "Never")
       message(FATAL_ERROR "Could not find dependency ${ARGV0} in system. Please install the dependency manually or use -DBuild_Deps=IfNotFound during cmake configuration to automatically build all dependencies that are not found.")
@@ -50,6 +63,9 @@ function(external_dependency)
   endif()
   if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV0})
     message(STATUS "Found sources for dependency ${ARGV0} at ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV0}")
+    add_subdirectory(${ARGV0} ${subdir_opts})
+  elseif(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/deps/${ARGV0})
+    message(STATUS "Found sources for dependency ${ARGV0} at ${CMAKE_SOURCE_DIR}/deps/${ARGV0}")
     add_subdirectory(${ARGV0} ${subdir_opts})
   elseif(ARG_GIT_REPO)
     set(bin_dir ${CMAKE_CURRENT_BINARY_DIR}/${ARGV0})
