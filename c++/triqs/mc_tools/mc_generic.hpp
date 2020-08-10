@@ -60,23 +60,6 @@ namespace triqs::mc_tools {
        : RandomGenerator(random_name, random_seed), AllMoves(RandomGenerator), AllMeasures(), AllMeasuresAux(), report(&std::cout, verbosity) {}
 
     /**
-    * Constructor
-    *
-    * @param random_name     Name of the random generator (cf doc).
-    * @param random_seed     Seed for the random generator
-    * @param sign_init       The initial value of the sign (usually 1)
-    * @param verbosity       Verbosity level. 0 : None, ... TBA
-    */
-    TRIQS_DEPRECATED("Deprecated constructor. Usage of sign_init is deprecated. Cf documentation. Will be removed in future releases.")
-    mc_generic(std::string random_name, int random_seed, MCSignType sign_init, int verbosity)
-       : RandomGenerator(random_name, random_seed),
-         AllMoves(RandomGenerator),
-         AllMeasures(),
-         AllMeasuresAux(),
-         report(&std::cout, verbosity),
-         sign(sign_init) {}
-
-    /**
    * Register a move
    *
    * If the move m is an rvalue, it is moved into the mc_generic, otherwise is copied into it.
@@ -305,10 +288,6 @@ namespace triqs::mc_tools {
    * An access to the random number generator
    */
     random_generator &get_rng() { return RandomGenerator; }
-
-    // backward compatibility only
-    TRIQS_DEPRECATED("TRIQS API change: please use get_rng instead of rng. This function WILL be removed in future releases.")
-    random_generator &rng() { return RandomGenerator; }
 
     /**
    * The current cycle number
