@@ -43,6 +43,22 @@ is no longer dependent on h5py, and instead provides the necessary
 Python bindings directly in the [h5](https://github.com/triqs/h5) repository,
 which per default is built and installed together with TRIQS.
 
+Removal of deprecated API
+-------------------------
+
+Some parts of the TRIQS library API that have been deprecated in earlier releases
+were removed. This includes,
+```
+InverseFourier, set_from_inverse_fourier, make_gf_from_inverse_fourier, triqs.applications.XXX, g.N1, g.N2, g.beta, g.statistic, g.indicesL, g.indicesR
+```
+for the Python API and
+```
+block_gf.domain(), block_gf.mesh(), get_gf_data_shape, get_target_shape
+```
+in C++.
+Note that the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs3) will replace some of these with the proper syntax.
+
+
 General
 -------
 * Port TRIQS and Cpp2Py from Python 2 to Python 3
@@ -56,6 +72,8 @@ General
 * Remove triqs/utility/variant.hpp and use std::variant instead
 * Make sure that histograms are == comparable in both C++ and Python + Test
 * Remove redundant ostream operator<< for std::array, conflicting with nda
+* Removal of deprecated parts of Python API
+* Removal of deprecated parts of C++ API
 * Avoid use of optional.value() for improved osx compatibility
 * Disable stacktrace implementation on Mac OS due to failure on OSX10.15 (Catalina)
 * Various improvements to triqs++ compiler wrapper
