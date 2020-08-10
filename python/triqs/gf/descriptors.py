@@ -167,10 +167,6 @@ class Fourier(BaseBlock):
         G2.set_from_fourier(self.G, *self.args, **self.kw)
         return G2
 
-def InverseFourier(*args):
-    warnings.warn("InverseFourier is deprecated and should be replaced with Fourier")
-    return Fourier(*args)
-
 class LegendreToMatsubara (BaseBlock):
     r"""
     The transformation from Legendre to Matsubara as a lazy expression

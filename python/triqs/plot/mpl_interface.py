@@ -72,11 +72,6 @@ def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  titl
 
     for curve_dict in plot_protocol_apply(obj, opt_dict, plt.xlim):
 
-        import warnings
-        if type in curve_dict:
-            warnings.warn("The keyword 'type' is deprecated. Remove it.")
-            curve_dict.pop('type',None)
-
         plt_fct = getattr(top, curve_dict.pop('plot_function', 'plot'))
         X = curve_dict.pop('xdata')
         Y = curve_dict.pop('ydata')

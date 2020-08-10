@@ -428,14 +428,7 @@ class BlockGf:
 #       self.__check_attr("make_real_in_tau")
 #       return self.__class__( name_block_generator = [ (n, g.make_real_in_tau()) for n,g in self], make_copies=False)
 
-    #-------------- Fourier Backward Compatibility. ---------------------------
-
-    def set_from_inverse_fourier(self, *args) :
-        warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
-        self.set_from_fourier(*args)
-
 #---------------------------------------------------------
 
 from h5.formats import register_class
 register_class (BlockGf)
-

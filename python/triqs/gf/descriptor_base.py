@@ -142,26 +142,3 @@ Omega = Omega_()
 iOmega_n = Omega_()
 
 ##########################################################################
-
-class A_Omega_Plus_B(Base):
-    "deprecated. do not use"
-    def __init__ (self, A=1, B=0, Invert=False):
-        Base.__init__(self, A=A, B=B,Invert=Invert)
-         
-    def __call__(self,G):
-        A,B = self.A, self.B
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
-            raise TypeError("This initializer is only correct in frequency")
-
-        if G.target_rank > 0:
-            if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.target_shape[0]) 
-            if not isinstance(B,numpy.ndarray): B = B*numpy.identity(G.target_shape[0]) 
-            if A.shape != G.target_shape: raise RuntimeError("Size of A incorrect")
-            if B.shape != G.target_shape: raise RuntimeError("Size of B incorrect")
-        
-        Function(lambda om: A*om + B, None)(G)
-
-        if self.Invert: G.invert()
-        return G
-
-

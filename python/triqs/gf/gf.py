@@ -430,10 +430,6 @@ class Gf(metaclass=AddMethod):
     def __le__(self, other): 
         raise RuntimeError(" Operator <= not defined ")
 
-    def __ilshift__(self, A):
-        warnings.warn("The operator <<= is deprecated : update your code to use << instead", UserWarning, stacklevel=2)
-        return self << A
-
     # ---------- Addition   
 
     def __iadd__(self,arg):
@@ -761,46 +757,6 @@ class Gf(metaclass=AddMethod):
         if flatten_y and data.shape[1:3] == (1, 1):
             data = data[:, 0, 0]
         return X, data
-
-    #-------------- Deprecated. ---------------------------
-    @property
-    def beta(self) : 
-        warnings.warn("g.beta is deprecated and not generic. Use g.mesh.beta instead")
-        return self.mesh.beta
-    
-    @property
-    def statistic(self) : 
-        warnings.warn("g.statistic is deprecated and not generic. Use g.mesh.statistic instead")
-        return self.mesh.statistic
-
-    #-------------- Deprecated. NB works only in 1 var, matrix_valued anyway  ---------------------------
-    @property
-    def N1(self):
-        assert self.target_rank == 2, "N1 only makes sense for rank 2 targets"
-        warnings.warn("g.N1 is deprecated and not generic. Use g.target_shape[0] instead")
-        return self.target_shape[0]
-
-    @property
-    def N2(self):
-        assert self.target_rank == 2, "N2 only makes sense for rank 2 targets"
-        warnings.warn("g.N2 is deprecated and not generic. Use g.target_shape[1] instead")
-        return self.target_shape[1]
-
-    @property
-    def indicesL(self):
-        warnings.warn("g.indicesL is deprecated. Use g.indices[0] instead")
-        return self.indices.data[0]
-
-    @property
-    def indicesR(self):
-        warnings.warn("g.indicesR is deprecated. Use g.indices[1] instead")
-        return self.indices.data[1]
-
-    #-------------- Fourier Backward Compatibility. ---------------------------
-
-    def set_from_inverse_fourier(self, *args) :
-        warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
-        self.set_from_fourier(*args)
 
 #---------------------------------------------------------
 

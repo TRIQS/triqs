@@ -55,13 +55,6 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
                  'label': make_label(ind),
                  'ydata': f(self.data[make_data_sl(ind)])} for ind in ind_range]
 
-    # backward compat.
-    if 'RI' in opt_dict:
-        assert 'mode' not in opt_dict, "Can not have both flags RI and mode."
-        import warnings
-        warnings.warn("oplot: 'RI' flag is deprecated, use 'mode' instead")
-        opt_dict['mode'] = opt_dict.pop('RI', '')
-
     # if data is real, overrule
     mode = opt_dict.pop('mode', '')
     if self.data.dtype == numpy.float64 : 
