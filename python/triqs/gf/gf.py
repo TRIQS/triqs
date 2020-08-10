@@ -95,7 +95,8 @@ class Gf(metaclass=AddMethod):
              If true, and target_shape is set, the data will be real.
              Mutually exclusive with argument ``data``.
 
-    indices: GfIndices or list of str or list of list of str, optional
+    indices: WARNING: The Use of string indices is deprecated!
+             GfIndices or list of str or list of list of str, optional
              Optional string indices for the target space, to allow e.g. ``['eg', 'eg']``.
              list of list of str: the list of indices for each dimension.
              list of str: all indices are assumed to be the same for all dimensions.
@@ -141,6 +142,8 @@ class Gf(metaclass=AddMethod):
             # if indices is not a list of list, but a list, then the target_rank is assumed to be 2 !
             # backward compatibility only, it is not very logical (what about vector_valued gf ???)
             assert isinstance(indices, (type(None), list, GfIndices)), "Type of indices incorrect : should be None, Gfindices, list of str, or list of list of str"
+            if indices is not None:
+                warnings.warn("Constructing a Green function with string indices", DeprecationWarning)
             if isinstance(indices, list):
                 if not isinstance(indices[0], list): indices = [indices, indices]
                 # indices : transform indices into string
@@ -258,7 +261,8 @@ class Gf(metaclass=AddMethod):
 
     @property
     def indices(self):
-        """GfIndices : The index object of the taret space."""
+        """GfIndices : The index object of the target space."""
+        warnings.warn("The use of g.indices is deprecated", DeprecationWarning)
         return self._indices
 
     def copy(self) : 
@@ -337,6 +341,7 @@ class Gf(metaclass=AddMethod):
 
             # String access: transform the key into a list integers
             if all(isinstance(x, str) for x in key):
+                warnings.warn("The use of string indices is deprecated", DeprecationWarning)
                 assert self._indices, "Got string indices, but I have no indices to convert them !"
                 key_tpl = tuple(self._indices.convert_index(s,i) for i,s in enumerate(key)) # convert returns a slice of len 1
 
