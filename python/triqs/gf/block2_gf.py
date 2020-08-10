@@ -337,14 +337,7 @@ class Block2Gf:
         if not hasattr(self._first(), attr):
            raise RuntimeError("The blocks of this Green's Function do not possess the %s method" % attr)
 
-    #-------------- Fourier Backward Compatibility. ---------------------------
-
-    def set_from_inverse_fourier(self, *args) :
-        warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
-        self.set_from_fourier(*args)
-
 #---------------------------------------------------------
 
 from h5.formats import register_class
 register_class(Block2Gf)
-

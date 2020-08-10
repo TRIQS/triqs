@@ -31,7 +31,7 @@ from .gf import *
 from .block_gf import BlockGf
 from .block2_gf import Block2Gf
 from .map_block import map_block
-from .descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
+from .descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, LegendreToMatsubara, MatsubaraToLegendre
 from .tools import *
 
 from .backwd_compat.gf_imfreq import *
@@ -50,16 +50,8 @@ from .gf_factories import make_gf_from_fourier, make_hermitian
 make_real_in_tau = make_hermitian
 
 import warnings
-def make_gf_from_inverse_fourier(*args):
-    warnings.warn("make_gf_from_inverse_fourier is deprecated and should be replaced with make_gf_from_fourier")
-    return make_gf_from_fourier(*args)
 
-def set_from_inverse_fourier(*args):
-    warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
-    set_from_inverse_fourier(*args)
-
-
-__all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
+__all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions',
             'MeshPoint','MeshValueGenerator',
             'Idx', 'Gf', 'MeshProduct', 'GfIndices',
@@ -81,8 +73,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'fit_tail', 'fit_hermitian_tail',
             'fit_tail_on_window', 'fit_hermitian_tail_on_window',
             'replace_by_tail', 'replace_by_tail_in_fit_window',
-            'set_from_fourier', 'set_from_inverse_fourier',
-            'make_gf_from_fourier', 'make_gf_from_inverse_fourier',
+            'set_from_fourier', 'make_gf_from_fourier',
             'set_from_legendre', 'set_from_imfreq', 'set_from_imtime',
             'rebinning_tau','enforce_discontinuity',
             'density',
