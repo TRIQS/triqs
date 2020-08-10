@@ -13,6 +13,8 @@ repl_dict = {
         "pytriqs\.archive\.hdf_archive": "h5.archive",
         "pytriqs": "triqs",
         "hdf_archive_schemes": "formats",
+        "set_from_inverse_fourier": "set_from_fourier",
+        "make_gf_from_inverse_fourier": "make_gf_from_fourier",
         "InverseFourier": "Fourier",
         "triqs::h5": "h5",
         "triqs/h5/serialization\.hpp": "h5/serialization.hpp",
