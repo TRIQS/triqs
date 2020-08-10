@@ -141,21 +141,6 @@ namespace triqs {
 
       int size() const { return _glist.size(); }
 
-      // backwd compat only
-      // TO BE REMOVED IN FUTURE RELEASE
-      //
-      struct __dom {
-        block_gf const *_g;
-        int size() const { return _g->size(); }
-        auto const &names() const { return _g->block_names(); }
-      };
-      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-      __dom domain() const { return {this}; }
-      TRIQS_DEPRECATED(
-         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-         "x<g.size(); ++x)")
-      itertools::range mesh() const { return itertools::range{0, size()}; }
-
       std::string name;
 
       private:
@@ -518,21 +503,6 @@ namespace triqs {
 
       int size() const { return _glist.size(); }
 
-      // backwd compat only
-      // TO BE REMOVED IN FUTURE RELEASE
-      //
-      struct __dom {
-        block_gf_view const *_g;
-        int size() const { return _g->size(); }
-        auto const &names() const { return _g->block_names(); }
-      };
-      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-      __dom domain() const { return {this}; }
-      TRIQS_DEPRECATED(
-         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-         "x<g.size(); ++x)")
-      itertools::range mesh() const { return itertools::range{0, size()}; }
-
       std::string name;
 
       private:
@@ -870,21 +840,6 @@ namespace triqs {
       block_names_t const &block_names() const { return _block_names; }
 
       int size() const { return _glist.size(); }
-
-      // backwd compat only
-      // TO BE REMOVED IN FUTURE RELEASE
-      //
-      struct __dom {
-        block_gf_const_view const *_g;
-        int size() const { return _g->size(); }
-        auto const &names() const { return _g->block_names(); }
-      };
-      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-      __dom domain() const { return {this}; }
-      TRIQS_DEPRECATED(
-         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-         "x<g.size(); ++x)")
-      itertools::range mesh() const { return itertools::range{0, size()}; }
 
       std::string name;
 

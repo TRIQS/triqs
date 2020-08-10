@@ -83,14 +83,6 @@ namespace triqs {
 
     template <typename Var, typename Target> struct gf_h5_rw;
 
-    /*----------------------------------------------------------
-  *  Get shape of the data or of the target
-  *--------------------------------------------------------*/
-
-    template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }
-
-    template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
-
     /*------------------------------------------------------------------------------------------------------
  *                                  For mpi lazy
  *-----------------------------------------------------------------------------------------------------*/
