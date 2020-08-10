@@ -6,12 +6,6 @@ labels: feature
 
 ---
 
-<!--
-NOTE: The issue list is not the place for general questions regarding the usage of the code.
-Please consider subscribing to the mailing list instead:
-https://groups.google.com/a/flatironinstitute.org/forum/#!forum/triqs
--->
-
 ### Summary
 
 One paragraph explanation of the feature.

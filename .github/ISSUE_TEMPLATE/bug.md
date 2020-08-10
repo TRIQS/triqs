@@ -6,12 +6,6 @@ labels: bug
 
 ---
 
-<!--
-NOTE: The issue list is not the place for general questions regarding the usage of the code.
-Please consider subscribing to the mailing list instead:
-https://groups.google.com/a/flatironinstitute.org/forum/#!forum/triqs
--->
-
 ### Prerequisites
 
 * Please check that a similar issue isn't already filed: https://github.com/issues?q=is%3Aissue+user%3Atriqs
