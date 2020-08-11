@@ -38,6 +38,8 @@ struct configuration {
   configuration() : x(0) {} //constructor
 };
 
+long node_that_will_raise_exception = 1;
+
 //------------------------------------------------------------
 // MOVES
 //------------------------------------------------------------
@@ -50,7 +52,7 @@ struct move_left {
   move_left(configuration &config_, double pl, double pr, triqs::mc_tools::random_generator &RND_)
      : config(&config_), proba(pr / pl), RND(RND_) {} //constructor
   double attempt() {
-    if ((c.rank() == 1) and counter++ == 2000) TRIQS_RUNTIME_ERROR << "A bad ERROR";
+    if ((c.rank() == node_that_will_raise_exception) and counter++ == 2000) TRIQS_RUNTIME_ERROR << "A bad ERROR";
     return proba;
   }
   double accept() {
@@ -60,7 +62,7 @@ struct move_left {
   void reject() {}
   move_left(move_left const &x) : config(x.config), proba(x.proba), RND(x.RND) { std::cout << "copy move_left" << std::endl; }
   move_left(move_left &&x) = default; //: config(x.config), proba(x.proba), RND(x.RND) { std::cout << "copy move_left"<<std::endl;}
-  ~move_left() { std::cout << "desctution move_left" << std::endl; }
+  //  ~move_left() { std::cout << "desctution move_left" << std::endl; }
 };
 struct move_right {
   configuration *config;
@@ -107,10 +109,8 @@ mpi::communicator world;
 //------------------------------------------------------------
 // MAIN
 //------------------------------------------------------------
-TEST(mc_generic, Base) {
 
-  // greeting
-  if (world.rank() == 0) std::cout << "Random walk calculation" << std::endl;
+bool test_mc(bool recover_from_exception) {
 
   // prepare the MC parameters
   int N_Cycles            = 100000; // number of different walks.
@@ -132,7 +132,7 @@ TEST(mc_generic, Base) {
   }
 
   // construct a Monte Carlo loop
-  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity);
+  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity, recover_from_exception);
 
   // construct configuration
   configuration config;
@@ -146,6 +146,15 @@ TEST(mc_generic, Base) {
 
   bool stopped_by_exception = false;
 
+  // FIXME : I can not test the non recovering case, with MPI_Abort
+#if 0
+  IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
+  IntMC.collect_results(world);
+
+  // NOT WORKING
+  //EXPECT_DEATH(IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600)), "NOde exception");
+
+#else
   try {
     // Run and collect results
     IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
@@ -154,11 +163,24 @@ TEST(mc_generic, Base) {
     std::cerr << "TEST : Exception occurred. Node " << world.rank() << " is stopping cleanly" << std::endl;
     stopped_by_exception = true;
   }
+#endif
 
+  return stopped_by_exception;
+}
+
+TEST(mc_generic, WithException) {
+  node_that_will_raise_exception = 1;
+  bool stopped_by_exception      = test_mc(true);
   if (world.size() == 1)
     EXPECT_FALSE(stopped_by_exception); // one node only. Should work
   else
     EXPECT_TRUE(stopped_by_exception);
+}
+
+TEST(mc_generic, WithOutException) {
+  node_that_will_raise_exception = -1;
+  bool stopped_by_exception      = test_mc(true);
+  EXPECT_FALSE(stopped_by_exception); // one node only. Should work
 }
 
 MAKE_MAIN;

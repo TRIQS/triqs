@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/utility/first_include.hpp>
 #include <cmath>
+#include <memory>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/timestamp.hpp>
 #include <triqs/utility/report_stream.hpp>
@@ -57,8 +58,13 @@ namespace triqs::mc_tools {
     * @param random_seed     Seed for the random generator
     * @param verbosity       Verbosity level. 0 : None, ... TBA
     */
-    mc_generic(std::string random_name, int random_seed, int verbosity)
-       : RandomGenerator(random_name, random_seed), AllMoves(RandomGenerator), AllMeasures(), AllMeasuresAux(), report(&std::cout, verbosity) {}
+    mc_generic(std::string random_name, int random_seed, int verbosity, bool recover_from_exception = false)
+       : RandomGenerator(random_name, random_seed),
+         AllMoves(RandomGenerator),
+         AllMeasures(),
+         AllMeasuresAux(),
+         report(&std::cout, verbosity),
+         recover_from_exception(recover_from_exception) {}
 
     /**
    * Register a move
@@ -190,9 +196,9 @@ namespace triqs::mc_tools {
      *
      */
     int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
-                              MCSignType sign_init) {
+                              MCSignType sign_init, mpi::communicator c = mpi::communicator{}) {
       sign = sign_init; // init the sign
-      return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback);
+      return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback, c);
     }
 
     private:
@@ -208,8 +214,11 @@ namespace triqs::mc_tools {
       bool stop_it = false, finished = false;
       int NC                = 0;
       double next_info_time = 0.1;
+      long aborted          = 0;
+      long signal_caught    = 0;
 
-      mpi::monitor node_monitor{c};
+      std::unique_ptr<mpi::monitor> node_monitor;
+      if (recover_from_exception) node_monitor = std::make_unique<mpi::monitor>(c);
 
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
         try {
@@ -235,11 +244,16 @@ namespace triqs::mc_tools {
           }
         } catch (triqs::signal_handler::exception const &) {
           std::cerr << "mc_generic: Signal caught on node " << c.rank() << "\n" << std::endl;
+          signal_caught = 1;
           // do nothing, let's continue
         } catch (std::exception const &err) {
           // log the error and node number
           std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
-          node_monitor.request_emergency_stop();
+          aborted = 1;
+          if (recover_from_exception)
+            node_monitor->request_emergency_stop();
+          else
+            c.abort(2);
         }
 
         // recompute fraction done
@@ -252,15 +266,22 @@ namespace triqs::mc_tools {
         }
         finished = NC + 1 >= n_cycles;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
+        stop_it |= signal_caught;
+        stop_it |= aborted;
 
-        stop_it |= node_monitor.should_stop(); // if one node has requested a stop, the monitor checks, bcast the info
-      }                                        // end main NC loop
+        if (node_monitor) stop_it |= node_monitor->should_stop(); // if one node has requested a stop, the monitor checks, bcast the info
+      }                                                           // end main NC loop
 
-      int status   = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
-      bool success = node_monitor.finalize();
+      int status = (finished ? 0 : (signal_caught ? 2 : 1));
+
+      bool success = (not aborted);
+      if (node_monitor) success = node_monitor->finalize();
       if (not success) status = 3;
 
+      //signal_caught = mpi::all_reduce(signal_caught, c);
+
       triqs::signal_handler::stop();
+
       current_cycle_number += NC;
       timer.stop();
       if (do_measure) {
@@ -270,9 +291,9 @@ namespace triqs::mc_tools {
       }
 
       // final reporting
-      if (status == 1) report << "mc_generic stops because of stop_callback";
-      if (status == 2) report << "mc_generic stops because of a signal";
-      if (status == 3) report << "mc_generic stops because of an exception on at least one node";
+      if (status == 1) std::cerr << "rank " << c.rank() << ": mc_generic stops because of stop_callback" << std::endl;
+      if (status == 2) std::cerr << "rank " << c.rank() << ": mc_generic stops because of a signal" << std::endl;
+      //if (status == 3) std::cerr << "rank "<< c.rank()<<": mc_generic stops because the calculation raised an exception on one node"<<std::endl;
       report << "\n" << std::endl;
 
       if (status == 3) TRIQS_RUNTIME_ERROR << "Stopped by an exception";
@@ -382,8 +403,9 @@ namespace triqs::mc_tools {
     uint64_t nmeasures, current_cycle_number = 0;
     utility::timer timer_accumulation, timer_warmup;
     std::function<void()> after_cycle_duty;
-    MCSignType sign       = 1;
-    uint64_t done_percent = 0;
-    uint64_t config_id    = 0;
-  }; // namespace triqs::mc_tools
+    MCSignType sign             = 1;
+    uint64_t done_percent       = 0;
+    uint64_t config_id          = 0;
+    bool recover_from_exception = false;
+  };
 } // namespace triqs::mc_tools
