@@ -135,12 +135,12 @@ To search for the available TRIQS packages, type
       
 To install TRIQS or a TRIQS applications, type (for example)
 
-      eb --robot TRIQS-2.2.0-foss-2019a-Python-2.7.15.eb
-      eb --robot TRIQS-cthyb-2.2.0-foss-2019a-Python-2.7.15.eb
+      eb --robot TRIQS-3.0.0-foss-2019a-Python-3.7.2.eb
+      eb --robot TRIQS-cthyb-3.0.0-foss-2019a-Python-3.7.2.eb
      
 This will fetch, compile and install the requested package, as well as all required dependencies (including toolchains, Python, various libraries). Corresponding environment modules will also be generated, thus a package can be loaded using (for example)
 
-      module load TRIQS-cthyb/2.2.0-foss-2019a-Python-2.7.15
+      module load TRIQS-cthyb/3.0.0-foss-2019a-Python-3.7.2
       
 or simply
 
