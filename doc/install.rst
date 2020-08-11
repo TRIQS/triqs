@@ -119,6 +119,36 @@ A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.i
 .. note:: Once your binder session is closed, your work will be lost.
 
 
+.. _triqs_easybuild:
+Compiling TRIQS from source using EasyBuild
+===========================================
+
+`EasyBuild <https://easybuild.readthedocs.io/en/latest/>` is a build and installation framework for managing scientific software on HPC systems.
+We here assume that a working copy of EasyBuild is already available (see `installation guide <https://easybuild.readthedocs.io/en/latest/Installation.html>` otherwise).
+To bring EasyBuild to the latest release (including the latest definitions of all software installable via EasyBuild), type
+
+      eb --install-latest-eb-release
+      
+To search for the available TRIQS packages, type
+
+      eb -S TRIQS
+      
+To install TRIQS or a TRIQS applications, type (for example)
+
+      eb --robot TRIQS-2.2.0-foss-2019a-Python-2.7.15.eb
+      eb --robot TRIQS-cthyb-2.2.0-foss-2019a-Python-2.7.15.eb
+     
+This will fetch, compile and install the requested package, as well as all required dependencies (including toolchains, Python, various libraries). Corresponding environment modules will also be generated, thus a package can be loaded using (for example)
+
+      module load TRIQS-cthyb/2.2.0-foss-2019a-Python-2.7.15
+      
+or simply
+
+      module load TRIQS-cthyb
+      
+for the most recent version.    
+
+
 .. _compilation_from_source:
 Compiling TRIQS from source (Advanced)
 ======================================
@@ -179,32 +209,3 @@ Further reading
    installation/environment_vars
    installation/python
    installation/clang
-
-
-Compiling TRIQS from source using EasyBuild
-===========================================
-
-`EasyBuild <https://easybuild.readthedocs.io/en/latest/>` is a build and installation framework for managing scientific software on HPC systems.
-We here assume that a working copy of EasyBuild is already available (see `installation guide <https://easybuild.readthedocs.io/en/latest/Installation.html>` otherwise).
-To bring EasyBuild to the latest release (including the latest definitions of all software installable via EasyBuild), type
-
-      eb --install-latest-eb-release
-      
-To search for the available TRIQS packages, type
-
-      eb -S TRIQS
-      
-To install TRIQS or a TRIQS applications, type (for example)
-
-      eb --robot TRIQS-2.2.0-foss-2019a-Python-2.7.15.eb
-      eb --robot TRIQS-cthyb-2.2.0-foss-2019a-Python-2.7.15.eb
-     
-This will fetch, compile and install the requested package, as well as all required dependencies (including toolchains, Python, various libraries). Corresponding environment modules will also be generated, thus a package can be loaded using (for example)
-
-      module load TRIQS-cthyb/2.2.0-foss-2019a-Python-2.7.15
-      
-or simply
-
-      module load TRIQS-cthyb
-      
-for the most recent version.    
