@@ -35,6 +35,9 @@ else()
   target_compile_options(triqs PUBLIC -std=c++17 $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
 endif()
 
+# Disable warnings about comma expression in array subscript
+target_compile_options(triqs PUBLIC -Wno-deprecated-comma-subscript)
+
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
 target_compile_definitions(triqs
