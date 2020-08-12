@@ -108,8 +108,7 @@ class HilbertTransform:
             Sigma_fnt = True
 
         # Check that Sigma is square
-        N1 = model.N1
-        N2 = model.N2
+        N1, N2 = model.target_shape
         assert N1 == N2, "Sigma must be a square Gf"
 
         # Check result
