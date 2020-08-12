@@ -401,6 +401,7 @@ class Gf(metaclass=AddMethod):
             else:
                 assert self.target_rank == 1, "wrong number of arguments. Expected %s, got %s"%(self.target_rank, 1)
                 assert isinstance(key, int)
+                self[key] << val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx)) for x in key):
