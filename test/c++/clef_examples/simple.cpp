@@ -16,11 +16,11 @@
 //
 // Authors: Olivier Parcollet
 
-#include "triqs/clef.hpp"
+#include <triqs/clef.hpp>
+#include <triqs/utility/macros.hpp>
 
 namespace tql = triqs::clef;
 // This macro just prints its argument literaly, and then its value
-#define PRINT(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl;
 
 int main() {
 
