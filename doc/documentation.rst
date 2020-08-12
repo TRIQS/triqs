@@ -6,7 +6,7 @@ Documentation
 Manual
 ------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    documentation/manual/contents
 
