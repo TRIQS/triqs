@@ -327,7 +327,7 @@ class Gf(metaclass=AddMethod):
 
                 # Invalid Access
                 else:
-                    raise NotImplementedError, "Partial slice of the target space not implemented"
+                    raise NotImplementedError("Partial slice of the target space not implemented")
 
                 dat = self._data[ self._rank * [slice(0,None)] + key_lst ] 
                 r = Gf(mesh = self._mesh, data = dat, indices = ind)
