@@ -47,10 +47,11 @@ m.add_class (c)
 
 # ---------------------- Tail functionality --------------------
 # fit_tail
-m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
-m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
-m.add_function("std::pair<std::vector<array<dcomplex,3>>, double> fit_tail(block_gf_view<imfreq, matrix_valued> g, std::vector<array_view<dcomplex,3>> known_moments = {})", doc = "tail")
-m.add_function("std::pair<std::vector<array<dcomplex,1>>, double> fit_tail(block_gf_view<imfreq, scalar_valued> g, std::vector<array_view<dcomplex,1>> known_moments = {})", doc = "tail")
+for mesh in ["imfreq", "refreq"]:
+    m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<%s, matrix_valued> g, array_view<dcomplex,3> known_moments = {})" % mesh, doc = "tail")
+    m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<%s, scalar_valued> g, array_view<dcomplex,1> known_moments = {})" % mesh, doc = "tail")
+    m.add_function("std::pair<std::vector<array<dcomplex,3>>, double> fit_tail(block_gf_view<%s, matrix_valued> g, std::vector<array_view<dcomplex,3>> known_moments = {})" % mesh, doc = "tail")
+    m.add_function("std::pair<std::vector<array<dcomplex,1>>, double> fit_tail(block_gf_view<%s, scalar_valued> g, std::vector<array_view<dcomplex,1>> known_moments = {})" % mesh, doc = "tail")
 
 # fit_hermitian_tail: impose hermiticity on the moment matrices
 m.add_function("std::pair<array<dcomplex,3>, double> fit_hermitian_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
@@ -146,6 +147,11 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     calling_pattern = "g_out = fourier(g_in)",
                     doc = """Fills self with the Fourier transform of g_in""")
+
+            if Meshes[1] in ["imtime", "retime"]:
+                m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, typename %s::real_t> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
+                        calling_pattern = "g_out = fourier(g_in)",
+                        doc = """Fills self with the Fourier transform of g_in""")
 
         # set_from_fourier with known moments
         m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Target),

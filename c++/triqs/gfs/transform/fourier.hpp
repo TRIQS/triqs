@@ -171,7 +171,7 @@ namespace triqs::gfs {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_tau));
   }
 
-  template <int N = 0, typename T> gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_iw = -1) {
+  template <int N = 0, typename T> gf<imfreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_iw = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_iw));
   }
 
@@ -179,7 +179,7 @@ namespace triqs::gfs {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
   }
 
-  template <int N = 0, typename T> gf<refreq, T> make_gf_from_fourier(gf_const_view<retime, T> gin, bool shift_half_bin = false) {
+  template <int N = 0, typename T> gf<refreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<retime, T> gin, bool shift_half_bin = false) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
   }
 

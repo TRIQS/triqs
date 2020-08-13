@@ -9,6 +9,7 @@ add_python_test(gf_init)
 add_python_test(gf_density)
 add_python_test(gf_base_op)
 add_python_test(gf_fourier)
+add_python_test(gf_fourier_real)
 add_python_test(gf_slicing)
 add_python_test(g_tau_mul)
 

@@ -23,9 +23,10 @@ from triqs.gf import *
 
 n_iw = 100
 n_tau = 6 * n_iw + 1
+beta=20.0
 
-gt = GfImTime(beta=20.0, n_points = n_tau, indices=[0])
-gw = GfImFreq(beta=20.0, n_points = n_iw,  indices=[0])
+gt = GfImTime(beta=beta, n_points=n_tau, indices=[0])
+gw = GfImFreq(beta=beta, n_points=n_iw,  indices=[0])
 gw2 = gw.copy()
 
 gw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
@@ -41,8 +42,17 @@ assert abs(gw2.data[0,0,0].real) < 1e-7
 assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
 assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
-gw << Fourier(0.3*gt)
-assert abs(gw.data[0,0,0].real) < 1e-7
+gw2 << Fourier(0.3*gt)
+assert abs(gw2.data[0,0,0].real) < 1e-7
+
+# ==== Matrix-real-valued Green functions
+
+gw2 << Fourier(gt.real)
+gw3 = make_gf_from_fourier(gt.real)
+
+# Check that the backward transform yields the initial gw
+assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
 # ==== Scalar-valued Green functions
 
@@ -63,8 +73,8 @@ assert abs(gw2.data[0].real) < 1e-7
 assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
 assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
-gw << Fourier(0.3*gt)
-assert abs(gw.data[0].real) < 1e-7
+gw2 << Fourier(0.3*gt)
+assert abs(gw2.data[0].real) < 1e-7
 
 # # ==== Block Green functions
 

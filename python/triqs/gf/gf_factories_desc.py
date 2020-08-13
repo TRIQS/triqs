@@ -47,6 +47,11 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                     signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     doc ="""Create Green function from the Fourier transform of g_in""")
 
+            if Meshes[1] in ["imtime", "retime"]:
+                m.add_function(name = "make_gf_from_fourier",
+                        signature="%s<%s, %s> make_gf_from_fourier(%s<%s, typename %s::real_t> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
+                        doc ="""Create Green function from the Fourier transform of g_in""")
+
         # make_gf_from_fourier with known moments
         m.add_function(name = "make_gf_from_fourier",
                signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in, gf_mesh<%s> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),

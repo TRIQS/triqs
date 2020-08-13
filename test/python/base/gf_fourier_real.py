@@ -19,7 +19,45 @@ from triqs.gf import *
 
 # ==== Matrix-valued Green functions
 
-gw = GfReFreq(indices = [1], window = (-5, 5), n_points = 1001, name = "egBlock")
-gw << SemiCircular(2.0)
+n_w = 1001
+w_mesh = MeshReFreq(omega_min=-10, omega_max=10, n_max = n_w)
+gw = GfReFreq(mesh=w_mesh, target_shape=(1,1))
+gw2 = gw.copy()
+#gw << SemiCircular(2.0)
+gw << inverse(Omega - 1 + 1j * 0.001)
 
-gt = make_gf_from_inverse_fourier(gw)
+t_mesh = make_adjoint_mesh(w_mesh)
+gt2 = GfReFreq(mesh=t_mesh, target_shape=(1,1))
+
+# ======== Without tail-fitting ========
+
+gt2 << Fourier(gw)
+gt3 = make_gf_from_fourier(gw)
+
+# Check that forward and backward transform gives Identity
+gw2 << Fourier(gt2)
+gw3 = make_gf_from_fourier(gt3)
+print(max(abs(gw.data[:] - gw2.data[:])))
+print(max(abs(gw.data[:] - gw3.data[:])))
+assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
+
+# Check Fourier transform of real frequency Green function
+gw3 = make_gf_from_fourier(gt3.real) + 1j * make_gf_from_fourier(gt3.imag)
+print(max(abs(gw.data[:] - gw3.data[:])))
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
+
+# ======== With tail-fitting ========
+
+tail, err = fit_tail(gw, make_zero_tail(gw, 1))
+print(tail, err)
+gt2 << Fourier(gw, tail)
+gt3 = make_gf_from_fourier(gw, t_mesh, tail)
+
+# Check that forward and backward transform gives Identity
+gw2 << Fourier(gt2, tail)
+gw3 = make_gf_from_fourier(gt3, w_mesh, tail)
+print(max(abs(gw.data[:] - gw2.data[:])))
+print(max(abs(gw.data[:] - gw3.data[:])))
+assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7

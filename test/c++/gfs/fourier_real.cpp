@@ -44,18 +44,18 @@ template <int TARGET_RANK> void test_fourier() {
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
   auto w_mesh = gf_mesh<refreq>{-w_max, w_max, Nw};
+  auto t_mesh = make_adjoint_mesh(w_mesh);
   auto Gw1    = gf<refreq, target_t>{w_mesh, shape};
 
   // === Fourier of a simple Lorentzian ===
 
   for (auto const &w : w_mesh) Gw1[w] = lorentzian(w, E);
 
-  auto Gt1           = make_gf_from_fourier(Gw1);
-  auto const &t_mesh = Gt1.mesh();
+  auto [tail, err] = fit_tail(Gw1);
+  auto Gt1         = make_gf_from_fourier(Gw1, t_mesh, tail);
 
   // verification that TF(TF^-1)=Id
-  auto [tail, err] = fit_tail(Gw1);
-  auto Gw1b        = make_gf_from_fourier(Gt1, w_mesh, tail(range(0, 3), ellipsis()));
+  auto Gw1b = make_gf_from_fourier(Gt1, w_mesh, tail);
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
   // Comparision against exact result
