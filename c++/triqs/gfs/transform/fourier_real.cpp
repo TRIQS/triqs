@@ -39,7 +39,7 @@ namespace triqs::gfs {
       // If no known_moments are passed we do a fourier transform on the raw data
       return _fourier_impl(w_mesh, gt, make_zero_tail(gt, 3));
     else {
-      TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 3.")
+      TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 2.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
@@ -84,23 +84,18 @@ namespace triqs::gfs {
 
     arrays::array_const_view<dcomplex, 2> mom_12;
 
-    // Assume vanishing 0th moment in tail fit
-    if (known_moments.is_empty()) return _fourier_impl(t_mesh, gw, make_zero_tail(gw, 1));
+    if (known_moments.is_empty())
+      // If no known_moments are passed we do a fourier transform on the raw data
+      return _fourier_impl(t_mesh, gw, make_zero_tail(gw, 3));
+    else {
+      TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct Real-Frequency Fourier transform requires known moments up to order 2.")
 
-    double _abs_tail0 = max_element(abs(known_moments(0, range())));
-    TRIQS_ASSERT2((_abs_tail0 < 1e-8),
-                  "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-8),
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
-    if (known_moments.shape()[0] < 3) {
-      auto [tail, error] = fit_tail(gw, known_moments);
-      TRIQS_ASSERT2((error < 1e-2), "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error) + "\n Please make sure you treat the constant offset analytically!\n");
-      if (error > 1e-4)
-        std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
-                  << "\n Please make sure you treat the constant offset analytically!\n";
-      TRIQS_ASSERT2((first_dim(tail) > 2), "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n");
-      return _fourier_impl(t_mesh, gw, tail); //(range(1, 3), range()));
-    } else
       mom_12.rebind(known_moments(range(1, 3), range()));
+    }
 
     size_t L = gw.mesh().size();
     if (L != t_mesh.size()) TRIQS_RUNTIME_ERROR << "Meshes are of different size: " << L << " vs " << t_mesh.size();
