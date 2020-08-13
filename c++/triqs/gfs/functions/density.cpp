@@ -199,9 +199,13 @@ namespace triqs::gfs {
   arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
     arrays::matrix<dcomplex> res(gl.target_shape());
     res() = 0.0;
+
+    // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145
     for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
     res /= gl.domain().beta;
-    return res;
+
+    // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
+    return transpose(res);
   }
 
   dcomplex density(gf_const_view<legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
