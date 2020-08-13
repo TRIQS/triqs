@@ -157,6 +157,10 @@ class Gf(metaclass=AddMethod):
                 # we now allocate the data
                 l = mesh.size_of_components() if isinstance(mesh, MeshProduct) else [len(mesh)]
                 data = np.zeros(list(l) + list(target_shape), dtype = np.float64 if is_real else np.complex128)
+            else:
+                l = tuple(mesh.size_of_components()) if isinstance(mesh, MeshProduct) else (len(mesh),)
+                assert l == data.shape[0:len(l)], "Mismatch between data shape %s and sizes of mesh(es) %s\n " % (data.shape, l)
+
             # Now we have the data at correct size. Set up a few short cuts
             self._data = data
             len_data_shape = len(self._data.shape) 
