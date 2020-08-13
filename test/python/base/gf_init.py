@@ -66,5 +66,10 @@ class test_gf_init(unittest.TestCase):
         g3 << g1
         assert_gfs_are_close(g1, g3)
 
+        # If meshes are incompatible we should see an AssertionError
+        g4 = GfImFreq(indices = ['eg1','eg2'], beta = 100, n_points = 100, name = "egBlock")
+        with self.assertRaises(AssertionError):
+            g4 << g1
+
 if __name__ == '__main__':
     unittest.main()

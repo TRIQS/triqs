@@ -403,7 +403,9 @@ class Gf(metaclass=AddMethod):
           * G << g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, Gf):
-            if self is not A: self.copy_from(A) # otherwise it is useless AND does not work !!
+            if self is not A: # otherwise it is useless AND does not work !!
+                assert self.mesh == A.mesh, "Green function meshes are not compatible:\n  %s\nand\n  %s" % (self.mesh, A.mesh)
+                self.copy_from(A)
         elif isinstance(A, lazy_expressions.LazyExpr): # A is a lazy_expression made of GF, scalars, descriptors
             A2 = descriptors.convert_scalar_to_const(A)
             def e_t (x):
