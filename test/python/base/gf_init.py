@@ -71,5 +71,25 @@ class test_gf_init(unittest.TestCase):
         with self.assertRaises(AssertionError):
             g4 << g1
 
+    def test_gf_rank1(self):
+
+        beta, n_points = 50, 100
+        iw_mesh = MeshImFreq(beta, 'Fermion', n_points)
+        g1 = Gf(mesh = iw_mesh, target_shape = [2])
+        g1[0] << SemiCircular(half_bandwidth = 1)
+        g1[1] << SemiCircular(half_bandwidth = 2)
+
+        g2 = Gf(mesh = iw_mesh, target_shape = [2])
+        g2[:] = g1
+        assert_gfs_are_close(g1, g2)
+
+        g3 = Gf(mesh = iw_mesh, target_shape = [2])
+        g3 << g1
+        assert_gfs_are_close(g1, g3)
+
+        g3[1] << g3[0]
+        assert_gfs_are_close(g1[0], g3[1])
+
+
 if __name__ == '__main__':
     unittest.main()
