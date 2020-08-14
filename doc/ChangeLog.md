@@ -80,6 +80,7 @@ General
 * Fix issues with simultaneous execution of various c++ tests
 * Fix bug in lattice tools dos function
 * Cpp2pyInfo class no longer requires a base-class
+* Regenerate GPL Copyright headers
 * Various smaller bugfixes / improvements
 
 atom_diag
@@ -99,6 +100,7 @@ cmake
 * Remove dependence on Boost serialization and clean cmake
 * Add deps/CMakeLists.txt file to manage dependencies
 * In extract_flags.cmake, protect extraction of -L/usr/lib and -I/usr/include
+* Disable warnings about comma operator in array subscript
 * Extend extract_flags.cmake to treat compiler-specific generator expressions properly
 * In extract_flags allow extraction of BUILD_INTERFACE flags
 * Fix install permissions for triqs++ compiler wrapper
@@ -133,7 +135,9 @@ doc
 * Add porting guide: doc/porting_to_triqs3.md
 * added NRGLjubjana_interface to the list of impurity solvers
 * updated applications page to include new hubbardi version 2.2
-* Various smaller improvements
+* Fix example code green_retime.py
+* Generate extended toctree for manual documentation pages
+* Update easybuild install instructions for 3.0.0 images
 * Change the Mathjax fallback solution to use version 2.7.8 @ github
 * Add advice on VERSION changes in top-level CMakeLists.txt to porting guide
 * Update documentation in histograms python module
@@ -145,14 +149,20 @@ doc
 * Fix CC/CXX export commands in osx install instructions
 * Bump cmake version requirement to actual required version
 * Update link to install page in README to use latest stable version
+* Various smaller improvements
 
 gf
 --
 * Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
+* Disable automatic tailfit in fourier transform of real-frequency Green functions
 * Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
 * Compare block_names also in c++ functions assert_block[2]_gfs_are_close
 * Fix warning about improper np.array access pattern
 * Properly compare gf indices in tests, fix improper indices construction in various spots
+* Fix defintion of density matrix in density(gf_const_view<legendre> gl)
+* Check that meshes are compatible in lshift assignment
+* When constructing Gf from data, be sure to check compatibility to the mesh
+* Allow fourier transform of real-valued imag/real time Green functions
 * Add comparison operators and output operators to the gf_indices type
 * Add deduction guides for gf{gf_expr} statements
 * Bugfix in block_gf(mesh, gf_struct) constructor for scalar_valued gf
@@ -161,6 +171,7 @@ gf
 * Change default tolerance of is_gf_hermitian from 1e-13 -> 1e-12
 * Fix make_hermitian and is_gf_hermitian for real-valued Green functions
 * Fix bug in return type of positive_freq_view(gf&) and add test FIX #764
+* Protect against rounding imprecisions in time_segment::make_time_pt(double)
 * Store block_names in block_gf and block2_gf as list of str instead of nparray
 
 jenkins
