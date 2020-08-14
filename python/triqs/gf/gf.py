@@ -303,37 +303,10 @@ class Gf(metaclass=AddMethod):
         if key == self._full_slice:
             return self
 
+        # Only one argument. Must be a mesh point
         if not isinstance(key, tuple):
-            if isinstance(key, (MeshPoint, Idx)):
-                return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
-            else:
-                assert self.target_rank == 1, "wrong number of arguments. Expected %s, got %s"%(self.target_rank, 1)
-                # Assume empty indices (scalar_valued)
-                ind = GfIndices([])
-
-                # String access: transform the key into a list integers
-                if isinstance(key, str):
-                    assert self._indices, "Got string indices, but I have no indices to convert them !"
-                    key_tpl = tuple([self._indices.convert_index(key,1)]) # convert returns a slice of len 1
-
-                # Slicing with ranges -> Adjust indices
-                elif isinstance(key, slice): 
-                    key_tpl = tuple([key])
-                    ind = GfIndices([ v[k]  for k,v in zip(key_lst, self._indices.data)])
-
-                # Integer access
-                elif isinstance(key, int):
-                    key_tpl = tuple([key])
-
-                # Invalid Access
-                else:
-                    raise NotImplementedError("Partial slice of the target space not implemented")
-
-                dat = self._data[ self._rank * (slice(0,None),) + key_tpl ] 
-                r = Gf(mesh = self._mesh, data = dat, indices = ind)
-
-                r.__check_invariants()
-                return r
+            assert isinstance(key, (MeshPoint, Idx))
+            return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         if all(isinstance(x, (MeshPoint, Idx)) for x in key):
