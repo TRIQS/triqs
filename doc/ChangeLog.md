@@ -9,6 +9,8 @@ TRIQS Version 3.0.0 is a major release that
 A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
 We provide a detailed list of the changes below.
 
+We thank all the people who have contributed to this release: Alexander Hampel, Olivier Parcollet, Malte Schueler, Hiroshi Shinaoka, Dylan Simon, Nils Wentzell, Manuel Zingl, Rok Žitko
+
 Renamings
 ---------
 
