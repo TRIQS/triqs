@@ -5,6 +5,7 @@ TRIQS Version 3.0.0 is a major release that
 * introduces compatibility with Python 3 (Python 2 no longer supported)
 * separates out the [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/itertools) functionality of the TRIQS library
 * fixes several library issues
+
 A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md).
 We provide a detailed list of the changes below.
 
