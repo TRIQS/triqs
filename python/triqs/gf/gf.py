@@ -139,8 +139,6 @@ class Gf(metaclass=AddMethod):
             # if indices is not a list of list, but a list, then the target_rank is assumed to be 2 !
             # backward compatibility only, it is not very logical (what about vector_valued gf ???)
             assert isinstance(indices, (type(None), list, GfIndices)), "Type of indices incorrect : should be None, Gfindices, list of str, or list of list of str"
-            if indices is not None:
-                warnings.warn("Constructing a Green function with string indices", DeprecationWarning)
             if isinstance(indices, list):
                 if not isinstance(indices[0], list): indices = [indices, indices]
                 # indices : transform indices into string
@@ -263,7 +261,6 @@ class Gf(metaclass=AddMethod):
     @property
     def indices(self):
         """GfIndices : The index object of the target space."""
-        warnings.warn("The use of g.indices is deprecated", DeprecationWarning)
         return self._indices
 
     def copy(self) : 

@@ -153,8 +153,9 @@ doc
 
 gf
 --
-* Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
 * Disable automatic tailfit in fourier transform of real-frequency Green functions
+* Deprecate the use of string indices
+* Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
 * Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
 * Compare block_names also in c++ functions assert_block[2]_gfs_are_close
 * Fix warning about improper np.array access pattern
@@ -171,7 +172,6 @@ gf
 * Change default tolerance of is_gf_hermitian from 1e-13 -> 1e-12
 * Fix make_hermitian and is_gf_hermitian for real-valued Green functions
 * Fix bug in return type of positive_freq_view(gf&) and add test FIX #764
-* Protect against rounding imprecisions in time_segment::make_time_pt(double)
 * Store block_names in block_gf and block2_gf as list of str instead of nparray
 
 jenkins
