@@ -305,8 +305,9 @@ class Gf(metaclass=AddMethod):
 
         # Only one argument. Must be a mesh point
         if not isinstance(key, tuple):
-            assert isinstance(key, (MeshPoint, Idx))
-            return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
+            if isinstance(key, (MeshPoint, Idx)):
+                return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
+            else: key = (key,)
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         if all(isinstance(x, (MeshPoint, Idx)) for x in key):
