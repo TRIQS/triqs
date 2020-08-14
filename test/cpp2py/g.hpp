@@ -2,45 +2,64 @@
 using namespace triqs::gfs;
 using namespace triqs;
 
+// ==== scalar gf ====
+
+gf<imfreq, scalar_valued> make_gf(double a) {
+  double beta = 1;
+  auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}};
+  g()         = a;
+
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "gout", g);
+
+  return g;
+}
+
+void pass_gf(gf_view<imfreq, scalar_valued> g) {
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "gin", g);
+}
+
+// ==== block gf ====
+
 block_gf<imfreq> make_bgf(double a) {
 
   double beta = 1;
-  auto G1     = gf<imfreq>{{beta, Fermion}, {2, 2}};
+  auto g      = gf<imfreq>{{beta, Fermion}, {2, 2}};
+  g()         = a;
 
-  auto B1 = make_block_gf<imfreq>(3, G1);
+  auto bg = make_block_gf<imfreq>(3, g);
 
-  {
-    h5::file file("ess_test_g1.h5", 'w');
-    h5_write(file, "g", B1);
-  }
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "bgout", bg);
 
-  return B1;
+  return bg;
 }
 
 void pass_bgf(block_gf_view<imfreq> g) {
 
-  {
-    h5::file file("ess_test_g2.h5", 'w');
-    h5_write(file, "g", g);
-  }
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "bgin", g);
 }
 
-// scalar gf
+// ==== pair of gf ====
 
-gf<imfreq, scalar_valued> make_sgf(double a) {
+std::pair<gf<imfreq, scalar_valued>, gf<imfreq, scalar_valued>> make_pair_gf(double a) {
   double beta = 1;
-  auto G1     = gf<imfreq, scalar_valued>{{beta, Fermion}};
-  {
-    h5::file file("ess_test_g3a.h5", 'w');
-    h5_write(file, "g", G1);
-  }
-  return G1;
+  auto g1     = gf<imfreq, scalar_valued>{{beta, Fermion}};
+  auto g2     = gf<imfreq, scalar_valued>{{beta, Fermion}};
+  g1()        = a;
+  g2()        = 2 * a;
+
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "g1out", g1);
+  h5_write(file, "g2out", g2);
+
+  return {g1, g2};
 }
 
-void pass_sgf(gf_view<imfreq, scalar_valued> g) {
-
-  {
-    h5::file file("ess_test_g3b.h5", 'w');
-    h5_write(file, "g", g);
-  }
+void pass_two_gf(gf_view<imfreq, scalar_valued> g1, gf_view<imfreq, scalar_valued> g2) {
+  h5::file file("test_wrap_gf.h5", 'a');
+  h5_write(file, "g1in", g1);
+  h5_write(file, "g2in", g2);
 }
