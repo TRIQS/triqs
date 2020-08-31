@@ -30,10 +30,10 @@ namespace triqs::gfs {
 
   //----------------------------------------------------------------------------------------------
   // construct the Vandermonde matrix
-  inline arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order) {
+  inline arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order, int error_order) {
     arrays::matrix<dcomplex> V(pts.size(), expansion_order + 1);
     for (auto [i, p] : itertools::enumerate(pts)) {
-      dcomplex z = 1;
+      dcomplex z = std::abs(std::pow( p , error_order ));
       for (int n = 0; n <= expansion_order; ++n) {
         V(i, n) = z;
         z *= p;
@@ -72,6 +72,7 @@ namespace triqs::gfs {
     const int _n_tail_max;
     const bool _adjust_order;
     const int _expansion_order;
+    const int _error_order;
     const double _rcond = 1e-8;
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, max_order + 1> _lss;
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache_hermitian>, max_order + 1> _lss_hermitian;
@@ -79,9 +80,10 @@ namespace triqs::gfs {
     std::vector<long> _fit_idx_lst;
 
     public:
-    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {})
+    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {}, int error_order = 0)
        : _tail_fraction(tail_fraction),
          _n_tail_max(n_tail_max),
+         _error_order(error_order),
          _adjust_order(not expansion_order.has_value()),
          _expansion_order(_adjust_order ? max_order : *expansion_order) {}
     //----------------------------------------------------------------------------------------------
@@ -94,6 +96,8 @@ namespace triqs::gfs {
 
     // The default upper limit for the number of frequencies to consider in the tail fit
     static constexpr int default_n_tail_max = 30;
+    
+    static constexpr int default_error_order = 0;
 
     //----------------------------------------------------------------------------------------------
 
@@ -152,7 +156,7 @@ namespace triqs::gfs {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
         for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
-        _vander = vander(C, _expansion_order);
+        _vander = vander(C, _expansion_order, _error_order);
       }
 
       if (n_fixed_moments + 1 > first_dim(_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
@@ -229,6 +233,8 @@ namespace triqs::gfs {
           g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
         else
           for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) g_mat(i, j) = x;
+          
+        for(int j=0; j < ncols; j++) g_mat(i, j) *= std::abs( std::pow( std::abs(m.omega_max()) / m.index_to_point(n), _error_order) );
       }
 
       // If an array with known_moments was passed, flatten the array into a matrix
@@ -304,20 +310,20 @@ namespace triqs::gfs {
 
     // Adjust the parameters for the tail-fitting
     void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}) const {
-      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order});
+                                 std::optional<int> expansion_order = {}, int error_order = tail_fitter::default_error_order) const {
+      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order, error_order});
     }
 
     // The tail fitter is mutable, even if the mesh is immutable to cache some data
     tail_fitter &get_tail_fitter() const {
-      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max);
+      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max, std::nullopt, tail_fitter::default_error_order);
       return *_tail_fitter;
     }
 
     // Adjust the parameters for the tail-fitting and return the fitter
     tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}) const {
-      set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
+                                 std::optional<int> expansion_order = {}, int error_order = tail_fitter::default_error_order) const {
+      set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order, error_order);
       return *_tail_fitter;
     }
 
