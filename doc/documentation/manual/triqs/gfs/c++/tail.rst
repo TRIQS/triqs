@@ -77,6 +77,9 @@ The fitting parameters are
 
 * :code:`expansion_order` (integer, optional)
   This parameter will fix the largest order to be considered for the fit.
+  
+* :code:`error_order` (integer, optional, default = 0)
+  Assume an omega-dependent error for the fit. :math:`\Delta G(i\omega_n) \sim |\omega_n|^\eta`
 
 Adjusting the fit window (Advanced)
 -----------------------------------
