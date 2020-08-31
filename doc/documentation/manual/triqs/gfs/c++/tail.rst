@@ -63,7 +63,7 @@ The experienced user can adjust the parameters of the fitting procedure directly
 
 .. code-block:: c
    
-   G.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order)
+   G.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order, error_order)
 
 The fitting parameters are
 
@@ -79,7 +79,7 @@ The fitting parameters are
   This parameter will fix the largest order to be considered for the fit.
   
 * :code:`error_order` (integer, optional, default = 0)
-  Assume an omega-dependent error for the fit. :math:`\Delta G(i\omega_n) \sim |\omega_n|^\eta`
+  Assume an omega-dependent error of the Green's function for the fit. Error_order :math:`\eta` is defined such that :math:`\Delta G(i\omega_n) \sim |\omega_n|^\eta`
 
 Adjusting the fit window (Advanced)
 -----------------------------------
