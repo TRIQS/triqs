@@ -80,10 +80,10 @@ namespace triqs::gfs {
     std::vector<long> _fit_idx_lst;
 
     public:
-    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {}, int error_order = 0)
+    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {}, std::optional<int> error_order = {})
        : _tail_fraction(tail_fraction),
          _n_tail_max(n_tail_max),
-         _error_order(error_order),
+         _error_order(error_order.has_value() ? *error_order : 0),
          _adjust_order(not expansion_order.has_value()),
          _expansion_order(_adjust_order ? max_order : *expansion_order) {}
     //----------------------------------------------------------------------------------------------
@@ -96,8 +96,6 @@ namespace triqs::gfs {
 
     // The default upper limit for the number of frequencies to consider in the tail fit
     static constexpr int default_n_tail_max = 30;
-    
-    static constexpr int default_error_order = 0;
 
     //----------------------------------------------------------------------------------------------
 
@@ -310,19 +308,19 @@ namespace triqs::gfs {
 
     // Adjust the parameters for the tail-fitting
     void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}, int error_order = tail_fitter::default_error_order) const {
+                                 std::optional<int> expansion_order = {}, std::optional<int> error_order = {}) const {
       _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order, error_order});
     }
 
     // The tail fitter is mutable, even if the mesh is immutable to cache some data
     tail_fitter &get_tail_fitter() const {
-      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max, std::nullopt, tail_fitter::default_error_order);
+      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max);
       return *_tail_fitter;
     }
 
     // Adjust the parameters for the tail-fitting and return the fitter
     tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}, int error_order = tail_fitter::default_error_order) const {
+                                 std::optional<int> expansion_order = {}, std::optional<int> error_order = {}) const {
       set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order, error_order);
       return *_tail_fitter;
     }
