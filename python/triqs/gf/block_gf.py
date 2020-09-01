@@ -1,5 +1,6 @@
 # Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2017 Hugo Strand
 # Copyright (c) 2014-2016 Igor Krivenko
 # Copyright (c) 2018-2020 Simons Foundation
 #

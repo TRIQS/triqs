@@ -1,5 +1,6 @@
 // Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
+// Copyright (c) 2017 Hugo Strand
 // Copyright (c) 2018-2019 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
