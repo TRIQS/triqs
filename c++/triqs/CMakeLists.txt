@@ -189,7 +189,7 @@ add_library(triqs_py arrays/python/numpy_extractor.cpp)
 set_property(TARGET triqs_py PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR})
 # C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 # for use of BUILD_INTERFACE
-target_link_libraries(triqs_py PUBLIC triqs python_and_numpy $<BUILD_INTERFACE:cpp2py>)
+target_link_libraries(triqs_py PUBLIC triqs cpp2py::python_and_numpy $<BUILD_INTERFACE:cpp2py>)
 
 # ---------------------------------
 # Generate Compiler Wrapper
@@ -198,7 +198,7 @@ target_link_libraries(triqs_py PUBLIC triqs python_and_numpy $<BUILD_INTERFACE:c
 # Get the compiler and linktime flags of triqs and python_and_numpy
 include(${PROJECT_SOURCE_DIR}/cmake/extract_flags.cmake)
 extract_flags(triqs)
-extract_flags(python_and_numpy)
+extract_flags(cpp2py::python_and_numpy)
 
 # Generate compiler wrapper
 configure_file(triqs++.in triqs++ @ONLY)
