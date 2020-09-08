@@ -44,8 +44,8 @@ Packaged Versions of TRIQS
 
 We provide various packages for the TRIQS library and some of the major applications.
 Note that the packages are compiled for generic x86 CPU's and do not provide optimal performance
-on modern CPU's. For optimal performance please consider using :ref:`easybuild <_triqs_easybuild>`
-or :ref:`compilation from source <_compilation_from_source>` and be sure to enable `architecture-specific optimizations <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>`_.
+on modern CPU's. For optimal performance please consider using :ref:`easybuild <triqs_easybuild>`
+or :ref:`compilation from source <compilation_from_source>` and be sure to enable `architecture-specific optimizations <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>`_.
 
 .. _ubuntu_debian:
 Ubuntu Debian packages
