@@ -1,3 +1,5 @@
+.. _triqs_contributing:
+
 Contributing
 ============
 

@@ -25,7 +25,7 @@ Get and install clang on linux
 ------------------------------
 
 Precompiled versions are available at the `LLVM dowload page <http://llvm.org/releases/download.html>`_.
-We have provided :ref:`instructions <clang_ubuntu>` on how to install a recent clang on Ubuntu.
+We have provided :ref:`instructions <ubuntu_clang>` on how to install a recent clang on Ubuntu.
 
 Alternatively, for the more experienced user, the most recent version of **clang** can be
 `compiled from source <http://clang.llvm.org/get_started.html#build>`_.

@@ -1,4 +1,4 @@
-.. _userguide:
+.. _triqs_userguide:
 
 .. warning::
 

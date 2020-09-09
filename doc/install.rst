@@ -2,7 +2,7 @@
 
 .. highlight:: bash
 
-.. _installation:
+.. _triqs_install:
 
 Installation
 ============
@@ -45,9 +45,10 @@ Packaged Versions of TRIQS
 We provide various packages for the TRIQS library and some of the major applications.
 Note that the packages are compiled for generic x86 CPU's and do not provide optimal performance
 on modern CPU's. For optimal performance please consider using :ref:`easybuild <triqs_easybuild>`
-or :ref:`compilation from source <compilation_from_source>` and be sure to enable `architecture-specific optimizations <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>`_.
+or :ref:`compilation from source <triqs_compilation>` and be sure to enable `architecture-specific optimizations <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>`_.
 
 .. _ubuntu_debian:
+
 Ubuntu Debian packages
 ----------------------
 
@@ -84,6 +85,7 @@ We further provide packages for `triqs_cthyb <https://github.com/conda-forge/tri
 and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
 
 .. _triqs_docker:
+
 Docker
 ------
 
@@ -96,6 +98,7 @@ systems. Once docker is installed, just pull the latest image with::
 and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
 
 .. _triqs_singularity:
+
 Singularity
 -----------
 
@@ -115,6 +118,8 @@ You can then run any command in parallel, e.g.::
 
 For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
 
+.. _triqs_binder:
+
 Binder
 ------
 
@@ -125,6 +130,7 @@ A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.i
 
 
 .. _triqs_easybuild:
+
 Compiling TRIQS from source using EasyBuild
 ===========================================
 
@@ -154,7 +160,8 @@ or simply::
 for the most recent version.    
 
 
-.. _compilation_from_source:
+.. _triqs_compilation:
+
 Compiling TRIQS from source (Advanced)
 ======================================
 
