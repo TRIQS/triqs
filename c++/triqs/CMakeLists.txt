@@ -36,7 +36,7 @@ else()
 endif()
 
 # Disable warnings about comma expression in array subscript
-target_compile_options(triqs PUBLIC -Wno-deprecated-comma-subscript)
+target_compile_options(triqs PUBLIC -Wno-deprecated-comma-subscript -Wno-unknown-warning-option)
 
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
