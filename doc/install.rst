@@ -113,7 +113,7 @@ which will generate an image file `triqs_latest.sif`. You can then execute comma
 
         singularity exec triqs_latest.sif python -c "from triqs import *"
 
-In order to run your code in parallel you will need to use Open MPI version 2.1.1 to match the version of the singularity image.
+In order to run your code in parallel you will need to use Open MPI version 4.0.3 to match the version of the singularity image.
 You can then run any command in parallel, e.g.::
 
         mpirun -np 2 singularity exec triqs_latest.sif python -c "from triqs.utility import mpi; print mpi.rank"
