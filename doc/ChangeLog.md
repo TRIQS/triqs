@@ -93,6 +93,8 @@ atom_diag
 * Allow mpi broadcasting of AtomDiag objects using the h5 serialization
 * In atom_diag h5_read / h5_write, make sure to treat all member variables
 * Add operator== for atom_diag objects for c++20 compatible compilers
+* Fix fill_first_eigenstate_of_subspace for case of zero subspaces
+
 
 cmake
 -----
@@ -128,6 +130,9 @@ cmake
 * Properly set MATHJAX_PATH in url fallback solution
 * Create separate targets for gmp and gmpxx and only link against the first
 * Add macro add_mpi_test and make sure test executables are found by mpich
+* Allow finding cpp2py in the system
+* Use CPP2PY_XXX python variables over bare ones to avoid issues with preinstalled cpp2py
+* Use FindGit.cmake in external_dependency.cmake, Improve error message on clone failure
 
 detmanip
 --------
@@ -136,6 +141,7 @@ detmanip
 doc
 ---
 * Add porting guide: doc/porting_to_triqs3.md
+* Update Ubuntu install instructions for TRIQS 3
 * added NRGLjubjana_interface to the list of impurity solvers
 * updated applications page to include new hubbardi version 2.2
 * Fix example code green_retime.py
@@ -152,6 +158,8 @@ doc
 * Fix CC/CXX export commands in osx install instructions
 * Bump cmake version requirement to actual required version
 * Update link to install page in README to use latest stable version
+* Adjust introduction on install page, recommend use of stable releases
+* Update list of requirements
 * Various smaller improvements
 
 gf
