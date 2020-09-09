@@ -73,7 +73,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
           "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
-          "PYTHONPATH=$installDir/lib/python3.7/site-packages",
+          "PYTHONPATH=$installDir/lib/python3.8/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
         deleteDir()
         sh "python3 -m venv $venv"
