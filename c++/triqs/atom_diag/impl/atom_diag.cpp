@@ -54,12 +54,13 @@ namespace triqs {
       fill_first_eigenstate_of_subspace();
       compute_vacuum();
     }
-    
+
     // -----------------------------------------------------------------
 
     ATOM_DIAG_METHOD(void, fill_first_eigenstate_of_subspace()) {
       // Calculate the index of the first eigenstate of each block
       first_eigenstate_of_subspace.resize(n_subspaces());
+      if (n_subspaces() == 0) return;
       first_eigenstate_of_subspace[0] = 0;
       for (int sp = 1; sp < n_subspaces(); ++sp) first_eigenstate_of_subspace[sp] = first_eigenstate_of_subspace[sp - 1] + get_subspace_dim(sp - 1);
     }
