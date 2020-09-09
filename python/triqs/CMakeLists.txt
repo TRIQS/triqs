@@ -1,5 +1,5 @@
 # 
-set(TRIQS_PYTHON_LIB_DEST ${PYTHON_LIB_DEST_ROOT}/triqs)
+set(TRIQS_PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/triqs)
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
 FILE(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py )
