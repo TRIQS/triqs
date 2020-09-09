@@ -74,7 +74,7 @@ Once you are done, save and quit with `:xa`.
 ## Porting to TRIQS 3.0
 
 TRIQS 3.0 introduced a number of changes that require adjustments in TRIQS-based applications.
-These changes are summarized in the [ChangeLog](https://github.com/TRIQS/triqs/blob/unstable/doc/ChangeLog.md)(NOT YET UPDATED).
+These changes are summarized in the [ChangeLog](https://github.com/TRIQS/triqs/blob/unstable/doc/ChangeLog.md).
 For convenient porting, we have created a [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3)
 that you can download and run in the top-level directory of your respository.
 
