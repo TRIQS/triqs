@@ -16,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Igor Krivenko, Olivier Parcollet, Nils Wentzell
+# Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
 import itertools
 from functools import reduce # Valid in Python 2.6+, required in Python 3

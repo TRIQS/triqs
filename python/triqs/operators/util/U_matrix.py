@@ -16,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Igor Krivenko, Michael, Priyanka Seth, Nils Wentzell
+# Authors: Michel Ferrero, Igor Krivenko, Michael, Priyanka Seth, Nils Wentzell
 
 from math import sqrt
 from scipy.special import factorial as fact

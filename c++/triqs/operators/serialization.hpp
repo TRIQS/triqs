@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet
+// Authors: Michel Ferrero, Olivier Parcollet
 
 #pragma once
 #include <triqs/operators/many_body_operator.hpp>

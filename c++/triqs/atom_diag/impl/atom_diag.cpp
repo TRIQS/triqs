@@ -16,7 +16,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
+// Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #include "../atom_diag.hpp"
 #include "./worker.hpp"

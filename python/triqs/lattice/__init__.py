@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Olivier Parcollet, Nils Wentzell, tayral
+# Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, tayral
 
 from .lattice_tools import *
 __all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone", "BravaisLattice"]

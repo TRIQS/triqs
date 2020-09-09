@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Laura Messio, Olivier Parcollet, Nils Wentzell, tayral
+// Authors: Michel Ferrero, Laura Messio, Olivier Parcollet, Nils Wentzell, tayral
 
 #pragma once
 #include "../../utility/arithmetic_ops_by_cast.hpp"

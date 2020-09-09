@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet
+// Authors: Michel Ferrero, Olivier Parcollet
 
 #ifndef TRIQS_DETMANIP_ALL_H
 #define TRIQS_DETMANIP_ALL_H

@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Nils Wentzell
+// Authors: Michel Ferrero, Nils Wentzell
 
 #include <triqs/gfs.hpp>
 #include "./fourier_common.hpp"

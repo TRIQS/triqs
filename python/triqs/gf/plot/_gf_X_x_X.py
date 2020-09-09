@@ -14,7 +14,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: tayral
+# Authors: Michel Ferrero, tayral
 
 import numpy as np
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime

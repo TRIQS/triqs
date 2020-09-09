@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Alexander Hampel, Olivier Parcollet, Priyanka Seth, Nils Wentzell, tayral
+# Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Priyanka Seth, Nils Wentzell, tayral
 
 
 __all__ = ['plt', 'oplot', 'oploti', 'oplotr', 'subplots']

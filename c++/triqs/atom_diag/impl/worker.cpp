@@ -16,7 +16,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Igor Krivenko, Hugo U. R. Strand, Nils Wentzell
+// Authors: Michel Ferrero, Igor Krivenko, Hugo U. R. Strand, Nils Wentzell
 
 #include "./worker.hpp"
 
