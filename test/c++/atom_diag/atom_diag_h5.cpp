@@ -40,4 +40,12 @@ TEST(atom_diag, HDF5) {
   EXPECT_THROW(h5_read(f_complex, "ad", ad_real), triqs::runtime_error);
 }
 
+TEST(atom_diag, HDF5_empty) {
+  auto ad_real    = triqs::atom_diag::atom_diag<false>{};
+  auto ad_complex = triqs::atom_diag::atom_diag<true>{};
+
+  rw_h5(ad_real, "ad_real", "ad");
+  rw_h5(ad_complex, "ad_complex", "ad");
+}
+
 MAKE_MAIN;
