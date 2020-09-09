@@ -52,27 +52,29 @@ or :ref:`compilation from source <triqs_compilation>` and be sure to enable `arc
 Ubuntu Debian packages
 ----------------------
 
-We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 (bionic).::
+We provide Debian packages for the Ubuntu LTS Versions 18.04 (bionic) and 20.04 (focal).
+They are hosted in a **TRIQS 3 specific** repository that can be added with::
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl
         source /etc/lsb-release
-        curl -L https://users.flatironinstitute.org/~ccq/triqs/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
-        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/$DISTRIB_CODENAME/ /"
+        curl -L https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
+        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/ /"
+
+To install the required runtime packages and triqs into the system tree at /usr run::
+
         sudo apt-get update && sudo apt-get install -y triqs
-
-This will install the minimal runtime packages and triqs into the system tree at /usr.
-
-.. note:: Since TRIQS version 2.1 we include cpp2py in the TRIQS debian package.
-          If you have installed an earlier packaged version of triqs (or cpp2py)
-          be sure to remove it before updating TRIQS to avoid package conflicts.
 
 If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variable <environment_vars>` permanently::
 
         export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
 
-For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
+For full functionality of the C++2Py Tool, please install clang and the libclang library::
 
-.. _anaconda:
+        sudo apt-get install clang libclang-dev
+
+
+.. _triqs_anaconda:
+
 Anaconda
 --------
 

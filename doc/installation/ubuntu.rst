@@ -5,72 +5,28 @@
 .. highlight:: bash
 
 Installing required libraries on Ubuntu
-===================================================
+=======================================
 
-TRIQS has been installed and tested on Ubuntu 16.04 and later. Earlier versions are not supported.
+TRIQS has been installed and tested on Ubuntu 18.04 and later. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
   sudo apt-get install cmake g++ gfortran git hdf5-tools \
-       libblas-dev libboost-all-dev libfftw3-dev libgfortran3 \
-       libhdf5-serial-dev libgmp-dev liblapack-dev libopenmpi-dev \
-       python-dev python-mako python-matplotlib \
-       python-mpi4py python-numpy python-scipy
+       libblas-dev libboost-dev libfftw3-dev libgfortran4 \
+       libgmp-dev libhdf5-dev liblapack-dev libopenmpi-dev \
+       python3-dev python3-mako python3-matplotlib \
+       python3-mpi4py python3-numpy python3-scipy
 
-If you wish to use the ipython/jupyter notebook with triqs, you need to install additional packages depending on your Ubuntu version.
+If you wish to use the jupyter notebook with triqs you can install it using::
 
-* For Ubuntu versions 16.04 and 16.10 please install::
+    sudo apt-get install jupyter-notebook
 
-    sudo apt-get install ipython ipython-notebook 
+.. _ubuntu_clang:
 
-* For Ubuntu 17.04 and later please install::
+For full functionality of the C++2Py Tool, please install clang and the libclang library::
 
-    sudo apt-get install python-notebook 
+    sudo apt-get install clang libclang-dev
 
-
-C++ compiler
-------------
-
-The default compiler on e.g. Ubuntu 16.04 (xenial) is gcc 5.4.0, which is too old to compile the latest version of TRIQS.
-
-.. note::
-        The instructions below address Ubuntu 16.04 (xenial). In Ubuntu 18.04 (bionic), please consider using the respective standard apt packages instead.
-
-We recommend to upgrade to gcc version 7 using the Ubuntu Toolchain test builds with the following commands::
-
-    sudo apt-get install software-properties-common
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
-    sudo apt-get upgrade
-    sudo apt-get install g++-7
-  
-In a second step, set the C/C++ compiler for your :ref:`environment <environment_vars>`::
-
-    export CC=gcc-7
-    export CXX=g++-7
-
-You can make this choice permanent by adding these two lines to your ``$HOME/.bash_profile``.
-
-.. _ubuntu_cpp2py:
-C++2py
-------
-
-For full functionality of the C++2Py Tool, a recent version of the libclang library is required.
-While a recent version is packaged with Ubuntu 18.04 (bionic), more steps are required on Ubuntu 16.04 (xenial).
-
-* As a first step you will need to install the g++-7 package as described in the first set of commands above.
-
-* In a second step we install version 6.0 of clang and libclang from the `apt.llvm.org <apt.llvm.org>`_ repositories::
-  
-    source /etc/lsb-release
-    sudo add-apt-repository 'deb http://apt.llvm.org/$DISTRIB_CODENAME/ llvm-toolchain-$DISTRIB_CODENAME-6.0 main' -y
-    curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-    sudo apt-get update && sudo apt-get install clang-6.0 libclang-6.0-dev python-clang-6.0
-
-If you are using the Ubuntu 16.04 (xenial) :ref:`debian packages <ubuntu_debian>`, you should permanently set the following :ref:`environment variables <environment_vars>`::
-
-    export LIBCLANG_LOCATION=/usr/lib/llvm-6.0/lib/libclang.so
-    export LIBCLANG_CXX_FLAGS="-I/usr/include/x86_64-linux-gnu/c++/7"
 
 .. _ubuntu_issues:
 Issues
