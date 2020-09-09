@@ -16,28 +16,13 @@ This page describes the installation of the TRIQS library itself. The
 installation procedure of the applications is described on their respective
 sites, under 'Install'.
 
-Philosophy
-----------
+Development Version
+-------------------
 
-The TRIQS project is in perpetual dynamic evolution such that we can get our
-developments directly to users straight out of the oven.
+To guarantee reproducibility in scientific calculations we strongly recommend the use of a stable `release <https://github.com/TRIQS/triqs/releases>`_ of both TRIQS and its applications.
 
-However, we also understand that some users may not wish to constantly update
-their codes, and are happy to use an older but perhaps more stable version.
+If however you would like to try the latest development version you can use the unstable branch instead. This will make the latest library improvements and new features available to you. Note however that the development versions may include changes of the API. We use `continuous integration <https://jenkins.flatironinstitute.org/job/TRIQS/>`_ to ensure that both the unstable and release branches compile and pass all tests. This is checked for both the TRIQS library and several public (and private) applications.
 
-To this end, we propose two options to the user:
-
-#. You follow the master branch in the git repository of TRIQS and all applications.
-   This will guarantee that you are using the latest stable release including essential
-   bug-fixes. Note that new releases might occasionally include changes of the API, which
-   we summarize in a set of release notes.
-   We use continuous integration to ensure that the master branch always compiles and 
-   passes all tests. This is checked for both the TRIQS library and several public 
-   (and private) applications.
-
-#. You use a version tag, e.g. version 2.0, for TRIQS and all applications.
-   This guarantees complete reproducibility, while you might be missing out on the latest
-   features and bug-fixes.
 
 Packaged Versions of TRIQS
 ==========================
