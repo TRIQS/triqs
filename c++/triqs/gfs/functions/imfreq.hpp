@@ -147,8 +147,8 @@ namespace triqs::gfs {
                     "make_hermitian requires a Green function with a target rank of 0, 2 or 4.");
 
       if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
-        if (g.mesh().positive_only()) return g;
-        typename G::regular_type g_sym = g;
+        if (g.mesh().positive_only()) return typename G::regular_type{g};
+        auto g_sym = typename G::regular_type{g};
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[w] = 0.5 * (g[w] + conj_r(g[-w]));
@@ -160,7 +160,7 @@ namespace triqs::gfs {
         return g_sym;
 
       } else { // === gf<imtime>
-        typename G::regular_type g_sym = g;
+        auto g_sym = typename G::regular_type{g};
         for (auto const &t : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[t] = 0.5 * (g[t] + conj_r(g[t]));
@@ -215,7 +215,7 @@ namespace triqs::gfs {
   }
 
   // Fit_tail on a window with the constraint of hermitian moment matrices
-  template <template <typename, typename> typename G, typename T>
+  template <template <typename, typename ...> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();

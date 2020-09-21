@@ -21,6 +21,13 @@
 namespace triqs {
   namespace gfs {
 
+    template <typename A> nda::matrix<nda::get_value_t<A>> make_matrix(A const &a) { return a; }
+
+    template <typename A> void _gf_invert_data_in_place(A &a) {
+      auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
+      nda::for_each(mesh_lengths, [&a, _ = nda::range()](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+    }
+
     // FOR LEGACY PYTHON CODE ONLY
     // THIS MUST be kept for python operations
     // specific operations (for legacy python code).

@@ -25,7 +25,7 @@ using namespace triqs::gfs;
 using gf_bz_imfreq_mat = gf<prod<b_zone, imfreq>, matrix_valued>;
 auto _                 = all_t{};
 
-static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::__1::complex<double>, 2,
+static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::complex<double>, 2,
       nda::C_layout, 'M', nda::heap> &>> == 'M', "oops");
 
 // --------------------------------------------------------------------------------

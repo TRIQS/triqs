@@ -31,7 +31,7 @@ namespace triqs::gfs {
     //static_assert(N==0, "ERROR");
 
     if (v.is_empty()) return array<T, 2>{};
-    auto a = rotate_index_view<N>(v);    // Swap relevant dim to front. The view is passed by value, we modify it.
+    auto a = nda::rotate_index_view<N>(v);    // Swap relevant dim to front. The view is passed by value, we modify it.
     long nrows = a.extent(0);            // # rows of the result, i.e. n-th dim, which is now at 0.
     long ncols = a.size() / nrows;        // # columns of the result. Everything but n-th dim.
     array<T, 2> mat(nrows, ncols); // result

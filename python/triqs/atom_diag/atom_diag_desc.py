@@ -36,8 +36,7 @@ module.add_preamble("""
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 
-#include <triqs/cpp2py_converters/arrays.hpp>
-#include <triqs/cpp2py_converters/gf.hpp>
+#include <triqs/cpp2py_converters.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 #include <triqs/cpp2py_converters/fundamental_operator_set.hpp>
 

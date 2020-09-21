@@ -235,7 +235,7 @@ namespace triqs::gfs {
       if constexpr (mesh::is_product_v<mesh_t>)
         return stdutil::join(m.size_of_components(), shap);
       else
-        return stdutil::front_append(shap, m.size()); // join(std::arrayutility::mini_vector<size_t, 1>{size_t(m.size())}, shap);
+        return stdutil::front_append(shap, m.size()); 
     }
 
     public:

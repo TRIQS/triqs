@@ -107,7 +107,7 @@ namespace triqs::gfs {
    * @return A pair of the tail object and the fitting error
    * @example triqs/gfs/fit_hermitian_tail.cpp
    */
-  template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
+  template <int N = 0, typename G, typename A = typename G::data_t> 
   std::pair<typename A::regular_type, double> fit_hermitian_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
     std::optional<long> inner_matrix_dim;
     constexpr int rank = G::target_t::rank;
@@ -168,7 +168,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G> auto make_zero_tail(G const &g, int n_moments = 10) {
     if constexpr (is_gf_v<G>) { // gf[_const][_view]<V, T>
-      auto sh = rotate_index_view<N>(make_const_view(g.data())).shape();
+      auto sh = nda::rotate_index_view<N>(make_const_view(g.data())).shape();
       sh[0]   = n_moments;
       return arrays::zeros<dcomplex>(sh);
     } else if constexpr (is_block_gf_v<G>) { // block[2]_gf[_const][_view]<V, T>
@@ -203,7 +203,7 @@ namespace triqs::gfs {
   template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
     static_assert(std::is_same_v<typename std::decay_t<G>::target_t, scalar_valued>,
                   "slice_target_to_scalar : the result is not a scalar valued function");
-    return g.apply_on_data([](auto &&d) { return reinterpret_add_fast_dims_of_size_one<2>(d); });
+    return g.apply_on_data([](auto &&d) { return nda::reinterpret_add_fast_dims_of_size_one<2>(d); });
   }
 
   /*------------------------------------------------------------------------------------------------------

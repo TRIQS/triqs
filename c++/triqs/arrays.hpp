@@ -53,19 +53,11 @@ namespace triqs {
 
 } // namespace triqs
 
-namespace triqs::utility {
-
-  template <typename T, int R> using mini_vector = std::array<T, R>;
-
-}
-
 namespace triqs::arrays {
 
   using namespace nda;
 
   using nda::blas::dot;
-
-  using utility::mini_vector;
 
   template <typename T> //[[deprecated]]
   nda::matrix<T> make_unit_matrix(int dim) {
@@ -76,6 +68,8 @@ namespace triqs::arrays {
   std::array<long, sizeof...(T)> make_shape(T... x) {
     return {long(x)...};
   }
+
+
 } // namespace triqs::arrays
 
 namespace nda {

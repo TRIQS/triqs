@@ -98,8 +98,8 @@ namespace triqs::mesh {
     }
 
     /// The sizes of all mesh components
-    utility::mini_vector<long, dim> size_of_components() const {
-      utility::mini_vector<long, dim> res;
+    std::array<long, dim> size_of_components() const {
+      std::array<long, dim> res;
       auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
       triqs::tuple::for_each_enumerate(m_tuple, l);
       return res;

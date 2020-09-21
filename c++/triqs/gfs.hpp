@@ -22,6 +22,9 @@
 // for python code generator, we need to know what has to been included.
 #define TRIQS_INCLUDED_GF
 
+// BACKWARD COMPAT
+#include "./arrays.hpp"
+
 // the meshes
 #include "./mesh.hpp"
 

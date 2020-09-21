@@ -17,6 +17,11 @@ add_cpp2py_module(gf_fnt)
 add_cpp2py_module(gf_factories)
 add_cpp2py_module(wrapped_aux)
 
+# One dep is sufficient to trigger the build of the _h5py.so
+# dep only at runtime
+add_dependencies(meshes _h5py)
+
+
 install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
 install(TARGETS meshes gf_fnt gf_factories wrapped_aux DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
 

@@ -112,6 +112,9 @@ namespace triqs {
       friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices const &g);
       friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices &g);
 
+      friend class boost::serialization::access;
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_data; }
+
       friend std::ostream &operator<<(std::ostream &out, gf_indices const &x) {
 	for(auto const & v: x.data()){
 	  out << "[";

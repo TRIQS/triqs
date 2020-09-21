@@ -15,7 +15,6 @@ m.add_include("<triqs/cpp2py_converters.hpp>")
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
 m.add_using("namespace triqs::arrays")
 m.add_using("namespace triqs::gfs")
-m.add_using("triqs::utility::mini_vector")
 m.add_preamble("""
 """)
 
@@ -42,13 +41,13 @@ def all_calls():
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>']
 
     for M in ['cyclat']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['triqs::utility::mini_vector<int, 3>'] # R =1
-        yield M,["matrix<dcomplex>"], 2, 'matrix_valued', ['triqs::utility::mini_vector<int, 3>'] # R =2
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>'] # R =1
+        yield M,["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>'] # R =2
         for R in [3,4]:
-            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['triqs::utility::mini_vector<int, 3>']
+            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>']
 
     for M1 in ['b_zone', 'cyclat']:
-      k_x = {'b_zone' : 'std::array<double, 3>', 'cyclat' : 'triqs::utility::mini_vector<int, 3>'}[M1]
+      k_x = {'b_zone' : 'std::array<double, 3>', 'cyclat' : 'std::array<long,3>'}[M1]
 
       for M2 in ['imfreq']:
         yield 'prod<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
@@ -80,7 +79,7 @@ namespace triqs {
   struct gf_proxy {
    Gv gv;
    gf_proxy(Gv gv) : gv(gv){}
-   template<typename ... U> auto call(U&& ... x) { return gv(std::forward<U>(x)...);}
+   template<typename ReturnType, typename ... U> ReturnType call(U&& ... x) { return ReturnType{gv(std::forward<U>(x)...)};}
   };
  }
 }
@@ -99,11 +98,12 @@ for var, return_t, R, target_t, point_t in all_calls():
     c.add_constructor("(gf_view<%s,%s> g)"%(var, target_t), doc = "")
     for P, Ret in zip(point_t, return_t) :
         if not isinstance(P, tuple) :
-          c.add_call(signature = "%s call(%s x)"%(Ret,P), doc = "")
+          c.add_call(signature = "%s call(%s x)"%(Ret, P), calling_pattern = "auto result = self_c.template call<%s>(x)"%(Ret), doc = "")
         else:
             xs = ['%s x_%s'%(t,n) for (n,t) in enumerate(P)]
-            sig =  "%s call(%s)"%(Ret, ','.join(xs))
-            c.add_call(signature =sig,  doc = "")
+            xs2 = ['x_%s'%(n) for (n,t) in enumerate(P)]
+            sig =  "%s call<%s>(%s)"%(Ret, Ret, ','.join(xs))
+            c.add_call(signature =sig,  calling_pattern = "auto result = self_c.template call<%s>(%s)"%(Ret,  ','.join(xs2)), doc = "")
     m.add_class (c)
 
     # FIX FIRST THE call and wrap of real_valued

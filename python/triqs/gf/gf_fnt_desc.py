@@ -16,7 +16,6 @@ m.add_include("<triqs/cpp2py_converters.hpp>")
 
 m.add_using("namespace triqs::arrays")
 m.add_using("namespace triqs::gfs")
-m.add_using("triqs::utility::mini_vector")
 m.add_preamble("""
 """)
 

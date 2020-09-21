@@ -22,14 +22,16 @@
 namespace triqs {
   namespace utility {
 
+    // FIXME : used only ONCE in mesh/bases/cluster_mesh.hpp
+    // Should we move it ??
     class index3_generator {
-      mini_vector<long, 3> d, i; // rely on mini_vector initialization
+      std::array<long, 3> d, i; 
       long i_flat  = 0;
       bool _at_end = false;
 
       public:
       index3_generator() = default;
-      index3_generator(mini_vector<long, 3> const &dims, mini_vector<long, 3> const &i) : d(dims), i(i) {
+      index3_generator(std::array<long, 3> const &dims, std::array<long, 3> const &i) : d(dims), i(i) {
         i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2];
       }
       void advance() {
@@ -45,7 +47,7 @@ namespace triqs {
         // i[0]=0;
         _at_end = true;
       }
-      mini_vector<long, 3> const &index() const { return i; }
+      std::array<long, 3> const &index() const { return i; }
       long linear_index() const { return i_flat; }
       bool at_end() const { return _at_end; }
       void reset() {

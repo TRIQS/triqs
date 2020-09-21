@@ -27,11 +27,6 @@
 #include <cmath>
 //#include <nda/nda.hpp>
 #include <triqs/arrays.hpp>
-//#include <triqs/arrays/linalg/det_and_inverse.hpp>
-//#include <triqs/arrays/blas_lapack/dot.hpp>
-//#include <triqs/arrays/blas_lapack/ger.hpp>
-//#include <triqs/arrays/blas_lapack/gemm.hpp>
-//#include <triqs/arrays/blas_lapack/gemv.hpp>
 #include <triqs/utility/function_arg_ret_type.hpp>
 
 namespace triqs {
@@ -64,7 +59,6 @@ namespace triqs {
 
       protected: // the data
       using int_type = std::ptrdiff_t;
-      //using range    = itertools::range;
 
       FunctionType f;
 
