@@ -5,3 +5,4 @@ Dockerfile.build
 Jenkinsfile
 TODO
 .git/objects/pack
+build*
