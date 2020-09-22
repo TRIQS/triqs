@@ -287,8 +287,8 @@ namespace triqs::mc_tools {
       }
 
       // final reporting
-      if (status == 1) std::cerr << "rank " << c.rank() << ": mc_generic stops because of stop_callback" << std::endl;
-      if (status == 2) std::cerr << "rank " << c.rank() << ": mc_generic stops because of a signal" << std::endl;
+      if (status == 1) report << "mc_generic stops because of stop_callback" << std::endl;
+      if (status == 2) report << "mc_generic stops because of a signal" << std::endl;
 
       report(3) << "\n" << std::endl;
 
