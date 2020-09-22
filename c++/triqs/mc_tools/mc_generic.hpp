@@ -54,17 +54,19 @@ namespace triqs::mc_tools {
     /**
     * Constructor
     *
-    * @param random_name     Name of the random generator (cf doc).
-    * @param random_seed     Seed for the random generator
-    * @param verbosity       Verbosity level. 0 : None, ... TBA
+    * @param random_name           Name of the random generator (cf doc).
+    * @param random_seed           Seed for the random generator
+    * @param verbosity             Verbosity level. 0 : None, ... TBA
+    * @param rethrow_exception     Whether to throw an exception on each node when an exception occurs on one of them.
+    *                              When set to false use MPI_Abort instead
     */
-    mc_generic(std::string random_name, int random_seed, int verbosity, bool recover_from_exception = false)
+    mc_generic(std::string random_name, int random_seed, int verbosity, bool rethrow_exception = true)
        : RandomGenerator(random_name, random_seed),
          AllMoves(RandomGenerator),
          AllMeasures(),
          AllMeasuresAux(),
          report(&std::cout, verbosity),
-         recover_from_exception(recover_from_exception) {}
+         rethrow_exception(rethrow_exception) {}
 
     /**
    * Register a move
@@ -216,7 +218,7 @@ namespace triqs::mc_tools {
       double next_info_time = 0.1;
 
       std::unique_ptr<mpi::monitor> node_monitor;
-      if (recover_from_exception) node_monitor = std::make_unique<mpi::monitor>(c);
+      if (rethrow_exception) node_monitor = std::make_unique<mpi::monitor>(c);
 
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
         try {
@@ -246,7 +248,7 @@ namespace triqs::mc_tools {
         } catch (std::exception const &err) {
           // log the error and node number
           std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
-          if (recover_from_exception)
+          if (rethrow_exception)
             node_monitor->request_emergency_stop();
           else
             c.abort(2);
@@ -396,9 +398,9 @@ namespace triqs::mc_tools {
     uint64_t nmeasures, current_cycle_number = 0;
     utility::timer timer_accumulation, timer_warmup;
     std::function<void()> after_cycle_duty;
-    MCSignType sign             = 1;
-    uint64_t done_percent       = 0;
-    uint64_t config_id          = 0;
-    bool recover_from_exception = false;
+    MCSignType sign        = 1;
+    uint64_t done_percent  = 0;
+    uint64_t config_id     = 0;
+    bool rethrow_exception = true;
   };
 } // namespace triqs::mc_tools
