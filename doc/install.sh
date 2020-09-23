@@ -18,9 +18,9 @@ make -j$NCORES && make test && make install
 cd ../
 
 # Load the triqs installation into your environment
-source $INSTALL_PREFIX/share/triqsvars.sh
+source $INSTALL_PREFIX/share/triqs/triqsvars.sh
 
 echo 
 echo "If you want to automatically load triqs into your environment,"
 echo "please add the following line to your ~/.bash_profile (or ~/.zprofile):"
-echo "source $INSTALL_PREFIX/share/triqsvars.sh"
+echo "source $INSTALL_PREFIX/share/triqs/triqsvars.sh"
