@@ -53,8 +53,5 @@ namespace triqs {
       return fold(std::plus<typename A::value_type>())(a);
     }
 
-    template <class A> std::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> prod(A const &a) {
-      return fold(std::multiplies<typename A::value_type>())(a, 1);
-    }
   } // namespace arrays
 } // namespace triqs

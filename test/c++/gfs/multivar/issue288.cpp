@@ -21,12 +21,12 @@
 
 TEST(GfCartesian, H5_RW_EvaluatorS) {
   double beta = 1;
-  auto g      = gf<cartesian_product<imfreq, imfreq>, scalar_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}};
+  auto g      = gf<prod<imfreq, imfreq>, scalar_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}};
   g()         = 2;
 
   h5::file file("g_nu_nuph5", 'w');
   h5_write(file, "g", g);
-  gf<cartesian_product<imfreq, imfreq>, scalar_valued> g2{};
+  gf<prod<imfreq, imfreq>, scalar_valued> g2{};
   h5_read(file, "g", g2);
 
   EXPECT_ARRAY_NEAR(g.data(), g2.data());
@@ -42,12 +42,12 @@ TEST(GfCartesian, H5_RW_EvaluatorS) {
 
 TEST(GfCartesian, H5_RW_EvaluatorM) {
   double beta = 1;
-  auto g      = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1, 1}};
+  auto g      = gf<prod<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1, 1}};
   g()         = 2;
 
   h5::file file("g_nu_nuph5", 'w');
   h5_write(file, "g", g);
-  gf<cartesian_product<imfreq, imfreq>, matrix_valued> g2{};
+  gf<prod<imfreq, imfreq>, matrix_valued> g2{};
   h5_read(file, "g", g2);
 
   EXPECT_ARRAY_NEAR(g.data(), g2.data());

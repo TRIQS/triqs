@@ -23,8 +23,8 @@ using namespace triqs::lattice;
 
 using triqs::clef::placeholder;
 // scalar valued gf_vertex
-using gf_vertex_t        = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
-using gf_vertex_tensor_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<3>>;
+using gf_vertex_t        = gf<prod<imfreq, imfreq, imfreq>, scalar_valued>;
+using gf_vertex_tensor_t = gf<prod<imfreq, imfreq, imfreq>, tensor_valued<3>>;
 
 // -----------------------------------------------------
 
@@ -33,7 +33,7 @@ TEST(Gf, VertexScalar) {
   double beta   = 10.0;
   int n_im_freq = 10;
 
-  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
+  auto m = mesh::imfreq{beta, Fermion, n_im_freq};
 
   auto vertex = gf_vertex_t{{m, m, m}};
 
@@ -61,7 +61,7 @@ TEST(Gf, VertexTensor) {
   double beta   = 10.0;
   int n_im_freq = 10;
 
-  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
+  auto m = mesh::imfreq{beta, Fermion, n_im_freq};
 
   // now with indices
   auto vertex = gf_vertex_tensor_t{{m, m, m}, {2, 2, 2}};

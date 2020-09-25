@@ -25,7 +25,7 @@ using namespace triqs::lattice;
 TEST(Gf, AutoAssignMatrixGf2_product) {
 
   double beta = 2.3;
-  auto g2     = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
+  auto g2     = gf<prod<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
 
   placeholder<0> i_;
   placeholder<1> j_;
@@ -48,7 +48,7 @@ TEST(Gf, AutoAssignMatrixGf2_product) {
 TEST(Gf, AutoAssignMatrixGf2_sum_product) {
 
   double beta = 2.3;
-  auto g2     = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
+  auto g2     = gf<prod<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
 
   placeholder<0> i_;
   placeholder<1> j_;

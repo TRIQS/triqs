@@ -26,6 +26,7 @@
 
 namespace triqs::gfs {
 
+  // FIXME  REMOVE TAG AND gf_keeper
   namespace tags {
     struct legendre {};
   } // namespace tags

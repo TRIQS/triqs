@@ -27,7 +27,7 @@ struct my_evaluator {
  static constexpr int arity = 3;
 
  // keep a view of the gf with the default evaluator
- gf_const_view<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing> gv;
+ gf_const_view<prod<imfreq, imfreq, imfreq>, scalar_valued, nothing> gv;
 
  template <typename G> my_evaluator(G *g) : gv(*g) {}
 
@@ -41,8 +41,8 @@ struct my_evaluator {
  }
 };
 
-using gf3_s = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing>;
-using gf3_s_modif = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing, my_evaluator>;
+using gf3_s = gf<prod<imfreq, imfreq, imfreq>, scalar_valued, nothing>;
+using gf3_s_modif = gf<prod<imfreq, imfreq, imfreq>, scalar_valued, nothing, my_evaluator>;
 
 TEST(Gf, EvaluatorWithSymmetry) {
  int nw = 5;

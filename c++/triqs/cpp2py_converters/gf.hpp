@@ -33,27 +33,24 @@ namespace cpp2py {
   // -----------------------------------
 
   template <typename M, typename T> struct is_view<triqs::gfs::gf_view<M, T>> : std::true_type {};
-  template <typename... T> struct is_view<triqs::gfs::block_gf_view<T...>> : std::true_type {};
-  template <typename... T> struct is_view<triqs::gfs::block2_gf_view<T...>> : std::true_type {};
-
   template <typename M, typename T> struct is_view<triqs::gfs::gf_const_view<M, T>> : std::true_type {};
-  template <typename... T> struct is_view<triqs::gfs::block_gf_const_view<T...>> : std::true_type {};
-  template <typename... T> struct is_view<triqs::gfs::block2_gf_const_view<T...>> : std::true_type {};
+
+  template <typename M, typename T, int A, bool C> struct is_view<triqs::gfs::block_gf_view<M, T, A, C>> : std::true_type {};
 
   // -----------------------------------
   // domains
   // -----------------------------------
 
-  template <bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>> {};
-  template <> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain> {};
+  template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
+  template <> struct py_converter<triqs::mesh::R_domain> : py_converter_from_reductor<triqs::mesh::R_domain> {};
 
   // -----------------------------------
   // all_t mapped to all
   // -----------------------------------
 
-  template <> struct py_converter<triqs::gfs::all_t> {
+  template <> struct py_converter<triqs::mesh::all_t> {
 
-    static PyObject *c2py(triqs::gfs::all_t m) {
+    static PyObject *c2py(triqs::mesh::all_t m) {
       static pyref all = pyref::get_class("builtins", "all", true);
       if (all.is_null()) return NULL;
       return all.new_ref();
@@ -64,16 +61,16 @@ namespace cpp2py {
       return (all == ob);
     }
 
-    static triqs::gfs::all_t py2c(PyObject *ob) { return {}; }
+    static triqs::mesh::all_t py2c(PyObject *ob) { return {}; }
   };
 
   // -----------------------------------
   //     Mesh Product
   // -----------------------------------
 
-  template <typename... Ms> struct py_converter<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> {
+  template <typename... Ms> struct py_converter<triqs::mesh::prod<Ms...>> {
 
-    using c_type      = triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>;
+    using c_type      = triqs::mesh::prod<Ms...>;
     using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
 
     static PyObject *c2py(c_type m) {
@@ -88,7 +85,7 @@ namespace cpp2py {
       static pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
 
       // first check it is a MeshProduct
-      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       pyref x = borrowed(ob);
 
       // check conversion of the mesh list
@@ -103,13 +100,13 @@ namespace cpp2py {
     }
   };
 
-  template<typename M, typename V = void> constexpr bool has_weights = false;
-  template<typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())> > = true;
+  template <typename M, typename V = void> constexpr bool has_weights                                     = false;
+  template <typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())>> = true;
 
   // Converter of mesh_point
-  template <typename M> struct py_converter<triqs::gfs::mesh_point<M>> {
+  template <typename M> struct py_converter<triqs::mesh::mesh_point<M>> {
 
-    using c_type = triqs::gfs::mesh_point<M>;
+    using c_type = triqs::mesh::mesh_point<M>;
 
     static PyObject *c2py(c_type const &p) {
 
@@ -125,7 +122,7 @@ namespace cpp2py {
       pyref val = convert_to_python(static_cast<typename c_type::cast_t>(p));
       if (val.is_null()) return NULL;
 
-      if constexpr(has_weights<M>){
+      if constexpr (has_weights<M>) {
         pyref weight = convert_to_python(p.weight());
         if (weight.is_null()) return NULL;
         return PyObject_Call(cls, pyref::make_tuple(lidx, idx, val, weight), NULL);
@@ -152,33 +149,16 @@ namespace cpp2py {
 */
 
   template <typename M, typename T> struct py_converter<triqs::gfs::gf<M, T>> : py_converter<triqs::gfs::gf_view<M, T>> {};
-  template <typename... T> struct py_converter<triqs::gfs::block_gf<T...>> : py_converter<triqs::gfs::block_gf_view<T...>> {};
-  template <typename... T> struct py_converter<triqs::gfs::block2_gf<T...>> : py_converter<triqs::gfs::block2_gf_view<T...>> {};
+
+  template <typename M, typename T, int A>
+  struct py_converter<triqs::gfs::block_gf<M, T, A>> : py_converter<triqs::gfs::block_gf_view<M, T, A, false>> {};
 
   // -----------------------------------
-  //   Const view
+  //   gf_ Const view
   // -----------------------------------
   template <typename M, typename T> struct py_converter<triqs::gfs::gf_const_view<M, T>> {
     using conv_t = py_converter<triqs::gfs::gf_view<M, T>>;
     using c_type = triqs::gfs::gf_const_view<M, T>;
-
-    static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
-    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
-  };
-
-  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_const_view<M, T>> {
-    using conv_t = py_converter<triqs::gfs::block_gf_view<M, T>>;
-    using c_type = triqs::gfs::block_gf_const_view<M, T>;
-
-    static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
-    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
-  };
-
-  template <typename M, typename T> struct py_converter<triqs::gfs::block2_gf_const_view<M, T>> {
-    using conv_t = py_converter<triqs::gfs::block2_gf_view<M, T>>;
-    using c_type = triqs::gfs::block2_gf_const_view<M, T>;
 
     static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
@@ -233,7 +213,7 @@ namespace cpp2py {
       static pyref cls = pyref::get_class("triqs.gf", "Gf", true);
 
       // first check it is a Gf
-      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       pyref x = borrowed(ob);
 
       // check the mesh, data, indices
@@ -273,11 +253,21 @@ namespace cpp2py {
   //    block_gf_view
   // -----------------------------------
 
-  template <typename... T> struct py_converter<triqs::gfs::block_gf_view<T...>> {
+  template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf_view<M, T, A, true>> {
+    using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, A, true>>;
+    using c_type = triqs::gfs::block_gf_view<M, T, A, true>;
 
-    using gf_type      = triqs::gfs::gf<T...>;
-    using gf_view_type = triqs::gfs::gf_view<T...>;
-    using c_type       = triqs::gfs::block_gf_view<T...>;
+    // FIXME : NOT TRUE MAKE THE ARRAY CONST
+    static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
+    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
+    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
+  };
+
+  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T, 1, false>> {
+
+    using gf_type      = triqs::gfs::gf<M, T>;
+    using gf_view_type = triqs::gfs::gf_view<M, T>;
+    using c_type       = triqs::gfs::block_gf_view<M, T, 1>;
 
     // ----------------------------------------------
 
@@ -303,8 +293,8 @@ namespace cpp2py {
     static void _set_err(PyObject *p, const char *X, std::string const &C) {
       using namespace std::string_literals;
       std::string err = "Cpp2py converter: Python to C++ :\n"s + "  ... Conversion of a BlockGf from Python to C++ "
-         + triqs::utility::typeid_name<c_type>() + "\n  ... Cannot convert the "s + X
-         + " of BlockGf from Python type :  " + p->ob_type->tp_name + " to the C++ type " + C;
+         + triqs::utility::typeid_name<c_type>() + "\n  ... Cannot convert the "s + X + " of BlockGf from Python type :  " + p->ob_type->tp_name
+         + " to the C++ type " + C;
       PyErr_SetString(PyExc_TypeError, err.c_str());
     }
 
@@ -314,20 +304,20 @@ namespace cpp2py {
       static pyref cls = pyref::get_class("triqs.gf", "BlockGf", true);
 
       // first check it is a BlockGf
-      if(not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       pyref x = borrowed(ob);
 
       // check the gfs and indicies
       pyref gfs = x.attr("_BlockGf__GFlist");
-      if (!py_converter<std::vector<gf_view_type>>::is_convertible(gfs, false)){
+      if (!py_converter<std::vector<gf_view_type>>::is_convertible(gfs, false)) {
         if (raise_exception) _set_err(gfs, "_BlockGf__GFlist", triqs::utility::typeid_name<std::vector<gf_view_type>>());
-	return false;
+        return false;
       }
 
       pyref names = x.attr("_BlockGf__indices");
-      if (!py_converter<std::vector<std::string>>::is_convertible(names, false)){
+      if (!py_converter<std::vector<std::string>>::is_convertible(names, false)) {
         if (raise_exception) _set_err(names, "_BlockGf__indices", triqs::utility::typeid_name<std::vector<std::string>>());
-	return false;
+        return false;
       }
 
       return true;
@@ -347,11 +337,12 @@ namespace cpp2py {
   //    block2_gf_view
   // -----------------------------------
 
-  template <typename... T> struct py_converter<triqs::gfs::block2_gf_view<T...>> {
+  // FIXME : REGROUP with A = 1
+  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T, 2, false>> {
 
     // using gf_type = triqs::gfs::gf<T...>;
-    using gf_view_type = triqs::gfs::gf_view<T...>;
-    using c_type       = triqs::gfs::block2_gf_view<T...>;
+    using gf_view_type = triqs::gfs::gf_view<M, T>;
+    using c_type       = triqs::gfs::block_gf_view<M, T, 2>;
 
     // ----------------------------------------------
 

@@ -41,14 +41,14 @@ template <int TARGET_RANK> void test_fourier() {
   auto bl = bravais_lattice{make_unit_matrix<double>(2)};
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
-  auto Gr = gf<cyclic_lattice, target_t>{{bl, N_k}, shape};
+  auto Gr = gf<cyclat, target_t>{{bl, N_k}, shape};
   Gr(r_) << exp(-r_(0));
 
-  auto Gk1 = gf<brillouin_zone, target_t>{{bz, N_k}, shape};
+  auto Gk1 = gf<b_zone, target_t>{{bz, N_k}, shape};
   Gk1()    = fourier(Gr);
 
   ///verification that TF(TF^-1)=Id
-  auto Grb = gf<cyclic_lattice, target_t>{{bl, N_k}, shape};
+  auto Grb = gf<cyclat, target_t>{{bl, N_k}, shape};
   Grb()    = fourier(Gk1);
   EXPECT_GF_NEAR(Gr, Grb, precision);
 

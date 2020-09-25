@@ -23,12 +23,12 @@ namespace triqs {
   namespace gfs {
 
     // Construct a Green function given a Mesh, a Target and a Memory Layout
-    template <typename Var, typename T, int R> gf<Var, typename T::target_t> make_gf(gf_mesh<Var> m, T const &t, memory_layout_t<R> const &ml) {
+    template <typename Mesh, typename T, int R> gf<Mesh, typename T::target_t> make_gf(Mesh m, T const &t, memory_layout_t<R> const &ml) {
       return {std::move(m), t.shape(), ml};
     }
 
     // Construct a Green function given a Mesh, and a Target
-    template <typename Var, typename T> gf<Var, typename T::target_t> make_gf(gf_mesh<Var> m, T const &t) { return {std::move(m), t.shape()}; }
+    template <typename Mesh, typename T> gf<Mesh, typename T::target_t> make_gf(Mesh m, T const &t) { return {std::move(m), t.shape()}; }
 
     // Create a Green function from another gf or view, changing the memory layout
     template <typename G> typename G::regular_type make_gf(G const &g, typename G::data_memory_layout_t const &ml) {

@@ -28,7 +28,7 @@ namespace triqs {
     // auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
 
     template <typename RHS, typename M, typename T> FORCEINLINE void triqs_clef_auto_assign(gf_view<M, T> g, RHS const &rhs) {
-      triqs_clef_auto_assign_impl(g, rhs, typename std::is_base_of<tag::composite, gf_mesh<M>>::type());
+      triqs_clef_auto_assign_impl(g, rhs, mesh::is_product<M>{});
     }
 
     template <typename RHS, typename M, typename T> FORCEINLINE void triqs_clef_auto_assign(gf<M, T> &g, RHS const &rhs) {

@@ -252,7 +252,7 @@ namespace triqs {
     }
 
     /*
-  * fold(f, r_init, t1, t2)
+  * fold(f, t1, t2, init)
   * f : a callable object
   * t1, t2 two tuples of the same size
   * Returns : f(x0,y0,f(x1,y1,,f(....)) for t1 = (x0,x1 ...) and t2 = (y0,y1...).

@@ -27,7 +27,7 @@ TEST(FitTailReal, Basic) { // NOLINT
   double omega_max = 10;
   int L            = 201;
 
-  auto w_mesh = gf_mesh<refreq>{-omega_max, omega_max, L};
+  auto w_mesh = mesh::refreq{-omega_max, omega_max, L};
 
   // Set the fraction of mesh points to use for the tail fit
   double tail_fraction = 0.3;
@@ -104,9 +104,9 @@ TEST(FitTailReal, Multivar) { // NOLINT
   int L            = 201;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = gf_mesh<brillouin_zone>(BL, N_k);
-  auto w_mesh    = gf_mesh<refreq>{-omega_max, omega_max, L};
-  auto prod_mesh = gf_mesh{k_mesh, w_mesh};
+  auto k_mesh    = mesh::b_zone(BL, N_k);
+  auto w_mesh    = mesh::refreq{-omega_max, omega_max, L};
+  auto prod_mesh = k_mesh * w_mesh;
 
   auto g = gf{prod_mesh, {1, 1}};
 

@@ -40,8 +40,8 @@ template <int TARGET_RANK> void test_fourier() {
 
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
-  auto iw_mesh  = gf_mesh<imfreq>{beta, Fermion, N_iw};
-  auto tau_mesh = gf_mesh<imtime>{beta, Fermion, N_tau};
+  auto iw_mesh  = mesh::imfreq{beta, Fermion, N_iw};
+  auto tau_mesh = mesh::imtime{beta, Fermion, N_tau};
 
   // -- Init Green functions
 

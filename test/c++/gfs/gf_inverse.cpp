@@ -44,7 +44,7 @@ TEST(CtHyb, gf_inverse2) {
   double t = 1.0;
   auto bz  = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 
-  auto G_iw = gf<cartesian_product<imfreq, brillouin_zone>>{{{beta, Fermion, n_iw}, {bz, nk}}, {1, 1}};
+  auto G_iw = gf<prod<imfreq, b_zone>>{{{beta, Fermion, n_iw}, {bz, nk}}, {1, 1}};
 
   triqs::clef::placeholder<0> om_;
   triqs::clef::placeholder<1> k_;
@@ -68,7 +68,7 @@ TEST(CtHyb, gf_inverse3) {
   double t = 1.0;
   auto bz  = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 
-  auto G_iw = gf<cartesian_product<imfreq, imtime, brillouin_zone>>{{{beta, Fermion, n_iw}, {beta, Fermion, n_t}, {bz, nk}}, {1, 1}};
+  auto G_iw = gf<prod<imfreq, imtime, b_zone>>{{{beta, Fermion, n_iw}, {beta, Fermion, n_t}, {bz, nk}}, {1, 1}};
 
   triqs::clef::placeholder<0> om_;
   triqs::clef::placeholder<2> t_;

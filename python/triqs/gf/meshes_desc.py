@@ -15,7 +15,7 @@ module.add_include("<cpp2py/converters/optional.hpp>")
 module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_using("namespace triqs::arrays")
-module.add_using("namespace triqs::gfs")
+module.add_using("namespace triqs::mesh")
 module.add_using("triqs::utility::mini_vector")
 module.add_preamble("""
 """)
@@ -32,12 +32,12 @@ module.add_preamble("""
 ########################
 
 module.add_enum(c_name = "statistic_enum",
-                c_namespace = "triqs::gfs",
+                c_namespace = "triqs::mesh",
                 values = ["Fermion","Boson"])
 
-module.add_enum(c_name = "matsubara_mesh_opt",
-                c_namespace = "triqs::gfs",
-                values = ["matsubara_mesh_opt::all_frequencies","matsubara_mesh_opt::positive_frequencies_only"])
+module.add_enum(c_name = "triqs::mesh::imfreq::option",
+         c_namespace = "",
+         values = ["imfreq::option::all_frequencies","imfreq::option::positive_frequencies_only"])
 
 ########################
 ##   Mesh generic
@@ -46,8 +46,8 @@ module.add_enum(c_name = "matsubara_mesh_opt",
 def make_mesh(py_type, c_tag, index_type='long'):
 
     m = class_( py_type = py_type,
-            c_type = "gf_mesh<%s>"%c_tag,
-            c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
+            c_type = "%s"%c_tag,
+            c_type_absolute = "triqs::mesh::%s"%c_tag,
             hdf5 = True,
             serializable= "tuple",
             is_printable= True,
@@ -114,14 +114,14 @@ module.add_class(m)
 # the domain
 dom = class_( py_type = "GfLegendreDomain",
         c_type = "legendre_domain",
-        c_type_absolute = "triqs::gfs::legendre_domain",
+        c_type_absolute = "triqs::mesh::legendre_domain",
         serializable= "tuple",
        )
 dom.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 module.add_class(dom)
 
 # the mesh
-m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::gfs::legendre")
+m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
@@ -185,7 +185,7 @@ module.add_class(m)
 ##   MeshBrillouinZone
 ########################
 
-m = make_mesh( py_type = "MeshBrillouinZone", c_tag = "brillouin_zone", index_type = 'triqs::utility::mini_vector<int,3>' )
+m = make_mesh( py_type = "MeshBrillouinZone", c_tag = "b_zone", index_type = 'triqs::utility::mini_vector<int,3>' )
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
 m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
@@ -205,7 +205,7 @@ module.add_class(m)
 ##   MeshCyclicLattice
 ########################
 
-m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclic_lattice", index_type = 'triqs::utility::mini_vector<int,3>' )
+m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclat", index_type = 'triqs::utility::mini_vector<int,3>' )
 m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
@@ -227,12 +227,12 @@ module.add_class(m)
 ############################
 
 # ---------------------- make_adjoint_mesh --------------------
-module.add_function("gf_mesh<brillouin_zone> make_adjoint_mesh(gf_mesh<cyclic_lattice> m)", doc = "Create the adjoint k-mesh")
-module.add_function("gf_mesh<cyclic_lattice> make_adjoint_mesh(gf_mesh<brillouin_zone> m)", doc = "Create the adjoint r-mesh")
-module.add_function("gf_mesh<imfreq> make_adjoint_mesh(gf_mesh<imtime> m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
-module.add_function("gf_mesh<imtime> make_adjoint_mesh(gf_mesh<imfreq> m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
-module.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
-module.add_function("gf_mesh<retime> make_adjoint_mesh(gf_mesh<refreq> m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
+module.add_function("b_zone triqs::gfs::make_adjoint_mesh(cyclat m)", doc = "Create the adjoint k-mesh")
+module.add_function("cyclat triqs::gfs::make_adjoint_mesh(b_zone m)", doc = "Create the adjoint r-mesh")
+module.add_function("imfreq triqs::gfs::make_adjoint_mesh(imtime m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
+module.add_function("imtime triqs::gfs::make_adjoint_mesh(imfreq m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
+module.add_function("refreq triqs::gfs::make_adjoint_mesh(retime m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
+module.add_function("retime triqs::gfs::make_adjoint_mesh(refreq m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
 
 ##   Code generation
 module.generate_code()

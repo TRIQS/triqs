@@ -27,7 +27,7 @@
 namespace triqs::gfs {
 
   // The implementation is almost the same in both cases...
-  template <typename V1, typename V2> gf_vec_t<V1> __impl(int fftw_backward_forward, gf_mesh<V1> const &out_mesh, gf_vec_cvt<V2> g_in) {
+  template <typename M1, typename M2> gf_vec_t<M1> __impl(int fftw_backward_forward, M1 const &out_mesh, gf_vec_cvt<M2> g_in) {
 
     //ASSERT_EQUAL(g_out.data().shape(), g_in.data().shape(), "Meshes are different");
     //ASSERT_EQUAL(g_out.data().indexmap().strides()[1], g_out.data().shape()[1], "Unexpected strides in fourier implementation");
@@ -44,7 +44,7 @@ namespace triqs::gfs {
         break;
       }
 
-    auto g_out    = gf_vec_t<V1>{out_mesh, g_in.target_shape()[0]};
+    auto g_out    = gf_vec_t<M1>{out_mesh, g_in.target_shape()[0]};
     long n_others = second_dim(g_in.data());
 
     auto dims = g_in.mesh().get_dimensions();
@@ -55,7 +55,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<cyclic_lattice> _fourier_impl(gf_mesh<cyclic_lattice> const &r_mesh, gf_vec_cvt<brillouin_zone> gk) {
+  gf_vec_t<mesh::torus> _fourier_impl(mesh::torus const &r_mesh, gf_vec_cvt<mesh::b_zone> gk) {
     auto gr = __impl(FFTW_FORWARD, r_mesh, gk);
     gr.data() /= gk.mesh().size();
     return std::move(gr);
@@ -63,7 +63,7 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<brillouin_zone> _fourier_impl(gf_mesh<brillouin_zone> const &k_mesh, gf_vec_cvt<cyclic_lattice> gr) {
+  gf_vec_t<mesh::b_zone> _fourier_impl(mesh::b_zone const &k_mesh, gf_vec_cvt<mesh::torus> gr) {
     return __impl(FFTW_BACKWARD, k_mesh, gr);
   }
 

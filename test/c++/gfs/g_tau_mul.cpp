@@ -51,7 +51,7 @@ TEST(GfMul, Statistic) {
 
 TEST(GfMul, Statistic2Imtime) {
   double beta = 10.0;
-  using g_t   = gf<cartesian_product<imtime, imtime>>;
+  using g_t   = gf<prod<imtime, imtime>>;
 
   auto ff = g_t{{{beta, Fermion, 100}, {beta, Fermion, 100}}, {1, 1}};
   auto fb = g_t{{{beta, Fermion, 100}, {beta, Boson, 100}}, {1, 1}};
@@ -83,12 +83,12 @@ TEST(GfMul, Statistic2Imtime) {
 // -------------------------------------
 
 TEST(GfMul, Statistic_k_tau) {
-  using g_t = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>;
+  using g_t = gf<prod<b_zone, imtime>, matrix_valued>;
 
   double beta = 10.0;
   int n_bz    = 20;
   auto bz     = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
-  auto g_eps  = gf<brillouin_zone>{{bz, n_bz}, {1, 1}};
+  auto g_eps  = gf<b_zone>{{bz, n_bz}, {1, 1}};
 
   auto f = g_t{{{bz, n_bz}, {beta, Fermion, 100}}, {1, 1}};
   auto b = g_t{{{bz, n_bz}, {beta, Boson, 100}}, {1, 1}};

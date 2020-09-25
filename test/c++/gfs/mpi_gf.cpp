@@ -56,7 +56,7 @@ TEST_F(MpiGf, Reduce) {
   // reduction
   gf<imfreq> g2 = mpi::reduce(g1, world);
   // out << g2.data()<<std::endl;
-  if (world.rank() == 0) test_gfs_are_close(g2, gf{world.size() * g1});
+  if (world.rank() == 0) test_gfs_are_close(g2, gf<imfreq>{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -64,7 +64,7 @@ TEST_F(MpiGf, Reduce) {
 TEST_F(MpiGf, AllReduce) {
   // all reduction
   gf<imfreq> g2 = mpi::all_reduce(g1, world);
-  test_gfs_are_close(g2, gf{world.size() * g1});
+  test_gfs_are_close(g2, gf<imfreq>{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -72,7 +72,7 @@ TEST_F(MpiGf, AllReduce) {
 TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
   gf<imfreq> g2 = g1;
   g2()          = mpi::all_reduce(g1(), world);
-  test_gfs_are_close(g2, gf{world.size() * g1});
+  test_gfs_are_close(g2, gf<imfreq>{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -114,10 +114,10 @@ TEST_F(MpiGf, ReduceBlock) {
   auto bgf3 = bgf;
 
   bgf2 = mpi::reduce(bgf);
-  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf{world.size() * g1});
+  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf<imfreq>{world.size() * g1});
 
   bgf3 = mpi::all_reduce(bgf);
-  test_gfs_are_close(bgf3[0], gf{world.size() * g1});
+  test_gfs_are_close(bgf3[0], gf<imfreq>{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -128,10 +128,10 @@ TEST_F(MpiGf, ReduceBlockView) {
   auto bgf2 = bgf;
 
   bgf2() = mpi::reduce(bgf);
-  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf{world.size() * g1});
+  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf<imfreq>{world.size() * g1});
 
   bgf2() = mpi::all_reduce(bgf);
-  test_gfs_are_close(bgf2[0], gf{world.size() * g1});
+  test_gfs_are_close(bgf2[0], gf<imfreq>{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -140,7 +140,7 @@ TEST_F(MpiGf, ReduceBlockView) {
 //auto g10 = gf<imfreq>{{beta, Fermion, Nfreq}, {1, 1}};
 //g10(w_) << 1 / (w_ + 1);
 
-//auto m  = mpi::scatter(gf_mesh<imfreq>{beta, Fermion, Nfreq}, world, 0);
+//auto m  = mpi::scatter(mesh::imfreq{beta, Fermion, Nfreq}, world, 0);
 //auto g3 = gf<imfreq>{m, {1, 1}};
 //auto g4 = gf<imfreq>{m, {1, 1}};
 //g3(w_) << 1 / (w_ + 1);
