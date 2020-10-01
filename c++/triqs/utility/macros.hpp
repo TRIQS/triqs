@@ -26,6 +26,7 @@
 #undef NDEBUG
 #endif
 
+#define TRIQS_DEPRECATED(Message) __attribute__((deprecated(AS_STRING(Message))))
 #define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
 
 #include <boost/utility/enable_if.hpp>
