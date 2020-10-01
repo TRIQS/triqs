@@ -61,6 +61,12 @@ namespace triqs::gfs {
   template <typename Mesh, typename Target, int Arity, bool IsConst>
   inline constexpr bool is_block_gf_v<block_gf_view<Mesh, Target, Arity, IsConst>, Arity> = true;
 
+  template<typename, typename = std::void_t<>>
+  inline constexpr int arity_of = -1;
+
+  template<typename T>
+  inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
+
   // FIXME : backward compat. remove this
   // template <typename G, int n> inline constexpr bool is_block_gf_v<G&, n> = is_block_gf_v<G, n>;
 

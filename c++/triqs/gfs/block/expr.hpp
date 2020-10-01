@@ -60,6 +60,9 @@ namespace triqs {
       using target_t = typename details_bgfs_expr::same_or_void<typename L_t::target_t, typename R_t::target_t>::type;
       static_assert(!std::is_same<mesh_t, void>::value, "Cannot combine two gf expressions with different variables");
       static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
+      static_assert((arity_of<L_t> == -1 xor arity_of<R_t> == -1) or (arity_of<R_t> == arity_of<L_t> and arity_of<R_t> > 0));
+
+      static constexpr int arity = std::max(arity_of<L_t>, arity_of<R_t>);
 
       L l;
       R r;

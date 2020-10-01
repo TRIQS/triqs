@@ -42,6 +42,7 @@ namespace triqs::mesh {
   template <typename... Ms> class prod : tag::product {
 
     // Backward compat helper.
+    static_assert(not(std::is_reference_v<Ms> or ...), "Cannot create mesh product of references");
     static_assert(not(std::is_same_v<Ms, triqs::lattice::brillouin_zone> or ...),
                   "Since TRIQS 2.3, brillouin_zone is replaced by mesh::b_zone as a mesh name. Cf Doc, changelog");
 
@@ -79,6 +80,8 @@ namespace triqs::mesh {
     prod() = default;
     prod(Ms const &... mesh) : m_tuple(mesh...), _dom(mesh.domain()...) {}
     prod(std::tuple<Ms...> const &mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
+    template<typename... U>
+    prod(std::tuple<U...> const &mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
     prod(prod const &) = default;
 
     /// Mesh comparison
@@ -207,10 +210,10 @@ namespace triqs::mesh {
     domain_t _dom;
   }; //end of class
 
-  // ---------- Class template argument deduction rules -------------
+  // ---------- Class template argument deduction rules (CTAD) -------------
   template <typename M1, typename M2, typename... Ms> prod(M1, M2, Ms...)->prod<M1, M2, Ms...>;
 
-  template <typename M1, typename M2, typename... Ms> prod(std::tuple<M1, M2, Ms...>)->prod<M1, M2, Ms...>;
+  template <typename M1, typename M2, typename... Ms> prod(std::tuple<M1, M2, Ms...>)->prod<std::decay_t<M1>, std::decay_t<M2>, std::decay_t<Ms>...>;
 
   // ------------------------------------------------
   /// The wrapper for the mesh point
