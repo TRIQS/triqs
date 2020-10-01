@@ -41,12 +41,23 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
+    ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, many_body_op_t const &hyb, fundamental_operator_set const &fops))
+       : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {
+      atom_diag_worker<Complex>{this}.autopartition(hyb);
+      fill_first_eigenstate_of_subspace();
+      compute_vacuum();
+    }
+    
+
+    // -----------------------------------------------------------------
+
     ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, fundamental_operator_set const &fops))
        : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {
       atom_diag_worker<Complex>{this}.autopartition();
       fill_first_eigenstate_of_subspace();
       compute_vacuum();
     }
+
 
     ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max))
        : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {

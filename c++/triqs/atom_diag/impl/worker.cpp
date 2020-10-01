@@ -46,18 +46,20 @@ namespace triqs {
 
     //------------------------------------------------------------------------------------
 
-    ATOM_DIAG_WORKER_METHOD(void, autopartition()) {
+    ATOM_DIAG_WORKER_METHOD(void, autopartition(many_body_op_t const &hyb)) {
+    //ATOM_DIAG_WORKER_METHOD(void, autopartition()) {
 
       fundamental_operator_set const &fops = hdiag->get_fops();
       many_body_op_t const &h              = hdiag->get_h_atomic();
 
       using imperative_operator_t = imperative_operator<class hilbert_space, scalar_t, false>;
       imperative_operator_t hamiltonian(h, fops);
+      imperative_operator_t hybridization(hyb, fops);
       state<class hilbert_space, scalar_t, true> st(hdiag->full_hs);
 
       using space_partition_t = space_partition<state<class hilbert_space, scalar_t, true>, imperative_operator_t>;
       // Split the Hilbert space
-      space_partition_t SP(st, hamiltonian, false);
+      space_partition_t SP(st, hamiltonian, false, hybridization);
 
       std::vector<typename space_partition_t::matrix_element_map_t> creation_melem(fops.size());
       std::vector<typename space_partition_t::matrix_element_map_t> annihilation_melem(fops.size());
@@ -71,7 +73,7 @@ namespace triqs {
         int n                                              = o.linear_index;
         std::tie(creation_melem[n], annihilation_melem[n]) = SP.merge_subspaces(op_c_dag, op_c, true);
       }
-
+ 
       // Fill subspaces
       auto & h_spaces = hdiag->sub_hilbert_spaces;
 
@@ -120,6 +122,7 @@ namespace triqs {
 
       complete();
     }
+
 
     // -----------------------------------------------------------------
 
