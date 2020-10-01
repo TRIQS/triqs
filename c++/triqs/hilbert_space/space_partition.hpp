@@ -62,8 +62,9 @@ namespace triqs {
    @param st Sample many-body state to be used internally by the algorithm
    @param H Hamiltonian as an imperative operator
    @param store_matrix_elements Should we store the non-vanishing matrix elements of the Hamiltonian?
+   @param H Hyb as an additionnal optional imperative operator
   */
-      space_partition(state_t const &st, operator_t const &H, bool store_matrix_elements = true)
+      space_partition(state_t const &st, operator_t const &H, bool store_matrix_elements = true, operator_t const &Hyb = operator_t())
          : tmp_state(make_zero_state(st)), subspaces(st.size()) {
         auto size = tmp_state.size();
 
@@ -72,8 +73,7 @@ namespace triqs {
           tmp_state(i)        = amplitude_t(1);
           state_t final_state = H(tmp_state);
 
-          // Iterate over non-zero final amplitudes
-          foreach (final_state, [&](index_t f, amplitude_t amplitude) {
+          auto mapping = [&](index_t f, amplitude_t amplitude) {
             using triqs::utility::is_zero;
             if (is_zero(amplitude)) return;
             auto i_subspace = subspaces.find_set(i);
@@ -81,8 +81,17 @@ namespace triqs {
             if (i_subspace != f_subspace) subspaces.link(i_subspace, f_subspace);
 
             if (store_matrix_elements) matrix_elements[std::make_pair(i, f)] = amplitude;
-          })
-            ;
+          };
+
+          // Iterate over non-zero final amplitudes
+          foreach (final_state, mapping);
+          
+          // redo for additionnal Hyb
+          if(not Hyb.is_empty()){
+            final_state = Hyb(tmp_state);
+            foreach (final_state, mapping);
+          }
+          
           tmp_state(i) = amplitude_t(0.);
         }
 

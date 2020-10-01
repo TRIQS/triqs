@@ -133,7 +133,9 @@ namespace triqs {
        * @note See :ref:`space_partition` for more details on the auto-partition scheme.
        */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
-
+      
+      atom_diag(many_body_op_t const &h, many_body_op_t const &hyb, fundamental_operator_set const &fops);
+      
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
 
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it

@@ -85,6 +85,11 @@ namespace triqs {
       /// Construct a zero operator
       imperative_operator() {}
 
+      /// Check if the operator is empty
+      bool is_empty() const{
+        return (all_terms.size()==0);
+      }
+
       /// Constructor from a `many_body_operator` and a `fundamental_operator_set`
       /**
    @param op Source `many_body_operator` object
