@@ -34,7 +34,6 @@ namespace triqs::gfs {
   using arrays::matrix_const_view;
   using arrays::matrix_view;
 
-  using nda::range;
   using utility::factory;
 
   // Using from mesh namespace

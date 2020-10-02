@@ -28,7 +28,7 @@ namespace triqs::gfs {
 
   namespace details {
 
-    using triqs::arrays::range_all;
+    using nda::range;
 
     //------------------------------------
     //  multivar_eval
@@ -79,7 +79,7 @@ namespace triqs::gfs {
     //------------------------------------------------------------------------------------
 
     template <typename M, typename Arg> auto _filter_the_all(M const &m, Arg const &arg) { return m.get_interpolation_data(arg); }
-    template <typename M> std::array<std::pair<range_all, mesh::one_t>, 1> _filter_the_all(M const &m, mesh::all_t) { return {}; }
+    template <typename M> std::array<std::pair<range::all_t, mesh::one_t>, 1> _filter_the_all(M const &m, mesh::all_t) { return {}; }
 
     // FIXME20 : use a lambda
     template <typename G, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, G const &g, Args const &... args) {

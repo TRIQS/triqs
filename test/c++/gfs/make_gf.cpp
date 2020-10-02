@@ -67,7 +67,7 @@ TEST(make_gf, new_layout) {
   // Create G2 from G1 with new memory layout
   G2 = G1;
 
-  nda::range_all _;
+  auto _ = nda::range::all;
 
   for (int w = 0; w < 5; ++w) { EXPECT_ARRAY_NEAR(G2.data()(w, _, _), G1.data()(w, _, _)); }
 

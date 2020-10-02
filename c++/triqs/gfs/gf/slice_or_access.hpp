@@ -22,14 +22,14 @@
 
 namespace triqs::gfs::details {
 
-  using triqs::arrays::range_all;
+  using nda::range;
 
   // "Lambda" : X = argument, M = mesh, Tu = tuple of results
   // Action : accumulate the m in tu iif X is a all_t
   // To be used in partial_eval in a fold to filter the tuple of mesh
   struct filter_mesh {
     template <typename X, typename M, typename Tu> auto operator()(X const &x, M const &m, Tu &&tu) const { return std::forward<Tu>(tu); }
-    template <typename M, typename Tu> auto operator()(range_all, M const &m, Tu &&tu) const {
+    template <typename M, typename Tu> auto operator()(range::all_t, M const &m, Tu &&tu) const {
       return std::tuple_cat(std::forward<Tu>(tu), std::tie(m));
     }
   };
@@ -50,15 +50,15 @@ namespace triqs::gfs::details {
   //
   //
   // g : a gf, gf_view, gf_const_view container.
-  // args must be range_all or long (linear_indices of meshes)
+  // args must be range::all_t or long (linear_indices of meshes)
   // returns either g.data[args...] if args contains no  all_t
   // or a new view if some args are all_t
   //
   template <typename G, typename... Args> decltype(auto) slice_or_access(G &g, Args const &... args) {
 
-    static_assert(((std::is_same_v<range_all, Args> or std::is_same_v<long, Args>)and...), "Internal error : unexpected type in slice_or_access");
+    static_assert(((std::is_same_v<range::all_t, Args> or std::is_same_v<long, Args>)and...), "Internal error : unexpected type in slice_or_access");
 
-    if constexpr (not(std::is_same_v<range_all, Args> or ...))
+    if constexpr (not(std::is_same_v<range::all_t, Args> or ...))
       return g.on_mesh_from_linear_index(args...);
     else {
 
@@ -90,7 +90,7 @@ namespace triqs::gfs::details {
     return x.linear_index();
   }
   template <typename M> FORCEINLINE auto get_linear_index_from_mesh_and_arg(M const &m, typename M::index_t const &x) { return m.index_to_linear(x); }
-  template <typename M> FORCEINLINE range_all get_linear_index_from_mesh_and_arg(M &&, all_t) { return {}; }
+  template <typename M> FORCEINLINE range::all_t get_linear_index_from_mesh_and_arg(M &&, all_t) { return {}; }
 
   //-----------------------------------------------
 
