@@ -16,6 +16,13 @@
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
+#pragma once
+
+#include <triqs/utility/first_include.hpp>
+#include <triqs/utility/stack_trace.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <type_traits>
+#include <iostream>
 
 #include <nda/macros.hpp>
 
@@ -29,18 +36,14 @@
     return 1;                                                                                                                                        \
   }
 
-#include <type_traits>
 namespace triqs {
   template <typename T> struct remove_cv_ref : std::remove_cv<typename std::remove_reference<T>::type> {};
 
   /// Tag the views
   struct is_view_tag {};
   template <typename T> struct is_view : std::is_base_of<is_view_tag, T> {};
-}
 
-#endif
-
-// ---- General Macros ----
+} // namespace triqs
 
 #define TYPE_ENABLE_IF(Type, ...) typename boost::enable_if<__VA_ARGS__, Type>::type
 #define TYPE_ENABLE_IFC(Type, ...) typename boost::enable_if_c<__VA_ARGS__, Type>::type
@@ -52,16 +55,9 @@ namespace triqs {
 
 #define FORCEINLINE __inline__ __attribute__((always_inline))
 
-#ifdef NDEBUG
-
-#define EXPECTS(X)
-#define ASSERT(X)
-#define ENSURES(X)
-#define EXPECTS_WITH_MESSAGE(X, ...)
-#define ASSERT_WITH_MESSAGE(X, ...)
-#define ENSURES_WITH_MESSAGE(X, ...)
-
-#else
-
-#include <iostream>
+#define TERMINATE(X)                                                                                                                                 \
+  std::cerr << "Terminating at " << __FILE__ << ":" << __LINE__ << "\n";                                                                             \
+  std::cerr << X;                                                                                                                                    \
+  std::terminate();                                                                                                                                  \
+  }
 
