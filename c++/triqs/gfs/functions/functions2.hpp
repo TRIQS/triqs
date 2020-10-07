@@ -121,8 +121,8 @@ namespace triqs::gfs {
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
-      return g.mesh().get_tail_fitter().template fit_hermitian<0>(g.mesh(), make_const_view(g.data()), true, make_const_view(known_moments),
-                                                                  inner_matrix_dim);
+      return g.mesh().get_tail_fitter().template fit_hermitian<0>(g.mesh(), make_array_const_view(g.data()), true,
+                                                                  make_array_const_view(known_moments), inner_matrix_dim);
     }
   }
 

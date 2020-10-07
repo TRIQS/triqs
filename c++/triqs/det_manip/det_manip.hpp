@@ -25,7 +25,6 @@
 #include <iterator>
 #include <numeric>
 #include <cmath>
-//#include <nda/nda.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/function_arg_ret_type.hpp>
 
@@ -427,9 +426,7 @@ namespace triqs {
         //for (size_t i=0; i<d.N;i++)
         //for (size_t j=0; j<d.N;j++)
         // f(d.x_values[i], d.y_values[j], d.mat_inv(j,i));
-        range R(0, d.N);
-        foreach (d.mat_inv(R, R), [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); })
-          ;
+        nda::for_each(std::array{long(d.N), long(d.N)}, [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
       }
 
       // ------------------------- OPERATIONS -----------------------------------------------
