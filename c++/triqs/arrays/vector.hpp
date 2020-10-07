@@ -282,11 +282,7 @@ namespace triqs {
       blas::scal(a, lhs);
     }
 
-    template <typename RHS, typename T>
-    std::enable_if_t<is_scalar_for<RHS, vector<T>>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'D'>) {
-      T a = 1 / rhs;
-      blas::scal(a, lhs);
-    }
+    // We do not implement vector division based on blas::scal as v_i * (1/rhs) is not numerically identical to v_i / rhs
 
     template <typename RHS, typename T>
     std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_assign_delegation(vector_view<T> &lhs, RHS const &rhs) {
