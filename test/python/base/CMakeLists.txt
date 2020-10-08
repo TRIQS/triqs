@@ -43,6 +43,9 @@ add_python_test(bug_bcast_mesh)
 # Issues with the high frequency moments
 add_python_test(tail_issues)
 
+# issue with mult of Gf with different dim
+add_python_test(issue_gf_mult_dim)
+
 # Add evaluator for g
 add_python_test(gf_eval)
 
