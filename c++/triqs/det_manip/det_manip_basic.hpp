@@ -296,6 +296,10 @@ namespace triqs {
       x_type const &get_x(long i) const { return x_values[i]; } // TODO: replace with at? Why const ref?
       y_type const &get_y(long j) const { return y_values[j]; } // TODO: replace with at? Why const ref?
 
+      auto const &get_x_internal_order() const { return x_values; }
+      auto const &get_y_internal_order() const { return y_values; }
+
+
       /// Returns the function f
       FunctionType const &get_function() const { return f; }
 
@@ -313,6 +317,10 @@ namespace triqs {
         compute_inverse();
         return mat_inverse(i, j);
       }
+
+      matrix_const_view_type inverse_matrix_internal_order() const { return inverse_matrix(); }
+
+      value_type inverse_matrix_internal_order(int i, int j) const { return inverse_matrix(i, j); }
 
       /** Returns M */
 
