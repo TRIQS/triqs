@@ -19,11 +19,11 @@
 
 #pragma once
 #include <triqs/utility/typeid_name.hpp>
+#include <triqs/cpp2py_converters/arrays.hpp>
 
 #include <cpp2py/converters/vector.hpp>
 #include <cpp2py/converters/tuple.hpp>
 #include <cpp2py/converters/std_array.hpp>
-
 
 /// Additional converters for gf
 namespace cpp2py {
