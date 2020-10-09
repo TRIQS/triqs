@@ -40,6 +40,20 @@ set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 # include the exported dependencies of the triqs project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
+# ############
+# Make sure that imported targets are always global
+get_property(IMPORTED_ALWAYS_GLOBAL GLOBAL PROPERTY IMPORTED_ALWAYS_GLOBAL)
+if(NOT IMPORTED_ALWAYS_GLOBAL)
+  function(add_library)
+    set(_args ${ARGN})
+    if ("${_args}" MATCHES ";IMPORTED")
+        list(APPEND _args GLOBAL)
+    endif()
+    _add_library(${_args})
+  endfunction()
+  set_property(GLOBAL PROPERTY IMPORTED_ALWAYS_GLOBAL TRUE)
+endif()
+
 # Find the target dependencies
 function(find_dep)
   get_property(${ARGV0}_FOUND GLOBAL PROPERTY ${ARGV0}_FOUND)
