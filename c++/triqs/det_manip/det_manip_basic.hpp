@@ -449,6 +449,9 @@ namespace triqs {
         TRIQS_ASSERT(i1 >= 0);
         TRIQS_ASSERT(j1 >= 0);
 
+	i1--;
+	j1--;
+
         if (N >= Nmax - 1) reserve(2 * Nmax);
         last_try = Insert2;
         w2.i[0]  = i0;
