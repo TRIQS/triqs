@@ -102,7 +102,6 @@ namespace triqs {
       std::vector<y_type> y_values;
 
       // Temporary objects: not serialized
-
       matrix_type mat_new;
       det_type det_new = 1.0;
 
@@ -395,6 +394,8 @@ namespace triqs {
         mat_new(i, j) = f(x, y);
 
         range R(0, N + 1);
+
+
         det_new = arrays::determinant(mat_new(R, R));
 
         return det_new / det;
@@ -449,8 +450,8 @@ namespace triqs {
         TRIQS_ASSERT(i1 >= 0);
         TRIQS_ASSERT(j1 >= 0);
 
-	i1--;
-	j1--;
+        i1--;
+        j1--;
 
         if (N >= Nmax - 1) reserve(2 * Nmax);
         last_try = Insert2;
@@ -559,6 +560,12 @@ namespace triqs {
         w1.j     = j;
         last_try = Remove;
 
+        // Treat N = 1 specially -> goes to zero
+        if (N == 1){
+          det_new = 1.0;
+          return det_new / det;
+        }
+
         range Row_A__(0, i);
         range Row_B_0(i + 1, N);
         range Row_B_1 = Row_B_0 + std::ptrdiff_t{-1};
@@ -620,6 +627,12 @@ namespace triqs {
         w2.i[1] = std::max(i0, i1);
         w2.j[0] = std::min(j0, j1);
         w2.j[1] = std::max(j0, j1);
+
+        // Treat N = 2 specially -> goes to N = 0
+        if (N == 2){
+          det_new = 1.0;
+          return det_new / det;
+        }
 
         range Row_A__(0, i0);
         range Row_B_0(i0 + 1, i1);
@@ -749,7 +762,7 @@ namespace triqs {
 
         range R(0, N);
         mat_new(R, R) = mat(R, R);
-        
+
         for (auto k : R) {
           mat_new(i, k) = f(x, y_values[k]);
           mat_new(k, j) = f(x_values[k], y);
