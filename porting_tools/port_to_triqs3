@@ -27,8 +27,27 @@ repl_dict = {
         "H5F_ACC_TRUNC": "'w'",
         "H5F_ACC_RDWR": "'a'", 
         "H5F_ACC_RDONLY": "'r'", 
-        "PYTHON_INTERPRETER": "PYTHON_EXECUTABLE"
+        "PYTHON_INTERPRETER": "PYTHON_EXECUTABLE",
         # r"(\d)_j": r"\1i"
+        # --- Meshes Merge ---
+        "( *)using namespace triqs::gfs;\n(?! *using namespace triqs::mesh)": r"\1using namespace triqs::gfs;\n\1using namespace triqs::mesh;\n",
+        "#include <triqs/gfs.hpp>\n(?!#include <triqs/mesh.hpp>)": "#include <triqs/gfs.hpp>\n#include <triqs/mesh.hpp>\n",
+        "cartesian_product": "prod",
+        #"brillouin_zone": "b_zone", # This has to be done manually due to naming conflict with lattice::brillouin_zone
+        "gf_mesh<brillouin_zone>": "gf_mesh<b_zone>",
+        "gf<brillouin_zone": "gf<b_zone",
+        "prod<brillouin_zone": "prod<b_zone",
+        "gf_closest_point": "closest_point",
+        "gf_mesh{": "prod{", # may be probematic if not constructing a prod??
+        "gf_mesh<(.?)>": r"\1", # really necessary?
+        # --- NDA Merge ---
+        "#include <triqs/clef.hpp>\n": "",
+        "triqs::utility::mini_vector": "std::array",
+        "mini_vector": "std::array",
+        "first_dim\((.*?)\)": r"\1.shape()[0]",
+        "second_dim\((.*?)\)": r"\1.shape()[1]",
+        "#include <triqs/arrays/blas_lapack/dot.hpp>": "#include <nda/blas/dot.hpp>",
+        "#include <triqs/arrays/linalg/eigenelements.hpp>": "#include <nda/linalg/eigenelements.hpp>"
         }
 # :bufdo :%s#\(\w *\)/\( *[Nn0-9]\)#\1//\2#gc
 
