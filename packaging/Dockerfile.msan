@@ -46,6 +46,7 @@ ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitiz
     CFLAGS="-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
     LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib \
     LDFLAGS="-fsanitize=memory" \
+    MSAN_OPTIONS=MSAN_OPTIONS=symbolize=1:halt_on_error=1 \
     MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer
 
 # HDF5
