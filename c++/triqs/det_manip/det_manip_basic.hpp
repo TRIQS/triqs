@@ -307,7 +307,7 @@ namespace triqs {
       auto determinant() const { return det; }
 
       /** Returns M^{-1} */
-      matrix_type inverse_matrix() const {
+      matrix_const_view_type inverse_matrix() const {
         compute_inverse();
         range R(0, N);
         return mat_inverse(R, R);
