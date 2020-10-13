@@ -49,11 +49,19 @@ ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitiz
     MSAN_OPTIONS=MSAN_OPTIONS=symbolize=1:halt_on_error=1 \
     MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer
 
+# Static zlib using fPIC to be linked into hdf5
+ADD https://cfhcable.dl.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/zlib-1.2.11.tar.gz && cd zlib-1.2.11 && \
+      CFLAGS="-fPIC $CFLAGS" ./configure --prefix=/opt/zlib && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/zlib*
+
 # HDF5
 ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
 RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
       mkdir build && cd build && \
-      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 && make -j${NTHREAD} && make install && \
+      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+                                               -DHDF5_ENABLE_Z_LIB_SUPPORT=ON -DZLIB_LIBRARY=/opt/zlib/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=/opt/zlib/include && \
+      make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
