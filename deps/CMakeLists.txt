@@ -91,5 +91,5 @@ external_dependency(h5
 external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 0.8
-  GIT_TAG unstable
+  GIT_TAG DEV_INCH
 )
