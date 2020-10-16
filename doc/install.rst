@@ -71,6 +71,11 @@ See also `github.com/conda-forge/triqs-feedstock <https://github.com/conda-forge
 We further provide packages for `triqs_cthyb <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_, `triqs_dft_tools <https://github.com/conda-forge/triqs_dft_tools-feedstock/>`_
 and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
 
+In case you encounter troubles resolving the dependencies, you can try using `mamba <https://github.com/mamba-org/mamba>`_ instead of `conda`::
+
+        conda install mamba -c conda-forge  # install mamba
+        mamba install -c conda-forge triqs  # use mamba instead of triqs for dependency resolution
+
 .. _triqs_docker:
 
 Docker
