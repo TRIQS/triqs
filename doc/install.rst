@@ -73,8 +73,8 @@ and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
 
 In case you encounter troubles resolving the dependencies, you can try using `mamba <https://github.com/mamba-org/mamba>`_ instead of `conda`::
 
-        conda install mamba -c conda-forge  # install mamba
-        mamba install -c conda-forge triqs  # use mamba instead of triqs for dependency resolution
+        conda install -c conda-forge mamba
+        mamba install -c conda-forge triqs
 
 .. _triqs_docker:
 
