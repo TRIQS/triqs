@@ -61,15 +61,16 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install gmp
      brew install fftw
      brew install open-mpi
+     brew install openblas
      brew install python
-     brew install numpy
-     brew install scipy
-     brew install mpi4py
 
 4. Install the required python packages: ::
 
     pip3 install --user --upgrade matplotlib
     pip3 install --user --upgrade mako
+    pip3 install --user --upgrade numpy
+    pip3 install --user --upgrade scipy
+    pip3 install --user --upgrade mpi4py
 
 5. We recommend using the clang compiler by default. The following command will install llvm together with the most recent clang compiler ::
 
