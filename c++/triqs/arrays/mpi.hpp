@@ -53,7 +53,7 @@ namespace triqs {
             dims[0] = mpi::reduce(slow_size, c, root); // valid only on root
             if (c.rank() != root) dims[0] = 1;             // valid only on root
           } else
-            dims[0] = mpi::all_reduce(slow_size, c, root); // in this case, it is valid on all nodes
+            dims[0] = mpi::all_reduce(slow_size, c); // in this case, it is valid on all nodes
         }
         // mpi::tag::reduce :do nothing
 
