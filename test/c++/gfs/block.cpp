@@ -42,7 +42,7 @@ TEST(Gf, Block) {
   auto B4 = make_block_gf({"0", "1", "2"}, G_vec);
   auto B5 = make_block_gf(2, G1);
 
-  auto gf_struct = gf_struct_t{{"0", {0, 1}}, {"1", {0, 1}}, {"2", {0, 1}}};
+  auto gf_struct = gf_struct_t{{"0", 2}, {"1", 2}, {"2", 2}};
   auto B6        = block_gf<imfreq>{{beta, Fermion}, gf_struct};
 
   auto V1       = make_block_gf_view(G1, G2, G3);

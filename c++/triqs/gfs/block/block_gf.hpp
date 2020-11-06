@@ -198,11 +198,10 @@ namespace triqs::gfs {
     // Create Block Green function from Mesh and gf_struct
     block_gf(Mesh const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) REQUIRES(Arity == 1) {
 
-      for (auto const &[bname, idx_lst] : gf_struct) {
-        auto bl_size = idx_lst.size();
-        _block_names.push_back(bname);
-        std::vector<std::string> idx_str_lst(bl_size);
-        std::transform(idx_lst.cbegin(), idx_lst.cend(), idx_str_lst.begin(), [](auto &arg) { return std::to_string(arg); });
+      for (auto const &[bl_name, bl_size] : gf_struct) {
+        _block_names.push_back(bl_name);
+        std::vector<std::string> idx_str_lst;
+        for (int idx = 0; idx < bl_size; idx++) idx_str_lst.push_back(std::to_string(idx));
         if constexpr (Target::rank == 0)
           _glist.emplace_back(m, make_shape());
         else

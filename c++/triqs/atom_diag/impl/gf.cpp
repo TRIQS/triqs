@@ -77,13 +77,12 @@ namespace triqs {
 
       // Generate all terms in Lehmann representation
       int bl = 0;
-      for (auto const &block : gf_struct) {
-        int bl_size = block.second.size();
+      for (auto const &[block, bl_size] : gf_struct) {
 
         for (int inner_index1 : range(bl_size))
           for (int inner_index2 : range(bl_size)) {
-            int n1 = fops[{block.first, block.second[inner_index1]}]; // linear_index of c
-            int n2 = fops[{block.first, block.second[inner_index2]}]; // linear_index of c_dag
+            int n1 = fops[{block, inner_index1}]; // linear_index of c
+            int n2 = fops[{block, inner_index2}]; // linear_index of c_dag
 
             for (int A = 0; A < n_sp; ++A) {                          // index of the A block. sum over all
               int B = atom.cdag_connection(n2, A);                    // index of the block connected to A by operator c_n
@@ -114,7 +113,7 @@ namespace triqs {
       // Prepare Lehmann GF container
       gf_lehmann_t<Complex> lehmann;
       lehmann.reserve(gf_struct.size());
-      for (auto const &block : gf_struct) { lehmann.emplace_back(block.second.size(), block.second.size()); }
+      for (auto const &[block, bl_size] : gf_struct) { lehmann.emplace_back(bl_size, bl_size); }
 
       // Fill container
       auto fill = [&lehmann](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) { lehmann[bl](n1, n2).emplace_back(pole, residue); };

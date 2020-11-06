@@ -156,7 +156,7 @@ class test_operators(unittest.TestCase):
 
     def test_util_extractors(self):
 
-        gf_struct = [['up',[0,1]],['dn',[0,1]]]
+        gf_struct = [('up',2), ('dn',2)]
 
         U, V = 1., 1.
         h_int = U * (n('up',0) * n('dn',0) + n('up',1) * n('dn',1)) + \

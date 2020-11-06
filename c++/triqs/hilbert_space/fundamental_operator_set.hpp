@@ -91,8 +91,8 @@ namespace triqs::hilbert_space {
      * @param gf_struct GF structure object
      */
     fundamental_operator_set(gf_struct_t const &gf_struct) {
-      for (auto const &block : gf_struct)
-        for (auto const &inner : block.second) insert(block.first, inner);
+      for (auto const &[block, blsize] : gf_struct)
+        for (auto idx : itertools::range(blsize)) insert(block, idx);
     }
 
     /// Reduce to a `std::vector<indices_t>`

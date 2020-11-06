@@ -76,10 +76,10 @@ class BlockGf:
         elif set(kwargs.keys()) == set(['mesh','gf_struct','target_rank']):
             BlockNameList = []
             GFlist = []
-            for bl, idx_lst in kwargs['gf_struct']:
+            for bl, bl_size in kwargs['gf_struct']:
                 BlockNameList.append(bl)
-                if len(idx_lst) > 0 and kwargs['target_rank'] > 0:
-                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[len(idx_lst)]*kwargs['target_rank'], name='G_%s'%bl, indices=[idx_lst]*kwargs['target_rank']))
+                if bl_size > 0 and kwargs['target_rank'] > 0:
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[bl_size]*kwargs['target_rank'], name='G_%s'%bl, indices=[list(range(bl_size))]*kwargs['target_rank']))
                 else:
                     GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[], name='G_%s'%bl))
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):

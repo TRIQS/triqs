@@ -354,7 +354,7 @@ TEST(atom_diag_real, Functions) {
   EXPECT_ARRAY_NEAR(st_ref, st);
 
   // GF
-  gf_struct_t gf_struct = {{"dn", {0, 1, 2}}, {"up", {0, 1, 2}}};
+  gf_struct_t gf_struct = {{"dn", 3}, {"up", 3}};
 
   int n_tau        = 1000;
   int n_iw         = 400;
