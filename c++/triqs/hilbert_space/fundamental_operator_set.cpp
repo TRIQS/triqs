@@ -33,7 +33,7 @@ namespace triqs {
 
       // FIXME : Simplify this ??
       // decode the string
-      std::variant<int, std::string> string_to_variant(std::string const &s) {
+      std::variant<long, std::string> string_to_variant(std::string const &s) {
         switch (s[0]) {
           case 'i': return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int
           case 's': return s.c_str() + 1;            // the variant is a string. Just skip the first char

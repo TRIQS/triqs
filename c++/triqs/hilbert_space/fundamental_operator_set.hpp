@@ -34,10 +34,10 @@
 namespace triqs::hilbert_space {
 
   /// The index type of an operator
-  using indices_t = std::vector<std::variant<int, std::string>>;
+  using indices_t = std::vector<std::variant<long, std::string>>;
 
   /// Type type describing the structure of a Block Green's function
-  using gf_struct_t = std::vector<std::pair<std::string, indices_t>>;
+  using gf_struct_t = std::vector<std::pair<std::string, long>>;
 
   /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
   /**

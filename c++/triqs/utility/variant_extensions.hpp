@@ -28,7 +28,7 @@ namespace std {
     return os;
   }
 
-  inline std::ostream &operator<<(std::ostream &os, std::vector<std::variant<int, std::string>> const &fs) {
+  inline std::ostream &operator<<(std::ostream &os, std::vector<std::variant<long, std::string>> const &fs) {
     int u = 0;
     for (auto const &i : fs) {
       if (u++) os << ",";
