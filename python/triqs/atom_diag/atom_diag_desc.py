@@ -67,6 +67,8 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
 
     c.add_method("int get_subspace_dim (int sp_index)", doc = "The dimension of subspace sp_index")
 
+    c.add_method("std::vector<int> get_subspace_dims()", doc = "Get the dimension of all subspaces")
+
     c.add_method("int flatten_subspace_index (int sp_index, int i)",
                  doc = "Returns the state index in the full Hilbert space given a subspace index and an inner index")
 

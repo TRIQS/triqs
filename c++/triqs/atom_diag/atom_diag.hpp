@@ -170,6 +170,13 @@ namespace triqs {
        */
       int get_subspace_dim(int sp_index) const { return eigensystems[sp_index].eigenvalues.size(); }
 
+      /// Get the dimensions of all subspaces
+      std::vector<int> get_subspace_dims() const {
+	auto dims = std::vector<int>(n_subspaces());
+	for(long i: range(n_subspaces())) dims[i] = get_subspace_dim(i);
+	return dims;
+      }
+
       /// The list of Fock states for each subspace
       std::vector<std::vector<fock_state_t>> get_fock_states() const {
         std::vector<std::vector<fock_state_t>> fock_states(n_subspaces());
