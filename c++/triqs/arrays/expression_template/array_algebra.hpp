@@ -56,8 +56,7 @@ namespace triqs {
       //template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...)));
 
       template <typename... Args>
-      //require(!clef::is_any_lazy<Args...>)
-      std::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+      auto operator()(Args &&... args) const REQUIRES(!clef::is_any_lazy<Args...>::value) {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
 

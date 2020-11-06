@@ -78,8 +78,7 @@ namespace triqs {
       domain_type domain() const { return combine_domain()(l, r); }
 
       template <typename... Args>
-      // require(!clef::is_any_lazy<Args...>)
-      std::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+      auto operator()(Args &&... args) const REQUIRES(!clef::is_any_lazy<Args...>::value) {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
 
