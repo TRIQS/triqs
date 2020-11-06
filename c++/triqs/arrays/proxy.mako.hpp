@@ -61,12 +61,12 @@ namespace triqs {
         auto indexmap() const { return _indexmap_impl(_seq{}); }
 
         private: // FIXME use if constexpr
-        template <size_t... Is, typename... Args> FORCEINLINE call_rt _call(std::index_sequence<Is...>, Args &&... args) const {
+        template <size_t... Is, typename... Args> FORCEINLINE auto _call(std::index_sequence<Is...>, Args &&... args) const {
           return a(std::get<Is>(frozen_args)..., std::forward<Args>(args)...);
         }
 
         public:
-        template <typename... Args> std::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+        template <typename... Args> auto operator()(Args &&... args) const REQUIRES(!triqs::clef::is_any_lazy<Args...>::value) {
           return _call(std::make_index_sequence<n_args>(), std::forward<Args>(args)...);
         }
       };
@@ -87,7 +87,7 @@ namespace triqs {
         using indexmap_type = typename slicer_t::r_type;
         indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), frozen_args, ellipsis()); }
 
-        template <typename... Args> std::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+        template <typename... Args> auto operator()(Args &&... args) const REQUIRES(!triqs::clef::is_any_lazy<Args...>::value) {
           return a(frozen_args, std::forward<Args>(args)...);
         }
       };
