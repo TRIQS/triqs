@@ -71,6 +71,11 @@ See also `github.com/conda-forge/triqs-feedstock <https://github.com/conda-forge
 We further provide packages for `triqs_cthyb <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_, `triqs_dft_tools <https://github.com/conda-forge/triqs_dft_tools-feedstock/>`_
 and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
 
+In case you encounter troubles resolving the dependencies, you can try using `mamba <https://github.com/mamba-org/mamba>`_ instead of `conda`::
+
+        conda install -c conda-forge mamba
+        mamba install -c conda-forge triqs
+
 .. _triqs_docker:
 
 Docker
@@ -122,7 +127,7 @@ Compiling TRIQS from source using EasyBuild
 ===========================================
 
 `EasyBuild <https://easybuild.readthedocs.io/en/latest/>`_ is a build and installation framework for managing scientific software on HPC systems.
-We here assume that a working copy of EasyBuild is already available (see `installation guide <https://easybuild.readthedocs.io/en/latest/Installation.html>`_ otherwise).
+We here assume that a working copy of EasyBuild is already available (see `installation guide <https://easybuild.readthedocs.io/en/latest/Installation.html>`_ otherwise). TRIQS 3.0.0 is available starting from EasyBuild version 4.3.1.
 To bring EasyBuild to the latest release (including the latest definitions of all software installable via EasyBuild), type::
 
       eb --install-latest-eb-release
@@ -133,12 +138,12 @@ To search for the available TRIQS packages, type::
       
 To install TRIQS or a TRIQS applications, type (for example)::
 
-      eb --robot TRIQS-3.0.0-foss-2019a-Python-3.7.2.eb
-      eb --robot TRIQS-cthyb-3.0.0-foss-2019a-Python-3.7.2.eb
+      eb --robot TRIQS-3.0.0-foss-2020a-Python-3.8.2.eb
+      eb --robot TRIQS-cthyb-3.0.0-foss-2020a-Python-3.8.2.eb
      
 This will fetch, compile and install the requested package, as well as all required dependencies (including toolchains, Python, various libraries). Corresponding environment modules will also be generated, thus a package can be loaded using (for example)::
 
-      module load TRIQS-cthyb/3.0.0-foss-2019a-Python-3.7.2
+      module load TRIQS-cthyb/3.0.0-foss-2020a-Python-3.8.2
       
 or simply::
 

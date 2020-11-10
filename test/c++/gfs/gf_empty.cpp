@@ -17,6 +17,9 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+// Make sure that EXPECTS checks use std::abort when failing
+#undef NDEBUG
+
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs.hpp>
 
@@ -30,4 +33,8 @@ TEST(Gf, Exceptions) {
 
   ASSERT_DEATH(g[closest_mesh_pt(5.3)], "");
 }
-MAKE_MAIN;
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
