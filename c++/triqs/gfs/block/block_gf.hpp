@@ -209,6 +209,20 @@ namespace triqs::gfs {
       }
     }
 
+    // Create Block Green function from Mesh and gf_struct
+    block_gf(Mesh const &m, std::vector<long> const & bl_sizes) REQUIRES(Arity == 1) {
+
+      for (auto const &[bl, bl_size] : itertools::enumerate(bl_sizes)) {
+        _block_names.push_back(std::to_string(bl));
+        std::vector<std::string> idx_str_lst;
+        for (int idx = 0; idx < bl_size; idx++) idx_str_lst.push_back(std::to_string(idx));
+        if constexpr (Target::rank == 0)
+          _glist.emplace_back(m, make_shape());
+        else
+          _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
+      }
+    }
+
     /// Constructs a n blocks with copies of g.
     block_gf(int n, int p, g_t const &g) REQUIRES(Arity == 2) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
