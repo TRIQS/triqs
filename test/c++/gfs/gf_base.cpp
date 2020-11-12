@@ -189,4 +189,12 @@ TEST(Gf, MeshCheck) {
   EXPECT_THROW(g2[*g1.mesh().begin()], triqs::runtime_error);
 }
 
+TEST(Gf, EvalSlice) {
+  auto t_mesh = gf_mesh<refreq>({-10., 10., 100});
+  gf<refreq, matrix_valued> g(t_mesh, {2, 2});
+
+  auto g_eval_slice = array<dcomplex, 1>{g(5.0)(range(), 0)};
+  EXPECT_EQ(g_eval_slice, (array<dcomplex, 1>{0.0, 0.0}));
+}
+
 MAKE_MAIN;
