@@ -76,7 +76,7 @@ external_dependency(itertools
 # -- mpi --
 external_dependency(mpi
   GIT_REPO https://github.com/TRIQS/mpi
-  VERSION 1.0
+  VERSION 1.1
   GIT_TAG unstable
 )
 
