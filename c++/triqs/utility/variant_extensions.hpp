@@ -17,6 +17,8 @@
 //
 // Authors: Nils Wentzell
 
+#pragma once
+
 #include <variant>
 
 namespace std {
