@@ -19,7 +19,11 @@
 
 #pragma once
 
+#include <string>
+#include <sstream>
+#include <ostream>
 #include <variant>
+#include <vector>
 
 namespace std {
 
