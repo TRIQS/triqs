@@ -210,7 +210,8 @@ namespace triqs::gfs {
     }
 
     // Create Block Green function from Mesh and gf_struct
-    block_gf(Mesh const &m, std::vector<long> const & bl_sizes) REQUIRES(Arity == 1) {
+    template <typename Int>
+    block_gf(Mesh const &m, std::vector<Int> const & bl_sizes) REQUIRES(Arity == 1 && std::is_integral_v<Int>) {
 
       for (auto const &[bl, bl_size] : itertools::enumerate(bl_sizes)) {
         _block_names.push_back(std::to_string(bl));
