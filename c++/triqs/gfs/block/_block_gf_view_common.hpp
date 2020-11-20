@@ -9,6 +9,17 @@ data_t const &data() const { return _glist; }
 ///
 block_names_t const &block_names() const { return _block_names; }
 
+///
+std::vector<int> block_sizes() const {
+  static_assert(g_t::target_t::rank == 2);
+  auto res = std::vector<int>(_glist.size());
+  for(auto [i, g]: itertools::enumerate(_glist)){
+    EXPECTS(g.target_shape()[0] == g.target_shape()[1]);
+    res[i] = g.target_shape()[0];
+  }
+  return res;
+}
+
 int size1() const REQUIRES(Arity == 2) { return _glist.size(); }
 int size2() const REQUIRES(Arity == 2) { return _glist[0].size(); } // FIXME PROTECT
 int size() const {
