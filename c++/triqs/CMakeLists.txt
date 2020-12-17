@@ -1,8 +1,3 @@
-# Consider ROOT env variables in find_package
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
-
 # Version file
 configure_file(version.hpp.in version.hpp @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/triqs/")

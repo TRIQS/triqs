@@ -35,8 +35,8 @@ message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 # Start project
 #---------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
-cmake_policy(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.13.5 FATAL_ERROR)
+cmake_policy(VERSION 3.13.5)
 project(TRIQS VERSION 3.0.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -82,6 +82,23 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 #---------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
+
+#---------------------------------------------------------------------
+# Linktime Optimizations
+#---------------------------------------------------------------------
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT output)
+if(NOT ipo_supported)
+  message(STATUS "Linktime optimizations could not be enabled!")
+  #message(STATUS "LTO Example failed to compile with error:\n${output}")
+else()
+  message(STATUS "Linktime optimizations enabled!")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+  if(CMAKE_SYSTEM_NAME EQUAL "Linux")
+    add_link_options($<$<CXX_COMPILER_ID:Clang>:-fuse-ld=gold>)
+  endif()
+endif()
 
 #------------------------
 # tests option
