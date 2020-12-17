@@ -56,7 +56,7 @@ def get_mkind(off_diag,map_operator_structure):
     return mkind
 
 # Set block structure of GF
-def set_operator_structure(spin_names,orb_names,off_diag):
+def set_operator_structure(spin_names,n_orb,off_diag):
     r"""
     Set the operator_structure for given spin and orbital names, according to
     whether or not the Green's functions contain off-diagonal blocks.
@@ -65,8 +65,8 @@ def set_operator_structure(spin_names,orb_names,off_diag):
     ----------
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int       
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+    n_orb : int
+            Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -82,9 +82,9 @@ def set_operator_structure(spin_names,orb_names,off_diag):
     op_struct = []
     if off_diag: # outer blocks are spin blocks
         for sn in spin_names:
-            op_struct.append([sn, [on for on in orb_names]])
+            op_struct.append([sn, n_orb])
     else: # outer blocks are spin-orbital blocks
-        for sn, on in product(spin_names,orb_names):
-            op_struct.append([sn+'_%s'%on, [0]])
+        for sn, on in product(spin_names,range(n_orb)):
+            op_struct.append([sn+'_%s'%on, 1])
 
     return op_struct
