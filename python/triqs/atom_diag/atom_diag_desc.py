@@ -62,6 +62,9 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
     c.add_constructor("(many_body_operator h, fundamental_operator_set fops)",
                       doc = "Reduce a given Hamiltonian to a block-diagonal form and diagonalize it")
 
+    c.add_constructor("(many_body_operator h, many_body_operator hyb, fundamental_operator_set fops)",
+                      doc = "Reduce a given Hamiltonian to a block-diagonal form and respect the block structure defined by the operator hyb")
+
     c.add_constructor("(many_body_operator h, fundamental_operator_set fops, std::vector<%s::many_body_op_t> qn_vector)" % c_type,
                       doc = "Reduce a given Hamiltonian to a block-diagonal form and diagonalize it using quantum numbers")
 
