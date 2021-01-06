@@ -114,6 +114,11 @@ namespace triqs::mc_tools {
     void rm_measure(typename measure_set<MCSignType>::measure_ptr_t const &m) { AllMeasures.remove(m); }
 
     /**
+     * Clear all registered measurements
+     */
+    void clear_measures() { AllMeasures.clear(); }
+
+    /**
    * Sets a function called after each cycle
    * @param f The function be called.
    */

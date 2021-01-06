@@ -116,9 +116,14 @@ namespace triqs {
       }
 
       /**
-    * Remove the measure m.
-    */
+       * Remove the measure m.
+       */
       void remove(measure_ptr_t const &m) { m_map.erase(m); }
+
+      /**
+       * Removes all measures
+       */
+      void clear() { m_map.clear(); }
 
       /// Does qmc have a measure named name
       bool has(std::string const &name) const { return m_map.find(name) != m_map.end(); }
