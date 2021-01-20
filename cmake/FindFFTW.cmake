@@ -18,7 +18,7 @@ endif()
 
 find_path(FFTW_INCLUDE_DIR
   NAMES fftw3.h
-  PATHS
+  HINTS
     ${FFTW3_ROOT}/include
     ${FFTW_ROOT}/include
     $ENV{FFTW3_ROOT}/include
@@ -39,7 +39,7 @@ find_path(FFTW_INCLUDE_DIR
 
 find_library(FFTW_LIBRARIES
   NAMES fftw3
-  PATHS
+  HINTS
     ${FFTW_INCLUDE_DIR}/../lib
     ${FFTW3_ROOT}/lib
     ${FFTW_ROOT}/lib

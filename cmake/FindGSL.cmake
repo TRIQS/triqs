@@ -14,7 +14,7 @@
 
 find_path(GSL_INCLUDE_DIR
   NAMES gsl_math.h
-  PATHS
+  HINTS
     ${GSL_ROOT}/include
     $ENV{GSL_ROOT}/include
     $ENV{GSL_BASE}/include
@@ -32,7 +32,7 @@ find_path(GSL_INCLUDE_DIR
 
 find_library(GSL_LIBRARIES
   NAMES gsl libgsl
-  PATHS
+  HINTS
     ${GSL_INCLUDE_DIR}/../lib
     ${GSL_ROOT}/lib
     $ENV{GSL_ROOT}/lib

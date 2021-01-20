@@ -9,14 +9,15 @@
 # 
 
 if(NOT DEFINED MATHJAX_PATH)
-  set(TRIAL_PATHS
-   $ENV{MATHJAX_ROOT}
-   ${MATHJAX_ROOT}
-   $ENV{HOME}/MathJax
-   /usr/share/javascript/mathjax
-   /opt/local/share/javascript/mathjax
-   )
-  find_path(MATHJAX_PATH MathJax.js ${TRIAL_PATHS} DOC "Root Path of MathJax")
+  find_path(MATHJAX_PATH
+    NAMES MathJax.js
+    HINTS
+      $ENV{MATHJAX_ROOT}
+      ${MATHJAX_ROOT}
+      $ENV{HOME}/MathJax
+      /usr/share/javascript/mathjax
+      /opt/local/share/javascript/mathjax
+    DOC "Root Path of MathJax")
 endif()
 
 if(MATHJAX_PATH STREQUAL MATHJAX_PATH-NOTFOUND)

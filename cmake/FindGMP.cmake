@@ -17,7 +17,7 @@ endif()
 
 find_path(GMP_INCLUDE_DIR
   NAMES gmp.h
-  PATHS
+  HINTS
     ${GMP_ROOT}/include
     $ENV{GMP_ROOT}/include
     $ENV{GMP_BASE}/include
@@ -35,7 +35,7 @@ find_path(GMP_INCLUDE_DIR
 
 find_library(GMP_LIBRARIES
   NAMES gmp libgmp
-  PATHS
+  HINTS
     ${GMP_INCLUDE_DIR}/../lib
     ${GMP_ROOT}/lib
     $ENV{GMP_ROOT}/lib
@@ -51,7 +51,7 @@ find_library(GMP_LIBRARIES
 
 find_library(GMPXX_LIBRARIES
   NAMES gmpxx libgmpxx
-  PATHS
+  HINTS
     ${GMP_INCLUDE_DIR}/../lib
     ${GMP_ROOT}/lib
     $ENV{GMP_ROOT}/lib

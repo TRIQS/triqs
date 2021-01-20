@@ -18,7 +18,7 @@ endif()
 
 find_path(NFFT_INCLUDE_DIR
   NAMES nfft3.h
-  PATHS
+  HINTS
     ${NFFT3_ROOT}/include
     ${NFFT_ROOT}/include
     $ENV{NFFT3_ROOT}/include
@@ -39,7 +39,7 @@ find_path(NFFT_INCLUDE_DIR
 
 find_library(NFFT_LIBRARIES
   NAMES nfft3
-  PATHS
+  HINTS
     ${NFFT_INCLUDE_DIR}/../lib
     ${NFFT3_ROOT}/lib
     ${NFFT_ROOT}/lib
