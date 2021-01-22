@@ -35,8 +35,8 @@ message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 # Start project
 #---------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.13.5 FATAL_ERROR)
-cmake_policy(VERSION 3.13.5)
+cmake_minimum_required(VERSION 3.9.6 FATAL_ERROR)
+cmake_policy(VERSION 3.9.6)
 project(TRIQS VERSION 3.0.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -87,6 +87,7 @@ option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 # Linktime Optimizations
 #---------------------------------------------------------------------
 
+cmake_policy(SET CMP0069 NEW)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_supported OUTPUT output)
 if(NOT ipo_supported)

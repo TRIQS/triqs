@@ -68,7 +68,9 @@ find_dep(h5 1.0)
 find_dep(nda 0.8)
 
 # Keep triqs_py as alias for backward compatability
-add_library(triqs_py ALIAS nda::nda_py)
+# ALIAS for IMPORTED targets only available recent cmake versions
+add_library(triqs_py INTERFACE)
+target_link_libraries(triqs_py INTERFACE nda::nda_py)
 
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
