@@ -123,18 +123,18 @@ namespace triqs {
         long i[2], j[2];
       } w2;
 
-      // struct work_data_type_refill {
-      //   std::vector<x_type> x_values;
-      //   std::vector<y_type> y_values;
-      //   matrix_type M;
-      //   void reserve(long s) {
-      //     x_values.reserve(s);
-      //     y_values.reserve(s);
-      //     if (s > first_dim(M)) M.resize(s, s);
-      //   }
-      // };
-
-      // work_data_type_refill w_refill;
+      struct work_data_type_refill {
+        std::vector<x_type> x_values;
+        std::vector<y_type> y_values;
+        void clear() {
+          x_values.clear();
+          y_values.clear();
+        }
+        void reserve(size_t s) {
+          x_values.reserve(s);
+          y_values.reserve(s);
+        }
+      } w_refill;
 
       // ---------------------------------------------------------------------------------------------------
       // Data Transfer: Serializatoin / HDF5 / Swap
@@ -402,8 +402,6 @@ namespace triqs {
         mat_new(i, j) = f(x, y);
 
         range R(0, N + 1);
-
-
         det_new = arrays::determinant(mat_new(R, R));
 
         return det_new / det;
@@ -791,71 +789,56 @@ namespace triqs {
       }
 
       //------------------------------------------------------------------------------------------
-      //   public:
-      //   /**
-      //  * Refill determinant with new values
-      //  *
-      //  * New values are calculated as f(x_i, y_i)
-      //  *
-      //  * Returns the ratio of det Minv_new / det Minv.
-      //  *
-      //  * This routine does NOT make any modification. It has to be completed with complete_operation().
-      //  */
-      //   template <typename ArgumentContainer1, typename ArgumentContainer2>
-      //   value_type try_refill(ArgumentContainer1 const &X, ArgumentContainer2 const &Y) {
-      //     TRIQS_ASSERT(last_try == NoTry);
-      //     TRIQS_ASSERT(X.size() == Y.size());
+      public:
+      /**
+       * Refill determinant with new values
+       * New values are calculated as f(x_i, y_i)
+       * Returns the ratio of det Minv_new / det Minv.
+       * This routine does NOT make any modification. It has to be completed with complete_operation().
+       */
+      template <typename ArgumentContainer1, typename ArgumentContainer2>
+      value_type try_refill(ArgumentContainer1 const &X, ArgumentContainer2 const &Y) {
+        TRIQS_ASSERT(last_try == NoTry);
+        TRIQS_ASSERT(X.size() == Y.size());
 
-      //     last_try = Refill;
+        long s = X.size();
+        if (s > Nmax) {
+          w_refill.reserve(2 * s);
+          reserve(2 * s);
+        }
+        last_try = Refill;
 
-      //     long s = X.size();
-      //     // treat empty matrix separately
-      //     if (s == 0) {
-      //       w_refill.x_values.clear();
-      //       w_refill.y_values.clear();
-      //       return 1 / (sign * det);
-      //     }
+        w_refill.clear();
+        if (s == 0) { // treat empty matrix separately
+          det_new = 1.0;
+        } else {
+          std::copy(X.begin(), X.end(), std::back_inserter(w_refill.x_values));
+          std::copy(Y.begin(), Y.end(), std::back_inserter(w_refill.y_values));
+          for (long i = 0; i < s; ++i)
+            for (long j = 0; j < s; ++j) mat_new(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
 
-      //     w_refill.reserve(s);
-      //     w_refill.x_values.clear();
-      //     w_refill.y_values.clear();
-      //     std::copy(X.begin(), X.end(), std::back_inserter(w_refill.x_values));
-      //     std::copy(Y.begin(), Y.end(), std::back_inserter(w_refill.y_values));
+          range R(0, s);
+          det_new = arrays::determinant(mat_new(R, R));
+        }
 
-      //     for (long i = 0; i < s; ++i)
-      //       for (long j = 0; j < s; ++j) w_refill.M(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
-      //     range R(0, s);
-      //     newdet  = arrays::determinant(w_refill.M(R, R));
-      //     newsign = 1;
+        return det_new / det;
+      }
 
-      //     return newdet / (sign * det);
-      //   }
+      //------------------------------------------------------------------------------------------
+      private:
+      void complete_refill() {
+        N = w_refill.x_values.size();
 
-      //   //------------------------------------------------------------------------------------------
-      //   private:
-      //   void complete_refill() {
-      //     N = w_refill.x_values.size();
+        // special empty case again
+        if (N == 0) {
+          clear();
+          return;
+        }
 
-      //     // special empty case again
-      //     if (N == 0) {
-      //       clear();
-      //       newdet  = 1;
-      //       newsign = 1;
-      //       return;
-      //     }
-
-      //     if (N > Nmax) reserve(2 * N);
-      //     std::swap(x_values, w_refill.x_values);
-      //     std::swap(y_values, w_refill.y_values);
-
-      //     row_num.resize(N);
-      //     col_num.resize(N);
-      //     std::iota(row_num.begin(), row_num.end(), 0);
-      //     std::iota(col_num.begin(), col_num.end(), 0);
-
-      //     range R(0, N);
-      //     mat_inv(R, R) = inverse(w_refill.M(R, R));
-      //   }
+        std::swap(x_values, w_refill.x_values);
+        std::swap(y_values, w_refill.y_values);
+        std::swap(mat, mat_new);
+      }
 
       //------------------------------------------------------------------------------------------
 
@@ -873,7 +856,7 @@ namespace triqs {
           case (ChangeRowCol): complete_change_col_row(); break;
           case (Insert2): complete_insert2(); break;
           case (Remove2): complete_remove2(); break;
-          // case (Refill): complete_refill(); break;
+          case (Refill): complete_refill(); break;
           case (NoTry): return; break;
           default: TRIQS_RUNTIME_ERROR << "Misuing det_manip_basic"; // Never used?
         }
@@ -956,55 +939,36 @@ namespace triqs {
         return r;
       }
 
-      //   ///
-      //   enum RollDirection { None, Up, Down, Left, Right };
+      ///
+      enum RollDirection { None, Up, Down, Left, Right };
 
-      //   /**
-      //  * "Cyclic Rolling" of the determinant.
-      //  *
-      //  * Right : Move the Nth col to the first col cyclically.
-      //  * Left  : Move the first col to the Nth, cyclically.
-      //  * Up    : Move the first row to the Nth, cyclically.
-      //  * Down  : Move the Nth row to the first row cyclically.
-      //  *
-      //  * Returns -1 is the roll changes the sign of the det, 1 otherwise
-      //  * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
-      //  * WHY is it like this ???? : try_roll : return det +1/-1.
-      //  */
-      //   int roll_matrix(RollDirection roll) {
-      //     long tmp;
-      //     const int_type NN = N;
-      //     switch (roll) {
-      //       case (None): return 1;
-      //       case (Down):
-      //         tmp = row_num[N - 1];
-      //         for (int_type i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
-      //         row_num[0] = tmp;
-      //         break;
-      //       case (Up):
-      //         tmp = row_num[0];
-      //         for (int_type i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
-      //         row_num[N - 1] = tmp;
-      //         break;
-      //       case (Right):
-      //         tmp = col_num[N - 1];
-      //         for (int_type i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
-      //         col_num[0] = tmp;
-      //         break;
-      //       case (Left):
-      //         tmp = col_num[0];
-      //         for (int_type i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
-      //         col_num[N - 1] = tmp;
-      //         break;
-      //       default: assert(0);
-      //     }
-      //     // signature of the cycle of order N : (-1)^(N-1)
-      //     if ((N - 1) % 2 == 1) {
-      //       sign *= -1;
-      //       return -1;
-      //     }
-      //     return 1;
-      //   }
+      /**
+       * "Cyclic Rolling" of the determinant.
+       *
+       * Right : Move the Nth col to the first col cyclically.
+       * Left  : Move the first col to the Nth, cyclically.
+       * Up    : Move the first row to the Nth, cyclically.
+       * Down  : Move the Nth row to the first row cyclically.
+       *
+       * Returns -1 is the roll changes the sign of the det, 1 otherwise
+       * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
+       * WHY is it like this ???? : try_roll : return det +1/-1.
+       */
+      int roll_matrix(RollDirection roll) {
+        long tmp;
+        const int_type NN = N;
+        switch (roll) {
+          case (None): return 1;
+          case (Down): std::rotate(cbegin(x_values), cend(x_values) - 1, cend(x_values)); break;
+          case (Up): std::rotate(cbegin(x_values), cbegin(x_values) + 1, cend(x_values)); break;
+          case (Right): std::rotate(cbegin(y_values), cend(y_values) - 1, cend(y_values)); break;
+          case (Left): std::rotate(cbegin(y_values), cbegin(y_values) + 1, cend(y_values)); break;
+          default: assert(0);
+        }
+        // signature of the cycle of order N : (-1)^(N-1)
+        if ((N - 1) % 2 == 1) { return -1; }
+        return 1;
+      }
     };
   } // namespace det_manip
 } // namespace triqs
