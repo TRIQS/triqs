@@ -134,7 +134,7 @@ class test_tail_issues(unittest.TestCase):
         dt = make_gf_from_fourier(d, tau_mesh, tail)
         max_im = np.max(np.abs(dt.data.imag))
         # print "Imag Delta", max_im
-        self.assertLess(max_im, 1e-12)
+        self.assertLess(max_im, 2e-12)
 
         # Check Delta(iw) extracted through triqs.gf.tools.delta
         D_exact = g.copy()
