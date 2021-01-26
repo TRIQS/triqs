@@ -24,10 +24,11 @@ target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_IN
 # Compile Options
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++20" HAS_CPP20)
-if(HAS_CPP20)
-  target_compile_options(triqs PUBLIC -std=c++20)
+if(HAS_CPP20 AND cxx_std_20 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  target_compile_features(triqs PUBLIC cxx_std_20)
 else()
-  target_compile_options(triqs PUBLIC -std=c++17 $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
+  target_compile_features(triqs PUBLIC cxx_std_17)
+  target_compile_options(triqs PUBLIC $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
 endif()
 
 # Disable warnings about comma expression in array subscript
