@@ -83,6 +83,12 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 
+#---------------------------------------------------------------------
+# Disable Compiler Extensions
+#---------------------------------------------------------------------
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #------------------------
 # tests option
 #------------------------
