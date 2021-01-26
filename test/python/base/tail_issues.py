@@ -36,7 +36,7 @@ class test_tail_issues(unittest.TestCase):
 
         # Check that tail fit error exceeds fourier error boundrary of 1e-2
         tail, err = g.fit_tail()
-        self.assertTrue(err > 1e-2)
+        self.assertGreater(err, 1e-2)
 
     def test_multi_fft(self):
         for eps in [0.001, 0.01, 0.1, 1, 10, 100]: #, 1000]:
@@ -68,8 +68,8 @@ class test_tail_issues(unittest.TestCase):
             err_herm[i] = np.linalg.norm(g.data[0,:,:] - np.transpose(np.conj(g.data[-1,:,:])))
 
         # print "err, err_herm : ", np.max(err), np.max(err_herm)
-        self.assertTrue(np.max(err) < 1e-9)
-        self.assertTrue(np.max(err_herm) < 1e-9)
+        self.assertLess(np.max(err), 1e-9)
+        self.assertLess(np.max(err_herm), 1e-9)
 
     def test_exact_moments(self):
         for eps in [0.001, 0.01, 0.1, 1, 10, 100]: #, 1000]:
@@ -89,7 +89,7 @@ class test_tail_issues(unittest.TestCase):
             exact_mom = np.linalg.matrix_power(H, n)
             rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
             # print "rel err ", rel_err
-            self.assertTrue(rel_err < 1e-4)
+            self.assertLess(rel_err, 1e-4)
 
         # Check error of tail coefficients imposing known moments
         km = make_zero_tail(g, 2)
@@ -99,7 +99,7 @@ class test_tail_issues(unittest.TestCase):
             exact_mom = np.linalg.matrix_power(H, n)
             rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
             # print "rel err ", rel_err
-            self.assertTrue(rel_err < 1e-4)
+            self.assertLess(rel_err, 1e-4)
 
     def test_imag_gt(self):
         # Init Gf with SemiCircular DOS
@@ -109,7 +109,7 @@ class test_tail_issues(unittest.TestCase):
         # Check size of imaginary part of gt
         gt = make_gf_from_fourier(g)
         max_imag_Gtau = np.max(np.abs(gt.data.imag))
-        self.assertTrue(max_imag_Gtau < 1e-11)
+        self.assertLess(max_imag_Gtau, 1e-11)
 
     def test_delta_infty(self):
         # Init G given H
@@ -124,7 +124,7 @@ class test_tail_issues(unittest.TestCase):
         tail, err = fit_hermitian_tail(C)
         error_H = np.max(np.abs(tail[0] + H))
         # print error_H
-        self.assertTrue(error_H < 1e-10)
+        self.assertLess(error_H, 1e-10)
 
         # Extract Delta(tau) and check imaginary part
         d = C.copy()
@@ -134,7 +134,7 @@ class test_tail_issues(unittest.TestCase):
         dt = make_gf_from_fourier(d, tau_mesh, tail)
         max_im = np.max(np.abs(dt.data.imag))
         # print "Imag Delta", max_im
-        self.assertTrue(max_im < 1e-12)
+        self.assertLess(max_im, 1e-12)
 
         # Check Delta(iw) extracted through triqs.gf.tools.delta
         D_exact = g.copy()
@@ -142,7 +142,7 @@ class test_tail_issues(unittest.TestCase):
         D = delta(g)
         max_diff = np.max(np.abs(D.data - D_exact.data))
         # print "Diff Delta Extraction", max_diff
-        self.assertTrue(max_diff < 1e-10)
+        self.assertLess(max_diff, 1e-10)
 
 
     def test_noisy_gf(self):
@@ -171,7 +171,7 @@ class test_tail_issues(unittest.TestCase):
         # Check that magnitude of error is of order noise
         err = np.max(np.abs(gt.data - gt2.data))
         # print "noise %.3e  err %.3e"%(noise, err)
-        self.assertTrue(err < 10 * noise)
+        self.assertLess(err, 10 * noise)
 
         # We can also go through a legendre basis to filter the noise
         gl = fit_legendre(gt)
@@ -180,7 +180,7 @@ class test_tail_issues(unittest.TestCase):
         gt3 = make_gf_from_fourier(gw_from_leg, len(gt.mesh))
         err = np.max(np.abs(gt.data - gt3.data))
         # print "noise %.3e  err %.3e"%(noise, err)
-        self.assertTrue(err < 10 * noise)
+        self.assertLess(err, 10 * noise)
 
         # from triqs.plot.mpl_interface import *
         # plt.subplot(2,1,1)
