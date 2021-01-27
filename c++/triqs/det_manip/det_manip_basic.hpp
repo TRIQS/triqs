@@ -966,10 +966,11 @@ namespace triqs {
 	}
 	for (long i = 0; i < N; ++i)
 	  for (long j = 0; j < N; ++j) mat(i, j) = f(x_values[i], y_values[j]);
-	compute_determinant();
-
         // signature of the cycle of order N : (-1)^(N-1)
-        if ((N - 1) % 2 == 1) { return -1; }
+        if ((N - 1) % 2 == 1) {
+	  det = -det;
+	  return -1;
+	}
         return 1;
       }
     };
