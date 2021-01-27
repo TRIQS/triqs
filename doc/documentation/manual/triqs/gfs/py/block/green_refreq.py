@@ -7,7 +7,7 @@ g['eg1','eg1'] = SemiCircular(half_bandwidth = 1)
 g['eg2','eg2'] = SemiCircular(half_bandwidth = 2)
 
 from triqs.plot.mpl_interface import oplot
-oplot(g['eg1','eg1'], '-o', RI = 'S')  # S : spectral function 
-oplot(g['eg2','eg2'], '-x', RI = 'S')
+oplot(g['eg1','eg1'], '-o', mode = 'S')  # S : spectral function 
+oplot(g['eg2','eg2'], '-x', mode = 'S')
 
 

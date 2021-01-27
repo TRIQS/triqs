@@ -36,5 +36,5 @@ g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
 
 # Comparison plot
 from triqs.plot.mpl_interface import oplot
-oplot(gr[0,0], '-o', RI = 'S', name = "Original DOS")
-oplot(g_pade[0,0], '-x', RI = 'S', name = "Pade-reconstructed DOS")
+oplot(gr[0,0], '-o', mode = 'S', name = "Original DOS")
+oplot(g_pade[0,0], '-x', mode = 'S', name = "Pade-reconstructed DOS")
