@@ -173,7 +173,7 @@ Plot options
 There is one important option that you will find very useful when plotting Green's functions, which we 
 saw already in the previous section:
 
-* `RI` = 'R' or 'I' or 'S'
+* `mode` = 'R' or 'I' or 'S'
 
 It tells the plotter, what part of the Green's function you want to plot. 'R' for the real part, 'I'
 for the imaginary part, and 'S' for the spectral function, :math:`-1/\pi{\rm Im}G`. Of course, 
