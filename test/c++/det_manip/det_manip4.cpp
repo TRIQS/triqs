@@ -104,6 +104,32 @@ TEST(det_manip, det_manip_refill_empty) {
   EXPECT_ARRAY_NEAR(_matrix{{9, -12}, {-12, 18}}, dm.inverse_matrix());
 }
 
+TEST(det_manip, det_manip_roll_matrix) {
+  auto dm = init_dm(2);
+
+  EXPECT_ARRAY_NEAR(_matrix{{1.0, 2.0 / 3},
+                            {2.0 / 3, 1.0 / 2}},
+                    dm.matrix());
+
+  double det_val = 1.0 / 2.0 - 4.0 / 9.0;
+  EXPECT_CLOSE(det_val, dm.determinant());
+
+  dm.roll_matrix(det_manip<func>::Up);
+
+  EXPECT_ARRAY_NEAR(_matrix{{2.0 / 3, 1.0 / 2},
+                            {1.0, 2.0 / 3}},
+                    dm.matrix());
+  EXPECT_CLOSE(-det_val, dm.determinant());
+
+  dm.roll_matrix(det_manip<func>::Right);
+
+  EXPECT_ARRAY_NEAR(_matrix{{1.0 / 2, 2.0 / 3},
+                            {2.0 / 3, 1.0}},
+                    dm.matrix());
+
+  EXPECT_CLOSE(det_val, dm.determinant());
+}
+
 // ------------------------
 
 MAKE_MAIN;

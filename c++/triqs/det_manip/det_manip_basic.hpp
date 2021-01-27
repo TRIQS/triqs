@@ -955,16 +955,19 @@ namespace triqs {
        * WHY is it like this ???? : try_roll : return det +1/-1.
        */
       int roll_matrix(RollDirection roll) {
-        long tmp;
-        const int_type NN = N;
-        switch (roll) {
-          case (None): return 1;
-          case (Down): std::rotate(cbegin(x_values), cend(x_values) - 1, cend(x_values)); break;
-          case (Up): std::rotate(cbegin(x_values), cbegin(x_values) + 1, cend(x_values)); break;
-          case (Right): std::rotate(cbegin(y_values), cend(y_values) - 1, cend(y_values)); break;
-          case (Left): std::rotate(cbegin(y_values), cbegin(y_values) + 1, cend(y_values)); break;
-          default: assert(0);
-        }
+	const int_type NN = N;
+	switch (roll) {
+	  case (None): return 1;
+	  case (Down): std::rotate(begin(x_values), end(x_values) - 1, end(x_values)); break;
+	  case (Up): std::rotate(begin(x_values), begin(x_values) + 1, end(x_values)); break;
+	  case (Right): std::rotate(begin(y_values), end(y_values) - 1, end(y_values)); break;
+	  case (Left): std::rotate(begin(y_values), begin(y_values) + 1, end(y_values)); break;
+	  default: assert(0);
+	}
+	for (long i = 0; i < N; ++i)
+	  for (long j = 0; j < N; ++j) mat(i, j) = f(x_values[i], y_values[j]);
+	compute_determinant();
+
         // signature of the cycle of order N : (-1)^(N-1)
         if ((N - 1) % 2 == 1) { return -1; }
         return 1;
