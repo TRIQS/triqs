@@ -200,10 +200,10 @@ endif()
 
 option(Build_Documentation "Build the documentation ?" OFF)
 
-if (Build_Documentation)
+if (Build_Documentation AND PythonSupport)
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (doc)
-endif (Build_Documentation)
+endif (Build_Documentation AND PythonSupport)
 
 #-----------------------------------------------
 # Install the FindXXX that should be exported
