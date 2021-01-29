@@ -1,24 +1,18 @@
-###################################################################################
+# Copyright (c) 2019-2020 Simons Foundation
 #
-# TRIQS: a Toolbox for Research in Interacting Quantum Systems
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (C) 2019-2020 Simons Foundation
-#    author: N. Wentzell
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# TRIQS is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# TRIQS. If not, see <http://www.gnu.org/licenses/>.
-#
-###################################################################################
+# You may obtain a copy of the License at
+#     https://www.gnu.org/licenses/gpl-3.0.txt
+# Author: Nils Wentzell
 
 # Recursively fetch all targets that the interface of a target depends upon
 macro(get_all_interface_targets name target)
@@ -64,6 +58,13 @@ macro(extract_flags)
     set(${target}_LDFLAGS "${${target}_LDFLAGS} ${opt}")
     set(${target}_CXXFLAGS "${${target}_CXXFLAGS} ${opt}")
   endforeach()
+
+  get_property_recursive(cxx_features TARGET ${target} PROPERTY INTERFACE_COMPILE_FEATURES)
+  if(cxx_std_20 IN_LIST cxx_features)
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -std=c++20")
+  elseif(cxx_std_17 IN_LIST cxx_features)
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -std=c++17")
+  endif()
 
   get_property_recursive(defs TARGET ${target} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
   foreach(def ${defs})
