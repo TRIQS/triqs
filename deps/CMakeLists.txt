@@ -48,14 +48,16 @@ else()
 endif()
 
 # -- Cpp2Py --
-external_dependency(Cpp2Py
-  GIT_REPO https://github.com/TRIQS/cpp2py
-  VERSION 2.0
-  GIT_TAG master
-)
-execute_process(COMMAND ${CPP2PY_PYTHON_EXECUTABLE} -c "import mpi4py" RESULT_VARIABLE failed ERROR_QUIET)
-if(failed)
-  message(FATAL_ERROR "Failed to import mpi4py Python module.")
+if(PythonSupport)
+ external_dependency(Cpp2Py
+   GIT_REPO https://github.com/TRIQS/cpp2py
+   VERSION 2.0
+   GIT_TAG master
+ )
+ execute_process(COMMAND ${CPP2PY_PYTHON_EXECUTABLE} -c "import mpi4py" RESULT_VARIABLE failed ERROR_QUIET)
+ if(failed)
+   message(FATAL_ERROR "Failed to import mpi4py Python module.")
+ endif()
 endif()
 
 # -- GTest --
