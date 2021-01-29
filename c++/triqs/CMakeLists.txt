@@ -171,7 +171,9 @@ endif()
 # Get the compiler and linktime flags of triqs and python_and_numpy
 include(${PROJECT_SOURCE_DIR}/cmake/extract_flags.cmake)
 extract_flags(triqs)
-extract_flags(cpp2py::python_and_numpy)
+if (PythonSupport)
+ extract_flags(cpp2py::python_and_numpy)
+endif()
 
 # Generate compiler wrapper
 configure_file(triqs++.in triqs++ @ONLY)

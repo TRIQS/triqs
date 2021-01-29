@@ -224,10 +224,17 @@ endif()
 
 option(Build_Documentation "Build the documentation ?" OFF)
 
+<<<<<<< HEAD
 if(Build_Documentation)
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (doc)
 endif(Build_Documentation)
+=======
+if (Build_Documentation AND PythonSupport)
+ message( STATUS "-------- Prepare documentation -------------")
+ add_subdirectory (doc)
+endif (Build_Documentation AND PythonSupport)
+>>>>>>> 81e253f7 ([nopython] CMake fixes)
 
 #-----------------------------------------------
 # Install the FindXXX that should be exported
