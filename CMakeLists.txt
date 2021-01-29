@@ -224,10 +224,10 @@ endif()
 
 option(Build_Documentation "Build the documentation ?" OFF)
 
-if (Build_Documentation)
+if(Build_Documentation)
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (doc)
-endif (Build_Documentation)
+endif(Build_Documentation)
 
 #-----------------------------------------------
 # Install the FindXXX that should be exported
@@ -241,9 +241,9 @@ install (FILES cmake/Findsanitizer.cmake DESTINATION share/cmake/Modules)
 
 option(BIND_FORTRAN_LOWERCASE "FORTRAN functions are compiled WITHOUT a trailing underscore" OFF)
 mark_as_advanced(BIND_FORTRAN_LOWERCASE)
-if (BIND_FORTRAN_LOWERCASE)
- set(TRIQS_BIND_FORTRAN_LOWERCASE OFF )
-endif (BIND_FORTRAN_LOWERCASE)
+if(BIND_FORTRAN_LOWERCASE)
+ set(TRIQS_BIND_FORTRAN_LOWERCASE OFF)
+endif(BIND_FORTRAN_LOWERCASE)
 
 #---------------------------------------
 # TRIQSConfig

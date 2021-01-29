@@ -57,7 +57,7 @@ for U in arange(Umin, Umax, 0.51):
     greal.set_from_pade(S.g, 201, 0.0)
 
     r=(U-Umin)/(Umax-Umin) #for color
-    oplot((-1/pi*greal).imag, lw=3,RI='S', color=(r,1.-r,1.-r), label = "U=%1.1f"%U)
+    oplot((-1/pi*greal).imag, lw=3,mode='S', color=(r,1.-r,1.-r), label = "U=%1.1f"%U)
 plt.xlim(-4,4)
 plt.ylim(0,0.7)
 plt.ylabel("$A(\omega)$");
