@@ -95,16 +95,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 cmake_policy(SET CMP0069 NEW)
 include(CheckIPOSupported)
-check_ipo_supported(RESULT ipo_supported OUTPUT output)
+check_ipo_supported(RESULT ipo_supported)
 if(NOT ipo_supported)
   message(STATUS "Linktime optimizations could not be enabled!")
-  #message(STATUS "LTO Example failed to compile with error:\n${output}")
 else()
   message(STATUS "Linktime optimizations enabled!")
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-  if(CMAKE_SYSTEM_NAME EQUAL "Linux")
-    add_link_options($<$<CXX_COMPILER_ID:Clang>:-fuse-ld=gold>)
-  endif()
 endif()
 
 #------------------------
