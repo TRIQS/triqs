@@ -106,4 +106,20 @@ TEST(Block2, CopyAssignment) {
   ASSERT_EQ(G2.block_names().size(), G.block_names().size());
 }
 
+TEST(Block2, Arithmetic) {
+  double beta = 1;
+  auto G1     = gf<imfreq>({beta, Fermion}, {2, 2});
+  auto G2     = gf<imfreq>({beta, Fermion}, {2, 2});
+  auto G3     = gf<imfreq>({beta, Fermion}, {2, 2});
+  triqs::clef::placeholder<0> w_;
+  G1(w_) << 1 / (w_ + 2);
+  G2(w_) << 1 / (w_ - 2);
+  G3(w_) << 1 / (w_ - 4);
+
+  auto G_vecvec = std::vector<std::vector<gf<imfreq>>>{{G1, G2}, {G2, G3}};
+  auto B        = make_block2_gf({"a", "b"}, {"c", "d"}, G_vecvec);
+
+  EXPECT_BLOCK2_GF_NEAR(block2_gf<imfreq>{2 * B}, block2_gf<imfreq>{1.0 * B + B * 1.0});
+}
+
 MAKE_MAIN;
