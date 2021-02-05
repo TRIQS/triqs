@@ -267,6 +267,7 @@ namespace triqs::gfs {
         _block_names.resize(rhs.size());
         _assign_impl(rhs);
       } else {
+        _block_names.resize(2);
         _glist.resize(rhs.size1());
         for (auto &g_bl : _glist) g_bl.resize(rhs.size2());
         _block_names[0].resize(rhs.size1());
