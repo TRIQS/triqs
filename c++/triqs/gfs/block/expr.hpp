@@ -69,7 +69,12 @@ namespace triqs {
       auto size1() const { return std::max(l.size1(), r.size1()); }
       auto size2() const { return std::max(l.size2(), r.size2()); }
 
-      auto block_names() const { return l.block_names(); }
+      auto block_names() const {
+        if constexpr (std::is_void_v<typename L_t::variable_t>)
+          return r.block_names();
+        else
+          return l.block_names();
+      }
 
       template <typename K> decltype(auto) operator[](K &&key) const {
         return utility::operation<Tag>()(l[std::forward<K>(key)], r[std::forward<K>(key)]);

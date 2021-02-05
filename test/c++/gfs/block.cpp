@@ -128,4 +128,17 @@ TEST(Block, Order) {
   std::cout << B_res[0](0) << std::endl;
 }
 
+TEST(Block, Arithmetic) {
+  double beta = 1;
+  auto G1     = gf<imfreq>({beta, Fermion}, {2, 2});
+  auto G2     = gf<imfreq>({beta, Fermion}, {2, 2});
+  triqs::clef::placeholder<0> w_;
+  G1(w_) << 1 / (w_ + 2);
+  G2(w_) << 1 / (w_ - 2);
+
+  auto B = make_block_gf({"a", "b"}, {G1, G2});
+
+  EXPECT_BLOCK_GF_NEAR(block_gf<imfreq>{2 * B}, block_gf<imfreq>{1.0 * B + B * 1.0});
+}
+
 MAKE_MAIN;
