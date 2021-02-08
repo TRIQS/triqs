@@ -67,20 +67,31 @@ if (NOT _CXX_OK)
 endif()
 
 #---------------------------------------------------------------------
-# Build type : Release or debug
+# CMake Options
 #---------------------------------------------------------------------
 
+# Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)
- set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
- mark_as_advanced(CMAKE_BUILD_TYPE)
+ set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
 endif()
-
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
-#---------------------------------------------------------------------
-# Shared or dynamic library
-#---------------------------------------------------------------------
+# Python Support
+option(PythonSupport "Build with Python support" ON)
 
+# Documentation
+option(Build_Documentation "Build the documentation ?" OFF)
+if(Build_Documentation AND NOT PythonSupport)
+  message(FATAL_ERROR "Build_Documentation=ON requires PythonSupport to be enabled")
+endif()
+
+# Testing
+option(Build_Tests "Build tests" ON)
+if(Build_Tests)
+  enable_testing()
+endif()
+
+# Build shared libraries by default
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 
 #---------------------------------------------------------------------
@@ -105,15 +116,6 @@ else()
   if(CMAKE_SYSTEM_NAME EQUAL "Linux")
     add_link_options($<$<CXX_COMPILER_ID:Clang>:-fuse-ld=gold>)
   endif()
-endif()
-
-#------------------------
-# tests option
-#------------------------
-
-option(Build_Tests "Build tests" ON)
-if(Build_Tests)
-  enable_testing()
 endif()
 
 #---------------------------------------------------------------------
@@ -202,7 +204,6 @@ add_subdirectory(c++/triqs)
 # Python modules 
 #---------------------------------------------------------------------
 
-option(PythonSupport "Build with Python support" ON)
 if(PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
  message( STATUS "-------- Preparing python extension modules  -------------")
@@ -222,19 +223,10 @@ endif()
 # Documentation
 #------------------------
 
-option(Build_Documentation "Build the documentation ?" OFF)
-
-<<<<<<< HEAD
 if(Build_Documentation)
  message( STATUS "-------- Prepare documentation -------------")
- add_subdirectory (doc)
-endif(Build_Documentation)
-=======
-if (Build_Documentation AND PythonSupport)
- message( STATUS "-------- Prepare documentation -------------")
- add_subdirectory (doc)
-endif (Build_Documentation AND PythonSupport)
->>>>>>> 81e253f7 ([nopython] CMake fixes)
+ add_subdirectory(doc)
+endif()
 
 #-----------------------------------------------
 # Install the FindXXX that should be exported

@@ -48,7 +48,7 @@ else()
 endif()
 
 # -- Cpp2Py --
-if(PythonSupport)
+if(PythonSupport OR Build_Documentation)
  external_dependency(Cpp2Py
    GIT_REPO https://github.com/TRIQS/cpp2py
    VERSION 2.0
