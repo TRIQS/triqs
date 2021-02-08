@@ -191,7 +191,7 @@ endif()
 # Build the triqs_py library
 # ---------------------------------
 
-if (PythonSupport)
+if(PythonSupport)
  add_library(triqs_py arrays/python/numpy_extractor.cpp)
  set_property(TARGET triqs_py PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR})
  # C.f. https://gitlab.kitware.com/cmake/cmake/-/issues/15415
@@ -206,7 +206,7 @@ endif()
 # Get the compiler and linktime flags of triqs and python_and_numpy
 include(${PROJECT_SOURCE_DIR}/cmake/extract_flags.cmake)
 extract_flags(triqs)
-if (PythonSupport)
+if(PythonSupport)
  extract_flags(cpp2py::python_and_numpy)
 endif()
 
@@ -218,12 +218,10 @@ configure_file(triqs++.in triqs++ @ONLY)
 # ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
-if (PythonSupport)
- install(TARGETS triqs triqs_py DESTINATION lib EXPORT triqs-targets)
-else()
- install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
+install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
+if(PythonSupport)
+ install(TARGETS triqs_py DESTINATION lib EXPORT triqs-targets)
 endif()
-
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
