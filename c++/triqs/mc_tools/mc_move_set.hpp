@@ -97,6 +97,13 @@ namespace triqs {
       uint64_t n_proposed_config() const { return NProposed; }
       uint64_t n_accepted_config() const { return Naccepted; }
 
+      void clear_statistics() {
+        collect_statistics_ = make_collect_statistics(impl_.get());
+        NProposed           = 0;
+        Naccepted           = 0;
+        acceptance_rate_    = -1;
+      }
+
       void collect_statistics(mpi::communicator const &c) {
         uint64_t nacc_tot  = mpi::all_reduce(Naccepted, c);
         uint64_t nprop_tot = mpi::all_reduce(NProposed, c);
@@ -237,7 +244,12 @@ namespace triqs {
       }
 
       ///
-      void collect_statistics(mpi::communicator c) {
+      void clear_statistics() {
+        for (auto &m : move_vec) m.clear_statistics();
+      }
+
+      ///
+      void collect_statistics(mpi::communicator const &c) {
         for (auto &m : move_vec) m.collect_statistics(c);
       }
 

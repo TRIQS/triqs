@@ -212,6 +212,9 @@ namespace triqs::mc_tools {
     // implementation
 
     int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c) {
+
+      AllMoves.clear_statistics();
+
       utility::timer timer;
       timer.start();
       if (n_cycles == 0) return 0;
