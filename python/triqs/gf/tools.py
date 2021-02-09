@@ -24,7 +24,7 @@ from .block_gf import BlockGf
 from .gf import Gf
 import numpy as np
 from itertools import product
-from .backwd_compat.gf_refreq import GfReFreq 
+from .backwd_compat.gf_refreq import GfReFreq
 from .map_block import map_block
 
 def inverse(x):
@@ -85,7 +85,7 @@ def delta(g):
         if err > 1e-5: print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
         return delta_iw
     else:
-        raise TypeError("No function delta for g0 object of type %s"%type(g)) 
+        raise TypeError("No function delta for g0 object of type %s"%type(g))
 
 
 # Determine one of G0_iw, G_iw and Sigma_iw from other two using Dyson's equation
@@ -117,7 +117,7 @@ def dyson(**kwargs):
 def read_gf_from_txt(block_txtfiles, block_name):
     """
     Read a GfReFreq from text files with the format (w, Re(G), Im(G)) for a single block.
-    
+
     Notes
     -----
     A BlockGf must be constructed from multiple GfReFreq objects if desired.
@@ -152,7 +152,7 @@ def read_gf_from_txt(block_txtfiles, block_name):
 def write_gf_to_txt(g):
     """
     Write a GfReFreq or GfImFreq to in the format (w/iw, Re(G), Im(G)) for a single block.
-    
+
     Parameters
     ----------
     g: GfReFreq or GfImFreq
@@ -175,7 +175,7 @@ def write_gf_to_txt(g):
 def make_zero_tail(g, n_moments=10):
     """
     Return a container for the high-frequency coefficients of a given Green function initialized to zero.
-    
+
     Parameters
     ----------
     g: GfImFreq or GfReFreq or GfImTime or GfReTime
@@ -199,7 +199,7 @@ def fit_legendre(g_t, order=10):
     Only Hermiticity is imposed on the fit, so discontinuities has
     to be fixed separately (see the method enforce_discontinuity)
 
-    Author: Hugo U.R. Strand 
+    Author: Hugo U.R. Strand
 
     Parameters
     ----------
@@ -259,8 +259,99 @@ def fit_legendre(g_t, order=10):
     l = np.arange(len(lmesh))
     scale = np.sqrt(2.*l + 1) / mesh.beta
     scale = scale.reshape([len(lmesh)] + [1]*len(g_t.target_shape))
-    
+
     g_l = Gf(mesh=lmesh, target_shape=g_t.target_shape)
     g_l.data[:] = c_l.reshape(g_l.data.shape) / scale
 
     return g_l
+
+
+def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8):
+    """
+    discretizes a given Delta_iw with Nb bath sites using
+    scipy.optimize.minimize using the Nelder-Mead algorithm.
+    The tolerance is ensuring the converging of the input
+    hopping and energy values. The discretized delta_disc_iw
+    is constructed as:
+    .. math:: \Delta^{disc} (i \omega_n) = \sum_{n=1}^{Nb} \frac{t^2_n}{i \omega_n - \epsilon_n}.
+
+    and the norm to minimize the difference between delta_disc_iw and delta_iw for scipy is:
+    .. math:: \left[ \sum_{i \omega_n} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
+
+    CAUTION: This function works only for scalar valued Gf objects.
+    if necessary call for each orbital in input Delta_iw separately.
+
+    Parameters
+    ----------
+    delta_iw : Gf
+        Matsubara hybridization function to discretize (scalar valued)
+    Nb : int
+        number of bath sites
+    bandwidth : float, optional
+        approximate bandwidth, used in choice of initial of bath energies [default=3.0]
+    t_init : float, optional
+        initial guess used for all hopping values [default=0.0]
+    tol: float, optional
+        tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
+    Returns
+    -------
+    t_opt : list of optimized bath hopping parameters
+    e_opt : sorted list of optimized bath energies
+    delta_disc_iw : Gf
+               Discretized Matsubara hybridization function
+    """
+    from scipy.optimize import minimize
+
+    # some tests if input is okay
+    assert not isinstance(delta_iw, BlockGf), 'delta_iw needs to be a GfImFreq not BlockGf'
+    assert isinstance(delta_iw.mesh, MeshImFreq), 'input delta_iw should have a mesh MeshImFreq'
+    assert len(delta_iw.target_shape)==0, 'delta_iw should have rank 0, i.e. a scalar valued Green function'
+
+    # prepare discretized delta with same mesh
+    delta_disc_iw = delta_iw.copy()
+    delta_disc_iw.zero()
+
+    ####
+    # define minimizer for scipy
+    def minimizer(parameters):
+        # first half of parameters are hoppings
+        t = parameters[0:Nb]
+        # second half are bath energies
+        e = parameters[Nb:]
+
+        # build discretized bath function as
+        # delta = sum_nb t_n / (iw - eps_n)
+        for w in delta_disc_iw.mesh:
+            delta_disc_iw[w] = np.sum(t**2 / ( w.value - e ) )
+
+        # calculate norm
+        norm = np.linalg.norm(delta_disc_iw.data - delta_iw.data)
+        return norm
+    ####
+
+    # initialize bath_hoppings by setting to the provided value
+    bath_hoppings = np.array( Nb*[t_init] )
+
+    # bath energies are initialized as linspace over the approximate bandwidth
+    bath_energies = np.linspace(0, bandwidth, Nb)
+
+    # parameters for scipy must be a 1D array
+    parameters = np.concatenate( [bath_hoppings, bath_energies] )
+
+    # run the minimizer if method Nelder-Mead and optimize the hoppings and energies to given
+    # tolerance
+    result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol})
+
+    if not result.success:
+        raise RuntimeError('optimization has failed: scipy minimize signaled no success.')
+
+    # results, taking absolute values of hoppings
+    e_opt = result.x[Nb:]
+    t_opt = np.abs(result.x[0:Nb])
+
+    # sort by energy
+    order = np.argsort(e_opt)
+    e_opt = e_opt[order]
+    t_opt = t_opt[order]
+
+    return t_opt, e_opt, delta_disc_iw
