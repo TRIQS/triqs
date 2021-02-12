@@ -25,7 +25,7 @@
 #include <mpi/vector.hpp>
 #include <optional>
 #include <triqs/arrays.hpp>
-#include <triqs/clef/clef.hpp>
+#include <nda/clef/clef.hpp>
 #include <h5/h5.hpp>
 #include <type_traits>
 #include <vector>
