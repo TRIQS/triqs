@@ -53,14 +53,18 @@ namespace triqs::stat {
     ///
     /// @param a Left end of the sampling range
     /// @param b Right end of the sampling range
-    histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(n_bins, 0) { _init(); }
+    histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(nda::vector<double>::zeros({n_bins})) {
+      _init();
+    }
 
     /// Constructs a histogram over :math:`[a; b]` range with a given number of bins.
     ///
     /// @param a Left end of the sampling range
     /// @param b Right end of the sampling range
     /// @param n_bins Number of bins
-    histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(n_bins, 0) { _init(); }
+    histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(nda::vector<double>::zeros({n_bins})) {
+      _init();
+    }
 
     /// Default constructor
     histogram() = default;
@@ -181,15 +185,13 @@ namespace triqs::stat {
     /// @brief Read histogram form HDF5
     friend void h5_read(h5::group g, std::string const &name, histogram &h);
 
-
-      /// Comparison operator
-      /**
+    /// Comparison operator
+    /**
     @param h Histogram to be compared
     @return True iff both Histograms are equal, else False
    */
-      bool operator==(histogram const &h) const;
-      inline bool operator!=(histogram const &h) const { return not (*this == h); }
-
+    bool operator==(histogram const &h) const;
+    inline bool operator!=(histogram const &h) const { return not(*this == h); }
 
     /// Output stream insertion
     /// @param os Reference to an output stream
@@ -207,13 +209,13 @@ namespace triqs::stat {
     /// @param version Archive format version tag
     /// @brief Serialize Histogram
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &a;
-        ar &b;
-        ar &n_bins;
-        ar &_data;
-        ar &_n_data_pts;
-        ar &_n_lost_pts;
-        ar &_step;
+      ar &a;
+      ar &b;
+      ar &n_bins;
+      ar &_data;
+      ar &_n_data_pts;
+      ar &_n_lost_pts;
+      ar &_step;
     }
   };
 
