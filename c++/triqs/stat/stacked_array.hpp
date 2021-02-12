@@ -24,7 +24,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace triqs::arrays {
+namespace nda {
 
   template <typename T, int N> array<T, N + 1> copy_and_push_back(array<T, N + 1> const &x, array_const_view<T, N> y) {
     auto sha = x.shape();
@@ -79,4 +79,4 @@ namespace triqs::arrays {
 
   template <typename T, int N> void h5_read(h5::group g, std::string const &name, stacked_array<T, N> &x) { h5_read(g, name, x._data); }
 
-} // namespace triqs::arrays
+} // namespace nda
