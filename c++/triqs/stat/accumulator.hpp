@@ -130,7 +130,7 @@ namespace triqs::stat {
     // Ref: see e.g. Chan, Golub, LeVeque. Am. Stat. 37, 242 (1983) and therein
     template <typename T> struct log_binning {
       std::vector<T> Mk; // Cf comments
-      using Q_t = decltype(make_regular(triqs::arrays::real(Mk[0])));
+      using Q_t = decltype(make_regular(nda::real(Mk[0])));
       std::vector<Q_t> Qk; // Cf comments
       int max_n_bins = 0;
       std::vector<T> acc;         // partial accumulators at size 2^(n+1). WARNING: acc[n] correspond to sum[n+1] to save unesscesary temporaries
@@ -156,7 +156,7 @@ namespace triqs::stat {
           acc.emplace_back(data_instance_local);
           acc_count.push_back(0);
         }
-        Qk.emplace_back(triqs::arrays::real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
+        Qk.emplace_back(nda::real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
         Mk.emplace_back(std::move(data_instance_local));
       }
 
