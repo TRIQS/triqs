@@ -31,7 +31,7 @@ namespace triqs::arrays {
     auto sha = x.shape();
     sha[0]++;
     auto tmp                  = array<T, N + 1>(sha);
-    auto R                    = range(0, first_dim(x));
+    auto R                    = range(0, x.shape()[0]);
     tmp(R, ellipsis())        = x; // copy the data
     tmp(R.last(), ellipsis()) = y;
     return tmp;
@@ -49,7 +49,7 @@ namespace triqs::arrays {
     array_view<T, N> operator[](long i) { return _data(i, ellipsis{}); }
     array_const_view<T, N> operator[](long i) const { return _data(i, ellipsis{}); }
 
-    long size() const { return first_dim(_data); }
+    long size() const { return _data.shape()[0]; }
 
     // costly
     void push_back(array_const_view<T, N> x) { _data = copy_and_push_back(_data, x); }
@@ -61,8 +61,8 @@ namespace triqs::arrays {
 
     public:
     // make it iterable
-    auto begin() const { return _make_iter(std::cbegin(range(0, first_dim(_data)))); }
-    auto end() const { return _make_iter(std::cend(range(0, first_dim(_data)))); }
+    auto begin() const { return _make_iter(std::cbegin(range(0, _data.shape()[0]))); }
+    auto end() const { return _make_iter(std::cend(range(0, _data.shape()[0]))); }
     auto cbegin() const { return begin(); }
     auto cend() const { return end(); }
 

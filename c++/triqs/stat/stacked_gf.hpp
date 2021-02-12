@@ -21,6 +21,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <type_traits>
 #include <vector>
 

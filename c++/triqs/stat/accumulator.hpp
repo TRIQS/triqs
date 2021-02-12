@@ -26,7 +26,7 @@
 #include <optional>
 #include <triqs/arrays.hpp>
 #include <triqs/clef/clef.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <type_traits>
 #include <vector>
 
@@ -39,7 +39,7 @@ namespace triqs::stat {
       long last_bin_count = 0; // Number of data points the currently active bin [bins.back()]
       std::vector<T> bins;     // Bins with accumulated data (stores means)
 
-      //static std::string hdf5_scheme() { return "linear_bins"; }
+      //static std::string hdf5_format() { return "linear_bins"; }
 
       lin_binning() = default;
 
@@ -137,7 +137,7 @@ namespace triqs::stat {
       std::vector<int> acc_count; // number of elements for partial accumulators at size 2^(n+1)
       long count = 0;             // Number of elements added to accumulator
 
-      //static std::string hdf5_scheme() { return "log_binning"; }
+      //static std::string hdf5_format() { return "log_binning"; }
 
       log_binning() = default;
 
@@ -290,7 +290,7 @@ namespace triqs::stat {
     }
 
     public:
-    static std::string hdf5_scheme() { return "accumulator"; }
+    static std::string hdf5_format() { return "accumulator"; }
 
     accumulator() = default;
 
