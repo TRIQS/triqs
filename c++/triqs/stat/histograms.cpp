@@ -26,25 +26,23 @@ namespace triqs::stat {
     _step = (n_bins - 1) / (b - a);
   }
 
-    bool histogram::operator==(histogram const &h) const {
-      return this->a == h.a &&                 //
-         this->b == h.b &&                     //
-         this->n_bins == h.n_bins &&           //
-         this->_data == h._data &&             //
-         this->_n_data_pts == h._n_data_pts && //
-         this->_n_lost_pts == h._n_lost_pts && //
-         this->_step == h._step;
-    }
+  bool histogram::operator==(histogram const &h) const {
+    return this->a == h.a &&                 //
+       this->b == h.b &&                     //
+       this->n_bins == h.n_bins &&           //
+       this->_data == h._data &&             //
+       this->_n_data_pts == h._n_data_pts && //
+       this->_n_lost_pts == h._n_lost_pts && //
+       this->_step == h._step;
+  }
 
-    histogram &histogram::operator<<(double x) {
-      if ((x < a) || (x > b))
-        ++_n_lost_pts;
-      else {
-        auto n = int(std::floor(((x - a) * _step) + 0.5));
-        ++_data[n];
-        ++_n_data_pts;
-      }
-      return *this;
+  histogram &histogram::operator<<(double x) {
+    if ((x < a) || (x > b))
+      ++_n_lost_pts;
+    else {
+      auto n = int(std::floor(((x - a) * _step) + 0.5));
+      ++_data[n];
+      ++_n_data_pts;
     }
     return *this;
   }
@@ -61,16 +59,16 @@ namespace triqs::stat {
     return h1;
   }
 
-    void h5_write(h5::group g, std::string const &name, histogram const &h) {
-      h5_write(g, name, h._data);
-      auto ds = g.open_dataset(name);
-      write_hdf5_format(ds, h);
-      h5_write_attribute(ds, "a", h.a);
-      h5_write_attribute(ds, "b", h.b);
-      h5_write_attribute(ds, "n_bins", h.n_bins);
-      h5_write_attribute(ds, "n_data_pts", h._n_data_pts);
-      h5_write_attribute(ds, "n_lost_pts", h._n_lost_pts);
-    }
+  void h5_write(h5::group g, std::string const &name, histogram const &h) {
+    h5_write(g, name, h._data);
+    auto ds = g.open_dataset(name);
+    write_hdf5_format(ds, h);
+    h5_write_attribute(ds, "a", h.a);
+    h5_write_attribute(ds, "b", h.b);
+    h5_write_attribute(ds, "n_bins", h.n_bins);
+    h5_write_attribute(ds, "n_data_pts", h._n_data_pts);
+    h5_write_attribute(ds, "n_lost_pts", h._n_lost_pts);
+  }
 
   void h5_read(h5::group g, std::string const &name, histogram &h) {
     h5_read(g, name, h._data);
