@@ -3,7 +3,7 @@
 from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.stat.histograms", doc = "")
+module = module_(full_name = "triqs.stat.histograms", doc = "")
 
 # All the triqs C++/Python modules
 
