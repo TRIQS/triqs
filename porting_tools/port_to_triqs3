@@ -47,7 +47,9 @@ repl_dict = {
         "first_dim\((.*?)\)": r"\1.shape()[0]",
         "second_dim\((.*?)\)": r"\1.shape()[1]",
         "#include <triqs/arrays/blas_lapack/dot.hpp>": "#include <nda/blas/dot.hpp>",
-        "#include <triqs/arrays/linalg/eigenelements.hpp>": "#include <nda/linalg/eigenelements.hpp>"
+        "#include <triqs/arrays/linalg/eigenelements.hpp>": "#include <nda/linalg/eigenelements.hpp>",
+        "triqs::arrays": "nda",
+        "conj_r": "conj"
         }
 # :bufdo :%s#\(\w *\)/\( *[Nn0-9]\)#\1//\2#gc
 
