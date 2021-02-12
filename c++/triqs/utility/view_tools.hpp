@@ -19,6 +19,7 @@
 
 #pragma once
 #include <type_traits>
+#include <nda/nda.hpp>
 
 namespace triqs {
 
@@ -38,7 +39,5 @@ namespace triqs {
   template <typename T> using view_or_type_t       = typename details::_view_or_type<T>::type;
   template <typename T> using const_view_or_type_t = typename details::_const_view_or_type<T>::type;
 
-  /// Transform to the regular type
-  template <typename A> regular_t<A> make_regular(A &&x) { return std::forward<A>(x); }
-
+  using nda::make_regular;
 } //namespace triqs
