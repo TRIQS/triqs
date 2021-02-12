@@ -8,7 +8,7 @@
 using namespace triqs::stat;
 using namespace triqs::stat::details;
 
-using triqs::arrays::conj_r;
+using nda::conj;
 
 using vec_d = std::vector<double>;
 using vec_c = std::vector<std::complex<double>>;

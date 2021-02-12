@@ -6,7 +6,7 @@
 #include <mpi/mpi.hpp>
 
 using namespace triqs::stat;
-using triqs::arrays::conj_r;
+using nda::conj;
 
 // *****************************************************************************
 

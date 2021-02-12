@@ -22,7 +22,7 @@
  ******************************************************************************/
 #pragma once
 
-#include "make_real.hpp"
+#include "./make_real.hpp"
 #include <mpi/vector.hpp>
 #include <optional>
 #include <triqs/arrays.hpp>
@@ -168,8 +168,9 @@ namespace triqs::stat {
       template <typename U> log_binning<T> &operator<<(U const &x) {
         if (max_n_bins == 0) return *this;
 
-        using nda::conj_r;
-        // using triqs::arrays::real; // FIXME:
+        using nda::conj;
+        using nda::real;
+
         ++count;
 
         // If max_n_bins == 1, there is only one (Mk, Qk) and we skip direclty to updating that below
@@ -209,7 +210,7 @@ namespace triqs::stat {
             auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
             T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
             auto k            = count / bin_capacity;
-            Qk[n + 1] += ((k - 1) / double(k)) * make_real(conj_r(x_m) * x_m);
+            Qk[n + 1] += ((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
             Mk[n + 1] += x_m / k;
             acc_count[n] = 0;
             acc[n]       = 0;
@@ -219,7 +220,7 @@ namespace triqs::stat {
         // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
         auto k = count;
         T x_m  = (x - Mk[0]);
-        Qk[0] += ((k - 1) / double(k)) * make_real(conj_r(x_m) * x_m);
+        Qk[0] += ((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
         Mk[0] += x_m / k;
 
         return *this;
@@ -305,7 +306,7 @@ namespace triqs::stat {
      *    * T can be set to zero with: T x=0
      *
      *    * T has a multiplication operator (x * x) defined in an element-wise manner
-     *    * T can be made real using: triqs::arrays::real(T)
+     *    * T can be made real using: nda::real(T)
      * 
      * @param data_instance 
      *
@@ -379,7 +380,7 @@ namespace triqs::stat {
     }
 
     /// Returns the standard errors for data with different power-of-two capacity.
-    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from triqs::arrays::real(T), where T is the type defining the accumulator.
+    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator.
     /// @brief Get standard errors of log binned data
     auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
@@ -398,7 +399,7 @@ namespace triqs::stat {
 
     /// Returns the standard errors for data with different power-of-two capacity, reduced from data over all MPI threads. The final answer is reduced only to the zero MPI thread (not all reduce).
     /// @param c TRIQS MPI communicator
-    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from triqs::arrays::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
+    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     auto log_bin_errors_mpi(mpi::communicator c) const {
       // FIXME WITH NEW MACHINARY

@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by O. Parcollet, T. Ayral.
  * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet, H. Strand, P. Dumitrescu
+ *   author : N Wentzell, P. Dumitrescu
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,18 +22,12 @@
  ******************************************************************************/
 #pragma once
 
-#include <type_traits>
 #include <nda/nda.hpp>
 
 namespace triqs::stat {
 
-template <typename T> auto make_real(T &&t) { return std::forward<T>(t); }
+  template <typename T> auto make_real(T &&t) { return nda::make_regular(nda::real(std::forward<T>(t))); }
 
-// template <typename T> auto make_real(T &&t) requires(std::is_same_v<void, std::void_t<decltype(std::declval<T>().real())>>) { return t.real(); }
-
-template <typename T> auto make_real(T &&t) requires(std::is_same_v<void, std::void_t<decltype(real(std::declval<T>()))>>) { return nda::make_regular(real(std::forward<T>(t))); }
-
-
-template <typename T> using get_real_t = std::decay_t<decltype(make_real(std::declval<T>()))>;
+  template <typename T> using get_real_t = decltype(make_real(std::declval<T>()));
 
 } // namespace triqs::stat

@@ -7,8 +7,8 @@
 #include <vector>
 
 using namespace triqs::stat;
-using triqs::arrays::conj_r;
 using namespace triqs;
+using nda::conj;
 
 // *****************************************************************************
 // Quasi-RNG Test: Compare to exact Results

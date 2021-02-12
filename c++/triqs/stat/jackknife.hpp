@@ -31,8 +31,6 @@
 
 namespace triqs::stat {
 
-  using triqs::arrays::conj_r;
-
   namespace details {
 
     // Represent the jacknifed series.
@@ -79,10 +77,6 @@ namespace triqs::stat {
       if (N == 0) TRIQS_RUNTIME_ERROR << "No data !";
       if (not((ja.original_series.size() == N) and ...)) TRIQS_RUNTIME_ERROR << " Jackknife : size mismatch";
 
-      using std::real;
-      using std::sqrt;
-      using triqs::arrays::abs2;
-
       // WARNING NB : In this function, we must be very careful never to store an expression template using f.
       // f is provided by the user. It will be provided with ja[i] which
       // might be an expression template itself (hence a temporary).
@@ -108,17 +102,17 @@ namespace triqs::stat {
       }
 
       // Compute the variance
-      auto Q = make_regular(real(M));
+      auto Q = make_regular(nda::real(M));
       Q      = 0;
       for (long i = 0; i < N; ++i) {
-        Q += abs2(f(ja[i]...) - M); // Cf NB
+        Q += nda::abs2(f(ja[i]...) - M); // Cf NB
       }
 
       // reduce Q
       if (c) Q = mpi::all_reduce(Q, *c);
 
       auto f_on_averages = make_regular(f(ja.average()...));
-      auto std_err       = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * sqrt(Q));
+      auto std_err       = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * std::sqrt(Q));
       auto average       = make_regular(N * (f_on_averages - M) + M);
       return std::make_tuple(average, std_err, M, f_on_averages);
     }
