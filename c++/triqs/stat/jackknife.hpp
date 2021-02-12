@@ -112,7 +112,7 @@ namespace triqs::stat {
       if (c) Q = mpi::all_reduce(Q, *c);
 
       auto f_on_averages = make_regular(f(ja.average()...));
-      auto std_err       = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * std::sqrt(Q));
+      auto std_err       = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * sqrt(Q));
       auto average       = make_regular(N * (f_on_averages - M) + M);
       return std::make_tuple(average, std_err, M, f_on_averages);
     }
