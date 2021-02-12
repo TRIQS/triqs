@@ -9,6 +9,7 @@
 using namespace triqs;
 using namespace triqs::stat;
 using namespace triqs::utility;
+using namespace nda;
 
 int seed = 1567;
 mpi::communicator world;
@@ -165,7 +166,7 @@ TEST(Stat, LogBinArray) {
 
   using A = array<double, 2>;
 
-  A a0{{1, 2}, {2, 1}};
+  A a0{{1., 2.}, {2., 1.}};
 
   auto zero = a0;
   zero      = 0;
@@ -180,7 +181,7 @@ TEST(Stat, LogBinArray) {
     b2 << 2 * i;
     b << i * a0;
 
-    A atemp{{i, 2 * i}, {2 * i, i}};
+    A atemp{{1. * i, 2. * i}, {2. * i, 1. * i}};
     bb << atemp;
   }
 

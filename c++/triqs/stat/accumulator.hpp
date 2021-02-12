@@ -22,6 +22,7 @@
  ******************************************************************************/
 #pragma once
 
+#include "make_real.hpp"
 #include <mpi/vector.hpp>
 #include <optional>
 #include <triqs/arrays.hpp>
@@ -31,6 +32,7 @@
 #include <vector>
 
 namespace triqs::stat {
+
   namespace details {
 
     template <typename T> struct lin_binning {
@@ -129,8 +131,9 @@ namespace triqs::stat {
     // Q_{k} = Q_{k-1} + \frac{(k-1)(x- M_{k-1})^2}{k}
     // Ref: see e.g. Chan, Golub, LeVeque. Am. Stat. 37, 242 (1983) and therein
     template <typename T> struct log_binning {
+
       std::vector<T> Mk; // Cf comments
-      using Q_t = decltype(make_regular(nda::real(Mk[0])));
+      using Q_t = get_real_t<T>;
       std::vector<Q_t> Qk; // Cf comments
       int max_n_bins = 0;
       std::vector<T> acc;         // partial accumulators at size 2^(n+1). WARNING: acc[n] correspond to sum[n+1] to save unesscesary temporaries
@@ -156,7 +159,7 @@ namespace triqs::stat {
           acc.emplace_back(data_instance_local);
           acc_count.push_back(0);
         }
-        Qk.emplace_back(nda::real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
+        Qk.emplace_back(make_real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
         Mk.emplace_back(std::move(data_instance_local));
       }
 
@@ -165,8 +168,8 @@ namespace triqs::stat {
       template <typename U> log_binning<T> &operator<<(U const &x) {
         if (max_n_bins == 0) return *this;
 
-        using triqs::arrays::conj_r;
-        using triqs::arrays::real; // FIXME:
+        using nda::conj_r;
+        // using triqs::arrays::real; // FIXME:
         ++count;
 
         // If max_n_bins == 1, there is only one (Mk, Qk) and we skip direclty to updating that below
@@ -206,7 +209,7 @@ namespace triqs::stat {
             auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
             T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
             auto k            = count / bin_capacity;
-            Qk[n + 1] += ((k - 1) / double(k)) * real(conj_r(x_m) * x_m);
+            Qk[n + 1] += ((k - 1) / double(k)) * make_real(conj_r(x_m) * x_m);
             Mk[n + 1] += x_m / k;
             acc_count[n] = 0;
             acc[n]       = 0;
@@ -216,7 +219,7 @@ namespace triqs::stat {
         // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
         auto k = count;
         T x_m  = (x - Mk[0]);
-        Qk[0] += ((k - 1) / double(k)) * real(conj_r(x_m) * x_m);
+        Qk[0] += ((k - 1) / double(k)) * make_real(conj_r(x_m) * x_m);
         Mk[0] += x_m / k;
 
         return *this;

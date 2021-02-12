@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "make_real.hpp"
 #include <itertools/itertools.hpp>
 #include <mpi/vector.hpp>
 #include <triqs/arrays.hpp>
@@ -50,7 +51,7 @@ namespace triqs::stat {
   /// @brief Calculate mean (MPI Version)
   template <typename V> auto mean_mpi(mpi::communicator c, V const &data) {
     // ENSURE(data.size() > 0);
-    auto M = make_regular(mean(data));
+    auto M = mean(data);
     long N = mpi::all_reduce(data.size(), c);
     M *= double(data.size()) / N;
     mpi::all_reduce_in_place(M, c); //M = mpi::all_reduce(M, c, 0);
@@ -70,7 +71,7 @@ namespace triqs::stat {
     using triqs::arrays::conj_r;
     long length    = data.size();
     auto mean_calc = mean(data);
-    auto err_calc  = make_regular(real(mean_calc));
+    auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
     for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
     err_calc = sqrt(err_calc);
@@ -90,7 +91,7 @@ namespace triqs::stat {
     using triqs::arrays::conj_r;
     long length    = mpi::all_reduce(data.size(), c);
     auto mean_calc = mean_mpi(c, data);
-    auto err_calc  = make_regular(real(mean_calc));
+    auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
     for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
     mpi::all_reduce_in_place(err_calc, c);
