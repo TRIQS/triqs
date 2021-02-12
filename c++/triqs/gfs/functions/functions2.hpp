@@ -41,7 +41,7 @@ namespace triqs::gfs {
     return g;
   }
 
-  using triqs::arrays::array_const_view;
+  using nda::array_const_view;
 
   /*------------------------------------------------------------------------------------------------------
    *                 Fitting the tail
@@ -181,7 +181,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
-    return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
+    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); },
                            [&args...](auto &&i) { return slice(i, args...); });
   }
 
@@ -191,7 +191,7 @@ namespace triqs::gfs {
 
   template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
     auto r =
-       g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); }, [&args...](auto &&i) { return slice(i, args...); });
+       g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); }, [&args...](auto &&i) { return slice(i, args...); });
     return r;
   }
 

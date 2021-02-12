@@ -33,11 +33,11 @@ namespace triqs {
     // specific operations (for legacy python code).
     // +=, -= with a matrix
     inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) += m;
+      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) += m;
     }
 
     inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) -= m;
+      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
     inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
@@ -56,11 +56,11 @@ namespace triqs {
 
     // - same with refreq
     inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) += m;
+      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) += m;
     }
 
     inline void operator-=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) -= m;
+      for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
     inline void operator+=(gf_view<refreq> g, std::complex<double> a) {

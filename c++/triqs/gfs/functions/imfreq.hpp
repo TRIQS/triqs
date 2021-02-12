@@ -54,7 +54,7 @@ namespace triqs::gfs {
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
     int is_boson = (g.mesh().domain().statistic == Boson);
-    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.indices()};
+    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis()), g.indices()};
   }
 
   /**
@@ -85,7 +85,6 @@ namespace triqs::gfs {
 
       if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
         if (g.mesh().positive_only()) return true;
-        using triqs::arrays::max_element;
         //for (auto const &w : g.mesh().get_positive_freq()) {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
@@ -100,7 +99,6 @@ namespace triqs::gfs {
         }
         return true;
       } else { // === gf<imtime>
-        using triqs::arrays::max_element;
         for (auto const &t : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
             if (abs(conj_r(g[t]) - g[t]) > tolerance) return false;

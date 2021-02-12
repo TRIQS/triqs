@@ -66,7 +66,7 @@ namespace triqs::gfs::details {
       // Filter the meshes of g into a tuple containing only the ones corresponding to all_t arguments
       auto m_tuple = triqs::tuple::fold(filter_mesh{}, std::make_tuple(args...), g.mesh().components(), std::make_tuple());
       // slice the data
-      auto arr2 = g.data()(args..., triqs::arrays::ellipsis());
+      auto arr2 = g.data()(args..., nda::ellipsis());
 
       // Build the new mesh. If tuple size > 1 , it is a prod mesh, otherwise just extract the mesh from the tuple
       auto mesh = [&m_tuple]() {
