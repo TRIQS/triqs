@@ -84,7 +84,7 @@ namespace triqs::stat {
         }
         // Compress data into new bins, except the last new bin
         for (int i = 0; i < n_bins_new - 1; ++i) {
-          bins[i] = std::move(bins[compression_factor * i]); // TODO: i = 0 case
+          if (i != 0) { bins[i] = std::move(bins[compression_factor * i]); }
           for (int j = 1; j < compression_factor; j++) { bins[i] += bins[compression_factor * i + j]; }
           bins[i] /= compression_factor;
         }
