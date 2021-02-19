@@ -2,6 +2,13 @@
 FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+# test if MPI detection works on system
+set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CPP2PY_MODULE_DIR}:${CPP2PY_BINARY_DIR}:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+add_test(NAME py_check_mpi_env COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 ${MPIEXEC_PREFLAGS} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_mpi_env.py)
+set_property(TEST py_check_mpi_env PROPERTY ENVIRONMENT ${testenv})
+
+#add_python_test(is_mpi_true MPI_NUMPROC 1)
+
 # Greens functions
 add_python_test(gf_imfreq)
 add_python_test(gf_block)
