@@ -19,4 +19,35 @@
 #
 ################################################################################
 
-from .mpi_mpi4py import *
+import os
+
+
+def check_for_mpi():
+    '''
+    Simple function checking if triqs has been called with 
+    mpirun or without, by checking for typical MPI environment
+    variables
+
+    Returns: 
+    -------
+    is_mpi: bool
+            True if triqs called with mpirun
+    '''
+    is_mpi = False
+
+    # for OpenMPI:
+    if os.environ.get('OMPI_COMM_WORLD_RANK'):
+        is_mpi = True
+    # for MPICH and intel based MPI:
+    elif os.environ.get('PMI_RANK'):
+        is_mpi = True
+    else:
+        print('Warning: could not identify MPI environment!')
+
+    return is_mpi
+
+
+if check_for_mpi():
+    from .mpi_mpi4py import *
+else:
+    from .mpi_nompi import *
