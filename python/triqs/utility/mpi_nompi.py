@@ -29,6 +29,11 @@ world = None
 rank = 0
 size = 1
 
+All_Nodes_report = False
+
+# variable for send and receive
+_sendval = None
+
 myprint_err ("Starting serial run at: %s"%(str(datetime.datetime.now())))
 
 
@@ -37,7 +42,7 @@ myprint_err ("Starting serial run at: %s"%(str(datetime.datetime.now())))
 def report(*x,**opt):
         myprint,myflush = (myprint_err,sys.stderr.flush)  if 'stderr' in opt and opt['stderr'] else (myprint_out,sys.stdout.flush)
         for y in x:
-          myprint( y)  # open('report','a').write(str(y) + '\n') #             print y
+          myprint(y)  # open('report','a').write(str(y) + '\n') #             print y
           myflush() # be sure to flush the buffer!
 
 
@@ -45,25 +50,24 @@ def is_master_node(): return True
 
 def bcast(x): return x
 
-def barrier() : return True
+def barrier() : return
 
 def all_reduce(WORLD, x, F) : return x
 
-def send(val, dest): return True
+def send(val, dest):
+    _sendval = val
+    return
 
-# this one I am not sure how to implement
-def recv(source = 0): return True
-
-def slice_inf(imin,imax) :
-  return imin
-
-def slice_sup(imin,imax) :
-  return imax
+def recv(source = 0):
+    if _sendval is None:
+        raise Exception('send val not set')
+    recval = _sendval
+    _sendval = None
+    return recval
 
 def slice_array(A) :
     """Given an array A, it returns a VIEW of a slice over the first dim on the node"""
-    imax = A.shape[0]-1
-    return A[slice_inf(0,imax):slice_sup(0,imax)+1] # +1 due to the slice convention
+    return A
 
 HostNames = {}
 def master_gets_host_names():
