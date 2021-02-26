@@ -283,40 +283,40 @@ template <typename T> void CheckLogBinSize(log_binning<T> bins, long n_size) {
 }
 
 TEST(Stat, Details_LogBins_AddDataComplex) {
-  std::complex<double> ii(0.0, 1.0);
+    using namespace std::complex_literals;
 
   log_binning<std::complex<double>> bins{0.0, 3};
-  EXPECT_EQ(bins.Mk, vec_c({0.0 * ii}));
+  EXPECT_EQ(bins.Mk, vec_c({0.0 * 1i}));
   EXPECT_EQ(bins.Qk, vec_d({0.0}));
-  EXPECT_EQ(bins.acc, vec_c({0.0 * ii}));
+  EXPECT_EQ(bins.acc, vec_c({0.0 * 1i}));
   EXPECT_EQ(bins.acc_count, vec_i({0}));
 
-  bins << ii;
-  EXPECT_EQ(bins.Mk, vec_c({ii}));
+  bins << 1i;
+  EXPECT_EQ(bins.Mk, vec_c({1i}));
   EXPECT_EQ(bins.Qk, vec_d({0.0}));
-  EXPECT_EQ(bins.acc, vec_c({ii}));
+  EXPECT_EQ(bins.acc, vec_c({1i}));
   EXPECT_EQ(bins.acc_count, vec_i({1}));
 
-  bins << 2 * ii;
-  EXPECT_EQ(bins.Mk, vec_c({1.5 * ii, 1.5 * ii}));
+  bins << 2 * 1i;
+  EXPECT_EQ(bins.Mk, vec_c({1.5 * 1i, 1.5 * 1i}));
   EXPECT_EQ(bins.Qk, vec_d({0.5, 0.0}));
-  EXPECT_EQ(bins.acc, vec_c({0 * ii, 3 * ii}));
+  EXPECT_EQ(bins.acc, vec_c({0 * 1i, 3 * 1i}));
   EXPECT_EQ(bins.acc_count, vec_i({0, 1}));
 
-  bins << 3 * ii;
-  EXPECT_EQ(bins.Mk, vec_c({2.0 * ii, 1.5 * ii}));
+  bins << 3 * 1i;
+  EXPECT_EQ(bins.Mk, vec_c({2.0 * 1i, 1.5 * 1i}));
   EXPECT_EQ(bins.Qk, vec_d({2.0, 0.0}));
-  EXPECT_EQ(bins.acc, vec_c({3 * ii, 3 * ii}));
+  EXPECT_EQ(bins.acc, vec_c({3 * 1i, 3 * 1i}));
   EXPECT_EQ(bins.acc_count, vec_i({1, 1}));
 
-  bins << 4 * ii;
-  EXPECT_EQ(bins.Mk, vec_c({2.5 * ii, 2.5 * ii, 2.5 * ii}));
+  bins << 4 * 1i;
+  EXPECT_EQ(bins.Mk, vec_c({2.5 * 1i, 2.5 * 1i, 2.5 * 1i}));
   EXPECT_EQ(bins.Qk, vec_d({5.0, 2.0, 0.0}));
   EXPECT_EQ(bins.acc, vec_c({0.0, 0.0}));
   EXPECT_EQ(bins.acc_count, vec_i({0, 0}));
 
-  bins << 5 * ii << 6 * ii << 7 * ii << 8 * ii;
-  EXPECT_EQ(bins.Mk, vec_c({4.5 * ii, 4.5 * ii, 4.5 * ii}));
+  bins << 5 * 1i << 6 * 1i << 7 * 1i << 8 * 1i;
+  EXPECT_EQ(bins.Mk, vec_c({4.5 * 1i, 4.5 * 1i, 4.5 * 1i}));
   EXPECT_EQ(bins.Qk, vec_d({42.0, 20.0, 8.0}));
   EXPECT_EQ(bins.acc, vec_c({0.0, 0.0}));
   EXPECT_EQ(bins.acc_count, vec_i({0, 0}));
