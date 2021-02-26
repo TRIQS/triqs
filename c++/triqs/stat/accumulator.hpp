@@ -406,11 +406,18 @@ namespace triqs::stat {
       // FIXME: M_k, Q_k can be different lenghts onb different accumualtors.
       // FIXME: Compesate M_k between MPI processors
       if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
-      auto res1          = log_bins.Qk;
-      std::vector<T> res = mpi_reduce(res1, c);
+
+      std::vector<T> res = mpi_reduce(log_bins.Mk, c, 0, true);
+
+      for (int n = 0; n < res.size(); ++n) {
+        T dela_M = (res[n] / c.size() - log_bins.Mk[n]);
+        res[n]   = log_bins.Qk[n] + (log_bins.count >> n) * dela_M * dela_M;
+      }
+
+      reduce_in_place(res, c);
+
       using std::sqrt;
       for (int n = 0; n < res.size(); ++n) {
-
         long count_n = c.size() * (log_bins.count >> n); // /2^n
         if (count_n <= 1) {
           res[n] = 0;
@@ -420,6 +427,8 @@ namespace triqs::stat {
       }
       return res;
     }
+
+    auto log_bin_count() const { return log_bins.count; }
 
     /// Returns vector with data stored from linear binning
     /// @brief Returns data stored from linear binning
