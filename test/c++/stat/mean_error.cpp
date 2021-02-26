@@ -27,17 +27,16 @@ TEST(Stat, mean_and_err) {
   EXPECT_DOUBLE_EQ(err, std::sqrt(2 * (0.5 * 0.5 + 1.5 * 1.5) / 12));
 }
 
-
 TEST(Stat, mean_only_mpi) {
   mpi::communicator world;
   int rank = world.rank();
   std::vector<double> data{4. * rank + 1, 4. * rank + 2, 4. * rank + 3, 4. * rank + 4};
-  
+
   auto ave_serial = mean(data);
   EXPECT_EQ(typeid(ave_serial), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(ave_serial, 2.5 + 4 * rank);
 
-  int size = world.size();
+  int size     = world.size();
   auto ave_mpi = mean_mpi(world, data);
   EXPECT_EQ(typeid(ave_mpi), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(ave_mpi, (1.0 + 4.0 * size) / 2.0);
@@ -58,12 +57,12 @@ TEST(Stat, mean_and_err_mpi) {
   EXPECT_EQ(ave_serial, 2.5 + 4 * rank);             // =
   EXPECT_DOUBLE_EQ(err_serial, std::sqrt(5.0 / 12)); // sqrt((n + 1) / 12)
 
-  int size = world.size();
+  int size                = world.size();
   auto [ave_mpi, err_mpi] = mean_and_err_mpi(world, data);
 
   EXPECT_EQ(typeid(ave_mpi), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(typeid(err_mpi), typeid(static_cast<double>(0.0)));
-  EXPECT_EQ(ave_mpi,  (1.0 + 4.0 * size) / 2.0);
+  EXPECT_EQ(ave_mpi, (1.0 + 4.0 * size) / 2.0);
   EXPECT_DOUBLE_EQ(err_mpi, std::sqrt((4.0 * size + 1.0) / 12));
 }
 

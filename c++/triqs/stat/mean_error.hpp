@@ -92,4 +92,27 @@ namespace triqs::stat {
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
   }
+
+  namespace details {
+
+    template <typename T> auto mpi_reduce_MQ(const T &Mi, const T &Qi, const long &count_i, mpi::communicator c) {
+      using nda::conj;
+      using nda::real;
+
+      long count_total = mpi::all_reduce(count_i, c);
+      double count_frac = double(count_i) / count_total;
+
+      T M = Mi * count_frac;
+      mpi::all_reduce_in_place(M, c);
+
+      T Q = Mi - M;
+      Q   = Qi + count_i * make_real(conj(Q) * Q);
+
+      reduce_in_place(Q, c);
+
+      return std::make_tuple(M, Q, count_total);
+    }
+
+  } // namespace details
+
 } // namespace triqs::stat
