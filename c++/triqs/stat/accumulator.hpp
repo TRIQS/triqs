@@ -159,7 +159,8 @@ namespace triqs::stat {
           acc.emplace_back(data_instance_local);
           acc_count.push_back(0);
         }
-        Qk.emplace_back(make_real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
+        // Multiply to ensure element can be element-wise multiplied [FIXME with concepts]
+        Qk.emplace_back(make_real(data_instance_local * data_instance_local));
         Mk.emplace_back(std::move(data_instance_local));
       }
 
@@ -386,7 +387,7 @@ namespace triqs::stat {
       auto res1 = log_bins.Qk;
       if (res1.size() == 0) return res1;
       for (int n = 0; n < res1.size(); ++n) {
-        long count_n = (log_bins.count >> n); // /2^n
+        long count_n = (log_bins.count >> n); // == count / 2^n (rounded down)
         if (count_n <= 1) {
           res1[n] = 0;
         } else {
@@ -402,25 +403,20 @@ namespace triqs::stat {
     /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     auto log_bin_errors_mpi(mpi::communicator c) const {
-      // FIXME WITH NEW MACHINARY
-      // FIXME: MQ can be different lenghts onb different accumualtors...
-      // FIXME: Don't create new bins from data
+      // FIXME: M_k, Q_k can be different lenghts onb different accumualtors.
+      // FIXME: Compesate M_k between MPI processors
       if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
-      auto res1 = log_bins.Qk;
-      for (int n = 0; n < res1.size(); ++n) {
-        long count_n = (log_bins.count >> n); // /2^n
-        if (count_n <= 1) {
-          res1[n] = 0;
-        } else {
-          using std::sqrt;
-          res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
-        }
-      }
+      auto res1          = log_bins.Qk;
       std::vector<T> res = mpi_reduce(res1, c);
       using std::sqrt;
-      for (auto &x : res) {
-        x /= c.size();
-        x = sqrt(x);
+      for (int n = 0; n < res.size(); ++n) {
+
+        long count_n = c.size() * (log_bins.count >> n); // /2^n
+        if (count_n <= 1) {
+          res[n] = 0;
+        } else {
+          res[n] = sqrt(res[n] / (count_n * (count_n - 1)));
+        }
       }
       return res;
     }
