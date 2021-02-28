@@ -95,7 +95,7 @@ namespace triqs::stat {
 
   namespace details {
 
-    template <typename T> auto mpi_reduce_MQ(const T &Mi, const T &Qi, const long &count_i, mpi::communicator c) {
+    template <typename T> auto mpi_reduce_MQ(const T &Mi, const T &Qi, const long &count_i, mpi::communicator c, int root = 0) {
       using nda::conj;
       using nda::real;
 
@@ -108,7 +108,7 @@ namespace triqs::stat {
       T Q = Mi - M;
       Q   = Qi + count_i * make_real(conj(Q) * Q);
 
-      reduce_in_place(Q, c);
+      mpi::reduce_in_place(Q, c, root);
 
       return std::make_tuple(M, Q, count_total);
     }

@@ -23,13 +23,17 @@
 #pragma once
 
 #include "./make_real.hpp"
+#include "mean_error.hpp"
+#include <mpi/mpi.hpp>
 #include <mpi/vector.hpp>
 #include <optional>
 #include <triqs/arrays.hpp>
 #include <nda/clef/clef.hpp>
 #include <h5/h5.hpp>
+#include <tuple>
 #include <type_traits>
 #include <vector>
+#include <algorithm>
 
 namespace triqs::stat {
 
@@ -41,7 +45,7 @@ namespace triqs::stat {
       long last_bin_count = 0; // Number of data points the currently active bin [bins.back()]
       std::vector<T> bins;     // Bins with accumulated data (stores means)
 
-      //static std::string hdf5_format() { return "linear_bins"; }
+      // static std::string hdf5_format() { return "linear_bins"; }
 
       lin_binning() = default;
 
@@ -403,29 +407,65 @@ namespace triqs::stat {
     /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     auto log_bin_errors_mpi(mpi::communicator c) const {
-      // FIXME: M_k, Q_k can be different lenghts onb different accumualtors.
-      // FIXME: Compesate M_k between MPI processors
-      if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
+      std::vector<T> result_vec{};
+      std::vector<long> count_vec{};
 
-      std::vector<T> res = mpi_reduce(log_bins.Mk, c, 0, true);
+      // M_k, Q_k can be different lenghts on different mpi threads.
+      long n_log_bins_i                   = n_log_bins();
+      std::vector<long> n_log_bins_vec    = mpi::all_gather(std::vector<long>{n_log_bins_i}, c);
+      auto [min_n_bins_it, max_n_bins_it] = std::minmax_element(n_log_bins_vec.cbegin(), n_log_bins_vec.cend());
+      long max_n_bins                     = *max_n_bins_it;
+      long min_n_bins                     = *min_n_bins_it;
 
-      for (int n = 0; n < res.size(); ++n) {
-        T dela_M = (res[n] / c.size() - log_bins.Mk[n]);
-        res[n]   = log_bins.Qk[n] + (log_bins.count >> n) * dela_M * dela_M;
+      int max_n_bins_rank = std::distance(n_log_bins_vec.cbegin(), max_n_bins_it);
+
+      // Prefer rank=0 as root if multiple ranks have same max_n_bins
+      if(n_log_bins_vec[0] == max_n_bins){
+        max_n_bins_rank = 0;
       }
 
-      reduce_in_place(res, c);
+      if (c.rank() == max_n_bins_rank) {
+        result_vec.reserve(max_n_bins);
+        count_vec.reserve(max_n_bins);
+      }
 
-      using std::sqrt;
-      for (int n = 0; n < res.size(); ++n) {
-        long count_n = c.size() * (log_bins.count >> n); // /2^n
-        if (count_n <= 1) {
-          res[n] = 0;
-        } else {
-          res[n] = sqrt(res[n] / (count_n * (count_n - 1)));
+      for (int n = 0; n < min_n_bins; n++) {
+        auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c, 0);
+        if (c.rank() == max_n_bins_rank) {
+          result_vec.emplace_back(std::move(Qn));
+          count_vec.emplace_back(std::move(count_n));
         }
       }
-      return res;
+
+      for (int n = min_n_bins; n < max_n_bins; n++) {
+        int split_color           = (n < n_log_bins_i) ? 0 : MPI_UNDEFINED;
+        int split_rank = (c.rank() == max_n_bins_rank) ? 0 : max_n_bins_rank + c.rank();
+        mpi::communicator c_split = c.split(split_color, split_rank);
+
+        if (split_color == 0){
+          auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c_split, 0);
+          if (c.rank() == max_n_bins_rank) {
+            result_vec.emplace_back(std::move(Qn));
+            count_vec.emplace_back(std::move(count_n));
+          }
+        }
+      }
+      
+      // Simplify this: point-to-point from max_n_bins_rank -> 0
+      mpi::broadcast(result_vec, c, max_n_bins_rank);
+      mpi::broadcast(count_vec, c, max_n_bins_rank);
+
+      if (c.rank() == 0) {
+        for (int n = 0; n < max_n_bins; n++) {
+          if (count_vec[n] <= 1) {
+            result_vec[n] = 0;
+          } else {
+            using std::sqrt;
+            result_vec[n] = sqrt(result_vec[n] / (count_vec[n] * (count_vec[n] - 1)));
+          }
+        }
+      }
+      return std::make_pair(result_vec, count_vec);
     }
 
     auto log_bin_count() const { return log_bins.count; }

@@ -1,4 +1,5 @@
 #include <itertools/itertools.hpp>
+#include <numeric>
 #include <triqs/arrays.hpp>
 #include <triqs/stat/accumulator.hpp>
 #include <triqs/stat/jackknife.hpp>
@@ -7,6 +8,8 @@
 
 #include <cmath>
 #include <random>
+
+// #include <format>
 
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/stat/accumulator.hpp>
@@ -23,36 +26,59 @@ using vec_i = std::vector<int>;
 
 mpi::communicator c;
 
-TEST(Stat, Accumulator_LogBinErrors_MPI) {
-  int n_log_bins_max = -1, lin_bin_capacity = 0, n_lin_bins_max = 0;
-  accumulator<double> my_acc{0.0, n_log_bins_max, n_lin_bins_max, lin_bin_capacity};
+TEST(Stat, LogBinErrorsMPI_EqualSize) {
 
-  int N = (1024) / c.size();
+  accumulator<double> acc_i{0.0, -1};
+  accumulator<double> acc_all{0.0, -1};
+
+  int N = 1024;
 
   std::mt19937 gen(123);
   std::normal_distribution<double> distr{1.0, 2.0};
 
-  // TODO: Error in Discard... Does not correctly align
-  for (long i = 0; i < c.rank() * N; ++i) { distr(gen); }
-  // gen.discard(c.rank() * N );
-
   for (long i = 0; i < N; ++i) {
     auto x = distr(gen);
-    my_acc << x;
+    acc_all << double(x);
+    if (c.size() * i / N == c.rank()) { acc_i << x; }
   }
 
-  auto log_errors = my_acc.log_bin_errors_mpi(c);
+  auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
 
   if (c.rank() == 0) {
-
-    std::vector<double> results_np1 = {
-       0.06756823571, 0.06738503966, 0.0657708692, 0.06329394592, 0.06851719085, 0.0616704721, 0.05894556666,
-    };
-
-    for (int n = 0; n < results_np1.size(); n++) { EXPECT_NEAR(log_errors[n], results_np1[n], 1e-8); }
+    auto errs_all = acc_all.log_bin_errors();
+    for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], std::numeric_limits<double>::epsilon() * 10); }
   }
 }
 
-// *****************************************************************************
+TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
+
+  accumulator<double> acc_i{0.0, -1};
+  accumulator<double> acc_all{0.0, -1};
+
+  int N1 = 32;
+  int N2 = 1024;
+
+  std::mt19937 gen(123);
+  std::normal_distribution<double> distr{1.0, 2.0};
+
+  for (long i = 0; i < N2; ++i) {
+    auto x = distr(gen);
+    acc_all << double(x);
+    if (c.rank() == 0) { acc_i << x; }
+  }
+
+  for (long i = 0; i < N1; ++i) {
+    auto x = distr(gen);
+    acc_all << double(x);
+    if (c.rank() == 1) { acc_i << x; }
+  }
+
+  auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
+
+  if (c.rank() == 0) {
+    auto errs_all = acc_all.log_bin_errors();
+    for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], errs[i] * std::numeric_limits<double>::epsilon() * 20); }
+  }
+}
 
 MAKE_MAIN;
