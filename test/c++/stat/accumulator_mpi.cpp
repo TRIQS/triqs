@@ -27,6 +27,7 @@ using vec_i = std::vector<int>;
 mpi::communicator c;
 
 TEST(Stat, LogBinErrorsMPI_EqualSize) {
+  // c.size() should be power of 2
 
   accumulator<double> acc_i{0.0, -1};
   accumulator<double> acc_all{0.0, -1};
@@ -67,10 +68,12 @@ TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
     if (c.rank() == 0) { acc_i << x; }
   }
 
-  for (long i = 0; i < N1; ++i) {
-    auto x = distr(gen);
-    acc_all << double(x);
-    if (c.rank() == 1) { acc_i << x; }
+  if (c.size() > 1) {
+    for (long i = 0; i < N1; ++i) {
+      auto x = distr(gen);
+      acc_all << double(x);
+      if (c.rank() == 1) { acc_i << x; }
+    }
   }
 
   auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
