@@ -46,7 +46,7 @@ TEST(Stat, LogBinErrorsMPI_EqualSize) {
 
   if (c.rank() == 0) {
     auto errs_all = acc_all.log_bin_errors();
-    for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], std::numeric_limits<double>::epsilon() * 10); }
+    for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], std::numeric_limits<double>::epsilon() * 120); }
   }
 }
 
