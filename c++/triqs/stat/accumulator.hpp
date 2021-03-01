@@ -420,16 +420,11 @@ namespace triqs::stat {
       // M_k, Q_k can be different lenghts on different mpi threads.
       long n_log_bins_i                   = n_log_bins();
       std::vector<long> n_log_bins_vec    = mpi::all_gather(std::vector<long>{n_log_bins_i}, c);
-      auto [min_n_bins_it, max_n_bins_it] = std::minmax_element(n_log_bins_vec.cbegin(), n_log_bins_vec.cend());
+      auto [min_n_bins_it, max_n_bins_it] = std::minmax_element(n_log_bins_vec.crbegin(), n_log_bins_vec.crend());
       long max_n_bins                     = *max_n_bins_it;
       long min_n_bins                     = *min_n_bins_it;
 
       int max_n_bins_rank = std::distance(n_log_bins_vec.cbegin(), max_n_bins_it);
-
-      // Prefer rank=0 as root if multiple ranks have same max_n_bins
-      if(n_log_bins_vec[0] == max_n_bins){
-        max_n_bins_rank = 0;
-      }
 
       if (c.rank() == max_n_bins_rank) {
         result_vec.reserve(max_n_bins);
