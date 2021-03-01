@@ -411,7 +411,9 @@ namespace triqs::stat {
     /// @param c TRIQS MPI communicator
     /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
-    auto log_bin_errors_mpi(mpi::communicator c) const {
+    ///
+    /// FIXME: Reduce only to a single mpi rank rather than broadcast to all
+    auto log_bin_errors_all_reduce(mpi::communicator c) const {
       std::vector<T> result_vec{};
       std::vector<long> count_vec{};
 
@@ -435,7 +437,7 @@ namespace triqs::stat {
       }
 
       for (int n = 0; n < min_n_bins; n++) {
-        auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c, 0);
+        auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c, max_n_bins_rank);
         if (c.rank() == max_n_bins_rank) {
           result_vec.emplace_back(std::move(Qn));
           count_vec.emplace_back(std::move(count_n));
@@ -444,8 +446,8 @@ namespace triqs::stat {
 
       for (int n = min_n_bins; n < max_n_bins; n++) {
         int split_color           = (n < n_log_bins_i) ? 0 : MPI_UNDEFINED;
-        int split_rank = (c.rank() == max_n_bins_rank) ? 0 : max_n_bins_rank + c.rank();
-        mpi::communicator c_split = c.split(split_color, split_rank);
+        int split_key = (c.rank() == max_n_bins_rank) ? 0 : 1 + c.rank();
+        mpi::communicator c_split = c.split(split_color, split_key);
 
         if (split_color == 0){
           auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c_split, 0);
@@ -456,11 +458,7 @@ namespace triqs::stat {
         }
       }
       
-      // Simplify this: point-to-point from max_n_bins_rank -> 0
-      mpi::broadcast(result_vec, c, max_n_bins_rank);
-      mpi::broadcast(count_vec, c, max_n_bins_rank);
-
-      if (c.rank() == 0) {
+      if (c.rank() == max_n_bins_rank) {
         for (int n = 0; n < max_n_bins; n++) {
           if (count_vec[n] <= 1) {
             result_vec[n] = 0;
@@ -470,6 +468,11 @@ namespace triqs::stat {
           }
         }
       }
+
+      // FIXME: Option not to bcast to all
+      mpi::broadcast(result_vec, c, max_n_bins_rank);
+      mpi::broadcast(count_vec, c, max_n_bins_rank);
+
       return std::make_pair(result_vec, count_vec);
     }
 

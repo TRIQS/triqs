@@ -345,7 +345,7 @@ TEST(Stat, Accumulator_LinBinOnly) {
   EXPECT_EQ(errors_i, std::vector<double>());
   EXPECT_EQ(count_i, std::vector<long>());
 
-  auto [errors_all, count_all] = my_acc.log_bin_errors_mpi(c);
+  auto [errors_all, count_all] = my_acc.log_bin_errors_all_reduce(c);
   EXPECT_EQ(errors_all, std::vector<double>());
   EXPECT_EQ(count_all, std::vector<long>());
 
@@ -389,7 +389,7 @@ TEST(Stat, Accumulator_Off) {
   EXPECT_EQ(errors_i, std::vector<double>());
   EXPECT_EQ(count_i, std::vector<long>());
 
-  auto [errors_all, count_all] = my_acc.log_bin_errors_mpi(c);
+  auto [errors_all, count_all] = my_acc.log_bin_errors_all_reduce(c);
   EXPECT_EQ(errors_all, std::vector<double>());
   EXPECT_EQ(count_all, std::vector<long>());
 }

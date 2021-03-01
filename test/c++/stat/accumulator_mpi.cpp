@@ -43,7 +43,7 @@ TEST(Stat, LogBinErrorsMPI_EqualSize) {
     if (c.size() * i / N == c.rank()) { acc_i << x; }
   }
 
-  auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
+  auto [errs, counts] = acc_i.log_bin_errors_all_reduce(c);
 
   if (c.rank() == 0) {
     auto [errs_all, counts_all] = acc_all.log_bin_errors();
@@ -76,7 +76,7 @@ TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
     }
   }
 
-  auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
+  auto [errs, counts] = acc_i.log_bin_errors_all_reduce(c);
 
   if (c.rank() == 0) {
     auto [errs_all, counts_all] = acc_all.log_bin_errors();
