@@ -340,8 +340,15 @@ TEST(Stat, Accumulator_LinBinOnly) {
 
   EXPECT_EQ(my_acc.n_log_bins(), 0);
   EXPECT_EQ(my_acc.n_log_bins_max(), 0);
-  EXPECT_EQ(my_acc.log_bin_errors(), std::vector<double>());
-  EXPECT_EQ(my_acc.log_bin_errors_mpi(c), std::vector<double>());
+
+  auto [errors_i, count_i] = my_acc.log_bin_errors();
+  EXPECT_EQ(errors_i, std::vector<double>());
+  EXPECT_EQ(count_i, std::vector<long>());
+
+  auto [errors_all, count_all] = my_acc.log_bin_errors_mpi(c);
+  EXPECT_EQ(errors_all, std::vector<double>());
+  EXPECT_EQ(count_all, std::vector<long>());
+
 }
 
 TEST(Stat, Accumulator_LogBinOnly) {
@@ -377,8 +384,14 @@ TEST(Stat, Accumulator_Off) {
 
   EXPECT_EQ(my_acc.n_log_bins(), 0);
   EXPECT_EQ(my_acc.n_log_bins_max(), 0);
-  EXPECT_EQ(my_acc.log_bin_errors(), std::vector<double>());
-  EXPECT_EQ(my_acc.log_bin_errors_mpi(c), std::vector<double>());
+
+  auto [errors_i, count_i] = my_acc.log_bin_errors();
+  EXPECT_EQ(errors_i, std::vector<double>());
+  EXPECT_EQ(count_i, std::vector<long>());
+
+  auto [errors_all, count_all] = my_acc.log_bin_errors_mpi(c);
+  EXPECT_EQ(errors_all, std::vector<double>());
+  EXPECT_EQ(count_all, std::vector<long>());
 }
 
 // *****************************************************************************
@@ -394,7 +407,9 @@ TEST(Stat, Accumulator_LogBinErrors) {
   EXPECT_EQ(my_acc.n_log_bins_max(), 3);
 
   vec_d ans({std::sqrt(3.0 / 4.0), std::sqrt(5.0 / 3.0), 2.0});
-  EXPECT_EQ(my_acc.log_bin_errors(), ans);
+  auto [errors, counts] = my_acc.log_bin_errors();
+  EXPECT_EQ(errors, ans);
+  EXPECT_EQ(counts, std::vector<long>({8, 4, 2}));
 }
 
 TEST(Stat, Accumulator_Chaining) {

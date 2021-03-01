@@ -67,9 +67,9 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     }
   }
 
-  auto variances = AA.log_bin_errors();
+  auto [errors, counts] = AA.log_bin_errors();
 
-  for (auto [n, b] : itertools::enumerate(variances)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
+  for (auto [n, b] : itertools::enumerate(errors)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
 }
 
 // ------------------------
@@ -96,10 +96,10 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
 
   // estimates of tau in an array
   triqs::arrays::array<double, 1> R(n_log_bins);
-  auto variances = AA.log_bin_errors();
+  auto [errors, counts] = AA.log_bin_errors();
 
   for (auto n : range(n_log_bins)) {
-    R(n) = tau_estimate_from_errors(variances[n], variances[0]);
+    R(n) = tau_estimate_from_errors(errors[n], errors[0]);
     // std::cout << std::setprecision(16) << R(n) << ",\n";
   }
   return R;
@@ -185,14 +185,20 @@ TEST(Stat, LogBinArray) {
     bb << atemp;
   }
 
-  for (auto [x1, x2, a] : itertools::zip(b1.log_bin_errors(), b2.log_bin_errors(), b.log_bin_errors())) {
+  auto [errors_b1, counts_b1] = b1.log_bin_errors();
+  auto [errors_b2, counts_b2] = b2.log_bin_errors();
+  auto [errors_b , counts_b] = b.log_bin_errors();
+
+  for (auto [x1, x2, a] : itertools::zip(errors_b1, errors_b2, errors_b)) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  for (auto [x, y] : itertools::zip(bb.log_bin_errors(), b.log_bin_errors())) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
+  auto [errors_bb , counts_bb] = b.log_bin_errors();
+
+  for (auto [x, y] : itertools::zip(errors_bb, errors_b)) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
 
   auto f = h5::file("auto_corr_array.h5", 'w');
   h5_write(f, "scalar", b1);

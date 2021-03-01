@@ -68,8 +68,12 @@ TEST(Stat, Accumulator_GoldenRatioTest) {
     }
 
     // Test log binning
-    EXPECT_NEAR(my_acc_f.log_bin_errors()[0] - gen.err_exact_f[idx], 0.0, gen.tol_err_in_ave_welford[idx]);
-    EXPECT_EQ(float(my_acc_d.log_bin_errors()[0]), gen.err_exact_f[idx]);
+
+    auto [errs_f, counts_f] = my_acc_f.log_bin_errors();
+    auto [errs_d, counts_d] = my_acc_d.log_bin_errors();
+
+    EXPECT_NEAR(errs_f[0] - gen.err_exact_f[idx], 0.0, gen.tol_err_in_ave_welford[idx]);
+    EXPECT_EQ(float(errs_d[0]), gen.err_exact_f[idx]);
 
     // Test mean_and_err
     auto [ave_f, err_f] = mean_and_err(my_acc_f.linear_bins());

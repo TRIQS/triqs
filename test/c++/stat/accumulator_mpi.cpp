@@ -45,7 +45,7 @@ TEST(Stat, LogBinErrorsMPI_EqualSize) {
   auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
 
   if (c.rank() == 0) {
-    auto errs_all = acc_all.log_bin_errors();
+    auto [errs_all, counts_all] = acc_all.log_bin_errors();
     for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], std::numeric_limits<double>::epsilon() * 120); }
   }
 }
@@ -76,7 +76,7 @@ TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
   auto [errs, counts] = acc_i.log_bin_errors_mpi(c);
 
   if (c.rank() == 0) {
-    auto errs_all = acc_all.log_bin_errors();
+    auto [errs_all, counts_all] = acc_all.log_bin_errors();
     for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], errs[i] * std::numeric_limits<double>::epsilon() * 20); }
   }
 }

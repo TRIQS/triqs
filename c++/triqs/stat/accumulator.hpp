@@ -389,7 +389,11 @@ namespace triqs::stat {
     /// @brief Get standard errors of log binned data
     auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
-      if (res1.size() == 0) return res1;
+      std::vector<long> count_vec{};
+
+      if (res1.size() == 0) return std::make_pair(res1, count_vec);
+      count_vec.reserve(res1.size());
+
       for (int n = 0; n < res1.size(); ++n) {
         long count_n = (log_bins.count >> n); // == count / 2^n (rounded down)
         if (count_n <= 1) {
@@ -398,8 +402,9 @@ namespace triqs::stat {
           using std::sqrt;
           res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
         }
+        count_vec.emplace_back(count_n);
       }
-      return res1;
+      return std::make_pair(res1, count_vec);
     }
 
     /// Returns the standard errors for data with different power-of-two capacity, reduced from data over all MPI threads. The final answer is reduced only to the zero MPI thread (not all reduce).
