@@ -56,18 +56,20 @@ TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
   accumulator<double> acc_i{0.0, -1};
   accumulator<double> acc_all{0.0, -1};
 
-  int N1 = 32;
-  int N2 = 1024;
+
+  int N1 = 1024;
+  int N2 = 16;
+  int N0 = 8;
+
+  int log_errs_expected = 11; // = log2(N1) + 1
+  if(c.size() == 1){
+    log_errs_expected = 4; // = log2(N0) + 1
+  }
 
   std::mt19937 gen(123);
   std::normal_distribution<double> distr{1.0, 2.0};
 
-  for (long i = 0; i < N2; ++i) {
-    auto x = distr(gen);
-    acc_all << double(x);
-    if (c.rank() == 0) { acc_i << x; }
-  }
-
+  
   if (c.size() > 1) {
     for (long i = 0; i < N1; ++i) {
       auto x = distr(gen);
@@ -76,12 +78,30 @@ TEST(Stat, LogBinErrorsMPI_UnEqualSize) {
     }
   }
 
-  auto [errs, counts] = acc_i.log_bin_errors_all_reduce(c);
-
-  if (c.rank() == 0) {
-    auto [errs_all, counts_all] = acc_all.log_bin_errors();
-    for (int i = 0; i < errs.size(); i++) { EXPECT_NEAR(errs[i], errs_all[i], errs[i] * std::numeric_limits<double>::epsilon() * 20); }
+  if (c.size() > 2) {
+    for (long i = 0; i < N2; ++i) {
+      auto x = distr(gen);
+      acc_all << double(x);
+      if (c.rank() == 2) { acc_i << x; }
+    }
   }
-}
+
+for (long i = 0; i < N0; ++i) {
+    auto x = distr(gen);
+    acc_all << double(x);
+    if (c.rank() == 0) { acc_i << x; }
+  }
+
+
+  auto [errs, counts] = acc_i.log_bin_errors_all_reduce(c);
+  auto [errs_all, counts_all] = acc_all.log_bin_errors();
+  
+  EXPECT_EQ(errs.size(), log_errs_expected);
+
+  for (int i = 0; i < errs.size(); i++) { 
+    EXPECT_NEAR(errs[i], errs_all[i], errs[i] * std::numeric_limits<double>::epsilon() * 10); 
+    }
+  }
+
 
 MAKE_MAIN;

@@ -424,7 +424,7 @@ namespace triqs::stat {
       long max_n_bins                     = *max_n_bins_it;
       long min_n_bins                     = *min_n_bins_it;
 
-      int max_n_bins_rank = std::distance(n_log_bins_vec.cbegin(), max_n_bins_it);
+      int max_n_bins_rank = c.size() - 1 - std::distance(n_log_bins_vec.crbegin(), max_n_bins_it);
 
       if (c.rank() == max_n_bins_rank) {
         result_vec.reserve(max_n_bins);
