@@ -95,7 +95,7 @@ namespace triqs::stat {
 
   namespace details {
 
-    template <typename T> auto mpi_reduce_MQ(const T &Mi, const T &Qi, const long &count_i, mpi::communicator c, int root = 0) {
+    template <typename T> auto mpi_reduce_MQ(const T &Mi, const get_real_t<T> &Qi, const long &count_i, mpi::communicator c, int root = 0) {
       using nda::conj;
       using nda::real;
 
