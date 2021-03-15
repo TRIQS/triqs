@@ -288,7 +288,7 @@ namespace triqs::gfs {
      *  
      *  NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
      */
-    template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Mesh, Target>> l) : gf() { operator=(l); }
+    template <typename Tag> gf(mpi::lazy<Tag, gf_const_view<Mesh, Target>> l) : gf() { operator=(l); }
 
     /// ---------------  swap --------------------
 
@@ -364,7 +364,7 @@ namespace triqs::gfs {
      * Performs MPI reduce
      * @param l The lazy object returned by mpi::reduce
      */
-    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh    = l.rhs.mesh();
       _data    = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
       _indices = l.rhs.indices();
@@ -374,7 +374,7 @@ namespace triqs::gfs {
      * Performs MPI scatter
      * @param l The lazy object returned by mpi::scatter
      */
-    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
       _mesh    = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data    = mpi::scatter(l.rhs.data(), l.c, l.root, true);
       _indices = mpi::scatter(l.rhs.indices(), l.c, l.root);
@@ -384,7 +384,7 @@ namespace triqs::gfs {
      * Performs MPI gather
      * @param l The lazy object returned by mpi::gather
      */
-    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
       _mesh    = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data    = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
       _indices = mpi::gather(l.rhs.indices(), l.c, l.root);

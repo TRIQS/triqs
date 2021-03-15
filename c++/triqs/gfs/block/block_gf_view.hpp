@@ -135,10 +135,10 @@ namespace triqs::gfs {
     }
 
     /**
-    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
     * @param l The lazy object returned by reduce
     */
-    block_gf_view &operator=(mpi_lazy<mpi::tag::reduce, const_view_type> l) REQUIRES(not IsConst) {
+    block_gf_view &operator=(mpi::lazy<mpi::tag::reduce, const_view_type> l) REQUIRES(not IsConst) {
       if (l.rhs.size() != this->size())
         TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
       _block_names = l.rhs.block_names();

@@ -67,23 +67,4 @@ namespace triqs::gfs {
 
   template <typename Mesh, typename Target> struct gf_h5_rw;
 
-  /*------------------------------------------------------------------------------------------------------
-   *                                  For mpi lazy
-   *-----------------------------------------------------------------------------------------------------*/
-
-  // A small lazy tagged class
-  template <typename Tag, typename T> struct mpi_lazy {
-    T rhs;
-    mpi::communicator c;
-    int root;
-    bool all;
-  };
-
-  template <typename T> struct mpi_lazy<mpi::tag::reduce, T> {
-    T rhs;
-    mpi::communicator c;
-    int root;
-    bool all;
-    MPI_Op op;
-  };
 } // namespace triqs::gfs
