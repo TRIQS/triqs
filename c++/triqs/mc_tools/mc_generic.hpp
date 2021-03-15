@@ -230,7 +230,7 @@ namespace triqs::mc_tools {
       double next_info_time = 0.1;
 
       std::unique_ptr<mpi::monitor> node_monitor;
-      if (rethrow_exception) node_monitor = std::make_unique<mpi::monitor>(c);
+      if (rethrow_exception and mpi::has_env) node_monitor = std::make_unique<mpi::monitor>(c);
 
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
         try {
