@@ -178,7 +178,7 @@ namespace triqs::gfs {
 
     /// Construct from the mpi lazy class of the implementation class, cf mpi section
     // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
-    template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
+    template <typename Tag> block_gf(mpi::lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
 
     /// Construct from a vector of gf
     block_gf(data_t V) REQUIRES(Arity == 1) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
@@ -237,11 +237,11 @@ namespace triqs::gfs {
     block_gf &operator=(block_gf &&rhs) = default;
 
     /**
-     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+     * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
      *
      * @param l The lazy object returned by reduce
      */
-    block_gf &operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
+    block_gf &operator=(mpi::lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
       
       _block_names = l.rhs.block_names();
       _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);

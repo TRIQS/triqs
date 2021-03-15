@@ -250,17 +250,17 @@ friend void mpi_broadcast(this_t &g, mpi::communicator c = {}, int root = 0) {
 }
 
 // mako ${mpidoc("Reduce")}
-friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false,
+friend mpi::lazy<mpi::tag::reduce, const_view_type> mpi_reduce(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                               MPI_Op op = MPI_SUM) {
   return {a(), c, root, all, op};
 }
 
 // mako ${mpidoc("Scatter")}
-friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(this_t const &a, mpi::communicator c = {}, int root = 0) {
+friend mpi::lazy<mpi::tag::scatter, const_view_type> mpi_scatter(this_t const &a, mpi::communicator c = {}, int root = 0) {
   return {a(), c, root, true};
 }
 
 // mako ${mpidoc("Gather")}
-friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+friend mpi::lazy<mpi::tag::gather, const_view_type> mpi_gather(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
   return {a(), c, root, all};
 }

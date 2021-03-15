@@ -275,7 +275,7 @@ namespace triqs::gfs {
     * Performs MPI reduce
     * @param l The lazy object returned by mpi::reduce
     */
-    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
     }
@@ -284,7 +284,7 @@ namespace triqs::gfs {
      * Performs MPI scatter
      * @param l The lazy object returned by reduce
      */
-    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
     }
@@ -293,7 +293,7 @@ namespace triqs::gfs {
      * Performs MPI gather
      * @param l The lazy object returned by mpi::reduce
      */
-    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
+    void operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
     }
