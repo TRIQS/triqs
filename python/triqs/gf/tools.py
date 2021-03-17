@@ -265,8 +265,7 @@ def fit_legendre(g_t, order=10):
 
     return g_l
 
-
-def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8):
+def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter = 10000):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -293,6 +292,8 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8):
         initial guess used for all hopping values [default=0.0]
     tol: float, optional
         tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
+    maxiter: float, optional
+        maximal number of optimization steps [default=10000]
     Returns
     -------
     t_opt : list of optimized bath hopping parameters
@@ -340,10 +341,10 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8):
 
     # run the minimizer if method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
-    result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol})
+    result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
 
     if not result.success:
-        raise RuntimeError('optimization has failed: scipy minimize signaled no success.')
+        raise RuntimeError('optimization has failed, scipy minimize signaled no success: {}'.format(result.message))
 
     # results, taking absolute values of hoppings
     e_opt = result.x[Nb:]
@@ -355,3 +356,4 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8):
     t_opt = t_opt[order]
 
     return t_opt, e_opt, delta_disc_iw
+
