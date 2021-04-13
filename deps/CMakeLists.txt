@@ -35,7 +35,7 @@ include(external_dependency.cmake)
 #                     In particular the dependency will not be installed.
 
 if(NOT DEFINED Build_Deps)
-  set(Build_Deps "IfNotFound" CACHE STRING "Do we build dependencies from source? [Never/Always/IfNotFound]")
+  set(Build_Deps "Always" CACHE STRING "Do we build dependencies from source? [Never/Always/IfNotFound]")
 else()
   set(Build_Deps_Opts "Never" "Always" "IfNotFound")
   if(NOT ${Build_Deps} IN_LIST Build_Deps_Opts)
