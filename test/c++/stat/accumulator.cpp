@@ -43,7 +43,7 @@ TEST(Stat, Details_LinBins_InitTest_Scalars) {
     EXPECT_EQ(bins_f.max_n_bins, nrBins);
     EXPECT_EQ(bins_f.last_bin_count, 0);
     EXPECT_EQ(bins_f.bin_capacity, 1);
-    EXPECT_EQ(bins_f.n_bins(), 1);
+    EXPECT_EQ(bins_f.n_bins(), 0);
     EXPECT_EQ(bins_f.bins.at(0), 0.0);
 
     lin_binning<double> bins_d{1.0, nrBins, 2};
@@ -51,7 +51,7 @@ TEST(Stat, Details_LinBins_InitTest_Scalars) {
     EXPECT_EQ(bins_d.max_n_bins, nrBins);
     EXPECT_EQ(bins_d.last_bin_count, 0);
     EXPECT_EQ(bins_d.bin_capacity, 2);
-    EXPECT_EQ(bins_d.n_bins(), 1);
+    EXPECT_EQ(bins_d.n_bins(), 0);
     EXPECT_EQ(bins_d.bins.at(0), 0.0);
 
     lin_binning<std::complex<double>> bins_cd{1.0, nrBins, 4};
@@ -59,7 +59,7 @@ TEST(Stat, Details_LinBins_InitTest_Scalars) {
     EXPECT_EQ(bins_cd.max_n_bins, nrBins);
     EXPECT_EQ(bins_cd.last_bin_count, 0);
     EXPECT_EQ(bins_cd.bin_capacity, 4);
-    EXPECT_EQ(bins_cd.n_bins(), 1);
+    EXPECT_EQ(bins_cd.n_bins(), 0);
     EXPECT_EQ(bins_cd.bins.at(0), 0.0);
   }
 }
@@ -80,7 +80,7 @@ TEST(Stat, Details_LinBins_InitTestArrayComplex) {
   lin_binning<cdouble_array_2d> bins{a, -1, 1};
   static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.bins.at(0))>, cdouble_array_2d>, "EE");
 
-  EXPECT_EQ(bins.n_bins(), 1);
+  EXPECT_EQ(bins.n_bins(), 0);
   EXPECT_ARRAY_EQ(bins.bins.at(0), a);
 }
 
