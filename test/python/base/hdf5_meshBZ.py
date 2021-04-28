@@ -23,7 +23,7 @@ from h5 import HDFArchive
 from triqs.lattice import BrillouinZone, BravaisLattice
 
 bz = BrillouinZone(BravaisLattice([[1,0],[0,1]]))
-bzmesh = MeshBrillouinZone(bz, n_k=4)
+bzmesh = MeshBrZone(bz, n_k=4)
 
 beta = 1.2345
 fmesh = MeshImFreq(beta=beta, S='Fermion', n_max=8)

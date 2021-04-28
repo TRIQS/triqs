@@ -55,15 +55,15 @@ namespace triqs::mesh {
   template <typename Target> struct closest_point<refreq, Target> : closest_point_linear_mesh {};
 
   //-------------------------------------------------------
-  // b_zone
+  // brzone
   // ------------------------------------------------------
 
-  template <typename Target> struct closest_point<b_zone, Target> {
+  template <typename Target> struct closest_point<brzone, Target> {
 
-    template <typename T> static b_zone::index_t invoke(b_zone const &m, closest_pt_wrap<T> const &p) {
+    template <typename T> static brzone::index_t invoke(brzone const &m, closest_pt_wrap<T> const &p) {
 
       //// WRONG To be reimplemented
-      //b_zone::index_t result; // array<Int, 3>
+      //brzone::index_t result; // array<Int, 3>
       //// FIXME : works only on square lattice
       //auto id = m.get_interpolation_data(p.value);
       //for (int u = 0; u < 3; ++u) {

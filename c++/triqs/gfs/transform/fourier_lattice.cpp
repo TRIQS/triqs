@@ -57,7 +57,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<mesh::torus> _fourier_impl(mesh::torus const &r_mesh, gf_vec_cvt<mesh::b_zone> gk) {
+  gf_vec_t<mesh::torus> _fourier_impl(mesh::torus const &r_mesh, gf_vec_cvt<mesh::brzone> gk) {
     auto gr = __impl(FFTW_FORWARD, r_mesh, gk);
     gr.data() /= gk.mesh().size();
     return std::move(gr);
@@ -65,8 +65,6 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<mesh::b_zone> _fourier_impl(mesh::b_zone const &k_mesh, gf_vec_cvt<mesh::torus> gr) {
-    return __impl(FFTW_BACKWARD, k_mesh, gr);
-  }
+  gf_vec_t<mesh::brzone> _fourier_impl(mesh::brzone const &k_mesh, gf_vec_cvt<mesh::torus> gr) { return __impl(FFTW_BACKWARD, k_mesh, gr); }
 
 } // namespace triqs::gfs

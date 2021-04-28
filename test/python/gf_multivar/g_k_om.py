@@ -29,7 +29,7 @@ from numpy import cos
 
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ]) #square lattice
 nk=20
-mesh_k = MeshBrillouinZone(BrillouinZone(BL), nk)
+mesh_k = MeshBrZone(BrillouinZone(BL), nk)
 mesh_iw = MeshImFreq(beta=1., S="Fermion", n_max=100) #not used  (just demo)
 mesh_k_iw = MeshProduct(mesh_k, mesh_iw) # not used (just demo)
 

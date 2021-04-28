@@ -141,7 +141,7 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
   int N_iw    = 100;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = mesh::b_zone(BL, N_k);
+  auto k_mesh    = mesh::brzone(BL, N_k);
   auto iW_mesh   = mesh::imfreq{beta, Boson, N_iW};
   auto iw_mesh   = mesh::imfreq{beta, Fermion, N_iw};
   auto prod_mesh = k_mesh * iW_mesh * iw_mesh;

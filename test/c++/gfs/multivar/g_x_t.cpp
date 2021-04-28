@@ -34,7 +34,7 @@ using index_t = std::array<long, 3>;
 
 TEST(Gf, x_t) {
 
-  auto gkt = gf<prod<b_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
+  auto gkt = gf<prod<brzone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder<1> t_;
@@ -57,7 +57,7 @@ TEST(Gf, x_t) {
 
 TEST(Gf, x_tau) {
 
-  auto gkt = gf<prod<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkt = gf<prod<brzone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder_prime<1> tau_;

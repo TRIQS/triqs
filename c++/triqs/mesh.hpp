@@ -37,7 +37,7 @@
 #include "./mesh/retime.hpp"
 #include "./mesh/refreq.hpp"
 #include "./mesh/legendre.hpp"
-#include "./mesh/b_zone.hpp"
+#include "./mesh/brzone.hpp"
 #include "./mesh/torus.hpp"
 #include "./mesh/prod.hpp"
 

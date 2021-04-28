@@ -44,7 +44,7 @@ namespace triqs::mesh {
     // Backward compat helper.
     static_assert(not(std::is_reference_v<Ms> or ...), "Cannot create mesh product of references");
     static_assert(not(std::is_same_v<Ms, triqs::lattice::brillouin_zone> or ...),
-                  "Since TRIQS 2.3, brillouin_zone is replaced by mesh::b_zone as a mesh name. Cf Doc, changelog");
+                  "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
     public:
     using domain_t  = domain_product<typename Ms::domain_t...>;

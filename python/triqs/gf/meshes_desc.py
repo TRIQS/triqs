@@ -181,10 +181,10 @@ m.add_property(name = "delta",
 module.add_class(m)
 
 ########################
-##   MeshBrillouinZone
+##   MeshBrZone
 ########################
 
-m = make_mesh( py_type = "MeshBrillouinZone", c_tag = "b_zone", index_type = 'std::array<long,3>' )
+m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::array<long,3>' )
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
 m.add_method(name="locate_neighbours", signature="std::array<long,3> locate_neighbours(triqs::arrays::vector<double> x)")
@@ -201,10 +201,10 @@ m.add_property(name = "domain",
 module.add_class(m)
 
 ########################
-##   MeshCyclicLattice
+##   MeshCycLat
 ########################
 
-m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclat", index_type = 'std::array<long,3>' )
+m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat", index_type = 'std::array<long,3>' )
 m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
@@ -226,8 +226,8 @@ module.add_class(m)
 ############################
 
 # ---------------------- make_adjoint_mesh --------------------
-module.add_function("b_zone triqs::gfs::make_adjoint_mesh(cyclat m)", doc = "Create the adjoint k-mesh")
-module.add_function("cyclat triqs::gfs::make_adjoint_mesh(b_zone m)", doc = "Create the adjoint r-mesh")
+module.add_function("brzone triqs::gfs::make_adjoint_mesh(cyclat m)", doc = "Create the adjoint k-mesh")
+module.add_function("cyclat triqs::gfs::make_adjoint_mesh(brzone m)", doc = "Create the adjoint r-mesh")
 module.add_function("imfreq triqs::gfs::make_adjoint_mesh(imtime m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
 module.add_function("imtime triqs::gfs::make_adjoint_mesh(imfreq m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
 module.add_function("refreq triqs::gfs::make_adjoint_mesh(retime m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")

@@ -8,12 +8,12 @@ from numpy import cos, pi
 
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ]) #square lattice
 nk=20
-mk = MeshBrillouinZone(BrillouinZone(BL), nk)
+mk = MeshBrZone(BrillouinZone(BL), nk)
 miw=MeshImFreq(beta=1., S="Fermion", n_max=100) #not used  (just demo)
-mprod_iw = MeshBrillouinZoneImFreq(mk, miw) # not used (just demo)
+mprod_iw = MeshBrZoneImFreq(mk, miw) # not used (just demo)
 
 mw=MeshReFreq(-5,5, 201)
-mprod = MeshBrillouinZoneReFreq(mk, mw)
+mprod = MeshBrZoneReFreq(mk, mw)
 
 #let us fill two G_k_w
 G_w = GfReFreq(mesh=mw, shape=[1,1])

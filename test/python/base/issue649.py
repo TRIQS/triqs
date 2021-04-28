@@ -20,7 +20,7 @@
 import copy
 import numpy as np
 
-from triqs.gf import MeshBrillouinZone
+from triqs.gf import MeshBrZone
 from triqs.lattice import BrillouinZone, BravaisLattice
 
 cell = [
@@ -32,7 +32,7 @@ bl = BravaisLattice(cell)
 bz = BrillouinZone(bl)
 
 periodization_matrix = 32 * np.eye(3, dtype=np.int32)
-bzmesh = MeshBrillouinZone(bz, periodization_matrix)
+bzmesh = MeshBrZone(bz, periodization_matrix)
 
 bzmesh_ref = copy.deepcopy(bzmesh) # BREAKS
 

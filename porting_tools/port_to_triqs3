@@ -33,10 +33,12 @@ repl_dict = {
         "( *)using namespace triqs::gfs;\n(?! *using namespace triqs::mesh)": r"\1using namespace triqs::gfs;\n\1using namespace triqs::mesh;\n",
         "#include <triqs/gfs.hpp>\n(?!#include <triqs/mesh.hpp>)": "#include <triqs/gfs.hpp>\n#include <triqs/mesh.hpp>\n",
         "cartesian_product": "prod",
-        #"brillouin_zone": "b_zone", # This has to be done manually due to naming conflict with lattice::brillouin_zone
-        "gf_mesh<brillouin_zone>": "gf_mesh<b_zone>",
-        "gf<brillouin_zone": "gf<b_zone",
-        "prod<brillouin_zone": "prod<b_zone",
+        #"brillouin_zone": "brzone", # This has to be done manually due to naming conflict with lattice::brillouin_zone
+        "gf_mesh<brillouin_zone>": "gf_mesh<brzone>",
+        "gf<brillouin_zone": "gf<brzone",
+        "prod<brillouin_zone": "prod<brzone",
+        "MeshBrillouinZone": "MeshBrZone",
+        "MeshCyclicLattice": "MeshCycLat",
         "gf_closest_point": "closest_point",
         "gf_mesh{": "prod{", # may be probematic if not constructing a prod??
         "gf_mesh<(.?)>": r"\1", # really necessary?

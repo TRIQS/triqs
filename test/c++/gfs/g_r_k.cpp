@@ -32,7 +32,7 @@ TEST(Gf, r_k) {
   placeholder<0> k_;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto gk = gf<b_zone>{{bz, N}, {S, S}};
+  auto gk = gf<brzone>{{bz, N}, {S, S}};
 
   gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
 

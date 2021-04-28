@@ -27,7 +27,7 @@ from math import pi
 units = matrix([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]], float)
 per_mat = matrix([[16, 0, 0],[0, 16, 0],[0, 0, 1]], int32)
 bz=BrillouinZone(BravaisLattice(units))
-k_mesh = MeshBrillouinZone(bz, per_mat)
+k_mesh = MeshBrZone(bz, per_mat)
 
 assert all(k_mesh.locate_neighbours([pi/2,  pi, 0.0]) == [4, 8, 0])
 assert all(k_mesh.locate_neighbours([pi/8,2*pi, 0.0]) == [1, 16, 0])
@@ -36,7 +36,7 @@ assert all(k_mesh.locate_neighbours([pi/8,2*pi, 0.0]) == [1, 16, 0])
 units = matrix([[1.,0.,0.],[0.5,sqrt(3)/2.,0.],[0.,0.,1.]], float)
 per_mat=  matrix([[6, 6, 0],[-6, 6, 0],[0, 0, 1]], int32)
 bz=BrillouinZone(BravaisLattice(units))
-k_mesh = MeshBrillouinZone(bz, per_mat)
+k_mesh = MeshBrZone(bz, per_mat)
 
 assert all(k_mesh.locate_neighbours([0.,5.,0.]) == [4, 4, 0])
 assert all(k_mesh.locate_neighbours([2.,1.,0.]) == [4, 0, 0])

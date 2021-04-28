@@ -27,12 +27,12 @@ namespace triqs::mesh {
   using lattice::brillouin_zone;
 
   ///Mesh on Brillouin zone
-  class b_zone : public cluster_mesh {
+  class brzone : public cluster_mesh {
     private:
     brillouin_zone bz;
 
     public:
-    b_zone() = default;
+    brzone() = default;
 
     /**
      * Constructs $$\tilde{b}_i = \sum_j N^{-1}_{ji} b_j$$ where $b_j$ reciprocal vectors
@@ -41,7 +41,7 @@ namespace triqs::mesh {
      * @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
      *
      */
-    b_zone(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
+    brzone(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
        : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), transpose(periodization_matrix_)) {
       matrix<double> N_as_double = periodization_matrix_;
       matrix<double> Nt_inv      = inverse(transpose(N_as_double));
@@ -51,7 +51,7 @@ namespace triqs::mesh {
     /** 
      * constructs simple bz mesh on square lattice with simple boundary conditions (backward compatibility only)
      */
-    b_zone(brillouin_zone const &bz_, int n_l)
+    brzone(brillouin_zone const &bz_, int n_l)
        : bz(bz_),
          cluster_mesh(matrix<double>{{{2 * M_PI / n_l, 0., 0.},
                                       {0., bz_.lattice().dim() >= 2 ? 2 * M_PI / n_l : 2 * M_PI, 0.},
@@ -112,13 +112,13 @@ namespace triqs::mesh {
 
     // ------------------- Comparison -------------------
 
-    bool operator==(b_zone const &M) const { return bz == M.domain() && cluster_mesh::operator==(M); }
+    bool operator==(brzone const &M) const { return bz == M.domain() && cluster_mesh::operator==(M); }
 
-    bool operator!=(b_zone const &M) const { return !(operator==(M)); }
+    bool operator!=(brzone const &M) const { return !(operator==(M)); }
 
     // -------------------- print -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, b_zone const &m) {
+    friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
       return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
                   << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
     }
@@ -138,13 +138,13 @@ namespace triqs::mesh {
 
     static std::string hdf5_format() { return "MeshBrillouinZone"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, b_zone const &m) {
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, brzone const &m) {
       h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
       h5::group gr = fg.open_group(subgroup_name);
       h5_write(gr, "brillouin_zone", m.bz);
     }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, b_zone &m) {
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, brzone &m) {
       h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
       h5::group gr = fg.open_group(subgroup_name);
       if (gr.has_key("bz")) {

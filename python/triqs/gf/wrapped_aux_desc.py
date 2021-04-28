@@ -34,7 +34,7 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
 
-    for M in ['b_zone']:
+    for M in ['brzone']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =1
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
         for R in [3,4]:
@@ -46,8 +46,8 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>']
 
-    for M1 in ['b_zone', 'cyclat']:
-      k_x = {'b_zone' : 'std::array<double, 3>', 'cyclat' : 'std::array<long,3>'}[M1]
+    for M1 in ['brzone', 'cyclat']:
+      k_x = {'brzone' : 'std::array<double, 3>', 'cyclat' : 'std::array<long,3>'}[M1]
 
       for M2 in ['imfreq']:
         yield 'prod<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
@@ -60,12 +60,12 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
                    'retime' : 'ReTime',
-                   'b_zone' : 'BrillouinZone',
+                   'brzone' : 'BrillouinZone',
                    'cyclat' : 'CyclicLattice',
-                   'prod<b_zone,imfreq>': 'BrillouinZone_x_ImFreq',
-                   'prod<b_zone,imtime>': 'BrillouinZone_x_ImTime',
-                   'prod<b_zone,refreq>': 'BrillouinZone_x_ReFreq',
-                   'prod<b_zone,retime>': 'BrillouinZone_x_ReTime',
+                   'prod<brzone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'prod<brzone,imtime>': 'BrillouinZone_x_ImTime',
+                   'prod<brzone,refreq>': 'BrillouinZone_x_ReFreq',
+                   'prod<brzone,retime>': 'BrillouinZone_x_ReTime',
                    'prod<cyclat,imfreq>': 'CyclicLattice_x_ImFreq',
                    'prod<cyclat,imtime>': 'CyclicLattice_x_ImTime',
                    'prod<cyclat,refreq>': 'CyclicLattice_x_ReFreq',

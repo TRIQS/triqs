@@ -28,7 +28,7 @@ from math import pi
 
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ]) #square lattice
 nk=20
-mk = MeshBrillouinZone(BrillouinZone(BL), nk)
+mk = MeshBrZone(BrillouinZone(BL), nk)
 
 mtf=MeshImTime (beta=1., S="Fermion", n_max=100)
 mtb=MeshImTime (beta=1., S="Boson", n_max=100)
