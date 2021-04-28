@@ -212,4 +212,124 @@ namespace triqs::operators::utils {
     return dict_to_matrix<double>(dict, fs);
   }
 
+  /**
+   * Filter out terms of given length from an operator
+   *
+   * @param h subject operator
+   * @param The length of the operator terms to filter
+   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+   * @return Operator containing only the terms of given length
+   * @include triqs/operators/util/extractors.hpp
+   */
+  template <typename scalar_t> op_t<scalar_t> filter_op(op_t<scalar_t> const &h, long len) {
+
+    auto h_filtered = op_t<scalar_t>{};
+
+    for (auto const &term : h) {
+      if (term.monomial.size() == len) h_filtered += term;
+    }
+
+    return h_filtered;
+  }
+
+  /**
+   * Filter out quadratic terms from an operator
+   *
+   * @param h subject operator
+   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+   * @return Operator containing only the quadratic terms
+   * @include triqs/operators/util/extractors.hpp
+   */
+  template <typename scalar_t> op_t<scalar_t> quadratic_terms(op_t<scalar_t> const &h) { return filter_op(h, 2); }
+
+  /**
+   * Filter out quartic terms from an operator
+   *
+   * @param h subject operator
+   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+   * @return Operator containing only the quartic terms
+   * @include triqs/operators/util/extractors.hpp
+   */
+  template <typename scalar_t> op_t<scalar_t> quartic_terms(op_t<scalar_t> const &h) { return filter_op(h, 4); }
+
+  /**
+   * Convert the quadratic operator
+   *
+   * .. math:: \sum_{\sigma ij} h_{\sigma ij} c_{\sigma, i}^\dagger c_{\sigma, j}.
+   *
+   * into its block-matrix representation
+   *
+   * @param h subject operator
+   * @param gf_struct The object defining the block-structure
+   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+   * @return The block-matrix representation h_{\sigma ij}
+   * @include triqs/operators/util/extractors.hpp
+   */
+  template <typename scalar_t>
+  nda::array<nda::matrix<scalar_t>, 1> block_matrix_from_op(op_t<scalar_t> const &h, hilbert_space::gf_struct_t const &gf_struct,
+                                                            bool ignore_irrelevant = false) {
+
+    int n_bl    = gf_struct.size();
+    auto bl_mat = nda::array<nda::matrix<scalar_t>, 1>(n_bl);
+    for (auto bl : range(n_bl)) {
+      auto bl_size = gf_struct[bl].second;
+      bl_mat[bl]   = nda::zeros<scalar_t>(bl_size, bl_size);
+    }
+
+    auto name_to_bl = [&](auto &bl_name) {
+      auto it =
+         std::find_if(cbegin(gf_struct), cend(gf_struct), [&bl_name](auto const &blname_and_size) { return bl_name == blname_and_size.first; });
+      return std::distance(cbegin(gf_struct), it);
+    };
+
+    for (auto const &term : h) {
+      auto const &m        = term.monomial;
+      scalar_t const &coef = term.coef;
+
+      if (m.size() == 2 and m[0].dagger and not m[1].dagger and m[0].indices[0] == m[1].indices[0] and m[0].indices.size() == 2
+          or m[1].indices.size() == 2) {
+        auto bl_name = std::get<std::string>(m[0].indices[0]);
+        auto op1_idx = std::get<long>(m[0].indices[1]);
+        auto op2_idx = std::get<long>(m[1].indices[1]);
+
+        bl_mat[name_to_bl(bl_name)](op1_idx, op2_idx) = coef;
+      } else {
+        if (!ignore_irrelevant) TRIQS_RUNTIME_ERROR << "block_matrix_from_op: Operator term is not of the form 'coeff * c_dag{bl,i} * c_{bl,j}'";
+        ;
+      }
+    }
+
+    return bl_mat;
+  }
+
+  /**
+   * Convert the block-matrix h_{\sigma ij} into the associated operator
+   *
+   * .. math:: \sum_{\sigma ij} h_{\sigma ij} c_{\sigma, i}^\dagger c_{\sigma, j}.
+   *
+   * @param bl_mat subject block_matrix
+   * @param gf_struct The object defining the block-structure
+   * @return The associated operator
+   * @include triqs/operators/util/extractors.hpp
+   */
+  template <typename scalar_t>
+  op_t<scalar_t> op_from_block_matrix(nda::array<nda::matrix<scalar_t>, 1> const &bl_mat, hilbert_space::gf_struct_t const &gf_struct) {
+
+    EXPECTS(bl_mat.size() == gf_struct.size());
+
+    auto h = op_t<scalar_t>{};
+
+    int n_bl = gf_struct.size();
+    for (auto bl : range(n_bl)) {
+
+      auto [bl_name, bl_size] = gf_struct[bl];
+
+      EXPECTS(bl_mat[bl].shape() == (std::array{bl_size, bl_size}));
+
+      for (auto [i, j] : itertools::product_range(bl_size, bl_size)) h += bl_mat[bl](i, j) * c_dag(bl_name, i) * c(bl_name, j);
+    }
+
+    return h;
+  }
+
 } // namespace triqs::operators::utils

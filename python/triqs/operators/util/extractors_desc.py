@@ -24,6 +24,7 @@ module.add_using("namespace triqs::hilbert_space")
 
 module.add_preamble("""
 using variant_int_string = std::variant<long, std::string>;
+using block_matrix_t = nda::array<nda::matrix<real_or_complex>, 1>;
 using indices_t_t = std::tuple<variant_int_string, variant_int_string>;
 auto v2t = [](indices_t const& v) { return std::make_tuple(v[0],v[1]); };
 using triqs::tuple::map;
@@ -122,6 +123,16 @@ module.add_function("real_or_complex_array<2> dict_to_variant_matrix(dict2_t<rea
                     name = "dict_to_matrix", doc = dict_to_matrix_docstring)
 module.add_function("real_or_complex_array<4> dict_to_variant_matrix(dict4_t<real_or_complex> d, gf_struct_t gf_struct)",
                     name = "dict_to_matrix", doc = dict_to_matrix_docstring)
+
+module.add_function("many_body_operator quadratic_terms(many_body_operator H)",
+                    name = "quadratic_terms", doc = "")
+module.add_function("many_body_operator quartic_terms(many_body_operator H)",
+                    name = "quartic_terms", doc = "")
+
+module.add_function("block_matrix_t block_matrix_from_op(many_body_operator H, gf_struct_t gf_struct, bool ignore_irrelevant = false)",
+                    name = "block_matrix_from_op", doc = "")
+module.add_function("many_body_operator op_from_block_matrix(block_matrix_t bl_mat, gf_struct_t gf_struct)",
+                    name = "op_from_block_matrix", doc = "")
 
 module.generate_code()
 

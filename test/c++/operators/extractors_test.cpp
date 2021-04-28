@@ -158,4 +158,30 @@ TEST(Extractors, extract_U_dict4) {
   EXPECT_THROW(dict_to_matrix(extract_U_dict4(wrong_index), gf_struct), triqs::exception);
 }
 
+// Test filter_op
+TEST(Extractors, filter_op) {
+  auto h_int = U0 * c_dag("up", 0) * c("dn", 0) * c_dag("dn", 1) * c("up", 1);
+
+  auto N0 = n("up", 0) + n("dn", 0);
+  auto N1 = n("up", 1) + n("dn", 1);
+  auto h0 = eps0 * N0 + eps1 * N1;
+
+  auto h_imp = h_int + h0;
+
+  EXPECT_EQ(quadratic_terms(h0), h0);
+  EXPECT_EQ(quartic_terms(h_int), h_int);
+  EXPECT_EQ(quadratic_terms(h_imp), h0);
+  EXPECT_EQ(quartic_terms(h_imp), h_int);
+}
+
+// Test block_matrix_from_op and op_from_block_matrix
+TEST(Extractors, block_matrix) {
+  auto h0  = eps0 * (n("up", 0) + n("dn", 0)) + eps1 * (n("up", 1) + n("dn", 1)) + eps2 * (n("up", 2) + n("dn", 2));
+  auto hop = t01 * (c_dag("up", 0) * c("up", 1) + c_dag("dn", 0) * c("dn", 1)) + t12 * (c_dag("up", 1) * c("up", 2) + c_dag("dn", 1) * c("dn", 2))
+     + t20 * (c_dag("up", 2) * c("up", 0) + c_dag("dn", 2) * c("dn", 0));
+  h0 += hop + dagger(hop);
+
+  EXPECT_EQ(op_from_block_matrix(block_matrix_from_op(h0, gf_struct), gf_struct), h0);
+}
+
 MAKE_MAIN;
