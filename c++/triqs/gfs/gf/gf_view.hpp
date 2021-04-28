@@ -158,7 +158,7 @@ namespace triqs::gfs {
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-    template <typename G> gf_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) { nda::debug_print_type(x); }
+    template <typename G> gf_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
 
     template <typename M, typename D>
     gf_view(impl_tag, M &&m, D &&dat, indices_t ind) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
