@@ -75,6 +75,12 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     m.add_function(name = "make_gf_from_fourier",
                    signature="gf<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_iw""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="block_gf<imfreq, %s> make_gf_from_fourier(block_gf_view<imtime, %s> g_in, int n_iw)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_tau""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="block_gf<imtime, %s> make_gf_from_fourier(block_gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_iw""")
 
     m.add_function(name = "make_gf_from_fourier",
                    signature="gf<refreq, %s> make_gf_from_fourier(gf_view<retime, %s> g_in, bool shift_half_bin)"%(Target, Target),
