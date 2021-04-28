@@ -22,6 +22,7 @@ class Cpp2pyInfo:
 
     table_imports = {
         'triqs::gfs::' : 'triqs.gf',
+        'triqs::mesh::' : 'triqs.gf.meshes',
         'triqs::operators::many_body_operator' : 'triqs.operators',
         'triqs::lattice' : 'triqs.lattice',
         'triqs::stat::histogram' : 'triqs.stat.histograms',
