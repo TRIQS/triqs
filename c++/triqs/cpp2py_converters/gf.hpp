@@ -134,29 +134,22 @@ namespace cpp2py {
   };
 
   // -----------------------------------
-  //    regular types
+  //   gf
   // -----------------------------------
 
-  // when converting gf Py->C, we return a gf_view. That is ok, we can construct a gf from it ...
-  /*
- template <typename M, typename T> struct py_converter<triqs::gfs::gf<M, T>> {
+  template <typename M, typename T> struct py_converter<triqs::gfs::gf<M, T>> {
     using conv_t = py_converter<triqs::gfs::gf_view<M, T>>;
     using c_type = triqs::gfs::gf<M, T>;
 
-    static PyObject *c2py(triqs::gfs::gf_view<M, T>> g) { return conv_t::c2py(g);}
-    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob,raise_exception);}
-    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob);}
-   };
-*/
-
-  template <typename M, typename T> struct py_converter<triqs::gfs::gf<M, T>> : py_converter<triqs::gfs::gf_view<M, T>> {};
-
-  template <typename M, typename T, int A>
-  struct py_converter<triqs::gfs::block_gf<M, T, A>> : py_converter<triqs::gfs::block_gf_view<M, T, A, false>> {};
+    static PyObject *c2py(triqs::gfs::gf_view<M, T> g) { return conv_t::c2py(g); }
+    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
+    static c_type py2c(PyObject *ob) { return c_type{conv_t::py2c(ob)}; }
+  };
 
   // -----------------------------------
-  //   gf_ Const view
+  //   gf_const_view
   // -----------------------------------
+
   template <typename M, typename T> struct py_converter<triqs::gfs::gf_const_view<M, T>> {
     using conv_t = py_converter<triqs::gfs::gf_view<M, T>>;
     using c_type = triqs::gfs::gf_const_view<M, T>;
@@ -251,24 +244,40 @@ namespace cpp2py {
   };
 
   // -----------------------------------
-  //    block_gf_view
+  //   block_gf
   // -----------------------------------
 
-  template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf_view<M, T, A, true>> {
-    using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, A, true>>;
-    using c_type = triqs::gfs::block_gf_view<M, T, A, true>;
+  template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf<M, T, A>> {
+    using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, A>>;
+    using c_type = triqs::gfs::block_gf<M, T, A>;
 
-    // FIXME : NOT TRUE MAKE THE ARRAY CONST
+    static PyObject *c2py(triqs::gfs::block_gf_view<M, T, A> g) { return conv_t::c2py(g); }
+    static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
+    static c_type py2c(PyObject *ob) { return c_type{conv_t::py2c(ob)}; }
+  };
+
+  // -----------------------------------
+  //   block_gf_const_view
+  // -----------------------------------
+
+  template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf_const_view<M, T, A>> {
+    using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, A>>;
+    using c_type = triqs::gfs::block_gf_const_view<M, T, A>;
+
     static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
     static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
   };
 
-  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T, 1, false>> {
+  // -----------------------------------
+  //    block_gf_view
+  // -----------------------------------
+
+  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T>> {
 
     using gf_type      = triqs::gfs::gf<M, T>;
     using gf_view_type = triqs::gfs::gf_view<M, T>;
-    using c_type       = triqs::gfs::block_gf_view<M, T, 1>;
+    using c_type       = triqs::gfs::block_gf_view<M, T>;
 
     // ----------------------------------------------
 
@@ -339,11 +348,11 @@ namespace cpp2py {
   // -----------------------------------
 
   // FIXME : REGROUP with A = 1
-  template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T, 2, false>> {
+  template <typename M, typename T> struct py_converter<triqs::gfs::block2_gf_view<M, T>> {
 
     // using gf_type = triqs::gfs::gf<T...>;
     using gf_view_type = triqs::gfs::gf_view<M, T>;
-    using c_type       = triqs::gfs::block_gf_view<M, T, 2>;
+    using c_type       = triqs::gfs::block2_gf_view<M, T>;
 
     // ----------------------------------------------
 
