@@ -27,7 +27,7 @@ It is imported with the command::
 
 from .mesh_point import MeshPoint, MeshValueGenerator
 from .gf import *
-from .block_gf import BlockGf
+from .block_gf import BlockGf, fix_gf_struct_type
 from .block2_gf import Block2Gf
 from .map_block import map_block
 from .descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, LegendreToMatsubara, MatsubaraToLegendre
@@ -63,7 +63,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'GfLegendre', 'MeshLegendre',
             'MeshBrZone', 'MeshBrillouinZone',
             'MeshCycLat', 'MeshCyclicLattice',
-            'BlockGf',
+            'BlockGf', 'fix_gf_struct_type',
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',

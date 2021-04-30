@@ -26,6 +26,19 @@ import operator
 import warnings
 import numpy as np
 
+def fix_gf_struct_type(gf_struct):
+    """For backward compatibility: Convert old gf_struct types to [(str,int), ...]"""
+    if isinstance(gf_struct,dict):
+        print("WARNING: gf_struct should be a list of pairs [(str,int), ...], not a dict. Converting...")
+        return list(gf_struct.items())
+
+    if isinstance(gf_struct[0][1],list):
+        print("WARNING: gf_struct should be a list of pairs '(str,int)' containing the block-name and its linear size",
+              "and not a list of pairs '(str,[str or int,...])'. Converting...")
+        return[(k, len(v)) for k, v in gf_struct]
+
+    return gf_struct
+
 def call_factory_from_dict(cl,name, dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
     return cl.__factory_from_dict__(name, dic)
@@ -49,7 +62,7 @@ class BlockGf:
 
                    * ``mesh``: The mesh used to construct each block
                    * ``target_rank``: The rank of the target space of each block (default: 2)
-                   * ``gf_struct``: List of pairs [ [str, [str,...]], ... ] providing the block name and indices, e.g. [ ['up', ['0']], ['dn', ['0']] ]
+                   * ``gf_struct``: List of pairs [ (str,int), ... ] providing the block name and its linear size
 
             * BlockGf(name_block_generator, make_copies = False, name = '')
 
