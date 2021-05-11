@@ -112,15 +112,13 @@ namespace triqs::gfs {
     static_assert(std::is_same<typename T1::complex_t, T2>::value, "Incompatible target types for fourier transform");
 
     // pb std::get<0> would not work on a non composite mesh. We use a little lambda to deduce ref and type
-    auto get_out_mesh = [](auto const &gout) -> auto const & { // NB must return a reference
+    auto const &out_mesh = [&gout]() -> auto const & { // NB must return a reference
       using m_t = std::decay_t<decltype(gout.mesh())>;
       if constexpr (mesh::is_product_v<m_t>)
         return std::get<N>(gout.mesh());
       else
         return gout.mesh();
-    };
-
-    auto const &out_mesh = get_out_mesh(gout);
+    }();
 
     // FIXME : Code failed with nda optimisation relaxing assumption on iterator order.
     // between nda::for_each and the flatten which were not inverse of each other any more

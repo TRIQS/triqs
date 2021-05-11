@@ -187,7 +187,7 @@ TEST(Stat, LogBinArray) {
 
   auto [errors_b1, counts_b1] = b1.log_bin_errors();
   auto [errors_b2, counts_b2] = b2.log_bin_errors();
-  auto [errors_b , counts_b] = b.log_bin_errors();
+  auto [errors_b, counts_b]   = b.log_bin_errors();
 
   for (auto [x1, x2, a] : itertools::zip(errors_b1, errors_b2, errors_b)) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
@@ -196,7 +196,7 @@ TEST(Stat, LogBinArray) {
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  auto [errors_bb , counts_bb] = b.log_bin_errors();
+  auto [errors_bb, counts_bb] = b.log_bin_errors();
 
   for (auto [x, y] : itertools::zip(errors_bb, errors_b)) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
 
