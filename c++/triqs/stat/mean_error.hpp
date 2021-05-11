@@ -70,7 +70,7 @@ namespace triqs::stat {
     auto mean_calc = mean(data);
     auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
-    for (auto const &x : data) { err_calc += nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
+    for (auto const &x : data) { err_calc += nda::real(nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1))); }
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
   }
@@ -87,7 +87,7 @@ namespace triqs::stat {
     auto mean_calc = mean_mpi(c, data);
     auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
-    for (auto const &x : data) { err_calc += nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
+    for (auto const &x : data) { err_calc += nda::real(nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1))); }
     mpi::all_reduce_in_place(err_calc, c);
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
