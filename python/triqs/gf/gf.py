@@ -676,6 +676,12 @@ class Gf(metaclass=AddMethod):
         assert L.shape[0] == self.target_shape[0], "Dimension mismatch between L and self"
         assert R.shape[1] == self.target_shape[1], "Dimension mismatch between R and self"
 
+        if not L.strides == sorted(L.strides):
+            L = L.copy(order='C')
+
+        if not R.strides == sorted(R.strides):
+            R = R.copy(order='C')
+
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
     def total_density(self, *args, **kwargs):
