@@ -19,8 +19,14 @@
 
 #pragma once
 
-inline bool kronecker(int i, int j) { return i == j; }
+#include <nda/clef.hpp>
+
+namespace triqs {
+  template <typename T> REQUIRES(std::is_integral_v<std::decay_t<T>>)
+  inline bool kronecker(T&& i, T&& j) { return i == j; }
+}
 
 namespace nda::clef {
- CLEF_MAKE_FNT_LAZY(kronecker);
+  using triqs::kronecker;
+  CLEF_MAKE_FNT_LAZY(kronecker);
 }
