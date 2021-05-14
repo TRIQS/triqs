@@ -79,6 +79,11 @@ def set_operator_structure(spin_names,n_orb,off_diag):
 
     """
 
+    if isinstance(n_orb, list):
+        import warnings
+        warnings.warn("set_operator_structure takes as a second argument the number of orbitals, not a list of orbital names")
+        n_orb = len(n_orb)
+
     op_struct = []
     if off_diag: # outer blocks are spin blocks
         for sn in spin_names:
