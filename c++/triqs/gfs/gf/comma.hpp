@@ -35,26 +35,11 @@ namespace triqs::gfs {
   // deduction rule. broken on clang ?
   //    template <typename... T> tuple_com(T&& ...x) -> tuple_com<std::decay_t<T>...>;
 
-  template <typename... T> tuple_com<std::decay_t<T>...> make_tuple_com(T &&... x) { return {std::make_tuple(std::forward<T>(x)...)}; }
+  template <typename... T> tuple_com<std::decay_t<T>...> make_tuple_com(T &&...x) { return {std::make_tuple(std::forward<T>(x)...)}; }
 
   template <typename... T> tuple_com<T...> make_tuple_com_from_tuple(std::tuple<T...> &&x) { return {std::move(x)}; }
 
   // FIXME USE a function  + enable if
-
-  // all_t
-  template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
-  inline tuple_com<long, all_t> operator,(long i, all_t p) { return {std::make_tuple(i, p)}; }
-
-  template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
-    return {std::make_tuple(std::move(m), std::forward<X>(x))};
-  }
-
-  template <typename M> tuple_com<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {std::make_tuple(i, std::move(m))}; }
-
-  template <typename T, int n, typename X> tuple_com<std::array<T, n>, X> operator,(std::array<T, n> const &v, X const &x) {
-    return {std::make_tuple(v, x)};
-  }
-  template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const &m, X const &x) { return {std::make_tuple(m, x)}; }
 
   // tuple_com absorbs anything
   template <typename X, typename... T, size_t... Is>
@@ -66,7 +51,43 @@ namespace triqs::gfs {
     return __comma_impl(std::move(t), std::forward<X>(x), std::make_index_sequence<sizeof...(T)>());
   }
 
-} // namespace triqs::mesh
+  // all_t
+  template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
+
+  // mesh_point
+  template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
+    return {std::make_tuple(std::move(m), std::forward<X>(x))};
+  }
+
+  // matsubara_freq
+  template <typename X> tuple_com<matsubara_freq, std::decay_t<X>> operator,(matsubara_freq m, X &&x) {
+    return {std::make_tuple(std::move(m), std::forward<X>(x))};
+  }
+
+  // integer types
+  template <typename Int> tuple_com<Int, all_t> operator,(Int i, all_t) REQUIRES(std::is_integral_v<Int>) { return {std::make_tuple(i, all_t{})}; }
+  template <typename Int, typename M> tuple_com<Int, mesh_point<M>> operator,(Int i, mesh_point<M> m) REQUIRES(std::is_integral_v<Int>) {
+    return {std::make_tuple(i, std::move(m))};
+  }
+  template <typename Int> tuple_com<Int, matsubara_freq> operator,(Int i, matsubara_freq m) REQUIRES(std::is_integral_v<Int>) {
+    return {std::make_tuple(i, std::move(m))};
+  }
+
+  // array<int,R>
+  template <typename Int, size_t R>
+  tuple_com<std::array<Int, R>, all_t> operator,(std::array<Int, R> const &a, all_t) REQUIRES(std::is_integral_v<Int>) {
+    return {std::make_tuple(a, all_t{})};
+  }
+  template <typename Int, size_t R, typename M>
+  tuple_com<std::array<Int, R>, mesh_point<M>> operator,(std::array<Int, R> const &a, mesh_point<M> m) REQUIRES(std::is_integral_v<Int>) {
+    return {std::make_tuple(a, std::move(m))};
+  }
+  template <typename Int, size_t R>
+  tuple_com<std::array<Int, R>, matsubara_freq> operator,(std::array<Int, R> const &a, matsubara_freq m) REQUIRES(std::is_integral_v<Int>) {
+    return {std::make_tuple(a, std::move(m))};
+  }
+
+} // namespace triqs::gfs
 
 namespace nda::clef {
 
@@ -81,18 +102,19 @@ namespace nda::clef {
   template <typename... T> constexpr bool is_any_lazy<triqs::gfs::tuple_com<T...>> = is_any_lazy<T...>;
 
   // The case A[x_,y_] = RHS : we form the function (make_function) and call auto_assign (by ADL)
-  template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, triqs::gfs::tuple_com<_ph<Is>...>> &&ex, RHS &&rhs) {
+  template <typename F, typename RHS, int... Is>
+  FORCEINLINE void operator<<(expr<tags::subscript, F, triqs::gfs::tuple_com<_ph<Is>...>> &&ex, RHS &&rhs) {
     clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
   }
 
   // tuple_com can be evaluated
   template <typename... T, typename... Contexts> struct evaluator<triqs::gfs::tuple_com<T...>, Contexts...> {
     static constexpr bool is_lazy = false;
-    FORCEINLINE decltype(auto) operator()(triqs::gfs::tuple_com<T...> const &tu, Contexts const &... contexts) const {
+    FORCEINLINE decltype(auto) operator()(triqs::gfs::tuple_com<T...> const &tu, Contexts const &...contexts) const {
       auto l  = [&contexts...](auto &&y) -> decltype(auto) { return eval(y, contexts...); };
       auto _t = triqs::tuple::map(l, tu._t);
       return triqs::gfs::make_tuple_com_from_tuple(std::move(_t));
     }
   };
 
-}
+} // namespace nda::clef
