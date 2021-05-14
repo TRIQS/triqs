@@ -21,12 +21,15 @@
 
 #include <nda/clef.hpp>
 
-namespace triqs {
-  template <typename T> REQUIRES(std::is_integral_v<std::decay_t<T>>)
-  inline bool kronecker(T&& i, T&& j) { return i == j; }
-}
+namespace triqs::utility {
+  template <typename T1, typename T2>
+  REQUIRES(std::is_arithmetic_v<std::decay_t<T1>> and std::is_arithmetic_v<std::decay_t<T2>>)
+  inline bool kronecker(T1 &&i, T2 &&j) {
+    return i == j;
+  }
+} // namespace triqs::utility
 
 namespace nda::clef {
-  using triqs::kronecker;
+  using triqs::utility::kronecker;
   CLEF_MAKE_FNT_LAZY(kronecker);
-}
+} // namespace nda::clef
