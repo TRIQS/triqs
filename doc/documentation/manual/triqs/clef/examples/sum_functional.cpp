@@ -1,4 +1,5 @@
 #include <nda/clef.hpp>
+#include <iostream>
 
 template <typename Domain> struct sum_impl {
   Domain d;
@@ -7,7 +8,7 @@ template <typename Domain> struct sum_impl {
   // double operator() (NotClefExpression const & f) const { double s=0; for (int u=0; u<10; ++u) s += f(u/10.0); return s;}
 
   // C++11 form
-  template <typename F> typename std::enable_if<!nda::clef::is_clef_expression<F>::value, double>::type operator()(F const &f) const {
+  template <typename F> typename std::enable_if<!nda::clef::is_clef_expression<F>, double>::type operator()(F const &f) const {
     double s = 0;
     for (int u = 0; u < 10; ++u) s += f(u / 10.0);
     return s;

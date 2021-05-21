@@ -1,5 +1,5 @@
 #include <nda/nda.hpp>
-#include <nda/functional/map.hpp>
+#include <nda/map.hpp>
 using nda::array;
 
 double f(int i) { return i * 10; }

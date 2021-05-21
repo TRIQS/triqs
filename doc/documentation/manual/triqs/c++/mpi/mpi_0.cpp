@@ -1,9 +1,8 @@
 #include <nda/nda.hpp>
+#include <nda/mpi.hpp>
 #include <iostream>
 
-using namespace triqs;
 using namespace nda;
-using namespace mpi;
 
 int main(int argc, char *argv[]) {
 
@@ -11,17 +10,17 @@ int main(int argc, char *argv[]) {
   mpi::communicator world;
 
   int a = 5;
-  mpi_broadcast(a);
-  a = mpi_reduce(a);
+  mpi::broadcast(a);
+  a = mpi::reduce(a);
 
   array<int, 2> A(2, 10);
   A() = 1;
 
   std::cout << A << std::endl;
 
-  mpi_scatter(A);
+  mpi::scatter(A);
   A += world.rank();
-  mpi_gather(A);
+  mpi::gather(A);
 
   std::cout << A << std::endl;
 }

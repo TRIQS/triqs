@@ -1,4 +1,5 @@
 #include <nda/clef.hpp>
+#include <iostream>
 
 struct Obj {
   double v;                  // put something in it

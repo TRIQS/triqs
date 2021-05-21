@@ -15,12 +15,10 @@ int foo(int x) { return x * 2; }
 // C++11 workaround
 template <typename T> typename std::enable_if<!nda::clef::is_clef_expression<T>::value, T>::type bar(T const &x) { return x + 1; }
 
-namespace triqs {
-  namespace clef {
-    CLEF_MAKE_FNT_LAZY(foo);
-    CLEF_MAKE_FNT_LAZY(bar);
-  } // namespace clef
-} // namespace triqs
+namespace nda::clef {
+  CLEF_MAKE_FNT_LAZY(foo);
+  CLEF_MAKE_FNT_LAZY(bar);
+} // namespace nda
 
 int main() {
   nda::clef::placeholder<3> x_;
