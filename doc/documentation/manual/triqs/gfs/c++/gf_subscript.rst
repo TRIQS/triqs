@@ -23,7 +23,7 @@ on the mesh. This is therefore a way to modify the Green function.
 
 This is valid for both the container (e.g. gf), and the view (e.g. gf_view).
 
-Note that the :ref:`gf_mesh\<cartesian_product\<X,Y,...\>\> <gf_product>` provides
+Note that the :ref:`gf_mesh\<prod\<X,Y,...\>\> <gf_product>` provides
 additional functionality for the operator [].
 
 

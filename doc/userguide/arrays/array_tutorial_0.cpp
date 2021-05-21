@@ -1,7 +1,7 @@
 
 
-#include <triqs/arrays.hpp>
-using triqs::arrays::array;
+#include <nda/nda.hpp>
+using nda::array;
 int main() {
   array<double, 1> A(20);
   std::cout << "A = " << A << std::endl; // arrays are not init by default: this is random

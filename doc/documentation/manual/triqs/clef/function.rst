@@ -60,7 +60,7 @@ For function of *one* variable, the make_function notation can be simplified int
 clef::function
 --------------------------
 
-The class triqs::clef::function stored a function of a given signature 
+The class nda::clef::function stored a function of a given signature 
 It is similar to std::function but 
 it can be constructed from an expression and an ordered list of placeholders.
 

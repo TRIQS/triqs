@@ -1,9 +1,9 @@
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
+#include <nda/nda.hpp>
+#include <nda/linalg.hpp>
 
-using triqs::arrays::array;
-using triqs::arrays::matrix;
-using triqs::clef::placeholder;
+using nda::array;
+using nda::matrix;
+using nda::clef::placeholder;
 int main() {
   placeholder<0> i_;
   placeholder<1> j_;

@@ -52,7 +52,7 @@ Using the library these operations look as follows:
 
 .. code-block:: c
 
- triqs::arrays::array<int, 3> A(8, 8, 8); // a three-dimensional array
+ nda::array<int, 3> A(8, 8, 8); // a three-dimensional array
  triqs::mpi::scatter(A);
  //do something with the corresponding part of A on each node
  triqs::mpi::gather(A);

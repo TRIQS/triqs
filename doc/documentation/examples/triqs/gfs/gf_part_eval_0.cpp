@@ -1,7 +1,8 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
 using namespace triqs::mesh;
-using triqs::clef::placeholder;
+using nda::clef::placeholder;
 int main() {
   double beta = 1, tmin = 0, tmax = 1.0;
   int n_re_time = 5, n_im_time = 10;

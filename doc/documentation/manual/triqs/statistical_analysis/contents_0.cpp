@@ -1,6 +1,6 @@
-#include <triqs/clef.hpp>
-#include <triqs/statistics.hpp>
-using namespace triqs::statistics;
+#include <nda/clef.hpp>
+#include <triqs/stat.hpp>
+using namespace triqs::stat;
 int main() {
   observable<double> X;
   X << 1.0;

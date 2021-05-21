@@ -1,6 +1,6 @@
-#include <triqs/clef.hpp>
+#include <nda/clef.hpp>
 #include <vector>
-using namespace triqs::clef;
+using namespace nda::clef;
 int main() {
   placeholder<0> i_;
   placeholder<1> x_;

@@ -9,12 +9,12 @@ Overloading functions
 ----------------------------
 
 Given a function, it is possible to overload it for CLEF expression arguments, returning a CLEF expression
-using the `TRIQS_CLEF_MAKE_FNT_LAZY` macro.
+using the `CLEF_MAKE_FNT_LAZY` macro.
 
 **Synopsis** ::
 
  namespace triqs { namespace clef { 
- TRIQS_CLEF_MAKE_FNT_LAZY (function_to_make_lazy);
+ CLEF_MAKE_FNT_LAZY (function_to_make_lazy);
  }}
 
 For example:
@@ -22,7 +22,7 @@ For example:
 .. literalinclude:: ./overload_0.cpp
 Note that: 
  
-* This overload **must** be defined in the triqs::clef namespace, since it is found by ADL.
+* This overload **must** be defined in the nda::clef namespace, since it is found by ADL.
 * The function `foo` can have many overloads.
 * The function `bar` can be a template, BUT then the template must be disabled for lazy expressions.
 * The overload is already defined by clef for usual functions: 

@@ -1,15 +1,15 @@
 #include <triqs/mc_tools/random_generator.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
-#include <triqs/arrays.hpp>
-#include <triqs/statistics.hpp>
+#include <nda/nda.hpp>
+#include <triqs/stat.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 // H = -J \sum_<ij> s_i s_j - h \sum_i s_i
 // theoretical T_c = 2/log(1+sqrt(2)) for J = 1.0
-using namespace triqs::statistics;
+using namespace triqs::stat;
 /**************
  * config
  **************/
@@ -21,7 +21,7 @@ struct configuration {
   int N, M;
   double beta, J, field, energy;
   // the chain of spins: true means "up", false means "down"
-  triqs::arrays::array<bool, 2> chain;
+  nda::array<bool, 2> chain;
   observable<double> M_stack;
 
   // constructor

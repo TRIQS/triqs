@@ -3,6 +3,7 @@
 #include <triqs/atom_diag/gf.hpp>
 
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 using namespace triqs::operators;
 using namespace triqs::atom_diag;
 

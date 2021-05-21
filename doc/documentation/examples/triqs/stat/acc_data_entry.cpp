@@ -1,8 +1,8 @@
 #include <triqs/stat/accumulator.hpp>
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 
 using namespace triqs::stat;
-using namespace triqs::arrays;
+using namespace nda;
 
 int main() {
     // Accumulating Simple Scalars:

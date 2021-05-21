@@ -11,7 +11,7 @@ Reference
 ---------------
 
 .. autoclass:: triqs.gf.GfImTime
-  :members: set_from_inverse_fourier, set_from_legendre, transpose, conjugate
+  :members: set_from_fourier, set_from_legendre, transpose, conjugate
 
 .. warning::
 

@@ -27,7 +27,7 @@ Note that:
 
 * The order of placeholder does not matter in calling eval.
 * It is an error to put the same placeholder twice.
-* The correct version of eval is found by ADL (Argument Dependent Lookup) in the triqs::clef namespace.
+* The correct version of eval is found by ADL (Argument Dependent Lookup) in the nda::clef namespace.
 
 Partial evaluation
 --------------------

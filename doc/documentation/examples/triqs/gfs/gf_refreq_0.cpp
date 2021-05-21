@@ -1,5 +1,7 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 
 int main() {
   double wmin = 0, wmax = 10; // Frequencies interval

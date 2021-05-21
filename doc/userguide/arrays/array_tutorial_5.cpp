@@ -1,6 +1,6 @@
-#include <triqs/arrays.hpp>
-using triqs::arrays::array;
-namespace tql = triqs::clef;
+#include <nda/nda.hpp>
+using nda::array;
+namespace tql = nda::clef;
 
 int main() {
   tql::placeholder<0> i_;

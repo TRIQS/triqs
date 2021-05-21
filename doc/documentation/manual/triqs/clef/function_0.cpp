@@ -1,6 +1,6 @@
-#include <triqs/clef.hpp>
+#include <nda/clef.hpp>
 #include <iostream>
-using namespace triqs::clef;
+using namespace nda::clef;
 
 int main() {
   placeholder<0> x_;
@@ -30,7 +30,7 @@ int main() {
     std::cout << g(10) << std::endl;
   }
   { // playing with clef::function and std::function
-    triqs::clef::function<double(double, double)> f2, g2;
+    nda::clef::function<double(double, double)> f2, g2;
     f2(x_, y_) = x_ + y_;
     std::cout << f2(2, 3) << std::endl;
 

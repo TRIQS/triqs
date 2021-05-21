@@ -1,8 +1,10 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <iomanip>
 
 using namespace triqs::gfs;
-triqs::clef::placeholder<0> iw_;
+using namespace triqs::mesh;
+nda::clef::placeholder<0> iw_;
 
 int main() {
   double beta = 1.0;

@@ -1,4 +1,4 @@
-**[triqs/statistics]** Tools for statistical analysis: binning, jackknife and autocorrelation time
+**[triqs.stat]** Tools for statistical analysis: binning, jackknife and autocorrelation time
 ====================================================================================================
 
 Introduction
@@ -94,4 +94,4 @@ Histogram
 .. literalinclude:: ./histogram_example.cpp
 
 .. toctree::
-   /documentation/cpp_api/triqs/statistics/histogram
+   /documentation/cpp_api/triqs.stat/histogram

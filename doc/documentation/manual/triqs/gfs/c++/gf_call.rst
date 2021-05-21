@@ -55,7 +55,7 @@ The special case (2) (no argument) returns a complete view of the object
 (3) Interaction with clef expressions 
 -------------------------------------------------
 
-* gf and gf_view can be used with the triqs::clef library 
+* gf and gf_view can be used with the nda::clef library 
 
 
   

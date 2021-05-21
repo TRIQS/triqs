@@ -1,10 +1,12 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 
 int main() {
 
-  triqs::clef::placeholder<0> iw_;
+  nda::clef::placeholder<0> iw_;
 
   double beta  = 10;
   auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, 100};

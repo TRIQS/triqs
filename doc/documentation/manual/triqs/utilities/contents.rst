@@ -10,6 +10,6 @@
    exceptions
    factory
    tupletools
-   mini_vector
+   std::array
    python_include_mess 
     

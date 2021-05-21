@@ -1,14 +1,14 @@
-#include <triqs/clef.hpp>
-#include <triqs/arrays.hpp>
+#include <nda/clef.hpp>
+#include <nda/nda.hpp>
 #include <iostream>
 #include <algorithm>
 int main() {
   // Declaring some placeholders (i.e. dummy variables).
-  triqs::clef::placeholder<0> i_;
-  triqs::clef::placeholder<1> j_;
+  nda::clef::placeholder<0> i_;
+  nda::clef::placeholder<1> j_;
 
   // Declaring a 3x3 matrix
-  triqs::arrays::matrix<double> A(3, 3);
+  nda::matrix<double> A(3, 3);
 
   // Automatically filling the matrix
   // -> forget about the bounds, it is automatic
@@ -23,7 +23,7 @@ int main() {
   double pi = std::acos(-1);
 
   // Automatically filling the vector with the evaluation of the expression in i_
-  triqs::clef::make_expr(V)[i_] << cos(2 * pi / 5.0 * i_);
+  nda::clef::make_expr(V)[i_] << cos(2 * pi / 5.0 * i_);
 
   // -> by the way, the constant calculation is precomputed
   // (expressions are partially evaluated as soon as possible)
@@ -33,11 +33,11 @@ int main() {
     std::cout << "call time_consuming_function" << std::endl;
     return 2 * x;
   };
-  triqs::clef::make_expr(V)[i_] << cos(time_consuming_function(10) * i_);
+  nda::clef::make_expr(V)[i_] << cos(time_consuming_function(10) * i_);
 
   // If you insist using on more complex containers...
   std::vector<std::vector<double>> W(3, std::vector<double>(5));
-  triqs::clef::make_expr(W)[i_][j_] << i_ + cos(time_consuming_function(10) * j_ + i_);
+  nda::clef::make_expr(W)[i_][j_] << i_ + cos(time_consuming_function(10) * j_ + i_);
 
   // You can also put a CLEF expression in a std::function
   // a function i -> 2*i +1

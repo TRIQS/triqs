@@ -1,5 +1,5 @@
-#include <triqs/clef.hpp>
-using namespace triqs::clef;
+#include <nda/clef.hpp>
+using namespace nda::clef;
 int main() {
   placeholder<1> x_;
   placeholder<2> y_;

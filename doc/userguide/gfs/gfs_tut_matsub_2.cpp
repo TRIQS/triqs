@@ -1,7 +1,8 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
 using namespace triqs::mesh;
-using triqs::clef::placeholder;
+using nda::clef::placeholder;
 
 int main() {
 

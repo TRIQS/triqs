@@ -1,5 +1,7 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 int main() {
 
   // Set the parameters
@@ -16,7 +18,7 @@ int main() {
   auto gt = gf<imtime, scalar_valued>{tau_mesh, {}};
 
   // Initialization
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   gw(om_) << 1 / (om_ - a);
 
   // Fill gt with the fourier transform of gw and provide the first two

@@ -1,5 +1,5 @@
-#include <triqs/arrays.hpp>
-using triqs::arrays::array;
+#include <nda/nda.hpp>
+using nda::array;
 int main() {
 
   array<double, 2> A(2, 2);

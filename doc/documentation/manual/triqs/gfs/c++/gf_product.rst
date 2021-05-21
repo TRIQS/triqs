@@ -2,7 +2,7 @@
 
 .. _gf_product: 
 
-**[gf<cartesian_product<X,Y,...>>]** Multiple variables 
+**[gf<prod<X,Y,...>>]** Multiple variables 
 ========================================================
 
 Domain & mesh

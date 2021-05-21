@@ -1,10 +1,10 @@
-#include <triqs/clef.hpp>
+#include <nda/clef.hpp>
 #include <iostream>
-using namespace triqs::clef;
+using namespace nda::clef;
 
 struct Obj {
   double v;
-  TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+  CLEF_IMPLEMENT_LAZY_CALL();
   //
   template <typename Fnt> friend void triqs_clef_auto_assign(Obj &x, Fnt f) {
     std::cout << " called triqs_clef_auto_assign " << f(x.v++) << std::endl;

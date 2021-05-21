@@ -29,8 +29,8 @@ start by writing some sources:
 
 OK, our project will be just one :file:`main.cpp` file, e.g.::
 
-  #include <triqs/arrays.hpp>
-  using namespace triqs::arrays;
+  #include <nda/nda.hpp>
+  using namespace nda;
   int main(){
     array<double,1> A {1,2,3}, B{10,20,30}, C;
     C = A+B;

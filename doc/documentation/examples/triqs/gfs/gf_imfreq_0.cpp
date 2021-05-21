@@ -1,5 +1,7 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 int main() {
   double beta = 10;
   int Nfreq   = 100;
@@ -12,7 +14,7 @@ int main() {
   auto g2 = gf<imfreq>{gf_mesh<imfreq>{beta, Fermion, Nfreq}, make_shape(1, 1)};
 
   // Filling the gf with something...
-  triqs::clef::placeholder<0> wn_;
+  nda::clef::placeholder<0> wn_;
   g1(wn_) << 1 / (wn_ + 2);
 
   // evaluation at n=3

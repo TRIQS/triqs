@@ -1,8 +1,8 @@
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 
-using triqs::arrays::array;
-using triqs::arrays::matrix;
-using triqs::arrays::vector;
+using nda::array;
+using nda::matrix;
+using nda::vector;
 int main() {
   array<double, 2> A(2, 2), B(2, 2), C;
 

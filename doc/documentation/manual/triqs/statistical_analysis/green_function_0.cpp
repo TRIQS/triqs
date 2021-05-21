@@ -1,10 +1,12 @@
-#include <triqs/clef.hpp>
+#include <nda/clef.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
-#include <triqs/statistics.hpp>
-using namespace triqs::statistics;
-using triqs::clef::placeholder;
+#include <triqs/stat.hpp>
+using namespace triqs::stat;
+using nda::clef::placeholder;
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 int main() {
 
   //generate Green's functions with random noise

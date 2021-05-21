@@ -1,7 +1,9 @@
 #include <triqs/gfs.hpp>
-#include <triqs/clef.hpp>
+#include <triqs/mesh.hpp>
+#include <nda/clef.hpp>
 using namespace triqs::gfs;
-using namespace triqs::clef;
+using namespace triqs::mesh;
+using namespace nda::clef;
 
 int main() {
   double beta = 10;  // the inverse temperature

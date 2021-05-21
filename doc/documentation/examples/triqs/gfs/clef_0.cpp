@@ -1,6 +1,8 @@
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using triqs::clef::placeholder;
+using namespace triqs::mesh;
+using nda::clef::placeholder;
 int main() {
 
   // Cf gf<imfreq> specialisation page for the constructor

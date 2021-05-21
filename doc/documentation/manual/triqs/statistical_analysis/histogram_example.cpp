@@ -1,5 +1,5 @@
-#include <triqs/statistics.hpp>
-using namespace triqs::statistics;
+#include <triqs/stat.hpp>
+using namespace triqs::stat;
 
 int main() {
 

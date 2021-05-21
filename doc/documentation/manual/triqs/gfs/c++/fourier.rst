@@ -12,8 +12,8 @@ Here is a synopsis (V = imfreq, imtime, refreq, retime)::
  auto fourier(gf_const_view<V, T> g, array_const_view<dcomplex, 1 + T::rank> known_moments);
 
  gf<adj(V), T> make_gf_from_fourier(gf_const_view<V, T> g);
- gf<adj(V), T> make_gf_from_fourier(gf_const_view<V, T> g, gf_mesh<V> m);
- gf<adj(V), T> make_gf_from_fourier(gf_const_view<V, T> g, gf_mesh<V> m, array_const_view<dcomplex, 1 + T::rank> known_moments);
+ gf<adj(V), T> make_gf_from_fourier(gf_const_view<V, T> g, V m);
+ gf<adj(V), T> make_gf_from_fourier(gf_const_view<V, T> g, V m, array_const_view<dcomplex, 1 + T::rank> known_moments);
 
 fourier
 -------

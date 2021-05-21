@@ -1,8 +1,8 @@
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <iostream>
 
 using namespace triqs;
-using namespace triqs::arrays;
+using namespace nda;
 using namespace mpi;
 
 int main(int argc, char *argv[]) {

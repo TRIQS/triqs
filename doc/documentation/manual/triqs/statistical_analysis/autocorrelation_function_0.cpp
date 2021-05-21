@@ -1,6 +1,6 @@
-#include <triqs/statistics.hpp>
+#include <triqs/stat.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
-using namespace triqs::statistics;
+using namespace triqs::stat;
 int main() {
   observable<double> A;
   triqs::mc_tools::random_generator RND;

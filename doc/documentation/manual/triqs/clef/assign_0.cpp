@@ -1,6 +1,6 @@
-#include "triqs/clef.hpp"
+#include "nda/clef.hpp"
 #include <iostream>
-using namespace triqs::clef;
+using namespace nda::clef;
 
 int main() {
   int N     = 5;

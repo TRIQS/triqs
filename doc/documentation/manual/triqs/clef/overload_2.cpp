@@ -1,4 +1,4 @@
-#include <triqs/clef.hpp>
+#include <nda/clef.hpp>
 
 struct Obj {
   double v;                  // put something in it
@@ -9,14 +9,14 @@ struct Obj {
   double operator()(double x) const { return 10 * x; }
 
   // This macro implements properly an overload of the operator ()
-  TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+  CLEF_IMPLEMENT_LAZY_CALL();
 
   // a method
   double my_method(double x) const { return 2 * x; }
 
   // CLEF overload
   // WARNING : the method MUST be const
-  TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(Obj, my_method);
+  CLEF_IMPLEMENT_LAZY_METHOD(Obj, my_method);
 
   // Just to print itself nicely in the expressions
   friend std::ostream &operator<<(std::ostream &out, Obj const &x) { return out << "Obj"; }
@@ -24,8 +24,8 @@ struct Obj {
 
 int main() {
   Obj f(7);
-  triqs::clef::placeholder<1> x_;
-  triqs::clef::placeholder<2> y_;
+  nda::clef::placeholder<1> x_;
+  nda::clef::placeholder<2> y_;
 
   std::cout << "Clef expression     : " << f(y_) + 2 * x_ << std::endl;
   std::cout << "Complete evaluation : " << eval(f(x_) + 2 * x_, x_ = 1) << std::endl;
