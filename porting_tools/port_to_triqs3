@@ -51,7 +51,7 @@ repl_dict = {
         "triqs::statistics": "triqs::stat",
         "triqs.statistics": "triqs.stat",
         # --- NDA Merge ---
-        "#include <triqs/clef.hpp>\n": "",
+        "triqs/clef.hpp": "nda/clef.hpp",
         "#include <triqs/arrays.hpp>": "#include <nda/nda.hpp>",
         "#include <triqs/arrays/array.hpp>": "#include <nda/nda.hpp>",
         "#include <triqs/arrays/linalg.*?.hpp>": "#include <nda/linalg.hpp>",
