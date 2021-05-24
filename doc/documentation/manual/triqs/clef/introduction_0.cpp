@@ -39,24 +39,4 @@ int main() {
   std::vector<std::vector<double>> W(3, std::vector<double>(5));
   nda::clef::make_expr(W)[i_][j_] << i_ + cos(time_consuming_function(10) * j_ + i_);
 
-  // You can also put a CLEF expression in a std::function
-  // a function i -> 2*i +1
-  std::function<int(int)> f = i_ >> 2 * i_ + 1;
-  // a function (i,j)  -> 2*i +j
-  std::function<double(int, int)> g = var(i_, j_) >> 2 * i_ + j_;
-  // checking ...
-  std::cout << "f(10) =" << f(10) << "  g(1,2) =" << g(1, 2) << std::endl;
-
-  // You can also use a Curry form : h is a function i-> j -> 2*i+ j
-  auto h = i_ >> (j_ >> 2 * i_ + j_);
-  std::cout << "h(1)(2) = " << h(1)(2) << std::endl;
-
-  // You an also use this to quickly write some lambda, as an alternative syntax to the C++ lambda
-  // with e.g. STL algorithms (with the advantage that the function is polymorphic!).
-  std::vector<int> v = {0, -1, 2, -3, 4, 5, -6};
-  // replace all negative elements (i.e. those for which i -> (i<0) return true), by 0
-  std::replace_if(begin(v), end(v), i_ >> (i_ < 0), 0);
-  // for non believer, it really worked ...
-  for (auto const &x : v) std::cout << x << " ";
-  std::cout << std::endl;
 }
