@@ -23,7 +23,7 @@
 
 namespace triqs::gfs {
 
-  using clef::_ph; // placeholder
+  using clef::placeholder;
   using mesh::mesh_point;
 
   /* ---------------------------------------------------------------------------------------------------
@@ -91,10 +91,10 @@ namespace triqs::gfs {
 
 namespace nda::clef {
 
-  template <int N, typename X> triqs::gfs::tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
+  template <int N, typename X> triqs::gfs::tuple_com<long, placeholder<N>> operator,(long i, placeholder<N> p) { return {std::make_tuple(i, p)}; }
 
   // placeholder, mesh_point a:sorbs argument in a tuple_com
-  template <int N, typename X> triqs::gfs::tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) {
+  template <int N, typename X> triqs::gfs::tuple_com<placeholder<N>, std::decay_t<X>> operator,(placeholder<N> p, X &&x) {
     return {std::make_tuple(p, std::forward<X>(x))};
   }
 
@@ -103,8 +103,8 @@ namespace nda::clef {
 
   // The case A[x_,y_] = RHS : we form the function (make_function) and call auto_assign (by ADL)
   template <typename F, typename RHS, int... Is>
-  FORCEINLINE void operator<<(expr<tags::subscript, F, triqs::gfs::tuple_com<_ph<Is>...>> &&ex, RHS &&rhs) {
-    clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+  FORCEINLINE void operator<<(expr<tags::subscript, F, triqs::gfs::tuple_com<placeholder<Is>...>> &&ex, RHS &&rhs) {
+    clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
   }
 
   // tuple_com can be evaluated
