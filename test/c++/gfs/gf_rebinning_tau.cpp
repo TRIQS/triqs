@@ -28,7 +28,7 @@ TEST(Gf, RebinTau) {
   auto gt1 = gf<imtime>{{beta, Fermion, 9}, {1, 1}};
   auto gt2 = gf<imtime>{{beta, Fermion, 10}, {1, 1}};
 
-  triqs::clef::placeholder_prime<0> tau_;
+  triqs::clef::placeholder<0> tau_;
   gt1(tau_) << -0.25 - 0.5 * tau_;
   gt2(tau_) << -0.25 - 0.5 * (beta - tau_);
 

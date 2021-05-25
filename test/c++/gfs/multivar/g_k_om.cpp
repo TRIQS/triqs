@@ -36,7 +36,7 @@ namespace nda::clef {
 
 placeholder<0> k_;
 placeholder<1> w_;
-placeholder_prime<0> wp_;
+placeholder<2> wp_;
 using gf_bz_imfreq_mat = gf<prod<brzone, imfreq>, matrix_valued>;
 using gf_bz_imtime_mat = gf<prod<brzone, imtime>, matrix_valued>;
 

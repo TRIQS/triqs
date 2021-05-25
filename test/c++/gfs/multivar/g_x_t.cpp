@@ -60,7 +60,7 @@ TEST(Gf, x_tau) {
   auto gkt = gf<prod<brzone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   placeholder<0> k_;
-  placeholder_prime<1> tau_;
+  placeholder<1> tau_;
 
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
   gkt(k_, tau_) << exp(-eps_k * tau_);

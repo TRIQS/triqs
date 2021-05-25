@@ -14,7 +14,7 @@ int main() {
   // or a more verbose/explicit form ...
   auto g2 = gf<imtime>{gf_mesh<imtime>{beta, Fermion, n_times}, make_shape(1, 1)};
 
-  nda::clef::placeholder_prime<0> tau_;
+  nda::clef::placeholder<0> tau_;
   g1(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
   // evaluation at tau=3.2

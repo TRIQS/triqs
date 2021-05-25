@@ -32,7 +32,7 @@ static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::comple
 
 gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<0> r_;
-  placeholder_prime<1> tau_;
+  placeholder<1> tau_;
   placeholder<2> k_;
 
   auto w_mesh = std::get<1>(G_k_w.mesh());
@@ -73,10 +73,10 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
 
 gf_bz_imfreq_mat compute_gg(gf_bz_imfreq_mat const &G_k_w) {
 
-  placeholder_prime<0> k_;
-  placeholder_prime<1> q_;
-  placeholder_prime<3> iw_;
-  placeholder_prime<4> inu_;
+  placeholder<0> k_;
+  placeholder<1> q_;
+  placeholder<3> iw_;
+  placeholder<4> inu_;
   auto const &w_mesh = std::get<1>(G_k_w.mesh());
   auto const &k_mesh = std::get<0>(G_k_w.mesh());
   double beta        = w_mesh.domain().beta;

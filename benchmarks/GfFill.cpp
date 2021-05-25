@@ -52,10 +52,9 @@ BENCHMARK(GfFillLoop)->RangeMultiplier(2)->Range(1 << 6, 1 << 8); //->Complexity
 static void GfFillClef(benchmark::State &state) {
   long n_iw = state.range(0);
 
-  // Lets guarantee we exclude tails by using primed clef
-  triqs::clef::placeholder_prime<0> iW;
-  triqs::clef::placeholder_prime<1> iw1;
-  triqs::clef::placeholder_prime<2> iw2;
+  triqs::clef::placeholder<0> iW;
+  triqs::clef::placeholder<1> iw1;
+  triqs::clef::placeholder<2> iw2;
 
   auto iw_mesh_large = gf_mesh<imfreq>{1.0, Fermion, 2 * n_iw};
   auto M             = gf<prod<imfreq, imfreq>, scalar_valued>{{iw_mesh_large, iw_mesh_large}};

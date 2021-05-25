@@ -95,7 +95,7 @@ TEST(Gf, EvaluatorMatrix) {
   double beta = 1;
   auto g      = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {2, 2}};
 
-  triqs::clef::placeholder_prime<0> om_;
+  triqs::clef::placeholder<0> om_;
   g(om_) << 1 / (om_ + 2.3);
 
   auto f     = matsubara_freq{120, beta, Fermion};
@@ -110,7 +110,7 @@ TEST(Gf, EvaluatorScalar) {
   double beta = 1;
   auto g      = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
 
-  triqs::clef::placeholder_prime<0> om_;
+  triqs::clef::placeholder<0> om_;
   g(om_) << 1 / (om_ + 2.3);
 
   auto f     = matsubara_freq{120, beta, Fermion};
@@ -125,7 +125,7 @@ TEST(Gf, PhNoInfinity) {
   double beta = 1;
   auto g      = gf<imfreq, matrix_valued>{{beta, Fermion}, {2, 2}};
 
-  triqs::clef::placeholder_prime<0> om_;
+  triqs::clef::placeholder<0> om_;
   g(om_) << 1 / (om_ + 2.3);
 }
 
@@ -137,7 +137,7 @@ TEST(Gf, PhNoInfinity_tau) {
 
   using std::exp;
   //triqs::clef::placeholder<0> tau_; // would not compile
-  triqs::clef::placeholder_prime<0> tau_;
+  triqs::clef::placeholder<0> tau_;
   g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 }
 
