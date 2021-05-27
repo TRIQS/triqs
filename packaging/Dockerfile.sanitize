@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
       libfftw3-dev \
-      libgfortran4 \
+      libgfortran5 \
       libgmp-dev \
       libhdf5-dev \
       liblapack-dev \

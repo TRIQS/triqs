@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libboost-dev \
       libclang-${LLVM}-dev \
       libfftw3-dev \
-      libgfortran4 \
+      libgfortran5 \
       libgmp-dev \
       python-dev \
       python3-dev \
