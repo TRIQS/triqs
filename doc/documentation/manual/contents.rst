@@ -19,7 +19,6 @@
    triqs/plotting_protocols/contents
    triqs/provenance/contents
    triqs/random_generator/contents
-   triqs/statistical_analysis/contents
    triqs/utilities/contents
    triqs/conventions
 
