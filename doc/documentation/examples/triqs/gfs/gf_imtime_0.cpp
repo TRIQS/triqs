@@ -18,7 +18,7 @@ int main() {
   g1(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
   // evaluation at tau=3.2
-  std::cout << nda::make_matrix(g1(3.2)) << " == " << exp(-a * 3.2) / (1 + exp(-beta * a)) << std::endl;
+  std::cout << nda::make_regular(g1(3.2)) << " == " << exp(-a * 3.2) / (1 + exp(-beta * a)) << std::endl;
 
   // --- a scalar_valued function ------------
 
