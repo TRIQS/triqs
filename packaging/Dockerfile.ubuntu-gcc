@@ -1,18 +1,18 @@
-FROM ubuntu:bionic
-ARG RELEASE=bionic
+FROM ubuntu:focal
+ARG RELEASE=focal
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       cmake \
-      g++ \
+      g++-10 \
       gfortran \
       git \
       vim \
-      lldb-9 \
+      lldb-10 \
       hdf5-tools \
       libblas-dev \
       libboost-dev \
       libfftw3-dev \
-      libgfortran3 \
+      libgfortran4 \
       libgmp-dev \
       libhdf5-dev \
       liblapack-dev \
@@ -28,5 +28,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.6 \
-    CC=gcc CXX=g++
+ENV PYTHON_VERSION=3.8 \
+    CC=gcc-10 CXX=g++-10
