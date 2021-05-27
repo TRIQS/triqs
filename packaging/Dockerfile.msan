@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
+      libssl-dev \
       python-dev \
       python3-dev \
       python3-clang-${LLVM} \
@@ -32,16 +33,13 @@ ENV PYTHON_VERSION=3.8 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.0
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
 
-# Build libcxx with MSAN
-ADD https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz /tmp/
-ADD https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz /tmp/
+# Build libcxx and libcxxabi with MSAN
+RUN git clone https://github.com/llvm/llvm-project --branch llvmorg-${LLVM}.0.0 --depth 1 -c advice.detachedHead=false /tmp/llvm_src
 RUN mkdir /tmp/build && cd /tmp/build && \
-      tar -C /tmp -xf /tmp/libcxx-${LLVM_VERSION}.src.tar.xz && \
-      tar -C /tmp -xf /tmp/libcxxabi-${LLVM_VERSION}.src.tar.xz && \
-      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} && make install && \
+      cmake /tmp/llvm_src/libcxxabi -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/llvm_src/libcxx -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} && make install && \
       rm -rf * && \
-      cmake /tmp/libcxx-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-${LLVM_VERSION}.src/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} install && \
-      rm -rf /tmp/libcxx* /tmp/build
+      cmake /tmp/llvm_src/libcxx -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/llvm_src/libcxxabi/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} install && \
+      rm -rf /tmp/llvm_src /tmp/build
 
 # Build Environment using MSAN
 ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
@@ -68,8 +66,8 @@ RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
 ENV HDF5_ROOT=/opt/hdf5
 
 # libevent
-ADD https://github.com/libevent/libevent/releases/download/release-2.1.11-stable/libevent-2.1.11-stable.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/libevent-2.1.11-stable.tar.gz && cd libevent-2.1.11-stable && \
+ADD https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/libevent-2.1.12-stable.tar.gz && cd libevent-2.1.12-stable && \
       ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/libevent*
 
@@ -81,10 +79,10 @@ RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd
       cd /tmp && rm -rf /tmp/hwloc*
 
 # OpenMPI
-ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.bz2 /tmp/
-RUN cd /tmp && tar xf /tmp/openmpi-4.0.4.tar.bz2 && cd openmpi-4.0.4 && \
+ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/openmpi-4.1.1.tar.bz2 && cd openmpi-4.1.1 && \
       ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/openmpi-4.0.4*
+      cd /tmp && rm -rf /tmp/openmpi-4.1.1*
 ENV MPI_ROOT=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
 
@@ -114,4 +112,4 @@ USER build
 RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMSAN=ON \
     -DLAPACK_LIBRARIES=/opt/libflame/lib/libflame.a -DBLAS_LIBRARIES=/opt/libflame/lib/libflame.a && \
     make -j${NTHREAD}
-RUN make test CTEST_OUTPUT_ON_FAILURE=1 || true
+RUN cd test/c++ && make test CTEST_OUTPUT_ON_FAILURE=1 || true
