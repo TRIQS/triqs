@@ -33,11 +33,11 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
         ( cat packaging/Dockerfile.${env.STAGE_NAME} ; sed '0,/^FROM /d' Dockerfile.build ) > Dockerfile
       """
       /* build and tag */
-      def args = ""
+      def args = ''
       if (platform == documentationPlatform)
-        args = "-DBuild_Documentation=1"
+        args = '-DBuild_Documentation=1 -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2"'
       else if (platform == "sanitize")
-        args = "-DASAN=ON -DUBSAN=ON"
+        args = '-DASAN=ON -DUBSAN=ON'
       def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside() {

@@ -34,8 +34,8 @@ ENV PYTHON_VERSION=3.8 \
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
 
 # Build libcxx and libcxxabi with MSAN
-RUN git clone https://github.com/llvm/llvm-project --branch llvmorg-${LLVM}.0.0 --depth 1 -c advice.detachedHead=false /tmp/llvm_src
-RUN mkdir /tmp/build && cd /tmp/build && \
+RUN git clone https://github.com/llvm/llvm-project --branch llvmorg-${LLVM_VERSION} --depth 1 -c advice.detachedHead=false /tmp/llvm_src && \
+      mkdir /tmp/build && cd /tmp/build && \
       cmake /tmp/llvm_src/libcxxabi -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/llvm_src/libcxx -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} && make install && \
       rm -rf * && \
       cmake /tmp/llvm_src/libcxx -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/llvm_src/libcxxabi/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} install && \
