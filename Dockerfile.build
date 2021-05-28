@@ -20,8 +20,8 @@ COPY --chown=build . $SRC/$APPNAME
 WORKDIR $BUILD/$APPNAME
 RUN chown build .
 USER build
-ARG BUILD_DOC=0
 ARG BUILD_ID
-RUN cmake $SRC/$APPNAME -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 || make -j1 VERBOSE=1
+ARG CMAKE_ARGS
+RUN cmake $SRC/$APPNAME -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Deps=Always -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" $CMAKE_ARGS && make -j2 || make -j1 VERBOSE=1
 USER root
 RUN make install
