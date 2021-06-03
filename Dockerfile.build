@@ -5,7 +5,7 @@ ARG APPNAME=triqs
 COPY requirements.txt /src/$APPNAME/requirements.txt
 RUN pip3 install -r /src/$APPNAME/requirements.txt
 
-RUN useradd -u 993 -m build
+RUN useradd -u 990 -m build
 
 ENV SRC=/src \
     BUILD=/home/build \
