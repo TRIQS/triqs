@@ -25,8 +25,8 @@ def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "centos-gcc"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
   def platform = dockerPlatforms[i]
-  platforms[platform] = { -> node('docker') {
-    stage(platform) { timeout(time: 1, unit: 'HOURS') {
+  platforms[platform] = { -> node('linux && docker && triqs') {
+    stage(platform) { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
       checkout scm
       /* construct a Dockerfile for this base */
       sh """
@@ -42,7 +42,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       if (!keepInstall) {
         sh "docker rmi --no-prune ${img.imageName()}"
       }
-    } }
+    } } }
   } }
 }
 
@@ -55,7 +55,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
   def platform = platformEnv[0]
   platforms["osx-$platform"] = { -> node('osx && triqs') {
-    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') {
+    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
       def srcDir = pwd()
       def tmpDir = pwd(tmp:true)
       def buildDir = "$tmpDir/build"
@@ -88,12 +88,12 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         } }
         sh "make install"
       } }
-    } }
+    } } }
   } }
 }
 
 /****************** sanitization builds (in docker) */
-platforms['sanitize'] = { -> node('docker') {
+platforms['sanitize'] = { -> node('linux && docker && triqs') {
   stage('sanitize') { timeout(time: 1, unit: 'HOURS') {
     checkout scm
     /* construct a Dockerfile for this base */
@@ -106,7 +106,7 @@ platforms['sanitize'] = { -> node('docker') {
 def error = null
 try {
   parallel platforms
-  if (keepInstall) { node("docker") {
+  if (keepInstall) { node('linux && docker && triqs') {
     /* Publish results */
     stage("publish") { timeout(time: 5, unit: 'MINUTES') {
       def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
