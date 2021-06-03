@@ -25,7 +25,7 @@ def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "sanitize"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
   def platform = dockerPlatforms[i]
-  platforms[platform] = { -> node('docker') {
+  platforms[platform] = { -> node('linux && docker && triqs') {
     stage(platform) { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
       checkout scm
       /* construct a Dockerfile for this base */
@@ -101,7 +101,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 def error = null
 try {
   parallel platforms
-  if (keepInstall) { node("docker") {
+  if (keepInstall) { node('linux && docker && triqs') {
     /* Publish results */
     stage("publish") { timeout(time: 5, unit: 'MINUTES') {
       def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
