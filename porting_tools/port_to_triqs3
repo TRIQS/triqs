@@ -72,7 +72,9 @@ repl_dict = {
         "#include <triqs/arrays/blas_lapack/dot.hpp>": "#include <nda/blas/dot.hpp>",
         "#include <triqs/arrays/linalg/eigenelements.hpp>": "#include <nda/linalg/eigenelements.hpp>",
         "triqs::arrays": "nda",
-        "conj_r": "conj"
+        "conj_r": "conj",
+        # --- C++20 ---
+        "REQUIRES": "requires",
         }
 # :bufdo :%s#\(\w *\)/\( *[Nn0-9]\)#\1//\2#gc
 
