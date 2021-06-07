@@ -84,7 +84,7 @@ namespace triqs {
       private:
       friend class boost::iterator_core_access;
       void increment() { ++_it; }
-      void decrement() REQUIRES(details::is_bidir<IteratorType>) { --_it; }
+      void decrement() requires(details::is_bidir<IteratorType>) { --_it; }
       bool equal(dressed_iterator const &other) const { return (other._it == _it); }
       Dressing dereference() const { return Dressing(_it, _aux); }
       IteratorType _it;
@@ -117,7 +117,7 @@ namespace triqs {
       private:
       friend class boost::iterator_core_access;
       void increment() { ++_it; }
-      void decrement() REQUIRES(details::is_bidir<IteratorType>) { --_it; }
+      void decrement() requires(details::is_bidir<IteratorType>) { --_it; }
       bool equal(dressed_iterator const &other) const { return (other._it == _it); }
       Dressing dereference() const { return Dressing(_it); }
       IteratorType _it;

@@ -23,7 +23,7 @@
 
 namespace triqs::utility {
   template <typename T1, typename T2>
-  REQUIRES(std::is_arithmetic_v<std::decay_t<T1>> and std::is_arithmetic_v<std::decay_t<T2>>)
+  requires(std::is_arithmetic_v<std::decay_t<T1>> and std::is_arithmetic_v<std::decay_t<T2>>)
   inline bool kronecker(T1 &&i, T2 &&j) {
     return i == j;
   }

@@ -20,8 +20,8 @@ std::vector<int> block_sizes() const {
   return res;
 }
 
-int size1() const REQUIRES(Arity == 2) { return _glist.size(); }
-int size2() const REQUIRES(Arity == 2) { return _glist[0].size(); } // FIXME PROTECT
+int size1() const requires(Arity == 2) { return _glist.size(); }
+int size2() const requires(Arity == 2) { return _glist[0].size(); } // FIXME PROTECT
 int size() const {
   if constexpr (Arity == 1) {
     return _glist.size();
@@ -51,40 +51,40 @@ const_view_type operator()() const { return *this; }
 /// Makes a view of *this if it is non const
 view_type operator()() { return *this; }
 
-decltype(auto) operator()(int n) const REQUIRES(Arity == 1) { return _glist[n]; }
-decltype(auto) operator()(int n1, int n2) const REQUIRES(Arity == 2) { return _glist[n1][n2]; }
-decltype(auto) operator()(int n1, int n2) REQUIRES(Arity == 2) { return _glist[n1][n2]; }
+decltype(auto) operator()(int n) const requires(Arity == 1) { return _glist[n]; }
+decltype(auto) operator()(int n1, int n2) const requires(Arity == 2) { return _glist[n1][n2]; }
+decltype(auto) operator()(int n1, int n2) requires(Arity == 2) { return _glist[n1][n2]; }
 
 // ------------- Call with lazy arguments -----------------------------
 
 // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-template <typename... Args> auto operator()(Args &&... args) & REQUIRES(nda::clef::is_clef_expression<Args...>) {
+template <typename... Args> auto operator()(Args &&... args) & requires(nda::clef::is_clef_expression<Args...>) {
   return clef::make_expr_call(*this, std::forward<Args>(args)...);
 }
 
-template <typename... Args> auto operator()(Args &&... args) const &REQUIRES(nda::clef::is_clef_expression<Args...>) {
+template <typename... Args> auto operator()(Args &&... args) const &requires(nda::clef::is_clef_expression<Args...>) {
   return clef::make_expr_call(*this, std::forward<Args>(args)...);
 }
 
-template <typename... Args> auto operator()(Args &&... args) && REQUIRES(nda::clef::is_clef_expression<Args...>) {
+template <typename... Args> auto operator()(Args &&... args) && requires(nda::clef::is_clef_expression<Args...>) {
   return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
 }
 // ------------- All the [] operators without lazy arguments -----------------------------
 
-decltype(auto) operator[](int n) const REQUIRES(Arity == 1) { return _glist[n]; }
-decltype(auto) operator[](int n) REQUIRES(Arity == 1) { return _glist[n]; }
+decltype(auto) operator[](int n) const requires(Arity == 1) { return _glist[n]; }
+decltype(auto) operator[](int n) requires(Arity == 1) { return _glist[n]; }
 
 // ------------- [] with lazy arguments -----------------------------
 
-template <typename Arg> auto operator[](Arg &&arg) const &REQUIRES(nda::clef::is_clef_expression<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) const &requires(nda::clef::is_clef_expression<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> auto operator[](Arg &&arg) & REQUIRES(nda::clef::is_clef_expression<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) & requires(nda::clef::is_clef_expression<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> auto operator[](Arg &&arg) && REQUIRES(nda::clef::is_clef_expression<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) && requires(nda::clef::is_clef_expression<Arg>) {
   return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
 }
 

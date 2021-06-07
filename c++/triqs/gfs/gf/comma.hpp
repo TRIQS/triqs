@@ -65,25 +65,25 @@ namespace triqs::gfs {
   }
 
   // integer types
-  template <typename Int> tuple_com<Int, all_t> operator,(Int i, all_t) REQUIRES(std::is_integral_v<Int>) { return {std::make_tuple(i, all_t{})}; }
-  template <typename Int, typename M> tuple_com<Int, mesh_point<M>> operator,(Int i, mesh_point<M> m) REQUIRES(std::is_integral_v<Int>) {
+  template <typename Int> tuple_com<Int, all_t> operator,(Int i, all_t) requires(std::is_integral_v<Int>) { return {std::make_tuple(i, all_t{})}; }
+  template <typename Int, typename M> tuple_com<Int, mesh_point<M>> operator,(Int i, mesh_point<M> m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(i, std::move(m))};
   }
-  template <typename Int> tuple_com<Int, matsubara_freq> operator,(Int i, matsubara_freq m) REQUIRES(std::is_integral_v<Int>) {
+  template <typename Int> tuple_com<Int, matsubara_freq> operator,(Int i, matsubara_freq m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(i, std::move(m))};
   }
 
   // array<int,R>
   template <typename Int, size_t R>
-  tuple_com<std::array<Int, R>, all_t> operator,(std::array<Int, R> const &a, all_t) REQUIRES(std::is_integral_v<Int>) {
+  tuple_com<std::array<Int, R>, all_t> operator,(std::array<Int, R> const &a, all_t) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(a, all_t{})};
   }
   template <typename Int, size_t R, typename M>
-  tuple_com<std::array<Int, R>, mesh_point<M>> operator,(std::array<Int, R> const &a, mesh_point<M> m) REQUIRES(std::is_integral_v<Int>) {
+  tuple_com<std::array<Int, R>, mesh_point<M>> operator,(std::array<Int, R> const &a, mesh_point<M> m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(a, std::move(m))};
   }
   template <typename Int, size_t R>
-  tuple_com<std::array<Int, R>, matsubara_freq> operator,(std::array<Int, R> const &a, matsubara_freq m) REQUIRES(std::is_integral_v<Int>) {
+  tuple_com<std::array<Int, R>, matsubara_freq> operator,(std::array<Int, R> const &a, matsubara_freq m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(a, std::move(m))};
   }
 

@@ -47,7 +47,7 @@ namespace triqs::gfs {
   }
 
   /// Make a const view of the positive frequency part of the function
-  template <typename G> view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g) REQUIRES(is_gf_v<G>) {
+  template <typename G> view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g) requires(is_gf_v<G>) {
     static_assert(std::is_same<typename std::decay_t<G>::mesh_t, mesh::imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
     static_assert(std::decay_t<G>::is_view or std::is_lvalue_reference_v<G>, "Cannot construct a positive_freq_view from a temporary gf");
     if (g.mesh().positive_only()) return g;
@@ -74,7 +74,7 @@ namespace triqs::gfs {
    *
    * @return true iif the fundamental property holds for all points of the mesh
    */
-  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-12) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-12) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
@@ -135,7 +135,7 @@ namespace triqs::gfs {
    *
    * @return The symmetrized Green function object
    */
-  template <typename G> typename G::regular_type make_hermitian(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G> typename G::regular_type make_hermitian(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;

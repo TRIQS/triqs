@@ -154,15 +154,15 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) &&
 
 // ------------- [] with lazy arguments -----------------------------
 
-template <typename Arg> auto operator[](Arg &&arg) const &REQUIRES(clef::is_any_lazy<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) const &requires(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> auto operator[](Arg &&arg) & REQUIRES(clef::is_any_lazy<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) & requires(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
 }
 
-template <typename Arg> auto operator[](Arg &&arg) && REQUIRES(clef::is_any_lazy<Arg>) {
+template <typename Arg> auto operator[](Arg &&arg) && requires(clef::is_any_lazy<Arg>) {
   return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
 }
 

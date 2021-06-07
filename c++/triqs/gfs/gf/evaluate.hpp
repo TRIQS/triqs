@@ -95,7 +95,7 @@ namespace triqs::gfs {
    * @param m The mesh
    * @param f The function 
    */
-  template <typename G, typename... Args> auto evaluate(G const &g, Args &&... args) REQUIRES(is_gf_v<G>) {
+  template <typename G, typename... Args> auto evaluate(G const &g, Args &&... args) requires(is_gf_v<G>) {
 
     if constexpr (not mesh::is_product_v<typename G::mesh_t>) {
       auto id = g.mesh().get_interpolation_data(std::forward<Args>(args)...);

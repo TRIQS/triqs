@@ -61,7 +61,7 @@ namespace triqs::gfs {
    * @example triqs/gfs/fit_tail.cpp
    */
   template <int N = 0, typename G, typename A = typename G::const_view_type::data_t>
-  std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
+  std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) requires(is_gf_v<G>) {
     if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true,
@@ -82,7 +82,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename BG, typename BA = std::vector<typename BG::g_t::data_t::regular_type>>
   std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_tail(BG const &bg, BA const &known_moments = {})
-     REQUIRES(is_block_gf_v<BG, 1>) {
+     requires(is_block_gf_v<BG, 1>) {
     double max_err = 0.0;
     std::vector<typename BG::g_t::data_t::regular_type> tail_vec;
     for (auto [i, g_bl] : itertools::enumerate(bg)) {
@@ -108,7 +108,7 @@ namespace triqs::gfs {
    * @example triqs/gfs/fit_hermitian_tail.cpp
    */
   template <int N = 0, typename G, typename A = typename G::data_t> 
-  std::pair<typename A::regular_type, double> fit_hermitian_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
+  std::pair<typename A::regular_type, double> fit_hermitian_tail(G const &g, A const &known_moments = {}) requires(is_gf_v<G>) {
     std::optional<long> inner_matrix_dim;
     constexpr int rank = G::target_t::rank;
     if (rank == 0)
@@ -137,7 +137,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename BG, typename A = std::vector<typename BG::g_t::data_t::regular_type>>
   std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_hermitian_tail(BG const &bg, A const &known_moments = {})
-     REQUIRES(is_block_gf_v<BG, 1>) {
+     requires(is_block_gf_v<BG, 1>) {
     double max_err = 0.0;
     std::vector<typename BG::g_t::data_t::regular_type> tail_vec;
     for (auto [i, g_bl] : itertools::enumerate(bg)) {
@@ -240,10 +240,10 @@ namespace triqs::gfs {
    @param tolerance tolerance threshold
    @return true iif the function g is real up to tolerance
    */
-  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G>) {
+  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) requires(is_gf_v<G>) {
     return max_element(abs(imag(g.data()))) <= tolerance;
   }
-  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) REQUIRES(is_block_gf_v<G>) {
+  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) requires(is_block_gf_v<G>) {
     return std::all_of(g.begin(), g.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
   }
 
@@ -253,7 +253,7 @@ namespace triqs::gfs {
    @tparam G any Gf, BlockGf or Block2Gf type
    @param g a gf
    */
-  template <typename G> typename G::regular_type::real_t real(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G> typename G::regular_type::real_t real(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>)
       return {g.mesh(), real(g.data()), g.indices()};
     else
@@ -272,7 +272,7 @@ namespace triqs::gfs {
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G> typename G::regular_type conj(G const &g) REQUIRES(is_gf_v<G>) { return {g.mesh(), conj(g.data()), g.indices()}; }
+  template <typename G> typename G::regular_type conj(G const &g) requires(is_gf_v<G>) { return {g.mesh(), conj(g.data()), g.indices()}; }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Multiply by matrices left or right

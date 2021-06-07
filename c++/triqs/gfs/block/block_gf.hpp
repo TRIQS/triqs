@@ -171,7 +171,7 @@ namespace triqs::gfs {
 
     /// Construct from anything which models BlockGreenFunction.
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-    template <typename G> block_gf(G const &x) REQUIRES(BlockGreenFunction<G>::value) : block_gf() {
+    template <typename G> block_gf(G const &x) requires(BlockGreenFunction<G>::value) : block_gf() {
       static_assert(G::arity == Arity, "Impossible");
       *this = x;
     }
@@ -181,22 +181,22 @@ namespace triqs::gfs {
     template <typename Tag> block_gf(mpi::lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
 
     /// Construct from a vector of gf
-    block_gf(data_t V) REQUIRES(Arity == 1) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
+    block_gf(data_t V) requires(Arity == 1) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
 
     /// Constructs a n block
-    block_gf(int n) REQUIRES(Arity == 1) : block_gf(data_t(n)) {}
+    block_gf(int n) requires(Arity == 1) : block_gf(data_t(n)) {}
 
     /// Constructs a n block with copies of g.
-    block_gf(int n, g_t const &g) REQUIRES(Arity == 1) : block_gf(data_t(n, g)) {}
+    block_gf(int n, g_t const &g) requires(Arity == 1) : block_gf(data_t(n, g)) {}
 
     /// Construct from the vector of names and one gf to be copied
-    block_gf(block_names_t b, g_t const &g) REQUIRES(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
+    block_gf(block_names_t b, g_t const &g) requires(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
 
     /// Construct from the vector of names
-    block_gf(block_names_t b) REQUIRES(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size()) {}
+    block_gf(block_names_t b) requires(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
     // Create Block Green function from Mesh and gf_struct
-    block_gf(Mesh const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) REQUIRES(Arity == 1) {
+    block_gf(Mesh const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) requires(Arity == 1) {
 
       for (auto const &[bl_name, bl_size] : gf_struct) {
         _block_names.push_back(bl_name);
@@ -211,7 +211,7 @@ namespace triqs::gfs {
 
     // Create Block Green function from Mesh and gf_struct
     template <typename Int>
-    block_gf(Mesh const &m, std::vector<Int> const & bl_sizes) REQUIRES(Arity == 1 && std::is_integral_v<Int>) {
+    block_gf(Mesh const &m, std::vector<Int> const & bl_sizes) requires(Arity == 1 && std::is_integral_v<Int>) {
 
       for (auto const &[bl, bl_size] : itertools::enumerate(bl_sizes)) {
         _block_names.push_back(std::to_string(bl));
@@ -225,10 +225,10 @@ namespace triqs::gfs {
     }
 
     /// Constructs a n blocks with copies of g.
-    block_gf(int n, int p, g_t const &g) REQUIRES(Arity == 2) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
+    block_gf(int n, int p, g_t const &g) requires(Arity == 2) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
     /// Construct from a vector of gf
-    block_gf(data_t V) REQUIRES(Arity == 2) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
+    block_gf(data_t V) requires(Arity == 2) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
 
     /// ---------------  Operator = --------------------
 

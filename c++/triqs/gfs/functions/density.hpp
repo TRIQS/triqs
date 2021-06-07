@@ -51,7 +51,7 @@ namespace triqs {
     // General Version for Block Gf
     // ------------------------------------------------------
 
-    template <typename BGf, int R> auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) REQUIRES(is_block_gf_v<BGf>) {
+    template <typename BGf, int R> auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) requires(is_block_gf_v<BGf>) {
 
       using mesh_t = typename BGf::mesh_t;
       static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::refreq>,

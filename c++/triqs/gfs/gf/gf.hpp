@@ -277,7 +277,7 @@ namespace triqs::gfs {
      *  @tparam G A type modeling :ref:`concept_GreenFunction`.
      *  @param g 
      */
-    template <typename G> explicit gf(G const &g) REQUIRES(GreenFunction<G>::value) : gf() { *this = g; } // explicit is very important here.	
+    template <typename G> explicit gf(G const &g) requires(GreenFunction<G>::value) : gf() { *this = g; } // explicit is very important here.	
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
 
     /** 
@@ -320,7 +320,7 @@ namespace triqs::gfs {
      * @param rhs
      * @example    triqs/gfs/gf_assign_0.cpp
      */
-    template <typename RHS> gf &operator=(RHS &&rhs) REQUIRES(GreenFunction<RHS>::value) {
+    template <typename RHS> gf &operator=(RHS &&rhs) requires(GreenFunction<RHS>::value) {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
       for (auto const &w : _mesh) (*this)[w] = rhs[w];

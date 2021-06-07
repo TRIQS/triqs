@@ -291,7 +291,7 @@ namespace std {
   /*
    * // NON PRODUCT mesh, for generic code std::get<0> should work
   // redondant with .get<pos>, but seems necessary.
-  template <size_t pos, typename M> auto const &get(M const &m) REQUIRES(models_mesh_concept<M>) {
+  template <size_t pos, typename M> auto const &get(M const &m) requires(models_mesh_concept<M>) {
     static_assert(pos == 0, "std::get<N>() of a non cartesiant product mesh for N>0");
     return m;
   }
@@ -336,7 +336,7 @@ namespace triqs::mesh {
 
   template <typename M1, typename M2>
   auto operator*(M1 const &m1, M2 const &m2) //
-     REQUIRES(models_mesh_concept_v<M1> and models_mesh_concept_v<M2>) {
+     requires(models_mesh_concept_v<M1> and models_mesh_concept_v<M2>) {
     return prod<M1, M2>{m1, m2};
   }
 } // namespace triqs::mesh
