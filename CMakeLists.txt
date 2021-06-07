@@ -35,8 +35,8 @@ message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 # Start project
 #---------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.9.6 FATAL_ERROR)
-cmake_policy(VERSION 3.9.6)
+cmake_minimum_required(VERSION 3.12.4 FATAL_ERROR)
+cmake_policy(VERSION 3.12.4)
 project(TRIQS VERSION 3.0.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

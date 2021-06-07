@@ -21,15 +21,8 @@ set_property(TARGET triqs PROPERTY VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSIO
 target_include_directories(triqs PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
-# Compile Options
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++20" HAS_CPP20)
-if(HAS_CPP20 AND cxx_std_20 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-  target_compile_features(triqs PUBLIC cxx_std_20)
-else()
-  target_compile_features(triqs PUBLIC cxx_std_17)
-  target_compile_options(triqs PUBLIC $<$<CXX_COMPILER_ID:GNU>:-fconcepts>)
-endif()
+# C++ Standard
+target_compile_features(triqs PUBLIC cxx_std_20)
 
 # Disable warnings about comma expression in array subscript
 target_compile_options(triqs PUBLIC
