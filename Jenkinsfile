@@ -11,7 +11,7 @@ properties([
   pipelineTriggers(keepInstall ? [
     upstream(
       threshold: 'SUCCESS',
-      upstreamProjects: '/TRIQS/cpp2py/master,/TRIQS/itertools/unstable,/TRIQS/mpi/unstable,/TRIQS/h5/unstable,/TRIQS/nda/unstable'
+      upstreamProjects: '/TRIQS/nda/unstable'
     )
   ] : [])
 ])
