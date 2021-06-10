@@ -28,23 +28,22 @@ namespace triqs::gfs {
   using gf_struct_t = std::vector<std::pair<std::string, long>>;
 
   /// h5_read function with backward compatibility layer for old gf_struct type
-  inline void h5_read_gf_struct(h5::group g, std::string const &name, gf_struct_t &x) {
+  inline void h5_read_gf_struct(h5::group g, std::string const &name, gf_struct_t &gf_struct) {
     {
       auto gobj = g.open_group(name);
       if (gobj.has_subgroup("0")) {
         auto bl0 = gobj.open_group("0");
         // Each block of old gf_struct type has subgroup "1"
         if (bl0.has_subgroup("1")) {
-          using gf_struct_old_t = std::vector<std::pair<std::string, std::vector<std::variant<long, std::string>>>>;
-          auto gf_struct_old    = gf_struct_old_t{};
-          h5::read(g, name, gf_struct_old);
-          x.clear();
-          for (auto &[bl, idx_lst] : gf_struct_old) x.push_back({bl, idx_lst.size()});
+          auto gf_struct_bkwd = std::vector<std::pair<std::string, std::vector<std::variant<long, std::string>>>>{};
+          h5::read(g, name, gf_struct_bkwd);
+          gf_struct.clear();
+          for (auto &[bl, idx_lst] : gf_struct_bkwd) gf_struct.push_back({bl, idx_lst.size()});
           return;
         }
       }
     }
-    h5::read(g, name, x);
+    h5::read(g, name, gf_struct);
   }
 
 } // namespace triqs::gfs
