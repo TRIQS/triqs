@@ -20,7 +20,8 @@
  ******************************************************************************/
 #pragma once
 
-#include "./../../hilbert_space/fundamental_operator_set.hpp"
+#include "./../../utility/factory.hpp"
+#include "./gf_struct.hpp"
 
 namespace triqs::gfs {
 
@@ -42,7 +43,7 @@ namespace triqs::gfs {
   /// --------------------------- CTAD ---------------------------------
 
   template <typename Mesh, typename Target> block_gf(std::vector<gf<Mesh, Target>>) -> block_gf<Mesh, Target, 1>;
-  template <typename Mesh> block_gf(Mesh const &, triqs::hilbert_space::gf_struct_t const &) -> block_gf<Mesh, matrix_valued, 1>;
+  template <typename Mesh> block_gf(Mesh const &, gf_struct_t const &) -> block_gf<Mesh, matrix_valued, 1>;
   template <typename Mesh, typename Target, int Arity, bool IsConst>
   block_gf(block_gf_view<Mesh, Target, Arity, IsConst>) -> block_gf<Mesh, Target, Arity>;
 
@@ -196,7 +197,7 @@ namespace triqs::gfs {
     block_gf(block_names_t b) requires(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
     // Create Block Green function from Mesh and gf_struct
-    block_gf(Mesh const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) requires(Arity == 1) {
+    block_gf(Mesh const &m, gf_struct_t const &gf_struct) requires(Arity == 1) {
 
       for (auto const &[bl_name, bl_size] : gf_struct) {
         _block_names.push_back(bl_name);

@@ -19,6 +19,7 @@
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <triqs/gfs/block/gf_struct.hpp>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_extensions.hpp>
@@ -37,7 +38,7 @@ namespace triqs::hilbert_space {
   using indices_t = std::vector<std::variant<long, std::string>>;
 
   /// Type type describing the structure of a Block Green's function
-  using gf_struct_t = std::vector<std::pair<std::string, long>>;
+  using triqs::gfs::gf_struct_t;
 
   /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
   /**
