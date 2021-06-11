@@ -35,7 +35,7 @@ namespace triqs::gfs {
         auto bl0 = gobj.open_group("0");
         // Each block of old gf_struct type has subgroup "1"
         if (bl0.has_subgroup("1")) {
-          auto gf_struct_bkwd = std::vector<std::pair<std::string, std::vector<std::variant<long, std::string>>>>{};
+          auto gf_struct_bkwd = std::vector<std::pair<std::string, std::vector<std::variant<int, std::string>>>>{};
           h5::read(g, name, gf_struct_bkwd);
           gf_struct.clear();
           for (auto &[bl, idx_lst] : gf_struct_bkwd) gf_struct.push_back({bl, idx_lst.size()});
