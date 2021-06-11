@@ -20,7 +20,7 @@
 #pragma once
 #include <itertools/itertools.hpp>
 #include <triqs/arrays.hpp>
-#include <nda/linalg/gelss_worker.hpp>
+#include <nda/lapack/gelss_worker.hpp>
 
 namespace triqs::mesh {
 
