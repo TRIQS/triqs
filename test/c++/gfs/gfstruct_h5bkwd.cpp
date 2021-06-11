@@ -19,9 +19,7 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 using triqs::hilbert_space::gf_struct_t;
-using triqs::hilbert_space::indices_t;
-
-using gf_struct_old_t = std::vector<std::pair<std::string, indices_t>>;
+using gf_struct_old_t = std::vector<std::pair<std::string, std::vector<std::variant<int, std::string>>>>;
 
 TEST(H5, GfStruct_Bkwd) {
   auto gf_struct_old = gf_struct_old_t{{"up", {0, 1}}, {"dn", {0, 1}}};
