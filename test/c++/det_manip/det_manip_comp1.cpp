@@ -18,11 +18,11 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #include <triqs/det_manip/det_manip.hpp>
-#include <triqs/mc_tools/random_generator.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/asserts.hpp>
-#include <iostream>
 #include <triqs/det_manip/det_manip_basic.hpp>
+#include <triqs/mc_tools/random_generator.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
+#include <iostream>
+#include "./old_test_tool.hpp"
 
 struct fun {
 
@@ -70,7 +70,7 @@ struct test {
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
 #else
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl
-              << D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix())) << std::endl;
+              << D.inverse_matrix() << D.matrix() << nda::matrix<double>(inverse(D.matrix())) << std::endl;
     std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << D.determinant() << std::endl;
 #endif
     std::cerr << "D.size() = " << D.size() << std::endl;
@@ -183,7 +183,7 @@ struct test {
             for (auto x : Dcopy2.get_y()) std::cerr << x << " ";
             std::cerr << std::endl;
 
-            triqs::arrays::assert_all_close(Dcopy.matrix(), Dcopy2.matrix(), PRECISION, true);
+            nda::assert_all_close(Dcopy.matrix(), Dcopy2.matrix(), PRECISION, true);
 #endif
 
           } else

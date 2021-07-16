@@ -21,9 +21,10 @@
 #include <triqs/arrays.hpp>
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/det_manip/det_manip_basic.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
 
-namespace arrays = triqs::arrays;
-using namespace triqs::det_manip;
+namespace arrays = nda;
+using triqs::det_manip::det_manip_basic;
 
 struct func {
   // gives the coefficients of the matrix (function F of the documentation)

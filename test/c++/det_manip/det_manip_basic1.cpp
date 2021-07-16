@@ -19,11 +19,10 @@
 
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/det_manip/det_manip_basic.hpp>
-
 #include <triqs/mc_tools/random_generator.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
 #include <iostream>
+#include "./old_test_tool.hpp"
 
 struct fun {
 
@@ -69,14 +68,14 @@ struct test {
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
 #else
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl
-              << D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix())) << std::endl;
+              << D.inverse_matrix() << D.matrix() << nda::matrix<double>(inverse(D.matrix())) << std::endl;
     std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << D.determinant() << std::endl;
 #endif
     assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
-    triqs::arrays::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
+    nda::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
 
-    triqs::arrays::assert_all_close(D.build_matrix_scratch(), D.matrix(), PRECISION, true);
+    nda::assert_all_close(D.build_matrix_scratch(), D.matrix(), PRECISION, true);
   }
 
   void run() {

@@ -22,10 +22,13 @@
 
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/arrays.hpp>
+#include <triqs/det_manip/det_manip.hpp>
 #include <triqs/det_manip/det_manip_basic.hpp>
-namespace arrays = triqs::arrays;
-using _vector    = triqs::arrays::vector<double>;
-using _matrix    = triqs::arrays::matrix<double>;
+#include <nda/linalg/det_and_inverse.hpp>
+
+namespace arrays = nda;
+using _vector    = nda::vector<double>;
+using _matrix    = nda::matrix<double>;
 using triqs::det_manip::det_manip_basic;
 
 struct func {

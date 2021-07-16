@@ -19,13 +19,11 @@
 
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/det_manip/det_manip_basic.hpp>
-
 #include <triqs/mc_tools/random_generator.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/asserts.hpp>
 #include <triqs/utility/timer.hpp>
-
+#include <nda/linalg/det_and_inverse.hpp>
 #include <iostream>
+#include "./old_test_tool.hpp"
 
 struct fun {
 
@@ -74,13 +72,13 @@ struct test {
     // std::cerr << "det = " << DetM.determinant() << " == " << double(determinant(DetM.matrix())) << std::endl;
 #else
     // std::cerr << "det = " << DetM.determinant() << " == " << double(determinant(DetM.matrix())) << std::endl
-    << DetM.inverse_matrix() << DetM.matrix() << triqs::arrays::matrix<double>(inverse(DetM.matrix())) << std::endl;
+    << DetM.inverse_matrix() << DetM.matrix() << nda::matrix<double>(inverse(DetM.matrix())) << std::endl;
     // std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << DetM.determinant() << std::endl;
 #endif
 
     if (DetM.size() > 0) {
-      triqs::arrays::assert_all_close(DetM.build_matrix_scratch(), DetM.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(inverse(DetM.matrix()), DetM.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM.build_matrix_scratch(), DetM.matrix(), PRECISION, true);
+      nda::assert_all_close(inverse(DetM.matrix()), DetM.inverse_matrix(), PRECISION, true);
     } else {
       assert(DetM.build_matrix_scratch().size() == 0);
       assert(DetM.matrix().size() == 0);
@@ -138,8 +136,8 @@ struct test {
       DetM_Schur2.try_insert(i, j, x, y);
       DetM_Schur2.complete_operation();
       timer_schur.stop();
-      triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -171,8 +169,8 @@ struct test {
       timer_schur.stop();
 
       if (N > 1) {
-        triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-        triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+        nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+        nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
       }
     }
 
@@ -210,8 +208,8 @@ struct test {
       DetM_Schur2.complete_operation();
       timer_schur.stop();
 
-      triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -244,8 +242,8 @@ struct test {
       timer_schur.stop();
 
       if (N > 2) {
-        triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-        triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+        nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+        nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
       }
     }
 
@@ -279,8 +277,8 @@ struct test {
       DetM_Schur2.complete_operation();
       timer_schur.stop();
 
-      triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -313,8 +311,8 @@ struct test {
       DetM_Schur2.complete_operation();
       timer_schur.stop();
 
-      triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -348,8 +346,8 @@ struct test {
       DetM_Schur2.complete_operation();
       timer_schur.stop();
 
-      triqs::arrays::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      triqs::arrays::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
+      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;

@@ -20,26 +20,23 @@
 
 #pragma once
 
-#include "triqs/arrays/linalg/det_and_inverse.hpp"
+#include <nda/nda.hpp>
+
+#include <itertools/itertools.hpp>
+
 #include <triqs/utility/first_include.hpp>
+#include <triqs/utility/is_complex.hpp>
+#include <triqs/utility/function_arg_ret_type.hpp>
+
 #include <vector>
 #include <iterator>
 #include <numeric>
 #include <cmath>
-#include <itertools/itertools.hpp>
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/algorithms.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/blas_lapack/ger.hpp>
-#include <triqs/arrays/blas_lapack/gemm.hpp>
-#include <triqs/arrays/blas_lapack/gemv.hpp>
-#include <triqs/utility/function_arg_ret_type.hpp>
 
 namespace triqs {
   namespace det_manip {
 
-    namespace blas = arrays::blas;
+    namespace blas = nda::blas;
 
     /**
   * @brief Standard matrix/det manipulations used in several QMC.
@@ -63,7 +60,7 @@ namespace triqs {
       //using det_type = std::conditional_t<std::is_same<value_type, double>::value, long double, std::complex<long double>>;
 
       using det_type = value_type;
-      static_assert(std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value,
+      static_assert(std::is_floating_point<value_type>::value || is_complex<value_type>::value,
                     "det_manip_basic : the function must return a floating number or a complex number");
 
       using vector_type            = arrays::vector<value_type>;
@@ -335,9 +332,7 @@ namespace triqs {
       // Order of iteration is NOT fixed, it is optimised (for memory traversal)
       template <typename LambdaType> friend void foreach (det_manip_basic const &d, LambdaType const &f) {
         d.compute_inverse();
-        range R(0, d.N);
-        foreach (d.mat_inverse(R, R), [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inverse(j, i)); })
-          ;
+        nda::for_each(std::array{long(d.N), long(d.N)}, [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inverse(j, i)); });
       }
 
       // ------------------------- OPERATIONS -----------------------------------------------
@@ -413,7 +408,7 @@ namespace triqs {
         N++;
         x_values.insert(begin(x_values) + w1.i, w1.x);
         y_values.insert(begin(y_values) + w1.j, w1.y);
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       public:
@@ -544,7 +539,7 @@ namespace triqs {
         x_values.insert(begin(x_values) + w2.i[0], w2.x[0]);
         y_values.insert(begin(y_values) + w2.j[1], w2.y[1]);
         y_values.insert(begin(y_values) + w2.j[0], w2.y[0]);
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       public:
@@ -596,7 +591,7 @@ namespace triqs {
         N--;
         x_values.erase(begin(x_values) + w1.i);
         y_values.erase(begin(y_values) + w1.j);
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       public:
@@ -680,7 +675,7 @@ namespace triqs {
         y_values.erase(begin(y_values) + w2.j[1]);
         y_values.erase(begin(y_values) + w2.j[0]);
 
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
       //------------------------------------------------------------------------------------------
       public:
@@ -711,7 +706,7 @@ namespace triqs {
       private:
       void complete_change_col() {
         y_values[w1.j] = w1.y;
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       //------------------------------------------------------------------------------------------
@@ -742,7 +737,7 @@ namespace triqs {
       private:
       void complete_change_row() {
         x_values[w1.i] = w1.x;
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       //------------------------------------------------------------------------------------------
@@ -785,7 +780,7 @@ namespace triqs {
       void complete_change_col_row() {
         x_values[w1.i] = w1.x;
         y_values[w1.j] = w1.y;
-        swap(mat, mat_new);
+        std::swap(mat, mat_new);
       }
 
       //------------------------------------------------------------------------------------------
