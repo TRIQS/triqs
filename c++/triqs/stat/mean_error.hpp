@@ -105,8 +105,8 @@ namespace triqs::stat {
       T M = Mi * count_frac;
       mpi::all_reduce_in_place(M, c);
 
-      T Q = Mi - M;
-      Q   = Qi + count_i * make_real(conj(Q) * Q);
+      T diff = Mi - M;
+      get_real_t<T> Q = Qi + count_i * make_real(conj(diff) * diff);
 
       mpi::reduce_in_place(Q, c, root);
 
