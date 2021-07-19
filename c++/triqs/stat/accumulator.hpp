@@ -413,8 +413,7 @@ namespace triqs::stat {
     /// @brief Get standard errors of log binned data (MPI Version)
     ///
     auto log_bin_errors_all_reduce(mpi::communicator c) const {
-    /// FIXME: Reduce only to a single mpi rank rather than broadcast to all
-      std::vector<T> result_vec{};
+      std::vector<get_real_t<T>> result_vec{};
       std::vector<long> count_vec{};
 
       // M_k, Q_k can be different lenghts on different mpi threads.
