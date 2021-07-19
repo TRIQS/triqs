@@ -260,6 +260,19 @@ namespace triqs::gfs {
       return map_block_gf([](auto &&g_bl) { return real(g_bl); }, g);
   }
 
+  /**
+   * Takes the imag part of g without check, and returns a new gf with a real target.
+   *
+   * @tparam G any Gf, BlockGf or Block2Gf type
+   * @param g a gf
+   */
+  template <typename G> typename G::regular_type::real_t imag(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
+    if constexpr (is_gf_v<G>)
+      return {g.mesh(), imag(g.data()), g.indices()};
+    else
+      return map_block_gf([](auto &&g_bl) { return imag(g_bl); }, g);
+  }
+
   /*------------------------------------------------------------------------------------------------------
   *                      Transpose. Create a NEW gf
   *-----------------------------------------------------------------------------------------------------*/

@@ -89,14 +89,26 @@ TEST(Gf, Base) {
   }
 }
 
+TEST(Gf, RealImag) {
+
+  double beta = 1;
+  auto g      = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {2, 2}};
+
+  triqs::clef::placeholder<0> iw_;
+  g(iw_) << 1 / (iw_ - 2.0);
+
+  auto g_re_im = gf<imfreq, matrix_valued>{real(g) + 1i * imag(g)};
+  EXPECT_GF_NEAR(g, g_re_im);
+}
+
 // Test the technique to avoid the infinity
 TEST(Gf, EvaluatorMatrix) {
 
   double beta = 1;
   auto g      = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {2, 2}};
 
-  triqs::clef::placeholder<0> om_;
-  g(om_) << 1 / (om_ + 2.3);
+  triqs::clef::placeholder<0> iw_;
+  g(iw_) << 1 / (iw_ + 2.3);
 
   auto f     = matsubara_freq{120, beta, Fermion};
   auto exact = matrix<dcomplex>{{1 / (f + 2.3), 0i}, {0i, 1 / (f + 2.3)}};
