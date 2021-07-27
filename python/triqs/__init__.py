@@ -26,6 +26,7 @@ class Cpp2pyInfo:
         'triqs::lattice' : 'triqs.lattice',
         'triqs::statistics::histogram' : 'triqs.statistics.histograms',
         'triqs::atom_diag::' : 'triqs.atom_diag',
+        'triqs::arrays::block_matrix' : 'triqs.arrays.block_matrix',
         'mpi::' : 'triqs.utility.mpi',
         'h5::' : 'h5._h5py'
         }
