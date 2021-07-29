@@ -179,12 +179,18 @@ namespace triqs {
 	return dims;
       }
 
+      /// The list of Fock states for a particular subspace
+      std::vector<fock_state_t> const &get_fock_states(int sp_index) const { return sub_hilbert_spaces[sp_index].get_all_fock_states(); }
+
       /// The list of Fock states for each subspace
       std::vector<std::vector<fock_state_t>> get_fock_states() const {
         std::vector<std::vector<fock_state_t>> fock_states(n_subspaces());
         for (int i : range(n_subspaces())) fock_states[i] = sub_hilbert_spaces[i].get_all_fock_states();
         return fock_states;
       }
+
+      /// Unitary matrix for given subspace that transform from Fock states to eigenstates
+      matrix<scalar_t> const &get_unitary_matrix(int sp_index) const { return eigensystems[sp_index].unitary_matrix; }
 
       /// Unitary matrices that transform from Fock states to eigenstates
       std::vector<matrix<scalar_t>> get_unitary_matrices() const {
