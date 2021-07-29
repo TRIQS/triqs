@@ -262,8 +262,7 @@ namespace triqs {
 
       imperative_operator<class hilbert_space, scalar_t> imp_op(op, fops);
 
-      auto M = matrix_t(to_sp.size(), from_sp.size());
-      M()    = 0;
+      auto M = matrix_t::zeros({to_sp.size(), from_sp.size()});
 
       for (int i = 0; i < from_sp.size(); ++i) { // loop on all fock states of the blocks
         state<class hilbert_space, scalar_t, true> from_s(full_hs);
@@ -299,7 +298,7 @@ namespace triqs {
         typename atom_diag<Complex>::eigensystem_t eigensystem;
 
         state<sub_hilbert_space, scalar_t, false> i_state(sp);
-        matrix_t h_matrix(sp.size(), sp.size());
+        auto h_matrix = matrix_t(sp.size(), sp.size());
 
         for (int i = 0; i < sp.size(); ++i) {
           i_state.amplitudes()() = 0;
