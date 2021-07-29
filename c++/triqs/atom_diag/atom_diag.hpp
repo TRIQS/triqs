@@ -83,6 +83,12 @@ namespace triqs {
         bool operator==(eigensystem_t const &) const = default;
 #endif
 
+        // MPI
+        friend void mpi_broadcast(eigensystem_t &eigs, mpi::communicator c = {}, int root = 0) {
+          mpi::broadcast(eigs.eigenvalues, c, root);
+          mpi::broadcast(eigs.unitary_matrix, c, root);
+        }
+
         // HDF5
         static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
 
