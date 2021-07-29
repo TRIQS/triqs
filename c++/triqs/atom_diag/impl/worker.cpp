@@ -23,10 +23,15 @@
 #include <vector>
 #include <bitset>
 #include <map>
+#include <triqs/utility/timer.hpp>
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/space_partition.hpp>
 #include <nda/linalg/eigenelements.hpp>
+#include <mpi/mpi.hpp>
+#include <mpi/vector.hpp>
+#include <mpi/pair.hpp>
+#include <itertools/itertools.hpp>
 
 using namespace triqs::hilbert_space;
 
@@ -288,14 +293,29 @@ namespace triqs {
       //  Compute energy levels and eigenvectors of the local Hamiltonian
       int n_subspaces = hdiag->sub_hilbert_spaces.size();
       hdiag->eigensystems.resize(n_subspaces);
-      hdiag->gs_energy = std::numeric_limits<double>::infinity();
 
-      // Prepare the eigensystem in a temporary map to sort them by energy !
-      std::map<std::pair<double, int>, typename atom_diag<Complex>::eigensystem_t> eign_map;
+      // Prepare the eigensystem in a temporary vector to sort them by energy !
+      std::vector<std::pair<int, typename atom_diag<Complex>::eigensystem_t>> vec_spn_eigs;
+      vec_spn_eigs.reserve(n_subspaces);
       double energy_split = 1.e-10; // to split the eigenvalues, which are numerically very close
-      for (int spn = 0; spn < n_subspaces; ++spn) {
+
+      // Create list if subspace indices inversly sorted by size
+      auto sp_idx_lst = itertools::make_vector_from_range(range(n_subspaces));
+      std::sort(begin(sp_idx_lst), end(sp_idx_lst),
+                [&](auto i1, auto i2) { return hdiag->sub_hilbert_spaces[i1].size() > hdiag->sub_hilbert_spaces[i2].size(); });
+
+      auto tim_tot = triqs::utility::timer{};
+      tim_tot.start();
+
+      mpi::communicator comm{};
+      for (auto n : range(comm.rank(), n_subspaces, comm.size())) {
+        auto spn = sp_idx_lst[n];
+
         auto const &sp = hdiag->sub_hilbert_spaces[spn];
         typename atom_diag<Complex>::eigensystem_t eigensystem;
+
+        auto tim = triqs::utility::timer{};
+        tim.start();
 
         state<sub_hilbert_space, scalar_t, false> i_state(sp);
         auto h_matrix = matrix_t(sp.size(), sp.size());
@@ -310,22 +330,31 @@ namespace triqs {
         auto eig                   = linalg::eigenelements(h_matrix);
         eigensystem.eigenvalues    = eig.first;
         eigensystem.unitary_matrix = eig.second;
-        hdiag->gs_energy           = std::min(hdiag->gs_energy, eigensystem.eigenvalues[0]);
 
-        eign_map.insert({{eigensystem.eigenvalues(0) + energy_split * spn, spn}, eigensystem});
+        vec_spn_eigs.push_back({spn, eigensystem});
+        std::cout << "Rank: " << comm.rank() << " Spn: " << spn << "/" << n_subspaces << " Size: " << sp.size() << " Runtime: " << double(tim)
+                  << std::endl;
       }
+      vec_spn_eigs = mpi::all_gather(vec_spn_eigs);
+
+      // Sort vec_spn_eigs by energy
+      std::sort(begin(vec_spn_eigs), end(vec_spn_eigs), [&](auto &&sp1, auto &&sp2) {
+        auto &[spn1, eigs1] = sp1;
+        auto &[spn2, eigs2] = sp2;
+        return eigs1.eigenvalues[0] + energy_split * spn1 < eigs2.eigenvalues[0] + energy_split * spn2;
+      });
+      hdiag->gs_energy = vec_spn_eigs[0].second.eigenvalues[0];
 
       // Reorder the block along their minimal energy
       {
         auto tmp = hdiag->sub_hilbert_spaces;
         std::map<int, int> remap;
-        int i = 0;
-        for (auto const &x : eign_map) { // in order of min energy !
-          hdiag->eigensystems[i] = x.second;
-          tmp[i]                 = hdiag->sub_hilbert_spaces[x.first.second];
-          tmp[i].set_index(i);
-          remap[x.first.second] = i;
-          ++i;
+        for (auto const &[idx, sp] : itertools::enumerate(vec_spn_eigs)) {
+          auto &[spn, eigs]        = sp;
+          hdiag->eigensystems[idx] = eigs;
+          tmp[idx]                 = hdiag->sub_hilbert_spaces[spn];
+          tmp[idx].set_index(idx);
+          remap[spn] = idx;
         }
         std::swap(tmp, hdiag->sub_hilbert_spaces);
         auto remap_connection = [&](matrix<long> &connection) {
@@ -340,13 +369,15 @@ namespace triqs {
       // Shift the ground state energy of the local Hamiltonian to zero.
       for (auto &eigensystem : hdiag->eigensystems) eigensystem.eigenvalues() -= hdiag->get_gs_energy();
 
-      for (auto const &x : fops) {
+      if (comm.rank() == 0) std::cout << "BeforeFops: " << double(tim_tot) << std::endl;
+
+      auto bools = std::array{true, false};
+      auto v     = itertools::make_vector_from_range(itertools::product(bools, fops));
+      for (auto const &[dag, x] : mpi::chunk(v)) {
         // get the operators and their index
         int n = x.linear_index;
         // n is guaranteed to be 0, 1, 2, 3, ... by the fundamental_operator_set class ... but it is very weird...
         // otherwise the push_back below is false.
-        auto create  = many_body_op_t::make_canonical(true, x.index);
-        auto destroy = many_body_op_t::make_canonical(false, x.index);
 
         // Compute the matrices of c, c dagger in the diagonalization base of H_loc
         // first a lambda, since it is almost the same code for c and cdag
@@ -361,10 +392,19 @@ namespace triqs {
         };
 
         // now execute code...
-        hdiag->c_matrices.push_back(make_c_mat(n, hdiag->annihilation_connection, destroy));
-        hdiag->cdag_matrices.push_back(make_c_mat(n, hdiag->creation_connection, create));
+        if (dag) {
+          auto create = many_body_op_t::make_canonical(true, x.index);
+          hdiag->cdag_matrices.push_back(make_c_mat(n, hdiag->creation_connection, create));
+        } else {
+          auto destroy = many_body_op_t::make_canonical(false, x.index);
+          hdiag->c_matrices.push_back(make_c_mat(n, hdiag->annihilation_connection, destroy));
+        }
 
       } // end of loop on operators
+      hdiag->c_matrices    = mpi::all_gather(hdiag->c_matrices);
+      hdiag->cdag_matrices = mpi::all_gather(hdiag->cdag_matrices);
+
+      if (comm.rank() == 0) std::cout << "Total Runtime: " << double(tim_tot) << std::endl;
     }
 
     // -----------------------------------------------------------------
