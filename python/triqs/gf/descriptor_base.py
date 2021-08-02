@@ -43,7 +43,7 @@ def is_lazy(y):
     return  isinstance(y,(Omega_, LazyExpr, LazyExprTerminal))
 
 def is_scalar(x): 
-    return type(x) in [ type(1), type(1.0), type(1j), numpy.ndarray, numpy.int, numpy.int_, numpy.int8, numpy.int16, numpy.int32, numpy.float, numpy.float_, numpy.float32, numpy.float64, numpy.complex, numpy.complex_, numpy.complex64, numpy.complex128 ]
+    return type(x) in [ type(1), type(1.0), type(1j), numpy.ndarray, int, numpy.int_, numpy.int8, numpy.int16, numpy.int32, float, numpy.float_, numpy.float32, numpy.float64, complex, numpy.complex_, numpy.complex64, numpy.complex128 ]
 
 def convert_scalar_to_const(expr): 
 
