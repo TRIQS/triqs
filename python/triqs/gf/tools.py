@@ -272,20 +272,16 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter
     The tolerance is ensuring the converging of the input
     hopping and energy values. The discretized delta_disc_iw
     is constructed as:
-    .. math:: \Delta^{disc} (i \omega_n) = \sum_{n=1}^{Nb} \frac{t^2_n}{i \omega_n - \epsilon_n}.
-
+    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{i=1}^{Nb} V_{ki}^* [i \omega_n - \epsilon_i]^{-1} V_{il} .
     and the norm to minimize the difference between delta_disc_iw and delta_iw for scipy is:
     .. math:: \left[ \sum_{i \omega_n} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
 
-    CAUTION: This function works only for scalar valued Gf objects.
-    if necessary call for each orbital in input Delta_iw separately.
-
     Parameters
     ----------
-    delta_iw : Gf
-        Matsubara hybridization function to discretize (scalar valued)
+    delta_iw : Gf or BlockGf
+        Matsubara hybridization function to discretize
     Nb : int
-        number of bath sites
+        number of bath sites per block
     bandwidth : float, optional
         approximate bandwidth, used in choice of initial of bath energies [default=3.0]
     t_init : float, optional
@@ -298,46 +294,68 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter
     -------
     t_opt : list of optimized bath hopping parameters
     e_opt : sorted list of optimized bath energies
-    delta_disc_iw : Gf
+    delta_disc_iw : Gf or BlockGf
                Discretized Matsubara hybridization function
     """
     from scipy.optimize import minimize
+    from triqs.gf.tools import map_block
+    from triqs.gf import make_hermitian
 
     # some tests if input is okay
-    assert not isinstance(delta_iw, BlockGf), 'delta_iw needs to be a GfImFreq not BlockGf'
     assert isinstance(delta_iw.mesh, MeshImFreq), 'input delta_iw should have a mesh MeshImFreq'
-    assert len(delta_iw.target_shape)==0, 'delta_iw should have rank 0, i.e. a scalar valued Green function'
+
+    if isinstance(delta_iw, BlockGf):
+        res = map_block(lambda g_bl: discretize_bath(g_bl, Nb, bandwidth, t_init, tol, maxiter), delta_iw)
+        t_opt, e_opt, delta_list = [], [], []
+        for elem in res:
+            t_opt.append(elem[0])
+            e_opt.append(elem[1])
+            delta_list.append(elem[2])
+
+        return t_opt, e_opt, BlockGf(name_list = list(delta_iw.indices), block_list = delta_list)
 
     # prepare discretized delta with same mesh
     delta_disc_iw = delta_iw.copy()
     delta_disc_iw.zero()
-
     ####
     # define minimizer for scipy
     def minimizer(parameters):
         # first half of parameters are hoppings
-        t = parameters[0:Nb]
+        V = parameters[0:Nb*n_orb].reshape(Nb,n_orb)
         # second half are bath energies
-        e = parameters[Nb:]
+        e = parameters[Nb*n_orb:]
 
         # build discretized bath function as
-        # delta = sum_nb t_n / (iw - eps_n)
-        for w in delta_disc_iw.mesh:
-            delta_disc_iw[w] = np.sum(t**2 / ( w.value - e ) )
+        # delta = sum_i  V_ji^* * [(w - eps_i)]^-1 V_ik
+        delta = np.einsum('ijw, jkw -> wik', V.conj().T[:,:,None] / ( w_vec - e[:,None] ), V[:,:,None])
+        # if Gf is scalar values we have to squeeze the add axis
+        if len(delta_iw.target_shape)==0:
+            delta_disc_iw.data[:] = delta.squeeze()
+        else:
+            delta_disc_iw.data[:] = delta
 
+        delta_disc_iw << make_hermitian(delta_disc_iw)
         # calculate norm
         norm = np.linalg.norm(delta_disc_iw.data - delta_iw.data)
         return norm
     ####
 
     # initialize bath_hoppings by setting to the provided value
-    bath_hoppings = np.array( Nb*[t_init] )
+
+    if len(delta_iw.target_shape)==0:
+        n_orb = 1
+    else:
+        n_orb = delta_iw.target_shape[0]
+
+    w_vec = np.array([w.value for w in delta_disc_iw.mesh]*np.ones((Nb,1)))
+    # create bath hoppings V with dim (Nb)
+    bath_hoppings = t_init*np.ones((Nb,n_orb)).flatten()
 
     # bath energies are initialized as linspace over the approximate bandwidth
     bath_energies = np.linspace(0, bandwidth, Nb)
 
     # parameters for scipy must be a 1D array
-    parameters = np.concatenate( [bath_hoppings, bath_energies] )
+    parameters = np.concatenate([bath_hoppings, bath_energies] )
 
     # run the minimizer if method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
@@ -347,13 +365,12 @@ def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter
         raise RuntimeError('optimization has failed, scipy minimize signaled no success: {}'.format(result.message))
 
     # results, taking absolute values of hoppings
-    e_opt = result.x[Nb:]
-    t_opt = np.abs(result.x[0:Nb])
+    e_opt = result.x[Nb*n_orb:]
+    t_opt = np.abs(result.x[0:Nb*n_orb])
 
     # sort by energy
     order = np.argsort(e_opt)
     e_opt = e_opt[order]
-    t_opt = t_opt[order]
 
     return t_opt, e_opt, delta_disc_iw
 
