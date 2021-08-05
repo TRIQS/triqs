@@ -21,7 +21,8 @@
 from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
 from .block_gf import BlockGf
-from .gf import Gf, make_hermitian
+from .gf import Gf
+from .gf_factories import make_hermitian
 import numpy as np
 from itertools import product
 from .backwd_compat.gf_refreq import GfReFreq
