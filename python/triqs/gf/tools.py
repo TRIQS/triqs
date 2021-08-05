@@ -312,9 +312,9 @@ def make_delta(V, eps, mesh, block_names = None):
     mesh_values = np.array([w.value for w in mesh])
 
     if isinstance(mesh, MeshImFreq):
-        one_fermion = 1/mesh_values[:,None,None] - eps[None,None,:]
+        one_fermion = 1/(mesh_values[:,None,None] - eps[None,None,:])
     elif isinstance(mesh, MeshImTime):
-        one_fermion = -np.exp(-1*mesh_values[:,None,None] * eps[None,None,:]) / (1. + np.exp(-mesh.beta * eps[None,None,:]))
+        one_fermion = -np.exp(-mesh_values[:,None,None] * eps[None,None,:]) / (1. + np.exp(-mesh.beta * eps[None,None,:]))
     
     delta_res.data[:] = np.einsum('wij, wjk -> wik', V.conj().T[None,:,:] * one_fermion, V[None,:,:])
         
