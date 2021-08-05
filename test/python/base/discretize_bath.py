@@ -31,7 +31,7 @@ energies = np.array([0.0, 0.5])
 delta_iw = make_delta(V= hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in = delta_iw, Nb = 2, eps0=2.5, V_init=0.1, tol=1e-8)
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in = delta_iw, Nb = 2, eps0=2.5, V0=0.1, tol=1e-8)
 
 # compare to given values
 assert max(abs(hoppings - V_opt)) < 1e-8, 'did not achieved requiered accuracy for bath fit '+str(V_opt)+' vs '+str(hoppings)
@@ -56,7 +56,7 @@ energies = np.array([-1.5437759000e+00, -4.0244628425e-01, -3.3678965769e-01, -3
 delta_tau = make_delta(V= hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 8, eps0= energies, V_init=hoppings, tol=1e-6, maxiter=100000)
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 8, eps0= energies, V0=hoppings, tol=1e-6, maxiter=100000)
 
 # # compare to given values
 assert np.max(np.abs(hoppings - V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit '+str(V_opt)+' vs '+str(hoppings)
