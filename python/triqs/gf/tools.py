@@ -307,7 +307,7 @@ def make_delta(V, eps, mesh, block_names = None):
     
     assert V.shape[0] == len(eps), 'number of bath sides in V and eps does not match'
     
-    delta_res = GfImFreq(mesh=mesh, target_shape=[V.shape[1],V.shape[1]])
+    delta_res = Gf(mesh=mesh, target_shape=[V.shape[1],V.shape[1]])
     
     mesh_values = np.array([w.value for w in mesh])
 
