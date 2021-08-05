@@ -319,7 +319,7 @@ def make_delta(V, eps, mesh, block_names = None):
         
     return delta_res
 
-def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
+def discretize_bath(delta_in, Nb, eps0= 3, V_init = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -344,9 +344,9 @@ def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 100
         Matsubara hybridization function to discretize
     Nb : int
         number of bath sites per Gf block
-    eps : float or list of floats, optional
+    eps0: float or list of floats, optional
         initial guesses for bath energies or if a single value is given approximate bandwidth for equidistant bath energies [default=3.0]
-    t_init : float or np.ndarray, optional
+    V_init : float or np.ndarray, optional
         initial guess used for all hopping values [default=0.0] or if a np.ndarray of correct shape is given initial guess for hoppings
     tol : float, optional
         tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
@@ -374,7 +374,7 @@ def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 100
     assert isinstance(delta_in.mesh, MeshImFreq) or isinstance(delta_in.mesh, MeshImTime), 'input delta_in should have a mesh MeshImFreq or MeshImTime'
     
     if isinstance(delta_in, BlockGf):
-        res = map_block(lambda g_bl: discretize_bath(g_bl, Nb, bandwidth, t_init, tol, maxiter), delta_in)
+        res = map_block(lambda g_bl: discretize_bath(g_bl, Nb, eps0, V_init, tol, maxiter), delta_in)
         V_opt, e_opt, delta_list = [], [], []
         for elem in res:
             V_opt.append(elem[0])
@@ -437,23 +437,25 @@ def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 100
 
     # initialize bath_hoppings 
     # create bath hoppings V with dim (Nb)
-    if isinstance(t_init,  np.ndarray) and t_init.shape == (Nb,n_orb):
+    if isinstance(V_init,  np.ndarray):
+        assert V_init.shape == (Nb,n_orb), 'V_init shape is not right. Must be ({},{}), but is {}'.format(Nb,n_orb,V_init.shape)
         if cmplx:
-            V = complex_to_real(t_init).flatten()
+            V = complex_to_real(V_init).flatten()
         else:
-            V = t_init.flatten()
+            V = V_init.flatten()
     else:
         if cmplx:
-            V = complex_to_real(t_init*np.ones((Nb,n_orb),dtype=np.complex128).flatten())
+            V = complex_to_real(V_init*np.ones((Nb,n_orb),dtype=np.complex128).flatten())
         else:
-            V = t_init*np.ones((Nb,n_orb)).flatten()
+            V = V_init*np.ones((Nb,n_orb)).flatten()
 
     # bath energies are initialized as linspace over the approximate bandwidth or given as list
-    if (isinstance(eps, list) or isinstance(eps, np.ndarray)) and len(eps) == Nb:
-        bath_energies = eps
+    if (isinstance(eps0, list) or isinstance(eps0, np.ndarray)):
+        assert len(eps0) == Nb, 'len(eps) does not match number of bath sides'
+        bath_energies = eps0
     else:
-        bath_energies = np.linspace(0, eps, Nb)
-
+        bath_energies = np.linspace(0, eps0, Nb)
+        
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V, bath_energies] )
 
@@ -461,7 +463,7 @@ def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 100
     # tolerance
     start_time = timer()
     result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
-
+    
     if result.success:
          print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
     else:
