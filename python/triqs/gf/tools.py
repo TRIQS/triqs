@@ -319,7 +319,7 @@ def make_delta(V, eps, mesh, block_names = None):
         
     return delta_res
 
-def discretize_bath(delta_in, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
+def discretize_bath(delta_in, Nb, eps = 3, t_init = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -344,10 +344,10 @@ def discretize_bath(delta_in, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter
         Matsubara hybridization function to discretize
     Nb : int
         number of bath sites per Gf block
-    bandwidth : float, optional
-        approximate bandwidth, used in choice of initial of bath energies [default=3.0]
-    t_init : float, optional
-        initial guess used for all hopping values [default=0.0]
+    eps : float or list of floats, optional
+        initial guesses for bath energies or if a single value is given approximate bandwidth for equidistant bath energies [default=3.0]
+    t_init : float or np.ndarray, optional
+        initial guess used for all hopping values [default=0.0] or if a np.ndarray of correct shape is given initial guess for hoppings
     tol : float, optional
         tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
     maxiter : float, optional
@@ -435,15 +435,24 @@ def discretize_bath(delta_in, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter
 
     mesh_values = np.array([w.value for w in delta_disc.mesh][opt_idx:])
 
-    # initialize bath_hoppings by setting to the provided value
+    # initialize bath_hoppings 
     # create bath hoppings V with dim (Nb)
-    if cmplx:
-        V = complex_to_real(t_init*np.ones((Nb,n_orb),dtype=np.complex128).flatten())
+    if isinstance(t_init,  np.ndarray) and t_init.shape == (Nb,n_orb):
+        if cmplx:
+            V = complex_to_real(t_init).flatten()
+        else:
+            V = t_init.flatten()
     else:
-        V = t_init*np.ones((Nb,n_orb)).flatten()
-    
-    # bath energies are initialized as linspace over the approximate bandwidth
-    bath_energies = np.linspace(0, bandwidth, Nb)
+        if cmplx:
+            V = complex_to_real(t_init*np.ones((Nb,n_orb),dtype=np.complex128).flatten())
+        else:
+            V = t_init*np.ones((Nb,n_orb)).flatten()
+
+    # bath energies are initialized as linspace over the approximate bandwidth or given as list
+    if (isinstance(eps, list) or isinstance(eps, np.ndarray)) and len(eps) == Nb:
+        bath_energies = eps
+    else:
+        bath_energies = np.linspace(0, eps, Nb)
 
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V, bath_energies] )
