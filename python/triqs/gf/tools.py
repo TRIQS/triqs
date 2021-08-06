@@ -269,55 +269,55 @@ def fit_legendre(g_t, order=10):
 
 def make_delta(V, eps, mesh, block_names = None):
     """
-    creates a hybridization function from given hoppings and bath energies 
-    as 
-    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{i=1}^{Nb} V_{ki}^* S  V_{il} .
+    creates a hybridization function from given hoppings and bath energies
+    as
+    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{i=1}^{Nb} V_{ki} S V_{il}* .
     where S is either:
-    .. math:: [i \omega_n - \epsilon_i]^{-1} 
+    .. math:: [i \omega_n - \epsilon_i]^{-1}
     for MeshImFreq or
     .. math:: - exp(-1* tau * e_i) / (1+ exp(-\beta * e_i) )
     for MeshImTime
-    
+
     Parameters
     -----------
     mesh : triqs Gf MeshImFreq or MeshImTime object
-    V_opt : bath hoppings V (shape Nb x norb) as numpy array per Gf block
-    e_opt : list of optimized bath energies per Gf block    
+    V_opt : bath hoppings V (shape Norb x nB) as numpy array per Gf block
+    e_opt : list of optimized bath energies per Gf block
     block_names : list of block names, used if V, eps are lists
-    
+
     Returns
     -------
     delta : Gf or BlockGf
             Discretized hybridization function on given mesh
-    
+
     """
-    
+
     if isinstance(V, list):
         delta_list = []
         for V_bloc, e_bloc in zip(V, eps):
             delta_list.append(make_delta(V_bloc, e_bloc, mesh))
-            
+
         if isinstance(block_names, list) and len(block_names) == len(delta_list):
             b_names = block_names
         else:
             b_names = [str(i) for i in range(len(delta_list))]
 
         return BlockGf(name_list = b_names, block_list = delta_list)
-            
-    
-    assert V.shape[0] == len(eps), 'number of bath sides in V and eps does not match'
-    
-    delta_res = Gf(mesh=mesh, target_shape=[V.shape[1],V.shape[1]])
-    
+
+
+    assert V.shape[1] == len(eps), 'number of bath sides in V and eps does not match'
+
+    delta_res = Gf(mesh=mesh, target_shape=[V.shape[0],V.shape[0]])
+
     mesh_values = np.array([w.value for w in mesh])
 
     if isinstance(mesh, MeshImFreq):
         one_fermion = 1/(mesh_values[:,None,None] - eps[None,None,:])
     elif isinstance(mesh, MeshImTime):
         one_fermion = -np.exp(-mesh_values[:,None,None] * eps[None,None,:]) / (1. + np.exp(-mesh.beta * eps[None,None,:]))
-    
-    delta_res.data[:] = np.einsum('wij, wjk -> wik', V.conj().T[None,:,:] * one_fermion, V[None,:,:])
-        
+
+    delta_res.data[:] = np.einsum('wij, wjk -> wik', V[None,:,:] * one_fermion, V.conj().T[None,:,:])
+
     return delta_res
 
 def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
@@ -327,13 +327,13 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     The tolerance is ensuring the converging of the input
     hopping and energy values. The discretized delta_disc_iw
     is constructed as:
-    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{i=1}^{Nb} V_{ki}^* S  V_{il} .
+    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{i=1}^{Nb} V_{ki} S  V_{il}^* .
     where S is either:
-    .. math:: [i \omega_n - \epsilon_i]^{-1} 
+    .. math:: [i \omega_n - \epsilon_i]^{-1}
     for MeshImFreq or
     .. math:: - exp(-1* tau * eps_i) / (1+ exp(-\beta * eps_i) )
     for MeshImTime.
-    
+
     and the norm to minimize the difference between delta_disc_iw and delta_in for scipy is:
     .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{i \omega_n}^{N} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
     and for MeshImTime
@@ -348,7 +348,7 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     eps0: float or list of floats, optional
         initial guesses for bath energies or if a single value is given approximate bandwidth for equidistant bath energies [default=3.0]
     V0 : float or np.ndarray, optional
-        initial guess used for all hopping values [default=0.0] or if a np.ndarray of correct shape is given initial guess for hoppings
+        initial guess used for all hopping values [default=0.0] or if a np.ndarray of correct shape (norbxNb) is given initial guess for hoppings
     tol : float, optional
         tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
     maxiter : float, optional
@@ -364,35 +364,38 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     from scipy.optimize import minimize
 
     if isinstance(delta_in, BlockGf):
-        res = map_block(lambda g_bl: discretize_bath(g_bl, Nb, eps0, V0, tol, maxiter), delta_in)
         V_opt, eps_opt, delta_list = [], [], []
-        for elem in res:
-            V_opt.append(elem[0])
-            eps_opt.append(elem[1])
-            delta_list.append(elem[2])
-        
+        for i, (block, delta) in zip(range(len(list(delta_in.indices))),delta_in):
+            if isinstance(eps0, list) and isinstance(V0, list):
+                res = discretize_bath(delta, Nb, eps0[i], V0[i], tol, maxiter)
+            else:
+                res = discretize_bath(delta, Nb, eps0, V0, tol, maxiter)
+            V_opt.append(res[0])
+            eps_opt.append(res[1])
+            delta_list.append(res[2])
+
         return V_opt, eps_opt, BlockGf(name_list = list(delta_in.indices), block_list = delta_list)
 
     # some tests if input is okay
     assert isinstance(delta_in.mesh, MeshImFreq) or isinstance(delta_in.mesh, MeshImTime), 'input delta_in should have a mesh MeshImFreq or MeshImTime'
-    
+
     # enforce hermiticity
     if isinstance(delta_in.mesh, MeshImFreq):
         delta_in << make_hermitian(delta_in)
     # prepare discretized delta with same mesh
     delta_disc = delta_in.copy()
     delta_disc.zero()
-        
+
     def unflatten(x):
         # first half of parameters are hoppings, second half are bath energies
         if cmplx:
-            V = x[0:2*Nb*n_orb].view(complex).reshape(Nb,n_orb)
+            V = x[0:2*Nb*n_orb].view(complex).reshape(n_orb, Nb)
             e = x[2*Nb*n_orb:]
         else:
-            V = x[0:Nb*n_orb].reshape(Nb,n_orb)
+            V = x[0:Nb*n_orb].reshape(n_orb, Nb)
             e = x[Nb*n_orb:]
         return V, e
- 
+
     ####
     # define minimizer for scipy
     def minimizer(parameters):
@@ -405,14 +408,14 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
             one_fermion = 1/(mesh_values[:,None,None] - e[None,None,:])
         elif isinstance(delta_in.mesh, MeshImTime):
             one_fermion = -np.exp(-mesh_values[:,None,None] * e[None,None,:]) / (1. + np.exp(-delta_in.mesh.beta * e[None,None,:]))
-           
-        delta = np.einsum('wij, wjk -> wik', V.conj().T[None,:,:] * one_fermion, V[None,:,:])
+
+        delta = np.einsum('wij, wjk -> wik', V[None,:,:] * one_fermion, V.conj().T[None,:,:])
         # if Gf is scalar values we have to squeeze the add axis
         if len(delta_in.target_shape)==0:
             delta_disc.data[opt_idx:] = delta.squeeze()
         else:
             delta_disc.data[opt_idx:] = delta
-        
+
         # calculate norm
         norm = np.linalg.norm(delta_disc.data[opt_idx:] - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
 
@@ -432,19 +435,19 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
 
     mesh_values = np.array([w.value for w in delta_disc.mesh][opt_idx:])
 
-    # initialize bath_hoppings 
+    # initialize bath_hoppings
     # create bath hoppings V with dim (Nb)
     if isinstance(V0, np.ndarray):
-        assert V0.shape == (Nb,n_orb), 'V0 shape is incorrect. Must be ({},{}), but is {}'.format(Nb,n_orb,V0.shape)
+        assert V0.shape == (n_orb, Nb), 'V0 shape is incorrect. Must be ({},{}), but is {}'.format(n_orb, Nb, V0.shape)
     else:
-        V0 = V0*np.ones((Nb,n_orb), dtype=complex if cmplx else float)
+        V0 = V0*np.ones((n_orb, Nb), dtype=complex if cmplx else float)
 
     # bath energies are initialized as linspace over the approximate bandwidth or given as list
     if (isinstance(eps0, list) or isinstance(eps0, np.ndarray)):
         assert len(eps0) == Nb, 'len(eps) does not match number of bath sides'
     else:
         eps0 = np.linspace(-eps0, eps0, Nb)
-        
+
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V0.view(float).flatten(), eps0])
 
@@ -452,7 +455,7 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     # tolerance
     start_time = timer()
     result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
-    
+
     if result.success:
          print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
     else:
@@ -460,12 +463,12 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     # results
     V_opt, eps_opt = unflatten(result.x)
 
-    if opt_idx > 0: 
+    if opt_idx > 0:
         delta_disc.data[:opt_idx] = delta_disc.data[opt_idx:].conj()[::-1]
-    
+
     # sort by energy
     order = np.argsort(eps_opt)
     eps_opt = eps_opt[order]
-    V_opt = V_opt[order,:]
+    V_opt = V_opt[:,order]
 
     return V_opt, eps_opt, delta_disc
