@@ -1,8 +1,16 @@
-Version 3.1.0
-=============
+(header_target)=
 
-Green function meshes (C++ only)
---------------------------------
+
+# Changelog
+
+This document describes the main changes in TRIQS.
+
+
+## Version 3.1.0
+
+
+### Green function meshes (C++ only)
+
 
 * The Green functions are now templated directly on the mesh, while the previous tags have been removed.
   This has little consequence in practice, except for the special case of brillouin_zone (cf below).
@@ -66,8 +74,7 @@ Now :
    auto m = prod {mesh1, mesh2}; // Ok too.
 ```
 
-Version 3.0.0
-=============
+## Version 3.0.0
 
 TRIQS Version 3.0.0 is a major release that
 * introduces compatibility with Python 3 (Python 2 no longer supported)
@@ -79,8 +86,7 @@ We provide a detailed list of the changes below.
 
 We thank all the people who have contributed to this release: Alexander Hampel, Olivier Parcollet, Malte Schueler, Hiroshi Shinaoka, Dylan Simon, Nils Wentzell, Manuel Zingl, Rok Žitko
 
-Renamings
----------
+### Renamings
 
 The separation of various TRIQS library functionalities into their
 own repositories made it necessary to rename various Python modules
@@ -90,8 +96,7 @@ These renamings can be automated using the [porting script](https://github.com/T
 that we provide. Please refer to our [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs3.md) for more
 detailed instructions.
 
-Dependency Management
----------------------
+### Dependency Management
 
 We are managing the interdependencies of the various
 library components [cpp2py](https://github.com/triqs/cpp2py), [h5](https://github.com/triqs/h5), [mpi](https://github.com/triqs/mpi) and [itertools](https://github.com/triqs/h5) using cmake.
@@ -105,8 +110,7 @@ This behavior can be altered using the additional cmake options
 
 during the configuration step.
 
-h5py dependency
----------------
+### h5py dependency
 
 The dependency on h5py has been a source of of problems in setting up
 the TRIQS library for many users. We are glad to report that TRIQS 3.0
@@ -114,8 +118,7 @@ is no longer dependent on h5py, and instead provides the necessary
 Python bindings directly in the [h5](https://github.com/triqs/h5) repository,
 which per default is built and installed together with TRIQS.
 
-Removal of deprecated API
--------------------------
+### Removal of deprecated API
 
 Some parts of the TRIQS library API that have been deprecated in earlier releases
 were removed. This includes,
@@ -130,8 +133,7 @@ in C++.
 Note that the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs3) will replace some of these with the proper syntax.
 
 
-General
--------
+### General
 * Port TRIQS and Cpp2Py from Python 2 to Python 3
 * Remove dependency on h5py package
 * Depend only on header-part of Boost library
@@ -154,8 +156,7 @@ General
 * Regenerate GPL Copyright headers
 * Various smaller bugfixes / improvements
 
-atom_diag
----------
+### atom_diag
 * Make python classes AtomDiagReal and AtomDiagComplex serializable using h5
 * Test h5 serialization of atom_diag real/cplx in c++
 * Allow mpi broadcasting of AtomDiag objects using the h5 serialization
@@ -164,8 +165,7 @@ atom_diag
 * Fix fill_first_eigenstate_of_subspace for case of zero subspaces
 
 
-cmake
------
+### cmake
 * Bump TRIQS Version number to 3.0.0
 * Bump cmake version requirement to 3.3.2
 * Add external_dependency.cmake file with function for external dependency management
@@ -202,12 +202,10 @@ cmake
 * Use CPP2PY_XXX python variables over bare ones to avoid issues with preinstalled cpp2py
 * Use FindGit.cmake in external_dependency.cmake, Improve error message on clone failure
 
-detmanip
---------
+### detmanip
 * Remove regenerate on singular det, Throw in regeneration
 
-doc
----
+### doc
 * Add porting guide: doc/porting_to_triqs3.md
 * Update Ubuntu install instructions for TRIQS 3
 * added NRGLjubjana_interface to the list of impurity solvers
@@ -230,8 +228,7 @@ doc
 * Update list of requirements
 * Various smaller improvements
 
-gf
---
+### gf
 * Disable automatic tailfit in fourier transform of real-frequency Green functions
 * Deprecate the use of string indices
 * Allow pytriqs Gf initialization with g[:] = RHS and add test FIX #773
@@ -253,8 +250,7 @@ gf
 * Fix bug in return type of positive_freq_view(gf&) and add test FIX #764
 * Store block_names in block_gf and block2_gf as list of str instead of nparray
 
-jenkins
--------
+### jenkins
 * Align Dockerfiles with app4triqs skeleton
 * Install lldb debugger into ubuntu and centos base images
 * Set CC and CXX env variables in centos-gcc base image
@@ -268,18 +264,15 @@ jenkins
 * Switch to centos build to centos 8
 * Update build scripts for Python3
 
-operators
----------
+### operators
 * Change comparison of many_body_operator_generic to const
 
-packaging
----------
+### packaging
 * Various updates/improvements to memory sanitizer compatible Docker environment (packaging/Dockerfile.msan)
 * Generate and test debian packages for Ubuntu 20.04, adjust dependencies
 
 
-Version 2.2.3
-=============
+## Version 2.2.3
 
 TRIQS Version 2.2.3 is a bug-fix release.
 In addition to various smaller fixes we improved
@@ -289,15 +282,13 @@ compiler-wrapper.
 
 A detailed description of the changes is provided below.
 
-General
--------
+### General
 * In the triqs++ compiler wrapper put any additional flags before cxxflags and ldflags
 * Update memory sanitizer docker image with latest development version
 * Fix memory sanitizer positive in triqs/arrays/linalg/eigenelements.hpp
 * Remove packaging directory from dockerignore
 
-cmake
------
+### cmake
 * Fix install permissions for triqs++ compiler wrapper
 * Be sure to add -Lpath_to_install/lib to triqs++ ldflags
 * In extract_flags.cmake, protect extraction of -L/usr/lib and fix filtering of -I/usr/include
@@ -305,24 +296,20 @@ cmake
 * Use extract_flags.cmake of triqs 3.0, properly protect agsinst -I/usr/include flags
 * Make sure to supress certain mpi warnings in ref-file based tests
 
-cpp2py
-------
+### cpp2py
 * Be sure to properly treat both rvalues and lvalues in c2py functions
 * Fix type usage in py_converter for integral types
 
-gf
---
+### gf
 * Properly import all mesh-types in python/triqs/gf/__init__.py
 * Provide is_gf_hermitian in python also for imtime and tensor_valued<4>
 * Wrap make_hermitian also for tensor_valued and imtime Green functions
 
-jenkins
--------
+### jenkins
 * oxs: force hdf5 1.10
 
 
-Version 2.2.2
-=============
+## Version 2.2.2
 
 TRIQS Version 2.2.2 introduces various smaller bug fixes
 and adjustments to the documentation. In particular we
@@ -334,25 +321,21 @@ compiled parts of the boost library.
 
 A more detailed description of the changes is provided below.
 
-doc
----
+### doc
 * Add NRGLjubjana_interface to the list of impurity solvers
 * Updated Applications page to include new hubbardi version 2.2
 * Add section on Anaconda packages to install page
 * Fix CC/CXX export commands in osx install instructions
 
-gf
---
+### gf
 * Fix construction of gf_indices in various places
 
-cmake
------
+### cmake
 * Remove dependence on Boost serialization
 * Add macro add_mpi_test to improve compatibility against mpich
 * Allow a compiler different from TRIQS, but explicitly warn the user
 
-General
--------
+### General
 * Fix error in triqs++ ld flags
 * Disable stacktrace in OSX error messages due to problems with Mac OS 10.15 (Catalina)
 * Fix bug in return type of positive_freq_view(gf&) and add test
@@ -361,8 +344,7 @@ General
 =======
 
 
-Version 2.2.1
-=============
+## Version 2.2.1
 
 TRIQS Version 2.2.1 introduces minor adjustments
 to the documentation. It further improves compatibility
@@ -370,24 +352,21 @@ for older osx versions and fixes the triqs++ compiler wrapper.
 
 We provide a more detailed description of the changes below.
 
-doc
----
+### doc
+
 * On OSX Install scipy/numpy via pip rather than homebrew for Python2 compatibility
 * For debian packages do not source /usr/share/triqsvars.sh
 * Bump cmake version requirement to actual required version
 * Update link to install page in README to use latest stable version
 
-cmake
------
+### cmake
 * Fix issues in flag extraction for triqs++ compiler wrapper
 
-General
--------
+### General
 * Avoid use of optional.value() for improved osx compatibility
 
 
-Version 2.2.0
-=============
+## Version 2.2.0
 
 TRIQS Version 2.2.0 introduces substantial performance
 improvements by reworking the array memory allocation and
@@ -399,8 +378,7 @@ Beyond that, this release fixes several library issues
 and improves the documentation. We provide a more detailed
 description of the changes below.
 
-Make range and itertools functionality standalone
--------------------------------------------------
+### Make range and itertools functionality standalone
 
 We have pulled the functionality for integer ranges
 and the range-adapting functionality (product, enumerate, ...)
@@ -410,8 +388,7 @@ and resides in the top-level itertools folder.
 Tests can be found in test/itertools.
 
 
-Make mpi functionality standalone and change namespace
-------------------------------------------------------
+### Make mpi functionality standalone and change namespace
 
 We have pulled the generic mpi functionality
 (communicator, gather(basic_type), reduce(basic_type), ...)
@@ -423,8 +400,7 @@ triqs/mpi/vector.hpp should now be replaced with with includes to
 the according file in the mpi directory.
 
 
-Non-owning views (C++)
-----------------------
+### Non-owning views (C++)
 
 We have changed the behavior of view-types within TRIQS.
 Prior to TRIQS 2.2 any view (gf_view, array_view, ...) would make sure that
@@ -470,8 +446,7 @@ Our analysis has shown that in practice this change in behavior rarely affects e
 You can however automatically detect any problems related to this change by using the dynamic analyzer checks described
 in the following.
 
-Dynamic Analyzer Checks (ASAN, UBSAN)
--------------------------------------
+### Dynamic Analyzer Checks (ASAN, UBSAN)
 
 The clang and gcc compiler provide so-called dynamic analyzer checks that allow us to
 detect various memory access errors and occurances of undefined behavior.
@@ -480,24 +455,21 @@ on the app4triqs skeleton by adding additional options to the cmake configuratio
 In order to run these checks you will need to configure TRIQS and your application
 with -DASAN=ON and/or -DUBSAN=ON.
 
-No longer install googletest
-----------------------------
+### No longer install googletest
 
 The build-system of the TRIQS library will no longer install the googletest project as this can
 lead to conflicts with system-provided packages. Applications should instead compile and link against
 their own version of googletest.
 This is done for example in the [app4triqs](https://github.com/TRIQS/app4triqs) application skeleton.
 
-app4triqs
----------
+### app4triqs
 
 Starting with TRIQS Version 2.2.0 we will issue compatible releases of the [app4triqs](https://github.com/TRIQS/app4triqs) application skeleton.
 These will serve as a basis to the corresponding compatible releases of many of our official applications.
 Making adjustments to the project structure directly within [app4triqs](https://github.com/TRIQS/app4triqs)
 allows us to easily propagate these changes to all compatible applications.
 
-arrays
-------
+### arrays
 * All views are now borrowed (non-owning) by default
 * Major Test cleanings
 * Fix make_regular for array_expr
@@ -507,8 +479,7 @@ arrays
 * Move arrays::range to itertools::range
 * Reduce hdf5 compression level from 8->1 for higher performance
 
-cmake
------
+### cmake
 * We now generate and install a triqs++ compiler wrapper
 * gtest is no longer installed by TRIQS but should now be compile by the applications (cf. app4triqs)
 * Install Findsanitizer.cmake - It locates sanitizer runtime libraries and interface targets
@@ -535,8 +506,7 @@ cmake
 * Remove and Clean usage of forward compat header c14.hpp and c17.hpp
 * Adjust fundamental operator set to respect order in gf_struct #342
 
-doc
----
+### doc
 * Major overhaul of the documentation file structure
 * Add documentation for fit_legendre function
 * Include a markdown cheat sheet in the feature request issue template
@@ -560,14 +530,12 @@ doc
 * Clean old python-package dependencies from install instructions and docker files
 * Update homebrew formula and osx install instructions
 
-fourier
--------
+### fourier
 * Fix generic make_gf_from_fourier for block_gf and block2_gf
 * Make direct fourier (ImTime -> Matsubara) checks less rigid
 * Issue warning in k-mesh fourier for non-diagonal periodization matrix
 
-gf
---
+### gf
 * Generalize is_gf_hermitian and make_hermitian for imtime and rank<4> green functions
 * Explicitly check is_within_boundary for index_to_linear and index_to_point in Debug mode
 * Remove modulo operation from cluster_mesh::operator[]
@@ -576,32 +544,27 @@ gf
 * Adjust the the delta(g) function in pytriqs.gf.tools after tail adjustments
 * Fix gf_indices construction in partial evaluation of Green functions
 
-h5
---
+### h5
 * Protect the write vector of size 0 in h5
 * Add missing h5_write/read for vector<long>
 
-itertools
----------
+### itertools
 * Add range slicing capabilities with slice(Range,start,end) + test
 * Add range striding capabilities with stride(Range,step) + test
 * Move chunk_range into itertools, add omp_chunk (omp version of mpi_chunk) to itertools/omp_chunk.hpp
 * Add a doc example for enumerate
 
-jenkins
--------
+### jenkins
 * Add sanitization build including both asan and ubsan
 * Make linux builds use requirements.txt
 * try to exclude large git packs from build
 * Switch ubuntu-clang build to libc++ packages
 * Add Dockerfile supporting msan with mkl
 
-mc_generic
-----------
+### mc_generic
 * We added separate functions warmup/accumulate
 
-mpi
----
+### mpi
 * Add range-adapting function mpi::chunk(Range) that distributes over all mpi ranks
 * Encapsulate generic mpi functionality in its own mpi namespace
 * Adjust slice_range/length to match the API of range(N,M,1) where M is excluded
@@ -611,22 +574,18 @@ mpi
 * Rename slice_range->chunk_range and slice_length->chunk_length
 * Add std::string broadcasting
 
-lattice
--------
+### lattice
 * Store orbital positions and names for bravais_lattice, FIX #724
 * Add BrillouinZone member to tight-binding-lattice
 
-operators
----------
+### operators
 * Add is_almost_zero(precision) function to many_body_operator FIX #745
 * Rename reduction_t -> data_t in fundamental op. set
 
-packaging
----------
+### packaging
 * Add Easybuild script for TRIQS release 2.1.1
 
-pytriqs
--------
+### pytriqs
 * Add missing imports of 'warnings' python module
 * Deprecate use of 'inverse' in fourier function names
 * Restore compatibility for old numpy versions
@@ -638,42 +597,35 @@ pytriqs
 * Extend make_zero_tail functionality to work on (im/re)time Green functions
 * Extend mpi.bcast(x) to bcast(x, root = 0) and recv() to recv(source = 0)
 
-General
--------
+### General
 * Reduce hdf5 compression level from 8->1 for higher performance
   (negligible change in file sizes, substantial change in write/read times)
 
 
-Version 2.1.1
-=============
+## Version 2.1.1
 
 TRIQS Version 2.1.1 introduces minor adjustments
 to the cmake files and the documentation.
 It further provides a build script for the
 EasyBuild framework.
 
-jenkins
--------
+### jenkins
 * Manually pip install numpy first on osx
 * Rename docker repo to packaging
 
-doc
----
+### doc
 * Use short version of binder link in install page
 * Fix github logo
 
-cmake
------
+### cmake
 * Synchronize and clean find_package modules for FFTW GMP GSL and NFFT
 * Allow compilation also with the parallel version of hdf5
 
-General
--------
+### General
 * Easyconfig Build Script for TRIQS release 2.1.1
 
 
-Version 2.1.0
-=============
+## Version 2.1.0
 
 TRIQS Version 2.1.0 is a bugfix release.
 It resolves a variety of issues. In particular it addresses
@@ -687,32 +639,27 @@ installed together with TRIQS and should no longer be installed
 seperately. The corresponding cpp2py deb package should thus
 also be removed.
 
-gf
---
+### gf
 * Introduce g.target_space() to generate an idx range + test
 * Add density function for real-frequency gf/block_gf
 * GfReFreq density density_zero_T + test
 * Add functions is_gf_hermitian and make_hermitian + tests
 * Important fix in pytriqs/gf matrix product and add test, Fix #608
 
-array
------
+### array
 * Add functionality to substack (vstack) matrices + test
 * Improve thread-safety of array_views (atomic counter)
 * Bugfix for iterators of length zero
 
-clef
-----
+### clef
 * Fix Issue #475
 * Additional Tests for products of matsubara frequencies
 
-BlockGf
--------
+### BlockGf
 * Enfore string block-names in BlockGf python constructor
 * FIX in BlockGf converter to check that names are convertible to std::string
 
-cmake
------
+### cmake
 * Fix a problem with improper usage of LIBRARY_PATH when using clang
 * Integrate cpp2py as a cmake sub-project
 * Check that compiler is either clang or gcc, Cleanup some intel remains
@@ -723,18 +670,15 @@ cmake
 * Only generate but do not install the TRIQS modulefile
 * Export GIT_EXECUTABLE into TRIQSConfig
 
-lapack
-------
+### lapack
 * replace fortran wrappers
 * A fix that avoids unnecessary copies in gesvd gelss
 
-lattice
--------
+### lattice
 * Make tight_binding object h5 read and writeable + test
 * Fix h5 read/write for cyclic_lattice mesh
 
-tail
-----
+### tail
 * Fix tail least-squares error: properly normalize, Small bugfixes
 * Fix assymetry bug in replace_by_tail
 * Fix in BlockGf functionality of make_zero_tail
@@ -743,24 +687,20 @@ tail
 * Adjust maximum fitting order based on largest fitted frequency
 * Important Bugfix in known_moment fitting
 
-det_manip
----------
+### det_manip
 * Add try_change_col_row and complete
 * expose precision warning and error bounds
 
-atom_diag
----------
+### atom_diag
 * Incorporate patch for empty subspaces
 * We now expose n_min, n_max and f_shell + test
 
-mc_tools
---------
+### mc_tools
 * Assert that a move has been registered in attempt() FIX #663
 * collect_results: Inform user that we are waiting for other mpi-threads
 * make measure timer optional, Fix #650
 
-doc
----
+### doc
 * Add warning about compilation memory usage to install page
 * Commit generated rst files, add an optional target for regeneration (docs_cpp2rst)
 * Add documentation for the fit_tail functionality, update to fourier docs
@@ -768,8 +708,7 @@ doc
 * Updated install instructions after cpp2py inclusion
 * Update install script for master branch
 
-General
--------
+### General
 * Fix the delta(g) function in pytriqs.gf.tools after tail adjustments
 * Generalize fit_[hermitian_]tail for BlockGf, Some cleanining in make_gf_from_fourier
 * time_pt h5 serialization
@@ -790,14 +729,12 @@ General
 * Add wrapping of fit_tail for scalar_valued gf's
 * Add real / imag for block[2] gf and test
 
-pytriqs
--------
+### pytriqs
 * Add fit_legendre(gt,order) function + test
 * Adjust descriptors for BlockGf Functionality FIX #106
 * Fix of Flat descriptor for scalar_valued gf
 
-fourier
--------
+### fourier
 * Fix generic make_gf_from_fourier for block_gf and block2_gf
 * Make direct fourier (ImTime -> Matsubara) checks less rigid
 * Updated Python Fourier test for BlockGf
@@ -805,40 +742,31 @@ fourier
 * Assume vanishing 0th moment in tail-fit, improved error msgs
 
 
-Version 2.0.0
-=============
+## Version 2.0.0
 
-fourier,tail
-------------
+### fourier,tail
 * Allowing known moments in direct fourier to python interface
 
-cmake
------
+### cmake
 * Add -Og flag for debug mode
 
-hdf5
-----
+### hdf5
 * enable compression in c++ h5write of array / array_stack
 
-arrays
-------
+### arrays
 * Add swap_index_view
 
-doc
----
+### doc
 * wip
 * remove tail doc for C++
 
-gf/py
------
+### gf/py
 * Add g + 1, 1+g for scalar_valued gf. Clean implementation
 
-py
---
+### py
 * Add wrapper for density for scalar_valued
 
-General
--------
+### General
 * grab the version number from the latest annotated git tag
 * Move out ipython notebooks to github.com/OParcollet/tail_studies
 * Update Dockerfile.build
@@ -890,12 +818,10 @@ General
 * Revert "draft complex_Freq"
 * draft complex_Freq
 
-travis
-------
+### travis
 * Disable clang
 
-gf
---
+### gf
 * Add Pade for scalar_valued function
 * Add evaluator with slice
 * density for bosonic Gf
@@ -904,8 +830,7 @@ gf
 * Add * and sign for statistic_enum
 * Add linear_dims in Python interface
 
-tail
-----
+### tail
 * Add replace_by_tail without n_min
 * Rename get_tail -> fit_tail, further cleaning after creation of tail_fitter class
 * pulling out tail_fitter
@@ -916,39 +841,31 @@ tail
 * Adjust n_moments automatically
 * Add tests
 
-pytriqs
--------
+### pytriqs
 * Small fix in add of gf
 * Add map_block function to pytriqs.gf, maps function to every element of Block[2]Gf
 * adding fourier factory functions to python interface + tests
 
-pytriqs/gf
-----------
+### pytriqs/gf
 * fix typo in new add scalar code
 * Adding functionality for scalar_valued gf in python + tests
 
-test
-----
+### test
 * gf_density boson test fails! n = infty...
 * tail fit sigma cancellation test
 
-tail,fourier
-------------
+### tail,fourier
 * Refactoring fourier matsubara and fourier lattice tests
 
-fourier
--------
+###fourier
 * Add checkfor known moments to fourier
 * Adjustments in gf_fourier.py for block_gf and precision
 * add overloads for block/block2, some tests and cleaning
 * Additional fourier tests and test cleaning
 * Adding factory functions for lattice fourier + tests
 
-Version 1.5
------------
+## Version 1.5
 
-Changes in installation and cmake files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To port an application's cmakelists:
 
@@ -966,8 +883,7 @@ To port an application's cmakelists:
 EXPLAIN
 
 
-API changes
-~~~~~~~~~~~
+### API changes
 
 * Remove the gf.local module, simply use gf
 
@@ -995,16 +911,14 @@ API changes
 Deprecation
 
 
-Version 1.4
------------
+## Version 1.4
 
-Documentation
-~~~~~~~~~~~~~
+### Documentation
 
 * Replace Doxygen by the local simpler tool c++2doc.
 
-Installation
-~~~~~~~~~~~~
+### Installation
+
 
 * boost mpi is no longer detected by triqs.
   You can either add 2 lines to
@@ -1049,8 +963,8 @@ Installation
   A more detailed documentation can be found here: https://triqs.github.io/triqs/1.x/tutorials/using_the_lib/application_structure.html
 
 
-Many-body operators
-~~~~~~~~~~~~~~~~~~~
+### Many-body operators
+
 
 * They are now polymorphic, they can handle complex and real case.
   many_body_operator is not a template any more.
@@ -1058,8 +972,7 @@ Many-body operators
 
 * The are in triqs::operators namespace (moved from utility).
 
-Green's functions
-~~~~~~~~~~~~~~~~~
+### Green's functions
 
 * Added support for complex G(tau). By default G(tau) is complex.
 
@@ -1085,8 +998,7 @@ Green's functions
     or a G(iw) on the full frequency axis.
 
 
-Tests
-~~~~~
+### Tests
 
 * All c++ tests have been ported to Google test.
 
@@ -1118,18 +1030,15 @@ Tests
 
 
 
-Version 1.3
------------
+## Version 1.3
 
-Installation
-~~~~~~~~~~~~
+### Installation
 
 * TRIQS depends on a number of third-party Sphinx extensions to build its documentation.
   These extensions are now installed under `${CMAKE_INSTALL_PREFIX}/share/triqs/sphinxext`, in order to let TRIQS-based application to reuse the extensions and to inherit the visual style of the docs.
 * Preinstalled Sphinx extension sphinxcontrib-doxylink is not needed anymore to build the documentation.
 
-Green functions
-~~~~~~~~~~~~~~~
+### Green functions
 
 * New Python method `DOS.copy()`.
 * New convenience functions in module `pytriqs.gf.local.tools`,
@@ -1140,8 +1049,7 @@ Green functions
   * `tail_fit()`: fit the tails of Sigma_iw and optionally G_iw;
   * `read_gf_from_txt()`/`write_gf_to_txt()`: read/write a GfReFreq from/to text files.
 
-Many-body operators
-~~~~~~~~~~~~~~~~~~~
+### Many-body operators
 
 * HDF5 support.
 * Various utilities related to the many-body operators are organized in a separate sub-package `pytriqs.operators.util`. It includes the following modules,
@@ -1151,28 +1059,24 @@ Many-body operators
   * `observables`: operators of commonly used observables (S_z, S^2, L_z, L^2, L*S and so on);
   * `op_struct`: auxiliary functions to work with spin and orbital indices.
 
-Monte-Carlo tools
-~~~~~~~~~~~~~~~~~
+### Monte-Carlo tools
 
 * Function `mc_generic::start()` returns different exit codes depending on the way it has been stopped, by receiving a signal or by `stop_callback()`.
 
-Determinant manipulation
-~~~~~~~~~~~~~~~~~~~~~~~~
+### Determinant manipulation
 
 * New functions `insert2()`, `remove2()`, `change_row()` and `change_col()`, which are combinations of `try_*` and `complete_operation()`.
 * New functions `insert2_at_end()`, `remove_at_end()` and `remove2_at_end()`.
 * Optimized version of `change_one_row_and_one_col()` and other minor optimizations.
 
-HDF5
-~~~~
+### HDF5
 
 * Support for `unsigned long long`.
 * The lists and tuples in Python are now written by hdf_archive with keys as "0", "1", "2", "3", instead of "00000000", "00000001", "0000002", "0000003", ...
   This is necessary for C++ compatibility, where `std::vector<T>` is written in HDF5 as a subgroup with object named by their number, for generic T (i.e. not `int`, `double`, `std::string`).
   This change is backward compatible: old archive can be read by new code, but would break h5diff.
 
-c++2py
-~~~~~~
+### c++2py
 
 * Support for rich comparison methods.
 * New C++ attribute `ignore_in_python` that prevents a class method from wrapping in Python.
@@ -1181,43 +1085,36 @@ c++2py
 * Converter for `std::tuple` (from any Python sequence/to `tuple()`).
 * `std::pair` is now converted to `tuple()`.
 
-Tests
-~~~~~
+### Tests
 
 * The Google Test framework (https://github.com/google/googletest) has been adopted by the project. Some of C++ test have been ported to it.
 * New header file `test_tools.hpp` with convenience functions and additional GTest macros for C++ testing.
 
-Miscellaneous
-~~~~~~~~~~~~~
+### Miscellaneous
 
 * Added a reference to a Computer Physics Communications paper about TRIQS.
 * Numerous updates to the documentation.
 
 
-Version 1.2
-------------------
+## Version 1.2
 
-C++
-~~~
+### C++
 
 * New wrapping of boost random generators. No effect on API.
 * HDF5 cleaned, now using only C library (not C++) for simpler installation.
 
-Python
-~~~~~~
+### Python
 
 * New wrapper tool to glue C++ and Python. Cython is gone.
 
-Green Functions
-~~~~~~~~~~~~~~~
+### Green Functions
 
 * `transpose()` method now returns a NEW green function, like `conjugate()`, etc...
 * Suppress the possibility to save/load in HDF5 for a tail alone (must be part of a GF).
 
 
 
-Version 1.1
------------
+### Version 1.1
 
 * New constructors for the gf [api change]
 * Fix for gf expression templates
@@ -1227,14 +1124,12 @@ Version 1.1
 * Fixes for issues #11, #18, #25
 
 
-Version 1.0
------------
+### Version 1.0
 
 There have been changes from versions 0.x to 1.0.0 that will most likely have
 consequences for your scripts and archives.
 
-Python classes
-~~~~~~~~~~~~~~
+### Python classes
 
 The number of python classes in the old 0.x releases was increasing with no
 clear naming convention. In TRIQS 1.0 we have unified the naming of the classes
@@ -1246,8 +1141,7 @@ following the `PEP naming conventions
 * Function names: lowercase with underscores
 * Function and method arguments: lowercase with underscores
 
-Archives
-~~~~~~~~
+### Archives
 
 We provide an update script ``porting_tools/update_archive.py`` which should
 help you upgrade your archive. The usage is very simple::

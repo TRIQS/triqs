@@ -11,6 +11,6 @@ Table of contents
    userguide
    contributing
    versions
-   changelog
+   ChangeLog.md
    about
    faqs

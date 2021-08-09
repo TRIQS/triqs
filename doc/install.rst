@@ -5,7 +5,7 @@
 .. _triqs_install:
 
 Installation
-============
+############
 
 TRIQS and its applications are provided *a la carte*:
 after you have installed the TRIQS library, you will be able to easily install

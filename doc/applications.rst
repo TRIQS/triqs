@@ -1,7 +1,7 @@
 .. _applications:
 
 **Applications based on TRIQS**
-===============================
+###############################
 
 The TRIQS library provides all the necessary building blocks for the
 development of applications for the study of interacting quantum systems.

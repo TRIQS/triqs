@@ -32,8 +32,23 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.napoleon',
+              'myst_parser',
               'matplotlib.sphinxext.plot_directive',
               ]
+
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_admonition",
+    "html_image",
+    "linkify",
+    "replacements",
+    "smartquotes",
+    "substitution",
+    "tasklist",
+]
 
 mathjax_path = "@MATHJAX_PATH@/MathJax.js?config=default"
 print("Mathjax: ",mathjax_path)
@@ -103,19 +118,28 @@ pygments_style = 'sphinx'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-#html_style = 'default.css'
-html_theme_path = ["@TRIQS_SOURCE_DIR@/doc/themes/"]
-html_theme = "triqs"
+# this requires the sphinx_rtd_theme to be installed via pip
+html_theme = 'sphinx_rtd_theme'
+
+# options for the the rtd theme
+html_theme_options = {
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    'vcs_pageview_mode': '',
+    'style_nav_header_background': '#7E588A',
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
+
 html_show_sphinx = False
 html_context = {'header_title': 'triqs',
-                'header_subtitle': 'a Toolbox for Research on Interacting Quantum Systems',
-                'header_links': [['Install', 'install'],
-                                 ['Documentation', 'documentation'],
-                                 ['User guide', 'userguide'],
-                                 ['Applications', 'applications'],
-                                 ['Contributing', 'contributing'],
-                                 ['About TRIQS', 'about']
-                                                       ]}
+                'header_subtitle': 'a Toolbox for Research on Interacting Quantum Systems'}
 
 #html_theme_options = { "pagewidth": "80em", "documentwidth": "60em" }
 
@@ -213,5 +237,49 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+
+# open links in new tabs
+# open links in new tab instead of same window
+from sphinx.writers.html import HTMLTranslator
+from docutils import nodes
+from docutils.nodes import Element
+
+class PatchedHTMLTranslator(HTMLTranslator):
+
+    def visit_reference(self, node: Element) -> None:
+        atts = {'class': 'reference'}
+        if node.get('internal') or 'refuri' not in node:
+            atts['class'] += ' internal'
+        else:
+            atts['class'] += ' external'
+            # ---------------------------------------------------------
+            # Customize behavior (open in new tab, secure linking site)
+            atts['target'] = '_blank'
+            atts['rel'] = 'noopener noreferrer'
+            # ---------------------------------------------------------
+        if 'refuri' in node:
+            atts['href'] = node['refuri'] or '#'
+            if self.settings.cloak_email_addresses and atts['href'].startswith('mailto:'):
+                atts['href'] = self.cloak_mailto(atts['href'])
+                self.in_mailto = True
+        else:
+            assert 'refid' in node, \
+                   'References must have "refuri" or "refid" attribute.'
+            atts['href'] = '#' + node['refid']
+        if not isinstance(node.parent, nodes.TextElement):
+            assert len(node) == 1 and isinstance(node[0], nodes.image)
+            atts['class'] += ' image-reference'
+        if 'reftitle' in node:
+            atts['title'] = node['reftitle']
+        if 'target' in node:
+            atts['target'] = node['target']
+        self.body.append(self.starttag(node, 'a', '', **atts))
+ 
+        if node.get('secnumber'):
+            self.body.append(('%s' + self.secnumber_suffix) %
+                             '.'.join(map(str, node['secnumber'])))
+
+def setup(app):
+    app.set_translator('html', PatchedHTMLTranslator)
 
 

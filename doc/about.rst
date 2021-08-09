@@ -1,3 +1,6 @@
+About TRIQS
+###########
+
 
 Authors & contributors
 ======================
