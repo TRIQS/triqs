@@ -402,14 +402,18 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
         V, e = unflatten(parameters)
 
         # build discretized bath function as
-        # delta = sum_i  V_ji^* * [(w - eps_i)]^-1 V_ik
-        # first dim is freq, second dim Nb, third dim Norb
+        # delta = sum_i V_ji^* f(eps_i) * V_ik  with
+        #     f = [(w - eps_i)]^-1
+        # for Matsubara and
+        #     f = -exp(-tau * eps_i) / [1 + exp(-beta * eps_i)]
+        # for imaginary time.
+        # delta has shape (Nmesh, Norb, Nb)
         if isinstance(delta_in.mesh, MeshImFreq):
-            one_fermion = 1/(mesh_values[:,None,None] - e[None,None,:])
+            one_fermion = 1/(mesh_values[:,None] - e[None,:])
         elif isinstance(delta_in.mesh, MeshImTime):
-            one_fermion = -np.exp(-mesh_values[:,None,None] * e[None,None,:]) / (1. + np.exp(-delta_in.mesh.beta * e[None,None,:]))
+            one_fermion = -np.exp(-mesh_values[:,None] * e[None,:]) / (1. + np.exp(-delta_in.mesh.beta * e[None,:]))
+        delta = np.dot(V[None,:,:] * one_fermion[:,None,:], V.conj().T)
 
-        delta = np.einsum('wij, wjk -> wik', V[None,:,:] * one_fermion, V.conj().T[None,:,:])
         # if Gf is scalar values we have to squeeze the add axis
         if len(delta_in.target_shape)==0:
             delta_disc.data[opt_idx:] = delta.squeeze()
