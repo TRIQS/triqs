@@ -367,9 +367,9 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
         V_opt, eps_opt, delta_list = [], [], []
         for i, (block, delta) in zip(range(len(list(delta_in.indices))),delta_in):
             if isinstance(eps0, list) and isinstance(V0, list):
-                res = discretize_bath(delta, Nb, eps0[i], V0[i], tol, maxiter)
+                res = discretize_bath(delta, Nb, eps0[i], V0[i], tol, maxiter, cmplx)
             else:
-                res = discretize_bath(delta, Nb, eps0, V0, tol, maxiter)
+                res = discretize_bath(delta, Nb, eps0, V0, tol, maxiter, cmplx)
             V_opt.append(res[0])
             eps_opt.append(res[1])
             delta_list.append(res[2])
