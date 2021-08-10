@@ -320,7 +320,7 @@ def make_delta(V, eps, mesh, block_names = None):
 
     return delta_res
 
-def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, cmplx = False):
+def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, cmplx = False, method='BFGS'):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -354,6 +354,8 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     maxiter : float, optional
         maximal number of optimization steps [default=10000]
     complx : allow the hoppings V to be complex
+    method : string, optional
+        method for minimizing the function in scipy minimize [default= BFGS]
     Returns
     -------
     V_opt : sorted bath hoppings V as numpy array (list if Gf block is given)
@@ -458,12 +460,17 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     # run the minimizer with method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
     start_time = timer()
-    result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
-
-    if result.success:
-         print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
+    if method == 'BFGS':
+        result = minimize(minimizer, parameters, method='L-BFGS-B', 
+                          options = {'ftol' : tol, 'maxiter' : maxiter, "disp" : False})
+    elif method == 'Nelder-Mead':
+        result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
     else:
-        raise RuntimeError('optimization has failed, scipy minimize signaled no success: {}'.format(result.message))
+        raise ValueError('method for minimizer not recognized')
+        
+    print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
+    if not result.success:
+        print('optimization finished, but scipy minimize signaled no success, check result: {}'.format(result.message))
     # results
     V_opt, eps_opt = unflatten(result.x)
 

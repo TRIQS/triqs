@@ -31,11 +31,11 @@ energies = np.array([0.0, 0.5])
 delta_iw = make_delta(V= hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in = delta_iw, Nb = 2, eps0=2.5, V0=0.1, tol=1e-8)
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in = delta_iw, Nb = 2, eps0=2.5, V0=0.1, tol=1e-10)
 
 # compare to given values , resulting V can be correct up to a global sign
-assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-assert np.max(np.abs(energies - e_opt)) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
 assert_gfs_are_close(delta_disc_iw, delta_iw)
 
 
@@ -55,8 +55,8 @@ delta_tau = make_delta(V= hoppings, eps=energies, mesh=mesh)
 V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 8, eps0= energies, V0=hoppings, tol=1e-10, maxiter=100000)
 
 # # compare to given values
-assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-assert np.max(np.abs(energies - e_opt)) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
 assert_gfs_are_close(delta_disc_tau, delta_tau)
 
 
@@ -84,7 +84,7 @@ for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delt
 
 #################################################
 # and test without providing input parameters
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 4, eps0= 1.5, V0=0.2, tol=1e-10, maxiter=1000000)
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 4, eps0= 3, V0=0.4, tol=1e-12, maxiter=1000000)
 
 # # compare to given values
 for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
