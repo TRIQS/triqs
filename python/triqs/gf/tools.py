@@ -414,7 +414,7 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
             one_fermion = 1/(mesh_values[:,None] - e[None,:])
         elif isinstance(delta_in.mesh, MeshImTime):
             one_fermion = -np.exp(-mesh_values[:,None] * e[None,:]) / (1. + np.exp(-delta_in.mesh.beta * e[None,:]))
-        delta = np.dot(V[None,:,:] * one_fermion[:,None,:], V.conj().T)
+        delta = np.einsum('wij, jk -> wik', V[None,:,:] * one_fermion[:,None,:], V.conj().T[:,:])
 
         # if Gf is scalar values we have to squeeze the add axis
         if len(delta_in.target_shape)==0:
