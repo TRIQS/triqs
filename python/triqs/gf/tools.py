@@ -312,11 +312,11 @@ def make_delta(V, eps, mesh, block_names = None):
     mesh_values = np.array([w.value for w in mesh])
 
     if isinstance(mesh, MeshImFreq):
-        one_fermion = 1/(mesh_values[:,None,None] - eps[None,None,:])
+        one_fermion = 1/(mesh_values[:,None] - eps[None,:])
     elif isinstance(mesh, MeshImTime):
-        one_fermion = -np.exp(-mesh_values[:,None,None] * eps[None,None,:]) / (1. + np.exp(-mesh.beta * eps[None,None,:]))
+        one_fermion = -np.exp(-mesh_values[:,None] * eps[None,:] + mesh.beta * ((eps < 0.0) * eps)[None,:]) / (1. + np.exp(-mesh.beta * np.abs(eps[None,:])))
 
-    delta_res.data[:] = np.einsum('wij, wjk -> wik', V[None,:,:] * one_fermion, V.conj().T[None,:,:])
+    delta_res.data[:] = np.einsum('wij, jk -> wik', V[None,:,:] * one_fermion[:,None,:], V.conj().T)
 
     return delta_res
 
@@ -401,20 +401,21 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     ####
     # define minimizer for scipy
     def minimizer(parameters):
-        V, e = unflatten(parameters)
+        V, eps = unflatten(parameters)
 
         # build discretized bath function as
         # delta = sum_i V_ji^* f(eps_i) * V_ik  with
         #     f = [(w - eps_i)]^-1
         # for Matsubara and
-        #     f = -exp(-tau * eps_i) / [1 + exp(-beta * eps_i)]
+        #     f = -exp(-tau * eps_i + beta * (eps_i < 0) * eps_i) / [1 + exp(-beta * |eps_i|)]
         # for imaginary time.
         # delta has shape (Nmesh, Norb, Nb)
         if isinstance(delta_in.mesh, MeshImFreq):
-            one_fermion = 1/(mesh_values[:,None] - e[None,:])
+            one_fermion = 1/(mesh_values[:,None] - eps[None,:])
         elif isinstance(delta_in.mesh, MeshImTime):
-            one_fermion = -np.exp(-mesh_values[:,None] * e[None,:]) / (1. + np.exp(-delta_in.mesh.beta * e[None,:]))
-        delta = np.einsum('wij, jk -> wik', V[None,:,:] * one_fermion[:,None,:], V.conj().T[:,:])
+            one_fermion = -np.exp(-mesh_values[:,None] * eps[None,:] + delta_in.mesh.beta * ((eps < 0.0) * eps)[None,:]) / (1. + np.exp(-delta_in.mesh.beta * np.abs(eps[None,:])))
+
+        delta = np.einsum('wij, jk -> wik', V[None,:,:] * one_fermion[:,None,:], V.conj().T)
 
         # if Gf is scalar values we have to squeeze the add axis
         if len(delta_in.target_shape)==0:
