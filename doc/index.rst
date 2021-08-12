@@ -12,6 +12,11 @@ Welcome
    This is the homepage TRIQS Version 3.0
    For the changes in 3.0, Cf :ref:`changelog page <changelog>`
 
+      .. image:: _static/logo_github.png
+         :width: 75%
+         :align: center
+         :target: https://github.com/triqs/triqs
+
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)
 is a scientific project providing a set of C++ and Python libraries to develop new tools
@@ -72,3 +77,26 @@ a platform for discussions with other users and developers as a `Google group <h
 You can also post an issue on the `TRIQS GitHub <https://github.com/TRIQS/triqs>`_.
 
 Finally, if you want to contribute to the project, please check our :ref:`Contributing <triqs_contributing>` section.
+
+.. image:: _static/logo_cea.png
+   :width: 14%
+   :target: http://ipht.cea.fr
+
+.. image:: _static/logo_x.png
+   :width: 14%
+   :target: "https://www.cpht.polytechnique.fr
+
+.. image:: _static/logo_cnrs.png
+   :width: 14%
+   :target: https://www.cnrs.fr
+
+.. image:: _static/logo_erc.jpg
+   :width: 14%
+
+.. image:: _static/logo_flatiron.png
+   :width: 20%
+   :target: https://www.simonsfoundation.org/flatiron
+
+.. image:: _static/logo_simons.jpg
+   :width: 20%
+   :target: https://www.simonsfoundation.org

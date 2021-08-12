@@ -15,21 +15,24 @@ The configuration
 We start by defining a configuration class on which the move and measure
 classes will act. We write this class in a file :file:`configuration.hpp`:
 
-.. literalinclude:: ./configuration.hpp
+.. literalinclude:: /documentation/manual/triqs/mc_tools/configuration.hpp
+    :language: cpp
 
 The move
 ********
 
 The move class should have three methods: `attempt()`, `accept()` and `reject()`:
 
-.. literalinclude:: ./moves.hpp
+.. literalinclude:: /documentation/manual/triqs/mc_tools/moves.hpp
+    :language: cpp
 
 Measure
 *******
 
 The measure class has two methods, `accumulate` and `collect_results`:
 
-.. literalinclude:: ./measures.hpp
+.. literalinclude:: /documentation/manual/triqs/mc_tools/measures.hpp
+    :language: cpp
 
 
 Main program
@@ -37,6 +40,8 @@ Main program
 
 The Monte-Carlo itself can now be written:
 
-.. literalinclude:: ./ising.cpp
+.. literalinclude:: /documentation/manual/triqs/mc_tools/ising.cpp
+    :language: cpp
   
+.. literalinclude:: /documentation/manual/triqs/mc_tools/ising.output
 

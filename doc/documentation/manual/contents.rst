@@ -8,6 +8,7 @@
  
    triqs/arrays/contents
    triqs/atom_diag/contents
+   triqs/c++/mpi/mpi
    triqs/clef/contents
    triqs/det_manip/contents
    triqs/gfs/contents

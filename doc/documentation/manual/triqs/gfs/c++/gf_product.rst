@@ -74,4 +74,7 @@ See:
  
 Examples
 ---------
-.. literalinclude:: ./gf_product_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_product_0.cpp
+:language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_product_0.output

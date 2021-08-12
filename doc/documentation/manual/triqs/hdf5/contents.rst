@@ -54,6 +54,6 @@ and new subgroup for other hdf-compliant data.
    :maxdepth: 5
 
    ref
-   ./../../userguide/hdf5/hdf5_tutorial
+   /userguide/hdf5/hdf5_tutorial
 
 

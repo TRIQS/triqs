@@ -50,7 +50,7 @@ The *Variable* template parameter can take the following values:
 +--------------------------+--------------------------------------------+
 | block_index              | Block Green function                       |
 +--------------------------+--------------------------------------------+
-| prod<Gs...> | Cartesian product of gf<Gs> ... functions. |
+| prod<Gs...> | Cartesian product of gf<Gs> ... functions.              |
 +--------------------------+--------------------------------------------+
 
 The *Target* template parameter can take the following values: 

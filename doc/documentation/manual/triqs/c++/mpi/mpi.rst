@@ -1,4 +1,4 @@
-MPI
+triqs/MPI
 ===============
 
 .. warning::
@@ -140,7 +140,11 @@ which includes the headers for basic, vector, array and generic type support.
 MPI example  
 -------------
 
-.. literalinclude:: ./mpi_0.cpp
+.. literalinclude:: /documentation/manual/triqs/c++/mpi/mpi_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/c++/mpi/mpi_0.output
+
 Simple MPI example.
 
 

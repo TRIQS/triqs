@@ -27,7 +27,12 @@ In addition, we provide a TRIQS_RUNTIME_ERROR macro to throw exception easily, C
 
 Example: 
 
-.. literalinclude:: ./exceptions_0.cpp
+.. literalinclude:: /documentation/manual/triqs/utilities/exceptions_0.cpp
+   :language: cpp
+
 The exception can of course be caught :
 
-.. literalinclude:: ./exceptions_1.cpp
+.. literalinclude:: /documentation/manual/triqs/utilities/exceptions_1.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/utilities/exceptions_1.output

@@ -33,7 +33,11 @@ and also for some STL container like std::vector.
 
 Example :
 
-.. literalinclude:: ./assign_0.cpp
+.. literalinclude:: /documentation/manual/triqs/clef/assign_0.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/clef/assign_1.output  
+
 **Details**
 
 The synopsis of the `triqs_clef_auto_assign` functions is ::
@@ -66,4 +70,7 @@ into ::
 
 A complete example: 
 
-.. literalinclude:: ./assign_1.cpp
+.. literalinclude:: /documentation/manual/triqs/clef/assign_1.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/clef/assign_1.output

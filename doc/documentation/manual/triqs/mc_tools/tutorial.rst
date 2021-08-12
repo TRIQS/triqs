@@ -27,7 +27,10 @@ Let's see how we can get this result from a Monte Carlo simulation. Here is
 a code that would do the job. Note that we put everything in one file here,
 but obviously you would usually want to cut this into pieces for clarity:
 
-.. literalinclude:: ./overview_ex.cpp
+.. literalinclude:: overview_ex.cpp
+   :language: cpp
+
+.. literalinclude:: overview_ex.output
 
 Let's go through the different parts of this code. First we look
 at ``main()``.
@@ -90,6 +93,7 @@ now need to tell it what moves must be tried and what measures must be made.
 This is done with:
 
 .. literalinclude:: overview_ex.cpp
+   :language: cpp
    :lines: 76-77
 
 The method ``add_move`` expects a move and a name, while
@@ -112,6 +116,7 @@ has three member functions that any move **must** have: ``attempt``, ``accept`` 
 ``reject``:
 
 .. literalinclude:: overview_ex.cpp
+   :language: cpp
    :lines: 14-25
 
 The ``attempt`` method is called by the Monte Carlo loop in order to try a new
@@ -147,6 +152,7 @@ Just in the same way, the measures are expected to satisfy a concept.
 Let's look at ``compute_m``.
 
 .. literalinclude:: overview_ex.cpp
+   :language: cpp
    :lines: 28-45
 
 Here only two methods are expected, ``accumulate`` and ``collect_results``.

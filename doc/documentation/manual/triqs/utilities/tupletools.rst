@@ -33,7 +33,8 @@ apply
  
 *Example* :
 
-.. literalinclude:: ./tupletools_0.cpp
+.. literalinclude:: tupletools_0.cpp
+   :language: cpp
 
 for_each 
 -------------------------------------------------------------------------
@@ -57,7 +58,8 @@ for_each
  
 *Example* :
 
-.. literalinclude:: ./tupletools_1.cpp
+.. literalinclude:: tupletools_1.cpp 
+    :language: cpp
 
 for_each_zip
 -------------------------------------------------------------------------
@@ -80,7 +82,8 @@ for_each_zip
  
 *Example* :
 
-.. literalinclude:: ./tupletools_2.cpp
+.. literalinclude:: tupletools_2.cpp
+   :language: cpp
 
 map
 -------------------------------------------------------------------------
@@ -104,7 +107,8 @@ map
   
 *Example* :
 
-.. literalinclude:: ./tupletools_3.cpp
+.. literalinclude:: tupletools_3.cpp
+   :language: cpp
 
 fold
 -------------------------------------------------------------------------
@@ -163,7 +167,8 @@ fold
 
 *Example* :
 
-.. literalinclude:: ./tupletools_4.cpp
+.. literalinclude:: tupletools_4.cpp
+   :language: cpp
 
 reverse
 -------------------------------------------------------------------------
@@ -196,7 +201,8 @@ reverse
    
 *Example* :
 
-.. literalinclude:: ./tupletools_reverse.cpp
+.. literalinclude:: tupletools_reverse.cpp
+   :language: cpp
 
 called_on_tuple
 -------------------------------------------------------------------------
@@ -226,8 +232,10 @@ called_on_tuple
    
 *Example* :
 
-.. literalinclude:: ./tupletools_called.cpp
+.. literalinclude:: tupletools_called.cpp
+   :language: cpp
 
+.. literalinclude:: tupletools_called.output
 
 *Implementation* :
 

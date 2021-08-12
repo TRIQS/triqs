@@ -16,47 +16,57 @@ Here are a couple of simple examples showing the basic use of this class.
 Creation of an empty det_manip class
 -------------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_0.cpp
+.. literalinclude:: det_manip_tutorial_0.cpp
+   :language: cpp
 
 Creation of a non empty det_manip class
 ----------------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_1.cpp
+.. literalinclude:: det_manip_tutorial_1.cpp
+   :language: cpp
 
 Get information about a det_manip class
 -----------------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_2.cpp
+.. literalinclude:: det_manip_tutorial_2.cpp
+   :language: cpp
 
 Add a line and a column
 -------------------------
 
-.. literalinclude:: ./det_manip_tutorial_3.cpp
+.. literalinclude:: det_manip_tutorial_3.cpp
+    :language: cpp
 
 Remove a line and a column
 ---------------------------
 
-.. literalinclude:: ./det_manip_tutorial_4.cpp
+.. literalinclude:: det_manip_tutorial_4.cpp
+    :language: cpp
 
 Add two lines and two columns
 ------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_5.cpp
+.. literalinclude:: det_manip_tutorial_5.cpp
+    :language: cpp
 
 Remove two lines and two columns
 --------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_6.cpp
+.. literalinclude:: det_manip_tutorial_6.cpp
+    :language: cpp
 
 Remove/add the one/two last lines and columns
 ---------------------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_7.cpp
+.. literalinclude:: det_manip_tutorial_7.cpp
+    :language: cpp
 
 Replace one line and column
 ---------------------------------------------
 
-.. literalinclude:: ./det_manip_tutorial_8.cpp
+.. literalinclude:: det_manip_tutorial_8.cpp
+   :language: cpp
+
 Learn more in the full reference, see :ref:`det_manip`
 
 

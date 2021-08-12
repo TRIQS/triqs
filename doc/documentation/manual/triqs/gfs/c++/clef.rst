@@ -17,7 +17,9 @@ Using the CLEF library offers a quick and efficient way to fill an array with mu
 
 **Example**: 
 
-.. literalinclude:: ./clef_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/clef_0.cpp
+   :language: cpp
+
 
 .. note:: 
 

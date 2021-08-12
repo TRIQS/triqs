@@ -86,5 +86,7 @@ h5 tag: `ImTime`
 Examples
 ---------
 
-.. literalinclude:: ./gf_imtime_0.cpp
-   
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_imtime_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_imtime_0.output

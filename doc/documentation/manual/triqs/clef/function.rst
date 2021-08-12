@@ -74,4 +74,7 @@ clef::function can be assigned with the = operator, Cf example below.
 Examples
 ---------
 
-  .. literalinclude:: ./function_0.cpp
+.. literalinclude:: /documentation/manual/triqs/clef/function_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/clef/function_0.output

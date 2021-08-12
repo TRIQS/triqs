@@ -22,7 +22,8 @@ The evaluation can be :
 Complete evaluation
 --------------------
 
-.. literalinclude:: ./expressions_eval_0.cpp
+.. literalinclude:: /documentation/manual/triqs/clef/expressions_eval_0.cpp
+
 Note that: 
 
 * The order of placeholder does not matter in calling eval.

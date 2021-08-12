@@ -40,4 +40,7 @@ Constructors of gf
 There are more examples for each specializations in the corresponding pages.
 
 
-.. literalinclude:: ./gf_constructors_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_constructors_0.cpp
+:language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_constructors_0.output

@@ -146,7 +146,7 @@ Under the hood ...
 
 
 Full documentation/manual/triqs 
--------------------------
+--------------------------------
 
 .. warning::
     In construction 
@@ -161,4 +161,7 @@ Full documentation/manual/triqs
 Example  
 ---------
 
-.. literalinclude:: ./det_manip_0.cpp
+.. literalinclude:: /documentation/manual/triqs/det_manip/det_manip_0.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/manual/triqs/det_manip/det_manip_0.output

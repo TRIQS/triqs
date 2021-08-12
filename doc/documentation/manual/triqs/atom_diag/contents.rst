@@ -33,8 +33,10 @@ Example of use: Python
 ----------------------
 
 .. literalinclude:: ./atom_diag_example.py
+    :language: python
 
 Example of use: C++
 --------------------
 
 .. literalinclude:: ./atom_diag_example.cpp
+    :language: cpp

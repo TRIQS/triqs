@@ -5,7 +5,7 @@ Green's functions
    :maxdepth: 3
 
 
-   concepts 
+   c++/concepts 
    basic_notions/contents
    c++ <c++/contents>
    py <py/contents>

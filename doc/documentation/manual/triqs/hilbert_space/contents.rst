@@ -26,3 +26,4 @@ Example of use
 --------------
 
 .. literalinclude:: ./hilbert_example.cpp
+   :language: cpp

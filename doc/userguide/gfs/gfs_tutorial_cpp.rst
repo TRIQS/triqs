@@ -21,7 +21,8 @@ In this example, we show how to initialize the following Green's functions:
     G(i\omega) = \frac{1}{i\omega -3}
 
 
-.. literalinclude:: ./gfs_tut_matsub_1.cpp
+.. literalinclude:: gfs_tut_matsub_1.cpp
+    :language: cpp
 
 Two-frequency Green's function :math:`G(i\omega,i\nu)`
 ........................................................
@@ -31,13 +32,14 @@ In this example, we show how to initialize the following Green's functions:
     G(i\omega, i\nu) = \frac{1}{i\omega + i\nu -4}
 
 
-.. literalinclude:: ./gfs_tut_matsub_2.cpp
-
+.. literalinclude:: gfs_tut_matsub_2.cpp
+    :language: cpp
 
 Imaginary-time Green's functions :math:`G(\tau)`
 --------------------------------------------------
 
-.. literalinclude:: ./gfs_tutorial_3.cpp
+.. literalinclude:: gfs_tutorial_3.cpp
+    :language: cpp
 
 Real-time Green's functions :math:`G(t)`
 ----------------------------------------------
@@ -45,32 +47,38 @@ Real-time Green's functions :math:`G(t)`
 Here we create a GF defined on the time interval from tmin to tmax.
 If we want the value of the GF at any time to be a scalar, we use:
 
-.. literalinclude:: ./gfs_tutorial_0.cpp
+.. literalinclude:: gfs_tutorial_0.cpp
+    :language: cpp
 
 If we need a matrix of size n by m, we use:
 
-.. literalinclude:: ./gfs_tutorial_1.cpp
+.. literalinclude:: gfs_tutorial_1.cpp
+    :language: cpp
 
 Or a tensor!
 
-.. literalinclude:: ./gfs_tutorial_2.cpp
+.. literalinclude:: gfs_tutorial_2.cpp
+    :language: cpp
 
 Creation of a two real time GF :math:`G(t,t')`
 ................................................
 
-.. literalinclude:: ./gfs_tutorial_4.cpp
+.. literalinclude:: gfs_tutorial_4.cpp
+    :language: cpp
 
 How to fill a GF with placeholders
 ...................................
 
-.. literalinclude:: ./gfs_tutorial_5.cpp
+.. literalinclude:: gfs_tutorial_5.cpp
+    :language: cpp
 
 How to interpolate the GF value at a point of the domain 
 .............................................................................
 
 You simply have to call the GF with the coordinates of the point: 
 
-.. literalinclude:: ./gfs_tutorial_6.cpp
+.. literalinclude:: gfs_tutorial_6.cpp
+    :language: cpp
 
 Learn more in the full reference, see :ref:`greenfunctions`
 

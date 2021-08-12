@@ -129,4 +129,7 @@ Block gf have a natural iterator, e.g. ::
 
 Examples
 ---------
-.. literalinclude:: ./gf_block_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_block_0.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_block_0.output

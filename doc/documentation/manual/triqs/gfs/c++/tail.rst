@@ -55,6 +55,7 @@ Example
 ~~~~~~~
 
 .. literalinclude:: ./tail.cpp
+   :language: cpp
 
 Adjusting the fit parameters (Advanced)
 ---------------------------------------

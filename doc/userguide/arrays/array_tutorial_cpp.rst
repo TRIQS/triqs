@@ -13,40 +13,48 @@ Here are a couple of simple examples showing the basic use of this class.
 
 Declaring and printing an array
 -------------------------------
-.. literalinclude:: ./array_tutorial_0.cpp
+.. literalinclude:: array_tutorial_0.cpp
+:language: cpp
 
 Simple operations
 -------------------
-.. literalinclude:: ./array_tutorial_1.cpp
+.. literalinclude:: array_tutorial_1.cpp
+   :language: cpp
 
 HDF5 Archiving
 -------------------
 Archiving an array into an HDF5 file is easy:
 
-.. literalinclude:: ./array_tutorial_2.cpp
+.. literalinclude:: array_tutorial_2.cpp
+   :language: cpp
 
 Views: ranges and slices
 -------------------------
 One can easily take a slice of an array to view and modify only part of the underlying data.
 
-.. literalinclude:: ./array_tutorial_3.cpp
+.. literalinclude:: array_tutorial_3.cpp
+   :language: cpp
 
 Matrices and vectors
 -------------------------
 Arrays must be distinguished from vectors and matrices, which have an algebra of their own.
 
-.. literalinclude:: ./array_tutorial_4.cpp
+.. literalinclude:: array_tutorial_4.cpp
+   :language: cpp
 
 Defining through a lazy expression
 -----------------------------------
-.. literalinclude:: ./array_tutorial_5.cpp
+.. literalinclude:: array_tutorial_5.cpp
+   :language: cpp
 
 Linear algebra
 ---------------
-.. literalinclude:: ./array_tutorial_6.cpp
+.. literalinclude:: array_tutorial_6.cpp
+   :language: cpp
 
 Map and fold
 -------------
-.. literalinclude:: ./array_tutorial_7.cpp
+.. literalinclude:: array_tutorial_7.cpp
+   :language: cpp
 The full reference of the array library can be found :doc:`here <../../reference/arrays/contents>`.
 

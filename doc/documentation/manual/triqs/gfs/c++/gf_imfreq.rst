@@ -75,7 +75,10 @@ Examples
 ---------
 
 
-.. literalinclude:: ./gf_imfreq_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_imfreq_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_imfreq_0.output
 
 Free functions
 ---------------------

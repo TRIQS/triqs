@@ -68,4 +68,7 @@ h5 tag: `ReFreq`
 Examples
 ---------
 
-.. literalinclude:: ./gf_refreq_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_refreq_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_refreq_0.output

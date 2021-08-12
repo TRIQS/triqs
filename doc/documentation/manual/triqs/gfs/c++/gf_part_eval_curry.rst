@@ -40,4 +40,7 @@ the result is a view of the partially evaluated gf with :
 
 Example : 
 
-.. literalinclude:: ./gf_part_eval_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_part_eval_0.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_part_eval_0.output

@@ -74,4 +74,7 @@ h5 tag: `ReTime`
 Examples
 ---------
 
-.. literalinclude:: ./gf_retime_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_retime_0.cpp
+  :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_retime_0.output

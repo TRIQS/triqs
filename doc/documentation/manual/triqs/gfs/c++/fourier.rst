@@ -50,8 +50,10 @@ we can use the function make_gf_from_fourier.
 Example
 -------
 
-.. literalinclude:: ./fourier_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/fourier_0.cpp
+:language: cpp
 
+.. literalinclude:: /documentation/examples/triqs/gfs/fourier_0.output
 
 .. toctree::
    :maxdepth: 1

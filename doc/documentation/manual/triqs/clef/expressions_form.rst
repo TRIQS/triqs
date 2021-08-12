@@ -44,7 +44,7 @@ CLEF expressions are made of:
 
 Examples: 
 
-.. literalinclude:: ./expressions_form_0.cpp
+.. literalinclude:: /documentation/manual/triqs/clef/expressions_form_0.cpp
 Note that: 
 
 * Expressions do not compute anything, they just store the expression tree.

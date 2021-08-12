@@ -56,4 +56,7 @@ h5 tag: `Legendre`
 Examples
 ---------
 
-.. literalinclude:: ./gf_legendre_0.cpp
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_legendre_0.cpp
+   :language: cpp
+
+.. literalinclude:: /documentation/examples/triqs/gfs/gf_legendre_0.output
