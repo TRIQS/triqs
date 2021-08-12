@@ -363,15 +363,14 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     delta_disc : Gf or BlockGf
                Discretized hybridization function
     """
-    from scipy.optimize import minimize
-
+    from scipy.optimize import minimize, basinhopping
     if isinstance(delta_in, BlockGf):
         V_opt, eps_opt, delta_list = [], [], []
         for i, (block, delta) in zip(range(len(list(delta_in.indices))),delta_in):
             res = discretize_bath(delta, Nb,
                     eps0[i] if isinstance(eps0, list) else eps0,
                     V0[i] if isinstance(V0, list) else V0,
-                    tol, maxiter, cmplx)
+                    tol, maxiter, cmplx, method)
             V_opt.append(res[0])
             eps_opt.append(res[1])
             delta_list.append(res[2])
@@ -457,20 +456,23 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
 
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V0.view(float).flatten(), eps0])
-
     # run the minimizer with method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
     start_time = timer()
     if method == 'BFGS':
-        result = minimize(minimizer, parameters, method='L-BFGS-B', 
-                          options = {'ftol' : tol, 'maxiter' : maxiter, "disp" : False})
+        result = minimize(minimizer, parameters, method='L-BFGS-B',
+                          options = {'ftol' : tol, 'gtol' : 1e-15, 'maxiter' : maxiter, "disp" : False})
+    elif method == 'basinhopping':
+        result = basinhopping(minimizer, parameters, niter_success= 30, niter = maxiter, disp= True, stepsize= 0.8,
+                              minimizer_kwargs = {'method' : 'L-BFGS-B', 'options' :{'ftol' :tol, 'gtol' : 1e-15, "disp" : False}} )
     elif method == 'Nelder-Mead':
         result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
     else:
         raise ValueError('method for minimizer not recognized')
-        
+
     print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
-    if not result.success:
+
+    if not method == 'basinhopping' and not result.success:
         print('optimization finished, but scipy minimize signaled no success, check result: {}'.format(result.message))
     # results
     V_opt, eps_opt = unflatten(result.x)
@@ -484,3 +486,4 @@ def discretize_bath(delta_in, Nb, eps0= 3, V0 = 0.0, tol=1e-8, maxiter = 10000, 
     V_opt = V_opt[:,order]
 
     return V_opt, eps_opt, delta_disc
+
