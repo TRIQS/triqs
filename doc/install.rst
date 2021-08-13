@@ -4,6 +4,7 @@
 
 .. _triqs_install:
 
+############
 Installation
 ############
 
@@ -16,12 +17,15 @@ This page describes the installation of the TRIQS library itself. The
 installation procedure of the applications is described on their respective
 sites, under 'Install'.
 
-Development Version
--------------------
+We provide pre-compiled versions of triqs and applications of each stable release. 
+If however you would like to try the latest development version you can use the 
+`unstable` branch instead and compile triqs manually. This will make the latest library 
+improvements and new features available to you. Note however that the development versions may include 
+changes of the API. We use `continuous integration <https://jenkins.flatironinstitute.org/job/TRIQS/>`_ 
+to ensure that both the unstable and release branches compile and pass all tests. 
+This is checked for both the TRIQS library and several public (and private) applications.
 
-To guarantee reproducibility in scientific calculations we strongly recommend the use of a stable `release <https://github.com/TRIQS/triqs/releases>`_ of both TRIQS and its applications.
-
-If however you would like to try the latest development version you can use the unstable branch instead. This will make the latest library improvements and new features available to you. Note however that the development versions may include changes of the API. We use `continuous integration <https://jenkins.flatironinstitute.org/job/TRIQS/>`_ to ensure that both the unstable and release branches compile and pass all tests. This is checked for both the TRIQS library and several public (and private) applications.
+.. note:: To guarantee reproducibility in scientific calculations we strongly recommend the use of a stable `release <https://github.com/TRIQS/triqs/releases>`_ of both TRIQS and its applications.
 
 
 Packaged Versions of TRIQS
@@ -193,7 +197,7 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
           or contact the admins of your HPC Machine.
 
 Environment setup
-^^^^^^^^^^^^^^^^^
+-----------------
 
 TRIQS provides a small script (`triqsvars.sh`)
 to load its installation into your :ref:`environment variables <environment_vars>`.

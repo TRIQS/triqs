@@ -15,7 +15,7 @@ The purpose of the MPi library is to provide a simplified, C++-style API to the 
 
 The communication routines in the C API of the MPI library have require several parameters, such as the ``reduce`` operation:
 
-.. code-block:: c
+.. code-block:: cpp
 
   int MPI_Reduce(void *sendbuf, void *recvbuf, int count,
                  MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)

@@ -1,5 +1,3 @@
-.. highlight:: c
-
 .. _gf_product: 
 
 **[gf<prod<X,Y,...>>]** Multiple variables 
@@ -17,7 +15,9 @@ Subscript operator
 
 In addition to the general :ref:`subscript functionality <gf_subscript>` of
 the Green function, the cartesian product provides the functionality to write
-expressions such as ::
+expressions such as:
+
+.. code-block:: c
 
         g[x1, x2, ..]
 
@@ -28,7 +28,9 @@ Clef expressions
 ----------------
 
 The subscript operator in clef expression assignment has also been extended to
-allow for assignments of the kind ::
+allow for assignments of the kind :
+
+.. code-block:: c
 
         g[_x1, _x2, ..] << g1[y1, _x1] * g2[_x2, y2] * ...
 
@@ -75,6 +77,4 @@ See:
 Examples
 ---------
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_product_0.cpp
-:language: cpp
-
-.. literalinclude:: /documentation/examples/triqs/gfs/gf_product_0.output
+    :language: cpp
