@@ -11,4 +11,8 @@ Utility functions for atom_diag
     /documentation/cpp_api/triqs/atom_diag/act
     /documentation/cpp_api/triqs/atom_diag/quantum_number_eigenvalues
     /documentation/cpp_api/triqs/atom_diag/quantum_number_eigenvalues_checked
-    /documentation/cpp_api/triqs/atom_diag/atomic_gf
+    /documentation/cpp_api/triqs/atom_diag/atomic_g_iw
+    /documentation/cpp_api/triqs/atom_diag/atomic_g_l
+    /documentation/cpp_api/triqs/atom_diag/atomic_g_lehmann
+    /documentation/cpp_api/triqs/atom_diag/atomic_g_tau
+    /documentation/cpp_api/triqs/atom_diag/atomic_g_w

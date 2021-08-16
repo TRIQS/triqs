@@ -412,8 +412,8 @@ namespace triqs::stat {
     /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     ///
-    /// FIXME: Reduce only to a single mpi rank rather than broadcast to all
     auto log_bin_errors_all_reduce(mpi::communicator c) const {
+    /// FIXME: Reduce only to a single mpi rank rather than broadcast to all
       std::vector<T> result_vec{};
       std::vector<long> count_vec{};
 
