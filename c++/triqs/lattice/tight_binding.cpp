@@ -129,7 +129,7 @@ namespace triqs {
         for (int j = 0; j < grid.size(); j++) {
           int a = int((eval(l, j) - epsmin) / deps);
           if (a == int(neps)) a = a - 1;
-          for (int k = 0; k < norb; k++) { rho(a, k) += real(conj(evec(l, k, j)) * evec(l, k, j)); }
+          for (int k = 0; k < norb; k++) { rho(a, k) += real(conj(evec(k, l, j)) * evec(k, l, j)); }
         }
       }
       rho /= grid.size() * deps;

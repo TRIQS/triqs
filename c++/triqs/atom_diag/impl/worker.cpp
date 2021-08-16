@@ -310,7 +310,7 @@ namespace triqs {
 
         auto eig                   = linalg::eigenelements(h_matrix);
         eigensystem.eigenvalues    = eig.first;
-        eigensystem.unitary_matrix = eig.second.transpose(); // Convert from eigenvectors as rows to columns.
+        eigensystem.unitary_matrix = eig.second;
         hdiag->gs_energy           = std::min(hdiag->gs_energy, eigensystem.eigenvalues[0]);
 
         eign_map.insert({{eigensystem.eigenvalues(0) + energy_split * spn, spn}, eigensystem});
