@@ -67,10 +67,9 @@ TEST(atom_diag_real, QuantumNumbers) {
   EXPECT_EQ(sp_dim_ref.size(), ad1.n_subspaces());
 #endif
 
-  vector<int> sp_dim1(ad1.n_subspaces());
+  auto sp_dim1 = ad1.get_subspace_dims();
   auto qn1 = ad1.get_quantum_numbers();
   for (int sp : range(sp_dim1.size())) {
-    sp_dim1[sp] = ad1.get_subspace_dim(sp);
 #ifndef GENERATE_REF_H5
     EXPECT_EQ(sp_dim_ref[sp], sp_dim1[sp]);
     EXPECT_NEAR(qn1_ref[sp][0], qn1[sp][0], 1e-14);
@@ -89,10 +88,9 @@ TEST(atom_diag_real, QuantumNumbers) {
   EXPECT_EQ(sp_dim_ref.size(), ad2.n_subspaces());
 #endif
 
-  vector<int> sp_dim2(ad2.n_subspaces());
+  auto sp_dim2 = ad2.get_subspace_dims();
   auto qn2 = ad2.get_quantum_numbers();
   for (int sp : range(sp_dim2.size())) {
-    sp_dim2[sp] = ad2.get_subspace_dim(sp);
 #ifndef GENERATE_REF_H5
     EXPECT_EQ(sp_dim_ref[sp], sp_dim2[sp]);
     EXPECT_NEAR(qn2_ref[sp][0], qn2[sp][0], 1e-14);
