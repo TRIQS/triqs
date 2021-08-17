@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libhdf5-dev \
       liblapack-dev \
       libopenmpi-dev \
+      libunwind-dev \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
