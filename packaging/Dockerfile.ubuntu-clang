@@ -37,8 +37,11 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-mpi4py \
       python3-numpy \
       python3-pip \
-      python3-scipy && \
-      pip3 install sphinx nbsphinx myst-parser sphinx_rtd_theme linkify-it-py
+      python3-scipy \
+      python3-sphinx \
+      python3-nbsphinx \
+      python3-sphinx-rtd-theme && \
+      pip3 install myst-parser linkify-it-py
 
 ENV PYTHON_VERSION=3.8 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
