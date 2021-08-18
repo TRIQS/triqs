@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
+      libunwind-${LLVM}-dev \
       libomp-${LLVM}-dev \
       libfftw3-dev \
       libgfortran5 \
@@ -26,7 +27,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libhdf5-dev \
       liblapack-dev \
       libopenmpi-dev \
-      libunwind-dev \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-numpy \
       python3-pip \
       python3-scipy && \
-      pip3 install --upgrade sphinx nbsphinx myst-parser sphinx_rtd_theme linkify-it-py
+      pip3 install sphinx nbsphinx myst-parser sphinx_rtd_theme linkify-it-py
 
 ENV PYTHON_VERSION=3.8 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
