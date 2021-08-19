@@ -1,10 +1,9 @@
-FROM ubuntu:focal
-ARG RELEASE=focal
+FROM ubuntu:21.04
+ARG RELEASE=21.04
 ARG LLVM=12
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
-      wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
@@ -19,7 +18,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
-      libunwind-${LLVM}-dev \
       libomp-${LLVM}-dev \
       libfftw3-dev \
       libgfortran5 \
@@ -40,9 +38,10 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-scipy \
       python3-sphinx \
       python3-nbsphinx \
+      python3-ipython \ 
       python3-sphinx-rtd-theme && \
       pip3 install myst-parser linkify-it-py
 
-ENV PYTHON_VERSION=3.8 \
+ENV PYTHON_VERSION=3.9 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
