@@ -120,13 +120,13 @@ class SumkDiscreteFromLattice (SumkDiscrete):
                 self.bz_points[k_index,:] +=Q
 
         # Compute the discretized hoppings from the Superlattice
-        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose()).transpose(2,0,1)
+        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose().copy()).transpose(2,0,1)
 
         if self.orthogonal_basis:
             self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]
         else:
             assert 0 , "not checked"
-            self.overlap[:,:,:] = self.SL.Overlap(bz_points.transpose())
+            self.overlap[:,:,:] = self.SL.Overlap(bz_points.transpose().copy())
             mupat = self.SL.MuPattern()
             for k_index in range(self.N_kpts()):
                 self.mu_pattern[:,:,k_index] = Num.dot( mupat ,self.Overlap[:,:,k_index])
@@ -168,7 +168,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         self.bz_weights /= total_weight
 
         # Compute the discretized hoppings from the Superlattice
-        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose()).transpose(2,0,1)
+        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose().copy()).transpose(2,0,1)
 
         if self.orthogonal_basis:
             self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]
