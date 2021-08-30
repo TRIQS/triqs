@@ -104,12 +104,38 @@ namespace triqs {
         hilbert_map = hmap;
         if ((hilbert_map.size() == 0) != !UseMap) TRIQS_RUNTIME_ERROR << "Internal error";
 
+        auto greater = [&fops](triqs::operators::canonical_ops_t const& op1,
+                               triqs::operators::canonical_ops_t const& op2) {
+          if(op1.dagger != op2.dagger) return op2.dagger;
+          return op1.dagger ? (fops[op1.indices] > fops[op2.indices]) :
+                              (fops[op1.indices] < fops[op2.indices]);
+        };
+
         // The goal here is to have a transcription of the many_body_operator in terms
         // of simple vectors (maybe the code below could be more elegant)
-        for (auto const &term : op) {
+        for (auto const& term : op) {
+          auto monomial = term.monomial;
+          auto coef = term.coef;
+
+          // Sort monomial according to the order established by fops
+          int n = monomial.size();
+          bool swapped;
+          do {
+            swapped = false;
+            for(int i = 1; i < n; ++i) {
+              if(greater(monomial[i - 1], monomial[i])) {
+                using std::swap;
+                swap(monomial[i - 1], monomial[i]);
+                swapped = true;
+                coef *= scalar_t(-1);
+              }
+            }
+            --n;
+          } while(swapped);
+
           std::vector<int> dag, ndag;
           uint64_t d_mask = 0, dag_mask = 0;
-          for (auto const &canonical_op : term.monomial) {
+          for (auto const &canonical_op : monomial) {
             (canonical_op.dagger ? dag : ndag).push_back(fops[canonical_op.indices]);
             (canonical_op.dagger ? dag_mask : d_mask) |= (uint64_t(1) << fops[canonical_op.indices]);
           }
@@ -125,7 +151,7 @@ namespace triqs {
             return mask;
           };
           uint64_t d_count_mask = compute_count_mask(ndag), dag_count_mask = compute_count_mask(dag);
-          all_terms.push_back(one_term_t{scalar_t(term.coef), d_mask, dag_mask, d_count_mask, dag_count_mask});
+          all_terms.push_back(one_term_t{scalar_t(coef), d_mask, dag_mask, d_count_mask, dag_count_mask});
         }
       }
 
