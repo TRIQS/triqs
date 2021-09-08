@@ -27,15 +27,6 @@
 #include <utility>
 #include <algorithm>
 
-// Workaround for GCC bug 41933
-#if defined GCC_VERSION && GCC_VERSION < 40900
-#define GCC_BUG_41933_WORKAROUND
-#endif
-
-#ifdef GCC_BUG_41933_WORKAROUND
-#include <triqs/utility/tuple_tools.hpp>
-#endif
-
 namespace triqs {
   namespace hilbert_space {
 
@@ -189,19 +180,11 @@ namespace triqs {
       }
 
       // Forward the call to the coefficient
-#ifdef GCC_BUG_41933_WORKAROUND
-      template <typename... Args>
-      static auto apply_if_possible(scalar_t const &x, std::tuple<Args...> const &args_tuple) -> typename std::result_of<scalar_t(Args...)>::type {
-        return triqs::tuple::apply(x, args_tuple);
-      }
-      static auto apply_if_possible(scalar_t const &x, std::tuple<> const &) -> scalar_t { return x; }
-#else
       template <typename... Args>
       static auto apply_if_possible(scalar_t const &x, Args &&... args) -> typename std::result_of<scalar_t(Args...)>::type {
         return x(std::forward<Args>(args)...);
       }
       static auto apply_if_possible(scalar_t const &x) -> scalar_t { return x; }
-#endif
 
       public:
       /// Act on a state and return a new state
@@ -223,19 +206,11 @@ namespace triqs {
         StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
         auto const &hs      = st.get_hilbert();
 
-#ifdef GCC_BUG_41933_WORKAROUND
-        auto args_tuple = std::make_tuple(args...);
-#endif
-
         using amplitude_t = typename StateType::value_type;
 
         for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
           auto M = all_terms[i];
-#ifdef GCC_BUG_41933_WORKAROUND
-          foreach (st, [M, &target_st, hs, args_tuple](int i, typename StateType::value_type amplitude) {
-#else
           foreach (st, [M, &target_st, hs, args...](int i, typename StateType::value_type amplitude) {
-#endif
             fock_state_t f2 = hs.get_fock_state(i);
             if ((f2 & M.d_mask) != M.d_mask) return;
             f2 &= ~M.d_mask;
@@ -244,11 +219,7 @@ namespace triqs {
             auto sign_is_minus = parity_number_of_bits((f2 & M.d_count_mask) ^ (f3 & M.dag_count_mask));
             // update state vector in target Hilbert space
             auto ind = target_st.get_hilbert().get_state_index(f3);
-#ifdef GCC_BUG_41933_WORKAROUND
-            target_st(ind) += amplitude * apply_if_possible(M.coeff, args_tuple) * (sign_is_minus ? -amplitude_t(1) : amplitude_t(1));
-#else
             target_st(ind) += amplitude * apply_if_possible(M.coeff, args...) * (sign_is_minus ? -amplitude_t(1) : amplitude_t(1));
-#endif
           })
             ; // foreach
         }
