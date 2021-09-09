@@ -28,4 +28,7 @@ ad2 = AtomDiag(H, fops2)
 
 # for e1, e2 in zip(ad1.energies, ad2.energies):
     # print(e1.round(5), e2.round(5))
-assert all(all(es1 == es2) for es1, es2 in zip(ad1.energies, ad2.energies))
+
+# Check that subspace energies are identical up to ordering
+assert len(ad1.energies) == len(ad2.energies)
+assert all(sum(np.array_equal(es1, es) for es1 in ad1.energies) == sum(np.array_equal(es2, es) for es2 in ad2.energies) for es in ad1.energies)
