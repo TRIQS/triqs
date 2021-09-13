@@ -48,7 +48,7 @@ def report(*x,**opt):
 
 def is_master_node(): return True
 
-def bcast(x): return x
+def bcast(x, root = 0): return x
 
 def barrier() : return
 
