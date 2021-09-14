@@ -33,22 +33,22 @@ Now we have simply
  auto g = gf<imfreq>{m, {1,1}}; // as before
 ```
 
-* Due to a name collision, the mesh over brillouin_zone has been renamed `b_zone`.
+* Due to a name collision, the mesh over brillouin_zone has been renamed `brzone`.
   So now : 
 
   * brillouin_zone is the triqs::lattice::brillouin_zone representing the Brillouin Zone
-  * triqs::mesh::b_zone is the mesh on such object
+  * triqs::mesh::brzone is the mesh on such object
 
 Before : 
 ```cpp
-  auto m= gf_mesh<brillouin_zone>{....};
+  auto m = gf_mesh<brillouin_zone>{....};
   auto g = gf<cartesian_product<brillouin_zone,imfreq>> {{m, ...}, ....}; 
 ```
 Now : 
 
 ```cpp
-  auto m= mesh::b_zone{....};
-  auto g = gf<prod<b_zone,imfreq>>{{m, ...}, ....}; 
+  auto m = mesh::brzone{....};
+  auto g = gf<prod<brzone,imfreq>>{{m, ...}, ....};
 ```
 
 * Backward compatibility help : 
