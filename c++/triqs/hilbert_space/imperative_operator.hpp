@@ -124,6 +124,14 @@ namespace triqs {
             --n;
           } while(swapped);
 
+          // Given the environment variable CHECK_ISSUE819 was set by the user
+          // throw an exception if the result of this model was effected by issue 819
+          // https://github.com/TRIQS/triqs/issues/819
+          static const bool check_issue819 = std::getenv("CHECK_ISSUE819");
+          if (check_issue819 && term.coef != coef)
+            TRIQS_RUNTIME_ERROR << "ERROR: The Atom-Diag result of this model is affected by issue 819 (https://github.com/TRIQS/triqs/issues/819).\n"
+                                   "If you have solved the same model with release 2.2.0, 2.2.1 or 3.0.0 of TRIQS the result was incorrect.";
+
           std::vector<int> dag, ndag;
           uint64_t d_mask = 0, dag_mask = 0;
           for (auto const &canonical_op : monomial) {
