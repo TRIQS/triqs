@@ -74,6 +74,63 @@ Now :
    auto m = prod {mesh1, mesh2}; // Ok too.
 ```
 
+
+## Version 3.0.1
+
+TRIQS Version 3.0.1 is a patch release that fixes a number of
+issues. In particular a crucial issue in relation to the atom_diag
+class was resolved.
+
+We provide a more detailed description of the changes and fixes below.
+
+### Issue 819 - Atom Diag
+
+For certain Hamiltonians and orderings of the fundamental_operator_set
+the atom_diag class would yield incorrect eigenenergies. Please refer to
+issue [#819](https://github.com/TRIQS/triqs/issues/819) for more details.
+
+We provide a simple mechanism to detect if a given model was affected by the issue.
+By setting the runtime environment variable `CHECK_ISSUE819` to an arbitrary value with e.g. `export CHECK_ISSUE819=1`
+before starting the calculation, TRIQS will now throw an exception if the model was affected before.
+
+This bug was fixed in pull request [#820](https://github.com/TRIQS/triqs/pull/820).
+
+### General
+* Add block_matrix to cpp2py converter table
+* Add missing includes in utility/variant_extensions.hpp
+* Add missing #pragma once in utility/variant_extensions.hpp
+* Increase tolerance in test_delta_infty
+* Use unittest assert methods for better errors
+
+### array
+* For triqs::arrays::vector operator /= fall back to array solution FIX #793
+* Fix issue with slicing of array and matrix proxies
+
+### Gf
+* Fix issue in block_gf / block2_gf scalar arithmetic + test
+* Fix issue in operator= for default constructed block2_gf
+* Extend gf_base test to cover slicing in combination with gf evaluation
+
+### cmake
+* Change required cpp2py branch to 2.0.x
+* Correction issue in TRIQSConfig.cmake.in
+* Treat cmake options before adding build dirs, fail if Build_Documentation AND NOT PythonSupport
+* Link triqs_py against proper namespaced cpp2py target
+* Smaller fixes for nopython build
+
+### jenkins
+* Updates for new jenkins node
+* Switch osx to gcc-11
+
+### doc
+* Updates to install.rst
+* Extend conda installation instruction
+* oplot: Replace remaining occurances of RI by mode
+* In osx install instructions install numpy scipy and mpi4py through pip3 instead of brew
+
+Contributors: DerWeh, Alexander Hampel, Igor Krivenko, Henri Menke, Dylan Simon, Hugo U. R. Strand, Nils Wentzell, Rok Žitko
+
+
 ## Version 3.0.0
 
 TRIQS Version 3.0.0 is a major release that
