@@ -98,7 +98,6 @@ namespace triqs {
       uint64_t n_accepted_config() const { return Naccepted; }
 
       void clear_statistics() {
-        collect_statistics_ = make_collect_statistics(impl_.get());
         NProposed           = 0;
         Naccepted           = 0;
         acceptance_rate_    = -1;
@@ -245,7 +244,11 @@ namespace triqs {
 
       ///
       void clear_statistics() {
-        for (auto &m : move_vec) m.clear_statistics();
+        for (auto &m : move_vec) {
+          m.clear_statistics();
+          auto ms = m.as_move_set();
+          if (ms) ms->clear_statistics();
+        }
       }
 
       ///
