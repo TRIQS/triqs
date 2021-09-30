@@ -21,9 +21,6 @@
 #include <cpp2py/converters/std_array.hpp>
 #include <nda_py/cpp2py_converters.hpp>
 
-// in module, triggers the call of import_array
-#define TRIQS_IMPORTED_CONVERTERS_ARRAYS
-
 #ifdef TRIQS_INCLUDED_GF
 #include "./cpp2py_converters/gf.hpp"
 #endif
