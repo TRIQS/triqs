@@ -32,7 +32,7 @@ namespace triqs {
       immutable_array_expr_impl(Expr e_, clef::pair<ph, range>... p)
          : f(clef::make_function(e_, clef::placeholder<ph>()...)), dom_(make_shape(p.rhs.size()...)){};
       typedef typename triqs::clef::result_of::make_function<Expr, clef::placeholder<ph>...>::type function_type;
-      typedef typename std::result_of<function_type(typename _si<ph>::type...)>::type value_type;
+      typedef typename std::invoke_result_t<function_type, typename _si<ph>::type...> value_type;
       typedef indexmaps::cuboid::domain_t<sizeof...(ph)> domain_type;
       domain_type domain() const { return dom_; }
       template <typename... Args> value_type operator()(Args const &... args) const { return f(args...); }

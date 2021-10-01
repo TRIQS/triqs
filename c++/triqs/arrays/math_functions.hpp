@@ -52,7 +52,7 @@ namespace triqs {
     };
 
     template <typename A>
-    typename boost::lazy_enable_if_c<!ImmutableMatrix<A>::value, std::result_of<map_impl<pow_wrap, 1>(A)>>::type pow(A &&a, int n) {
+    typename boost::lazy_enable_if_c<!ImmutableMatrix<A>::value, std::invoke_result<map_impl<pow_wrap, 1>, A>>::type pow(A &&a, int n) {
       return map(pow_wrap{n})(std::forward<A>(a));
     }
 
@@ -62,21 +62,21 @@ namespace triqs {
     template <typename A> auto operator()(A const &a) const DECL_AND_RETURN(FNT(a));                                                                 \
   };                                                                                                                                                 \
   template <typename A>                                                                                                                              \
-  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::result_of<map_impl<__triqs_##FNT##_wrap, 1>(A)>>::type FNT(A &&a) {          \
+  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::invoke_result<map_impl<__triqs_##FNT##_wrap, 1>, A>>::type FNT(A &&a) {      \
     return map(__triqs_##FNT##_wrap{})(std::forward<A>(a));                                                                                          \
   }
 
-#define MAP_IT_NO_STD(FNT)                                                                                                                                  \
+#define MAP_IT_NO_STD(FNT)                                                                                                                           \
   struct __triqs_##FNT##_wrap {                                                                                                                      \
     template <typename A> auto operator()(A const &a) const DECL_AND_RETURN(FNT(a));                                                                 \
   };                                                                                                                                                 \
   template <typename A>                                                                                                                              \
-  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::result_of<map_impl<__triqs_##FNT##_wrap, 1>(A)>>::type FNT(A &&a) {          \
+  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::invoke_result<map_impl<__triqs_##FNT##_wrap, 1>, A>>::type FNT(A &&a) {      \
     return map(__triqs_##FNT##_wrap{})(std::forward<A>(a));                                                                                          \
   }
 
-MAP_IT_NO_STD(conj_r)
-MAP_IT_NO_STD(abs2)
+    MAP_IT_NO_STD(conj_r)
+    MAP_IT_NO_STD(abs2)
 
 #define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)(isnan)
 
@@ -94,7 +94,7 @@ MAP_IT_NO_STD(abs2)
   };                                                                                                                                                 \
   template <typename A>                                                                                                                              \
   typename boost::lazy_enable_if_c<ImmutableArray<A>::value || ImmutableVector<A>::value,                                                            \
-                                   std::result_of<map_impl<__triqs_##FNT##_wrap, 1>(A)>>::type                                                       \
+                                   std::invoke_result<map_impl<__triqs_##FNT##_wrap, 1>, A>>::type                                                   \
   FNT(A &&a) {                                                                                                                                       \
     return map(__triqs_##FNT##_wrap{})(std::forward<A>(a));                                                                                          \
   }

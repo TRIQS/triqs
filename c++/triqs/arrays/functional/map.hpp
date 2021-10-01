@@ -42,7 +42,7 @@ namespace triqs {
     template <typename F, int arity, bool is_vec, typename... A> struct map_impl_result;
 
     template <typename F, bool is_vec, typename A> struct map_impl_result<F, 1, is_vec, A> {
-      typedef typename std::result_of<F(typename std::remove_reference<A>::type::value_type)>::type value_type;
+      typedef typename std::invoke_result_t<F, typename std::remove_reference<A>::type::value_type> value_type;
       typedef typename std::remove_reference<A>::type::domain_type domain_type;
       F f;
       typename std::add_const<A>::type a; // A is a T or a T& : add const to them.
@@ -60,7 +60,7 @@ namespace triqs {
 
     // possible to generalize to N order using tuple techniques ...
     template <typename F, bool is_vec, typename A, typename B> struct map_impl_result<F, 2, is_vec, A, B> {
-      typedef typename std::result_of<F(typename remove_cv_ref<A>::type::value_type, typename remove_cv_ref<B>::type::value_type)>::type value_type;
+      typedef typename std::invoke_result_t<F, typename remove_cv_ref<A>::type::value_type, typename remove_cv_ref<B>::type::value_type> value_type;
       typedef typename remove_cv_ref<A>::type::domain_type domain_type;
       F f;
       typename std::add_const<A>::type a;

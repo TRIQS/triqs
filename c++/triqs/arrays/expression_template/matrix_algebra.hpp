@@ -65,9 +65,8 @@ namespace triqs {
       typedef typename std::remove_reference<R>::type R_t;
       static_assert(get_rank<R_t>::value == 0 || get_rank<L_t>::value == 0 || get_rank<L_t>::value == get_rank<R_t>::value,
                     "rank mismatch in matrix operations");
-      //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type )>::type  value_type;
       typedef
-         typename std::remove_cv<typename std::remove_reference<typename std::result_of<combine_domain(L_t, R_t)>::type>::type>::type domain_type;
+         typename std::remove_cv<typename std::remove_reference<typename std::invoke_result_t<combine_domain, L_t, R_t>>::type>::type domain_type;
 
       L l;
       R r;

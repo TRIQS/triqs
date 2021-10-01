@@ -36,10 +36,10 @@ namespace triqs {
       };
 
       template <class A, class R>
-      auto operator()(A const &a, R init) const -> typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type {
+      auto operator()(A const &a, R init) const -> typename std::decay<typename std::invoke_result_t<F, R, typename A::value_type>>::type {
         // to take into account that f may be double,double -> double, while one passes 0 (an int...)
         // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
-        using R2 = typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type;
+        using R2 = typename std::decay<typename std::invoke_result_t<F, R, typename A::value_type>>::type;
         R2 r2    = init;
         foreach (a, fold_func_adaptor<A, R2>{f, a, r2})
           ;
