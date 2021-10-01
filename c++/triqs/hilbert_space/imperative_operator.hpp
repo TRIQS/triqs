@@ -189,7 +189,7 @@ namespace triqs {
 
       // Forward the call to the coefficient
       template <typename... Args>
-      static auto apply_if_possible(scalar_t const &x, Args &&... args) -> typename std::result_of<scalar_t(Args...)>::type {
+      static auto apply_if_possible(scalar_t const &x, Args &&... args) -> std::invoke_result_t<scalar_t, Args...> {
         return x(std::forward<Args>(args)...);
       }
       static auto apply_if_possible(scalar_t const &x) -> scalar_t { return x; }
