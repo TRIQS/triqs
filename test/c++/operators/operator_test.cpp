@@ -135,8 +135,8 @@ TEST(Operator, Complex) {
   EXPECT_PRINT("(0,2) + (-1,-0)*c(0)", 2.0i - x);
   EXPECT_PRINT("(3,0)*c_dag(1)", 3.0 * y);
   EXPECT_PRINT("(3,0)*c_dag(1)", y * 3.0);
-  EXPECT_PRINT("(0,3)*c_dag(1)", 3.0i * y);
-  EXPECT_PRINT("(0,3)*c_dag(1)", y * 3.0i);
+  EXPECT_PRINT("(1,3)*c_dag(1)", (1 + 3.0i) * y);
+  EXPECT_PRINT("(1,3)*c_dag(1)", y * (1 + 3.0i));
   EXPECT_PRINT("(1,0)*c_dag(1) + (1,0)*c(0)", x + y);
   EXPECT_PRINT("(-1,-0)*c_dag(1) + (1,0)*c(0)", x - y);
   EXPECT_PRINT("(2,0)*c_dag(1)*c(0)", (x + y) * (x - y));
