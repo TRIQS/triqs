@@ -17,6 +17,10 @@ using namespace triqs::utility;
 int seed = 1567;
 mpi::communicator world;
 
+void expect_near(double x, double y) {
+  EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y))));
+}
+
 // FIXME : remove boost generator for std:: ones
 
 // test the mecanics of the jackknife
@@ -165,12 +169,12 @@ TEST(Binned, array) {
   //std::cerr << xn << std::endl;
   //std::cerr << xd << std::endl;
 
-  EXPECT_NEAR(x1, x(0, 0), 1.e-15);
-  EXPECT_NEAR(x2, x(0, 1), 1.e-15);
-  EXPECT_NEAR(xn1, xn(0, 0), 1.e-15);
-  EXPECT_NEAR(xn2, xn(0, 1), 1.e-15);
-  EXPECT_NEAR(d1, xd(0, 0), 1.e-15);
-  EXPECT_NEAR(d2, xd(1, 0), 1.e-15);
+  expect_near(x1, x(0, 0));
+  expect_near(x2, x(0, 1));
+  expect_near(xn1, xn(0, 0));
+  expect_near(xn2, xn(0, 1));
+  expect_near(d1, xd(0, 0));
+  expect_near(d2, xd(1, 0));
 }
 
 /*

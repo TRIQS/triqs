@@ -14,6 +14,10 @@ using namespace nda;
 int seed = 1567;
 mpi::communicator world;
 
+void expect_near(double x, double y) {
+  EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y))));
+}
+
 // ----- TESTS ------------------
 
 TEST(Stat, AutoCorrDoubleManualCheck) {
@@ -69,7 +73,7 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
 
   auto [errors, counts] = AA.log_bin_errors();
 
-  for (auto [n, b] : itertools::enumerate(errors)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
+  for (auto [n, b] : itertools::enumerate(errors)) { expect_near(bins[n], b); }
 }
 
 // ------------------------
@@ -213,10 +217,10 @@ TEST(Stat, LogBinArray) {
   auto [errors_b, counts_b]   = b.log_bin_errors();
 
   for (auto [x1, x2, a] : itertools::zip(errors_b1, errors_b2, errors_b)) {
-    EXPECT_NEAR(x1, a(0, 0), 1.e-15);
-    EXPECT_NEAR(x2, a(0, 1), 1.e-15);
-    EXPECT_NEAR(x1, a(1, 1), 1.e-15);
-    EXPECT_NEAR(x2, a(1, 0), 1.e-15);
+    expect_near(x1, a(0, 0));
+    expect_near(x2, a(0, 1));
+    expect_near(x1, a(1, 1));
+    expect_near(x2, a(1, 0));
   }
 
   auto [errors_bb, counts_bb] = b.log_bin_errors();
@@ -249,10 +253,10 @@ TEST(Stat, LinBinArray) {
   }
 
   for (auto [x1, x2, a] : itertools::zip(b1.linear_bins(), b2.linear_bins(), b.linear_bins())) {
-    EXPECT_NEAR(x1, a(0, 0), 1.e-15);
-    EXPECT_NEAR(x2, a(0, 1), 1.e-15);
-    EXPECT_NEAR(x1, a(1, 1), 1.e-15);
-    EXPECT_NEAR(x2, a(1, 0), 1.e-15);
+    expect_near(x1, a(0, 0));
+    expect_near(x2, a(0, 1));
+    expect_near(x1, a(1, 1));
+    expect_near(x2, a(1, 0));
   }
 }
 
