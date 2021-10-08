@@ -289,8 +289,16 @@ class Block2Gf:
         return self
 
     def __mul__(self,y):
-        c = self.copy()
-        c *= y
+        if isinstance(y, self.__class__):
+            block_list = []
+            for i1, name1 in enumerate(self.__indices1):
+                block_list.append([])
+                for i2, name2 in enumerate(self.__indices2):
+                    block_list[i1].append(self[(name1, name2)] * y[(name1, name2)])
+            c = Block2Gf(name_list1=self.__indices1, name_list2=self.__indices2, block_list=block_list)
+        else:
+            c = self.copy()
+            c *= y
         return c
 
     def __rmul__(self,x): return self.__mul__(x)

@@ -181,5 +181,23 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert_gfs_are_close(G, G_exact)
         assert_gfs_are_close(Mat * G * linalg.inv(Mat), G_exact)
 
+    def test_different_rank_prod(self):
+        mesh = MeshImFreq(beta=self.beta, S="Fermion", n_max=10)
+        G1 = Gf(mesh=mesh, target_shape=[2,2])
+        G1 << inverse(iOmega_n + 2)
+        G2 = Gf(mesh=mesh, target_shape=[])
+        G2 << inverse(iOmega_n - 2)
+
+        G_loop = G1.copy()
+        for i in range(len(G1.mesh)):
+            G_loop.data[i] = G1.data[i] * G2.data[i]
+
+        G3 = G1.copy()
+        G3 *= G2
+
+        assert_gfs_are_close(G1*G2, G_loop)
+        assert_gfs_are_close(G2*G1, G_loop)
+        assert_gfs_are_close(G3, G_loop)
+
 if __name__ == '__main__':
     unittest.main()

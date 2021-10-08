@@ -88,5 +88,45 @@ class test_Gf_Block(unittest.TestCase):
 
         assert_block2_gfs_are_close(-B1.imag, B2.imag)
 
+    def test_mult(self):
+
+        G1 = Gf(mesh=self.iw_mesh, target_shape=(1,1))
+        G2 = G1.copy()
+        G3 = Gf(mesh=self.iw_mesh, target_shape=(1,2))
+        G4 = Gf(mesh=self.iw_mesh, target_shape=(1,3))
+
+        G1 << inverse(2 + iOmega_n)
+        G2 << inverse(2 - iOmega_n)
+        for i in range(2):
+            G3[0,i] << inverse(iOmega_n + 2 + i)
+        for i in range(3):
+            G4[0,i] << inverse(iOmega_n + 2 + i)
+
+        B1 = BlockGf(name_list=['0', '1'], block_list=[G1, G2])
+        B2 = BlockGf(name_list=['0', '1'], block_list=[G3, G4])
+        B3 = B1 * B2
+        B4 = BlockGf(name_list=['0', '1'], block_list=[G1*G3, G2*G4])
+
+        assert_block_gfs_are_close(B3, B4)
+
+    def test_block2_mult(self):
+
+        G1 = Gf(mesh=self.iw_mesh, target_shape=(2,2))
+        G2 = G1.copy()
+        G3 = G1.copy()
+        G4 = G1.copy()
+
+        G1 << inverse(2 + iOmega_n)
+        G2 << inverse(2 - iOmega_n)
+        G1 << inverse(3 + iOmega_n)
+        G2 << inverse(3 - iOmega_n)
+
+        B1 = Block2Gf(name_list1=['0', '1'], name_list2=['0', '1'], block_list=[[G1, G2], [G2, G1]])
+        B2 = Block2Gf(name_list1=['0', '1'], name_list2=['0', '1'], block_list=[[G3, G4], [G3, G4]])
+        B3 = B1 * B2
+        B4 = Block2Gf(name_list1=['0', '1'], name_list2=['0', '1'], block_list=[[G1*G3, G2*G4], [G2*G3, G1*G4]])
+
+        assert_block2_gfs_are_close(B3, B4)
+
 if __name__ == '__main__':
     unittest.main()
