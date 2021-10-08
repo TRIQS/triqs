@@ -361,8 +361,16 @@ class BlockGf:
         return self
 
     def __mul__(self,y):
-        c = self.copy()
-        c *= y
+        if isinstance(y, BlockGf):
+            name_list = []
+            block_list = []
+            for (n,g) in self:
+                name_list.append(n)
+                block_list.append(self[n] * y[n])
+            c = BlockGf(name_list=name_list, block_list=block_list)
+        else:
+            c = self.copy()
+            c *= y
         return c
 
     def __rmul__(self,x): return self.__mul__(x)

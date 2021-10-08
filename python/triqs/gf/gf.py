@@ -482,18 +482,6 @@ class Gf(metaclass=AddMethod):
         return c
 
     # ---------- Multiplication
-    # Naive implementation of G1 *= G2 without checks
-    def __imul__impl(self,arg): # need to separate for the ImTime case
-
-        # reshaping the data. Smash the mesh indices into one
-        rh = lambda d : np.reshape(d, (reduce(mul, d.shape[:self.rank]),) + (d.shape[self.rank:]))
-        d_self =  rh(self.data)
-        d_args =  rh(arg.data)
-        if self.target_rank == 2:
-            for n in range (d_self.shape[0]):
-               d_self[n] = np.dot(d_self[n], d_args[n]) # put to C if too slow.
-        else:
-            d_self *= d_args # put to C if too slow.
 
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
@@ -501,7 +489,24 @@ class Gf(metaclass=AddMethod):
         if isinstance(arg, Gf):
             assert type(self.mesh) == type(arg.mesh), "Can not multiply two Gf with meshes of different type"
             assert self.mesh == arg.mesh, "Can not use in-place multiplication for two Gf with different mesh"
-            self.__imul__impl(arg)
+
+            if self.target_rank == 2:
+                if arg.target_rank == 2:
+                    assert arg.target_shape[0] != arg.target_shape[1], "In place multiplication not supported if"
+                    "the argument is a nonsquare matrix. Use regular multiplication instead."
+                    np.matmul(self.data, arg.data, out=self.data)
+                elif arg.target_rank == 0:
+                    self.data[:] *= arg.data[..., None, None]
+                else:
+                    raise NotImplementedError("argument of in place multiplication must be rank 0 or 2")
+            
+            elif self.target_rank == 0:
+                assert arg.target_rank == 0, "argument of in place multiplication must have rank 0 if self does"
+                self.data[:] = self.data * arg.data
+            
+            else:
+                raise NotImplementedError("Green's functions must be of rank 0 or 2 for multiplication")
+
         elif isinstance(arg, numbers.Number):
             self._data[:] *= arg
         elif isinstance(arg, np.ndarray):
@@ -530,11 +535,23 @@ class Gf(metaclass=AddMethod):
     def __mul__(self,y):
         if isinstance(y, Gf):
             # make a copy, but special treatment of the mesh in the Imtime case.
-            c = Gf(mesh = Gf._combine_mesh_mul(self._mesh, y.mesh),
-                   data = self._data.copy(), 
-                   indices = self._indices.copy(), 
-                   name = self.name)
-            c.__imul__impl(y)
+            result_mesh = Gf._combine_mesh_mul(self._mesh, y.mesh)
+            if self.target_rank == 2 and y.target_rank == 2:
+                c = Gf(mesh=result_mesh, target_shape=[self.target_shape[0], y.target_shape[1]])
+                np.matmul(self.data, y.data, out=c.data)
+            elif self.target_rank == 0 and y.target_rank == 0:
+                c = Gf(mesh=result_mesh, target_shape=[])
+                c.data[:] = self.data * y.data
+            elif self.target_rank == 2 and y.target_rank == 0:
+                c = Gf(mesh=result_mesh, target_shape=self.target_shape)
+                c.data[:] = self.data * y.data[..., None, None]
+            elif self.target_rank == 0 and y.target_rank == 2:
+                c = Gf(mesh=result_mesh, target_shape=y.target_shape)
+                c.data[:] = self.data[..., None, None] * y.data
+
+            else:
+                raise NotImplementedError("Green's functions must be of rank 0 or 2 for multiplication")
+
         elif isinstance(y, (numbers.Number, np.ndarray)):
             c = self.copy()
             c *= y
