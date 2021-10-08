@@ -35,6 +35,14 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
     m.add_function("%s<imtime, tensor_valued<4>> make_hermitian(%s<imtime, tensor_valued<4>> g)"%(gf_type, gf_view_type),
                 doc = "Symmetrize the Green function in imaginary time, to ensure its hermiticity (G_ijkl[tau] = G_klij[tau]*)")
 
+    # make_real_in_tau
+    m.add_function("%s<imfreq, scalar_valued> make_real_in_tau(%s<imfreq, scalar_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its real in tau (G[iw] = G[-iw]*)")
+    m.add_function("%s<imfreq, matrix_valued> make_real_in_tau(%s<imfreq, matrix_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its real in tau (G[iw](i,j) = G[-iw](i,j)*)")
+    m.add_function("%s<imfreq, tensor_valued<4>> make_real_in_tau(%s<imfreq, tensor_valued<4>> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its real in tau (G[iw](i,j,k,l) = G[-iw](i,j,k,l)*)")
+
 # ---------------------- make_gf_from_fourier --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 

@@ -116,8 +116,40 @@ namespace triqs::gfs {
       return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_hermitian<typename G::g_t>(g_bl, tolerance); });
     }
   }
-  /// This function is identical to is_gf_hermitian
-  template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-12) { return is_gf_hermitian<G>(g, tolerance); }
+
+  /**
+   * Test if a Matsubara Green function object has an associated imaginary-time Green function
+   * with an imaginary part below a fixed tolerance $\epsilon$
+   * The following property is checked
+   * $G[i\omega](...) == conj(G[-i\omega](...))$
+   *
+   * @param g The Green function object to check the property for
+   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-12]
+   *
+   * @tparam The Green function type
+   *
+   * @return true iif the property holds for all points of the mesh
+   */
+  template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-12) {
+    if constexpr (is_gf_v<G>) {
+      using target_t = typename G::target_t;
+      using mesh_t   = typename std::decay_t<G>::mesh_t;
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq>,
+                    "is_gf_hermitian requires an imfreq Green function");
+
+      if (g.mesh().positive_only()) return true;
+      for (auto const &w : g.mesh()) {
+        if constexpr (target_t::rank == 0) { // ---- scalar_valued
+          if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
+	} else {
+          if (max_element(abs(conj(g[-w]) - g[w])) > tolerance) return false;
+	}
+      }
+      return true;
+    } else { // Block Green function
+      return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_real_in_tau<typename G::g_t>(g_bl, tolerance); });
+    }
+  }
 
   /**
    * Symmetrize a Green function object to fullfill fundamental Green function properties.
@@ -173,8 +205,35 @@ namespace triqs::gfs {
       return map_block_gf(make_hermitian<typename G::g_t>, g);
     }
   }
-  /// This function is identical to make_hermitian
-  template <typename G> typename G::regular_type make_real_in_tau(G const &g) { return make_hermitian<G>(g); }
+
+  /**
+   * Symmetrize a Matsubara Green function object such that the associated imaginary-time
+   * propagator is fully real-valued. The following transformation is performed
+   * $G[i\omega](...) \rightarrow \frac{1}{2} ( G[i\omega](...) + conj(G[-i\omega](...)) )$
+   *
+   * @param g The Green function object to symmetrize
+   *
+   * @tparam The Green function type
+   *
+   * @return The symmetrized Green function object
+   */
+  template <typename G> typename G::regular_type make_real_in_tau(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
+    if constexpr (is_gf_v<G>) {
+      using target_t = typename G::target_t;
+      using mesh_t   = typename std::decay_t<G>::mesh_t;
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq>,
+                    "make_real_in_tau requires an imfreq Green function");
+
+      if (g.mesh().positive_only()) return typename G::regular_type{g};
+      auto g_sym = typename G::regular_type{g};
+      for (auto const &w : g.mesh()) {
+        g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
+      }
+      return g_sym;
+    } else if (is_block_gf_v<G>) { // Block Green function
+      return map_block_gf(make_real_in_tau<typename G::g_t>, g);
+    }
+  }
 
   // ------------------------------------------------------------------------------------------------------
 
