@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2018 Centre national de la recherche scientifique (CNRS)
-// Copyright (c) 2018-2019 Simons Foundation
+// Copyright (c) 2018-2020 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,12 +17,39 @@
 //
 // Authors: Nils Wentzell
 
-#include <triqs/gfs.hpp>
 #include <triqs/test_tools/gfs.hpp>
-using namespace triqs::gfs;
-using namespace std::complex_literals;
 
-TEST(Functions, RealGf) {
+using namespace triqs::gfs;
+using namespace nda;
+
+TEST(real_in_tau, symmetrize_and_check) {
+
+  triqs::clef::placeholder<0> iw_;
+  triqs::clef::placeholder<1> i_;
+  triqs::clef::placeholder<2> j_;
+  double beta = 1;
+
+  // ============ Test with hermitian Gf
+  auto h = matrix<dcomplex>{{{1 + 0i, 0.1}, {0.1, 2 + 0i}}};
+  auto G = gf<imfreq>{{beta, Fermion}, {2, 2}};
+  for (auto &iw : G.mesh()) G[iw] = inverse(iw - h);
+
+  EXPECT_TRUE(is_gf_real_in_tau(G));
+
+  // Check that Gf remains the same
+  EXPECT_GF_NEAR(G, make_real_in_tau(G), 1e-15);
+
+  // ============  Now with cplx-valued Hamiltonian
+  h = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
+  for (auto &iw : G.mesh()) G[iw] = inverse(iw - h);
+
+  EXPECT_FALSE(is_gf_real_in_tau(G));
+
+  // Restore hermiticity
+  EXPECT_TRUE(is_gf_real_in_tau(make_real_in_tau(G)));
+}
+
+TEST(real_in_tau, real_gf) {
 
   double beta  = 1;
   int n_iw     = 100;
