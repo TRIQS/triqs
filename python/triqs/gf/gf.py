@@ -317,9 +317,9 @@ class Gf(metaclass=AddMethod):
             assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
             mlist = self._mesh._mlist 
             for x in key:
-                if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented") 
-            # slice the data 
-            k = [x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)] + self._target_rank * [slice(0, None)]
+                if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented")
+            # slice the data
+            k = tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
             dat = self._data[k]
             # list of the remaining lists
             mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), zip(key, mlist))]
