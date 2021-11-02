@@ -270,6 +270,7 @@ namespace triqs {
           y_values.reserve(Nmax);
           w1.reserve(Nmax);
         }
+        // FIXME: fuse w2.k != k case with other block
         if (!(new_size <= Nmax && w2.k == k))
           w2.reserve(Nmax, k);
       }
@@ -717,34 +718,36 @@ namespace triqs {
       private:
       void complete_insert2() {
         // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-        for (int k = 0; k < 2; ++k) {
+        for (int k = 0; k < w2.k; ++k) {
           x_values.push_back(w2.x[k]);
           y_values.push_back(w2.y[k]);
           row_num.push_back(0);
           col_num.push_back(0);
         }
 
-        range R2(0, 2);
+        range R2(0, w2.k);
         // treat empty matrix separately
         if (N == 0) {
-          N                = 2;
-          mat_inv(R2, R2)  = inverse(w2.ksi);
-          row_num[w2.i[1]] = 1;
-          col_num[w2.j[1]] = 1;
+          N               = w2.k;
+          mat_inv(R2, R2) = inverse(w2.ksi);
+          for (size_t k = 0; k < w2.k; ++k) {
+            row_num[w2.i[k]] = k;
+            col_num[w2.j[k]] = k;
+          }
           return;
         }
 
         range Ri(0, N);
         //w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// OPTIMIZE BELOW
         blas::gemm(1.0, w2.C(R2, Ri), mat_inv(Ri, Ri), 0.0, w2.MC(R2, Ri));
-        w2.MC(R2, range(N, N + 2)) = -1; // -identity matrix
-        w2.MB(range(N, N + 2), R2) = -1; // -identity matrix !
+        w2.MC(R2, range(N, N + w2.k)) = -1; // -identity matrix
+        w2.MB(range(N, N + w2.k), R2) = -1; // -identity matrix !
 
         // keep the real position of the row/col
         // since we insert a col/row, we have first to push the col at the right
         // and then say that col w2.i[0] is stored in N, the last col.
         // same for rows
-        for (int k = 0; k < 2; ++k) {
+        for (int k = 0; k < w2.k; ++k) {
           N++;
           for (int_type i = N - 2; i >= int_type(w2.i[k]); i--) row_num[i + 1] = row_num[i];
           row_num[w2.i[k]] = N - 1;
@@ -753,8 +756,8 @@ namespace triqs {
         }
         w2.ksi = inverse(w2.ksi);
         range R(0, N);
-        mat_inv(R, range(N - 2, N)) = 0;
-        mat_inv(range(N - 2, N), R) = 0;
+        mat_inv(R, range(N - w2.k, N)) = 0;
+        mat_inv(range(N - w2.k, N), R) = 0;
         //mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // OPTIMIZE BELOW
         blas::gemm(1.0, w2.MB(R, R2), (w2.ksi * w2.MC(R2, R)), 1.0, mat_inv(R, R));
       }
