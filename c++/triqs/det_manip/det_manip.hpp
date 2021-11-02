@@ -27,6 +27,7 @@
 #include <cmath>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/function_arg_ret_type.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
 
 namespace triqs {
   namespace det_manip {
@@ -161,21 +162,45 @@ namespace triqs {
       };
 
       struct work_data_type2 {
-        x_type x[2];
-        y_type y[2];
+        size_t k;
+        std::vector<x_type> x;
+        std::vector<y_type> y;
         // MB = A^(-1)*B,
         // MC = C*A^(-1)
         matrix_type MB, MC, B, C, ksi;
-        size_t i[2], j[2], ireal[2], jreal[2];
-        void reserve(size_t s) {
-          MB.resize(s, 2);
-          MC.resize(2, s);
-          B.resize(s, 2), C.resize(2, s);
-          ksi.resize(2, 2);
-          MB() = 0;
-          MC() = 0;
+        std::vector<size_t> i, j, ireal, jreal;
+        void reserve(size_t s, size_t k_) {
+          k = k_;
+          if (k != 0) {
+            x.resize(k);
+            y.resize(k);
+            i.resize(k);
+            j.resize(k);
+            ireal.resize(k);
+            jreal.resize(k);
+            MB.resize(s, k);
+            MC.resize(k, s);
+            B.resize(s, k), C.resize(k, s);
+            ksi.resize(k, k);
+            MB() = 0;
+            MC() = 0;
+          }
         }
-        value_type det_ksi() const { return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1); }
+        value_type det_ksi() const {
+          if (ksi.shape(0) == 2 && ksi.shape(1) == 2) {
+            return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
+          } else if (ksi.shape(0) == 3 && ksi.shape(1) == 3) {
+            return // Rule of Sarrus
+                ksi(0, 0) * ksi(1, 1) * ksi(2, 2)
+              + ksi(0, 1) * ksi(1, 2) * ksi(2, 0)
+              + ksi(0, 2) * ksi(1, 0) * ksi(2, 1)
+              - ksi(2, 0) * ksi(1, 1) * ksi(0, 2)
+              - ksi(2, 1) * ksi(1, 2) * ksi(0, 0)
+              - ksi(2, 2) * ksi(1, 0) * ksi(0, 1);
+          } else {
+            return nda::determinant(ksi);
+          };
+        }
       };
 
       struct work_data_type_refill {
@@ -232,19 +257,21 @@ namespace triqs {
      *
      * @param new_size The new size of the reserved memory
      */
-      void reserve(size_t new_size) {
-        if (new_size <= Nmax) return;
-        matrix_type Mcopy(mat_inv);
-        size_t N0 = Nmax;
-        Nmax      = new_size;
-        mat_inv.resize(Nmax, Nmax);
-        mat_inv(range(0, N0), range(0, N0)) = Mcopy; // keep the content of mat_inv ---> into the lib ?
-        row_num.reserve(Nmax);
-        col_num.reserve(Nmax);
-        x_values.reserve(Nmax);
-        y_values.reserve(Nmax);
-        w1.reserve(Nmax);
-        w2.reserve(Nmax);
+      void reserve(size_t new_size, size_t k) {
+        if (!(new_size <= Nmax)) {
+          matrix_type Mcopy(mat_inv);
+          size_t N0 = Nmax;
+          Nmax      = new_size;
+          mat_inv.resize(Nmax, Nmax);
+          mat_inv(range(0, N0), range(0, N0)) = Mcopy; // keep the content of mat_inv ---> into the lib ?
+          row_num.reserve(Nmax);
+          col_num.reserve(Nmax);
+          x_values.reserve(Nmax);
+          y_values.reserve(Nmax);
+          w1.reserve(Nmax);
+        }
+        if (!(new_size <= Nmax && w2.k == k))
+          w2.reserve(Nmax, k);
       }
 
       /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
@@ -280,7 +307,7 @@ namespace triqs {
      *                  if it happens too often.
      */
       det_manip(FunctionType F, size_t init_size) : f(std::move(F)), Nmax(0), N(0) {
-        reserve(init_size);
+        reserve(init_size, 0);
         mat_inv() = 0;
         det       = 1;
       }
@@ -297,10 +324,10 @@ namespace triqs {
         N = X.size();
         if (N == 0) {
           det = 1;
-          reserve(30);
+          reserve(30, 0);
           return;
         }
-        if (N > Nmax) reserve(2 * N); // put some margin..
+        if (N > Nmax) reserve(2 * N, 0); // put some margin..
         std::copy(X.begin(), X.end(), std::back_inserter(x_values));
         std::copy(Y.begin(), Y.end(), std::back_inserter(y_values));
         mat_inv() = 0;
@@ -483,7 +510,7 @@ namespace triqs {
         TRIQS_ASSERT(j <= N);
         TRIQS_ASSERT(i >= 0);
         TRIQS_ASSERT(j >= 0);
-        if (N == Nmax) reserve(2 * Nmax);
+        if (N == Nmax) reserve(2 * Nmax, /* TODO */ 2);
         last_try = Insert;
         w1.i     = i;
         w1.j     = j;
@@ -610,45 +637,51 @@ namespace triqs {
      * @category Operations
      */
 
-      value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0_, x_type const &x1_, y_type const &y0_, y_type const &y1_) {
-
-        // first make sure i0<i1 and j0<j1
-        x_type const &x0((i0 < i1) ? x0_ : x1_);
-        x_type const &x1((i0 < i1) ? x1_ : x0_);
-        y_type const &y0((j0 < j1) ? y0_ : y1_);
-        y_type const &y1((j0 < j1) ? y1_ : y0_);
-        if (i0 > i1) std::swap(i0, i1);
-        if (j0 > j1) std::swap(j0, j1);
-
-        // check input and store it for complete_operation
+      value_type try_insert2(std::vector<std::tuple<size_t, x_type>> ix, std::vector<std::tuple<size_t, y_type>> jy) {
         TRIQS_ASSERT(last_try == NoTry);
-        TRIQS_ASSERT(i0 != i1);
-        TRIQS_ASSERT(j0 != j1);
-        TRIQS_ASSERT(i0 <= N);
-        TRIQS_ASSERT(j0 <= N);
-        TRIQS_ASSERT(i0 >= 0);
-        TRIQS_ASSERT(j0 >= 0);
-        TRIQS_ASSERT(i1 <= N + 1);
-        TRIQS_ASSERT(j1 <= N + 1);
-        TRIQS_ASSERT(i1 >= 0);
-        TRIQS_ASSERT(j1 >= 0);
+        TRIQS_ASSERT(ix.size() == jy.size());
 
-        if (N >= Nmax - 1) reserve(2 * Nmax);
+        size_t const Nk = ix.size();
+
+        std::sort(ix.begin(), ix.end(), [] (auto const &lhs, auto const &rhs) {
+          auto const &[a, unused_1] = lhs;
+          auto const &[b, unused_2] = rhs;
+          return a < b;
+        });
+
+        std::sort(jy.begin(), jy.end(), [] (auto const &lhs, auto const &rhs) {
+          auto const &[a, unused_1] = lhs;
+          auto const &[b, unused_2] = rhs;
+          return a < b;
+        });
+
+        // check input
+        /*
+        {
+          auto const predicate = [this] (auto const &lhs, auto const &rhs) {
+            auto const &[prev, unused_1] = lhs;
+            auto const &[curr, unused_2] = rhs;
+            return (curr == prev) || !(0 <= curr && curr <= N + 1);
+          };
+          TRIQS_ASSERT(std::adjacent_find(ix.begin(), ix.end(), predicate) != ix.end());
+          TRIQS_ASSERT(std::adjacent_find(jy.begin(), jy.end(), predicate) != jy.end());
+        }
+        */
+
+        // store it for complete_operation
+        if (N >= Nmax - 1 || w2.k != Nk) reserve(2 * Nmax, Nk);
         last_try = Insert2;
-        w2.i[0]  = i0;
-        w2.i[1]  = i1;
-        w2.j[0]  = j0;
-        w2.j[1]  = j1;
-        w2.x[0]  = x0;
-        w2.x[1]  = x1;
-        w2.y[0]  = y0;
-        w2.y[1]  = y1;
+        for (size_t k = 0; k < w2.k; ++k) {
+          std::tie(w2.i[k], w2.x[k]) = ix[k];
+          std::tie(w2.j[k], w2.y[k]) = jy[k];
+        };
 
         // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
-        w2.ksi(0, 0) = f(x0, y0);
-        w2.ksi(0, 1) = f(x0, y1);
-        w2.ksi(1, 0) = f(x1, y0);
-        w2.ksi(1, 1) = f(x1, y1);
+        for (size_t m = 0; m < w2.k; ++m) {
+          for (size_t n = 0; n < w2.k; ++n) {
+            w2.ksi(m, n) = f(w2.x[m], w2.y[n]);
+          }
+        }
 
         // treat empty matrix separately
         if (N == 0) {
@@ -659,21 +692,25 @@ namespace triqs {
 
         // I add the rows and cols and the end. If the move is rejected,
         // no effect since N will not be changed : inv_mat(i,j) for i,j>=N has no meaning.
-        for (size_t k = 0; k < N; k++) {
-          w2.B(k, 0) = f(x_values[k], y0);
-          w2.B(k, 1) = f(x_values[k], y1);
-          w2.C(0, k) = f(x0, y_values[k]);
-          w2.C(1, k) = f(x1, y_values[k]);
+        for (size_t n = 0; n < N; n++) {
+          for (size_t m = 0; m < w2.k; ++m) {
+            w2.B(n, m) = f(x_values[n], w2.y[m]);
+            w2.C(m, n) = f(w2.x[m], y_values[n]);
+          }
         }
-        range R(0, N), R2(0, 2);
+        range R(0, N), R2(0, Nk);
         //w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // OPTIMIZE BELOW
         blas::gemm(1.0, mat_inv(R, R), w2.B(R, R2), 0.0, w2.MB(R, R2));
         //w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // OPTIMIZE BELOW
         blas::gemm(-1.0, w2.C(R2, R), w2.MB(R, R2), 1.0, w2.ksi);
         auto ksi = w2.det_ksi();
         newdet   = det * ksi;
-        newsign  = ((i0 + j0 + i1 + j1) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
-        return ksi * (newsign * sign);                            // sign is unity, hence 1/sign == sign
+        size_t idx_sum = 0;
+        for (size_t k = 0; k < w2.k; ++k) {
+          idx_sum += w2.i[k] + w2.j[k];
+        }
+        newsign  = (idx_sum % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
+        return ksi * (newsign * sign);                // sign is unity, hence 1/sign == sign
       }
 
       //------------------------------------------------------------------------------------------
@@ -828,6 +865,7 @@ namespace triqs {
 
         last_try = Remove2;
 
+        if (w2.k != 2) reserve(N, 2);
         w2.i[0]     = std::min(i0, i1);
         w2.i[1]     = std::max(i0, i1);
         w2.j[0]     = std::min(j0, j1);
@@ -1139,7 +1177,7 @@ namespace triqs {
           return;
         }
 
-        if (N > Nmax) reserve(2 * N);
+        if (N > Nmax) reserve(2 * N, /* TODO */ 2);
         std::swap(x_values, w_refill.x_values);
         std::swap(y_values, w_refill.y_values);
 
@@ -1262,7 +1300,7 @@ namespace triqs {
 
       /// Insert2 (try_insert2 + complete)
       value_type insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
-        auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
+        auto r = try_insert2({{i0, x0}, {i1, x1}}, {{j0, y0}, {j1, y1}});
         complete_operation();
         return r;
       }
