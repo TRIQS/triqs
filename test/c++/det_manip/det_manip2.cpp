@@ -99,7 +99,7 @@ struct test {
           if (D.size() >= 2) {
             w  = RNG(s);
             w1 = RNG(s);
-            if (w != w1) detratio = D.try_remove2(w, w1, w, w1);
+            if (w != w1) detratio = D.try_remove2({w, w1}, {w, w1});
           }
           break;
         default: TRIQS_RUNTIME_ERROR << " TEST INTERNAL ERROR";

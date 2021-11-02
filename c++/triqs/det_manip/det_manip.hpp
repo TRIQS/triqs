@@ -657,17 +657,15 @@ namespace triqs {
         });
 
         // check input
-        /*
         {
           auto const predicate = [this] (auto const &lhs, auto const &rhs) {
             auto const &[prev, unused_1] = lhs;
             auto const &[curr, unused_2] = rhs;
             return (curr == prev) || !(0 <= curr && curr <= N + 1);
           };
-          TRIQS_ASSERT(std::adjacent_find(ix.begin(), ix.end(), predicate) != ix.end());
-          TRIQS_ASSERT(std::adjacent_find(jy.begin(), jy.end(), predicate) != jy.end());
+          TRIQS_ASSERT(std::adjacent_find(ix.begin(), ix.end(), predicate) == ix.end());
+          TRIQS_ASSERT(std::adjacent_find(jy.begin(), jy.end(), predicate) == jy.end());
         }
-        */
 
         // store it for complete_operation
         if (N >= Nmax - 1 || w2.k != Nk) reserve(2 * Nmax, Nk);
@@ -847,45 +845,49 @@ namespace triqs {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-      value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
+      value_type try_remove2(std::vector<size_t> i, std::vector<size_t> j) {
 
         // first make sure i0<i1 and j0<j1
-        if (i0 > i1) std::swap(i0, i1);
-        if (j0 > j1) std::swap(j0, j1);
+        std::sort(i.begin(), i.end());
+        std::sort(j.begin(), j.end());
 
         TRIQS_ASSERT(last_try == NoTry);
         TRIQS_ASSERT(N >= 2);
-        TRIQS_ASSERT(i0 != i1);
-        TRIQS_ASSERT(j0 != j1);
-        TRIQS_ASSERT(i0 < N);
-        TRIQS_ASSERT(j0 < N);
-        TRIQS_ASSERT(i0 >= 0);
-        TRIQS_ASSERT(j0 >= 0);
-        TRIQS_ASSERT(i1 < N + 1);
-        TRIQS_ASSERT(j1 < N + 1);
-        TRIQS_ASSERT(i1 >= 0);
-        TRIQS_ASSERT(j1 >= 0);
+        TRIQS_ASSERT(i.size() == j.size());
+
+        // check inputs
+        {
+          auto const predicate = [this] (size_t const prev, size_t const curr) {
+            return (curr == prev) || !(0 <= curr && curr < N + 1);
+          };
+          TRIQS_ASSERT(std::adjacent_find(i.begin(), i.end(), predicate) == i.end());
+          TRIQS_ASSERT(std::adjacent_find(j.begin(), j.end(), predicate) == j.end());
+        }
 
         last_try = Remove2;
 
-        if (w2.k != 2) reserve(N, 2);
-        w2.i[0]     = std::min(i0, i1);
-        w2.i[1]     = std::max(i0, i1);
-        w2.j[0]     = std::min(j0, j1);
-        w2.j[1]     = std::max(j0, j1);
-        w2.ireal[0] = row_num[w2.i[0]];
-        w2.ireal[1] = row_num[w2.i[1]];
-        w2.jreal[0] = col_num[w2.j[0]];
-        w2.jreal[1] = col_num[w2.j[1]];
+        size_t const Nk = i.size();
+        if (w2.k != Nk) reserve(N, Nk);
+        for (size_t k = 0; k < w2.k; ++k) {
+          w2.i[k] = i[k];
+          w2.j[k] = j[k];
+          w2.ireal[k] = row_num[w2.i[k]];
+          w2.jreal[k] = col_num[w2.j[k]];
+        }
 
         // compute the newdet
-        w2.ksi(0, 0) = mat_inv(w2.jreal[0], w2.ireal[0]);
-        w2.ksi(1, 0) = mat_inv(w2.jreal[1], w2.ireal[0]);
-        w2.ksi(0, 1) = mat_inv(w2.jreal[0], w2.ireal[1]);
-        w2.ksi(1, 1) = mat_inv(w2.jreal[1], w2.ireal[1]);
+        for (size_t k1 = 0; k1 < w2.k; ++k1) {
+          for (size_t k2 = 0; k2 < w2.k; ++k2) {
+            w2.ksi(k1, k2) = mat_inv(w2.jreal[k1], w2.ireal[k2]);
+          }
+        }
         auto ksi     = w2.det_ksi();
         newdet       = det * ksi;
-        newsign      = ((i0 + j0 + i1 + j1) % 2 == 0 ? sign : -sign);
+        size_t idx_sum = 0;
+        for (size_t k = 0; k < w2.k; ++k) {
+          idx_sum += w2.i[k] + w2.j[k];
+        }
+        newsign      = (idx_sum % 2 == 0 ? sign : -sign);
 
         return ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
       }
@@ -1325,7 +1327,7 @@ namespace triqs {
 
       /// Remove2 (try_remove2 + complete)
       value_type remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
-        auto r = try_remove2(i0, i1, j0, j1);
+        auto r = try_remove2({i0, i1}, {j0, j1});
         complete_operation();
         return r;
       }
