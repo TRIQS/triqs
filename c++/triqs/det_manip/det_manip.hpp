@@ -27,6 +27,7 @@
 #include <cmath>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/function_arg_ret_type.hpp>
+#include <nda/linalg/det_and_inverse.hpp>
 
 namespace triqs {
   namespace det_manip {
@@ -71,8 +72,8 @@ namespace triqs {
         ChangeCol,
         ChangeRow,
         ChangeRowCol,
-        Insert2 = 10,
-        Remove2 = 11,
+        InsertK = 10,
+        RemoveK = 11,
         Refill  = 20,
       } last_try = NoTry; // keep in memory the last operation not completed
       std::vector<size_t> row_num, col_num;
@@ -161,21 +162,45 @@ namespace triqs {
       };
 
       struct work_data_type2 {
-        x_type x[2];
-        y_type y[2];
+        size_t k;
+        std::vector<x_type> x;
+        std::vector<y_type> y;
         // MB = A^(-1)*B,
         // MC = C*A^(-1)
         matrix_type MB, MC, B, C, ksi;
-        size_t i[2], j[2], ireal[2], jreal[2];
-        void reserve(size_t s) {
-          MB.resize(s, 2);
-          MC.resize(2, s);
-          B.resize(s, 2), C.resize(2, s);
-          ksi.resize(2, 2);
-          MB() = 0;
-          MC() = 0;
+        std::vector<size_t> i, j, ireal, jreal;
+        void reserve(size_t s, size_t k_) {
+          k = k_;
+          if (k != 0) {
+            x.resize(k);
+            y.resize(k);
+            i.resize(k);
+            j.resize(k);
+            ireal.resize(k);
+            jreal.resize(k);
+            MB.resize(s, k);
+            MC.resize(k, s);
+            B.resize(s, k), C.resize(k, s);
+            ksi.resize(k, k);
+            MB() = 0;
+            MC() = 0;
+          }
         }
-        value_type det_ksi() const { return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1); }
+        value_type det_ksi() const {
+          if (ksi.shape(0) == 2 && ksi.shape(1) == 2) {
+            return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
+          } else if (ksi.shape(0) == 3 && ksi.shape(1) == 3) {
+            return // Rule of Sarrus
+                ksi(0, 0) * ksi(1, 1) * ksi(2, 2)
+              + ksi(0, 1) * ksi(1, 2) * ksi(2, 0)
+              + ksi(0, 2) * ksi(1, 0) * ksi(2, 1)
+              - ksi(2, 0) * ksi(1, 1) * ksi(0, 2)
+              - ksi(2, 1) * ksi(1, 2) * ksi(0, 0)
+              - ksi(2, 2) * ksi(1, 0) * ksi(0, 1);
+          } else {
+            return nda::determinant(ksi);
+          };
+        }
       };
 
       struct work_data_type_refill {
@@ -232,19 +257,22 @@ namespace triqs {
      *
      * @param new_size The new size of the reserved memory
      */
-      void reserve(size_t new_size) {
-        if (new_size <= Nmax) return;
-        matrix_type Mcopy(mat_inv);
-        size_t N0 = Nmax;
-        Nmax      = new_size;
-        mat_inv.resize(Nmax, Nmax);
-        mat_inv(range(0, N0), range(0, N0)) = Mcopy; // keep the content of mat_inv ---> into the lib ?
-        row_num.reserve(Nmax);
-        col_num.reserve(Nmax);
-        x_values.reserve(Nmax);
-        y_values.reserve(Nmax);
-        w1.reserve(Nmax);
-        w2.reserve(Nmax);
+      void reserve(size_t new_size, size_t k) {
+        if (!(new_size <= Nmax)) {
+          matrix_type Mcopy(mat_inv);
+          size_t N0 = Nmax;
+          Nmax      = new_size;
+          mat_inv.resize(Nmax, Nmax);
+          mat_inv(range(0, N0), range(0, N0)) = Mcopy; // keep the content of mat_inv ---> into the lib ?
+          row_num.reserve(Nmax);
+          col_num.reserve(Nmax);
+          x_values.reserve(Nmax);
+          y_values.reserve(Nmax);
+          w1.reserve(Nmax);
+        }
+        // FIXME: fuse w2.k != k case with other block
+        if (!(new_size + k <= Nmax && w2.k == k))
+          w2.reserve(new_size + k, k);
       }
 
       /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
@@ -280,7 +308,7 @@ namespace triqs {
      *                  if it happens too often.
      */
       det_manip(FunctionType F, size_t init_size) : f(std::move(F)), Nmax(0), N(0) {
-        reserve(init_size);
+        reserve(init_size, 0);
         mat_inv() = 0;
         det       = 1;
       }
@@ -297,10 +325,10 @@ namespace triqs {
         N = X.size();
         if (N == 0) {
           det = 1;
-          reserve(30);
+          reserve(30, 0);
           return;
         }
-        if (N > Nmax) reserve(2 * N); // put some margin..
+        if (N > Nmax) reserve(2 * N, 0); // put some margin..
         std::copy(X.begin(), X.end(), std::back_inserter(x_values));
         std::copy(Y.begin(), Y.end(), std::back_inserter(y_values));
         mat_inv() = 0;
@@ -483,7 +511,7 @@ namespace triqs {
         TRIQS_ASSERT(j <= N);
         TRIQS_ASSERT(i >= 0);
         TRIQS_ASSERT(j >= 0);
-        if (N == Nmax) reserve(2 * Nmax);
+        if (N == Nmax) reserve(2 * Nmax, 0);
         last_try = Insert;
         w1.i     = i;
         w1.j     = j;
@@ -610,45 +638,52 @@ namespace triqs {
      * @category Operations
      */
 
-      value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0_, x_type const &x1_, y_type const &y0_, y_type const &y1_) {
-
-        // first make sure i0<i1 and j0<j1
-        x_type const &x0((i0 < i1) ? x0_ : x1_);
-        x_type const &x1((i0 < i1) ? x1_ : x0_);
-        y_type const &y0((j0 < j1) ? y0_ : y1_);
-        y_type const &y1((j0 < j1) ? y1_ : y0_);
-        if (i0 > i1) std::swap(i0, i1);
-        if (j0 > j1) std::swap(j0, j1);
-
-        // check input and store it for complete_operation
+      value_type try_insert_k(std::vector<size_t> const& i, std::vector<size_t> const& j, std::vector<x_type> const& x, std::vector<y_type> const& y) {
         TRIQS_ASSERT(last_try == NoTry);
-        TRIQS_ASSERT(i0 != i1);
-        TRIQS_ASSERT(j0 != j1);
-        TRIQS_ASSERT(i0 <= N);
-        TRIQS_ASSERT(j0 <= N);
-        TRIQS_ASSERT(i0 >= 0);
-        TRIQS_ASSERT(j0 >= 0);
-        TRIQS_ASSERT(i1 <= N + 1);
-        TRIQS_ASSERT(j1 <= N + 1);
-        TRIQS_ASSERT(i1 >= 0);
-        TRIQS_ASSERT(j1 >= 0);
+        TRIQS_ASSERT(i.size() == x.size());
+        TRIQS_ASSERT(j.size() == y.size());
+        TRIQS_ASSERT(i.size() == j.size());
+        TRIQS_ASSERT(x.size() == y.size());
 
-        if (N >= Nmax - 1) reserve(2 * Nmax);
-        last_try = Insert2;
-        w2.i[0]  = i0;
-        w2.i[1]  = i1;
-        w2.j[0]  = j0;
-        w2.j[1]  = j1;
-        w2.x[0]  = x0;
-        w2.x[1]  = x1;
-        w2.y[0]  = y0;
-        w2.y[1]  = y1;
+        size_t const Nk = i.size();
+
+        auto const argsort = [] (auto const &vec) {
+          std::vector<size_t> idx(vec.size());
+          std::iota(idx.begin(), idx.end(), static_cast<size_t>(0));
+          std::stable_sort(idx.begin(), idx.end(), [&vec] (size_t const lhs, size_t const rhs) {
+            return vec[lhs] < vec[rhs];
+          });
+          return idx;
+        };
+        std::vector<size_t> idx = argsort(i);
+        std::vector<size_t> idy = argsort(j);
+
+        // store it for complete_operation
+        if (N > Nmax - Nk) reserve(2 * Nmax, Nk);
+        if (w2.k != Nk) reserve(Nmax, Nk);
+        last_try = InsertK;
+        for (size_t k = 0; k < w2.k; ++k) {
+          w2.i[k] = i[idx[k]];
+          w2.x[k] = x[idx[k]];
+          w2.j[k] = j[idy[k]];
+          w2.y[k] = y[idy[k]];
+        };
+
+        // check consistency
+        {
+          auto const predicate = [this,Nk] (size_t const prev, size_t const curr) {
+            return (curr == prev) || !(0 <= curr && curr <= N + Nk);
+          };
+          TRIQS_ASSERT(std::adjacent_find(w2.i.begin(), w2.i.end(), predicate) == w2.i.end());
+          TRIQS_ASSERT(std::adjacent_find(w2.j.begin(), w2.j.end(), predicate) == w2.j.end());
+        }
 
         // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
-        w2.ksi(0, 0) = f(x0, y0);
-        w2.ksi(0, 1) = f(x0, y1);
-        w2.ksi(1, 0) = f(x1, y0);
-        w2.ksi(1, 1) = f(x1, y1);
+        for (size_t m = 0; m < w2.k; ++m) {
+          for (size_t n = 0; n < w2.k; ++n) {
+            w2.ksi(m, n) = f(w2.x[m], w2.y[n]);
+          }
+        }
 
         // treat empty matrix separately
         if (N == 0) {
@@ -659,55 +694,64 @@ namespace triqs {
 
         // I add the rows and cols and the end. If the move is rejected,
         // no effect since N will not be changed : inv_mat(i,j) for i,j>=N has no meaning.
-        for (size_t k = 0; k < N; k++) {
-          w2.B(k, 0) = f(x_values[k], y0);
-          w2.B(k, 1) = f(x_values[k], y1);
-          w2.C(0, k) = f(x0, y_values[k]);
-          w2.C(1, k) = f(x1, y_values[k]);
+        for (size_t n = 0; n < N; n++) {
+          for (size_t m = 0; m < w2.k; ++m) {
+            w2.B(n, m) = f(x_values[n], w2.y[m]);
+            w2.C(m, n) = f(w2.x[m], y_values[n]);
+          }
         }
-        range R(0, N), R2(0, 2);
+        range R(0, N), R2(0, Nk);
         //w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // OPTIMIZE BELOW
         blas::gemm(1.0, mat_inv(R, R), w2.B(R, R2), 0.0, w2.MB(R, R2));
         //w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // OPTIMIZE BELOW
         blas::gemm(-1.0, w2.C(R2, R), w2.MB(R, R2), 1.0, w2.ksi);
         auto ksi = w2.det_ksi();
         newdet   = det * ksi;
-        newsign  = ((i0 + j0 + i1 + j1) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
-        return ksi * (newsign * sign);                            // sign is unity, hence 1/sign == sign
+        size_t idx_sum = 0;
+        for (size_t k = 0; k < w2.k; ++k) {
+          idx_sum += w2.i[k] + w2.j[k];
+        }
+        newsign  = (idx_sum % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
+        return ksi * (newsign * sign);                // sign is unity, hence 1/sign == sign
+      }
+      value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
+        return try_insert_k({i0, i1}, {j0, j1}, {x0, x1}, {y0, y1});
       }
 
       //------------------------------------------------------------------------------------------
       private:
-      void complete_insert2() {
+      void complete_insert_k() {
         // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-        for (int k = 0; k < 2; ++k) {
+        for (int k = 0; k < w2.k; ++k) {
           x_values.push_back(w2.x[k]);
           y_values.push_back(w2.y[k]);
           row_num.push_back(0);
           col_num.push_back(0);
         }
 
-        range R2(0, 2);
+        range R2(0, w2.k);
         // treat empty matrix separately
         if (N == 0) {
-          N                = 2;
-          mat_inv(R2, R2)  = inverse(w2.ksi);
-          row_num[w2.i[1]] = 1;
-          col_num[w2.j[1]] = 1;
+          N               = w2.k;
+          mat_inv(R2, R2) = inverse(w2.ksi);
+          for (size_t k = 0; k < w2.k; ++k) {
+            row_num[w2.i[k]] = k;
+            col_num[w2.j[k]] = k;
+          }
           return;
         }
 
         range Ri(0, N);
         //w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// OPTIMIZE BELOW
         blas::gemm(1.0, w2.C(R2, Ri), mat_inv(Ri, Ri), 0.0, w2.MC(R2, Ri));
-        w2.MC(R2, range(N, N + 2)) = -1; // -identity matrix
-        w2.MB(range(N, N + 2), R2) = -1; // -identity matrix !
+        w2.MC(R2, range(N, N + w2.k)) = -1; // -identity matrix
+        w2.MB(range(N, N + w2.k), R2) = -1; // -identity matrix !
 
         // keep the real position of the row/col
         // since we insert a col/row, we have first to push the col at the right
         // and then say that col w2.i[0] is stored in N, the last col.
         // same for rows
-        for (int k = 0; k < 2; ++k) {
+        for (int k = 0; k < w2.k; ++k) {
           N++;
           for (int_type i = N - 2; i >= int_type(w2.i[k]); i--) row_num[i + 1] = row_num[i];
           row_num[w2.i[k]] = N - 1;
@@ -716,10 +760,13 @@ namespace triqs {
         }
         w2.ksi = inverse(w2.ksi);
         range R(0, N);
-        mat_inv(R, range(N - 2, N)) = 0;
-        mat_inv(range(N - 2, N), R) = 0;
+        mat_inv(R, range(N - w2.k, N)) = 0;
+        mat_inv(range(N - w2.k, N), R) = 0;
         //mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // OPTIMIZE BELOW
         blas::gemm(1.0, w2.MB(R, R2), (w2.ksi * w2.MC(R2, R)), 1.0, mat_inv(R, R));
+      }
+      void complete_insert2() {
+        complete_insert_k();
       }
 
       public:
@@ -807,83 +854,88 @@ namespace triqs {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-      value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
+      value_type try_remove_k(std::vector<size_t> i, std::vector<size_t> j) {
 
         // first make sure i0<i1 and j0<j1
-        if (i0 > i1) std::swap(i0, i1);
-        if (j0 > j1) std::swap(j0, j1);
+        std::sort(i.begin(), i.end());
+        std::sort(j.begin(), j.end());
 
         TRIQS_ASSERT(last_try == NoTry);
         TRIQS_ASSERT(N >= 2);
-        TRIQS_ASSERT(i0 != i1);
-        TRIQS_ASSERT(j0 != j1);
-        TRIQS_ASSERT(i0 < N);
-        TRIQS_ASSERT(j0 < N);
-        TRIQS_ASSERT(i0 >= 0);
-        TRIQS_ASSERT(j0 >= 0);
-        TRIQS_ASSERT(i1 < N + 1);
-        TRIQS_ASSERT(j1 < N + 1);
-        TRIQS_ASSERT(i1 >= 0);
-        TRIQS_ASSERT(j1 >= 0);
+        TRIQS_ASSERT(i.size() == j.size());
 
-        last_try = Remove2;
+        // check inputs
+        {
+          auto const predicate = [this] (size_t const prev, size_t const curr) {
+            return (curr == prev) || !(0 <= curr && curr < N + 1);
+          };
+          TRIQS_ASSERT(std::adjacent_find(i.begin(), i.end(), predicate) == i.end());
+          TRIQS_ASSERT(std::adjacent_find(j.begin(), j.end(), predicate) == j.end());
+        }
 
-        w2.i[0]     = std::min(i0, i1);
-        w2.i[1]     = std::max(i0, i1);
-        w2.j[0]     = std::min(j0, j1);
-        w2.j[1]     = std::max(j0, j1);
-        w2.ireal[0] = row_num[w2.i[0]];
-        w2.ireal[1] = row_num[w2.i[1]];
-        w2.jreal[0] = col_num[w2.j[0]];
-        w2.jreal[1] = col_num[w2.j[1]];
+        last_try = RemoveK;
+
+        size_t const Nk = i.size();
+        if (w2.k != Nk) reserve(Nmax, Nk);
+        for (size_t k = 0; k < w2.k; ++k) {
+          w2.i[k] = i[k];
+          w2.j[k] = j[k];
+          w2.ireal[k] = row_num[w2.i[k]];
+          w2.jreal[k] = col_num[w2.j[k]];
+        }
 
         // compute the newdet
-        w2.ksi(0, 0) = mat_inv(w2.jreal[0], w2.ireal[0]);
-        w2.ksi(1, 0) = mat_inv(w2.jreal[1], w2.ireal[0]);
-        w2.ksi(0, 1) = mat_inv(w2.jreal[0], w2.ireal[1]);
-        w2.ksi(1, 1) = mat_inv(w2.jreal[1], w2.ireal[1]);
+        for (size_t k1 = 0; k1 < w2.k; ++k1) {
+          for (size_t k2 = 0; k2 < w2.k; ++k2) {
+            w2.ksi(k1, k2) = mat_inv(w2.jreal[k1], w2.ireal[k2]);
+          }
+        }
         auto ksi     = w2.det_ksi();
         newdet       = det * ksi;
-        newsign      = ((i0 + j0 + i1 + j1) % 2 == 0 ? sign : -sign);
+        size_t idx_sum = 0;
+        for (size_t k = 0; k < w2.k; ++k) {
+          idx_sum += w2.i[k] + w2.j[k];
+        }
+        newsign      = (idx_sum % 2 == 0 ? sign : -sign);
 
         return ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
       }
+      value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
+        return try_remove_k({i0, i1}, {j0, j1});
+      }
       //------------------------------------------------------------------------------------------
       private:
-      void complete_remove2() {
-        if (N == 2) {
+      void complete_remove_k() {
+        if (N == w2.k) {
           clear();
           return;
         } // put the sign to 1 also .... Change complete_remove...
 
-        size_t i_real_max = std::max(w2.ireal[0], w2.ireal[1]);
-        size_t i_real_min = std::min(w2.ireal[0], w2.ireal[1]);
-        size_t j_real_max = std::max(w2.jreal[0], w2.jreal[1]);
-        size_t j_real_min = std::min(w2.jreal[0], w2.jreal[1]);
+        std::vector<size_t> ireal = w2.ireal;
+        std::vector<size_t> jreal = w2.jreal;
+        std::sort(ireal.begin(), ireal.end());
+        std::sort(jreal.begin(), jreal.end());
 
         range R(0, N);
 
-        if (j_real_max != N - 1) {
-          deep_swap(mat_inv(j_real_max, R), mat_inv(N - 1, R));
-          y_values[j_real_max] = y_values[N - 1];
-        }
-        if (j_real_min != N - 2) {
-          deep_swap(mat_inv(j_real_min, R), mat_inv(N - 2, R));
-          y_values[j_real_min] = y_values[N - 2];
-        }
-        if (i_real_max != N - 1) {
-          deep_swap(mat_inv(R, i_real_max), mat_inv(R, N - 1));
-          x_values[i_real_max] = x_values[N - 1];
-        }
-        if (i_real_min != N - 2) {
-          deep_swap(mat_inv(R, i_real_min), mat_inv(R, N - 2));
-          x_values[i_real_min] = x_values[N - 2];
+        // Move rows and cols that are going to be removed to the end in ascending order.
+        for (size_t n = 1; n <= w2.k; ++n) {
+          size_t const k = w2.k - n;
+          size_t const target = N - n;
+          if (jreal[k] != target) {
+            deep_swap(mat_inv(jreal[k], R), mat_inv(target, R));
+            y_values[jreal[k]] = y_values[target];
+          }
+          if (ireal[k] != target) {
+            deep_swap(mat_inv(R, ireal[k]), mat_inv(R, target));
+            x_values[ireal[k]] = x_values[target];
+          }
         }
 
-        N -= 2;
+        N -= w2.k;
 
         // M <- a - d^-1 b c with BLAS
-        range Rn(0, N), Rl(N, N + 2);
+        range Rn(0, N), Rl(N, N + w2.k);
         //w2.ksi = mat_inv(Rl,Rl);
         //w2.ksi = inverse( w2.ksi);
         w2.ksi = inverse(mat_inv(Rl, Rl));
@@ -893,24 +945,32 @@ namespace triqs {
         blas::gemm(-1.0, mat_inv(Rn, Rl), w2.ksi * mat_inv(Rl, Rn), 1.0, mat_inv(Rn, Rn));
 
         // modify the permutations
-        for (size_t k = w2.i[0]; k < w2.i[1] - 1; k++) row_num[k] = row_num[k + 1];
-        for (size_t k = w2.i[1] - 1; k < N; k++) row_num[k] = row_num[k + 2];
-        for (size_t k = w2.j[0]; k < w2.j[1] - 1; k++) col_num[k] = col_num[k + 1];
-        for (size_t k = w2.j[1] - 1; k < N; k++) col_num[k] = col_num[k + 2];
-        for (size_t k = 0; k < N; k++) {
-          if (col_num[k] == N + 1) col_num[k] = j_real_max;
-          if (col_num[k] == N) col_num[k] = j_real_min;
-          if (row_num[k] == N + 1) row_num[k] = i_real_max;
-          if (row_num[k] == N) row_num[k] = i_real_min;
+        // skip swapped out elements by counting their offsets
+        for (size_t l = 0, ci = 0, cj = 0; l < N; ++l) {
+          while (ci < w2.i.size() && l + ci == w2.i[ci]) { ++ci; }
+          row_num[l] = row_num[l+ci];
+          while (cj < w2.j.size() && l + cj == w2.j[cj]) { ++cj; }
+          col_num[l] = col_num[l+cj];
+        }
+        for (size_t l = 0; l < N; ++l) {
+          for (size_t k = 0; k < w2.k; ++k) {
+            size_t const k_ = w2.k - 1 - k;
+            if (col_num[l] == N + k_) col_num[l] = jreal[k_];
+            if (row_num[l] == N + k_) row_num[l] = ireal[k_];
+          }
         }
 
-        for (int u = 0; u < 2; ++u) {
+        for (int u = 0; u < w2.k; ++u) {
           row_num.pop_back();
           col_num.pop_back();
           x_values.pop_back();
           y_values.pop_back();
         }
       }
+      void complete_remove2() {
+        complete_remove_k();
+      }
+
       //------------------------------------------------------------------------------------------
       public:
       /**
@@ -1139,7 +1199,7 @@ namespace triqs {
           return;
         }
 
-        if (N > Nmax) reserve(2 * N);
+        if (N > Nmax) reserve(2 * N, /* TODO */ 2);
         std::swap(x_values, w_refill.x_values);
         std::swap(y_values, w_refill.y_values);
 
@@ -1227,8 +1287,8 @@ namespace triqs {
           case (ChangeCol): complete_change_col(); break;
           case (ChangeRow): complete_change_row(); break;
           case (ChangeRowCol): complete_change_col_row(); break;
-          case (Insert2): complete_insert2(); break;
-          case (Remove2): complete_remove2(); break;
+          case (InsertK): complete_insert_k(); break;
+          case (RemoveK): complete_remove_k(); break;
           case (Refill): complete_refill(); break;
           case (NoTry): return; break;
           default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
@@ -1262,7 +1322,7 @@ namespace triqs {
 
       /// Insert2 (try_insert2 + complete)
       value_type insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
-        auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
+        auto r = try_insert2(i0, i1, x0, x1, j0, j1, y0, y1);
         complete_operation();
         return r;
       }
