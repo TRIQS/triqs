@@ -894,39 +894,36 @@ namespace triqs {
       //------------------------------------------------------------------------------------------
       private:
       void complete_remove2() {
-        if (N == 2) {
+        if (N == w2.k) {
           clear();
           return;
         } // put the sign to 1 also .... Change complete_remove...
 
-        size_t i_real_max = std::max(w2.ireal[0], w2.ireal[1]);
-        size_t i_real_min = std::min(w2.ireal[0], w2.ireal[1]);
-        size_t j_real_max = std::max(w2.jreal[0], w2.jreal[1]);
-        size_t j_real_min = std::min(w2.jreal[0], w2.jreal[1]);
+        std::vector<size_t> ireal = w2.ireal;
+        std::vector<size_t> jreal = w2.jreal;
+        std::sort(ireal.begin(), ireal.end());
+        std::sort(jreal.begin(), jreal.end());
 
         range R(0, N);
 
-        if (j_real_max != N - 1) {
-          deep_swap(mat_inv(j_real_max, R), mat_inv(N - 1, R));
-          y_values[j_real_max] = y_values[N - 1];
-        }
-        if (j_real_min != N - 2) {
-          deep_swap(mat_inv(j_real_min, R), mat_inv(N - 2, R));
-          y_values[j_real_min] = y_values[N - 2];
-        }
-        if (i_real_max != N - 1) {
-          deep_swap(mat_inv(R, i_real_max), mat_inv(R, N - 1));
-          x_values[i_real_max] = x_values[N - 1];
-        }
-        if (i_real_min != N - 2) {
-          deep_swap(mat_inv(R, i_real_min), mat_inv(R, N - 2));
-          x_values[i_real_min] = x_values[N - 2];
+        // Move rows and cols that are going to be removed to the end in ascending order.
+        for (size_t n = 1; n <= w2.k; ++n) {
+          size_t const k = w2.k - n;
+          size_t const target = N - n;
+          if (jreal[k] != target) {
+            deep_swap(mat_inv(jreal[k], R), mat_inv(target, R));
+            y_values[jreal[k]] = y_values[target];
+          }
+          if (ireal[k] != target) {
+            deep_swap(mat_inv(R, ireal[k]), mat_inv(R, target));
+            x_values[ireal[k]] = x_values[target];
+          }
         }
 
-        N -= 2;
+        N -= w2.k;
 
         // M <- a - d^-1 b c with BLAS
-        range Rn(0, N), Rl(N, N + 2);
+        range Rn(0, N), Rl(N, N + w2.k);
         //w2.ksi = mat_inv(Rl,Rl);
         //w2.ksi = inverse( w2.ksi);
         w2.ksi = inverse(mat_inv(Rl, Rl));
@@ -936,18 +933,22 @@ namespace triqs {
         blas::gemm(-1.0, mat_inv(Rn, Rl), w2.ksi * mat_inv(Rl, Rn), 1.0, mat_inv(Rn, Rn));
 
         // modify the permutations
-        for (size_t k = w2.i[0]; k < w2.i[1] - 1; k++) row_num[k] = row_num[k + 1];
-        for (size_t k = w2.i[1] - 1; k < N; k++) row_num[k] = row_num[k + 2];
-        for (size_t k = w2.j[0]; k < w2.j[1] - 1; k++) col_num[k] = col_num[k + 1];
-        for (size_t k = w2.j[1] - 1; k < N; k++) col_num[k] = col_num[k + 2];
-        for (size_t k = 0; k < N; k++) {
-          if (col_num[k] == N + 1) col_num[k] = j_real_max;
-          if (col_num[k] == N) col_num[k] = j_real_min;
-          if (row_num[k] == N + 1) row_num[k] = i_real_max;
-          if (row_num[k] == N) row_num[k] = i_real_min;
+        // skip swapped out elements by counting their offsets
+        for (size_t l = 0, ci = 0, cj = 0; l < N; ++l) {
+          while (ci < w2.i.size() && l + ci == w2.i[ci]) { ++ci; }
+          row_num[l] = row_num[l+ci];
+          while (cj < w2.j.size() && l + cj == w2.j[cj]) { ++cj; }
+          col_num[l] = col_num[l+cj];
+        }
+        for (size_t l = 0; l < N; ++l) {
+          for (size_t k = 0; k < w2.k; ++k) {
+            size_t const k_ = w2.k - 1 - k;
+            if (col_num[l] == N + k_) col_num[l] = jreal[k_];
+            if (row_num[l] == N + k_) row_num[l] = ireal[k_];
+          }
         }
 
-        for (int u = 0; u < 2; ++u) {
+        for (int u = 0; u < w2.k; ++u) {
           row_num.pop_back();
           col_num.pop_back();
           x_values.pop_back();
