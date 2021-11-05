@@ -91,7 +91,7 @@ struct test {
           w1 = RNG(s + 1);
           if (w != w1) {
             std::cout << " Insert2" << std::endl;
-            detratio = D.try_insert2({{w, x}, {w1, x1}}, {{w, x}, {w1, x1}});
+            detratio = D.try_insert2(w, w1, w, w1, x, x1, x, x1);
           }
           break;
         case 3:
@@ -99,7 +99,7 @@ struct test {
           if (D.size() >= 2) {
             w  = RNG(s);
             w1 = RNG(s);
-            if (w != w1) detratio = D.try_remove2({w, w1}, {w, w1});
+            if (w != w1) detratio = D.try_remove2(w, w1, w, w1);
           }
           break;
         default: TRIQS_RUNTIME_ERROR << " TEST INTERNAL ERROR";

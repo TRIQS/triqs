@@ -114,7 +114,7 @@ struct test {
           j0 = RNG(s);
           j1 = RNG(s + 1);
           if ((i0 != i1) && (j0 != j1)) {
-            detratio = D.try_insert2({{i0, x}, {i1, x1}}, {{j0, y}, {j1, y1}});
+            detratio = D.try_insert2(i0, i1, j0, j1, x, x1, y, y1);
           } else
             do_something = false;
 
@@ -127,7 +127,7 @@ struct test {
             j0 = RNG(s);
             j1 = RNG(s);
             if ((i0 != i1) && (j0 != j1)) {
-              detratio = D.try_remove2({i0, i1}, {j0, j1});
+              detratio = D.try_remove2(i0, i1, j0, j1);
             } else
               do_something = false;
           }
