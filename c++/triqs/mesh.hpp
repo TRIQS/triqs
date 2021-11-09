@@ -38,7 +38,7 @@
 #include "./mesh/refreq.hpp"
 #include "./mesh/legendre.hpp"
 #include "./mesh/brzone.hpp"
-#include "./mesh/torus.hpp"
+#include "./mesh/cyclat.hpp"
 #include "./mesh/prod.hpp"
 
 #include "./mesh/details/debug.hpp"
@@ -48,10 +48,8 @@
 
 namespace triqs::mesh {
 
-  using cyclat = torus;
-  using cyclic_lattice = torus;
+  using cyclic_lattice = cyclat;
 
   template<typename ...T> using cartesian_product = prod<T...>;
-
 }
 

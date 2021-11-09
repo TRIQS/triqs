@@ -28,7 +28,7 @@ namespace triqs::mesh {
   using nda::eye;
 
   ///
-  struct torus : cluster_mesh {
+  struct cyclat : cluster_mesh {
     private:
     bravais_lattice bl;
 
@@ -37,14 +37,14 @@ namespace triqs::mesh {
     @param bl_ bravais lattice
     @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
    */
-    torus(bravais_lattice const &bl_, matrix<int> const &periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
+    cyclat(bravais_lattice const &bl_, matrix<int> const &periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
 
     ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
-    torus(int L1 = 1, int L2 = 1, int L3 = 1)
+    cyclat(int L1 = 1, int L2 = 1, int L3 = 1)
        : bl{eye<double>(3)}, cluster_mesh{eye<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
 
     ///Construct from domain (bravais_lattice) and int L (linear size of Cluster mesh)
-    torus(bravais_lattice const &bl_, int L)
+    cyclat(bravais_lattice const &bl_, int L)
        : bl(bl_), cluster_mesh{bl_.units(), matrix<int>{{{L, 0, 0}, {0, bl_.dim() >= 2 ? L : 1, 0}, {0, 0, bl_.dim() >= 3 ? L : 1}}}} {}
 
     using domain_t = bravais_lattice;
@@ -58,13 +58,13 @@ namespace triqs::mesh {
 
     // ------------------- Comparison -------------------
 
-    bool operator==(torus const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
+    bool operator==(cyclat const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
 
-    bool operator!=(torus const &M) const { return !(operator==(M)); }
+    bool operator!=(cyclat const &M) const { return !(operator==(M)); }
 
     // -------------------- print -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, torus const &m) {
+    friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
       return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
                   << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
     }
@@ -73,13 +73,13 @@ namespace triqs::mesh {
 
     static std::string hdf5_format() { return "MeshCyclicLattice"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, torus const &m) {
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, cyclat const &m) {
       h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
       h5::group gr = fg.open_group(subgroup_name);
       h5_write(gr, "bravais_lattice", m.bl);
     }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, torus &m) {
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, cyclat &m) {
       h5_read_impl(fg, subgroup_name, m, "MeshCyclicLattice");
       h5::group gr = fg.open_group(subgroup_name);
       try { // Care for Backward Compatibility
