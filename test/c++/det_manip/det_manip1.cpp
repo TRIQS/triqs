@@ -68,13 +68,13 @@ struct test {
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
 #else
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl
-              << D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix())) << std::endl;
+              << D.inverse_matrix() << D.matrix() << nda::matrix<double>(inverse(D.matrix())) << std::endl;
     std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << D.determinant() << std::endl;
 #endif
     auto diff = nda::matrix<double>( inverse(D.matrix())- D.inverse_matrix());
     //std::cerr  << diff <<std::endl;
     //std::cerr  << max_element(abs(diff)) <<std::endl;
-    triqs::arrays::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
+    nda::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
     assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
     std::cerr << "---- end check --- "<<std::endl;

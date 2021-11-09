@@ -37,7 +37,7 @@ namespace triqs::gfs {
   //-------------------------------------
 
   array<dcomplex, 2> fit_tail(gf_const_view<imtime, tensor_valued<1>> gt) {
-    using matrix_t   = arrays::matrix<dcomplex>;
+    using matrix_t   = nda::matrix<dcomplex>;
     int fit_order    = 8;
     auto _           = range();
     auto d_vec_left  = matrix_t(fit_order, gt.target_shape()[0]);
@@ -94,9 +94,9 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<imtime> gt, nda::array_const_view<dcomplex, 2> known_moments) {
 
-    arrays::array<dcomplex, 2> tail;
+    nda::array<dcomplex, 2> tail;
 
     if (known_moments.is_empty()) {
       // A simple check on whether or not we are dealing with noisy data
@@ -189,11 +189,11 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<imfreq> gw, arrays::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<imfreq> gw, nda::array_const_view<dcomplex, 2> known_moments) {
 
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
-    arrays::array_const_view<dcomplex, 2> tail;
+    nda::array_const_view<dcomplex, 2> tail;
 
     // Assume vanishing 0th moment in tail fit
     if (known_moments.is_empty()) return _fourier_impl(tau_mesh, gw, make_zero_tail(gw, 1));

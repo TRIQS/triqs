@@ -29,7 +29,7 @@ int n_times   = n_freq * 2 + 1;
 int L         = 16;
 int n_bz      = L;
 auto _        = all_t{};
-auto bz       = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+auto bz       = brillouin_zone{bravais_lattice{eye<double>(2)}};
 using index_t = std::array<long, 3>;
 
 TEST(Gf, x_t) {

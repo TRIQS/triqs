@@ -42,7 +42,7 @@ namespace triqs::mesh {
      *
      */
     brzone(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
-       : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), transpose(periodization_matrix_)) {
+       : bz(bz_), cluster_mesh(eye<double>(3), transpose(periodization_matrix_)) {
       matrix<double> N_as_double = periodization_matrix_;
       matrix<double> Nt_inv      = inverse(transpose(N_as_double));
       units                      = Nt_inv * bz_.units();

@@ -117,7 +117,7 @@ namespace triqs {
    k_in[:,n] is the nth vector
    In the result, R[:,:,n] is the corresponding hopping t(k)
    */
-    array<dcomplex, 3> hopping_stack(tight_binding const &TB, arrays::array_const_view<double, 2> k_stack);
+    array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
     // not optimal ordering here
 
     std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);

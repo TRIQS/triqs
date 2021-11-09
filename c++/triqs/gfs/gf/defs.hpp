@@ -26,13 +26,13 @@ namespace triqs::gfs {
   /// FIXME CLEAN THIS
   using dcomplex = std::complex<double>;
 
-  using arrays::array;
-  using arrays::array_view;
-  using arrays::ellipsis;
-  using arrays::make_shape;
-  using arrays::matrix;
-  using arrays::matrix_const_view;
-  using arrays::matrix_view;
+  using nda::array;
+  using nda::array_view;
+  using nda::ellipsis;
+  using triqs::arrays::make_shape;
+  using nda::matrix;
+  using nda::matrix_const_view;
+  using nda::matrix_view;
 
   using utility::factory;
 

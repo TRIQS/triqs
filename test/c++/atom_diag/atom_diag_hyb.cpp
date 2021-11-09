@@ -59,7 +59,7 @@ void print_binary(unsigned int n, int total_bits) {
   std::printf(" ");
 }
 
-void print_matrix(triqs::arrays::matrix<double> m, double factor) {
+void print_matrix(nda::matrix<double> m, double factor) {
 
   for (int i = 0; i < first_dim(m); i++) {
     std::printf("\n [");

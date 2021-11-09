@@ -59,11 +59,6 @@ namespace triqs::arrays {
 
   using nda::blas::dot;
 
-  template <typename T> //[[deprecated]]
-  nda::matrix<T> make_unit_matrix(int dim) {
-    return nda::eye<T>(dim);
-  }
-
   template <typename... T> //[[deprecated]]
   std::array<long, sizeof...(T)> make_shape(T... x) {
     return {long(x)...};

@@ -40,7 +40,7 @@ namespace triqs::stat {
     long n_bins;                        // number of points on the mesh (for double only)
     unsigned long long _n_data_pts = 0; // number of data points
     unsigned long long _n_lost_pts = 0; // number of discarded points
-    arrays::vector<double> _data;       // histogram data
+    nda::vector<double> _data;       // histogram data
     double _step;                       // number of bins per unit length
 
     void _init(); // initialize _step
@@ -99,7 +99,7 @@ namespace triqs::stat {
     /// Read-only access to the data storage
     /// @return Constant reference to the histogram data array
     /// @brief Read-only access to the data storage
-    arrays::vector<double> const &data() const { return _data; }
+    nda::vector<double> const &data() const { return _data; }
 
     /// Get number of accumulated samples
     /// @return Number of accumulated data points

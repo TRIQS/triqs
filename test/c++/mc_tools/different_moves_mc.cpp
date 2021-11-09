@@ -31,7 +31,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/test_tools/arrays.hpp>
-triqs::arrays::array<std::complex<double>, 1> make_array(std::complex<double> c) { return {c}; };
+nda::array<std::complex<double>, 1> make_array(std::complex<double> c) { return {c}; };
 
 struct configuration {
   int x;                    //position of the walker
@@ -83,11 +83,11 @@ struct move_right {
 //------------------------------------------------------------
 struct compute_histo {
   configuration *config;
-  triqs::arrays::array<double, 1> H; // an histogram of the positions of the walker
+  nda::array<double, 1> H; // an histogram of the positions of the walker
   long xmax;                         //maximal position registered in the histo
   mpi::communicator world;
   long tot; //number of pointsregistered inthe histogram
-  compute_histo(configuration &config_, triqs::arrays::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
+  compute_histo(configuration &config_, nda::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
   void accumulate(double sign) {
     if (config->x + xmax >= 0 && config->x - xmax < 0) {
       H(floor((config->x + xmax))) += 1;
@@ -136,7 +136,7 @@ bool test_mc(bool recover_from_exception) {
 
   // construct configuration
   configuration config;
-  triqs::arrays::array<double, 1> H(2 * xmax);
+  nda::array<double, 1> H(2 * xmax);
   H() = 0;
 
   // add moves and measures

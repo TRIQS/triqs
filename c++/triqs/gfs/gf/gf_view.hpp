@@ -277,7 +277,7 @@ namespace triqs::gfs {
     */
     void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh = l.rhs.mesh();
-      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
     }
 
     /**

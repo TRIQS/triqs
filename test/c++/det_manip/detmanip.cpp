@@ -85,7 +85,7 @@ TEST(DetManip, ChangeRowCol) {
     if (std::abs(detratio - det/det1) > precision) TRIQS_RUNTIME_ERROR << "detratio incorrect : " << detratio <<"  " << det/det1;
     if (std::abs(det - det2) > precision) TRIQS_RUNTIME_ERROR << "Det != d2 : " << det <<"  " << det2;
     if (std::abs(det - det_check) > precision) TRIQS_RUNTIME_ERROR << "Det != det_check : " << det << "  " << det_check;
-    triqs::arrays::assert_all_close(nda::matrix<double>{inverse(d.matrix())}, d.inverse_matrix(), precision, true);
+    nda::assert_all_close(nda::matrix<double>{inverse(d.matrix())}, d.inverse_matrix(), precision, true);
   }
 
   }

@@ -74,10 +74,10 @@ TEST(det_manip, det_manip_zero_mat) {
   auto dm2                        = remove_second_row_col(dm1);
   auto dm3                        = insert_second_row_col(dm2);
   auto dm4                        = remove_first_row_col(dm2);
-  arrays::matrix<double> true_dm1 = {{1, 1}, {-3, 5}};
-  arrays::matrix<double> true_dm2 = {{1}};
-  arrays::matrix<double> true_dm3 = {{1, 2}, {1, 10}};
-  arrays::matrix<double> true_dm4 = {};
+  nda::matrix<double> true_dm1 = {{1, 1}, {-3, 5}};
+  nda::matrix<double> true_dm2 = {{1}};
+  nda::matrix<double> true_dm3 = {{1, 2}, {1, 10}};
+  nda::matrix<double> true_dm4 = {};
 
   EXPECT_ARRAY_NEAR(dm1.matrix(), true_dm1);
   EXPECT_EQ(dm1.determinant(), 8);

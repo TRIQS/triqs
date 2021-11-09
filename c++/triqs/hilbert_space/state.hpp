@@ -33,7 +33,7 @@ namespace triqs {
     /// Many-body state as a list of amplitudes in a *basis of Fock states*
     /**
   The amplitudes can either be stored using a map (only non-vanishing elements are stored)
-  or in a `triqs::arrays::vector`. In order to make this class model [[statevector_concept]]
+  or in a `nda::vector`. In order to make this class model [[statevector_concept]]
   free function [[make_zero_state]] is defined. Specializations on `BasedOnMap` provide
   different extensions of the concept, and are documented separately:
 
@@ -216,13 +216,13 @@ namespace triqs {
       }
     };
 
-    /// State: implementation based on `triqs::arrays::vector`
+    /// State: implementation based on `nda::vector`
     template <typename HilbertSpace, typename ScalarType>
     class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpace, ScalarType, false>>,
                                                    boost::multiplicative<state<HilbertSpace, ScalarType, false>, ScalarType> {
 
       const HilbertSpace *hs_p;
-      using amplitude_t = triqs::arrays::vector<ScalarType>;
+      using amplitude_t = nda::vector<ScalarType>;
       amplitude_t ampli;
 
       public:
@@ -326,12 +326,12 @@ namespace triqs {
       // Additions to StateVector concept
       //
 
-      /// Direct access to the storage container (`triqs::arrays::vector`)
+      /// Direct access to the storage container (`nda::vector`)
       /**
    @return Constant reference to the storage container
   */
       amplitude_t const &amplitudes() const { return ampli; }
-      /// Direct access to the storage container (`triqs::arrays::vector`)
+      /// Direct access to the storage container (`nda::vector`)
       /**
    @return Reference to the storage container
   */

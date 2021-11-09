@@ -61,9 +61,9 @@ TEST(histogram, basic) {
   auto hi2 = make_hi2();
   auto hd2 = make_hd2();
 
-  arrays::vector<double> true_hi1 = {3, 1, 3, 1, 0, 1, 0, 0, 0, 1, 0};
-  arrays::vector<double> true_hd1 = {0, 0, 1, 0, 2, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1};
-  arrays::vector<double> true_h2  = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
+  nda::vector<double> true_hi1 = {3, 1, 3, 1, 0, 1, 0, 0, 0, 1, 0};
+  nda::vector<double> true_hd1 = {0, 0, 1, 0, 2, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1};
+  nda::vector<double> true_h2  = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
 
   // hi1
 
@@ -100,7 +100,7 @@ TEST(histogram, basic) {
 TEST(histogram, clear) {
   auto hi1 = make_hi1();
   hi1.clear();
-  EXPECT_ARRAY_EQ(arrays::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}), hi1.data());
+  EXPECT_ARRAY_EQ(nda::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}), hi1.data());
   EXPECT_EQ(0, hi1.n_data_pts());
   EXPECT_EQ(0, hi1.n_lost_pts());
 }
@@ -111,7 +111,7 @@ TEST(histogram, sum) {
   auto hd1 = make_hd1();
   auto hd2 = make_hd2();
 
-  arrays::vector<double> true_hsum = {3, 2, 5, 3, 0, 2, 0, 0, 0, 2, 1};
+  nda::vector<double> true_hsum = {3, 2, 5, 3, 0, 2, 0, 0, 0, 2, 1};
 
   EXPECT_THROW(hi1 + hd1, triqs::runtime_error);
 
@@ -141,7 +141,7 @@ TEST(histogram, pdf) {
 
   auto hi1 = make_hi1();
 
-  arrays::vector<double> true_pdf_hi1 = {.3, .1, .3, .1, .0, .1, .0, .0, .0, .1, .0};
+  nda::vector<double> true_pdf_hi1 = {.3, .1, .3, .1, .0, .1, .0, .0, .0, .1, .0};
   auto pdf_hi1                        = pdf(hi1);
 
   EXPECT_ARRAY_NEAR(true_pdf_hi1, pdf_hi1.data());
@@ -151,7 +151,7 @@ TEST(histogram, cdf) {
 
   auto hi1 = make_hi1();
 
-  arrays::vector<double> true_cdf_hi1 = {.3, .4, .7, .8, .8, .9, .9, .9, .9, 1.0, 1.0};
+  nda::vector<double> true_cdf_hi1 = {.3, .4, .7, .8, .8, .9, .9, .9, .9, 1.0, 1.0};
   auto cdf_hi1                        = cdf(hi1);
 
   EXPECT_ARRAY_NEAR(true_cdf_hi1, cdf_hi1.data());

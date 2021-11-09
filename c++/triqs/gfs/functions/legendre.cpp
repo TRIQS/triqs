@@ -23,7 +23,7 @@
 namespace triqs {
   namespace gfs {
 
-    using arrays::array;
+    using nda::array;
 
     //-------------------------------------------------------
     // For Legendre functions
@@ -46,16 +46,16 @@ namespace triqs {
     }
 
     // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
-    void enforce_discontinuity(gf_view<legendre> &gl, arrays::array_view<double, 2> disc) {
+    void enforce_discontinuity(gf_view<legendre> &gl, nda::array_view<double, 2> disc) {
 
       double norm = 0.0;
-      arrays::vector<double> t(gl.data().shape()[0]);
+      nda::vector<double> t(gl.data().shape()[0]);
       for (int i = 0; i < t.size(); ++i) {
         t(i) = triqs::utility::legendre_t(i, 1) / gl.domain().beta;
         norm += t(i) * t(i);
       }
 
-      arrays::array<dcomplex, 2> corr(disc.shape());
+      nda::array<dcomplex, 2> corr(disc.shape());
       corr() = 0;
       for (auto const &l : gl.mesh()) corr += t(l.index()) * gl[l];
 

@@ -69,7 +69,7 @@ namespace triqs {
     template <bool Complex>
     auto matrix_element_of_monomial(ATOM_DIAG const &atom, operators::monomial_t const &op_vec, int B) -> std::pair<int, ATOM_DIAG_T::matrix_t> {
 
-      auto m           = triqs::arrays::make_unit_matrix<ATOM_DIAG_T::scalar_t>(atom.get_subspace_dim(B));
+      auto m           = nda::eye<ATOM_DIAG_T::scalar_t>(atom.get_subspace_dim(B));
       auto const &fops = atom.get_fops();
       for (int i = op_vec.size() - 1; i >= 0; --i) {
         int ind = fops[op_vec[i].indices];

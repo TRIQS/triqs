@@ -80,7 +80,7 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
 
 // test used in the Python test.
 
-triqs::arrays::array<double, 1> f(int N, int seed) {
+nda::array<double, 1> f(int N, int seed) {
   int n_log_bins = 20;
   accumulator<double> AA(0, n_log_bins);
 
@@ -99,7 +99,7 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
   }
 
   // estimates of tau in an array
-  triqs::arrays::array<double, 1> R(n_log_bins);
+  nda::array<double, 1> R(n_log_bins);
   auto [errors, counts] = AA.log_bin_errors();
 
   for (auto n : range(n_log_bins)) {

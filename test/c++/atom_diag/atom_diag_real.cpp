@@ -200,7 +200,7 @@ TEST(atom_diag_real, Autopartition) {
 #ifndef GENERATE_REF_H5
     EXPECT_ARRAY_NEAR(energies_ref[sp], eigs.eigenvalues);
     EXPECT_ARRAY_NEAR(umat[sp], eigs.unitary_matrix);
-    EXPECT_ARRAY_NEAR(make_unit_matrix<double>(sp_dim[sp]), umat[sp] * transpose(umat[sp]));
+    EXPECT_ARRAY_NEAR(eye<double>(sp_dim[sp]), umat[sp] * transpose(umat[sp]));
 
     EXPECT_EQ(flat_index, ad.index_range_of_subspace(sp).first());
     matrix<double> e_diag(sp_dim[sp], sp_dim[sp]);

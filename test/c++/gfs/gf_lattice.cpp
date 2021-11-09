@@ -27,7 +27,7 @@ TEST(Gfs, cyclat) {
   double beta = 1;
   triqs::clef::placeholder<0> r_;
 
-  auto bl  = bravais_lattice{make_unit_matrix<double>(2)};
+  auto bl  = bravais_lattice{eye<double>(2)};
   auto m_r = mesh::cyclat{bl, 2};
   ASSERT_EQ(m_r.size(), 4);
 
@@ -48,7 +48,7 @@ TEST(Gfs, brillouin_zone) {
 
   int n_k = 50;
 
-  auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz  = brillouin_zone{bravais_lattice{eye<double>(2)}};
   auto m_k = mesh::brzone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
@@ -57,7 +57,7 @@ TEST(Gfs, brillouin_zone) {
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
 
-  ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (std::array<long, 3>({0, 0, 0})));
+  ASSERT_EQ(Gk.mesh().locate_neighbours(nda::vector<double>{0, 0, 0}), (std::array<long, 3>({0, 0, 0})));
   EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0}), -4);
   EXPECT_COMPLEX_NEAR(Gk(K_t{M_PI, M_PI, M_PI}), 4);
   EXPECT_COMPLEX_NEAR(Gk(K_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
@@ -89,7 +89,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
 
   int n_k = 50;
 
-  auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz  = brillouin_zone{bravais_lattice{eye<double>(2)}};
   auto m_k = mesh::brzone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
@@ -98,7 +98,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
 
-  ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (std::array<long, 3>({0, 0, 0})));
+  ASSERT_EQ(Gk.mesh().locate_neighbours(nda::vector<double>{0, 0, 0}), (std::array<long, 3>({0, 0, 0})));
   //auto a = Gk(index_t{0, 0, 0});
   auto a = Gk(K_t{0, 0, 0});
 

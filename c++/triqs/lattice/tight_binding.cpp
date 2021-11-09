@@ -42,7 +42,7 @@ namespace triqs {
     }
 
     //------------------------------------------------------
-    array<dcomplex, 3> hopping_stack(tight_binding const &TB, arrays::array_const_view<double, 2> k_stack) {
+    array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack) {
       auto TK = fourier(TB);
       array<dcomplex, 3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
       for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TK(k_stack(range(), i));

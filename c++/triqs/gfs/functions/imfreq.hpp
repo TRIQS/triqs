@@ -36,7 +36,7 @@ namespace triqs::gfs {
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
-    auto _ = arrays::ellipsis{};
+    auto _ = nda::ellipsis{};
     if (is_boson) new_data(L - 1, _) = dat(0, _);
     int L1 = (is_boson ? L - 1 : L);
     for (int u = is_boson; u < L; ++u) {

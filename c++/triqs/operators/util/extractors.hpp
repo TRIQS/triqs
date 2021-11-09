@@ -28,7 +28,7 @@
 
 namespace triqs::operators::utils {
 
-  using triqs::arrays::array;
+  using nda::array;
 
   using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 

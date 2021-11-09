@@ -63,13 +63,13 @@ namespace triqs {
 
     class pade_approximant {
 
-      arrays::vector<dcomplex> z_in; // Input complex frequency points
-      arrays::vector<dcomplex> a;    // Pade coefficients
+      nda::vector<dcomplex> z_in; // Input complex frequency points
+      nda::vector<dcomplex> a;    // Pade coefficients
 
       public:
       static const int GMP_default_prec = 256; // Precision of GMP floats to use during a Pade coefficients calculation.
 
-      pade_approximant(const arrays::vector<dcomplex> &z_in_, const arrays::vector<dcomplex> &u_in) : z_in(z_in_), a(z_in.size()) {
+      pade_approximant(const nda::vector<dcomplex> &z_in_, const nda::vector<dcomplex> &u_in) : z_in(z_in_), a(z_in.size()) {
 
         int N = z_in.size();
 
@@ -77,7 +77,7 @@ namespace triqs {
         unsigned long old_prec = mpf_get_default_prec();
         mpf_set_default_prec(GMP_default_prec); // How do we determine it?
 
-        arrays::array<gmp_complex, 2> g(N, N);
+        nda::array<gmp_complex, 2> g(N, N);
         gmp_complex MP_0 = {0.0, 0.0};
         g()              = MP_0;
         for (int f = 0; f < N; ++f) { g(0, f) = u_in(f); };

@@ -31,20 +31,20 @@ namespace triqs {
      * Computes the density of the Gf g, i.e $g(\tau=0^-)$
      * Uses tail moments n=1, 2, and 3
      */
-    arrays::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> = {});
+    nda::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> = {});
     dcomplex density(gf_const_view<mesh::imfreq, scalar_valued> g, array_const_view<dcomplex, 1> = {});
 
-    arrays::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
+    nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
     //-------------------------------------------------------
     // For Real Frequency functions
     // ------------------------------------------------------
 
-    arrays::matrix<dcomplex> density(gf_const_view<mesh::refreq> g, double beta);
+    nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g, double beta);
     dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g, double beta);
 
-    arrays::matrix<dcomplex> density(gf_const_view<mesh::refreq> g);
+    nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g);
     dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g);
 
     //-------------------------------------------------------

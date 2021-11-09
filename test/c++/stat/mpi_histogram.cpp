@@ -33,7 +33,7 @@ TEST(histogram, mpi_broadcast) {
   mpi::communicator world;
   auto h = world.rank() ? histogram{0, 20} : make_hd();
 
-  arrays::vector<double> true_h = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
+  nda::vector<double> true_h = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
   mpi::broadcast(h, world, 0);
 
   EXPECT_EQ(11, h.size());
@@ -49,7 +49,7 @@ TEST(histogram, mpi_reduce) {
 
   mpi::communicator world;
   auto h                            = make_hd();
-  arrays::vector<double> true_h_rec = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
+  nda::vector<double> true_h_rec = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
   true_h_rec *= world.size();
 
   // reduce

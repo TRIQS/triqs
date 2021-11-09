@@ -22,18 +22,18 @@
 
 namespace triqs::gfs {
 
-  using arrays::array;
+  using nda::array;
 
   //-------------------------------------------------------
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  arrays::matrix<dcomplex> density(gf_const_view<imfreq> g, array_const_view<dcomplex, 3> known_moments) {
+  nda::matrix<dcomplex> density(gf_const_view<imfreq> g, array_const_view<dcomplex, 3> known_moments) {
 
     if (g.mesh().positive_only())
       TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
 
-    arrays::array_const_view<dcomplex, 3> mom_123;
+    nda::array_const_view<dcomplex, 3> mom_123;
 
     // Assume vanishing 0th moment in tail fit
     if (known_moments.is_empty()) return density(g, make_zero_tail(g, 1));
@@ -57,7 +57,7 @@ namespace triqs::gfs {
 
     auto sh = g.target_shape();
     int N1 = sh[0], N2 = sh[1];
-    arrays::matrix<dcomplex> res(sh);
+    nda::matrix<dcomplex> res(sh);
     auto beta = g.domain().beta;
 
     auto S = g.mesh().domain().statistic;
@@ -131,7 +131,7 @@ namespace triqs::gfs {
   // ------------------------------------------------------
 
   /// Zero temperature density from integration on the real frequency axis
-  arrays::matrix<dcomplex> density(gf_const_view<refreq> g) {
+  nda::matrix<dcomplex> density(gf_const_view<refreq> g) {
 
     int N       = g.mesh().size(); // no mesh points
     double wmin = g.mesh().x_min();
@@ -142,7 +142,7 @@ namespace triqs::gfs {
     int N0     = std::floor(-wmin / dw) + 1; // frequency index at or above w=0
     double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
 
-    arrays::matrix<dcomplex> res(g.target_shape());
+    nda::matrix<dcomplex> res(g.target_shape());
 
     // Trapetzoidal integration, with partial right interval
     res = 0.5 * g[0];
@@ -165,11 +165,11 @@ namespace triqs::gfs {
   }
 
   /// Finite temperature density from integration on the real frequency axis
-  arrays::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
+  nda::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
 
     assert(beta > 0.);
 
-    arrays::matrix<dcomplex> res(g.target_shape());
+    nda::matrix<dcomplex> res(g.target_shape());
     res() = 0;
 
     for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
@@ -196,8 +196,8 @@ namespace triqs::gfs {
   // For Legendre functions
   // ------------------------------------------------------
 
-  arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
-    arrays::matrix<dcomplex> res(gl.target_shape());
+  nda::matrix<dcomplex> density(gf_const_view<legendre> gl) {
+    nda::matrix<dcomplex> res(gl.target_shape());
     res() = 0.0;
 
     // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145

@@ -107,7 +107,7 @@ namespace triqs {
     auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const
       -> std::pair<int, matrix_t> {
 
-      auto m = triqs::arrays::make_unit_matrix<scalar_t>(get_subspace_dim(B));
+      auto m = nda::eye<scalar_t>(get_subspace_dim(B));
 
       auto const &fops = get_fops();
       for (int i = op_vec.size() - 1; i >= 0; --i) {

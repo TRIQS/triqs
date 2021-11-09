@@ -64,7 +64,7 @@ namespace triqs::gfs {
       auto [tail, err] = fit_tail_no_normalize(g);
 
       dcomplex x = std::abs(g.mesh().omega_max()) / f;
-      auto res   = arrays::zeros<dcomplex>(g.target_shape()); // a new array
+      auto res   = nda::zeros<dcomplex>(g.target_shape()); // a new array
 
       dcomplex z = 1.0;
       for (int n : range(tail.extent(0))) {
@@ -98,7 +98,7 @@ namespace triqs::gfs {
       } else {
         if (g.mesh().is_within_boundary(args...)) return make_regular(evaluate(g, std::forward<Args>(args)...));
         using rt = std::decay_t<decltype(make_regular(evaluate(g, std::forward<Args>(args)...)))>;
-        return rt{arrays::zeros<dcomplex>(g.target_shape())};
+        return rt{nda::zeros<dcomplex>(g.target_shape())};
       }
     }
   };
@@ -110,7 +110,7 @@ namespace triqs::gfs {
   // Not finished, not tested
   template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
     static constexpr int arity = 1;
-    template <typename G> arrays::matrix_view<dcomplex> operator()(G const &g, long n) const {
+    template <typename G> nda::matrix_view<dcomplex> operator()(G const &g, long n) const {
       return g.data()(n, itertools::range(), itertools::range());
     }
   };

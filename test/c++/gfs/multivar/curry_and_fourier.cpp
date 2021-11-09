@@ -27,7 +27,7 @@ using namespace triqs::lattice;
 
 TEST(GfM, CurryFourier) {
   double beta = 1;
-  auto bz     = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz     = brillouin_zone{bravais_lattice{eye<double>(2)}};
 
   int n_freq  = 100;
   int n_times = n_freq * 2 + 1;
@@ -51,7 +51,7 @@ TEST(GfM, CurryFourier) {
   for (auto const &k : mk) gkt[k, _] = fourier(gkw[k, _]);
 
   // works also, but uses the evaluator which return to the same point
-  for (auto k : mk) EXPECT_EQ(k.linear_index(), mk.index_to_linear(mk.locate_neighbours(arrays::vector<double>(mesh::lattice_point(k)))));
+  for (auto k : mk) EXPECT_EQ(k.linear_index(), mk.index_to_linear(mk.locate_neighbours(nda::vector<double>(mesh::lattice_point(k)))));
 
   /// Testing the result
   auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};

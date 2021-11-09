@@ -50,16 +50,16 @@ namespace triqs::mesh {
    * @param inv_n inverse $N^{-1}$ of the periodization matrix
    * @return the dimensions of the parallelepiped unit cell
    */
-  std::array<long, 3> find_cell_dims(arrays::matrix<double> const &inv_n);
+  std::array<long, 3> find_cell_dims(nda::matrix<double> const &inv_n);
 
   /// A lattice point
-  struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, arrays::vector<double>> {
+  struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, nda::vector<double>> {
     std::array<long, 3> index;
-    arrays::matrix<double> units; // unit vectors
+    nda::matrix<double> units; // unit vectors
 
-    lattice_point() : index({0, 0, 0}), units(arrays::make_unit_matrix<double>(3)) {}
+    lattice_point() : index({0, 0, 0}), units(nda::eye<double>(3)) {}
     lattice_point(std::array<long, 3>  const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
-    using cast_t = arrays::vector<double>;
+    using cast_t = nda::vector<double>;
     operator cast_t() const {
       cast_t M(3);
       M() = 0.0;
@@ -108,7 +108,7 @@ namespace triqs::mesh {
     /// ---------- Model the domain concept  ---------------------
     using domain_t = cluster_mesh;
     domain_t const &domain() const { return *this; }
-    using point_t = arrays::vector<double>; // domain concept. PUT on STACK
+    using point_t = nda::vector<double>; // domain concept. PUT on STACK
 
     /// ----------- Model the mesh concept  ----------------------
 

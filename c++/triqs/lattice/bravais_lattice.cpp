@@ -37,7 +37,7 @@ namespace triqs {
       units_()     = 0;
       units_(r, r) = units__(r, r);
       // First complete the basis. Add some tests for safety
-      arrays::vector<double> ux(3), uy(3), uz(3);
+      nda::vector<double> ux(3), uy(3), uz(3);
       double delta;
       auto _ = range{};
       switch (dim_) {

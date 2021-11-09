@@ -32,19 +32,19 @@ namespace triqs {
     // THIS MUST be kept for python operations
     // specific operations (for legacy python code).
     // +=, -= with a matrix
-    inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+    inline void operator+=(gf_view<imfreq> g, nda::matrix<std::complex<double>> const &m) {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) += m;
     }
 
-    inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+    inline void operator-=(gf_view<imfreq> g, nda::matrix<std::complex<double>> const &m) {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
     inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
-      operator+=(g, make_matrix(a * arrays::make_unit_matrix<double>(g.target_shape()[0])));
+      operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
     }
     inline void operator-=(gf_view<imfreq> g, std::complex<double> a) {
-      operator-=(g, make_matrix(a * arrays::make_unit_matrix<double>(g.target_shape()[0])));
+      operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
     }
 
     // Same for scalar valued
@@ -55,19 +55,19 @@ namespace triqs {
     inline void operator-=(gf_view<imfreq, scalar_valued> g, std::complex<double> a) { g.data() -= a; }
 
     // - same with refreq
-    inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+    inline void operator+=(gf_view<refreq> g, nda::matrix<std::complex<double>> const &m) {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) += m;
     }
 
-    inline void operator-=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+    inline void operator-=(gf_view<refreq> g, nda::matrix<std::complex<double>> const &m) {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
     inline void operator+=(gf_view<refreq> g, std::complex<double> a) {
-      operator+=(g, make_matrix(a * arrays::make_unit_matrix<double>(g.target_shape()[0])));
+      operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
     }
     inline void operator-=(gf_view<refreq> g, std::complex<double> a) {
-      operator-=(g, make_matrix(a * arrays::make_unit_matrix<double>(g.target_shape()[0])));
+      operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
     }
 
     // Same for scalar valued
@@ -78,7 +78,7 @@ namespace triqs {
     inline void operator-=(gf_view<refreq, scalar_valued> g, std::complex<double> a) { g.data() -= a; }
 
     //inline gf<imfreq> operator+(std::complex<double> const &m, gf_view<imfreq> g) { return g + m; }
-    //inline gf<imfreq> operator+(arrays::matrix<std::complex<double>> const &m, gf_view<imfreq> g) { return g + m; }
+    //inline gf<imfreq> operator+(nda::matrix<std::complex<double>> const &m, gf_view<imfreq> g) { return g + m; }
 
     // inline gf<imfreq> operator-(std::complex<double> const &m, gf_view<imfreq> g) {
     //  gf_view<imfreq> r = g;
@@ -87,7 +87,7 @@ namespace triqs {
     //  return r;
     // }
 
-    //inline gf<imfreq> operator-(arrays::matrix<std::complex<double>> const &m, gf_view<imfreq> g) {
+    //inline gf<imfreq> operator-(nda::matrix<std::complex<double>> const &m, gf_view<imfreq> g) {
     //gf_view<imfreq> r = g;
     //r *= -1;
     //r += m;

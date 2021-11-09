@@ -25,7 +25,7 @@
 namespace triqs::mesh {
 
   using lattice::bravais_lattice;
-  using triqs::arrays::make_unit_matrix;
+  using nda::eye;
 
   ///
   struct torus : cluster_mesh {
@@ -41,7 +41,7 @@ namespace triqs::mesh {
 
     ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
     torus(int L1 = 1, int L2 = 1, int L3 = 1)
-       : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
+       : bl{eye<double>(3)}, cluster_mesh{eye<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
 
     ///Construct from domain (bravais_lattice) and int L (linear size of Cluster mesh)
     torus(bravais_lattice const &bl_, int L)

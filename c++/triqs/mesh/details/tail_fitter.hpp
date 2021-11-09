@@ -26,12 +26,12 @@ namespace triqs::mesh {
 
   class imfreq;
 
-  using arrays::array_const_view;
+  using nda::array_const_view;
 
   //----------------------------------------------------------------------------------------------
   // construct the Vandermonde matrix
-  inline arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order) {
-    arrays::matrix<dcomplex> V(pts.size(), expansion_order + 1);
+  inline nda::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order) {
+    nda::matrix<dcomplex> V(pts.size(), expansion_order + 1);
     for (auto [i, p] : itertools::enumerate(pts)) {
       dcomplex z = 1;
       for (int n = 0; n <= expansion_order; ++n) {
@@ -47,18 +47,18 @@ namespace triqs::mesh {
   // Return array<dcomplex, R -1 > if R>1 else dcomplex
   // FIXME : use dynamic R array when available.
   // FIXME : array of dimension 0
-  template <int R> auto tail_eval(arrays::array_const_view<dcomplex, R> A, dcomplex om) {
+  template <int R> auto tail_eval(nda::array_const_view<dcomplex, R> A, dcomplex om) {
 
     // same algo for both cases below
     auto compute = [&A, om](auto res) { // copy, in fact rvalue
       dcomplex z = 1;
       long N     = A.extent(0);
-      for (int n = 0; n < N; ++n, z /= om) res += A(n, arrays::ellipsis()) * z;
+      for (int n = 0; n < N; ++n, z /= om) res += A(n, nda::ellipsis()) * z;
       return std::move(res);
     };
 
     if constexpr (R > 1) {
-      return compute(arrays::zeros<dcomplex>(stdutil::front_pop(A.indexmap().lengths())));
+      return compute(nda::zeros<dcomplex>(stdutil::front_pop(A.indexmap().lengths())));
     } else {
       return compute(dcomplex{0});
     }
@@ -73,9 +73,9 @@ namespace triqs::mesh {
     const bool _adjust_order;
     const int _expansion_order;
     const double _rcond = 1e-8;
-    std::array<std::unique_ptr<const arrays::lapack::gelss_worker<dcomplex>>, max_order + 1> _lss;
-    std::array<std::unique_ptr<const arrays::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
-    arrays::matrix<dcomplex> _vander;
+    std::array<std::unique_ptr<const nda::lapack::gelss_worker<dcomplex>>, max_order + 1> _lss;
+    std::array<std::unique_ptr<const nda::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
+    nda::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
 
     public:
@@ -140,7 +140,7 @@ namespace triqs::mesh {
     // Set up the least-squares solver for a given number of known moments.
     template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_fixed_moments) {
 
-      using namespace arrays::lapack;
+      using namespace nda::lapack;
       using cache_t = std::conditional_t<enforce_hermiticity, gelss_worker_hermitian, gelss_worker<dcomplex>>;
 
       // Calculate the indices to fit on
@@ -192,7 +192,7 @@ namespace triqs::mesh {
      * */
     // FIXME : nda : use dynamic Rank here.
     template <int N, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
+    std::pair<nda::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
                                                       array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
 
       if (enforce_hermiticity and not inner_matrix_dim.has_value())
@@ -212,7 +212,7 @@ namespace triqs::mesh {
       int n_moments = lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
       using itertools::enumerate;
-      using triqs::arrays::ellipsis;
+      using nda::ellipsis;
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = nda::rotate_index_view<N>(g_data);
@@ -220,7 +220,7 @@ namespace triqs::mesh {
       long ncols           = imp.size() / imp.lengths()[0];
 
       // We flatten the data in the target space and remaining mesh into the second dim
-      arrays::matrix<dcomplex> g_mat(_vander.extent(0), ncols);
+      nda::matrix<dcomplex> g_mat(_vander.extent(0), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       for (auto [i, n] : enumerate(_fit_idx_lst)) {
@@ -239,7 +239,7 @@ namespace triqs::mesh {
         long ncols_km = imp_km.size() / imp_km.lengths()[0];
 
         if (ncols != ncols_km) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
-        arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
+        nda::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
 
         // We have to scale the known_moments by 1/Omega_max^n
         double z      = 1.0;
@@ -273,7 +273,7 @@ namespace triqs::mesh {
       }
       // === Reinterpret the result as an R-dimensional array according to initial shape and return together with the error
 
-      using r_t = arrays::array<dcomplex, R>; // return type
+      using r_t = nda::array<dcomplex, R>; // return type
       auto lg   = g_data_swap_idx.indexmap().lengths();
 
       // Index map for the view on the a_mat result
@@ -295,7 +295,7 @@ namespace triqs::mesh {
     //--------------------
 
     template <int N, typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
+    std::pair<nda::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
                                                                 array_const_view<dcomplex, R2> known_moments,
                                                                 std::optional<long> inner_matrix_dim = {}) {
       return fit<N, true, M, R, R2>(m, g_data, normalize, known_moments, inner_matrix_dim);

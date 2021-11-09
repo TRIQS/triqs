@@ -170,7 +170,7 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) { // gf[_const][_view]<V, T>
       auto sh = nda::rotate_index_view<N>(make_const_view(g.data())).shape();
       sh[0]   = n_moments;
-      return arrays::zeros<dcomplex>(sh);
+      return nda::zeros<dcomplex>(sh);
     } else if constexpr (is_block_gf_v<G>) { // block[2]_gf[_const][_view]<V, T>
       return map_block_gf([&](auto const &g_bl) { return make_zero_tail<N>(g_bl, n_moments); }, g);
     }
@@ -315,8 +315,8 @@ namespace triqs::gfs {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       auto rhs_v = make_matrix_view(b(i, _, _));
       auto lhs_v = make_matrix_view(a(i, _, _));
-      arrays::blas::gemm(1, rhs_v, r, 0, tmp);
-      arrays::blas::gemm(1, l, tmp, 0, lhs_v);
+      nda::blas::gemm(1, rhs_v, r, 0, tmp);
+      nda::blas::gemm(1, l, tmp, 0, lhs_v);
     }
   }
 

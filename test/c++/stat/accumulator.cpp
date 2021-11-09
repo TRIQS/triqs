@@ -46,7 +46,7 @@ TEST(Stat, Details_LinBins_InitTest_Scalars) {
 }
 
 TEST(Stat, Details_LinBins_InitTestArray) {
-  typedef triqs::arrays::array<double, 2> double_array_2d;
+  typedef nda::array<double, 2> double_array_2d;
   auto a = double_array_2d{{1., 2., 3., 4.}, {1., 2., 3., 4.}};
   // With Zeroing
   lin_binning<double_array_2d> linbins{a, 1, -1};
@@ -55,7 +55,7 @@ TEST(Stat, Details_LinBins_InitTestArray) {
 }
 
 TEST(Stat, Details_LinBins_InitTestArrayComplex) {
-  typedef triqs::arrays::array<std::complex<double>, 2> cdouble_array_2d;
+  typedef nda::array<std::complex<double>, 2> cdouble_array_2d;
 
   auto a = cdouble_array_2d{{0., 0., 0.}, {0., 0., 0.}};
   lin_binning<cdouble_array_2d> bins{a, -1, 1};
@@ -248,16 +248,16 @@ TEST(Stat, Details_LogBins_InitTest_FloatComplex) {
 }
 
 TEST(Stat, Details_LogBins_InitTestArray) {
-  typedef triqs::arrays::array<std::complex<double>, 2> cdouble_array_2d;
+  typedef nda::array<std::complex<double>, 2> cdouble_array_2d;
   auto a = cdouble_array_2d{{0., 0., 0.}, {0., 0., 0.}};
   log_binning<cdouble_array_2d> bins{a, -1};
   static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, cdouble_array_2d>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, triqs::arrays::array<double, 2>>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, nda::array<double, 2>>, "EE");
   static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, cdouble_array_2d>, "EE");
   static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc_count.at(0))>, int>, "EE");
   EXPECT_EQ(bins.n_bins(), 1);
   EXPECT_ARRAY_EQ(bins.Mk.at(0), a);
-  EXPECT_ARRAY_EQ(bins.Qk.at(0), triqs::arrays::real(a));
+  EXPECT_ARRAY_EQ(bins.Qk.at(0), nda::real(a));
   EXPECT_ARRAY_EQ(bins.acc.at(0), a);
 }
 
@@ -424,7 +424,7 @@ TEST(Stat, Accumulator_Chaining) {
 // tau_estimate_from_errors
 
 TEST(Stat, Tau_From_Errors) {
-  typedef triqs::arrays::array<double, 2> double_array_2d;
+  typedef nda::array<double, 2> double_array_2d;
   double_array_2d a = double_array_2d{{1., 1., 1., 1.}, {1., 1., 1., 1.}};
   double_array_2d b = 2 * a;
   auto taus = tau_estimate_from_errors(b, a);

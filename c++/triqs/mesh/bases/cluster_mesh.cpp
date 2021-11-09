@@ -1,17 +1,17 @@
 #include "./cluster_mesh.hpp"
 
 namespace triqs::mesh {
-  std::array<long, 3> find_cell_dims(arrays::matrix<double> const &inv_n) {
+  std::array<long, 3> find_cell_dims(nda::matrix<double> const &inv_n) {
 
-    arrays::matrix<double> n_mat = inverse(inv_n);
-    double Ld                    = arrays::determinant(n_mat);
+    nda::matrix<double> n_mat = inverse(inv_n);
+    double Ld                    = nda::determinant(n_mat);
     double dev                   = std::abs(std::abs(Ld) - round(std::abs(Ld)));
     if (dev > 1e-8)
       TRIQS_RUNTIME_ERROR << "determinant of inverse of inv_n should be an integer, is " << Ld << " instead (deviation =" << dev << ").";
     int L = int(std::abs(Ld));
     clef::placeholder<0> i_;
-    std::vector<arrays::vector<int>> units{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-    std::vector<arrays::vector<int>> C{{0, 0, 0}};
+    std::vector<nda::vector<int>> units{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    std::vector<nda::vector<int>> C{{0, 0, 0}};
     std::array<long, 3> k_res;
     for (int d = 0; d < 3; d++) {
       k_res[d] = L + 1;
@@ -37,7 +37,7 @@ namespace triqs::mesh {
         } // k
       }   // x
 
-      std::vector<arrays::vector<int>> Cp;
+      std::vector<nda::vector<int>> Cp;
       for (auto const &x : C)
         for (int q = 0; q < k_res[d]; q++) Cp.push_back(x + q * units[d]);
       C = Cp;

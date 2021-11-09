@@ -31,7 +31,7 @@
 namespace triqs {
   namespace det_manip {
 
-    namespace blas = arrays::blas;
+    namespace blas = nda::blas;
 
     /**
   * @brief Standard matrix/det manipulations used in several QMC.
@@ -51,10 +51,10 @@ namespace triqs {
       static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
                     "det_manip : the function must return a floating number or a complex number");
 
-      using vector_type            = arrays::vector<value_type>;
-      using matrix_type            = arrays::matrix<value_type>;
-      using matrix_view_type       = arrays::matrix_view<value_type>;
-      using matrix_const_view_type = arrays::matrix_const_view<value_type>;
+      using vector_type            = nda::vector<value_type>;
+      using matrix_type            = nda::matrix<value_type>;
+      using matrix_view_type       = nda::matrix_view<value_type>;
+      using matrix_const_view_type = nda::matrix_const_view<value_type>;
 
       protected: // the data
       using int_type = std::ptrdiff_t;
@@ -310,7 +310,7 @@ namespace triqs {
           for (size_t j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
         }
         range R(0, N);
-        det           = arrays::determinant(mat_inv(R, R));
+        det           = nda::determinant(mat_inv(R, R));
         mat_inv(R, R) = inverse(mat_inv(R, R));
       }
 
@@ -484,7 +484,7 @@ namespace triqs {
         range R(0, N);
         //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(R, R), w1.B(R), 0.0, w1.MB(R));
-        w1.ksi  = f(x, y) - arrays::dot(w1.C(R), w1.MB(R));
+        w1.ksi  = f(x, y) - nda::blas::dot(w1.C(R), w1.MB(R));
         newdet  = det * w1.ksi;
         newsign = ((i + j) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0  = i0+j0 [2]
         return w1.ksi * (newsign * sign);            // sign is unity, hence 1/sign == sign
@@ -520,7 +520,7 @@ namespace triqs {
         range R(0, N);
         //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(R, R), w1.B(R), 0.0, w1.MB(R));
-        w1.ksi  = ksi - arrays::dot(w1.C(R), w1.MB(R));
+        w1.ksi  = ksi - nda::blas::dot(w1.C(R), w1.MB(R));
         newdet  = det * w1.ksi;
         newsign = ((i + j) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0  = i0+j0 [2]
         return w1.ksi * (newsign * sign);            // sign is unity, hence 1/sign == sign
@@ -1024,7 +1024,7 @@ namespace triqs {
         // compute the det_ratio
         auto Xn        = w1.C(w1.jreal);
         auto Yn        = w1.B(w1.ireal);
-        auto Z         = arrays::dot(w1.MB(R), w1.C(R));
+        auto Z         = nda::blas::dot(w1.MB(R), w1.C(R));
         auto Mnn       = mat_inv(w1.jreal, w1.ireal);
         auto det_ratio = (1 + Xn) * (1 + Yn) - Mnn * Z;
         w1.ksi         = det_ratio;
@@ -1047,7 +1047,7 @@ namespace triqs {
         auto D   = w1.ksi;        // get back
         auto a   = -(1 + Yn) / D; // D in the notes
         auto b   = -(1 + Xn) / D;
-        auto Z   = arrays::dot(w1.MB(R), w1.C(R)); // FIXME : store this ?
+        auto Z   = nda::blas::dot(w1.MB(R), w1.C(R)); // FIXME : store this ?
         Z        = Z / D;
         Mnn      = Mnn / D;
         w1.MB(R) = mat_inv(w1.jreal, R); // Mnj
@@ -1098,7 +1098,7 @@ namespace triqs {
         for (size_t i = 0; i < s; ++i)
           for (size_t j = 0; j < s; ++j) w_refill.M(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
         range R(0, s);
-        newdet  = arrays::determinant(w_refill.M(R, R));
+        newdet  = nda::determinant(w_refill.M(R, R));
         newsign = 1;
 
         return newdet / (sign * det);
@@ -1143,7 +1143,7 @@ namespace triqs {
         matrix_type res(N, N);
         for (int i = 0; i < N; i++)
           for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
-        det = arrays::determinant(res);
+        det = nda::determinant(res);
 
         if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
         res = inverse(res);
@@ -1174,13 +1174,13 @@ namespace triqs {
 
         // find the sign (there must be a better way...)
         double s = 1.0;
-        arrays::matrix<double> m(N, N);
+        nda::matrix<double> m(N, N);
         m() = 0.0;
         for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
-        s *= arrays::determinant(m);
+        s *= nda::determinant(m);
         m() = 0.0;
         for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
-        s *= arrays::determinant(m);
+        s *= nda::determinant(m);
         sign = (s > 0 ? 1 : -1);
       }
 

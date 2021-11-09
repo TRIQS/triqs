@@ -32,7 +32,7 @@ namespace triqs {
       static constexpr int is_real    = true;
       static constexpr bool is_matrix = false;
       using scalar_t                  = double;
-      using value_t                   = arrays::array<scalar_t, rank>;
+      using value_t                   = nda::array<scalar_t, rank>;
       using real_t                    = tensor_real_valued;
       using complex_t                 = tensor_valued<R>;
     };
@@ -43,7 +43,7 @@ namespace triqs {
       static constexpr int is_real    = false;
       static constexpr bool is_matrix = false;
       using scalar_t                  = dcomplex;
-      using value_t                   = arrays::array<scalar_t, rank>;
+      using value_t                   = nda::array<scalar_t, rank>;
       using real_t                    = tensor_real_valued<R>;
       using complex_t                 = tensor_valued;
     };
@@ -54,7 +54,7 @@ namespace triqs {
       static constexpr int is_real    = true;
       static constexpr bool is_matrix = true;
       using scalar_t                  = double;
-      using value_t                   = arrays::matrix<scalar_t>;
+      using value_t                   = nda::matrix<scalar_t>;
       using real_t                    = matrix_real_valued;
       using complex_t                 = matrix_valued;
     };
@@ -64,7 +64,7 @@ namespace triqs {
       static constexpr int is_real    = false;
       static constexpr bool is_matrix = true;
       using scalar_t                  = dcomplex;
-      using value_t                   = arrays::matrix<scalar_t>;
+      using value_t                   = nda::matrix<scalar_t>;
       using real_t                    = matrix_real_valued;
       using complex_t                 = matrix_valued;
     };

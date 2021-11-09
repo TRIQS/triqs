@@ -31,7 +31,7 @@ TEST(Gf, r_k) {
   int S = 2;
   placeholder<0> k_;
 
-  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{eye<double>(2)}};
   auto gk = gf<brzone>{{bz, N}, {S, S}};
 
   gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));

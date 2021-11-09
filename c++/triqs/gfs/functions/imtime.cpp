@@ -23,7 +23,7 @@
 namespace triqs {
   namespace gfs {
 
-    using arrays::array;
+    using nda::array;
 
     //-------------------------------------------------------
     // For Imaginary Time functions
