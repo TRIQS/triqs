@@ -53,13 +53,13 @@ class TBSuperLattice(TBLattice):
         """
         if not isinstance(tb_lattice, TBLattice): raise ValueError("tb_lattice should be an instance of TBLattice")
         self.__BaseLattice = tb_lattice
-        dim = tb_lattice.dim
+        ndim = tb_lattice.ndim
 
         try:
             self.__super_lattice_units = numpy.array(super_lattice_units, copy=True)
-            assert self.__super_lattice_units.shape == (dim, dim)
+            assert self.__super_lattice_units.shape == (ndim, ndim)
         except:
-            raise ValueError("super_lattice_units is not correct. Cf Doc. value is %s, dim = %s "%(super_lattice_units,dim))
+            raise ValueError("super_lattice_units is not correct. Cf Doc. value is %s, ndim = %s "%(super_lattice_units,ndim))
 
         Ncluster_sites = int(numpy.rint(abs(numpy.linalg.det(self.__super_lattice_units ))))
         assert Ncluster_sites >0, "Superlattice vectors are not independant !"
@@ -67,7 +67,6 @@ class TBSuperLattice(TBLattice):
         self._Mtilde = numpy.array(numpy.rint(numpy.linalg.inv(self._M)*Ncluster_sites), dtype = int)
 
         self.__remove_internal_hoppings = remove_internal_hoppings
-        #self.norb = tb_lattice.NOrbitalsInUnitCell
         self.Norb = tb_lattice.NOrbitalsInUnitCell * Ncluster_sites
 
         # cluster_sites computation
@@ -91,16 +90,13 @@ class TBSuperLattice(TBLattice):
             for nx in r(0):
                 for ny in r(1):
                     for nz in r(2):
-                        nv = numpy.array([nx, ny, nz][0:dim])
+                        nv = numpy.array([nx, ny, nz][0:ndim])
                         k_sl = numpy.dot(Mtilde, nv)
                         if (min(k_sl) >= 0) and (max(k_sl) < Ncluster_sites ): # The point is a point of the cluster. We store it.
                             self.__cluster_sites.append(nv.tolist())
 
         assert len(self.__cluster_sites) == Ncluster_sites, """Number of cluster positions incorrect (compared to the volume of unit cell of the Superlattice)"""
         self.Ncluster_sites = Ncluster_sites
-
-        # creating a dictionnary position_of_sites -> number e.g. (1, 0): 2 etc...
-        # self._clustersites_hash =  dict ([ (tuple(pos), n) for n, pos in enumerate(self.cluster_sites)])
 
         # Compute the new Hopping in the supercell
         Hopping = self.fold(tb_lattice.hopping_dict(), remove_internal_hoppings)
@@ -125,11 +121,9 @@ class TBSuperLattice(TBLattice):
         elif len(site_index_list)>1 and len(orbital_index_list)>1:
             Orbital_Names= [ (pos, o) for o in orbital_index_list for pos in site_index_list]
 
-        #print tb_lattice.OrbitalNames #Orbital_Names
         TBLattice.__init__(self, Units, Hopping, Orbital_Positions, Orbital_Names)
-        # we pass False since the folding has arealdy been done in tb_lattice
-
         assert self.Norb == self.NOrbitalsInUnitCell
+
 
     __HDF_reduction__ = ['__BaseLattice', '__super_lattice_units', '__cluster_sites', '__remove_internal_hoppings']
 
@@ -149,7 +143,7 @@ class TBSuperLattice(TBLattice):
             for disp, t in list(D1.items()):
                 R, alpha = self.change_coordinates_L_to_SL(numpy.array(CS)+numpy.array(disp))
                 if R not in Res: Res[R] = create_zero() if create_zero else numpy.zeros((self.Norb, self.Norb), dtype = type(t[0,0]))
-                if not(remove_internal) or R!= self.tb_lattice.dim*(0, ):
+                if not(remove_internal) or R!= self.tb_lattice.ndim*(0, ):
                     for orb1 in range(norb):
                         for orb2 in range(norb):
                             Res[R][pack(nsite, orb1), pack(alpha, orb2)] += t[orb1, orb2]

@@ -62,7 +62,7 @@ class TBLattice:
         self.bl = BravaisLattice(units, orbital_positions)
         self.bz = BrillouinZone(self.bl)
         self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
-        self.dim = self.bl.dim
+        self.ndim = self.bl.ndim
         self.NOrbitalsInUnitCell = self.bl.n_orbitals
         self.Units = units
         self.OrbitalPositions = orbital_positions 

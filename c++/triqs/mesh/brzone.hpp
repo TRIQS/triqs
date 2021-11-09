@@ -57,11 +57,7 @@ namespace triqs::mesh {
      * @param n_l The number of grid-points for each dimension
      */
     brzone(brillouin_zone const &bz_, int n_l)
-       : bz(bz_),
-         cluster_mesh(matrix<double>{{{2 * M_PI / n_l, 0., 0.},
-                                      {0., bz_.lattice().dim() >= 2 ? 2 * M_PI / n_l : 2 * M_PI, 0.},
-                                      {0., 0., bz_.lattice().dim() >= 3 ? 2 * M_PI / n_l : 2 * M_PI}}},
-                      matrix<int>{{{n_l, 0, 0}, {0, bz_.lattice().dim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().dim() >= 3 ? n_l : 1}}}) {}
+       : brzone(bz_, matrix<int>{{{n_l, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_l : 1}}}) {}
 
     /// ----------- Model the mesh concept  ----------------------
     using domain_t    = brillouin_zone;

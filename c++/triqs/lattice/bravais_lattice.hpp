@@ -49,7 +49,9 @@ namespace triqs {
 
       /// Matrix containing lattice basis vectors as rows
       nda::matrix_const_view<double> units() const { return units_; }
-      int dim() const { return dim_; }
+
+      /// Number of dimensions
+      int ndim() const { return ndim_; }
 
       /// Transform into real coordinates.
       template <typename R> r_t lattice_to_real_coordinates(R const &x) const {
@@ -60,14 +62,14 @@ namespace triqs {
 
       // ------------------- Comparison -------------------
 
-      bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && dim_ == bl.dim() && n_orbitals() == bl.n_orbitals(); }
+      bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && ndim_ == bl.ndim() && n_orbitals() == bl.n_orbitals(); }
 
       bool operator!=(bravais_lattice const &bl) const { return !(operator==(bl)); }
 
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
-        return sout << "Bravais Lattice with dimension " << bl.dim_ << ", units " << bl.units_ << ", n_orbitals " << bl.n_orbitals();
+        return sout << "Bravais Lattice with dimension " << bl.ndim() << ", units " << bl.units() << ", n_orbitals " << bl.n_orbitals();
       }
 
       /// Write into HDF5
@@ -79,7 +81,7 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &dim_;
+        ar &ndim_;
         ar &units_;
         ar &atom_orb_pos;
         ar &atom_orb_name;
@@ -89,7 +91,7 @@ namespace triqs {
       matrix<double> units_;
       std::vector<r_t> atom_orb_pos;          // atom_orb_pos[i] = position of ith atoms/orbitals in the unit cell
       std::vector<std::string> atom_orb_name; // names of these atoms/orbitals.
-      int dim_;
+      int ndim_;
     };
   } // namespace lattice
 } // namespace triqs

@@ -76,7 +76,7 @@ namespace triqs {
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, brillouin_zone const &bz) {
-        return sout << "Brillouin Zone with dimension " << bz.lattice_.dim() << ", reciprocal matrix " << bz.reciprocal_matrix();
+        return sout << "Brillouin Zone with " << bz.ndim() << " dimensions and reciprocal matrix " << bz.reciprocal_matrix();
       }
 
       /// Write into HDF5
@@ -99,11 +99,9 @@ namespace triqs {
 
       ///FIXME
       template <typename K> k_t _transfo_impl(K const &k, nda::matrix<double> const &K_base) const {
-        if (first_dim(k) != lattice().dim()) TRIQS_RUNTIME_ERROR << "latt_to_real_k : dimension of k must be " << lattice().dim();
-        k_t res(3);
-        res()   = 0;
-        int dim = lattice().dim();
-        for (int i = 0; i < dim; i++) res += k(i) * K_base(i, range{});
+        if (first_dim(k) != lattice().ndim()) TRIQS_RUNTIME_ERROR << "latt_to_real_k : dimension of k must be " << lattice().ndim();
+        auto res = k_t::zeros({3});
+        for (int i = 0; i < lattice().ndim(); i++) res += k(i) * K_base(i, range{});
         return res;
       }
     };

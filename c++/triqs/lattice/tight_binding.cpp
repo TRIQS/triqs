@@ -32,8 +32,8 @@ namespace triqs {
       // checking inputs
       if (displ_vec_.size() != overlap_mat_vec_.size()) TRIQS_RUNTIME_ERROR << " Number of displacements != Number of matrices";
       for (int i = 0; i < displ_vec_.size(); ++i) {
-        if (displ_vec_[i].size() != bl_.dim())
-          TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << displ_vec_[i].size() << "instead of " << bl_.dim();
+        if (displ_vec_[i].size() != bl_.ndim())
+          TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << displ_vec_[i].size() << "instead of " << bl_.ndim();
         if (first_dim(overlap_mat_vec_[i]) != n_bands())
           TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(overlap_mat_vec_[i]) << " instead of " << n_bands();
         if (second_dim(overlap_mat_vec_[i]) != n_bands())
@@ -53,7 +53,7 @@ namespace triqs {
     array<double, 2> energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
       auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
-      int ndim = TB.lattice().dim();
+      int ndim = TB.lattice().ndim();
       array<double, 2> eval(norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
       for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))()); }
@@ -64,7 +64,7 @@ namespace triqs {
     array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
       auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
-      int ndim = TB.lattice().dim();
+      int ndim = TB.lattice().ndim();
       array<dcomplex, 3> eval(norb, norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
       for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), range(), i) = TK(k(range(0, ndim)))(); }
@@ -76,7 +76,7 @@ namespace triqs {
 
       auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
-      int ndim = TB.lattice().dim();
+      int ndim = TB.lattice().ndim();
       grid_generator grid(ndim, n_pts);
       array<double, 2> eval(norb, grid.size());
       for (; grid; ++grid) { eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))()); }
@@ -91,7 +91,7 @@ namespace triqs {
       auto TK = fourier(TB);
 
       // loop on the BZ
-      int ndim = TB.lattice().dim();
+      int ndim = TB.lattice().ndim();
       int norb = TB.lattice().n_orbitals();
       grid_generator grid(ndim, nkpts);
       array<double, 1> tempeval(norb);
@@ -150,7 +150,7 @@ namespace triqs {
       array<double, 1> dos(neps);
 
       // Check consistency
-      int ndim = TB.lattice().dim();
+      int ndim = TB.lattice().ndim();
       // int norb=TB.lattice().n_orbitals();
       if (ndim != 2) TRIQS_RUNTIME_ERROR << "dos_patch : dimension 2 only !";
       if (triangles.shape(1) != ndim) TRIQS_RUNTIME_ERROR << "dos_patch : the second dimension of the 'triangle' array in not " << ndim;

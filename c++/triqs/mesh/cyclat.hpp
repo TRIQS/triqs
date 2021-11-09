@@ -45,7 +45,7 @@ namespace triqs::mesh {
 
     ///Construct from domain (bravais_lattice) and int L (linear size of Cluster mesh)
     cyclat(bravais_lattice const &bl_, int L)
-       : bl(bl_), cluster_mesh{bl_.units(), matrix<int>{{{L, 0, 0}, {0, bl_.dim() >= 2 ? L : 1, 0}, {0, 0, bl_.dim() >= 3 ? L : 1}}}} {}
+       : bl(bl_), cluster_mesh{bl_.units(), matrix<int>{{{L, 0, 0}, {0, bl_.ndim() >= 2 ? L : 1, 0}, {0, 0, bl_.ndim() >= 3 ? L : 1}}}} {}
 
     using domain_t = bravais_lattice;
     domain_t const &domain() const { return bl; }

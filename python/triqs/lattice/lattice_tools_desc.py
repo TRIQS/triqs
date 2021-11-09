@@ -34,9 +34,9 @@ bl.add_constructor(signature = "(matrix<double> units)",
 bl.add_constructor(signature = "()",
                    doc = "")
 
-bl.add_property(getter = cfunction("int dim()"), doc = "Dimension of the lattice")
-bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals")
-bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Base vectors of the lattice")
+bl.add_property(getter = cfunction("int ndim()"), doc = "Number Dimension of the lattice")
+bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals in the unit cell")
+bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing lattice basis vectors as rows")
 
 bl.add_method(name = "lattice_to_real_coordinates", 
               signature = "r_t lattice_to_real_coordinates(r_t x)",

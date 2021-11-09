@@ -31,17 +31,17 @@ namespace triqs {
       using nda::blas::dot;
       using nda::linalg::cross_product;
 
-      dim_ = first_dim(units__);
-      if ((dim_ < 1) || (dim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
+      ndim_ = first_dim(units__);
+      if ((ndim_ < 1) || (ndim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
       //using itertools::range;
-      auto r       = range(0, dim_);
+      auto r       = range(0, ndim_);
       units_()     = 0;
       units_(r, r) = units__(r, r);
       // First complete the basis. Add some tests for safety
       nda::vector<double> ux(3), uy(3), uz(3);
       double delta;
       auto _ = range{};
-      switch (dim_) {
+      switch (ndim_) {
         case 1:
           ux    = units_(0, _);
           uz()  = 0;
@@ -83,7 +83,7 @@ namespace triqs {
     /// Write into HDF5
     void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl) {
       h5::group gr = fg.create_group(subgroup_name);
-      auto _       = range(0, bl.dim());
+      auto _       = range(0, bl.ndim());
       h5_write(gr, "units", bl.units_(_, _));
       h5_write(gr, "atom_orb_pos", bl.atom_orb_pos);
       h5_write(gr, "atom_orb_name", bl.atom_orb_name);
