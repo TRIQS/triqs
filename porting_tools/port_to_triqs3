@@ -71,7 +71,7 @@ repl_dict = {
         "data_start\(\)": "data()",
         "#include <triqs/arrays/blas_lapack/dot.hpp>": "#include <nda/blas/dot.hpp>",
         "#include <triqs/arrays/linalg/eigenelements.hpp>": "#include <nda/linalg/eigenelements.hpp>",
-        "make_unit_matrix<": "eye<",
+        "make_unit_matrix<": "nda::eye<",
         "triqs::arrays::dot": "nda::blas::dot",
         "triqs::arrays": "nda",
         "conj_r": "conj",
