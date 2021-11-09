@@ -96,6 +96,10 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
                    """, 
                    doc = " ")
 
+tb.add_method(name = "dispersion",
+              signature = "matrix<dcomplex> (k_t K)",
+              doc = """Evaluate the dispersion relation for a momentum vector k in units of the reciprocal lattice vectors""")
+
 module.add_class(tb)
 
 # ---------   Module functions ----------------------------------

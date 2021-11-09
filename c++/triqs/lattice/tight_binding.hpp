@@ -60,32 +60,28 @@ namespace triqs {
         for (int i = 0; i < n; ++i) f(tb.displ_vec_[i], tb.overlap_mat_vec_[i]);
       }
 
-      // a simple function on the domain brillouin_zone
-      struct fourier_impl {
-        tight_binding const &tb;
-        const int nb;
-
-        using domain_t = brillouin_zone;
-        brillouin_zone domain() const { return {tb.lattice()}; }
-
-        TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-
-        template <typename K> std::enable_if_t<!clef::is_clef_expression<K>, matrix<dcomplex>> operator()(K const &k) const {
-          matrix<dcomplex> res(nb, nb);
-          res() = 0;
-          foreach (tb, [&](std::vector<long> const &displ, matrix<dcomplex> const &m) {
-            double dot_prod = 0;
-            int imax        = displ.size();
-            for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
-            //double dot_prod = k(0) * displ[0] + k(1) * displ[1];
-            res += m * exp(2i * M_PI * dot_prod);
-          })
-            ;
-          return res;
-        }
-      };
-
-      fourier_impl friend fourier(tight_binding const &tb) { return {tb, tb.n_bands()}; }
+      /**
+       * Calculate the dispersion relation for a given momentum vector k
+       *
+       *   $$ \epsilon_k = \sum_j m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
+       *
+       * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
+       * k needs to be represented in units of the reciprocal lattice vectors
+       *
+       * @param k The momentum vector in units of the reciprocal lattice vectors
+       * @return The value for $\epsilon_k$ as a complex matrix
+       */
+      template <typename K> std::enable_if_t<!clef::is_clef_expression<K>, matrix<dcomplex>> dispersion(K const &k) const {
+        auto res = matrix<dcomplex>::zeros({n_bands(), n_bands()});
+        foreach (*this, [&](std::vector<long> const &displ, matrix<dcomplex> const &m) {
+          double dot_prod = 0;
+          int imax        = displ.size();
+          for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
+          res += m * exp(2i * M_PI * dot_prod);
+        })
+          ;
+        return res;
+      }
 
       // ------------------- Comparison -------------------
 

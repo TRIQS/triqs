@@ -43,52 +43,45 @@ namespace triqs {
 
     //------------------------------------------------------
     array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack) {
-      auto TK = fourier(TB);
       array<dcomplex, 3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
-      for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TK(k_stack(range(), i));
+      for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TB.dispersion(k_stack(range(), i));
       return res;
     }
 
     //------------------------------------------------------
     array<double, 2> energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
-      auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
       int ndim = TB.lattice().ndim();
       array<double, 2> eval(norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))()); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), i) = linalg::eigenvalues(TB.dispersion(k(range(0, ndim)))()); }
       return eval;
     }
 
     //------------------------------------------------------
     array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
-      auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
       int ndim = TB.lattice().ndim();
       array<dcomplex, 3> eval(norb, norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), range(), i) = TK(k(range(0, ndim)))(); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), range(), i) = TB.dispersion(k(range(0, ndim)))(); }
       return eval;
     }
 
     //------------------------------------------------------
     array<double, 2> energies_on_bz_grid(tight_binding const &TB, int n_pts) {
 
-      auto TK  = fourier(TB);
       int norb = TB.lattice().n_orbitals();
       int ndim = TB.lattice().ndim();
       grid_generator grid(ndim, n_pts);
       array<double, 2> eval(norb, grid.size());
-      for (; grid; ++grid) { eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))()); }
+      for (; grid; ++grid) { eval(range(), grid.index()) = linalg::eigenvalues(TB.dispersion((*grid)(range(0, ndim)))()); }
       return eval;
     }
 
     //------------------------------------------------------
 
     std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps) {
-
-      // The fourier transform of TK
-      auto TK = fourier(TB);
 
       // loop on the BZ
       int ndim = TB.lattice().ndim();
@@ -99,7 +92,7 @@ namespace triqs {
       array<double, 2> eval(norb, grid.size());
       if (norb == 1)
         for (; grid; ++grid) {
-          double ee                = real(TK((*grid)(range(0, ndim)))(0, 0));
+          double ee                = real(TB.dispersion((*grid)(range(0, ndim)))(0, 0));
           eval(0, grid.index())    = ee;
           evec(0, 0, grid.index()) = 1;
         }
@@ -108,7 +101,7 @@ namespace triqs {
           // cerr<<" index = "<<grid.index()<<endl;
           array_view<double, 1> eval_sl   = eval(range(), grid.index());
           array_view<dcomplex, 2> evec_sl = evec(range(), range(), grid.index());
-          std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TK((*grid)(range(0, ndim)))); //,  true);
+          std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TB.dispersion((*grid)(range(0, ndim))));
           // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
         }
 
@@ -168,9 +161,6 @@ namespace triqs {
       int pt = 0;
       double s, t;
 
-      // The fourier transform of TK
-      auto TK = fourier(TB);
-
       // loop over the triangles
       for (int tri = 0; tri < ntri; tri++) {
         a = triangles(pt, range());
@@ -195,7 +185,7 @@ namespace triqs {
 
               if (k == 0 || j < ndiv - i - 1) {
 
-                energ(k_index) = real(TK(rv)(0, 0));
+                energ(k_index) = real(TB.dispersion(rv)(0, 0));
                 // compute(rv);
                 // energ(k_index) = real(tk_for_eval(1,1)); //tk_for_eval is Fortran array
                 weight(k_index) = area;

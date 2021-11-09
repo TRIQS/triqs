@@ -65,18 +65,20 @@ class TBLattice:
         self.ndim = self.bl.ndim
         self.NOrbitalsInUnitCell = self.bl.n_orbitals
         self.Units = units
-        self.OrbitalPositions = orbital_positions 
+        self.OrbitalPositions = orbital_positions
         self.OrbitalNames = orbital_names
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
-    def latt_to_real_x(self, p) : 
-        return self.bl.lattice_to_real_coordinates (numpy.array(p, numpy.float64))
-        # modified since array are not converted automatically any more
-        ##return self.bl.lattice_to_real_coordinates (p ) #numpy.array(p.float64))
+    def latt_to_real_x(self, p) :
+        return self.bl.lattice_to_real_coordinates(numpy.array(p, numpy.float64))
 
     def hopping_dict(self) : return self._hop
 
+    def dispersion(self, k):
+        return self.tb.dispersion(k)
+
     def hopping(self, k_stack) :
+        warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
         return hopping_stack(self.tb, k_stack)
 
     #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, name = 'dos2')

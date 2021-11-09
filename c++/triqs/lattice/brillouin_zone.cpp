@@ -30,14 +30,9 @@ namespace triqs {
       using nda::blas::dot;
       using nda::linalg::cross_product;
 
-      auto _       = range{};
-      auto Units   = lattice().units();
-      double delta = dot(Units(0, _), cross_product(Units(1, _), Units(2, _)));
-      if (std::abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
-      K_reciprocal(0, _) = cross_product(Units(1, _), Units(2, _)) / delta;
-      K_reciprocal(1, _) = cross_product(Units(2, _), Units(0, _)) / delta;
-      K_reciprocal(2, _) = cross_product(Units(0, _), Units(1, _)) / delta;
-      K_reciprocal       = K_reciprocal * 2 * M_PI;
+      auto Units = lattice().units();
+      if (abs(determinant(Units)) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
+      K_reciprocal       = 2 * M_PI * inverse(transpose(Units));
       K_reciprocal_inv   = inverse(K_reciprocal);
     }
 
