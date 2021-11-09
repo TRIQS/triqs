@@ -23,34 +23,31 @@ from .tight_binding import TBLattice
 
 __all__ = ['TBSuperLattice']
 
-
-def nint_strict(x, precision=1.e-9):
-    """ Round array x to the closest integer and asserts that its distance to this integer is less than precision.
-        precision must satisfy :  precision >0 and precision <0.5
-    """
-    assert precision >0 and precision <0.5, "nint_strict : precision makes no sense !"
-    i = numpy.floor(x+0.5)
-    assert abs(i-x).max() < precision, repr(i) + "\n "+repr(x) + "\n The Float is not close enough to the integer "
-    return i.astype(numpy.int)
-
-
 class TBSuperLattice(TBLattice):
-    """
-    Builds a superlattice on top of a base Lattice, by picking superlattice units and optionally the cluster points.
+    r""" Builds a superlattice on top of a base TBLattice.
+
+    Parameters
+    ----------
+
+    tb_lattice : TBLattice instance
+        The base tight binding lattice.
+
+    super_lattice_units : ndarray (2D)
+        The unit vectors of the superlattice in the ``tb_lattice`` (integer) coordinates.
+
+    cluster_sites :
+        Coordinates of the cluster in tb_lattice coordinates.
+        If ``None``, an automatic computation of cluster positions
+        is made as follows: it takes all points whose coordinates
+        in the basis of the superlattice are in [0, 1[^dimension.
+
+    remove_internal_hoppings : bool
+        If ``true``, the hopping terms are removed inside the cluster.
+        Useful to add Hartree Fock terms at the boundary of a cluster, e.g.
+
     """
     def __init__(self, tb_lattice, super_lattice_units, cluster_sites = None, remove_internal_hoppings = False):
-        """
-         * tb_lattice: The underlying lattice
 
-         * super_lattice_units: The unit vectors of the superlattice in the tb_lattice (integer) coordinates
-
-         * cluster_sites [None]: Coordinates of the cluster in tb_lattice coordinates.
-                   If None, an automatic computation of cluster positions is made as follows:
-                   it takes all points whose coordinates in the basis of the superlattice are in [0, 1[^dimension
-
-         * remove_internal_hoppings: If true, the hopping terms are removed inside the cluster.
-                   Useful to add Hartree Fock terms at the boundary of a cluster, e.g.
-        """
         if not isinstance(tb_lattice, TBLattice): raise ValueError("tb_lattice should be an instance of TBLattice")
         self.__BaseLattice = tb_lattice
         ndim = tb_lattice.ndim
@@ -76,22 +73,16 @@ class TBSuperLattice(TBLattice):
             self.__cluster_sites = []
             #We tile the super-cell with the tb_lattice points and retains
             # the points inside it and store it.
-            M=numpy.array(self.__super_lattice_units)
-            assert M.shape==tuple(2*[dim]), "Tiling Construct: super_lattice_units does not have the correct size"
-            #Minv = Ncluster_sites*numpy.linalg.inverse(M)  #+0.5  # +0.5 is for the round
-            #Mtilde = Minv.astype(numpy.Int)  # now is integer.
-            Mtilde = nint_strict(Ncluster_sites*numpy.linalg.inv(M))
-            # round to the closest integer, with assert that precision is <1.e-9
-            if dim==1:  a=(max(M[0,:]), 0, 0 )
-            elif dim==2:  a=(2*max(M[0,:]), 2*max(M[1,:]), 0 )
-            elif dim==3: a= (3*max(M[0,:]), 3*max(M[1,:]), 3*max(M[2,:]))
-            else: raise ValueError("dim is not between 1 and 3 !!")
+            if ndim==1:  a=(max(self._M[0,:]), 0, 0 )
+            elif ndim==2:  a=(2*max(self._M[0,:]), 2*max(self._M[1,:]), 0 )
+            elif ndim==3: a= (3*max(self._M[0,:]), 3*max(self._M[1,:]), 3*max(self._M[2,:]))
+            else: raise ValueError("ndim is not between 1 and 3 !!")
             r = lambda i:  list(range(-a[i] , a[i]+1))
             for nx in r(0):
                 for ny in r(1):
                     for nz in r(2):
                         nv = numpy.array([nx, ny, nz][0:ndim])
-                        k_sl = numpy.dot(Mtilde, nv)
+                        k_sl = numpy.dot(self._Mtilde, nv)
                         if (min(k_sl) >= 0) and (max(k_sl) < Ncluster_sites ): # The point is a point of the cluster. We store it.
                             self.__cluster_sites.append(nv.tolist())
 

@@ -21,6 +21,7 @@
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
+from ..gf import Gf, MeshBrZone
 from .lattice_tools import BravaisLattice
 from .lattice_tools import BrillouinZone
 from .lattice_tools import TightBinding
@@ -29,9 +30,10 @@ from .lattice_tools import dos as dos_c
 from .lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from triqs.dos import DOS
 import numpy
+import warnings
 
 
-def dos(tight_binding, n_kpts, n_eps, name) : 
+def dos(tight_binding, n_kpts, n_eps, name) :
     """
     :param tight_binding: a tight_binding object
     :param n_kpts: the number of k points to use in each dimension
@@ -43,20 +45,40 @@ def dos(tight_binding, n_kpts, n_eps, name) :
     eps, arr = dos_c(tight_binding, n_kpts, n_eps)
     return [ DOS (eps, arr[:, i], name) for i in range (arr.shape[1]) ]
 
-def dos_patch(tight_binding, triangles, n_eps, n_div, name) :  
+def dos_patch(tight_binding, triangles, n_eps, n_div, name) :
     """
     To be written
     """
     eps, arr = dos_patch_c(tight_binding, triangles, n_eps, n_div)
     return DOS (eps, arr, name)
 
-# for backward compatibility. Not documented. 
-class TBLattice:
+class TBLattice(object):
 
-    def __init__ (self, units, hopping, orbital_positions = [ (0, 0, 0) ], orbital_names = [""]):
+    """ Class describing a tight binding hamiltonian on top of a bravais lattice.
 
-        # the k are int32 which boost python does like to convert 
-        def reg(k) : return tuple( int(x) for x in k) 
+    Parameters
+    ----------
+
+    units : list of tuples of floats
+        Basis vectors for the real space lattice.
+
+    hopping : dict
+        Dictionary with tuples of integers as keys,
+        describing real space hoppings in multiples of
+        the real space lattice basis vectors, and values being
+        numpy ndarray hopping matrices in the orbital indices.
+
+    orbital_positions : list of three three-tuples of floats.
+        Internal orbital positions in the unit-cell.
+
+    orbital_names : list of strings
+        Names for each orbital.
+    """
+
+    def __init__ (self, units, hopping, orbital_positions = [(0, 0, 0)], orbital_names = [""]):
+
+        # the k are int32 which boost python does like to convert
+        def reg(k) : return tuple( int(x) for x in k)
         self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in list(hopping.items()))
         orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
         self.bl = BravaisLattice(units, orbital_positions)
@@ -81,6 +103,31 @@ class TBLattice:
         warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
         return hopping_stack(self.tb, k_stack)
 
-    #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, name = 'dos2')
+    def dispersion_on_k_mesh(self, n_k):
 
+        """ Construct a discretization of the tight-binding dispersion
+        on a mesh with a given number of k-points.
 
+        Parameters
+        ----------
+
+        n_k : three-tuple of ints
+            Number of k-points in every dimension.
+
+        Returns
+        -------
+
+        e_k : Greens function on a Brillioun zone mesh
+            Discretized tight binding dispersion.
+        """
+
+        kmesh = MeshBrZone(self.bz, numpy.array(numpy.diag(n_k), dtype=numpy.int32))
+
+        target_shape = [self.NOrbitalsInUnitCell] * 2
+        e_k = Gf(mesh=kmesh, target_shape=target_shape)
+
+        k_vec = numpy.array([k.value for k in kmesh])
+        k_vec_rec = numpy.dot(k_vec, numpy.linalg.inv(self.bz.units))
+        e_k.data[:] = numpy.array([self.dispersion(k) for k in k_vec_rec])
+
+        return e_k
