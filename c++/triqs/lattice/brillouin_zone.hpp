@@ -39,13 +39,13 @@ namespace triqs {
       brillouin_zone& operator =( brillouin_zone &&) = default;
 
       /// Construct from a bravais_lattice
-      brillouin_zone(bravais_lattice const &bl_);
+      explicit brillouin_zone(bravais_lattice const &bl_);
 
       /// Access to the underlying bravais lattice
       bravais_lattice const & lattice() const { return lattice_; }
 
       /// Allow cast to bravais lattice
-      operator bravais_lattice() const { return lattice_; }
+      explicit operator bravais_lattice() const { return lattice_; }
 
       /// Matrix containing reciprocal basis vectors as rows
       nda::matrix_const_view<double> units() const { return K_reciprocal; }

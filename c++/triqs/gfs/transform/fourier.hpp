@@ -68,10 +68,10 @@ namespace triqs::gfs {
   }
 
   // FIXME : DOC
-  inline brzone make_adjoint_mesh(cyclat const &m) { return {m.domain(), m.periodization_matrix}; }
+  inline brzone make_adjoint_mesh(cyclat const &m) { return {lattice::brillouin_zone{m.domain()}, m.periodization_matrix()}; }
 
   // FIXME : DOC
-  inline cyclat make_adjoint_mesh(brzone const &m) { return {m.domain(), m.periodization_matrix}; }
+  inline cyclat make_adjoint_mesh(brzone const &m) { return {m.domain().lattice(), m.periodization_matrix()}; }
 
   // trait for error messages later
   template <typename V> using _mesh_fourier_image = decltype(make_adjoint_mesh(V()));
