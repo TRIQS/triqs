@@ -40,8 +40,7 @@ TEST(ClusterMesh, FindCellDims) {
 }
 
 TEST(ClusterMesh, Basic) {
-
-  auto m1 = cluster_mesh(eye<double>(3), 3 * eye<int>(3));
+  auto m1 = cluster_mesh(nda::eye<double>(3), 3 * nda::eye<int>(3));
   EXPECT_EQ(m1.size(), 3 * 3 * 3);
   auto m2 = cluster_mesh(eye<double>(3), matrix<int>({{1, 2, 0}, {2, 1, 0}, {0, 0, 1}}));
   EXPECT_EQ(m2.size(), 3);

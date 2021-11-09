@@ -170,7 +170,7 @@ inline void iter_on_range(range r) {
   itertools::foreach(r, [](int i) { std::cout << i << std::endl; });
 }
 
-inline matrix<double> make_matrix(int size) { return make_unit_matrix<double>(size); }
+inline matrix<double> make_matrix(int size) { return nda::eye<double>(size); }
 
 inline void print_matrix(matrix<double> const &M) {
   // std::cout  << M <<std::endl;

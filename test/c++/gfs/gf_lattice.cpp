@@ -27,7 +27,7 @@ TEST(Gfs, cyclat) {
   double beta = 1;
   triqs::clef::placeholder<0> r_;
 
-  auto bl  = bravais_lattice{eye<double>(2)};
+  auto bl  = bravais_lattice{nda::eye<double>(2)};
   auto m_r = mesh::cyclat{bl, 2};
   ASSERT_EQ(m_r.size(), 4);
 

@@ -20,6 +20,7 @@
 #include "./bravais_lattice.hpp"
 #include <nda/lapack.hpp>
 #include <nda/linalg/cross_product.hpp>
+
 namespace triqs {
   namespace lattice {
 

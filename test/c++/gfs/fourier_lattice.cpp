@@ -38,8 +38,8 @@ template <int TARGET_RANK> void test_fourier() {
 
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
-  auto bl = bravais_lattice{eye<double>(2)};
-  auto bz = brillouin_zone{bravais_lattice{eye<double>(2)}};
+  auto bl = bravais_lattice{nda::eye<double>(2)};
+  auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
 
   auto Gr = gf<cyclat, target_t>{{bl, N_k}, shape};
   Gr(r_) << exp(-r_(0));

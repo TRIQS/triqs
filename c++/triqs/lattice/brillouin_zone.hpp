@@ -47,12 +47,17 @@ namespace triqs {
       /// Allow cast to bravais lattice
       operator bravais_lattice() const { return lattice_; }
 
-      ///return reciprocal matrix: lines are cartesian coordinates of each reciprocal unit vectors
-      nda::matrix_view<double> units() const { return K_reciprocal; }
-      ///return reciprocal matrix: lines are cartesian coordinates of each reciprocal unit vectors
-      nda::matrix_view<double> reciprocal_matrix() const { return K_reciprocal; }
+      /// Matrix containing reciprocal basis vectors as rows
+      nda::matrix_const_view<double> units() const { return K_reciprocal; }
 
-      nda::matrix_view<double> reciprocal_matrix_inv() const { return K_reciprocal_inv; }
+      /// Number of dimensions
+      int ndim() const { return lattice_.ndim(); }
+
+      /// Matrix containing reciprocal basis vectors as rows
+      nda::matrix_const_view<double> reciprocal_matrix() const { return K_reciprocal; }
+
+      /// Inverse of the reciprocal matrix
+      nda::matrix_const_view<double> reciprocal_matrix_inv() const { return K_reciprocal_inv; }
 
       /// Transform from lattice to real coordinates
       template <typename K> k_t lattice_to_real_coordinates(K const &k) const { return _transfo_impl(k, K_reciprocal); }

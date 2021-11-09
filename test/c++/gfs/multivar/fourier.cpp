@@ -33,7 +33,8 @@ template <int TARGET_RANK> void test_fourier() {
   double E = 1;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = mesh::brzone(BL, N_k);
+  auto BZ        = brillouin_zone{BL};
+  auto k_mesh    = mesh::brzone(BZ, N_k);
   auto iw_mesh   = mesh::imfreq{beta, Fermion, N_iw};
   auto iW_mesh   = mesh::imfreq{beta, Boson, N_iW};
   auto prod_mesh = k_mesh * iW_mesh * iw_mesh;

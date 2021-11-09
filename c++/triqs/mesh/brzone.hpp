@@ -49,7 +49,12 @@ namespace triqs::mesh {
     }
 
     /** 
-     * constructs simple bz mesh on square lattice with simple boundary conditions (backward compatibility only)
+     * Construct a brzone mesh on a given brillouin zone
+     * with n_l mesh-points in each reciprocal direction
+     * i.e. using a diagonal periodization matrix
+     *
+     * @param bz The Brillouin zone (domain)
+     * @param n_l The number of grid-points for each dimension
      */
     brzone(brillouin_zone const &bz_, int n_l)
        : bz(bz_),

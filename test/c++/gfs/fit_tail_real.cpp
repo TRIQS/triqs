@@ -104,7 +104,8 @@ TEST(FitTailReal, Multivar) { // NOLINT
   int L            = 201;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = mesh::brzone(BL, N_k);
+  auto BZ        = brillouin_zone{BL};
+  auto k_mesh    = mesh::brzone(BZ, N_k);
   auto w_mesh    = mesh::refreq{-omega_max, omega_max, L};
   auto prod_mesh = k_mesh * w_mesh;
 

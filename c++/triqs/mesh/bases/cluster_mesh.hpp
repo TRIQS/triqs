@@ -55,7 +55,7 @@ namespace triqs::mesh {
   /// A lattice point
   struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, nda::vector<double>> {
     std::array<long, 3> index;
-    nda::matrix<double> units; // unit vectors
+    nda::matrix<double> units;
 
     lattice_point() : index({0, 0, 0}), units(nda::eye<double>(3)) {}
     lattice_point(std::array<long, 3>  const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
@@ -86,7 +86,7 @@ namespace triqs::mesh {
 
     public:
     cluster_mesh() = default;
-    /// full constructor
+
     /**
     * @param units matrix X such that the unit vectors (a_i) are given in cartesian coordinates (e_j) by:
           $$ \mathbf{a}_i = \sum_{j} x_{ij} \mathbf{e}_j $$
@@ -106,19 +106,24 @@ namespace triqs::mesh {
     std::array<long, 3> get_dimensions() const { return dims; }
 
     /// ---------- Model the domain concept  ---------------------
+
     using domain_t = cluster_mesh;
+
     domain_t const &domain() const { return *this; }
+
     using point_t = nda::vector<double>; // domain concept. PUT on STACK
 
     /// ----------- Model the mesh concept  ----------------------
 
-    using index_t        = std::array<long, 3>;
+    using index_t = std::array<long, 3>;
+
     using linear_index_t = long;
 
-    /// Reduce index modulo to the lattice.
+    /// Reduce index modulo to the lattice
     index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
 
-    size_t size() const { return _size; }
+    /// The total number of points in the mesh
+    size_t size() const { return size_; }
 
     /// from the index (n_i) to the cartesian coordinates
     /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
@@ -135,7 +140,6 @@ namespace triqs::mesh {
       return M;
     }
 
-    // MODULO IS WRONG HERE !!!
     /// flatten the index
     linear_index_t index_to_linear(index_t const &i) const {
       EXPECTS(i == index_modulo(i));
@@ -194,7 +198,8 @@ namespace triqs::mesh {
       m                         = cluster_mesh(units, periodization_matrix);
     }
 
-    //  BOOST Serialization
+    //  --------- BOOST Serialization ---------
+
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
       ar &units;

@@ -27,7 +27,7 @@ using namespace triqs::lattice;
 
 TEST(GfM, CurryFourier) {
   double beta = 1;
-  auto bz     = brillouin_zone{bravais_lattice{eye<double>(2)}};
+  auto bz     = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
 
   int n_freq  = 100;
   int n_times = n_freq * 2 + 1;

@@ -86,7 +86,7 @@ TEST(Gkom, Eval) {
   int n_k = 40;
   int n_w = 5;
 
-  auto bz = brillouin_zone{bravais_lattice{eye<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<prod<brzone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
@@ -121,7 +121,7 @@ TEST(Gkom, EvalSlice) {
   int n_k = 40;
   int n_w = 5;
 
-  auto bz = brillouin_zone{bravais_lattice{eye<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<prod<brzone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));

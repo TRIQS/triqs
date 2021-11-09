@@ -44,9 +44,9 @@
 #include "./mesh/details/debug.hpp"
 #include "./mesh/details/closest_mesh_pt.hpp"
 
-// Backward compat alias
-
 namespace triqs::mesh {
+
+  // -- Backward compat aliases --
 
   using cyclic_lattice = cyclat;
 

@@ -64,7 +64,6 @@ namespace triqs::arrays {
     return {long(x)...};
   }
 
-
 } // namespace triqs::arrays
 
 namespace nda {
