@@ -56,13 +56,12 @@ c = class_(
 c.add_constructor("""(triqs::lattice::bravais_lattice bl_)""",
                   doc = """Construct from a bravais_lattice """)
 
-c.add_method(name = "units",
-             signature = "matrix_const_view<double> units()",
-             doc = "Get reciprocal unit vectors")
+c.add_property(getter = cfunction("matrix_const_view<double> units()"),
+               doc = "Matrix containing reciprocal basis vectors as rows")
 
-c.add_property(name = "lattice",
-               getter = cfunction("triqs::lattice::bravais_lattice lattice ()"),
+c.add_property(getter = cfunction("triqs::lattice::bravais_lattice lattice()"),
                doc = """Access to the underlying bravais lattice """)
+
 module.add_class(c)
 
 # ---------   TightBinding ----------------------------------

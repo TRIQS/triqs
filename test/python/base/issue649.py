@@ -36,8 +36,8 @@ bzmesh = MeshBrZone(bz, periodization_matrix)
 
 bzmesh_ref = copy.deepcopy(bzmesh) # BREAKS
 
-units = bzmesh.domain.units()
-units_ref = bzmesh_ref.domain.units()
+units = bzmesh.domain.units
+units_ref = bzmesh_ref.domain.units
 
 np.testing.assert_array_almost_equal(units, units_ref)
 
