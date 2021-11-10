@@ -35,17 +35,21 @@ namespace triqs::mesh {
     brzone() = default;
 
     /**
-     * Constructs $$\tilde{b}_i = \sum_j N^{-1}_{ji} b_j$$ where $b_j$ reciprocal vectors
+     * Construct a brzone mesh on a given brillouin zone
+     * The underlying cluster-mesh will be constructed with the provided periodization matrix N.
      *
-     * @param bz_ brillouin zone
-     * @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
+     * The unit vectors of the cluster-mesh are constructed to respect the periodicity of the
+     * brillouin_zone, i.e.
      *
+     *   $$K = N * U$$
+     *
+     * where $K$ is the reciprocal matrix and $U$ are the unit vectors of the cluster-mesh.
+     *
+     * @param bz The Brillouin zone (domain)
+     * @param periodization_matrix Periodiziation matrix N of shape 3x3
      */
-    brzone(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
-       : bz(bz_), cluster_mesh(nda::eye<double>(3), transpose(periodization_matrix_)) {
-      matrix<double> N_as_double = periodization_matrix_;
-      matrix<double> Nt_inv      = inverse(transpose(N_as_double));
-      units_                     = Nt_inv * bz_.units();
+    brzone(brillouin_zone const &bz, matrix<int> const &periodization_matrix) : bz(bz), cluster_mesh(nda::eye<double>(3), periodization_matrix) {
+      units_ = inverse(matrix<double>(periodization_matrix)) * bz.units();
     }
 
     /** 
@@ -69,34 +73,27 @@ namespace triqs::mesh {
 
     static constexpr int n_pts_in_linear_interpolation = (1 << 3);
 
-    // FIXME : INCORRECT
-    std::array<std::pair<linear_index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &x) const {
+    std::array<std::pair<linear_index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &k) const {
 
-      // FIXME pass in the units of the reciprocal lattice
-      // ONLY VALID for SQUARE LATTICE
+      // Calculate k in the units basis
+      auto kv      = nda::vector_const_view<double>{{3}, k.data()};
+      auto k_units = transpose(inverse(units_)) * kv;
 
-      // 0----1----2----3----4----5 : dim = 5, point 6 is 2 Pi
-      std::array<std::array<long, 3>, 2> ia;   // compute the neighbouring points ia, ja in all dimensions
-      std::array<std::array<double, 3>, 2> wa; // compute the weight in all dimensions
-      for (int u = 0; u < 3; ++u) {
-        double delta_k = 2 * M_PI / this->dims_[u];
-        //double a = (x[u] + M_PI)/delta_k; // if the grid would be centered on 0
-        double a = (x[u]) / delta_k; // centered at pi
-        long i   = std::floor(a);
-        assert(i >= 0);
-        assert(i <= this->dims_[u]);
-        double w = a - i;
-        ia[0][u] = i;
-        ia[1][u] = _modulo(ia[0][u] + 1, u);
-        wa[0][u] = 1 - w;
-        wa[1][u] = w;
+      // 0----1----2----3----4----5---- : dim = 5, point 6 is 2 Pi
+      std::array<std::array<long, 2>, 3> is;   // indices of the two neighbouring grid points
+      std::array<std::array<double, 2>, 3> ws; // weights for the two neighbouring grid points
+      for (int d = 0; d < 3; ++d) {
+        long i   = std::floor(k_units[d]); // Take modulo later
+        double w = k_units[d] - i;
+        is[d]    = {i, i + 1};
+        ws[d]    = {1 - w, w};
       }
       std::array<std::pair<linear_index_t, double>, n_pts_in_linear_interpolation> result;
       int c = 0;
-      for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 2; ++j)
-          for (int k = 0; k < 2; ++k) {
-            result[c] = std::make_pair(index_to_linear(index_modulo(index_t{ia[i][0], ia[j][1], ia[k][2]})), wa[i][0] * wa[j][1] * wa[k][2]);
+      for (int ix = 0; ix < 2; ++ix)
+        for (int iy = 0; iy < 2; ++iy)
+          for (int iz = 0; iz < 2; ++iz) {
+            result[c] = std::make_pair(index_to_linear(index_modulo(index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
             c++;
           }
       return result;
