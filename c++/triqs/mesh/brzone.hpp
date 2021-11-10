@@ -42,10 +42,10 @@ namespace triqs::mesh {
      *
      */
     brzone(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
-       : bz(bz_), cluster_mesh(eye<double>(3), transpose(periodization_matrix_)) {
+       : bz(bz_), cluster_mesh(nda::eye<double>(3), transpose(periodization_matrix_)) {
       matrix<double> N_as_double = periodization_matrix_;
       matrix<double> Nt_inv      = inverse(transpose(N_as_double));
-      units                      = Nt_inv * bz_.units();
+      units_                     = Nt_inv * bz_.units();
     }
 
     /** 
@@ -79,12 +79,12 @@ namespace triqs::mesh {
       std::array<std::array<long, 3>, 2> ia;   // compute the neighbouring points ia, ja in all dimensions
       std::array<std::array<double, 3>, 2> wa; // compute the weight in all dimensions
       for (int u = 0; u < 3; ++u) {
-        double delta_k = 2 * M_PI / this->dims[u];
+        double delta_k = 2 * M_PI / this->dims_[u];
         //double a = (x[u] + M_PI)/delta_k; // if the grid would be centered on 0
         double a = (x[u]) / delta_k; // centered at pi
         long i   = std::floor(a);
         assert(i >= 0);
-        assert(i <= this->dims[u]);
+        assert(i <= this->dims_[u]);
         double w = a - i;
         ia[0][u] = i;
         ia[1][u] = _modulo(ia[0][u] + 1, u);
@@ -120,18 +120,18 @@ namespace triqs::mesh {
     // -------------------- print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
-      return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
-                  << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
+      return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units()
+                  << "\n -- periodization_matrix = " << m.periodization_matrix() << "\n -- Domain: " << m.domain();
     }
 
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &units;
-      ar &periodization_matrix;
-      ar &dims;
-      ar &_size;
-      ar &s2;
-      ar &s1;
+      ar &units_;
+      ar &periodization_matrix_;
+      ar &dims_;
+      ar &size_;
+      ar &stride0;
+      ar &stride1;
       ar &bz;
     }
 

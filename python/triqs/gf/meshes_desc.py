@@ -187,16 +187,11 @@ module.add_class(m)
 m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::array<long,3>' )
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
-m.add_method(name="locate_neighbours", signature="std::array<long,3> locate_neighbours(triqs::arrays::vector<double> x)")
+m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 
-m.add_property(name = "linear_dims",
-               getter = cfunction(calling_pattern="std::array<long,3> result = self_c.get_dimensions()",
-               signature = "std::array<long,3>()",
-               doc = "Linear dimensions"))
-m.add_property(name = "domain",
-               getter = cfunction(calling_pattern="brillouin_zone result = self_c.domain()",
-               signature = "brillouin_zone()",
-               doc = "Domain"))
+m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Linear dimensions")
+m.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing mesh basis vectors as rows")
+m.add_property(getter = cfunction("triqs::lattice::brillouin_zone domain()"), doc = "The brillouin_zone domain")
 
 module.add_class(m)
 
@@ -208,16 +203,11 @@ m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat", index_type = 'std::arra
 m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
-m.add_method(name="locate_neighbours", signature="std::array<long,3> locate_neighbours(triqs::arrays::vector<double> x)")
+m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 
-m.add_property(name = "linear_dims",
-               getter = cfunction(calling_pattern="std::array<long,3> result = self_c.get_dimensions()",
-               signature = "std::array<long,3>()",
-               doc = "Linear dimensions"))
-m.add_property(name = "domain",
-               getter = cfunction(calling_pattern="bravais_lattice result = self_c.domain()",
-               signature = "bravais_lattice()",
-               doc = "Domain"))
+m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Extent of each dimension")
+m.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing mesh basis vectors as rows")
+m.add_property(getter = cfunction("triqs::lattice::bravais_lattice domain()"), doc = "The bravais_lattice domain")
 
 module.add_class(m)
 

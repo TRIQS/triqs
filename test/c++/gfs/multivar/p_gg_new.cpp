@@ -41,7 +41,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   int nw      = w_mesh.last_index() + 1;
   int nnu     = 2;
   int ntau    = nw * 4;
-  int nk      = k_mesh.get_dimensions()[0];
+  int nk      = k_mesh.dims()[0];
 
   auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 

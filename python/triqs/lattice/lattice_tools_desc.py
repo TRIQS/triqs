@@ -57,7 +57,7 @@ c.add_constructor("""(triqs::lattice::bravais_lattice bl_)""",
                   doc = """Construct from a bravais_lattice """)
 
 c.add_method(name = "units",
-             signature = "matrix_view<double> units()",
+             signature = "matrix_const_view<double> units()",
              doc = "Get reciprocal unit vectors")
 
 c.add_property(name = "lattice",

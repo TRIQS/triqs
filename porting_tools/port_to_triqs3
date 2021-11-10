@@ -46,6 +46,8 @@ repl_dict = {
         "gf_mesh{": "prod{", # may be probematic if not constructing a prod??
         "gf_mesh<(.?)>": r"\1", # really necessary?
         "matsubara_mesh_opt": "imfreq::option",
+        "get_dimensions()": "dims()",
+        "locate_neighbours": "closest_index",
         # --- Stat Changes ---
         "#include <triqs/statistics": "#include <triqs/stat",
         "triqs::statistics": "triqs::stat",

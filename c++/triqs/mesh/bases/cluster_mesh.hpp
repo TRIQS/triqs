@@ -47,10 +47,10 @@ namespace triqs::mesh {
    *   - Update $C = {mathbf{x} + q mathbf{a}_d, mathbf{x}\in C, q=0\dots k_d-1}$
    * return {k_d}_{k=1\dots d}
    *
-   * @param inv_n inverse $N^{-1}$ of the periodization matrix
-   * @return the dimensions of the parallelepiped unit cell
+   * @param periodization_matrix The periodization matrix
+   * @return The dimensions of the parallelepiped unit cell
    */
-  std::array<long, 3> find_cell_dims(nda::matrix<double> const &inv_n);
+  std::array<long, 3> find_cell_dims(nda::matrix<int> const &periodization_matrix);
 
   /// A lattice point
   struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, nda::vector<double>> {
@@ -73,37 +73,42 @@ namespace triqs::mesh {
 
   struct cluster_mesh : tag::mesh {
 
-    matrix<double> units;
-    matrix<int> periodization_matrix;
-    std::array<long, 3> dims; // the size in each dimension
-    size_t _size;
-    long s1, s2;
-
-    long _modulo(long r, int i) const {
-      long res = r % dims[i];
-      return (res >= 0 ? res : res + dims[i]);
-    }
-
     public:
     cluster_mesh() = default;
 
     /**
-    * @param units matrix X such that the unit vectors (a_i) are given in cartesian coordinates (e_j) by:
-          $$ \mathbf{a}_i = \sum_{j} x_{ij} \mathbf{e}_j $$
-    * @param periodization_matrix matrix $N$ specifying the periodic boundary conditions:
-          $$ \tilde{\mathbf{a}}_i = \sum_j N_{ij} \mathbf{a}_j $$
-    */
-    cluster_mesh(matrix<double> const &units_, matrix<int> const &periodization_matrix_)
-       : units(units_), periodization_matrix(periodization_matrix_) {
-      dims  = find_cell_dims(inverse(matrix<double>(periodization_matrix)));
-      _size = dims[0] * dims[1] * dims[2];
-      s1    = dims[2];           // stride
-      s2    = dims[1] * dims[2]; // stride
+     * Construct from basis vectors and periodization matrix
+     *
+     * @param units Matrix $B$ containing as rows the basis vectors that generate mesh points
+     * @param periodization_matrix Matrix $N$ specifying the translation vectors for the
+     *        periodic boundary conditions
+     *      $$ \mathbf{x} \equiv \mathbf{x} + \mathbf{z} \cdot \mathbf{N} \forall \mathbf{n} in \Z^n$
+     */
+    cluster_mesh(matrix<double> const &units, matrix<int> const &periodization_matrix) : units_(units), periodization_matrix_(periodization_matrix) {
+      EXPECTS((periodization_matrix.shape() == std::array{3l, 3l}));
+
+      // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
+      // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
+      //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
+      if (nda::diag(nda::diagonal(periodization_matrix)) != periodization_matrix)
+        throw std::runtime_error{"Non-diagonal periodization matrices are currently not implemented."};
+
+      dims_   = find_cell_dims(periodization_matrix_);
+      size_   = dims_[0] * dims_[1] * dims_[2];
+      stride0 = dims_[1] * dims_[2];
+      stride1 = dims_[2];
     }
 
-    int rank() const { return (dims[2] > 1 ? 3 : (dims[1] > 1 ? 2 : 1)); }
+    int rank() const { return (dims_[2] > 1 ? 3 : (dims_[1] > 1 ? 2 : 1)); }
 
-    std::array<long, 3> get_dimensions() const { return dims; }
+    /// The extent of each dimension
+    std::array<long, 3> dims() const { return dims_; }
+
+    /// Matrix containing the mesh basis vectors as rows
+    matrix_const_view<double> units() const { return units_; }
+
+    // The matrix defining the periodization on the mesh
+    matrix_const_view<int> periodization_matrix() const { return periodization_matrix_; }
 
     /// ---------- Model the domain concept  ---------------------
 
@@ -136,14 +141,14 @@ namespace triqs::mesh {
       point_t M(3);
       M() = 0.0;
       for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++) M(i) += n[j] * units(j, i);
+        for (int j = 0; j < 3; j++) M(i) += n[j] * units_(j, i);
       return M;
     }
 
     /// flatten the index
     linear_index_t index_to_linear(index_t const &i) const {
       EXPECTS(i == index_modulo(i));
-      return i[0] * s2 + i[1] * s1 + i[2];
+      return i[0] * stride0 + i[1] * stride1 + i[2];
     }
 
     /// Is the point in the mesh ? Always true
@@ -163,30 +168,37 @@ namespace triqs::mesh {
 
     /// Mesh comparison
     bool operator==(cluster_mesh const &M) const {
-      return ((dims == M.dims) && (units == M.units) && (periodization_matrix == M.periodization_matrix));
+      return ((dims_ == M.dims_) && (units_ == M.units_) && (periodization_matrix_ == M.periodization_matrix_));
     }
     bool operator!=(cluster_mesh const &M) const { return !(operator==(M)); }
 
     /// locate the closest point
-    inline index_t locate_neighbours(point_t const &x) const {
-      auto inv_units = inverse(units);
-      index_t x_n({1, 1, 1});
-      for (int i = 0; i < 3; i++) {
-        double s = 0.0;
-        for (int j = 0; j < 3; j++) s += x[j] * inv_units(j, i);
-        x_n[i] = std::lrint(s);
-      }
-      return x_n;
+    inline index_t closest_index(point_t const &x) const {
+      auto idbl = transpose(inverse(units_)) * x;
+      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+    }
+
+    protected:
+    matrix<double> units_;
+    matrix<int> periodization_matrix_;
+    std::array<long, 3> dims_;
+    size_t size_;
+    long stride1, stride0;
+
+    long _modulo(long r, int i) const {
+      long res = r % dims_[i];
+      return (res >= 0 ? res : res + dims_[i]);
     }
 
     // -------------- HDF5  --------------------------
 
+    public:
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string subgroup_name, cluster_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format_as_string(gr, _type);
-      h5_write(gr, "units", m.units);
-      h5_write(gr, "periodization_matrix", m.periodization_matrix);
+      h5_write(gr, "units", m.units_);
+      h5_write(gr, "periodization_matrix", m.periodization_matrix_);
     }
 
     /// Read from HDF5
@@ -202,16 +214,17 @@ namespace triqs::mesh {
 
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &units;
-      ar &periodization_matrix;
-      ar &dims;
-      ar &_size;
-      ar &s2;
-      ar &s1;
+      ar &units_;
+      ar &periodization_matrix_;
+      ar &dims_;
+      ar &size_;
+      ar &stride0;
+      ar &stride1;
     }
 
     friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) {
-      return sout << "cluster_mesh of size " << m.dims << "\n units = " << m.units << "\n periodization_matrix = " << m.periodization_matrix << "\n";
+      return sout << "cluster_mesh of size " << m.dims() << "\n units = " << m.units() << "\n periodization_matrix = " << m.periodization_matrix()
+                  << "\n";
     }
   };
 
@@ -233,13 +246,13 @@ namespace triqs::mesh {
     using linear_index_t = mesh_t::linear_index_t;
 
     mesh_point() = default;
-    explicit mesh_point(mesh_t const &mesh, mesh_t::index_t const &index) : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
+    explicit mesh_point(mesh_t const &mesh, mesh_t::index_t const &index) : index3_generator(mesh.dims(), index), m(&mesh) {}
     mesh_point(mesh_t const &mesh) : mesh_point(mesh, {0, 0, 0}) {}
 
     using cast_t = point_t; // FIXME : decide what we want.
 
     operator mesh_t::point_t() const { return m->index_to_point(index()); }
-    operator lattice_point() const { return lattice_point(index(), m->units); }
+    operator lattice_point() const { return lattice_point(index(), m->units()); }
     operator mesh_t::index_t() const { return index(); }
     linear_index_t linear_index() const { return m->index_to_linear(index()); }
     // The mesh point behaves like a vector

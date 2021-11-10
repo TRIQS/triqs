@@ -65,8 +65,8 @@ namespace triqs::mesh {
     // -------------------- print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
-      return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
-                  << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
+      return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units()
+                  << "\n -- periodization_matrix = " << m.periodization_matrix() << "\n -- Domain: " << m.domain();
     }
 
     // -------------- HDF5  --------------------------

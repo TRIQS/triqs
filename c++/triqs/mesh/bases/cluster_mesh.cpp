@@ -1,14 +1,11 @@
 #include "./cluster_mesh.hpp"
 
 namespace triqs::mesh {
-  std::array<long, 3> find_cell_dims(nda::matrix<double> const &inv_n) {
+  std::array<long, 3> find_cell_dims(nda::matrix<int> const &periodization_matrix) {
 
-    nda::matrix<double> n_mat = inverse(inv_n);
-    double Ld                    = nda::determinant(n_mat);
-    double dev                   = std::abs(std::abs(Ld) - round(std::abs(Ld)));
-    if (dev > 1e-8)
-      TRIQS_RUNTIME_ERROR << "determinant of inverse of inv_n should be an integer, is " << Ld << " instead (deviation =" << dev << ").";
-    int L = int(std::abs(Ld));
+    auto P     = nda::matrix<double>(periodization_matrix);
+    auto inv_P = make_regular(inverse(P));
+    int L      = std::floor(std::abs(nda::determinant(P)));
     clef::placeholder<0> i_;
     std::vector<nda::vector<int>> units{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
     std::vector<nda::vector<int>> C{{0, 0, 0}};
@@ -20,8 +17,8 @@ namespace triqs::mesh {
           bool OK = false;
           for (int dp = 0; dp < 3; dp++) {
             double s = 0;
-            for (int i : range(3)) s += inv_n(i, dp) * x(i);
-            double crit = k * inv_n(d, dp) - s; // sum(inv_n(i_, dp) * x(i_), i_ = range(0, 3));
+            for (int i : range(3)) s += inv_P(dp, i) * x(i);
+            double crit = k * inv_P(dp, d) - s;
             if (std::abs(crit - int(crit)) > 1e-8) {
               OK = false;
               break;
