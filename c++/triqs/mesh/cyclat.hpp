@@ -28,16 +28,16 @@ namespace triqs::mesh {
   using nda::eye;
 
   ///
-  struct cyclat : cluster_mesh {
+  class cyclat : public cluster_mesh {
     private:
     bravais_lattice bl;
 
     public:
     /**
-    @param bl_ bravais lattice
-    @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
-   */
-    cyclat(bravais_lattice const &bl_, matrix<int> const &periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
+     * @param bl_ bravais lattice
+     * @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
+     */
+    cyclat(bravais_lattice const &bl_, matrix_const_view<int> periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
 
     ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
     cyclat(int L1 = 1, int L2 = 1, int L3 = 1)
