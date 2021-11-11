@@ -33,7 +33,7 @@ namespace triqs {
     class tight_binding {
 
       bravais_lattice bl_;
-      std::vector<std::vector<long>> displ_vec_;
+      std::vector<nda::vector<long>> displ_vec_;
       std::vector<matrix<dcomplex>> overlap_mat_vec_;
 
       public:
@@ -46,7 +46,7 @@ namespace triqs {
        * @param displ_vec The vector of displacement vectors in units of the lattice basis vectors
        * @param overlap_mat_vec The vector of overlap (hopping) matrices
        */
-      tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
+      tight_binding(bravais_lattice const &bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
 
       /// Underlying lattice
       bravais_lattice const &lattice() const { return bl_; }
@@ -61,25 +61,30 @@ namespace triqs {
       }
 
       /**
-       * Calculate the dispersion relation for a given momentum vector k
+       * Calculate the dispersion relation for a given momentum vector k (or array of vectors)
        *
        *   $$ \epsilon_k = \sum_j m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
        *
        * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
        * k needs to be represented in units of the reciprocal lattice vectors
        *
-       * @param k The momentum vector in units of the reciprocal lattice vectors
+       * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
        * @return The value for $\epsilon_k$ as a complex matrix
        */
-      template <typename K> std::enable_if_t<!clef::is_clef_expression<K>, matrix<dcomplex>> dispersion(K const &k) const {
-        auto res = matrix<dcomplex>::zeros({n_bands(), n_bands()});
-        foreach (*this, [&](std::vector<long> const &displ, matrix<dcomplex> const &m) {
-          double dot_prod = 0;
-          int imax        = displ.size();
-          for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
-          res += m * exp(2i * M_PI * dot_prod);
-        })
-          ;
+      template <typename K>
+      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto dispersion(K const &k) const {
+        auto vals = [&](int j) {
+          if constexpr (nda::ArrayOfRank<K, 1>) {
+            return std::exp(2i * M_PI * nda::blas::dot(k, displ_vec_[j])) * overlap_mat_vec_[j];
+          } else { // Rank==2
+            auto k_mat = nda::make_matrix_view(k);
+            auto exp   = [](auto d) { return std::exp(d); };
+            auto exp_j = make_regular(nda::map(exp)(2i * M_PI * k_mat * displ_vec_[j]));
+            return nda::blas::outer_product(exp_j, overlap_mat_vec_[j]);
+          }
+        };
+        auto res = make_regular(vals(0));
+        for (int i = 1; i < displ_vec_.size(); ++i) res += vals(i);
         return res;
       }
 
@@ -109,7 +114,7 @@ namespace triqs {
       static tight_binding h5_read_construct(h5::group g, std::string subgroup_name) {
         auto grp = g.open_group(subgroup_name);
         auto bl              = h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
-        auto displ_vec       = h5::h5_read<std::vector<std::vector<long>>>(grp, "displ_vec");
+        auto displ_vec       = h5::h5_read<std::vector<nda::vector<long>>>(grp, "displ_vec");
         auto overlap_mat_vec = h5::h5_read<std::vector<matrix<dcomplex>>>(grp, "overlap_mat_vec");
         return tight_binding(bl, displ_vec, overlap_mat_vec);
       }
@@ -121,6 +126,7 @@ namespace triqs {
    k_in[:,n] is the nth vector
    In the result, R[:,:,n] is the corresponding hopping t(k)
    */
+    [[deprecated("Please use tight_binding member-function 'dispersion' instead")]]
     array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
     // not optimal ordering here
 

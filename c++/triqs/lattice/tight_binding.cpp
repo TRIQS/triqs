@@ -26,7 +26,7 @@ namespace triqs {
 
     using namespace arrays;
 
-    tight_binding::tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)
+    tight_binding::tight_binding(bravais_lattice const &bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)
        : bl_(bl), displ_vec_(std::move(displ_vec)), overlap_mat_vec_(std::move(overlap_mat_vec)) {
 
       // checking inputs

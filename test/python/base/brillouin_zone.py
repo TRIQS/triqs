@@ -98,18 +98,18 @@ class test_brillouin_zone(unittest.TestCase):
 
         # ----- Interpolate Dispersion -----
 
-        # Hopping [Displacement on the lattice]
-        # where n=Number_Orbitals
-        t = 1.0 # hopping
+        # Hopping[Displacement on the lattice]
+        t = 1.0
         tb = TightBinding(bl, {  (1,0)  :  -t*diag([1,2,3]),
                                  (-1,0) :  -t*diag([1,2,3]),
                                  (0,1)  :  -t*diag([1,2,3]),
                                  (0,-1) :  -t*diag([1,2,3])})
 
-        e_k_vec = array([tb.dispersion(in_rec_basis(k)) for k in k_mesh])
 
         e_k = Gf(mesh=k_mesh, target_shape=(n_orb,n_orb))
-        e_k.data[:] = e_k_vec[:]
+
+        k_vec_rec = array([in_rec_basis(k) for k in k_mesh])
+        e_k.data[:] = tb.dispersion(k_vec_rec)[:]
 
         max_adj_diff = amax(abs(diff(e_k.data[:], axis=0)))
 
@@ -127,7 +127,7 @@ class test_brillouin_zone(unittest.TestCase):
 
         iw_vec = array([iw.value * eye(n_orb) for iw in iw_mesh])
         mu_mat = mu * eye(n_orb)
-        G_k_iw.data[:] = linalg.inv(iw_vec[None,...] + mu_mat[None,None,...] - e_k_vec[::,None,...])
+        G_k_iw.data[:] = linalg.inv(iw_vec[None,...] + mu_mat[None,None,...] - e_k.data[::,None,...])
 
         # Evaluate on finer mesh
         for n in [0,10,100]: # Matsubara Idx

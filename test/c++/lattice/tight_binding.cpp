@@ -29,10 +29,13 @@ using namespace triqs::lattice;
 using namespace triqs::arrays;
 
 TEST(tight_binding, h5_read_write) {
+  auto units           = nda::matrix<double>{{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
+  int norb             = 2;
+  auto atom_orb_pos    = std::vector(norb, nda::vector<double>{0., 0., 0.});
+  auto bl              = bravais_lattice(units, atom_orb_pos);
+  auto displ_vec       = std::vector<nda::vector<long>>{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
   double t             = 1.0;
-  auto bl              = bravais_lattice{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
-  auto displ_vec       = std::vector<std::vector<long>>{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-  auto overlap_mat_vec = std::vector<matrix<dcomplex>>{{{t}}, {{t}}, {{t}}, {{t}}, {{t}}, {{t}}};
+  auto overlap_mat_vec = std::vector(displ_vec.size(), nda::diag(nda::vector<dcomplex>{t, t}));
 
   auto tb = tight_binding{bl, displ_vec, overlap_mat_vec};
 
@@ -48,7 +51,7 @@ TEST(tight_binding, h5_read_write) {
     auto file  = h5::file{"test_tb.h5", 'r'};
     auto grp   = h5::group{file};
     auto tb_in = h5::h5_read<tight_binding>(grp, "cubic_lattice_nn_hop");
-    //EXPECT_EQ(tb, tb_in);
+    EXPECT_EQ(tb, tb_in);
   }
 }
 

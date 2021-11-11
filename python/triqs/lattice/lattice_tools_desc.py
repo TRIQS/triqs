@@ -12,8 +12,8 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_using("namespace triqs::lattice")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs")
-module.add_using("r_t = arrays::vector<double>")
-module.add_using("k_t = arrays::vector<double>")
+module.add_using("r_cvt = nda::vector_const_view<double>")
+module.add_using("k_cvt = nda::vector_const_view<double>")
 
 # ---------   Bravais lattice ----------------------------------
 
@@ -39,7 +39,7 @@ bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbital
 bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing lattice basis vectors as rows")
 
 bl.add_method(name = "lattice_to_real_coordinates", 
-              signature = "r_t lattice_to_real_coordinates(r_t x)",
+              signature = "r_t lattice_to_real_coordinates(r_cvt x)",
               doc = "Transform into real coordinates.")
 
 module.add_class(bl)
@@ -82,13 +82,13 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
                     // First of all, if it is not a dict, error
                     if (!PyDict_Check(hopping)) {PyErr_SetString(PyExc_TypeError, "hopping must be a mapping type (dict)"); return 0;}
                     // The arguments for the C++ constructor
-                    std::vector<std::vector<long>> displs; 
+                    std::vector<nda::vector<long>> displs;
                     std::vector<matrix<dcomplex>> mats;
                     // we loop on the dict // Cf python doc for PyDict_Next
                     PyObject *key, *value;
                     Py_ssize_t pos = 0;
                     while (PyDict_Next(hopping, &pos, &key, &value)) {
-                     displs.push_back(convert_from_python<std::vector<long>>(key));
+                     displs.push_back(convert_from_python<nda::vector<long>>(key));
                      mats.push_back(convert_from_python<matrix<dcomplex>>(value));
                     }
                     auto result = tight_binding(latt, displs, mats);
@@ -96,8 +96,13 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
                    doc = " ")
 
 tb.add_method(name = "dispersion",
-              signature = "matrix<dcomplex> (k_t K)",
+              signature = "matrix<dcomplex> (k_cvt K)",
               doc = """Evaluate the dispersion relation for a momentum vector k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "dispersion",
+              signature = "nda::array<dcomplex, 3> (nda::array_const_view<double, 2> K)",
+              doc = """Evaluate the dispersion relation for list of momentum vectors k in units of the reciprocal lattice vectors""")
+
 
 module.add_class(tb)
 
@@ -113,10 +118,10 @@ module.add_function(name = "dos_patch",
                     signature = "std::pair<array<double, 1>, array<double, 1>> (tight_binding  TB, array<double, 2> triangles, int neps, int ndiv)",
                     doc = """ """)
 module.add_function(name = "energies_on_bz_path",
-                    signature = "array<double, 2> (tight_binding  TB, k_t  K1, k_t  K2, int n_pts)",
+                    signature = "array<double, 2> (tight_binding  TB, k_cvt  K1, k_cvt  K2, int n_pts)",
                     doc = """ """)
 module.add_function(name = "energy_matrix_on_bz_path",
-                    signature = "array<dcomplex, 3> (tight_binding  TB, k_t  K1, k_t  K2, int n_pts)",
+                    signature = "array<dcomplex, 3> (tight_binding  TB, k_cvt  K1, k_cvt  K2, int n_pts)",
                     doc = """ """)
 module.add_function(name = "energies_on_bz_grid",
                     signature = "array<double, 2> (tight_binding  TB, int n_pts)",
