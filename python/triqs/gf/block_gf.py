@@ -18,13 +18,15 @@
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
 # Authors: Michel Ferrero, Hartmut Hafermann, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, tayral
-
-import collections
-
-from .gf import Gf
 import operator
 import warnings
+
+from collections.abc import Sequence
+
 import numpy as np
+
+from .gf import Gf
+
 
 def call_factory_from_dict(cl,name, dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
@@ -306,7 +308,7 @@ class BlockGf:
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
             for (n,g) in self: self[n] += arg[n]
-        elif isinstance(arg, collections.Sequence):
+        elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g +=l
         else:
@@ -323,7 +325,7 @@ class BlockGf:
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
            for (n,g) in self: self[n] -= arg[n]
-        elif isinstance(arg, collections.Sequence):
+        elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g -=l
         else:
@@ -355,7 +357,7 @@ class BlockGf:
     def __rmul__(self,x): return self.__mul__(x)
 
     def __itruediv__(self,arg):
-        if isinstance(arg, collections.Sequence):
+        if isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g /=l
         else:
