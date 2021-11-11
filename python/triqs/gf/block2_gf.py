@@ -17,13 +17,14 @@
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
 # Authors: Michel Ferrero, Igor Krivenko, Nils Wentzell
-
-
-from itertools import product, chain
 import operator
 import warnings
+
+from collections.abc import Sequence
+from itertools import chain, product
+
 import numpy as np
-import collections
+
 
 class Block2Gf:
     """
@@ -73,7 +74,7 @@ class Block2Gf:
                 self.__GFlist.append([])
                 for bn2 in name_list2:
                     self.__GFlist[-1].append(block_list(bn1,bn2).copy() if make_copies else block_list(bn1,bn2))
-        elif isinstance(block_list, collections.Sequence):
+        elif isinstance(block_list, Sequence):
             try:
                 assert len(block_list) == len(name_list1), "incorrect outer size of block_list"
                 for g_row in block_list:
@@ -244,7 +245,7 @@ class Block2Gf:
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
             for bn, g in self: self[bn] += arg[bn]
-        elif isinstance(arg, collections.Sequence):
+        elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] += l
         else:
@@ -261,7 +262,7 @@ class Block2Gf:
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
            for bn, g in self: self[bn] -= arg[bn]
-        elif isinstance(arg, collections.Sequence):
+        elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] -= l
         else:
@@ -281,7 +282,7 @@ class Block2Gf:
     def __imul__(self,arg):
         if isinstance(arg, self.__class__):
             for bn, g in self: self[bn] *= arg[bn]
-        elif isinstance(arg, collections.Sequence):
+        elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] *= l
         else:
@@ -296,7 +297,7 @@ class Block2Gf:
     def __rmul__(self,x): return self.__mul__(x)
 
     def __itruediv__(self,arg):
-        if isinstance(arg, collections.Sequence):
+        if isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] /= l
         else:
