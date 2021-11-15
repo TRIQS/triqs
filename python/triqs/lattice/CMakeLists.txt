@@ -3,6 +3,7 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/bz_patch.py
   ${CMAKE_CURRENT_SOURCE_DIR}/super_lattice.py
   ${CMAKE_CURRENT_SOURCE_DIR}/tight_binding.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils.py
 )
 
 # 
