@@ -20,8 +20,12 @@
 
 #pragma once
 #include "brillouin_zone.hpp"
+#include "../mesh/brzone.hpp"
+#include "../gfs.hpp"
+#include <itertools/itertools.hpp>
 #include <h5/std_addons/complex.hpp>
 #include <h5/h5.hpp>
+#include <nda/linalg.hpp>
 
 namespace triqs {
   namespace lattice {
@@ -61,18 +65,18 @@ namespace triqs {
       }
 
       /**
-       * Calculate the dispersion relation for a given momentum vector k (or array of vectors)
+       * Calculate the fourier transform for a given momentum vector k (or array of vectors)
        *
-       *   $$ \epsilon_k = \sum_j m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
+       *   $$ h_k = \sum_j m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
        *
        * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
        * k needs to be represented in units of the reciprocal lattice vectors
        *
        * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
-       * @return The value for $\epsilon_k$ as a complex matrix
+       * @return The value for $h_k$ as a complex matrix
        */
       template <typename K>
-      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto dispersion(K const &k) const {
+      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2> or std::is_same_v<K, mesh::brzone>) auto fourier(K const &k) const {
         auto vals = [&](int j) {
           if constexpr (nda::ArrayOfRank<K, 1>) {
             return std::exp(2i * M_PI * nda::blas::dot(k, displ_vec_[j])) * overlap_mat_vec_[j];
@@ -86,6 +90,82 @@ namespace triqs {
         auto res = make_regular(vals(0));
         for (int i = 1; i < displ_vec_.size(); ++i) res += vals(i);
         return res;
+      }
+
+      /**
+       * Calculate the fourier transform on a given k-mesh
+       * and return the associated Green-function object
+       *
+       * @param k_mesh The brillouin-zone mesh
+       * @return Green function on the k_mesh initialized with the fourier transform
+       */
+      inline auto fourier_on_k_mesh(mesh::brzone const &k_mesh) {
+        auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
+        for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range()) = nda::vector<double>(k); }
+        auto kvecs_rec = make_regular(kvecs * k_mesh.domain().reciprocal_matrix_inv());
+        auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_bands(), n_bands()});
+        h_k.data()     = fourier(kvecs_rec);
+        return h_k;
+      }
+
+      /**
+       * Calculate the fourier transform on a regular k-mesh
+       * with n_l grid-points in each reciprocal direction.
+       * Return the associated Green-function object.
+       *
+       * @param n_l The number of grid-points for each dimension
+       * @return Green function on the k_mesh initialized with the fourier transform
+       */
+      inline auto fourier_on_k_mesh(int n_l) {
+        auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
+        return fourier_on_k_mesh(k_mesh);
+      }
+
+      /**
+       * Calculate the dispersion, i.e. the eigenvalue-spectrum of $h_k$,
+       * for a given momentum vector k (or array of vectors).
+       *
+       * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
+       * @return The value for $h_k$ as a complex matrix
+       */
+      template <typename K>
+      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2> or std::is_same_v<K, mesh::brzone>) auto dispersion(K const &k) const {
+        if constexpr (nda::ArrayOfRank<K, 1>) {
+          return nda::linalg::eigenvalues(fourier(k));
+        } else { // Rank==2
+          auto h_k = fourier(k);
+          auto n_k = h_k.shape()[0];
+          auto res = nda::array<double, 2>(n_k, n_bands());
+          for (auto l : range(n_k)) res(l, range()) = nda::linalg::eigenvalues(h_k(l, nda::ellipsis()));
+          return res;
+        }
+      }
+
+      /**
+       * Calculate the dispersion on a given k-mesh
+       * and return the associated Green-function object
+       *
+       * @param k_mesh The brillouin-zone mesh
+       * @return Green function on the k_mesh initialized with the dispersion values
+       */
+      inline auto dispersion_on_k_mesh(mesh::brzone const &k_mesh) {
+        auto h_k = fourier_on_k_mesh(k_mesh);
+        auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_bands()});
+        for (auto const &k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
+        return e_k;
+      }
+
+      /**
+       * Calculate the dispersion on a regular k-mesh
+       * with n_l grid-points in each reciprocal direction.
+       * Return the associated Green-function object.
+       *
+       * @param n_l The number of grid-points for each dimension
+       * @return Green function on the k_mesh initialized with the dispersion values
+       */
+      inline auto dispersion_on_k_mesh(int n_l) {
+        auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
+        return dispersion_on_k_mesh(k_mesh);
       }
 
       // ------------------- Comparison -------------------
@@ -121,19 +201,19 @@ namespace triqs {
 
     }; // tight_binding
 
-    /**
-   Factorized version of hopping (for speed)
-   k_in[:,n] is the nth vector
-   In the result, R[:,:,n] is the corresponding hopping t(k)
-   */
-    [[deprecated("Please use tight_binding member-function 'dispersion' instead")]]
-    array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
-    // not optimal ordering here
-
     std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
     std::pair<array<double, 1>, array<double, 1>> dos_patch(tight_binding const &TB, const array<double, 2> &triangles, int neps, int ndiv);
-    array<double, 2> energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
-    array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
-    array<double, 2> energies_on_bz_grid(tight_binding const &TB, int n_pts);
+
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<dcomplex, 3>
+    hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
+
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<double, 2>
+    energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
+
+    [[deprecated("Use tight_binding member-function 'fourier' instead")]] array<dcomplex, 3>
+    energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
+
+    [[deprecated("Use tight_binding member-function 'dispersion_on_k_mesh' instead")]] array<double, 2> energies_on_bz_grid(tight_binding const &TB,
+                                                                                                                            int n_pts);
   } // namespace lattice
 } // namespace triqs

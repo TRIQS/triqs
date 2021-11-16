@@ -109,13 +109,13 @@ class test_brillouin_zone(unittest.TestCase):
         e_k = Gf(mesh=k_mesh, target_shape=(n_orb,n_orb))
 
         k_vec_rec = array([in_rec_basis(k) for k in k_mesh])
-        e_k.data[:] = tb.dispersion(k_vec_rec)[:]
+        e_k.data[:] = tb.fourier(k_vec_rec)[:]
 
         max_adj_diff = amax(abs(diff(e_k.data[:], axis=0)))
 
         # Evaluate on finer mesh
         for k in k_fine_mesh:
-            e_k_exact = tb.dispersion(in_rec_basis(k))
+            e_k_exact = tb.fourier(in_rec_basis(k))
             assert allclose(e_k(k.value), e_k_exact, atol=max_adj_diff)
 
         # ----- Lattice Green function -----
@@ -134,7 +134,7 @@ class test_brillouin_zone(unittest.TestCase):
             G_cur = G_k_iw[::, Idx(n)]
             max_adj_diff = amax(abs(diff(G_cur.data[:], axis=0)))
             for k in k_fine_mesh:
-                Gk_exact = linalg.inv(iw_mesh(n) * eye(n_orb) + mu_mat - tb.dispersion(in_rec_basis(k)))
+                Gk_exact = linalg.inv(iw_mesh(n) * eye(n_orb) + mu_mat - tb.fourier(in_rec_basis(k)))
                 assert allclose(G_cur(k.value), Gk_exact, atol=max_adj_diff)
 
 

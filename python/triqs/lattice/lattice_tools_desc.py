@@ -11,6 +11,7 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_using("namespace triqs::lattice")
 module.add_using("namespace triqs::arrays")
+module.add_using("namespace triqs::gfs")
 module.add_using("namespace triqs")
 module.add_using("r_cvt = nda::vector_const_view<double>")
 module.add_using("k_cvt = nda::vector_const_view<double>")
@@ -95,27 +96,43 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
                    """, 
                    doc = " ")
 
-tb.add_method(name = "dispersion",
+tb.add_method(name = "fourier",
               signature = "matrix<dcomplex> (k_cvt K)",
+              doc = """Evaluate the fourier transform for a momentum vector k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "fourier",
+              signature = "nda::array<dcomplex, 3> (nda::array_const_view<double, 2> K)",
+              doc = """Evaluate the fourier transform for an array of momentum vectors k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "fourier_on_k_mesh",
+              signature = "gf<mesh::brzone, matrix_valued> (mesh::brzone k_mesh)",
+              doc = """Evaluate the fourier transform on the k_mesh and return the associated Green-function object""")
+
+tb.add_method(name = "dispersion",
+              signature = "nda::array<double, 1> (k_cvt K)",
               doc = """Evaluate the dispersion relation for a momentum vector k in units of the reciprocal lattice vectors""")
 
 tb.add_method(name = "dispersion",
-              signature = "nda::array<dcomplex, 3> (nda::array_const_view<double, 2> K)",
-              doc = """Evaluate the dispersion relation for list of momentum vectors k in units of the reciprocal lattice vectors""")
+              signature = "nda::array<double, 2> (nda::array_const_view<double, 2> K)",
+              doc = """Evaluate the dispersion relation for an array of momentum vectors k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "dispersion_on_k_mesh",
+              signature = "gf<mesh::brzone, tensor_real_valued<1>> (mesh::brzone k_mesh)",
+              doc = """Evaluate the dispersion relation on the k_mesh and return the associated Green-function object""")
 
 
 module.add_class(tb)
 
 # ---------   Module functions ----------------------------------
 
-module.add_function(name = "hopping_stack",
-                    signature = "array<dcomplex, 3> (tight_binding  TB, array_const_view<double, 2> k_stack)",
-                    doc = """ """)
 module.add_function(name = "dos",
                     signature = "std::pair<array<double, 1>, array<double, 2>> (tight_binding  TB, int nkpts, int neps)",
                     doc = """ """)
 module.add_function(name = "dos_patch",
                     signature = "std::pair<array<double, 1>, array<double, 1>> (tight_binding  TB, array<double, 2> triangles, int neps, int ndiv)",
+                    doc = """ """)
+module.add_function(name = "hopping_stack",
+                    signature = "array<dcomplex, 3> (tight_binding  TB, array_const_view<double, 2> k_stack)",
                     doc = """ """)
 module.add_function(name = "energies_on_bz_path",
                     signature = "array<double, 2> (tight_binding  TB, k_cvt  K1, k_cvt  K2, int n_pts)",

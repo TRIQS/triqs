@@ -103,31 +103,19 @@ class TBLattice(object):
         warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
         return hopping_stack(self.tb, k_stack)
 
-    def dispersion_on_k_mesh(self, n_k):
-
+    def dispersion_on_k_mesh(self, k_mesh):
         """ Construct a discretization of the tight-binding dispersion
         on a mesh with a given number of k-points.
 
         Parameters
         ----------
-
-        n_k : three-tuple of ints
-            Number of k-points in every dimension.
+        k_mesh : MeshBrZone
+            The k-mesh to evaluate the dispersion on.
 
         Returns
         -------
-
-        e_k : Greens function on a Brillioun zone mesh
-            Discretized tight binding dispersion.
+        e_k : Gf
+            The Green function on the k_mesh initialized with the dispersion values
         """
 
-        kmesh = MeshBrZone(self.bz, numpy.array(numpy.diag(n_k), dtype=numpy.int32))
-
-        target_shape = [self.NOrbitalsInUnitCell] * 2
-        e_k = Gf(mesh=kmesh, target_shape=target_shape)
-
-        k_vec = numpy.array([k.value for k in kmesh])
-        k_vec_rec = numpy.dot(k_vec, numpy.linalg.inv(self.bz.units))
-        e_k.data[:] = numpy.array([self.dispersion(k) for k in k_vec_rec])
-
-        return e_k
+        return self.tb.dispersion_on_k_mesh(k_mesh)
