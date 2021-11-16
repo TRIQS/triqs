@@ -50,7 +50,7 @@ namespace triqs::mesh {
    * @param periodization_matrix The periodization matrix
    * @return The dimensions of the parallelepiped unit cell
    */
-  std::array<long, 3> find_cell_dims(nda::matrix<int> const &periodization_matrix);
+  std::array<long, 3> find_cell_dims(nda::matrix<long> const &periodization_matrix);
 
   /// A lattice point
   struct lattice_point : public utility::arithmetic_ops_by_cast<lattice_point, nda::vector<double>> {
@@ -84,7 +84,7 @@ namespace triqs::mesh {
      *        periodic boundary conditions
      *      $$ \mathbf{x} \equiv \mathbf{x} + \mathbf{z} \cdot \mathbf{N} \forall \mathbf{n} in \Z^n$
      */
-    cluster_mesh(matrix<double> const &units, matrix<int> const &periodization_matrix) : units_(units), periodization_matrix_(periodization_matrix) {
+    cluster_mesh(matrix<double> const &units, matrix<long> const &periodization_matrix) : units_(units), periodization_matrix_(periodization_matrix) {
       EXPECTS((periodization_matrix.shape() == std::array{3l, 3l}));
 
       // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
@@ -108,7 +108,7 @@ namespace triqs::mesh {
     matrix_const_view<double> units() const { return units_; }
 
     // The matrix defining the periodization on the mesh
-    matrix_const_view<int> periodization_matrix() const { return periodization_matrix_; }
+    matrix_const_view<long> periodization_matrix() const { return periodization_matrix_; }
 
     /// ---------- Model the domain concept  ---------------------
 
@@ -180,7 +180,7 @@ namespace triqs::mesh {
 
     protected:
     matrix<double> units_;
-    matrix<int> periodization_matrix_;
+    matrix<long> periodization_matrix_;
     std::array<long, 3> dims_;
     size_t size_;
     long stride1, stride0;
@@ -206,7 +206,7 @@ namespace triqs::mesh {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format_as_string(gr, _type, true);
       auto units                = h5::h5_read<matrix<double>>(gr, "units");
-      auto periodization_matrix = h5::h5_read<matrix<int>>(gr, "periodization_matrix");
+      auto periodization_matrix = h5::h5_read<matrix<long>>(gr, "periodization_matrix");
       m                         = cluster_mesh(units, periodization_matrix);
     }
 

@@ -48,7 +48,7 @@ namespace triqs::mesh {
      * @param bz The Brillouin zone (domain)
      * @param periodization_matrix Periodiziation matrix N of shape 3x3
      */
-    brzone(brillouin_zone const &bz, matrix<int> const &periodization_matrix) : bz(bz), cluster_mesh(nda::eye<double>(3), periodization_matrix) {
+    brzone(brillouin_zone const &bz, matrix<long> const &periodization_matrix) : bz(bz), cluster_mesh(nda::eye<double>(3), periodization_matrix) {
       units_ = inverse(matrix<double>(periodization_matrix)) * bz.units();
     }
 
@@ -61,7 +61,7 @@ namespace triqs::mesh {
      * @param n_l The number of grid-points for each dimension
      */
     brzone(brillouin_zone const &bz_, int n_l)
-       : brzone(bz_, matrix<int>{{{n_l, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_l : 1}}}) {}
+       : brzone(bz_, matrix<long>{{{n_l, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_l : 1}}}) {}
 
     /// ----------- Model the mesh concept  ----------------------
     using domain_t    = brillouin_zone;

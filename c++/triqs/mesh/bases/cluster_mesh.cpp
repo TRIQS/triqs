@@ -1,7 +1,7 @@
 #include "./cluster_mesh.hpp"
 
 namespace triqs::mesh {
-  std::array<long, 3> find_cell_dims(nda::matrix<int> const &periodization_matrix) {
+  std::array<long, 3> find_cell_dims(nda::matrix<long> const &periodization_matrix) {
 
     auto P     = nda::matrix<double>(periodization_matrix);
     auto inv_P = make_regular(inverse(P));

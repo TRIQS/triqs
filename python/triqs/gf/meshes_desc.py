@@ -186,7 +186,7 @@ module.add_class(m)
 
 m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::array<long,3>' )
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
-m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
+m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<long> periodization_matrix)")
 m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 
 m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Linear dimensions")
@@ -201,7 +201,7 @@ module.add_class(m)
 
 m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat", index_type = 'std::array<long,3>' )
 m.add_constructor(signature = "(int L1, int L2, int L3)")
-m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<long> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
 m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 

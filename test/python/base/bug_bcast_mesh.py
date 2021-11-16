@@ -29,12 +29,12 @@ from triqs.lattice.lattice_tools import BravaisLattice
 bl = BravaisLattice(np.eye(3), [(0,0,0)])
 bz = BrillouinZone(bl)
 
-mesh = MeshBrZone(bz, 8*np.eye(3, dtype=np.int32))
+mesh = MeshBrZone(bz, 8*np.eye(3, dtype=int))
 
 import triqs.utility.mpi as mpi
 
 if mpi.is_master_node():
-    m = MeshBrZone(bz, 8*np.eye(3, dtype=np.int32))
+    m = MeshBrZone(bz, 8*np.eye(3, dtype=int))
 else:
     m = None
 
