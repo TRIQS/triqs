@@ -129,7 +129,7 @@ namespace triqs {
        * @return The value for $h_k$ as a complex matrix
        */
       template <typename K>
-      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2> or std::is_same_v<K, mesh::brzone>) auto dispersion(K const &k) const {
+      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto dispersion(K const &k) const {
         if constexpr (nda::ArrayOfRank<K, 1>) {
           return nda::linalg::eigenvalues(fourier(k));
         } else { // Rank==2
