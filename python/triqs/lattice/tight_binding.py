@@ -96,26 +96,27 @@ class TBLattice(object):
 
     def hopping_dict(self) : return self._hop
 
-    def dispersion(self, k):
-        return self.tb.dispersion(k)
+    def fourier(self, arg):
+        """ C.f. documentation of TightBinding.fourier
+        """
+        return self.tb.fourier(arg)
+
+    def fourier_on_k_mesh(self, arg):
+        """ C.f. documentation of TightBinding.fourier_on_k_mesh
+        """
+        return self.tb.fourier_on_k_mesh(arg)
+
+    def dispersion(self, arg):
+        """ C.f. documentation of TightBinding.dispersion
+        """
+        return self.tb.dispersion(arg)
+
+    def dispersion_on_k_mesh(self, arg):
+        """ C.f. documentation of TightBinding.dispersion_on_k_mesh
+        """
+        return self.tb.dispersion_on_k_mesh(arg)
 
     def hopping(self, k_stack) :
         warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
         return hopping_stack(self.tb, k_stack)
 
-    def dispersion_on_k_mesh(self, k_mesh):
-        """ Construct a discretization of the tight-binding dispersion
-        on a mesh with a given number of k-points.
-
-        Parameters
-        ----------
-        k_mesh : MeshBrZone
-            The k-mesh to evaluate the dispersion on.
-
-        Returns
-        -------
-        e_k : Gf
-            The Green function on the k_mesh initialized with the dispersion values
-        """
-
-        return self.tb.dispersion_on_k_mesh(k_mesh)
