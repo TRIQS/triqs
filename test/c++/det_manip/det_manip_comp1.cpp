@@ -117,7 +117,7 @@ struct test {
 
       switch (RNG((s > 10 ? 7 : 1))) {
         case 0:
-          x = RNG(10.0), y = RNG(10.0);
+          x = RNG(5.0), y = RNG(5.0);
           std::cerr << " x,y = " << x << "  " << y << std::endl;
           i0             = RNG(s);
           j0             = RNG(s);
@@ -134,10 +134,10 @@ struct test {
           break;
         case 2:
           std::cerr << " Insert2" << std::endl;
-          x  = RNG(10.0);
-          x1 = RNG(10.0);
-          y  = RNG(10.0);
-          y1 = RNG(10.0);
+          x  = RNG(5.0);
+          x1 = RNG(5.0);
+          y  = RNG(5.0);
+          y1 = RNG(5.0);
           i0 = RNG(s);
           i1 = RNG(s + 1);
           j0 = RNG(s);
@@ -207,7 +207,7 @@ struct test {
           break;
         case 4:
           if (D.size() == 0) break;
-          y  = RNG(10.0);
+          y  = RNG(5.0);
           i0 = RNG(s);
           std::cerr << " try_change_col" << i0 << std::endl;
           detratio       = D.try_change_col(i0, y);
@@ -215,7 +215,7 @@ struct test {
           break;
         case 5:
           if (D.size() == 0) break;
-          y  = RNG(10.0);
+          y  = RNG(5.0);
           i0 = RNG(s);
           std::cerr << " try_change_row" << i0 << std::endl;
           detratio       = D.try_change_row(i0, y);
@@ -223,8 +223,8 @@ struct test {
           break;
         case 6:
           if (D.size() == 0) break;
-          x  = RNG(10.0);
-          y  = RNG(10.0);
+          x  = RNG(5.0);
+          y  = RNG(5.0);
           i0 = RNG(s);
           j0 = RNG(s);
 
