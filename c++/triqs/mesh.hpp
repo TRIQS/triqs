@@ -32,6 +32,8 @@
 
 #include <mpi/vector.hpp>
 
+#include "./mesh/mesh_concepts.hpp"
+
 #include "./mesh/imtime.hpp"
 #include "./mesh/imfreq.hpp"
 #include "./mesh/retime.hpp"
