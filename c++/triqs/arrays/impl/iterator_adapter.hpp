@@ -31,16 +31,18 @@ namespace triqs {
   *    - StorageType : the storage.
   */
 
-    template <bool Const, typename IndexMapIterator, typename StorageType>
-    class iterator_adapter
-       : public std::iterator<std::forward_iterator_tag,
-                              std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>> {
+    template <bool Const, typename IndexMapIterator, typename StorageType> class iterator_adapter {
 
       triqs::arrays::mem::handle<typename StorageType::value_type, 'B'> storage_;
       IndexMapIterator it;
 
       public:
-      using value_type             = std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
+      using iterator_category = std::forward_iterator_tag;
+      using value_type        = std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
+      using difference_type   = std::ptrdiff_t;
+      using pointer           = value_type *;
+      using reference         = value_type &;
+
       using indexmap_iterator_type = IndexMapIterator;
 
       iterator_adapter()                         = default;
