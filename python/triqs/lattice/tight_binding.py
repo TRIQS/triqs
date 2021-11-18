@@ -96,6 +96,17 @@ class TBLattice(object):
 
     def hopping_dict(self): return self._hop
 
+    def get_kmesh(self, n_k):
+        if isinstance(n_k, int):
+            return MeshBrZone(self.bz, n_k)
+        else:
+            return MeshBrZone(self.bz, numpy.diag(n_k))
+
+    def get_rmesh(self, n_r):
+        if isinstance(n_r, int):
+            return MeshCycLat(self.bl, n_r)
+        else:
+            return MeshCycLat(self.bl, numpy.diag(n_r))
 
     def fourier(self, arg):
         """ C.f. documentation of TightBinding.fourier
