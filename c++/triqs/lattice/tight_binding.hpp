@@ -76,7 +76,7 @@ namespace triqs {
        * @return The value for $h_k$ as a complex matrix
        */
       template <typename K>
-      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2> or std::is_same_v<K, mesh::brzone>) auto fourier(K const &k) const {
+      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto fourier(K const &k) const {
         auto vals = [&](int j) {
           if constexpr (nda::ArrayOfRank<K, 1>) {
             return std::exp(2i * M_PI * nda::blas::dot(k, displ_vec_[j])) * overlap_mat_vec_[j];
@@ -99,7 +99,7 @@ namespace triqs {
        * @param k_mesh The brillouin-zone mesh
        * @return Green function on the k_mesh initialized with the fourier transform
        */
-      inline auto fourier_on_k_mesh(mesh::brzone const &k_mesh) {
+      inline auto fourier(mesh::brzone const &k_mesh) {
         auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
         for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range()) = nda::vector<double>(k); }
         auto kvecs_rec = make_regular(kvecs * k_mesh.domain().reciprocal_matrix_inv());
@@ -116,9 +116,9 @@ namespace triqs {
        * @param n_l The number of grid-points for each dimension
        * @return Green function on the k_mesh initialized with the fourier transform
        */
-      inline auto fourier_on_k_mesh(int n_l) {
+      inline auto fourier(int n_l) {
         auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
-        return fourier_on_k_mesh(k_mesh);
+        return fourier(k_mesh);
       }
 
       /**
@@ -148,8 +148,8 @@ namespace triqs {
        * @param k_mesh The brillouin-zone mesh
        * @return Green function on the k_mesh initialized with the dispersion values
        */
-      inline auto dispersion_on_k_mesh(mesh::brzone const &k_mesh) {
-        auto h_k = fourier_on_k_mesh(k_mesh);
+      inline auto dispersion(mesh::brzone const &k_mesh) {
+        auto h_k = fourier(k_mesh);
         auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_bands()});
         for (auto const &k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
         return e_k;
@@ -163,9 +163,9 @@ namespace triqs {
        * @param n_l The number of grid-points for each dimension
        * @return Green function on the k_mesh initialized with the dispersion values
        */
-      inline auto dispersion_on_k_mesh(int n_l) {
+      inline auto dispersion(int n_l) {
         auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
-        return dispersion_on_k_mesh(k_mesh);
+        return dispersion(k_mesh);
       }
 
       // ------------------- Comparison -------------------
@@ -213,7 +213,7 @@ namespace triqs {
     [[deprecated("Use tight_binding member-function 'fourier' instead")]] array<dcomplex, 3>
     energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
 
-    [[deprecated("Use tight_binding member-function 'dispersion_on_k_mesh' instead")]] array<double, 2> energies_on_bz_grid(tight_binding const &TB,
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<double, 2> energies_on_bz_grid(tight_binding const &TB,
                                                                                                                             int n_pts);
   } // namespace lattice
 } // namespace triqs

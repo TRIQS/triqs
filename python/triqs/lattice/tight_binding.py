@@ -91,30 +91,21 @@ class TBLattice(object):
         self.OrbitalNames = orbital_names
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
-    def latt_to_real_x(self, p) :
+    def latt_to_real_x(self, p):
         return self.bl.lattice_to_real_coordinates(numpy.array(p, numpy.float64))
 
-    def hopping_dict(self) : return self._hop
+    def hopping_dict(self): return self._hop
+
 
     def fourier(self, arg):
         """ C.f. documentation of TightBinding.fourier
         """
         return self.tb.fourier(arg)
 
-    def fourier_on_k_mesh(self, arg):
-        """ C.f. documentation of TightBinding.fourier_on_k_mesh
-        """
-        return self.tb.fourier_on_k_mesh(arg)
-
     def dispersion(self, arg):
         """ C.f. documentation of TightBinding.dispersion
         """
         return self.tb.dispersion(arg)
-
-    def dispersion_on_k_mesh(self, arg):
-        """ C.f. documentation of TightBinding.dispersion_on_k_mesh
-        """
-        return self.tb.dispersion_on_k_mesh(arg)
 
     def hopping(self, k_stack) :
         warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
