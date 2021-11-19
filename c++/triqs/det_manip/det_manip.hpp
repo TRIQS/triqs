@@ -658,17 +658,18 @@ namespace triqs {
 
         // check input
         {
-          auto const predicate = [this] (auto const &lhs, auto const &rhs) {
+          auto const predicate = [this,Nk] (auto const &lhs, auto const &rhs) {
             auto const &[prev, unused_1] = lhs;
             auto const &[curr, unused_2] = rhs;
-            return (curr == prev) || !(0 <= curr && curr <= N + 1);
+            return (curr == prev) || !(0 <= curr && curr <= N + Nk);
           };
           TRIQS_ASSERT(std::adjacent_find(ix.begin(), ix.end(), predicate) == ix.end());
           TRIQS_ASSERT(std::adjacent_find(jy.begin(), jy.end(), predicate) == jy.end());
         }
 
         // store it for complete_operation
-        if (N >= Nmax - 1 || w2.k != Nk) reserve(2 * Nmax, Nk);
+        if (N >= Nmax - 1) reserve(2 * Nmax, Nk);
+        if (w2.k != Nk) reserve(Nmax, Nk);
         last_try = InsertK;
         for (size_t k = 0; k < w2.k; ++k) {
           std::tie(w2.i[k], w2.x[k]) = ix[k];
