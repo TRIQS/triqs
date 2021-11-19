@@ -638,43 +638,45 @@ namespace triqs {
      * @category Operations
      */
 
-      value_type try_insert_k(std::vector<std::tuple<size_t, x_type>> ix, std::vector<std::tuple<size_t, y_type>> jy) {
+      value_type try_insert_k(std::vector<size_t> const& i, std::vector<size_t> const& j, std::vector<x_type> const& x, std::vector<y_type> const& y) {
         TRIQS_ASSERT(last_try == NoTry);
-        TRIQS_ASSERT(ix.size() == jy.size());
+        TRIQS_ASSERT(i.size() == x.size());
+        TRIQS_ASSERT(j.size() == y.size());
+        TRIQS_ASSERT(i.size() == j.size());
+        TRIQS_ASSERT(x.size() == y.size());
 
-        size_t const Nk = ix.size();
+        size_t const Nk = i.size();
 
-        std::sort(ix.begin(), ix.end(), [] (auto const &lhs, auto const &rhs) {
-          auto const &[a, unused_1] = lhs;
-          auto const &[b, unused_2] = rhs;
-          return a < b;
-        });
-
-        std::sort(jy.begin(), jy.end(), [] (auto const &lhs, auto const &rhs) {
-          auto const &[a, unused_1] = lhs;
-          auto const &[b, unused_2] = rhs;
-          return a < b;
-        });
-
-        // check input
-        {
-          auto const predicate = [this,Nk] (auto const &lhs, auto const &rhs) {
-            auto const &[prev, unused_1] = lhs;
-            auto const &[curr, unused_2] = rhs;
-            return (curr == prev) || !(0 <= curr && curr <= N + Nk);
-          };
-          TRIQS_ASSERT(std::adjacent_find(ix.begin(), ix.end(), predicate) == ix.end());
-          TRIQS_ASSERT(std::adjacent_find(jy.begin(), jy.end(), predicate) == jy.end());
-        }
+        auto const argsort = [] (auto const &vec) {
+          std::vector<size_t> idx(vec.size());
+          std::iota(idx.begin(), idx.end(), static_cast<size_t>(0));
+          std::stable_sort(idx.begin(), idx.end(), [&vec] (size_t const lhs, size_t const rhs) {
+            return vec[lhs] < vec[rhs];
+          });
+          return idx;
+        };
+        std::vector<size_t> idx = argsort(i);
+        std::vector<size_t> idy = argsort(j);
 
         // store it for complete_operation
         if (N >= Nmax - 1) reserve(2 * Nmax, Nk);
         if (w2.k != Nk) reserve(Nmax, Nk);
         last_try = InsertK;
         for (size_t k = 0; k < w2.k; ++k) {
-          std::tie(w2.i[k], w2.x[k]) = ix[k];
-          std::tie(w2.j[k], w2.y[k]) = jy[k];
+          w2.i[k] = i[idx[k]];
+          w2.x[k] = x[idx[k]];
+          w2.j[k] = j[idy[k]];
+          w2.y[k] = y[idy[k]];
         };
+
+        // check consistency
+        {
+          auto const predicate = [this,Nk] (size_t const prev, size_t const curr) {
+            return (curr == prev) || !(0 <= curr && curr <= N + Nk);
+          };
+          TRIQS_ASSERT(std::adjacent_find(w2.i.begin(), w2.i.end(), predicate) == w2.i.end());
+          TRIQS_ASSERT(std::adjacent_find(w2.j.begin(), w2.j.end(), predicate) == w2.j.end());
+        }
 
         // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
         for (size_t m = 0; m < w2.k; ++m) {
@@ -713,7 +715,7 @@ namespace triqs {
         return ksi * (newsign * sign);                // sign is unity, hence 1/sign == sign
       }
       value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
-        return try_insert_k({{i0, x0}, {i1, x1}}, {{j0, y0}, {j1, y1}});
+        return try_insert_k({i0, i1}, {j0, j1}, {x0, x1}, {y0, y1});
       }
 
       //------------------------------------------------------------------------------------------
