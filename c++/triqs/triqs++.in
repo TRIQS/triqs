@@ -18,9 +18,9 @@ if args.show:
     print("LDFLAGS=\"%s\""%(ldflags))
 elif args.ldflags:
     assert not args.cxxflags, "Please choose either -show, -ldflags or -cxxflags"
-    print(args.ldflags, end=' ')
+    print(ldflags)
 elif args.cxxflags:
-    print(args.cxxflags, end=' ')
+    print(cxxflags)
 else:
     compile_command = "@CMAKE_CXX_COMPILER@ -Wno-unused-command-line-argument %s %s %s"%(" ".join(additional_args), cxxflags, ldflags)
     os.system(compile_command)
