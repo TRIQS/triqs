@@ -17,7 +17,7 @@
 
 import unittest
 from triqs.lattice import BravaisLattice, BrillouinZone
-from triqs.lattice.utils import k_space_path
+from triqs.lattice.utils import k_space_path, TB_from_wannier90
 
 import numpy as np
 
@@ -35,7 +35,7 @@ class test_utils(unittest.TestCase):
         X     = np.array([0.5, 0.0, 0.0])
         Z     = np.array([0.0, 0.0, 0.5])
 
-        # ---- 
+        # ----
 
         num = 101
         paths = [(Gamma, M), (M, R), (X, Z)]
@@ -48,12 +48,27 @@ class test_utils(unittest.TestCase):
             kvec = kvecs[n*num:(n+1)*num]
             kvec_exact = ki[None,:] + np.linspace(0,1,num)[:,None] * dk[None,:]
             self.assertTrue(np.array_equal(kvec, kvec_exact))
-            
+
             dd = np.linalg.norm(np.dot(dk, bz.units))
-            dist_cmp_exact.append(dd + dist_cmp_exact[-1]) 
+            dist_cmp_exact.append(dd + dist_cmp_exact[-1])
 
         dist_cmp = np.concatenate((dist[0:1], dist[num-1::num]))
         self.assertTrue(np.array_equal(dist_cmp, dist_cmp_exact))
+
+    def test_TB_from_w90(self):
+
+        # try first with spin and add local
+        n_orb = 3
+        mu = -12.3461 * np.eye(n_orb*2)
+        TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=True, add_local=mu)
+        # and normal
+        mu = -12.3461 * np.eye(n_orb)
+        TB_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False, add_local=mu)
+
+        # check if orbitals are degenerate as in hr.dat
+        hr_0 = TB_w90.hopping_dict()[(0, 0, 0)]
+        self.assertTrue(hr_0[0, 0] == hr_0[1, 1])
+
 
 if __name__ == '__main__':
     unittest.main()
