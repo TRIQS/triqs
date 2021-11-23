@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <h5/h5.hpp>
+
 namespace triqs::mesh {
 
   /// The domain
@@ -30,4 +32,27 @@ namespace triqs::mesh {
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
   };
+
+  struct real_domain {
+    using point_t = double;
+
+    bool is_in_domain(point_t const & pt) { return !std::isnan(pt); }; // Q: -Inf & Inf
+    bool operator==(real_domain const &) const { return true; }
+
+    static std::string hdf5_format() { return "real_domain"; }
+    friend void h5_write(h5::group, std::string_view, real_domain const &) {}
+    friend void h5_read(h5::group, std::string_view, real_domain &) {}
+
+    // friend class boost::serialization::access;
+    template <class Archive> void serialize(Archive &, const unsigned int) {}
+  };
+
+  // type_domain. Domain convered by type (but nan, infs, ...)
+
+  // // Various instantiations
+  // struct R_domain : point_domain<double, true> {};
+  // struct C_domain : point_domain<std::complex<double>, true> {};
+  // template <int N> struct RN_domain : point_domain<std::array<double, N>, N == 1> {};
+  // template <int N> struct CN_domain : point_domain<std::array<std::complex<double>, N>, false> {};
+
 } // namespace triqs::mesh
