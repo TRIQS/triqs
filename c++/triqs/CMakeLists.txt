@@ -74,6 +74,11 @@ target_link_libraries(triqs PRIVATE h5::hdf5)
 # NDA (this provides blas/lapack linkeage)
 target_link_libraries(triqs PUBLIC nda::nda_c)
 
+# FMT
+target_link_libraries(triqs PUBLIC fmt)
+install(TARGETS fmt EXPORT triqs-dependencies)
+
+
 # ---------------------------------
 # Boost
 # ---------------------------------
