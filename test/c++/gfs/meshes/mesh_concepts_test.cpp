@@ -17,16 +17,22 @@
 
 #include "mesh_concept_test.hpp"
 #include <triqs/test_tools/gfs.hpp>
+#include <triqs/mesh/domains/real_complex.hpp>
+// #include <triqs/mesh/domains/legendre.hpp>
+// #include <triqs/mesh/domains/matsubara.hpp>
+
 
 using namespace triqs::mesh;
 
-TEST(MeshConcept, LinearMeshConceptTest) {
-  std::cout << "Check Domain Concept: " << type_name_domain<R_domain>() << std::endl;
-  std::cout << "Check Domain Concept: " << type_name_domain<matsubara_freq_domain>() << std::endl;
-  std::cout << "Check Domain Concept: " << type_name_domain<matsubara_time_domain>() << std::endl;
-  std::cout << "Check Domain Concept: " << type_name_domain<legendre_domain>() << std::endl;
-  std::cout << "Check Domain Concept: " << type_name_domain<discrete_domain>() << std::endl;
-  std::cout << "Check Domain Concept: " << type_name_domain<domain_product<R_domain, R_domain>>() << std::endl;
+TEST(MeshConcepts, DomainConceptTest) {
+  std::cout << "Check Domain Concept: " << type_name_domain<real_domain>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_domain<complex_domain>() << std::endl;
+  //
+  std::cout << "Check Domain Concept: " << type_name_domain<real_N_domain<2>>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_domain<real_N_domain<7>>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_domain<complex_N_domain<2>>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_domain<complex_N_domain<7>>() << std::endl;
+  //
 }
 
 MAKE_MAIN;
