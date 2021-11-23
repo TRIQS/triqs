@@ -20,13 +20,13 @@
 #pragma once
 #include "../details/mesh_tools.hpp"
 #include "./linear.hpp"
-#include "../domains/R.hpp"
+#include "../domains/real_complex.hpp"
 
 namespace triqs::mesh {
 
   /** A linear mesh on a segment on R */
-  struct segment_mesh : linear_mesh<R_domain> {
-    using B        = linear_mesh<R_domain>;
+  struct segment_mesh : linear_mesh<real_domain> {
+    using B        = linear_mesh<real_domain>;
     segment_mesh() = default;
     segment_mesh(double x_min, double x_max, int n_pts) : B(typename B::domain_t(), x_min, x_max, n_pts) {}
   };
