@@ -1,6 +1,8 @@
+// TRIQS: a Toolbox for Research in Interacting Quantum Systems
+//
 // Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
-// Copyright (c) 2018 Simons Foundation
+// Copyright (c) 2018-2021 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +17,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
+// Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, Philipp Dumitrescu
 
 #pragma once
 
@@ -24,7 +26,7 @@
 #include <string>
 #include <fmt/core.h>
 #include <h5/h5.hpp>
-#include "product.hpp"
+// #include "product.hpp"
 
 namespace triqs::mesh {
 
@@ -39,7 +41,8 @@ namespace triqs::mesh {
     }
   } // namespace impl
 
-  // Generic Implemenation for Numerical Types
+  // Generic Implemenation for Numerical Types (~ is_iec559 or std::complex<is_iec559>)
+  // Domain is full Type except NaNs, but including +-Inf
   template <typename T> struct numerical_type_domain_base {
     using point_t = T;
 
@@ -67,6 +70,8 @@ namespace triqs::mesh {
   struct complex_domain : numerical_type_domain_base<std::complex<double>> {
     static std::string hdf5_format() { return "complex_domain"; }
   };
+
+  // Q: Should we make these tuples / Product domains instead? (use forward parameter packs).
 
   template <int N> struct real_N_domain : numerical_type_domain_base<std::array<double, N>> {
     static std::string hdf5_format() { return fmt::format("real_N_domain_{:d}", N); } // labels

@@ -2,10 +2,9 @@
 #pragma once
 
 #include <triqs/mesh/mesh_concepts.hpp>
-#include <triqs/test_tools/gfs.hpp>
+#include <triqs/test_tools/arrays.hpp>
 #include <h5/h5.hpp>
 #include <iterator>
-
 #include <string_view>
 
 using namespace triqs::mesh;

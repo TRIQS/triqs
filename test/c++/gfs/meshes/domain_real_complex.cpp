@@ -19,13 +19,12 @@
 
 #include <triqs/mesh/domains/real_complex.hpp>
 
-#include <triqs/test_tools/gfs.hpp>
+#include <triqs/test_tools/arrays.hpp>
 #include <h5/h5.hpp>
 #include <iterator>
 
 #include <string_view>
 
-#include <triqs/test_tools/gfs.hpp>
 
 TEST(DomainRealComplex, RealDomain) {
 

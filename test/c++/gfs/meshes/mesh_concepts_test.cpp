@@ -16,11 +16,9 @@
 // Authors: Philipp Dumitrescu
 
 #include "mesh_concept_test.hpp"
-#include <triqs/test_tools/gfs.hpp>
 #include <triqs/mesh/domains/real_complex.hpp>
-// #include <triqs/mesh/domains/legendre.hpp>
+#include <triqs/mesh/domains/legendre.hpp>
 // #include <triqs/mesh/domains/matsubara.hpp>
-
 
 using namespace triqs::mesh;
 

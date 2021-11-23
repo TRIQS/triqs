@@ -18,15 +18,19 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <tuple>
+
 namespace triqs::mesh {
 
   template <typename... Domains> struct domain_product {
     using point_t = std::tuple<typename Domains::point_t...>;
-    std::tuple<Domains...> domains;
+    std::tuple<Domains...> domains{};
+
     domain_product() = default;
     domain_product(std::tuple<Domains...> const &dom_tpl) : domains(dom_tpl) {}
     domain_product(std::tuple<Domains...> &&dom_tpl) : domains(std::move(dom_tpl)) {}
-    domain_product(Domains const &... doms) : domains(doms...) {}
+    domain_product(Domains const &...doms) : domains(doms...) {}
+
     friend bool operator==(domain_product const &D1, domain_product const &D2) { return D1.domains == D2.domains; }
     // implement boost serializable, hdf5 if needed... (done at the mesh level).
   };

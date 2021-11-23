@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <itertools/itertools.hpp>
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 
@@ -31,7 +31,8 @@ namespace triqs::mesh {
   using nda::array;
   using nda::array_view;
   using nda::ellipsis;
-  using triqs::arrays::make_shape;
+  // using nda::make_shape;
+  using nda::eye;
   using nda::matrix;
   using nda::matrix_const_view;
   using nda::matrix_view;
