@@ -31,6 +31,7 @@ TEST(MeshConcepts, DomainConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_domain<complex_N_domain<2>>() << std::endl;
   std::cout << "Check Domain Concept: " << type_name_domain<complex_N_domain<7>>() << std::endl;
   //
+  std::cout << "Check Domain Concept: " << type_name_domain<legendre_domain>() << std::endl;
 }
 
 MAKE_MAIN;
