@@ -18,7 +18,7 @@
 #include "mesh_concept_test.hpp"
 #include <triqs/mesh/domains/real_complex.hpp>
 #include <triqs/mesh/domains/legendre.hpp>
-// #include <triqs/mesh/domains/matsubara.hpp>
+#include <triqs/mesh/domains/matsubara.hpp>
 
 using namespace triqs::mesh;
 
@@ -32,6 +32,10 @@ TEST(MeshConcepts, DomainConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_domain<complex_N_domain<7>>() << std::endl;
   //
   std::cout << "Check Domain Concept: " << type_name_domain<legendre_domain>() << std::endl;
+  //
+  std::cout << "Check Domain Concept: " << type_name_domain<matsubara_freq_domain>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_domain<matsubara_time_domain>() << std::endl;
+
 }
 
 MAKE_MAIN;

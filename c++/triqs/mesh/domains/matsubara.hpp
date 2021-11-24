@@ -19,6 +19,14 @@
  *
  ******************************************************************************/
 #pragma once
+
+#include <numbers>
+#include <fmt/core.h>
+#include <h5/h5.hpp>
+
+#include "../details/mesh_tools.hpp"
+#include "../../utility/exceptions.hpp"
+
 #include "../../utility/arithmetic_ops_by_cast.hpp"
 #include "../../utility/kronecker.hpp"
 
@@ -43,9 +51,16 @@ namespace triqs::mesh {
   *   and work on the index
   **/
   struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
-    long n;
+    long n; // index
+    long linear_index;
+    std::complex<double> value;
+    std::size_t mesh_hash;
+
     double beta;
     statistic_enum statistic;
+
+    // operator std::complex<double>() const { return value; }
+
     matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
     matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
     matsubara_freq(_long n_, double beta_, statistic_enum stat_) : n(n_.value), beta(beta_), statistic(stat_) {}
@@ -70,36 +85,53 @@ namespace triqs::mesh {
     return std::complex<double>{x} * std::complex<double>{y};
   }
 
+  inline bool kronecker(matsubara_freq const &freq) { return freq.n == 0; }
+  inline bool kronecker(matsubara_freq const &f1, matsubara_freq const &f2) { return f1.n == f2.n; }
+
   //---------------------------------------------------------------------------------------------------------
-  /// The domain
-  template <bool IsFreq> struct matsubara_domain {
-    using point_t = typename std::conditional<IsFreq, std::complex<double>, double>::type;
-    double beta;
-    statistic_enum statistic;
-    matsubara_domain(double beta, statistic_enum s) : beta(beta), statistic(s) {
-      if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction :  beta <0 : beta =" << beta << "\n";
+  // Domains
+
+  struct matsubara_time_domain; // Advance Declaration
+
+  struct matsubara_freq_domain {
+    using point_t = std::complex<double>;
+
+    double beta              = 0.0;
+    statistic_enum statistic = Fermion;
+
+    bool is_in_domain(point_t const &pt) {
+      double n_guess   = pt.imag() / (2 * std::numbers::pi / beta);
+      bool double_comp = (std::abs(n_guess - std::round(n_guess)) < 1.e-15);
+      return (pt.real() == 0.0) && double_comp;
     }
-    matsubara_domain() : matsubara_domain(1, Fermion) {}
-    matsubara_domain(matsubara_domain const &) = default;
-    matsubara_domain(matsubara_domain<!IsFreq> const &x) : matsubara_domain(x.beta, x.statistic) {}
-    bool operator==(matsubara_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
-    bool operator!=(matsubara_domain const &x) const { return !(operator==(x)); }
+
+    matsubara_freq_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
+      if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction : beta < 0 : beta =" << beta << "\n";
+    }
+
+    matsubara_freq_domain() = default;
+    matsubara_freq_domain(matsubara_time_domain const &x);
+
+    bool operator==(matsubara_freq_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
+    bool operator!=(matsubara_freq_domain const &) const = default;
+
+    static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
 
     /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string subgroup_name, matsubara_domain const &d) {
-      h5::group gr = fg.create_group(subgroup_name);
+    friend void h5_write(h5::group fg, std::string_view subgroup_name, matsubara_freq_domain const &d) {
+      h5::group gr = fg.create_group(std::string{subgroup_name});
       h5_write(gr, "beta", d.beta);
       h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
     }
 
     /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string subgroup_name, matsubara_domain &d) {
-      h5::group gr = fg.open_group(subgroup_name);
+    friend void h5_read(h5::group fg, std::string_view subgroup_name, matsubara_freq_domain &d) {
+      h5::group gr = fg.open_group(std::string{subgroup_name});
       double beta;
-      std::string statistic = " ";
+      std::string statistic{};
       h5_read(gr, "beta", beta);
       h5_read(gr, "statistic", statistic);
-      d = matsubara_domain(beta, (statistic == "F" ? Fermion : Boson));
+      d = matsubara_freq_domain(beta, (statistic == "F" ? Fermion : Boson));
     }
 
     //  BOOST Serialization
@@ -108,16 +140,63 @@ namespace triqs::mesh {
       ar &beta;
       ar &statistic;
     }
-    friend std::ostream &operator<<(std::ostream &sout, matsubara_domain const &d) {
+
+    friend std::ostream &operator<<(std::ostream &sout, matsubara_freq_domain const &d) {
       auto stat_cstr = (d.statistic == Boson ? "Boson" : "Fermion");
-      return sout << "Matsubara domain with beta = " << d.beta << ", statistic = " << stat_cstr;
+      return sout << fmt::format("Matsubara frequency domain with beta = {}, statistic = {}", d.beta, stat_cstr);
     }
   };
 
-  using matsubara_freq_domain = matsubara_domain<true>;
-  using matsubara_time_domain = matsubara_domain<false>;
+  struct matsubara_time_domain {
+    using point_t = double;
 
-  // ----- kronecker function : overload for matsubara_freq
-  inline bool kronecker(matsubara_freq const &freq) { return freq.n == 0; }
-  inline bool kronecker(matsubara_freq const &f1, matsubara_freq const &f2) { return f1.n == f2.n; }
+    double beta              = 0.0;
+    statistic_enum statistic = Fermion;
+
+    bool is_in_domain(point_t const &pt) { return (pt <= beta) && (0.0 <= pt); }
+
+    matsubara_time_domain() = default;
+    matsubara_time_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
+      if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction : beta < 0 : beta =" << beta << "\n";
+    }
+
+    matsubara_time_domain(matsubara_freq_domain const &x);
+
+    bool operator==(matsubara_time_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
+    bool operator!=(matsubara_time_domain const &) const = default;
+
+    static std::string hdf5_format() { return "MatsubaraTimeDomain"; }
+
+    /// Write into HDF5
+    friend void h5_write(h5::group fg, std::string_view subgroup_name, matsubara_time_domain const &d) {
+      h5::group gr = fg.create_group(std::string{subgroup_name});
+      h5_write(gr, "beta", d.beta);
+      h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
+    }
+
+    /// Read from HDF5
+    friend void h5_read(h5::group fg, std::string_view subgroup_name, matsubara_time_domain &d) {
+      h5::group gr = fg.open_group(std::string{subgroup_name});
+      double beta;
+      std::string statistic{};
+      h5_read(gr, "beta", beta);
+      h5_read(gr, "statistic", statistic);
+      d = matsubara_time_domain(beta, (statistic == "F" ? Fermion : Boson));
+    }
+
+    //  BOOST Serialization
+    friend class boost::serialization::access;
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+      ar &beta;
+      ar &statistic;
+    }
+
+    friend std::ostream &operator<<(std::ostream &sout, matsubara_time_domain const &d) {
+      return sout << fmt::format("Matsubara time domain with beta = {}, statistic = {}", d.beta, d.statistic);
+    }
+  };
+
+  inline matsubara_freq_domain::matsubara_freq_domain(matsubara_time_domain const &x) : matsubara_freq_domain{x.beta, x.statistic} {};
+  inline matsubara_time_domain::matsubara_time_domain(matsubara_freq_domain const &x) : matsubara_time_domain{x.beta, x.statistic} {};
+
 } // namespace triqs::mesh

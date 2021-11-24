@@ -47,8 +47,8 @@ namespace triqs::mesh {
   class imfreq : tag::mesh, public tail_fitter_handle {
 
     public:
-    ///type of the domain: matsubara_domain<true>
-    using domain_t = matsubara_domain<true>;
+    ///type of the domain: matsubara_freq_domain
+    using domain_t = matsubara_freq_domain;
 
     ///type of the Matsubara index $n$ (as in $i\omega_n$)
     using index_t = _long;

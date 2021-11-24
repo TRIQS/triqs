@@ -43,9 +43,11 @@ namespace cpp2py {
   // -----------------------------------
   // domains
   // -----------------------------------
-
-  template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
   template <> struct py_converter<triqs::mesh::real_domain> : py_converter_from_reductor<triqs::mesh::real_domain> {};
+
+  // template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
+   template <> struct py_converter<triqs::mesh::matsubara_time_domain> : py_converter_from_reductor<triqs::mesh::matsubara_time_domain> {};
+   template <> struct py_converter<triqs::mesh::matsubara_freq_domain> : py_converter_from_reductor<triqs::mesh::matsubara_freq_domain> {};
 
   // -----------------------------------
   // all_t mapped to all
