@@ -118,20 +118,19 @@ namespace triqs::mesh {
     static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
 
     /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string_view subgroup_name, matsubara_freq_domain const &d) {
-      h5::group gr = fg.create_group(std::string{subgroup_name});
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain const &d) {
+      h5::group gr = fg.create_group(subgroup_name);
       h5_write(gr, "beta", d.beta);
       h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
     }
 
     /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string_view subgroup_name, matsubara_freq_domain &d) {
-      h5::group gr = fg.open_group(std::string{subgroup_name});
-      double beta;
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain &d) {
+      h5::group gr = fg.open_group(subgroup_name);
       std::string statistic{};
-      h5_read(gr, "beta", beta);
+      h5_read(gr, "beta", d.beta);
       h5_read(gr, "statistic", statistic);
-      d = matsubara_freq_domain(beta, (statistic == "F" ? Fermion : Boson));
+      d.statistic = "F" ? Fermion : Boson;
     }
 
     //  BOOST Serialization
@@ -168,15 +167,15 @@ namespace triqs::mesh {
     static std::string hdf5_format() { return "MatsubaraTimeDomain"; }
 
     /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string_view subgroup_name, matsubara_time_domain const &d) {
-      h5::group gr = fg.create_group(std::string{subgroup_name});
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, matsubara_time_domain const &d) {
+      h5::group gr = fg.create_group(subgroup_name);
       h5_write(gr, "beta", d.beta);
       h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
     }
 
     /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string_view subgroup_name, matsubara_time_domain &d) {
-      h5::group gr = fg.open_group(std::string{subgroup_name});
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, matsubara_time_domain &d) {
+      h5::group gr = fg.open_group(subgroup_name);
       double beta;
       std::string statistic{};
       h5_read(gr, "beta", beta);

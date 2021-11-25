@@ -36,7 +36,7 @@ namespace triqs::mesh {
   };
 
   template <typename T>
-  concept H5Serializable = requires(T const &tcr, T &tr, h5::group g, std::string_view subgroup_name) {
+  concept H5Serializable = requires(T const &tcr, T &tr, h5::group g, std::string const &subgroup_name) {
     { tcr.hdf5_format() } -> std::convertible_to<std::string>;
     {h5_write(g, subgroup_name, tcr)};
     {h5_read(g, subgroup_name, tr)};
