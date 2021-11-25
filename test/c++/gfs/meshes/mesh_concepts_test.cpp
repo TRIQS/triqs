@@ -16,9 +16,11 @@
 // Authors: Philipp Dumitrescu
 
 #include "mesh_concept_test.hpp"
+// Domains
 #include <triqs/mesh/domains/real_complex.hpp>
 #include <triqs/mesh/domains/legendre.hpp>
 #include <triqs/mesh/domains/matsubara.hpp>
+#include <triqs/mesh/domains/interval.hpp>
 
 using namespace triqs::mesh;
 
@@ -35,7 +37,17 @@ TEST(MeshConcepts, DomainConceptTest) {
   //
   std::cout << "Check Domain Concept: " << type_name_domain<matsubara_freq_domain>() << std::endl;
   std::cout << "Check Domain Concept: " << type_name_domain<matsubara_time_domain>() << std::endl;
+  //
+  std::cout << "Check Domain Concept: " << type_name_domain<real_interval_domain>() << std::endl;
+}
 
+TEST(MeshConcepts, IntervalDomainConceptTest) {
+  //
+  std::cout << "Check Domain Concept: " << type_name_interval_domain<legendre_domain>() << std::endl;
+  //
+  std::cout << "Check Domain Concept: " << type_name_interval_domain<matsubara_time_domain>() << std::endl;
+  //
+  std::cout << "Check Domain Concept: " << type_name_interval_domain<real_interval_domain>() << std::endl;
 }
 
 MAKE_MAIN;

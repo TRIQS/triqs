@@ -49,6 +49,14 @@ namespace triqs::mesh {
     { t.is_in_domain(pt) } -> std::same_as<bool>;
   };
 
+  template <typename D>
+  concept IntervalDomain = Domain<D> && requires(D const &m) {
+    requires std::totally_ordered<typename D::point_t>;
+    requires std::regular<typename D::point_t>;
+    { m.min() } -> std::same_as<typename D::point_t>;
+    { m.max() } -> std::same_as<typename D::point_t>;
+  };
+
   // A mesh is a domain and a iterator ("std::range") over a subset of that domain (which may be the full domain).
   // Mesh must be h5 serializable and hashable (to quickly check if a mesh point originates from a mesh)
   template <typename M>
