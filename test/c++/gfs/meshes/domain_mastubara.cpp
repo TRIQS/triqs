@@ -48,6 +48,8 @@ TEST(DomainMatsubara, TimeDomain) {
   triqs::mesh::matsubara_time_domain m3(75.0, triqs::mesh::Fermion);
   EXPECT_TRUE(m3 != m2);
   EXPECT_TRUE(m3 != m1);
+
+  std::cout << m2 << std::endl;
 }
 
 TEST(DomainMatsubara, FreqDomain) {
@@ -62,6 +64,8 @@ TEST(DomainMatsubara, FreqDomain) {
   EXPECT_FALSE(m1.is_in_domain({1.0, 0.0}));
   EXPECT_FALSE(m1.is_in_domain({1.0, 2 * std::numbers::pi * 5 / beta1}));
   EXPECT_FALSE(m1.is_in_domain({-5.0, 2 * std::numbers::pi * 5 / beta1}));
+
+  std::cout << m1 << std::endl;
 }
 
 MAKE_MAIN;

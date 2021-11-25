@@ -86,7 +86,7 @@ namespace triqs::mesh {
     domain_t const &domain() const { return _dom; }
 
     /// Size (linear) of the mesh of the window
-    long size() const { return L; }
+    [[nodiscard]] auto size() const { return L; }
 
     /// Is the point in mesh ?
     static constexpr bool is_within_boundary(all_t) { return true; }
@@ -145,9 +145,7 @@ namespace triqs::mesh {
     friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear_mesh &m, const char *tag_expected) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format_as_string(gr, tag_expected, true);
-      typename linear_mesh::domain_t dom;
-      double a, b;
-      long L;
+      size_t L;
       h5_read(gr, "domain", dom);
       h5_read(gr, "min", a);
       h5_read(gr, "max", b);
@@ -174,7 +172,7 @@ namespace triqs::mesh {
     // ------------------------------------------------
     private:
     domain_t _dom;
-    long L;
+    size_t L;
     double xmin, xmax, del, del_inv;
   };
 

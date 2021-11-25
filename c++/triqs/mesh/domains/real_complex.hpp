@@ -46,7 +46,7 @@ namespace triqs::mesh {
   template <typename T> struct numerical_type_domain_base {
     using point_t = T;
 
-    bool is_in_domain(point_t const &pt) {
+    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
       using std::isnan;
       using triqs::mesh::impl::isnan;
       return !isnan(pt);
@@ -70,8 +70,6 @@ namespace triqs::mesh {
   struct complex_domain : numerical_type_domain_base<std::complex<double>> {
     static std::string hdf5_format() { return "complex_domain"; }
   };
-
-  // Q: Should we make these tuples / Product domains instead? (use forward parameter packs).
 
   template <int N> struct real_N_domain : numerical_type_domain_base<std::array<double, N>> {
     static std::string hdf5_format() { return fmt::format("real_N_domain_{:d}", N); } // labels

@@ -19,6 +19,7 @@
 
 #pragma once
 #include "./../gf/flatten.hpp"
+#include "triqs/mesh/domains/matsubara.hpp"
 #include <triqs/utility/tuple_tools.hpp>
 
 namespace triqs::gfs {
@@ -43,13 +44,13 @@ namespace triqs::gfs {
   // FIXME : DOC
   inline imfreq make_adjoint_mesh(imtime const &m, int n_iw = -1) {
     if (n_iw == -1) n_iw = (m.size() - 1) / 6;
-    return {m.domain(), n_iw};
+    return {triqs::mesh::matsubara_freq_domain{m.domain()}, static_cast<size_t>(n_iw)};
   }
 
   // FIXME : DOC
   inline imtime make_adjoint_mesh(imfreq const &m, int n_tau = -1) {
     if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
-    return {m.domain(), n_tau};
+    return {triqs::mesh::matsubara_time_domain{m.domain()}, static_cast<size_t>(n_tau)};
   }
 
   // FIXME : DOC

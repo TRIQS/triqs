@@ -109,7 +109,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                 doc = """""")
 
 # rebinning_tau
-m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, int new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
+m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, size_t new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
 
 # GfLegendre specific functions
 m.add_function("void enforce_discontinuity(gf_view<triqs::gfs::legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")

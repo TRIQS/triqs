@@ -50,7 +50,7 @@ namespace triqs::mesh {
      * @param dom Matsubara time domain
      * @param n_tau Number of mesh-points
      */
-    imtime(matsubara_time_domain d, long n_tau) : B(d, 0, d.beta, n_tau) {}
+    imtime(matsubara_time_domain d, size_t n_tau) : B(d, 0, d.beta, n_tau) {}
 
     /**
      * Construct a Mesh of imaginary times on the interval [0,beta]
@@ -60,7 +60,7 @@ namespace triqs::mesh {
      * @param S Statistic (Fermion or Boson)
      * @param n_tau Number of mesh-points
      */
-    imtime(double beta, statistic_enum S, long n_tau) : imtime({beta, S}, n_tau) {}
+    imtime(double beta, statistic_enum S, size_t n_tau) : imtime({beta, S}, n_tau) {}
 
     // -------------------- print -------------------
 

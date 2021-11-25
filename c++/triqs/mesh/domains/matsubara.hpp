@@ -99,9 +99,9 @@ namespace triqs::mesh {
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
 
-    bool is_in_domain(point_t const &pt) {
+    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
       double n_guess   = pt.imag() / (2 * std::numbers::pi / beta);
-      bool double_comp = (std::abs(n_guess - std::round(n_guess)) < 1.e-15);
+      bool double_comp = (std::abs(n_guess - std::round(n_guess)) < 1.e-15); // TODO: Fix the double comparrison!!
       return (pt.real() == 0.0) && double_comp;
     }
 
@@ -110,10 +110,9 @@ namespace triqs::mesh {
     }
 
     matsubara_freq_domain() = default;
-    matsubara_freq_domain(matsubara_time_domain const &x);
+    explicit matsubara_freq_domain(matsubara_time_domain const &x);
 
-    bool operator==(matsubara_freq_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
-    bool operator!=(matsubara_freq_domain const &) const = default;
+    bool operator==(matsubara_freq_domain const &D) const = default;
 
     static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
 
@@ -152,17 +151,19 @@ namespace triqs::mesh {
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
 
-    bool is_in_domain(point_t const &pt) { return (pt <= beta) && (0.0 <= pt); }
+    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (pt <= beta) && (0.0 <= pt); }
+
+    [[nodiscard]] constexpr point_t min() const { return 0.0; }
+    [[nodiscard]] point_t max() const { return beta; }
 
     matsubara_time_domain() = default;
     matsubara_time_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
       if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction : beta < 0 : beta =" << beta << "\n";
     }
 
-    matsubara_time_domain(matsubara_freq_domain const &x);
+    explicit matsubara_time_domain(matsubara_freq_domain const &x);
 
-    bool operator==(matsubara_time_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
-    bool operator!=(matsubara_time_domain const &) const = default;
+    bool operator==(matsubara_time_domain const &D) const = default;
 
     static std::string hdf5_format() { return "MatsubaraTimeDomain"; }
 

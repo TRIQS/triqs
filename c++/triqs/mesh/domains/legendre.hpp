@@ -33,6 +33,9 @@ namespace triqs::mesh {
     statistic_enum statistic = Fermion;
     size_t max_n             = 1; // Is this inclusive order not??
 
+    [[nodiscard]] constexpr point_t min() const { return 0; }
+    [[nodiscard]] point_t max() const { return max_n; }
+
     // Do we need this ctor??
     legendre_domain() = default;
 
@@ -45,14 +48,9 @@ namespace triqs::mesh {
      */
     legendre_domain(double beta_, statistic_enum statistic_, point_t max_n_) : beta{beta_}, statistic{statistic_}, max_n{max_n_} {};
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (0 <= pt) && (pt <= max_n); };
+    [[nodiscard]] size_t size() const { return max_n + 1; };
 
-    [[nodiscard]] size_t size() const { return max_n; };
-
-    bool operator==(legendre_domain const &D) const {
-      return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic) && (max_n == D.max_n));
-    }
-    bool operator!=(legendre_domain const &) const = default;
+    bool operator==(legendre_domain const &) const = default;
 
     [[nodiscard]] std::string hdf5_format() const { return "LegendreDomain"; }
 

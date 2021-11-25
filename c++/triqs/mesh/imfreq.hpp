@@ -74,7 +74,7 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(domain_t dom, long n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
+    imfreq(domain_t dom, size_t n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
       _last_index = n_iw - 1; // total number of points
       if (opt == option::positive_frequencies_only) {
         _first_index = 0;
@@ -89,16 +89,12 @@ namespace triqs::mesh {
     /**
      * Construct a Mesh of Matsubara frequencies on a Matsubara domain
      *
-     * @param dom The Matsubara domain
-     * @param n_iw The number of positive Matsubara frequencies
-     * @param option Wether to use all frequencies, or only the positive ones
-     *
      * @param beta Inverse temperature
      * @param S Statistic (Fermion or Boson)
-     * @param n_iw defined as n_iw = n_max + 1 (n_max: last matsubara index)
-     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
+     * @param n_iw The number of positive Matsubara frequencies
+     * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(double beta, statistic_enum S, long n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}
+    imfreq(double beta, statistic_enum S, size_t n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}
 
     /**
      * @param dom
@@ -229,7 +225,7 @@ namespace triqs::mesh {
       int pos_freq = 0;
       if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
       if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
-      int n_iw  = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
+      size_t n_iw = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
       auto opt  = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
       m         = imfreq{std::move(dom), n_iw, opt};
     }
@@ -249,7 +245,7 @@ namespace triqs::mesh {
     // ------------------------------------------------
     private:
     domain_t _dom;
-    int _n_iw;
+    size_t _n_iw;
     option _opt;
     long _first_index, _last_index;
   };

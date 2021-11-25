@@ -28,7 +28,7 @@ namespace triqs {
     //-------------------------------------------------------
     // For Imaginary Time functions
     // ------------------------------------------------------
-    gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, int new_n_tau) {
+    gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, size_t new_n_tau) {
 
       auto const &old_m = g.mesh();
       gf<mesh::imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, g.target_shape()};

@@ -192,14 +192,14 @@ namespace triqs {
 
     /// G(\tau) from atom_diag
     template <bool Complex>
-    block_gf<imtime> atomic_g_tau(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_tau,
+    block_gf<imtime> atomic_g_tau(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, size_t n_tau,
                                   excluded_states_t const &excluded_states) {
       auto g = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
       atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, make_term_proc<Complex>(beta, g()));
       return g;
     }
-    template block_gf<imtime> atomic_g_tau(ATOM_DIAG_R const &, double, gf_struct_t const &, int, excluded_states_t const &);
-    template block_gf<imtime> atomic_g_tau(ATOM_DIAG_C const &, double, gf_struct_t const &, int, excluded_states_t const &);
+    template block_gf<imtime> atomic_g_tau(ATOM_DIAG_R const &, double, gf_struct_t const &, size_t, excluded_states_t const &);
+    template block_gf<imtime> atomic_g_tau(ATOM_DIAG_C const &, double, gf_struct_t const &, size_t, excluded_states_t const &);
 
     // -----------------------------------------------------------------
 
@@ -234,14 +234,14 @@ namespace triqs {
 
     /// G(i\omega) from atom_diag
     template <bool Complex>
-    block_gf<imfreq> atomic_g_iw(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_iw,
+    block_gf<imfreq> atomic_g_iw(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, size_t n_iw,
                                  excluded_states_t const &excluded_states) {
       auto g = block_gf<imfreq>{{beta, Fermion, n_iw}, gf_struct};
       atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, make_term_proc<Complex>(g()));
       return g;
     }
-    template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_R const &, double, gf_struct_t const &, int, excluded_states_t const &);
-    template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_C const &, double, gf_struct_t const &, int, excluded_states_t const &);
+    template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_R const &, double, gf_struct_t const &, size_t, excluded_states_t const &);
+    template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_C const &, double, gf_struct_t const &, size_t, excluded_states_t const &);
 
     // -----------------------------------------------------------------
 
