@@ -18,7 +18,7 @@
 from io import StringIO
 import numpy as np
 
-__all__ = ['k_space_path']
+__all__ = ['k_space_path', 'TB_from_wannier90']
 
 
 def k_space_path(paths, num=101, bz=None):
@@ -86,58 +86,28 @@ def parse_hopping_from_wannier90_hr_dat(filename):
     """
 
     with open(filename, 'r') as fd:
+        fd.readline()  # eliminate time header
+        num_wann = int(fd.readline())
+        nrpts = int(fd.readline())
         lines = fd.readlines()
 
-    lines.pop(0)  # pop time header
-
-    num_wann = int(lines.pop(0))
-    nrpts = int(lines.pop(0))
-
-    nlines = int(np.ceil(float(nrpts / 15.)))
-
-    deg = np.array([])
-    for line in lines[:nlines]:
-        deg = np.concatenate((deg, np.loadtxt(StringIO(line), dtype=int, ndmin=1)))
-
+    # Read R Vector degeneracies, At most 15 elements before line-break
+    nlines = int(np.ceil(nrpts / 15.))
+    deg = np.array("".join(lines[:nlines]).split(), dtype=int)
     assert deg.shape == (nrpts,)
 
-    hopp = "".join(lines[nlines:])
-    hopp = np.loadtxt(StringIO(hopp))
+    # Read R Vector and Hopping data
+    dat = "".join(lines[nlines:])
+    dat = np.loadtxt(StringIO(dat))
+    dat = dat.reshape(nrpts, num_wann, num_wann, 7)
+    R = dat[:, 0, 0, 0:3].astype(int)
+    hopp = dat[..., 5] + 1.j * dat[..., 6]
 
-    assert hopp.shape == (num_wann**2 * nrpts, 7)
+    # Account for degeneracy of the Wigner-Seitz points
+    hopp /= deg[:, None, None]
 
-    # Lattice coordinates in multiples of lattice vectors
-    R = np.array(hopp[:, :3], dtype=int)
-    # orbital index pairs, wannier90 counts from 1, fix by remove 1
-    nm = np.array(hopp[:, 3:5], dtype=int) - 1
-
-    t_re = hopp[:, 5]
-    t_im = hopp[:, 6]
-
-    # complex hopping amplitudes for each R, mn (H(R)_{mn})
-    t = t_re + 1.j * t_im
-
-    # -- Dict with hopping matrices
-    r_dict = {}
-    hopp_dict = {}
-    for idx in range(R.shape[0]):
-        r = tuple(R[idx])
-
-        if r not in r_dict:
-            r_dict[r] = 1
-        else:
-            r_dict[r] += 1
-
-        if r not in hopp_dict:
-            hopp_dict[r] = np.zeros((num_wann, num_wann), dtype=complex)
-
-        n, m = nm[idx]
-        hopp_dict[r][n, m] = t[idx]
-
-    # -- Account for degeneracy of the Wigner-Seitz points
-
-    for r, weight in zip(list(r_dict.keys()), deg):
-        hopp_dict[r] /= weight
+    # Dict with hopping matrices
+    hopp_dict = {tuple(R[i]): hopp[i] for i in range(nrpts)}
 
     return hopp_dict, num_wann
 
@@ -174,25 +144,20 @@ def parse_lattice_vectors_from_wannier90_wout(filename):
     if 'Lattice Vectors' not in line:
         raise IOError
 
+    # Read vector data and scale by unit length
     lines = "".join(lines[idx+1:idx+4])
-    array = np.loadtxt(StringIO(lines), usecols=(1, 2, 3))
+    dat = np.loadtxt(StringIO(lines), usecols=(1, 2, 3))
+    dat *= unit
 
-    array *= unit
-
-    # -- convert 3x3 array to list of tuples
-    vectors = []
-    for idx in range(array.shape[0]):
-        v = tuple(array[idx])
-        vectors.append(v)
+    # Convert 3x3 data to list of tuples
+    vectors = [tuple(dat[i]) for i in range(3)]
 
     return vectors
 
 
-def extend_wannier90_to_spin(hopping, num_wann):
-    hopping_spin = {}
-    for key, value in hopping.items():
-        hopping_spin[key] = np.kron(np.eye(2), value)
-    return hopping_spin, 2 * num_wann
+def extend_wannier90_to_spin(hopp_dict, num_wann):
+    hopp_dict_spin = {k: np.kron(np.eye(2), v) for k, v in hopp_dict.items()}
+    return hopp_dict_spin, 2 * num_wann
 
 
 def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
@@ -222,15 +187,17 @@ def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
 
     from triqs.lattice.tight_binding import TBLattice
 
-    hopping, num_wann = parse_hopping_from_wannier90_hr_dat(path + seed + '_hr.dat')
+    hopp_dict, num_wann = parse_hopping_from_wannier90_hr_dat(path + seed + '_hr.dat')
     units = parse_lattice_vectors_from_wannier90_wout(path + seed + '.wout')
 
     if extend_to_spin:
-        hopping, num_wann = extend_wannier90_to_spin(hopping, num_wann)
+        hopp_dict, num_wann = extend_wannier90_to_spin(hopp_dict, num_wann)
 
     if add_local is not None:
-        hopping[(0, 0, 0)] += add_local
+        hopp_dict[(0, 0, 0)] += add_local
 
-    TBL = TBLattice(units=units, hopping=hopping, orbital_positions=[(0, 0, 0)]*num_wann,
+    # Should we use hopp_dict or hopping?
+    TBL = TBLattice(units=units, hopping=hopp_dict,
+                    orbital_positions=[(0, 0, 0)]*num_wann,
                     orbital_names=[str(i) for i in range(num_wann)])
     return TBL
