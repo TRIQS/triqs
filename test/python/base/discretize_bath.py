@@ -18,20 +18,20 @@
 # Authors: Alexander Hampel, Nils Wentzell
 
 import numpy as np
-from triqs.gf import *
+from triqs.gf import MeshImFreq, MeshImTime
 from triqs.gf.tools import discretize_bath, make_delta
-from triqs.utility.comparison_tests import *
+from triqs.utility.comparison_tests import assert_gfs_are_close
 
 # build delta from discretized values
-mesh=MeshImFreq(beta=40, S='Fermion', n_max=200)
+mesh = MeshImFreq(beta=40, S='Fermion', n_max=200)
 
 hoppings = np.array([[0.2, 0.6]])
 energies = np.array([0.0, 0.5])
 
-delta_iw = make_delta(V= hoppings, eps=energies, mesh=mesh)
+delta_iw = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in = delta_iw, Nb = 2, eps0=2.5, V0=0.1, tol=1e-10)
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=2, eps0=2.5, V0=0.1, tol=1e-10)
 
 # compare to given values , resulting V can be correct up to a global sign
 assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
@@ -41,18 +41,18 @@ assert_gfs_are_close(delta_disc_iw, delta_iw)
 
 #################################################
 # second test with 2x2 delta input and init guess
-mesh=MeshImTime(beta=40, S='Fermion', n_max=1001)
+mesh = MeshImTime(beta=40, S='Fermion', n_max=1001)
 
-hoppings = np.array([[ 6.1916012067e-01, 0.0, 3.4998359745e-01, 0.0, 1.3545326772e-01, 0.0, 2.4378742241e-01, 0.0],
-                     [ 0.0, 3.3503877422e-01, 0.0, 1.8849071562e-01, 0.0, -2.2889123931e-01, 0.0, -4.7688592983e-02]])
+hoppings = np.array([[6.1916012067e-01, 0.0, 3.4998359745e-01, 0.0, 1.3545326772e-01, 0.0, 2.4378742241e-01, 0.0],
+                     [0.0, 3.3503877422e-01, 0.0, 1.8849071562e-01, 0.0, -2.2889123931e-01, 0.0, -4.7688592983e-02]])
 
 energies = np.array([-1.5437759000e+00, -4.0244628425e-01, -3.3678965769e-01, -3.8795127563e-02,
                      9.9602047476e-03,  1.6012620754e-01,  3.4692574848e-01,  2.0529795026e+03])
 
-delta_tau = make_delta(V= hoppings, eps=energies, mesh=mesh)
+delta_tau = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 8, eps0= energies, V0=hoppings, tol=1e-10, maxiter=100000)
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=8, eps0=energies, V0=hoppings, tol=1e-10, maxiter=100000)
 
 # compare to given values
 assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
@@ -62,7 +62,7 @@ assert_gfs_are_close(delta_disc_tau, delta_tau)
 
 # #################################################
 # test blockGf
-mesh=MeshImTime(beta=40, S='Fermion', n_max=1001)
+mesh = MeshImTime(beta=40, S='Fermion', n_max=1001)
 
 hoppings = [np.array([[0.2, 0.1, -0.5, 0.15]]),
             np.array([[0.2, -0.35, 0.7, 0.1]])]
@@ -70,10 +70,10 @@ hoppings = [np.array([[0.2, 0.1, -0.5, 0.15]]),
 energies = [np.array([-2.2, -1.1, 0.0, 0.7]),
             np.array([-1.7, -0.3, -0.1, 0.2])]
 
-delta_tau = make_delta(V= hoppings, eps=energies, mesh=mesh)
+delta_tau = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 4, eps0= energies, V0=hoppings, tol=1e-10, maxiter=100000)
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=energies, V0=hoppings, tol=1e-10, maxiter=100000)
 
 # compare to given values
 for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
@@ -84,7 +84,7 @@ for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delt
 
 #################################################
 # and test without providing input parameters
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in = delta_tau, Nb = 4, eps0= 2, V0=0.4, tol=1e-15, maxiter=200, method='basinhopping')
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=2, V0=0.4, tol=1e-15, maxiter=200, method='basinhopping')
 
 # compare to given values
 for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
