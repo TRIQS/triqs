@@ -69,6 +69,16 @@ class test_utils(unittest.TestCase):
         hr_0 = TB_w90.hopping_dict()[(0, 0, 0)]
         self.assertTrue(hr_0[0, 0] == hr_0[1, 1])
 
+        Gamma = np.array([0.0, 0.0, 0.0])
+        M = np.array([0.5, 0.5, 0.0])
+        paths = [(Gamma, M)]
+        kvecs, dist = k_space_path(paths, num=101, bz=TB_w90.bz)
+
+        # test dispersion
+        epsilon_k = TB_w90.dispersion(kvecs)
+        # test fourier to obtain H_k
+        H_k = TB_w90.fourier(TB_w90.get_kmesh(11))
+
 
 if __name__ == '__main__':
     unittest.main()
