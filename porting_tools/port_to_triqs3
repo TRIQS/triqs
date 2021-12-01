@@ -48,6 +48,7 @@ repl_dict = {
         "matsubara_mesh_opt": "imfreq::option",
         "get_dimensions()": "dims()",
         "locate_neighbours": "closest_index",
+        "linear_dims": "dims",
         # --- Stat Changes ---
         "#include <triqs/statistics": "#include <triqs/stat",
         "triqs::statistics": "triqs::stat",
