@@ -35,12 +35,15 @@ bl.add_constructor(signature = "(matrix<double> units)",
 bl.add_constructor(signature = "()",
                    doc = "")
 
-bl.add_property(getter = cfunction("int ndim()"), doc = "Number Dimension of the lattice")
-bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals in the unit cell")
 bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing lattice basis vectors as rows")
+bl.add_property(getter = cfunction("int ndim()"), doc = "Number of dimensions")
+bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals in the unit cell")
+bl.add_property(getter = cfunction("std::vector<r_t> orbital_positions()"), doc = "Return the vector of orbital positions")
+bl.add_property(getter = cfunction("std::vector<std::string> orbital_names()"), doc = "Return the vector of orbital names")
+
 
 bl.add_method(name = "lattice_to_real_coordinates", 
-              signature = "r_t lattice_to_real_coordinates(r_cvt x)",
+              signature = "r_t lattice_to_real_coordinates(r_t x)",
               doc = "Transform into real coordinates.")
 
 module.add_class(bl)
@@ -107,6 +110,10 @@ tb.add_property(getter = cfunction("std::vector<matrix<dcomplex>> overlap_mat_ve
 
 tb.add_property(getter = cfunction("triqs::lattice::bravais_lattice lattice()"),
                 doc = """The underlying bravais lattice""")
+
+tb.add_method(name = "lattice_to_real_coordinates",
+              signature = "r_t lattice_to_real_coordinates(r_t x)",
+              doc = "Transform into real coordinates.")
 
 tb.add_method(name = "fourier",
               signature = "matrix<dcomplex> (k_cvt K)",

@@ -66,7 +66,7 @@ class test_utils(unittest.TestCase):
         TB_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False, add_local=mu)
 
         # check if orbitals are degenerate as in hr.dat
-        hr_0 = TB_w90.hopping_dict()[(0, 0, 0)]
+        hr_0 = TB_w90.hoppings[(0, 0, 0)]
         self.assertTrue(hr_0[0, 0] == hr_0[1, 1])
 
         Gamma = np.array([0.0, 0.0, 0.0])

@@ -61,8 +61,11 @@ namespace triqs {
       /// Return a vector containing all overlap matrices
       auto const &overlap_mat_vec() const { return overlap_mat_vec_; }
 
-      /// Number of bands, i.e. size of the matrix t(k)
-      int n_bands() const { return bl_.n_orbitals(); }
+      /// Transform into real coordinates.
+      template <typename R> r_t lattice_to_real_coordinates(R const &x) const { return bl_.lattice_to_real_coordinates(x); }
+
+      /// Number of orbitals / bands, i.e. size of the matrix t(k)
+      int n_orbitals() const { return bl_.n_orbitals(); }
 
       // calls F(R, t(R)) for all R
       template <typename F> friend void foreach (tight_binding const &tb, F f) {
@@ -112,7 +115,7 @@ namespace triqs {
         auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
         for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range()) = nda::vector<double>(k); }
         auto kvecs_rec = make_regular(kvecs * k_mesh.domain().reciprocal_matrix_inv());
-        auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_bands(), n_bands()});
+        auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_orbitals(), n_orbitals()});
         h_k.data()     = fourier(kvecs_rec);
         return h_k;
       }
@@ -144,7 +147,7 @@ namespace triqs {
         } else { // Rank==2
           auto h_k = fourier(k);
           auto n_k = h_k.shape()[0];
-          auto res = nda::array<double, 2>(n_k, n_bands());
+          auto res = nda::array<double, 2>(n_k, n_orbitals());
           for (auto l : range(n_k)) res(l, range()) = nda::linalg::eigenvalues(h_k(l, nda::ellipsis()));
           return res;
         }
@@ -159,7 +162,7 @@ namespace triqs {
        */
       inline auto dispersion(mesh::brzone const &k_mesh) {
         auto h_k = fourier(k_mesh);
-        auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_bands()});
+        auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_orbitals()});
         for (auto const &k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
         return e_k;
       }

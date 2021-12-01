@@ -101,7 +101,7 @@ class TBSuperLattice(TBLattice):
 
         # Positions and names of orbitals in the supercell: just translate all orbitals for cluster site positions
         # in R^3 coordinates.
-        Orbital_Positions = [POS + tb_lattice.latt_to_real_x(CS) for POS in tb_lattice.OrbitalPositions for CS in self.__cluster_sites]
+        Orbital_Positions = [POS + tb_lattice.lattice_to_real_coordinates(CS) for POS in tb_lattice.OrbitalPositions for CS in self.__cluster_sites]
 
         #Orbital_Names = [ '%s%s'%(n, s) for n in tb_lattice.OrbitalNames for s in range(Ncluster_sites)]
         site_index_list, orbital_index_list = list(range(1, Ncluster_sites+1)), tb_lattice.OrbitalNames
@@ -110,7 +110,7 @@ class TBSuperLattice(TBLattice):
         elif len(site_index_list)==1 and len(orbital_index_list)>1:
             Orbital_Names= [ o for o in orbital_index_list]
         elif len(site_index_list)>1 and len(orbital_index_list)>1:
-            Orbital_Names= [ (pos, o) for o in orbital_index_list for pos in site_index_list]
+            Orbital_Names= [ "{}_{}".format(pos, o) for o in orbital_index_list for pos in site_index_list]
 
         TBLattice.__init__(self, Units, Hopping, Orbital_Positions, Orbital_Names)
         assert self.Norb == self.NOrbitalsInUnitCell

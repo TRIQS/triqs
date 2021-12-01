@@ -44,14 +44,20 @@ namespace triqs {
       bravais_lattice(matrix<double> const &units) : bravais_lattice(units, std::vector<r_t>{{0, 0, 0}}) {}
       bravais_lattice() : bravais_lattice(nda::eye<double>(2)) {}
 
-      // Number of orbitals in the unit cell
-      int n_orbitals() const { return atom_orb_name.size(); }
+      /// Number of dimensions
+      int ndim() const { return ndim_; }
 
       /// Matrix containing lattice basis vectors as rows
       nda::matrix_const_view<double> units() const { return units_; }
 
-      /// Number of dimensions
-      int ndim() const { return ndim_; }
+      // Number of orbitals in the unit cell
+      int n_orbitals() const { return atom_orb_name.size(); }
+
+      /// Return the vector of orbital positions
+      std::vector<r_t> const & orbital_positions() { return atom_orb_pos; }
+
+      /// Return the vector of orbital names
+      std::vector<std::string> const & orbital_names() { return atom_orb_name; }
 
       /// Transform into real coordinates.
       template <typename R> r_t lattice_to_real_coordinates(R const &x) const {

@@ -197,7 +197,7 @@ def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
         hopp_dict[(0, 0, 0)] += add_local
 
     # Should we use hopp_dict or hopping?
-    TBL = TBLattice(units=units, hopping=hopp_dict,
+    TBL = TBLattice(units=units, hoppings=hopp_dict,
                     orbital_positions=[(0, 0, 0)]*num_wann,
                     orbital_names=[str(i) for i in range(num_wann)])
     return TBL

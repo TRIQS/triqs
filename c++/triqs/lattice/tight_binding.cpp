@@ -34,10 +34,10 @@ namespace triqs {
       for (int i = 0; i < displ_vec_.size(); ++i) {
         if (displ_vec_[i].size() != bl_.ndim())
           TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << displ_vec_[i].size() << "instead of " << bl_.ndim();
-        if (first_dim(overlap_mat_vec_[i]) != n_bands())
-          TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(overlap_mat_vec_[i]) << " instead of " << n_bands();
-        if (second_dim(overlap_mat_vec_[i]) != n_bands())
-          TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(overlap_mat_vec_[i]) << " instead of " << n_bands();
+        if (first_dim(overlap_mat_vec_[i]) != n_orbitals())
+          TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(overlap_mat_vec_[i]) << " instead of " << n_orbitals();
+        if (second_dim(overlap_mat_vec_[i]) != n_orbitals())
+          TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(overlap_mat_vec_[i]) << " instead of " << n_orbitals();
       }
     }
 
@@ -183,7 +183,7 @@ namespace triqs {
 
     //------------------------------------------------------
     array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack) {
-      array<dcomplex, 3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
+      array<dcomplex, 3> res(TB.n_orbitals(), TB.n_orbitals(), k_stack.shape(1));
       for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TB.fourier(k_stack(range(), i));
       return res;
     }

@@ -21,7 +21,7 @@
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
-from ..gf import Gf, MeshBrZone
+from ..gf import Gf, MeshBrZone, MeshCycLat
 from .lattice_tools import BravaisLattice
 from .lattice_tools import BrillouinZone
 from .lattice_tools import TightBinding
@@ -55,70 +55,150 @@ def dos_patch(tight_binding, triangles, n_eps, n_div, name) :
 class TBLattice(object):
 
     """ Class describing a tight binding hamiltonian on top of a bravais lattice.
+    Has objects of type BravaisLattice, BrillouinZone and TightBinding as attributes,
+    and exposes part of their interfaces.
 
-    Parameters
+    Attributes
     ----------
 
-    units : list of tuples of floats
-        Basis vectors for the real space lattice.
+    bl : BravaisLattice
+        The associated Bravais Lattice
 
-    hopping : dict
-        Dictionary with tuples of integers as keys,
-        describing real space hoppings in multiples of
-        the real space lattice basis vectors, and values being
-        numpy ndarray hopping matrices in the orbital indices.
+    bz : BrillouinZone
+        The associated Brillouin Zone
 
-    orbital_positions : list of three three-tuples of floats.
-        Internal orbital positions in the unit-cell.
+    tb : TightBinding
+        The tight-binding Hamiltonian
 
-    orbital_names : list of strings
-        Names for each orbital.
+    ndim : int
+        Number of dimensions of the Bravais Lattice
     """
 
-    def __init__ (self, units, hopping, orbital_positions = [(0, 0, 0)], orbital_names = [""]):
+    def __init__(self, units,
+                 hoppings=dict(),
+                 orbital_positions=[(0, 0, 0)],
+                 orbital_names=None,
+                 hopping=None):
+        """ 
+        Parameters
+        ----------
 
-        # the k are int32 which boost python does like to convert
-        def reg(k) : return tuple( int(x) for x in k)
-        self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in list(hopping.items()))
-        orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
-        self.bl = BravaisLattice(units, orbital_positions)
+        units : list of tuples of floats
+            Basis vectors for the real space lattice.
+
+        hoppings : dict
+            Dictionary with tuples of integers as keys,
+            describing real space hoppings in multiples of
+            the real space lattice basis vectors, and values being
+            numpy ndarray hopping matrices in the orbital indices.
+
+        orbital_positions : list of three three-tuples of floats.
+            Internal orbital positions in the unit-cell.
+
+        orbital_names : list of strings
+            Names for each orbital.
+        """
+
+        if hopping is not None:
+            warnings.warn("Keyword hopping in TBLattice.__init__ deprecated; use hoppings instead.", DeprecationWarning)
+            hoppings = hopping
+
+        if orbital_names is None:
+            orbital_names = len(orbital_positions) * [""]
+
+        self.bl = BravaisLattice(units, orbital_positions, orbital_names)
         self.bz = BrillouinZone(self.bl)
-        self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
+        self.tb = TightBinding(self.bl, hoppings)
+
+        # ---- Expose BravaisLattice API ----
         self.ndim = self.bl.ndim
-        self.NOrbitalsInUnitCell = self.bl.n_orbitals
-        self.Units = units
-        self.OrbitalPositions = orbital_positions
-        self.OrbitalNames = orbital_names
-        self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
+        self.n_orbitals = self.bl.n_orbitals
+        self.orbital_positions = self.bl.orbital_positions
+        self.orbital_names = self.bl.orbital_names
 
-    def latt_to_real_x(self, p):
-        return self.bl.lattice_to_real_coordinates(numpy.array(p, numpy.float64))
-
-    def hopping_dict(self): return self._hop
+        # ---- Additional API ----
+        self.units = units
+        self.hoppings = hoppings
+        self.MuPattern = numpy.identity(self.n_orbitals)
 
     def get_kmesh(self, n_k):
+        """Return a mesh on the Brillouin zone with a given discretization
+
+        Parameters
+        ----------
+        n_k : int or three-tuple of int
+            The linear dimension(s)
+
+        Returns
+        -------
+        MeshBrZone
+            The mesh on the Brillouin zone
+
+        """
         if isinstance(n_k, int):
             return MeshBrZone(self.bz, n_k)
         else:
             return MeshBrZone(self.bz, numpy.diag(n_k))
 
     def get_rmesh(self, n_r):
+        """Return a mesh on the Bravais lattice with a given periodicity
+
+        Parameters
+        ----------
+        n_r : int or three-tuple of int
+            The periodicity in each dimension
+
+        Returns
+        -------
+        MeshCycLat
+            The cyclic lattice mesh
+
+        """
         if isinstance(n_r, int):
             return MeshCycLat(self.bl, n_r)
         else:
             return MeshCycLat(self.bl, numpy.diag(n_r))
 
+    # ---- Expose TightBinding API ----
+
+    def lattice_to_real_coordinates(self, x):
+        return self.tb.lattice_to_real_coordinates(x)
+    lattice_to_real_coordinates.__doc__ = TightBinding.lattice_to_real_coordinates.__doc__
+
     def fourier(self, arg):
-        """ C.f. documentation of TightBinding.fourier
-        """
         return self.tb.fourier(arg)
+    fourier.__doc__ = TightBinding.fourier.__doc__
 
     def dispersion(self, arg):
-        """ C.f. documentation of TightBinding.dispersion
-        """
-        return self.tb.dispersion(arg)
+        return self.tb.fourier(arg)
+    dispersion.__doc__ = TightBinding.dispersion.__doc__
 
-    def hopping(self, k_stack) :
-        warnings.warn("TBLattice.hopping(k_stack) is deprecated; use TBLattice.dispersion(k) instead.", warnings.DeprecationWarning)
-        return hopping_stack(self.tb, k_stack)
+    # ---- Backward Compatibility ----
 
+    @property
+    def Units(self):
+        warnings.warn("TBLattice.Units is deprecated; use TBLattice.units instead.", DeprecationWarning)
+        return self.units
+
+    @property
+    def NOrbitalsInUnitCell(self):
+        warnings.warn("TBLattice.tb is deprecated; use TBLattice.n_orbitals instead.", DeprecationWarning)
+        return self.n_orbitals
+
+    @property
+    def OrbitalPositions(self):
+        warnings.warn("TBLattice.OrbitalPositions is deprecated; use TBLattice.orbital_positions instead.", DeprecationWarning)
+        return self.orbital_positions
+
+    @property
+    def OrbitalNames(self):
+        warnings.warn("TBLattice.OrbitalNames is deprecated; use TBLattice.orbital_names instead.", DeprecationWarning)
+        return self.orbital_names
+
+    def hopping_dict(self):
+        warnings.warn("TBLattice.hopping_dict() is deprecated; use TBLattice.hoppings instead.", DeprecationWarning)
+        return self.hoppings
+
+    def hopping(self, k):
+        warnings.warn("TBLattice.hopping(k) is deprecated; use TBLattice.dispersion(k) instead.", DeprecationWarning)
+        return hopping_stack(self, k)

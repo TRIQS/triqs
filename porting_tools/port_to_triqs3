@@ -49,6 +49,7 @@ repl_dict = {
         "get_dimensions()": "dims()",
         "locate_neighbours": "closest_index",
         "linear_dims": "dims",
+        "latt_to_real_x": "lattice_to_real_coordinates",
         # --- Stat Changes ---
         "#include <triqs/statistics": "#include <triqs/stat",
         "triqs::statistics": "triqs::stat",
