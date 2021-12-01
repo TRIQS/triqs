@@ -73,28 +73,40 @@ tb = class_(py_type = "TightBinding",
         comparisons = "== !="
        )
 
-tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
+tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hoppings)",
                    calling_pattern = 
                    """
                     // We need to rewrite manually the call to the constructor : 
-                    // hopping is a dict : displacement -> matrix
+                    // hoppings is a dict : displacement -> matrix
                     // we flatten it into 2 vector of vector and matrix resp.
                     // for the tight_binding constructor
                     // First of all, if it is not a dict, error
-                    if (!PyDict_Check(hopping)) {PyErr_SetString(PyExc_TypeError, "hopping must be a mapping type (dict)"); return 0;}
+                    if (!PyDict_Check(hoppings)) {PyErr_SetString(PyExc_TypeError, "hoppings must be a mapping type (dict)"); return 0;}
                     // The arguments for the C++ constructor
                     std::vector<nda::vector<long>> displs;
                     std::vector<matrix<dcomplex>> mats;
                     // we loop on the dict // Cf python doc for PyDict_Next
                     PyObject *key, *value;
                     Py_ssize_t pos = 0;
-                    while (PyDict_Next(hopping, &pos, &key, &value)) {
+                    while (PyDict_Next(hoppings, &pos, &key, &value)) {
                      displs.push_back(convert_from_python<nda::vector<long>>(key));
                      mats.push_back(convert_from_python<matrix<dcomplex>>(value));
                     }
                     auto result = tight_binding(latt, displs, mats);
                    """, 
                    doc = " ")
+
+tb.add_constructor(signature = "(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)",
+                   doc = """Construct a TightBinding object given the bravais lattice, the vector of displacements, and the vector of overlap matrices""")
+
+tb.add_property(getter = cfunction("std::vector<nda::vector<long>> displ_vec()"),
+                doc = """A list containing displacement vectors""")
+
+tb.add_property(getter = cfunction("std::vector<matrix<dcomplex>> overlap_mat_vec()"),
+                doc = """A list containing overlap matrices""")
+
+tb.add_property(getter = cfunction("triqs::lattice::bravais_lattice lattice()"),
+                doc = """The underlying bravais lattice""")
 
 tb.add_method(name = "fourier",
               signature = "matrix<dcomplex> (k_cvt K)",

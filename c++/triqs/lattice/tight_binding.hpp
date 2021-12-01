@@ -50,10 +50,16 @@ namespace triqs {
        * @param displ_vec The vector of displacement vectors in units of the lattice basis vectors
        * @param overlap_mat_vec The vector of overlap (hopping) matrices
        */
-      tight_binding(bravais_lattice const &bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
+      tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
 
       /// Underlying lattice
       bravais_lattice const &lattice() const { return bl_; }
+
+      /// Return a vector containing all displacement vectors
+      auto const &displ_vec() const { return displ_vec_; }
+
+      /// Return a vector containing all overlap matrices
+      auto const &overlap_mat_vec() const { return overlap_mat_vec_; }
 
       /// Number of bands, i.e. size of the matrix t(k)
       int n_bands() const { return bl_.n_orbitals(); }
