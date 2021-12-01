@@ -83,11 +83,14 @@ namespace triqs {
        */
       template <typename K>
       requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto fourier(K const &k) const {
+        // Make sure to account for ndim in lattice
+        auto k_ndim = make_regular(k(nda::ellipsis(), range(lattice().ndim())));
+
         auto vals = [&](int j) {
           if constexpr (nda::ArrayOfRank<K, 1>) {
-            return std::exp(2i * M_PI * nda::blas::dot(k, displ_vec_[j])) * overlap_mat_vec_[j];
+            return std::exp(2i * M_PI * nda::blas::dot(k_ndim, displ_vec_[j])) * overlap_mat_vec_[j];
           } else { // Rank==2
-            auto k_mat = nda::make_matrix_view(k);
+            auto k_mat = nda::make_matrix_view(k_ndim);
             auto exp   = [](auto d) { return std::exp(d); };
             auto exp_j = make_regular(nda::map(exp)(2i * M_PI * k_mat * displ_vec_[j]));
             return nda::blas::outer_product(exp_j, overlap_mat_vec_[j]);
