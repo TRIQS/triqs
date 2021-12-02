@@ -201,3 +201,40 @@ def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
                     orbital_positions=[(0, 0, 0)]*num_wann,
                     orbital_names=[str(i) for i in range(num_wann)])
     return TBL
+
+def TB_from_pythTB(ptb):
+    r"""
+    convert pythTB model to TBLattice object
+
+    Parameters
+    ----------
+    ptb : pythtb.tb_model
+        pythTB tight-binding object
+
+    Returns
+    -------
+    TBL : triqs TBLattice object
+        triqs tight binding object
+
+    """
+
+    from triqs.lattice.tight_binding import TBLattice
+
+    # initialize objects
+    hopp_dict = {}
+    m_zero = np.zeros((ptb.get_num_orbitals(), ptb.get_num_orbitals()), dtype=complex)
+
+    # fill on-site energies
+    hopp_dict[(0, 0, 0)] = np.eye(ptb.get_num_orbitals(), dtype=complex) * ptb._site_energies
+
+    # fill hoppings
+    for hopp, orb_from, orb_to, displacement in ptb._hoppings:
+        if tuple(displacement) not in hopp_dict:
+            hopp_dict[tuple(displacement)] = m_zero.copy()
+        hopp_dict[tuple(displacement)][orb_from, orb_to] = hopp
+
+    TBL = TBLattice(units=ptb.get_lat(), hopping=hopp_dict,
+                    orbital_positions=ptb.get_orb(),
+                    orbital_names=[str(i) for i in range(ptb.get_num_orbitals())])
+
+    return TBL
