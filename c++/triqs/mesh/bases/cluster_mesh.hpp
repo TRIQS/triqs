@@ -91,7 +91,7 @@ namespace triqs::mesh {
       // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
       //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
       if (nda::diag(nda::diagonal(periodization_matrix)) != periodization_matrix)
-        throw std::runtime_error{"Non-diagonal periodization matrices are currently not implemented."};
+        throw std::runtime_error{"Non-diagonal periodization matrices are currently not supported."};
 
       dims_   = find_cell_dims(periodization_matrix_);
       size_   = dims_[0] * dims_[1] * dims_[2];
