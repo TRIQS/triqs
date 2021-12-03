@@ -18,12 +18,11 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include "./bases/segment.hpp"
 #include "triqs/mesh/domains/real_complex.hpp"
 
 namespace triqs::mesh {
 
-  struct retime : segment_mesh {
+  struct retime : linear_mesh<real_domain> {
 
     retime() = default;
 
@@ -37,7 +36,8 @@ namespace triqs::mesh {
      *  @param t_max Largest time
      *  @param n_t Number of time-points
      */
-    retime(double t_min, double t_max, int n_t) : segment_mesh(t_min, t_max, n_t) {}
+    retime(double x_min, double x_max, int n_t) : linear_mesh<real_domain>(real_domain{}, x_min, x_max, n_t) {}
+    template <typename... T> retime(T &&... x) : linear_mesh<real_domain>(std::forward<T>(x)...) {}
 
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
 

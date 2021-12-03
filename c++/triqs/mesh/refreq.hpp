@@ -18,12 +18,11 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include "./bases/segment.hpp"
 #include "./details/tail_fitter.hpp"
 
 namespace triqs::mesh {
 
-  struct refreq : segment_mesh, tail_fitter_handle {
+  struct refreq : linear_mesh<real_domain>, tail_fitter_handle {
 
     refreq() = default;
 
@@ -35,7 +34,8 @@ namespace triqs::mesh {
      *  @param w_max Largest frequency
      *  @param n_w Number of frequencies
      */
-    refreq(double w_min, double w_max, int n_w) : segment_mesh(w_min, w_max, n_w) {}
+    refreq(double x_min, double x_max, int n_w) : linear_mesh<real_domain>(real_domain{}, x_min, x_max, n_w) {}
+    template <typename... T> refreq(T &&... x) : linear_mesh<real_domain>(std::forward<T>(x)...) {}
 
     refreq(std::pair<double, double> window, int n_w) : refreq(std::get<0>(window), std::get<1>(window), n_w) {}
 
