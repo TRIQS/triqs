@@ -322,7 +322,8 @@ def make_delta(V, eps, mesh, block_names=None):
     return delta_res
 
 
-def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmplx=False, method='BFGS'):
+def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
+                    cmplx=False, method='BFGS', constr_tol=1e-10, penalty=10.0):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -363,6 +364,11 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmpl
         allow the hoppings V to be complex
     method : string, optional, default=BFGS
         method for minimizing the function in scipy minimize
+    constr_tol : float, optional, default=1e-10
+        tolerance threshold of delta_fit(i,j) for i!=j
+        if delta_fit(i,j) is larger then given value a penalty is applied
+        in the norm to suppress occuring delta elements
+    penalty : float, optional, default=10
     Returns
     -------
     V_opt : sorted bath hoppings V as numpy array (list if Gf block is given)
@@ -433,7 +439,16 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmpl
             delta_disc.data[opt_idx:] = delta
 
         # calculate norm
-        norm = np.linalg.norm(delta_disc.data[opt_idx:] - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
+        delta_disc_constr = delta_disc.data[opt_idx:].copy()
+        # for i_mesh_pt, mesh_pt in enumerate(mesh_values):
+            # for orbs in constr_orbs:
+                # if delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]] > constr_tol:
+                    # delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]] = penalty*delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]]
+        for i,j in constr_orbs:
+            delta_disc_constr[i, j] = penalty*delta_disc_constr[i, j]
+
+
+        norm = np.linalg.norm(delta_disc_constr - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
 
         return norm
     ####
@@ -451,6 +466,15 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmpl
 
     mesh_values = np.array([w.value for w in delta_disc.mesh][opt_idx:])
 
+    # find constrained elements of delta_in
+    # max_{i,j,tau} |Delta[tau][i,j]| < tol for off-diag terms
+    constr_orbs = []
+    for i in range(n_orb):
+        for j in range(n_orb):
+            if np.max(delta_in.data[:, i, j]) < constr_tol and i != j:
+                constr_orbs.append((i, j))
+    print('The following matrix elements will be forced to have a vanishing delta {}'.format(constr_orbs))
+
     # initialize bath_hoppings
     # create bath hoppings V with dim (Nb)
     if isinstance(V0, np.ndarray):
@@ -458,7 +482,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmpl
     elif isinstance(V0, float):
         V0 = V0*np.ones((n_orb, Nb), dtype=complex if cmplx else float)
     else:
-        print('initial guess of V from cholesky decompisition of leading order moment of delta_in')
+        print('initial guess of V from cholesky decomposition of leading order moment of delta_in')
         # get 1st moment of delta_in
         if isinstance(delta_in.mesh, MeshImFreq):
             known_moments = make_zero_tail(delta_in, n_moments=1)
@@ -487,8 +511,16 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000, cmpl
     else:
         eps0 = np.linspace(-eps0, eps0, Nb)
 
+    # alternatively remove hoppings associated with constr_orbs form parameters
+    # rem_hop = []
+    # for i,j in constr_orbs:
+        # for hop_idx in range(i*Nb+j, (i+1)*Nb+j, n_orb):
+            # rem_hop.append(hop_idx)
+    # V0_new = np.array([hop for i, hop in enumerate(V0) if i not in rem_hop ])
+
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V0.view(float).flatten(), eps0])
+
     # run the minimizer with method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
     start_time = timer()
