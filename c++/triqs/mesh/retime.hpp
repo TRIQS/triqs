@@ -19,6 +19,7 @@
 
 #pragma once
 #include "./bases/segment.hpp"
+#include "triqs/mesh/domains/real_complex.hpp"
 
 namespace triqs::mesh {
 

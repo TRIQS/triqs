@@ -19,7 +19,11 @@
  *
  ******************************************************************************/
 #pragma once
+#include "../mesh_concepts.hpp"
 #include "../details/mesh_tools.hpp"
+#include "../details/mesh_point.hpp"
+#include <ranges>
+#include <stdexcept>
 namespace triqs::mesh {
 
   /**
@@ -42,56 +46,35 @@ namespace triqs::mesh {
   }
   //-----------------------------------------------------------------------
 
-  // NB linear_index and index are the same in this mesh
-  template <typename Domain> struct linear_mesh : triqs::mesh::tag::mesh {
-
-    using domain_t       = Domain;
+  template <Domain D>
+  requires std::totally_ordered<typename D::point_t> // Addable and dividable
+  class linear_mesh  {
+    public:
+    // linear_index and index are identical for this mesh
     using index_t        = long;
     using linear_index_t = long;
-    using domain_pt_t    = typename domain_t::point_t;
+    using domain_t       = D;
 
-    static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value, "Internal error : cannot use Linear Mesh in this case");
+    // Syntax Sugar: No longer part of domain concept
+    using domain_pt_t  = typename D::point_t;
+    using mesh_point_t = mesh_point<linear_mesh>;
 
-    // -------------------- Constructors -------------------
+    // -------------------- Index Bijection -------------------
 
-    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)), del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del} {
-      EXPECTS(a<=b);
+    [[nodiscard]] linear_index_t index_to_linear_index(index_t const &index) const {
+      EXPECTS(is_within_boundary(index));
+       return index; 
+      }
+    [[nodiscard]] index_t linear_index_to_index(linear_index_t const &liner_index) const { 
+      return liner_index;
     }
 
-    linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
+    // -------------------- Mesh Point Access -------------------
 
-    /// Mesh comparison
-    bool operator==(linear_mesh const &M) const {
-      return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
-    }
-    bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
+    [[nodiscard]] mesh_point_t operator[](index_t i) const { return {i}; } // FIX ME WITH NEW MESH POINT
+    [[nodiscard]] mesh_point_t linear_index_to_mesh_pt(linear_index_t const &liner_index) const { return operator[](liner_index); }
 
-    // -------------------- Accessors (other) -------------------
-
-    /// Step of the mesh
-    double delta() const { return del; }
-
-    /// Inverse of the step of the mesh
-    double delta_inv() const { return del_inv; }
-
-    /// Min of the mesh
-    double x_min() const { return xmin; }
-
-    /// Max of the mesh
-    double x_max() const { return xmax; }
-
-    // -------------------- Accessors (from concept) -------------------
-
-    /// The corresponding domain
-    domain_t const &domain() const { return _dom; }
-
-    /// Size (linear) of the mesh of the window
-    [[nodiscard]] auto size() const { return L; }
-
-    /// Is the point in mesh ?
-    static constexpr bool is_within_boundary(all_t) { return true; }
-    bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
-    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < L)); }
+    // -------------------- Mesh Implemenation -------------------
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
@@ -103,34 +86,65 @@ namespace triqs::mesh {
       return res;
     }
 
+    /// LEGACY name === index_to_linear_index
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
     long index_to_linear(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
       return idx;
     }
 
-    // -------------------- mesh_point -------------------
+    // -------------------- Constructors -------------------
 
-    /// Type of the mesh point
-    using mesh_point_t = mesh_point<linear_mesh>;
-
-    /// Accessing a point of the mesh
-    mesh_point_t operator[](index_t i) const { return {*this, i}; }
-
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<linear_mesh>;
-    const_iterator begin() const { return const_iterator(this); }
-    const_iterator end() const { return const_iterator(this, true); }
-    const_iterator cbegin() const { return const_iterator(this); }
-    const_iterator cend() const { return const_iterator(this, true); }
-
-    // -------------- Evaluation of a function on the grid --------------------------
-
-    std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
-      return interpolate_on_segment(x, x_min(), delta(), delta_inv(), long(size()) - 1);
+    explicit linear_mesh(D dom, double a, double b, size_t n_pts)
+       : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)), del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del}, r_{make_mesh_range(*this)} {
+      EXPECTS(a<=b);
     }
 
-    // -------------- HDF5  --------------------------
+    linear_mesh() : linear_mesh(D{}, 0, 1, 2) {}
+    
+    // -------------------- Comparison -------------------
+
+    /// Mesh comparison
+    bool operator==(linear_mesh const &m) const {
+      return (_dom == m._dom) && (size() == m.size()) && (xmin == m.xmin) && (xmax == m.xmax);
+    }
+    bool operator!=(linear_mesh const &) const = default;
+
+    // -------------------- Accessors -------------------
+
+    /// The corresponding domain
+    auto const &domain() const { return _dom; }
+
+    /// Size (linear) of the mesh of the window
+    [[nodiscard]] auto size() const { return L; }
+
+    /// Step of the mesh
+    [[nodiscard]] domain_pt_t delta() const { return del; }
+
+    /// Inverse of the step of the mesh
+    [[nodiscard]] domain_pt_t delta_inv() const { return del_inv; }
+
+    /// Min of the mesh
+    [[nodiscard]] domain_pt_t x_min() const { return xmin; }
+
+    /// Max of the mesh
+    [[nodiscard]] domain_pt_t x_max() const { return xmax; }
+
+    // -------------------------- Other --------------------------
+
+    /// Is the point in mesh ?
+    static constexpr bool is_within_boundary(all_t) { return true; }
+    [[nodiscard]] bool is_within_boundary(domain_pt_t x) const { return (x >= xmin) && (x <= xmax); }
+    [[nodiscard]] bool is_within_boundary(index_t idx) const { return (idx >= 0) && (idx < L); }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    auto begin() const { return r_.begin(); }
+    auto end() const { return r_.end(); }
+    auto cbegin() const { return r_.begin(); }
+    auto cend() const { return r_.end(); }
+
+    //  -------------------------- HDF5  --------------------------
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
@@ -145,6 +159,8 @@ namespace triqs::mesh {
     friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear_mesh &m, const char *tag_expected) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format_as_string(gr, tag_expected, true);
+      domain_t dom;
+      domain_pt_t a, b;
       size_t L;
       h5_read(gr, "domain", dom);
       h5_read(gr, "min", a);
@@ -171,9 +187,11 @@ namespace triqs::mesh {
 
     // ------------------------------------------------
     private:
-    domain_t _dom;
+    D _dom;
     size_t L;
-    double xmin, xmax, del, del_inv;
+    domain_pt_t xmin, xmax, del, del_inv;
+    make_mesh_range_rtype<linear_mesh> r_{};
+    size_t mesh_hash = 0;
   };
 
   // ---------------------------------------------------------------------------
@@ -184,21 +202,24 @@ namespace triqs::mesh {
   struct mesh_point<linear_mesh<Domain>> : public utility::arithmetic_ops_by_cast<mesh_point<linear_mesh<Domain>>, typename Domain::point_t> {
     using mesh_t  = linear_mesh<Domain>;
     using index_t = typename mesh_t::index_t;
-    mesh_t const *m;
-    index_t _index;
+    // mesh_t const *m;
+    index_t _index = 0;
 
     public:
-    mesh_point() : m(nullptr) {}
-    mesh_point(mesh_t const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
-    mesh_point(mesh_t const &mesh) : mesh_point(mesh, 0) {}
+    mesh_point() = default;
+    // mesh_point() : m(nullptr) {}
+    mesh_point( index_t const &index_) :  _index(index_) {}
+
+    // mesh_point(mesh_t const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
+    // mesh_point(mesh_t const &mesh) : mesh_point(mesh, 0) {}
     void advance() { ++_index; }
     using cast_t = typename Domain::point_t;
-    operator cast_t() const { return m->index_to_point(_index); }
+    operator cast_t() const { return 0.0; }
     long linear_index() const { return _index; }
     long index() const { return _index; }
-    bool at_end() const { return (_index == m->size()); }
+    // bool at_end() const { return (_index == m->size()); }
     void reset() { _index = 0; }
-    mesh_t const &mesh() const { return *m; }
+    // mesh_t const &mesh() const { return *m; }
   };
 
 } // namespace triqs::mesh
