@@ -44,10 +44,10 @@ TEST(Gf, Real) {
   rw_h5(Git, "Git");
   rw_h5(Giw, "Giw");
 
-  for (auto &t : Gt.mesh()) Gt[t] = 1.0 * t;
-  for (auto &w : Gw.mesh()) Gw[w] = 1.0 * w;
-  for (auto &it : Git.mesh()) Git[it] = 1.0 * it;
-  for (auto &iw : Giw.mesh()) Giw[iw] = 1.0 * iw;
+  for (auto const &t : Gt.mesh()) Gt[t] = 1.0 * t;
+  for (auto const &w : Gw.mesh()) Gw[w] = 1.0 * w;
+  for (auto const &it : Git.mesh()) Git[it] = 1.0 * it;
+  for (auto const &iw : Giw.mesh()) Giw[iw] = 1.0 * iw;
 
   triqs::clef::placeholder<0> t_;
   triqs::clef::placeholder<1> w_;
