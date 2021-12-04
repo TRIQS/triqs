@@ -21,6 +21,7 @@
 #pragma once
 #include "./domains/product.hpp"
 #include "./details/mesh_tools.hpp"
+#include "mesh_concepts.hpp"
 
 namespace triqs::mesh {
 
@@ -336,7 +337,7 @@ namespace triqs::mesh {
 
   template <typename M1, typename M2>
   auto operator*(M1 const &m1, M2 const &m2) //
-     requires(models_mesh_concept_v<M1> and models_mesh_concept_v<M2>) {
+     requires(models_mesh_concept_v<M1> or Mesh<M1>) and (models_mesh_concept_v<M2> or Mesh<M2>) {
     return prod<M1, M2>{m1, m2};
   }
 } // namespace triqs::mesh
