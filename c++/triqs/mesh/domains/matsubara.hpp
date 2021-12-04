@@ -163,7 +163,7 @@ namespace triqs::mesh {
 
     explicit matsubara_time_domain(matsubara_freq_domain const &x);
 
-    bool operator==(matsubara_time_domain const &D) const = default;
+    bool operator==(matsubara_time_domain const &) const = default;
 
     static std::string hdf5_format() { return "MatsubaraTimeDomain"; }
 

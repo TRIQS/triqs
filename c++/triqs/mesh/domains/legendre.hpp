@@ -31,14 +31,13 @@ namespace triqs::mesh {
 
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    size_t max_n             = 1; // Is this inclusive order not??
+    long max_n               = 1; // Is this inclusive order not??
 
     [[nodiscard]] constexpr point_t min() const { return 0; }
     [[nodiscard]] point_t max() const { return max_n; }
 
     // Do we need this ctor??
     legendre_domain() = default;
-
     /**
      *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,n_l]
      *
@@ -46,9 +45,9 @@ namespace triqs::mesh {
      *  @param S Statistic, Fermion or Boson
      *  @param n_l Largest degree
      */
-    legendre_domain(double beta_, statistic_enum statistic_, point_t max_n_) : beta{beta_}, statistic{statistic_}, max_n{max_n_} {};
+    legendre_domain(double beta_, statistic_enum statistic_, long max_n_) : beta{beta_}, statistic{statistic_}, max_n{max_n_} {};
 
-    [[nodiscard]] size_t size() const { return max_n + 1; };
+    [[nodiscard]] long size() const { return max_n + 1; };
 
     bool operator==(legendre_domain const &) const = default;
 

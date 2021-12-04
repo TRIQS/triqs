@@ -24,6 +24,10 @@
 #include <triqs/mesh/domains/interval.hpp>
 // Meshes
 #include <triqs/mesh/retime.hpp>
+#include <triqs/mesh/refreq.hpp>
+#include <triqs/mesh/imtime.hpp>
+#include <triqs/mesh/imfreq.hpp>
+#include <triqs/mesh/legendre.hpp>
 
 using namespace triqs::mesh;
 
@@ -53,6 +57,11 @@ TEST(MeshConcepts, IntervalDomainConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_interval_domain<real_interval_domain>() << std::endl;
 }
 
-TEST(MeshConcepts, MeshConceptTest) { std::cout << "Check Domain Concept: " << type_name_mesh<retime>() << std::endl; }
+TEST(MeshConcepts, MeshConceptTest) {
+  std::cout << "Check Domain Concept: " << type_name_mesh<retime>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_mesh<refreq>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_mesh<imtime>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_mesh<imfreq>() << std::endl;
+}
 
 MAKE_MAIN;
