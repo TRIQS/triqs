@@ -85,11 +85,11 @@ namespace triqs::mesh {
     typename M::index_t;
 
   } && requires(M const &m, typename M::index_t const &idx) {
-    { m.index_to_linear_index(idx) } -> std::same_as<typename M::linear_index_t>; // TODO: naming!
+    { m.index_to_linear(idx) } -> std::same_as<typename M::linear_index_t>; // TODO: naming!
     { m.operator[](idx) } -> std::same_as<typename M::mesh_point_t>;
   } && requires(M const &m, typename M::linear_index_t const &idx_lin) {
-    { m.linear_index_to_index(idx_lin) } -> std::same_as<typename M::index_t>;        // TODO:  naming!
-    { m.linear_index_to_mesh_pt(idx_lin) } -> std::same_as<typename M::mesh_point_t>; // TODO: naming!
+    { m.linear_to_index(idx_lin) } -> std::same_as<typename M::index_t>;        // TODO:  naming!
+    { m.linear_to_mesh_pt(idx_lin) } -> std::same_as<typename M::mesh_point_t>; // TODO: naming!
   };
 
   template <typename M>

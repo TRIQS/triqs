@@ -39,11 +39,11 @@ namespace triqs::mesh {
 
   // Generic implementation of iterator generating mesh points
 
-  // A "named" lambda function, capturing a mesh const& and calling linear_index_to_mesh_pt.
+  // A "named" lambda function, capturing a mesh const& and calling linear_to_mesh_pt.
   // This is needed for having a consistent type in range transform.
   template <typename M> struct mesh_point_maker {
     M *mesh = nullptr;
-    mesh_point<M> operator()(typename M::linear_index_t const &i) const { return mesh->linear_index_to_mesh_pt(i); }
+    mesh_point<M> operator()(typename M::linear_index_t const &i) const { return mesh->linear_to_mesh_pt(i); }
   };
 
 // libc++ does not yet implement ranges for now: use itertools
