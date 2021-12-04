@@ -78,7 +78,7 @@ namespace triqs::gfs {
 
     //------------------------------------------------------------------------------------
 
-    template <typename M, typename Arg> auto _filter_the_all(M const &m, Arg const &arg) { return m.get_interpolation_data(arg); }
+    template <typename M, typename Arg> auto _filter_the_all(M const &m, Arg const &arg) { return get_interpolation_data(m, arg); }
     template <typename M> std::array<std::pair<range::all_t, mesh::one_t>, 1> _filter_the_all(M const &m, mesh::all_t) { return {}; }
 
     // FIXME20 : use a lambda
@@ -98,7 +98,7 @@ namespace triqs::gfs {
   template <typename G, typename... Args> auto evaluate(G const &g, Args &&... args) requires(is_gf_v<G>) {
 
     if constexpr (not mesh::is_product_v<typename G::mesh_t>) {
-      auto id = g.mesh().get_interpolation_data(std::forward<Args>(args)...);
+      auto id = get_interpolation_data(g.mesh(), std::forward<Args>(args)...);
       return details::multivar_eval(g, id);
     } else { // special case for the product mesh
       return details::evaluate_impl(std::index_sequence_for<Args...>{}, g, std::forward<Args>(args)...);

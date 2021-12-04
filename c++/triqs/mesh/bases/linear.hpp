@@ -26,26 +26,6 @@
 #include <stdexcept>
 namespace triqs::mesh {
 
-  /**
-   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
-   * @param x : the point
-   * @param i_max : maximum index
-   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
-   * @param delta_x
-   *
-   * 
-   * Throws if x is not in the window
-   * */
-  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, double delta_x_inv, long imax) noexcept {
-    EXPECTS(x_min <= x and x <= x_min + imax * delta_x);
-    x = std::max(x, x_min);
-    double a = (x - x_min) * delta_x_inv;
-    long i   = std::min(static_cast<long>(a), imax - 1);
-    double w = std::min(a - i, 1.0);
-    return {std::make_pair(i, 1 - w), std::make_pair(i + 1, w)};
-  }
-  //-----------------------------------------------------------------------
-
   template <Domain D>
   requires std::totally_ordered<typename D::point_t> // Addable and dividable
   class linear_mesh  {
@@ -221,5 +201,33 @@ namespace triqs::mesh {
     void reset() { _index = 0; }
     // mesh_t const &mesh() const { return *m; }
   };
+
+  //-----------------------------------------------------------------------
+
+  /**
+   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
+   * @param x : the point
+   * @param i_max : maximum index
+   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
+   * @param delta_x
+   *
+   * 
+   * Throws if x is not in the window
+   * */
+  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, double delta_x_inv, long imax) noexcept {
+    EXPECTS(x_min <= x and x <= x_min + imax * delta_x);
+    x = std::max(x, x_min);
+    double a = (x - x_min) * delta_x_inv;
+    long i   = std::min(static_cast<long>(a), imax - 1);
+    double w = std::min(a - i, 1.0);
+    return {std::make_pair(i, 1 - w), std::make_pair(i + 1, w)};
+  }
+  //-----------------------------------------------------------------------
+
+  template <typename Domain> inline std::array<std::pair<long, double>, 2> get_interpolation_data(linear_mesh<Domain> const &m, double x) {
+    return interpolate_on_segment(x, m.x_min(), m.delta(), m.delta_inv(), long(m.size()) - 1);
+  }
+
+  //-----------------------------------------------------------------------
 
 } // namespace triqs::mesh

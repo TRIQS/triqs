@@ -195,9 +195,6 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(long n) const { return {std::make_pair(index_to_linear(index_t(n)), one_t{})}; }
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(matsubara_freq n) const { return get_interpolation_data(n.n); }
-
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
       return sout << "Matsubara Freq Mesh of size " << m.size() << ", Domain: " << m.domain() << ", positive_only : " << m.positive_only();
     }
@@ -280,5 +277,12 @@ namespace triqs::mesh {
   inline imfreq::const_iterator imfreq::end() const { return const_iterator(this, true); }
   inline imfreq::const_iterator imfreq::cbegin() const { return const_iterator(this); }
   inline imfreq::const_iterator imfreq::cend() const { return const_iterator(this, true); }
+
+  inline std::array<std::pair<imfreq::linear_index_t, one_t>, 1> get_interpolation_data(imfreq const &m, long n) {
+    return {std::make_pair(m.index_to_linear(imfreq::index_t(n)), one_t{})};
+  }
+  inline std::array<std::pair<imfreq::linear_index_t, one_t>, 1> get_interpolation_data(imfreq const &m, matsubara_freq n) {
+    return get_interpolation_data(m, n.n);
+  }
 
 } // namespace triqs::mesh

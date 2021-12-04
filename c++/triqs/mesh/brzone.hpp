@@ -70,42 +70,8 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    static constexpr int n_pts_in_linear_interpolation = (1 << 3);
-
-    std::array<std::pair<linear_index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &k) const {
-
-      // Calculate k in the units basis
-      auto kv      = nda::vector_const_view<double>{{3}, k.data()};
-      auto k_units = transpose(inverse(units_)) * kv;
-
-      // 0----1----2----3----4----5---- : dim = 5, point 6 is 2 Pi
-      std::array<std::array<long, 2>, 3> is;   // indices of the two neighbouring grid points
-      std::array<std::array<double, 2>, 3> ws; // weights for the two neighbouring grid points
-      for (int d = 0; d < 3; ++d) {
-        long i   = std::floor(k_units[d]); // Take modulo later
-        double w = k_units[d] - i;
-        is[d]    = {i, i + 1};
-        ws[d]    = {1 - w, w};
-      }
-      std::array<std::pair<linear_index_t, double>, n_pts_in_linear_interpolation> result;
-      int c = 0;
-      for (int ix = 0; ix < 2; ++ix)
-        for (int iy = 0; iy < 2; ++iy)
-          for (int iz = 0; iz < 2; ++iz) {
-            result[c] = std::make_pair(index_to_linear(index_modulo(index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
-            c++;
-          }
-      return result;
-    }
-
-    // -------------- Evaluation of a function on the grid --------------------------
-
     /// Reduce index modulo to the lattice.
     index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
-
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(index_t const &x) const {
-      return {std::pair<linear_index_t, one_t>{index_to_linear(index_modulo(x)), {}}};
-    }
 
     // ------------------- Comparison -------------------
 
@@ -153,4 +119,40 @@ namespace triqs::mesh {
       }
     }
   };
+
+  // -------------- Evaluation of a function on the grid --------------------------
+
+  static constexpr int n_pts_in_linear_interpolation = (1 << 3);
+
+  inline std::array<std::pair<brzone::linear_index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(brzone const &m,
+                                                                                                                     std::array<double, 3> const &k) {
+
+    // Calculate k in the units basis
+    auto kv      = nda::vector_const_view<double>{{3}, k.data()};
+    auto k_units = transpose(inverse(m.units())) * kv;
+
+    // 0----1----2----3----4----5---- : dim = 5, point 6 is 2 Pi
+    std::array<std::array<long, 2>, 3> is;   // indices of the two neighbouring grid points
+    std::array<std::array<double, 2>, 3> ws; // weights for the two neighbouring grid points
+    for (int d = 0; d < 3; ++d) {
+      long i   = std::floor(k_units[d]); // Take modulo later
+      double w = k_units[d] - i;
+      is[d]    = {i, i + 1};
+      ws[d]    = {1 - w, w};
+    }
+    std::array<std::pair<brzone::linear_index_t, double>, n_pts_in_linear_interpolation> result;
+    int c = 0;
+    for (int ix = 0; ix < 2; ++ix)
+      for (int iy = 0; iy < 2; ++iy)
+        for (int iz = 0; iz < 2; ++iz) {
+          result[c] = std::make_pair(m.index_to_linear(m.index_modulo(brzone::index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
+          c++;
+        }
+    return result;
+  }
+
+  inline std::array<std::pair<brzone::linear_index_t, one_t>, 1> get_interpolation_data(brzone const &m, brzone::index_t const &x) {
+    return {std::pair<brzone::linear_index_t, one_t>{m.index_to_linear(m.index_modulo(x)), {}}};
+  }
+
 } // namespace triqs::mesh
