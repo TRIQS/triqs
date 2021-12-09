@@ -31,15 +31,15 @@ energies = np.array([0.0, 0.5])
 delta_iw = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
 # run bath fitter on this input
-# V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=2, eps0=2.5, V0=None, tol=1e-10)
-# # compare to given values , resulting V can be correct up to a global sign
-# assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-# assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
-# assert_gfs_are_close(delta_disc_iw, delta_iw)
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=2, eps0=2.5, V0=None, tol=1e-10)
+# compare to given values , resulting V can be correct up to a global sign
+assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+assert_gfs_are_close(delta_disc_iw, delta_iw)
 
-# # try with Nb % n_orb != 0
-# V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=3, eps0=2.5, V0=None, tol=1e-10)
-# V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=1, eps0=2.5, V0=None, tol=1e-10)
+#try with Nb % n_orb != 0
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=3, eps0=2.5, V0=None, tol=1e-10)
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=1, eps0=2.5, V0=None, tol=1e-10)
 
 #################################################
 # second test with 2x2 delta input and init guess
@@ -53,46 +53,44 @@ energies = np.array([-1.5437759000e+00, -4.0244628425e-01, -3.3678965769e-01, -3
 
 delta_tau = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=8, eps0=energies, V0=None, tol=1e-15, maxiter=1000000, method='BFGS', constr_tol=1e-8, penalty=10)
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=8, eps0=energies, V0=None, tol=1e-15, maxiter=10000000, method='BFGS')
 print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
-print(V_opt)
 
-# compare to given values
-assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+# # compare to given values
+assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-5, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+assert np.max(np.abs(energies - e_opt)) < 1e-5, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
 assert_gfs_are_close(delta_disc_tau, delta_tau)
 
 
-# #################################################
-# # test blockGf
-# mesh = MeshImTime(beta=40, S='Fermion', n_max=501)
+#################################################
+# test blockGf
+mesh = MeshImTime(beta=40, S='Fermion', n_max=501)
 
-# hoppings = [np.array([[0.2, 0.1, -0.5, 0.15]]),
-            # np.array([[0.2, -0.35, 0.7, 0.1]])]
+hoppings = [np.array([[0.2, 0.1, -0.5, 0.15]]),
+            np.array([[0.2, -0.35, 0.7, 0.1]])]
 
-# energies = [np.array([-2.2, -1.1, 0.0, 0.7]),
-            # np.array([-1.7, -0.3, -0.1, 0.2])]
+energies = [np.array([-2.2, -1.1, 0.0, 0.7]),
+            np.array([-1.7, -0.3, -0.1, 0.2])]
 
-# delta_tau = make_delta(V=hoppings, eps=energies, mesh=mesh)
+delta_tau = make_delta(V=hoppings, eps=energies, mesh=mesh)
 
-# # run bath fitter on hopping as input
-# V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=energies, V0=hoppings, tol=1e-12, maxiter=100000)
-# print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
+# run bath fitter on hopping as input
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=energies, V0=hoppings, tol=1e-15, maxiter=100000)
+print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
 
-# # compare to given values
-# for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
-    # assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-    # assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
-    # assert_gfs_are_close(delta_disc, delta_tau[block])
+# compare to given values
+for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
+    assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+    assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+    assert_gfs_are_close(delta_disc, delta_tau[block])
 
 
-# #################################################
-# # and test without providing input parameters
-# V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=2, V0=None, tol=1e-15, maxiter=200, method='basinhopping')
-# print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
-
-# # compare to given values
-# for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
-    # assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-    # assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
-    # assert_gfs_are_close(delta_disc, delta_tau[block], precision=1e-3)
+#################################################
+# and test without providing input parameters
+V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=2, V0=None, tol=1e-15, maxiter=200, method='basinhopping')
+print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
+# compare to given values
+for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
+    assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+    assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+    assert_gfs_are_close(delta_disc, delta_tau[block], precision=1e-3)

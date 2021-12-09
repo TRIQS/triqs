@@ -322,8 +322,8 @@ def make_delta(V, eps, mesh, block_names=None):
     return delta_res
 
 
-def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
-                    cmplx=False, method='BFGS', constr_tol=1e-10, penalty=10.0):
+def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
+                    cmplx=False, method='BFGS', constr_tol=1e-10):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -356,7 +356,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
         if a np.ndarray of correct shape (norbxNb) is given: initial guess for V0
         If 'None' than a cholesky decomposition on lim_iw>inf iw*delta_in = A A^dag is
         performed to obtain a guess for V0 (extended to all bath sites)
-    tol : float, optional, default=1e-8
+    tol : float, optional, default=1e-15
         tolerance for scipy minimize on data to optimize (xatol / ftol)
     maxiter : float, optional, default=10000
         maximal number of optimization steps
@@ -368,7 +368,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
         tolerance threshold of delta_fit(i,j) for i!=j
         if delta_fit(i,j) is larger then given value a penalty is applied
         in the norm to suppress occuring delta elements
-    penalty : float, optional, default=10
+
     Returns
     -------
     V_opt : sorted bath hoppings V as numpy array (list if Gf block is given)
@@ -439,16 +439,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
             delta_disc.data[opt_idx:] = delta
 
         # calculate norm
-        delta_disc_constr = delta_disc.data[opt_idx:].copy()
-        # for i_mesh_pt, mesh_pt in enumerate(mesh_values):
-            # for orbs in constr_orbs:
-                # if delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]] > constr_tol:
-                    # delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]] = penalty*delta_disc_constr[i_mesh_pt, orbs[0], orbs[1]]
-        for i,j in constr_orbs:
-            delta_disc_constr[i, j] = penalty*delta_disc_constr[i, j]
-
-
-        norm = np.linalg.norm(delta_disc_constr - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
+        norm = np.linalg.norm(delta_disc.data[opt_idx:] - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
 
         return norm
     ####
@@ -468,20 +459,22 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
 
     # find constrained elements of delta_in
     # max_{i,j,tau} |Delta[tau][i,j]| < tol for off-diag terms
+    # not used atm, but could be used to constrain minimizer
     constr_orbs = []
     for i in range(n_orb):
         for j in range(n_orb):
-            if np.max(delta_in.data[:, i, j]) < constr_tol and i != j:
+            if i != j and np.max(np.abs(delta_in.data[:, i, j])) < constr_tol:
                 constr_orbs.append((i, j))
-    print('The following matrix elements will be forced to have a vanishing delta {}'.format(constr_orbs))
 
     # initialize bath_hoppings
     # create bath hoppings V with dim (Nb)
     if isinstance(V0, np.ndarray):
         assert V0.shape == (n_orb, Nb), 'V0 shape is incorrect. Must be ({},{}), but is {}'.format(n_orb, Nb, V0.shape)
-    elif isinstance(V0, float):
+    elif isinstance(V0, (float, complex)):
+        if isinstance(V0, complex) and not cmplx:
+            raise ValueError('V0 initialized with a complex value, but cmplx=False')
         V0 = V0*np.ones((n_orb, Nb), dtype=complex if cmplx else float)
-    else:
+    elif V0 is None:
         print('initial guess of V from cholesky decomposition of leading order moment of delta_in')
         # get 1st moment of delta_in
         if isinstance(delta_in.mesh, MeshImFreq):
@@ -494,29 +487,33 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
         # obtain guess from cholesky decompisition of 1st moment (tail[1])
         chol = np.linalg.cholesky(leading_moment)
         # chol is dim n_orb, extend to shape of V
-        V0 = np.block([chol/(Nb//n_orb) for i in range(Nb//n_orb)])
+        V0 = np.block([chol for i in range(Nb//n_orb if Nb//n_orb > 0 else 1)])
+        # initiate norm
+        norm = (Nb//n_orb if Nb//n_orb > 0 else 1)*np.ones((n_orb))
         # if Nb % n_orb != 0 we need to correct the shape of V0
+        # if Nb<n_orb we cut V0 and cut the norm
         if V0.shape[1] > Nb:
-            V0 = V0[:, Nb]
+            V0 = V0[:, :Nb]
+            norm = norm[:Nb]
+        # otherwise we fill the remaining cols of V0 with entries from chol
         elif V0.shape[1] < Nb:
             Nb_missing = Nb - V0.shape[1]
-            V0 = np.hstack((V0, chol[:, 0:Nb_missing]/(Nb//n_orb)))
+            V0 = np.hstack((V0, chol[:, 0:Nb_missing]))
+            norm[0:Nb_missing] = norm[0:Nb_missing] + 1
         # chol always returns complex arrays
         if not cmplx:
             V0 = V0.real
+
+        # norm V0 with the sqrt(# of occurences of this col)
+        V0 = V0 / np.sqrt(norm[:,None])
+    else:
+        raise ValueError('V0 has invalid type {}, should be one of: None, float, complex, or np.ndarray'.format(type(V0)))
 
     # bath energies are initialized as linspace over the approximate bandwidth or given as list
     if (isinstance(eps0, list) or isinstance(eps0, np.ndarray)):
         assert len(eps0) == Nb, 'len(eps) does not match number of bath sides'
     else:
         eps0 = np.linspace(-eps0, eps0, Nb)
-
-    # alternatively remove hoppings associated with constr_orbs form parameters
-    # rem_hop = []
-    # for i,j in constr_orbs:
-        # for hop_idx in range(i*Nb+j, (i+1)*Nb+j, n_orb):
-            # rem_hop.append(hop_idx)
-    # V0_new = np.array([hop for i, hop in enumerate(V0) if i not in rem_hop ])
 
     # parameters for scipy must be a 1D array
     parameters = np.concatenate([V0.view(float).flatten(), eps0])
@@ -526,10 +523,10 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-8, maxiter=10000,
     start_time = timer()
     if method == 'BFGS':
         result = minimize(minimizer, parameters, method='L-BFGS-B',
-                          options={'ftol': tol, 'gtol': 1e-15, 'maxiter': maxiter, "disp": False})
+                options={'ftol': tol, 'gtol': 1e-15, 'maxiter': maxiter, "disp": False, "maxfun": maxiter})
     elif method == 'basinhopping':
         result = basinhopping(minimizer, parameters, niter_success=30, niter=maxiter, disp=False, stepsize=0.8,
-                              minimizer_kwargs={'method': 'L-BFGS-B', 'options': {'ftol': tol, 'gtol': 1e-15, "disp": False}})
+                minimizer_kwargs={'method': 'L-BFGS-B', 'options': {'ftol': tol, 'gtol': 1e-15, "disp": False, "maxfun" : 1000000}})
     elif method == 'Nelder-Mead':
         result = minimize(minimizer, parameters, method='Nelder-Mead', options={'xatol': tol, 'maxiter': maxiter, 'adaptive': True})
     else:
