@@ -78,11 +78,17 @@ namespace triqs {
         return sout << "Bravais Lattice with dimension " << bl.ndim() << ", units " << bl.units() << ", n_orbitals " << bl.n_orbitals();
       }
 
+      // -------------------- hdf5 -------------------
+
+      static std::string hdf5_format() { return "bravais_lattice"; }
+
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl);
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl);
+
+      // ---------------------------------------
 
       //  BOOST Serialization
       friend class boost::serialization::access;

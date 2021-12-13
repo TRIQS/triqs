@@ -18,9 +18,12 @@ module.add_using("k_cvt = nda::vector_const_view<double>")
 
 # ---------   Bravais lattice ----------------------------------
 
-bl = class_( py_type = "BravaisLattice",
+bl = class_(py_type = "BravaisLattice",
         c_type = "bravais_lattice",
         c_type_absolute = "triqs::lattice::bravais_lattice",
+        is_printable = True,
+        hdf5 = True,
+        comparisons = "== !=",
         serializable= "tuple",
        )
 
@@ -38,8 +41,8 @@ bl.add_constructor(signature = "()",
 bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing lattice basis vectors as rows")
 bl.add_property(getter = cfunction("int ndim()"), doc = "Number of dimensions")
 bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals in the unit cell")
-bl.add_property(getter = cfunction("std::vector<r_t> orbital_positions()"), doc = "Return the vector of orbital positions")
-bl.add_property(getter = cfunction("std::vector<std::string> orbital_names()"), doc = "Return the vector of orbital names")
+bl.add_property(getter = cfunction("std::vector<r_t> orbital_positions()"), doc = "Return the list of orbital positions")
+bl.add_property(getter = cfunction("std::vector<std::string> orbital_names()"), doc = "Return the list of orbital names")
 
 
 bl.add_method(name = "lattice_to_real_coordinates", 
@@ -54,6 +57,9 @@ c = class_(
         c_type = "brillouin_zone",   # name of the C++ class
         c_type_absolute = "triqs::lattice::brillouin_zone",
         doc = r"",   # doc of the C++ class
+        is_printable = True,
+        hdf5 = True,
+        comparisons = "== !=",
         serializable= "tuple",
 )
 
@@ -72,6 +78,7 @@ module.add_class(c)
 tb = class_(py_type = "TightBinding",
         c_type = "tight_binding",
         c_type_absolute = "triqs::lattice::tight_binding",
+        is_printable = True,
         hdf5 = True,
         comparisons = "== !="
        )

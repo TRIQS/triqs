@@ -79,11 +79,17 @@ namespace triqs {
         return sout << "Brillouin Zone with " << bz.ndim() << " dimensions and reciprocal matrix " << bz.reciprocal_matrix();
       }
 
+      // -------------------- hdf5 -------------------
+
+      static std::string hdf5_format() { return "brillouin_zone"; }
+
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const &bz);
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, brillouin_zone &bz);
+
+      // ---------------------------------------
 
       //  BOOST Serialization
       friend class boost::serialization::access;

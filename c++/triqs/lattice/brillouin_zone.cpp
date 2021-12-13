@@ -40,6 +40,7 @@ namespace triqs {
 
     void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const &bz) {
       h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format(gr, bz);
       h5_write(gr, "bravais_lattice", bz.lattice_);
     }
 

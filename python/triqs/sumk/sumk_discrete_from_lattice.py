@@ -123,11 +123,11 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose().copy()).transpose(2,0,1)
 
         if self.orthogonal_basis:
-            self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]
+            self.mu_pattern[:,:] = numpy.identity(self.SL.n_orbitals)
         else:
             assert 0 , "not checked"
             self.overlap[:,:,:] = self.SL.Overlap(bz_points.transpose().copy())
-            mupat = self.SL.MuPattern()
+            mupat = numpy.identity(self.SL.n_orbitals)
             for k_index in range(self.N_kpts()):
                 self.mu_pattern[:,:,k_index] = Num.dot( mupat ,self.Overlap[:,:,k_index])
 

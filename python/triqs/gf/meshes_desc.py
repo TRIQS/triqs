@@ -3,7 +3,7 @@ import re
 
 module = module_(full_name = "triqs.gf.meshes", doc = "All the meshes", app_name="triqs")
 
-module.add_imports("triqs.lattice")
+module.add_imports("triqs.lattice.lattice_tools")
 
 module.add_include("<triqs/gfs.hpp>")
 

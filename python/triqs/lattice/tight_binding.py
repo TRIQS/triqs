@@ -18,6 +18,7 @@
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 
+from h5.formats import register_class
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
@@ -33,7 +34,7 @@ import numpy
 import warnings
 
 
-def dos(tight_binding, n_kpts, n_eps, name) :
+def dos(tight_binding, n_kpts, n_eps, name):
     """
     :param tight_binding: a tight_binding object
     :param n_kpts: the number of k points to use in each dimension
@@ -43,14 +44,16 @@ def dos(tight_binding, n_kpts, n_eps, name) :
     :rtype: return a list of DOS, one for each band
     """
     eps, arr = dos_c(tight_binding, n_kpts, n_eps)
-    return [ DOS (eps, arr[:, i], name) for i in range (arr.shape[1]) ]
+    return [DOS(eps, arr[:, i], name) for i in range(arr.shape[1])]
 
-def dos_patch(tight_binding, triangles, n_eps, n_div, name) :
+
+def dos_patch(tight_binding, triangles, n_eps, n_div, name):
     """
     To be written
     """
     eps, arr = dos_patch_c(tight_binding, triangles, n_eps, n_div)
-    return DOS (eps, arr, name)
+    return DOS(eps, arr, name)
+
 
 class TBLattice(object):
 
@@ -69,9 +72,6 @@ class TBLattice(object):
 
     tb : TightBinding
         The tight-binding Hamiltonian
-
-    ndim : int
-        Number of dimensions of the Bravais Lattice
     """
 
     def __init__(self, units,
@@ -79,7 +79,7 @@ class TBLattice(object):
                  orbital_positions=[(0, 0, 0)],
                  orbital_names=None,
                  hopping=None):
-        """ 
+        """
         Parameters
         ----------
 
@@ -100,7 +100,8 @@ class TBLattice(object):
         """
 
         if hopping is not None:
-            warnings.warn("Keyword hopping in TBLattice.__init__ deprecated; use hoppings instead.", DeprecationWarning)
+            warnings.warn(
+                "Keyword hopping in TBLattice.__init__ deprecated; use hoppings instead.", DeprecationWarning)
             hoppings = hopping
 
         if orbital_names is None:
@@ -110,16 +111,9 @@ class TBLattice(object):
         self.bz = BrillouinZone(self.bl)
         self.tb = TightBinding(self.bl, hoppings)
 
-        # ---- Expose BravaisLattice API ----
-        self.ndim = self.bl.ndim
-        self.n_orbitals = self.bl.n_orbitals
-        self.orbital_positions = self.bl.orbital_positions
-        self.orbital_names = self.bl.orbital_names
-
-        # ---- Additional API ----
-        self.units = units
-        self.hoppings = hoppings
-        self.MuPattern = numpy.identity(self.n_orbitals)
+    @property
+    def hoppings(self):
+        return {tuple(displ): hop for displ, hop in zip(self.tb.displ_vec, self.tb.overlap_mat_vec)}
 
     def get_kmesh(self, n_k):
         """Return a mesh on the Brillouin zone with a given discretization
@@ -159,6 +153,33 @@ class TBLattice(object):
         else:
             return MeshCycLat(self.bl, numpy.diag(n_r))
 
+    # ---- Expose BravaisLattice API ----
+
+    @property
+    def ndim(self):
+        """Number of dimensions of the lattice"""
+        return self.bl.ndim
+
+    @property
+    def units(self):
+        """Number of dimensions of the lattice"""
+        return self.bl.units[:self.ndim, :self.ndim]
+
+    @property
+    def n_orbitals(self):
+        """Number of orbitals in the unit cell"""
+        return self.bl.n_orbitals
+
+    @property
+    def orbital_positions(self):
+        """The list of orbital positions"""
+        return self.bl.orbital_positions
+
+    @property
+    def orbital_names(self):
+        """The list of orbital names"""
+        return self.bl.orbital_names
+
     # ---- Expose TightBinding API ----
 
     def lattice_to_real_coordinates(self, x):
@@ -173,32 +194,71 @@ class TBLattice(object):
         return self.tb.fourier(arg)
     dispersion.__doc__ = TightBinding.dispersion.__doc__
 
+    # ---- H5 Serialization ----
+
+    def __reduce_to_dict__(self):
+        return {"BravaisLattice": self.bl,
+                "BrillouinZone": self.bz,
+                "TightBinding": self.tb}
+
+    @classmethod
+    def __factory_from_dict__(cls, name, d):
+        bl = d["BravaisLattice"]
+        tb = d["TightBinding"]
+        hoppings = {tuple(displ): hop for displ, hop in zip(
+            tb.displ_vec, tb.overlap_mat_vec)}
+        return cls(bl.units[:bl.ndim, :bl.ndim],
+                   hoppings,
+                   bl.orbital_positions,
+                   bl.orbital_names)
+
+    # ---- Comparison ----
+
+    def __eq__(self, other):
+        if not isinstance(other, TBLattice):
+            return False
+        return self.tb == other.tb and self.bz == other.bz and self.bl == other.bl
+
+    # ---- Print ----
+
+    def __str__(self):
+        return str(self.tb)
+
     # ---- Backward Compatibility ----
 
     @property
     def Units(self):
-        warnings.warn("TBLattice.Units is deprecated; use TBLattice.units instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.Units is deprecated; use TBLattice.units instead.", DeprecationWarning)
         return self.units
 
     @property
     def NOrbitalsInUnitCell(self):
-        warnings.warn("TBLattice.tb is deprecated; use TBLattice.n_orbitals instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.tb is deprecated; use TBLattice.n_orbitals instead.", DeprecationWarning)
         return self.n_orbitals
 
     @property
     def OrbitalPositions(self):
-        warnings.warn("TBLattice.OrbitalPositions is deprecated; use TBLattice.orbital_positions instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.OrbitalPositions is deprecated; use TBLattice.orbital_positions instead.", DeprecationWarning)
         return self.orbital_positions
 
     @property
     def OrbitalNames(self):
-        warnings.warn("TBLattice.OrbitalNames is deprecated; use TBLattice.orbital_names instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.OrbitalNames is deprecated; use TBLattice.orbital_names instead.", DeprecationWarning)
         return self.orbital_names
 
     def hopping_dict(self):
-        warnings.warn("TBLattice.hopping_dict() is deprecated; use TBLattice.hoppings instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.hopping_dict() is deprecated; use TBLattice.hoppings instead.", DeprecationWarning)
         return self.hoppings
 
     def hopping(self, k):
-        warnings.warn("TBLattice.hopping(k) is deprecated; use TBLattice.dispersion(k) instead.", DeprecationWarning)
+        warnings.warn(
+            "TBLattice.hopping(k) is deprecated; use TBLattice.dispersion(k) instead.", DeprecationWarning)
         return hopping_stack(self, k)
+
+
+register_class(TBLattice)

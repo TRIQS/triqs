@@ -188,13 +188,22 @@ namespace triqs {
 
       bool operator!=(tight_binding const &tb) const { return !(operator==(tb)); }
 
+      // -------------------- print -------------------
+
+      friend std::ostream &operator<<(std::ostream &sout, tight_binding const &tb) {
+        sout << "Tight Binding Hamiltonian on " << tb.lattice() << "\nwith hoppings [";
+        for (auto const &[displ, overlap_mat] : itertools::zip(tb.displ_vec(), tb.overlap_mat_vec()))
+          sout << "\n   " << displ << " : " << overlap_mat;
+        return sout << " ]";
+      }
+
       // ------------------- HDF5 Read / Write -------------------
 
       static std::string hdf5_format() { return "tight_binding"; }
 
       // Function that writes the solver_core to hdf5 file
-      friend void h5_write(h5::group g, std::string subgroup_name, tight_binding const &tb) {
-        auto grp = g.create_group(subgroup_name);
+      friend void h5_write(h5::group fg, std::string subgroup_name, tight_binding const &tb) {
+        auto grp = fg.create_group(subgroup_name);
         write_hdf5_format(grp, tb);
         h5_write(grp, "bravais_lattice", tb.bl_);
         h5_write(grp, "displ_vec", tb.displ_vec_);

@@ -17,5 +17,6 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, tayral
 
-from .lattice_tools import *
-__all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone", "BravaisLattice"]
+from .lattice_tools import BravaisLattice, BrillouinZone, TightBinding, dos, dos_patch
+__all__ = ["TightBinding", "BrillouinZone", "BravaisLattice",
+           "dos", "dos_patch", "utils", "tight_binding", "super_lattice"]

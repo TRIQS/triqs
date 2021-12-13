@@ -12,5 +12,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${w90_files} DESTINATION ${CMAKE_CURRENT_B
 
 add_python_test(operators)
 add_python_test(lattice_utils)
+add_python_test(lattice_tight_binding)
 
 add_all_subdirectories_with_cmakelist()
