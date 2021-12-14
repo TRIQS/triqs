@@ -1,6 +1,6 @@
 FROM ubuntu:focal
 ARG RELEASE=focal
-ARG LLVM=12
+ARG LLVM=13
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
       wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
