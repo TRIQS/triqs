@@ -17,7 +17,7 @@
 
 import unittest
 from triqs.lattice import BravaisLattice, BrillouinZone
-from triqs.lattice.utils import k_space_path, TB_from_wannier90
+from triqs.lattice.utils import k_space_path, TB_from_wannier90, TB_from_pythTB
 
 import numpy as np
 
@@ -69,6 +69,12 @@ class test_utils(unittest.TestCase):
         hr_0 = TB_w90.hoppings[(0, 0, 0)]
         self.assertTrue(hr_0[0, 0] == hr_0[1, 1])
 
+        # check 100 hopping
+        hr_100 = TB_w90.hoppings[(1, 0, 0)]
+        self.assertTrue(hr_100[0, 0] == -0.256015)
+        self.assertTrue(hr_100[2, 2] == -0.025979)
+
+
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
@@ -78,6 +84,49 @@ class test_utils(unittest.TestCase):
         epsilon_k = TB_w90.dispersion(kvecs)
         # test fourier to obtain H_k
         H_k = TB_w90.fourier(TB_w90.get_kmesh(11))
+
+    def test_TB_from_pythTB(self):
+
+        try:
+            from pythtb import tb_model
+        except(ModuleNotFoundError):
+            print('skipping pythTB test because module pythTB could not be imported')
+            return
+
+        # set up simple 1band model with NN and NNN hopping
+        n_orb = 3
+        lattice = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        orbitals = [[0, 0, 0]] * n_orb
+        d0 = 1.0
+        t0 = -0.5
+        ptb = tb_model(3, 3, lattice, orbitals)
+        # set cfs and hoppings
+        ptb.set_onsite([d0] * n_orb)
+        ptb.set_hop(t0, 0, 0, [0, 1, 0])
+        ptb.set_hop(t0, 0, 0, [1, 0, 0])
+        ptb.set_hop(t0, 1, 1, [0, 0, 1])
+        ptb.set_hop(t0, 1, 1, [1, 0, 0])
+        ptb.set_hop(t0, 2, 2, [0, 0, 1])
+        ptb.set_hop(t0, 2, 2, [0, 1, 0])
+
+        tbl_ptb = TB_from_pythTB(ptb)
+
+        # check if orbitals are degenerate as in hr.dat
+        hr_0 = tbl_ptb.hoppings[(0, 0, 0)]
+        self.assertTrue(hr_0[0, 0] == hr_0[1, 1] == hr_0[2, 2] == d0)
+
+        hr_100 = tbl_ptb.hoppings[(1, 0, 0)]
+        self.assertTrue(hr_100[0, 0] == hr_100[1, 1] == t0)
+
+        Gamma = np.array([0.0, 0.0, 0.0])
+        M = np.array([0.5, 0.5, 0.0])
+        paths = [(Gamma, M)]
+        kvecs, dist = k_space_path(paths, num=101, bz=tbl_ptb.bz)
+
+        # test dispersion
+        epsilon_k = tbl_ptb.dispersion(kvecs)
+        # test fourier to obtain H_k
+        H_k = tbl_ptb.fourier(tbl_ptb.get_kmesh(11))
 
 
 if __name__ == '__main__':
