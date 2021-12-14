@@ -31,15 +31,16 @@ def k_space_path(paths, num=101, bz=None):
     num : int, default=100
        Number of k-vectors along each segment the paths
     bz : brillouin_zone, optional
-       When a Brillouin Zone is passed, calculate distance in absoulte units
+       When a Brillouin Zone is passed, calculate distance in absolute units
 
     Returns
     -------
     kvecs: numpy.array [shape=(len(paths)*num,3)]
-        Two-dimensional numpy array containing the path vectors as rows
+        Two-dimensional numpy array containing the path vectors (in reciprocal units) as rows
     dist: numpy.array  [shape=(kvecs.shape[0])]
         One-dimensional numpy array containing, for each element in kvecs,
         the distance travelled along the path. Useful for plotting.
+        If bz is provided, calculate the distance in absolute units.
         The distances for the relevant k-points in paths can be obtained with dist[num-1::num].
     """
 
