@@ -1,3 +1,23 @@
+Version 3.0.2
+=============
+
+TRIQS Version 3.0.2 is a patch release that fixes a few smaller issues
+to restore compatibility with Python 3.10 and C++20 compilers.
+
+We provide a more detailed description of the changes and fixes below.
+
+Python 3.10
+-----------
+* Fix Sequence import, should be from collections.abc
+
+c++20
+-----
+* Stop using deprecated template class std::iterator<...>
+* Replace std::result_of by std::invoke_result
+
+Contributors: Weh Andreas, Nils Wentzell
+
+
 Version 3.0.1
 =============
 
