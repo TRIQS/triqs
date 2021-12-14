@@ -63,28 +63,32 @@ class test_utils(unittest.TestCase):
         TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=True, add_local=mu)
         # and normal
         mu = -12.3461 * np.eye(n_orb)
-        TB_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False, add_local=mu)
+        tbl_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False, add_local=mu)
 
         # check if orbitals are degenerate as in hr.dat
-        hr_0 = TB_w90.hoppings[(0, 0, 0)]
+        hr_0 = tbl_w90.hoppings[(0, 0, 0)]
         self.assertTrue(hr_0[0, 0] == hr_0[1, 1])
 
         # check 100 hopping
-        hr_100 = TB_w90.hoppings[(1, 0, 0)]
+        hr_100 = tbl_w90.hoppings[(1, 0, 0)]
         self.assertTrue(hr_100[0, 0] == -0.256015)
         self.assertTrue(hr_100[2, 2] == -0.025979)
 
+        # Evaluate dispersion on k-space path
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
-        kvecs, dist = k_space_path(paths, num=101, bz=TB_w90.bz)
-
-        # test dispersion
-        epsilon_k = TB_w90.dispersion(kvecs)
+        kvecs, dist = k_space_path(paths, num=101, bz=tbl_w90.bz)
+        epsilon_k = tbl_w90.dispersion(kvecs)
         self.assertTrue(epsilon_k.shape == (101, 3))
 
-        # test fourier to obtain H_k
-        H_k = TB_w90.fourier(TB_w90.get_kmesh(11))
+        # Obtain H_k on same path and compare eigenvalues against dispersion
+        H_k = tbl_w90.fourier(kvecs)
+        evals = np.sort(np.linalg.eigvalsh(H_k))
+        self.assertTrue(np.allclose(evals, epsilon_k))
+
+        # Obtain H_k as Gf
+        H_k = tbl_w90.fourier(tbl_w90.get_kmesh(11))
         self.assertTrue(H_k.data.shape == (1331, 3, 3))
 
     def test_TB_from_pythTB(self):
@@ -104,32 +108,44 @@ class test_utils(unittest.TestCase):
         ptb = tb_model(3, 3, lattice, orbitals)
         # set cfs and hoppings
         ptb.set_onsite([d0] * n_orb)
-        ptb.set_hop(t0, 0, 0, [0, 1, 0])
-        ptb.set_hop(t0, 0, 0, [1, 0, 0])
-        ptb.set_hop(t0, 1, 1, [0, 0, 1])
-        ptb.set_hop(t0, 1, 1, [1, 0, 0])
-        ptb.set_hop(t0, 2, 2, [0, 0, 1])
-        ptb.set_hop(t0, 2, 2, [0, 1, 0])
+        ptb.set_hop(1*t0, 0, 0, [1, 0, 0])
+        ptb.set_hop(2*t0, 1, 1, [1, 0, 0])
+        ptb.set_hop(1*t0, 0, 0, [0, 1, 0])
+        ptb.set_hop(4*t0, 2, 2, [0, 1, 0])
+        ptb.set_hop(1*t0, 1, 1, [0, 0, 1])
+        ptb.set_hop(8*t0, 2, 2, [0, 0, 1])
 
         tbl_ptb = TB_from_pythTB(ptb)
 
-        # check if orbitals are degenerate as in hr.dat
+        # Check that hopping dict matches pythtb model above
         hr_0 = tbl_ptb.hoppings[(0, 0, 0)]
         self.assertTrue(hr_0[0, 0] == hr_0[1, 1] == hr_0[2, 2] == d0)
 
         hr_100 = tbl_ptb.hoppings[(1, 0, 0)]
-        self.assertTrue(hr_100[0, 0] == hr_100[1, 1] == t0)
+        self.assertTrue(2*hr_100[0, 0] == hr_100[1, 1] == 2*t0)
 
+        hr_010 = tbl_ptb.hoppings[(0, 1, 0)]
+        self.assertTrue(4*hr_010[0, 0] == hr_010[2, 2] == 4*t0)
+
+        hr_001 = tbl_ptb.hoppings[(0, 0, 1)]
+        self.assertTrue(8*hr_001[1, 1] == hr_001[2, 2] == 8*t0)
+
+        # Evaluate dispersion on k-space path
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
         kvecs, dist = k_space_path(paths, num=101, bz=tbl_ptb.bz)
-
-        # test dispersion
         epsilon_k = tbl_ptb.dispersion(kvecs)
-        # test fourier to obtain H_k
-        H_k = tbl_ptb.fourier(tbl_ptb.get_kmesh(11))
+        self.assertTrue(epsilon_k.shape == (101, 3))
 
+        # Obtain H_k on same path and compare eigenvalues against dispersion
+        H_k = tbl_ptb.fourier(kvecs)
+        evals = np.linalg.eigvalsh(H_k)
+        self.assertTrue(np.allclose(evals, epsilon_k))
+
+        # Obtain H_k as Gf
+        H_k = tbl_ptb.fourier(tbl_ptb.get_kmesh(11))
+        self.assertTrue(H_k.data.shape == (1331, 3, 3))
 
 if __name__ == '__main__':
     unittest.main()
