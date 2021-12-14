@@ -191,7 +191,7 @@ class TBLattice(object):
     fourier.__doc__ = TightBinding.fourier.__doc__
 
     def dispersion(self, arg):
-        return self.tb.fourier(arg)
+        return self.tb.dispersion(arg)
     dispersion.__doc__ = TightBinding.dispersion.__doc__
 
     # ---- H5 Serialization ----

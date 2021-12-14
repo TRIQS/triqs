@@ -74,7 +74,6 @@ class test_utils(unittest.TestCase):
         self.assertTrue(hr_100[0, 0] == -0.256015)
         self.assertTrue(hr_100[2, 2] == -0.025979)
 
-
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
@@ -82,8 +81,11 @@ class test_utils(unittest.TestCase):
 
         # test dispersion
         epsilon_k = TB_w90.dispersion(kvecs)
+        self.assertTrue(epsilon_k.shape == (101, 3))
+
         # test fourier to obtain H_k
         H_k = TB_w90.fourier(TB_w90.get_kmesh(11))
+        self.assertTrue(H_k.data.shape == (1331, 3, 3))
 
     def test_TB_from_pythTB(self):
 
