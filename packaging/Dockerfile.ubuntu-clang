@@ -4,6 +4,7 @@ ARG LLVM=13
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
+      wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
@@ -38,7 +39,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-scipy \
       python3-sphinx \
       python3-nbsphinx \
-      python3-ipython \ 
+      python3-ipython \
       python3-sphinx-rtd-theme && \
       pip3 install myst-parser linkify-it-py
 
