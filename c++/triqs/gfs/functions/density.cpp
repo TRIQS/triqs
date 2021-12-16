@@ -143,6 +143,7 @@ namespace triqs::gfs {
     double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
 
     nda::matrix<dcomplex> res(g.target_shape());
+    nda::matrix<dcomplex> den(g.target_shape());
 
     // Trapetzoidal integration, with partial right interval
     res = 0.5 * g[0];
@@ -159,9 +160,9 @@ namespace triqs::gfs {
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
-    res = 0.5 * (res + dagger(res));     // A = i( g - g^+ )
+    den = 0.5 * (res + dagger(res));     // A = i( g - g^+ )
 
-    return res;
+    return den;
   }
 
   /// Finite temperature density from integration on the real frequency axis
@@ -170,6 +171,7 @@ namespace triqs::gfs {
     assert(beta > 0.);
 
     nda::matrix<dcomplex> res(g.target_shape());
+    nda::matrix<dcomplex> den(g.target_shape());
     res() = 0;
 
     for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
@@ -180,9 +182,9 @@ namespace triqs::gfs {
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
-    res = 0.5 * (res + dagger(res));                   // A = i( g - g^+ )
+    den = 0.5 * (res + dagger(res));                   // A = i( g - g^+ )
 
-    return res;
+    return den;
   }
 
   //-------------------------------------------------------

@@ -72,4 +72,20 @@ TEST(Gf, Density_with_not_all_moments) {
   EXPECT_THROW(triqs::gfs::density(G), triqs::runtime_error);
 }
 
+TEST(Gf, DensityFermionReFreq) {
+
+  double wmax = 10;
+  int N       = 1000;
+  auto h      = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
+  auto G      = gf<refreq>{{-wmax, wmax, N}, {2, 2}};
+  nda::matrix<dcomplex> n_dag(G.target_shape());
+
+  //G(iw_) << inverse(w_ - h + eta); // FIXME
+  for (auto &w : G.mesh()) G[w] = inverse(w - h + 0.1i);
+
+  auto n = triqs::gfs::density(G);
+  n_dag  = dagger(n);
+  EXPECT_ARRAY_EQ(n, n_dag);
+}
+
 MAKE_MAIN;
