@@ -175,4 +175,4 @@ class TBSuperLattice(TBLattice):
    Base TBLattice: %s
    SuperLattice Units: %s
    Remove internal Hoppings: %s
-   Cluster site positions: %s"""%(self.__BaseLattice, f(self.__super_lattice_units), self.__cluster_sites, self.__remove_internal_hoppings)
+   Cluster site positions: %s"""%(self.__BaseLattice, f(self.__super_lattice_units), self.__remove_internal_hoppings, self.__cluster_sites)
