@@ -36,29 +36,35 @@ namespace triqs {
 
       gf_mesh() = default;
 
-      ///full constructor
       /**
-    @param bz_ brillouin zone
-    @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
-
-    Constructs $$\tilde{b}_i = \sum_j N^{-1}_{ji} b_j$$ where $b_j$ reciprocal vectors
-   */
+       * Construct a brzone mesh on a given brillouin zone
+       * The underlying cluster-mesh will be constructed with the provided periodization matrix N.
+       *
+       * The unit vectors of the cluster-mesh are constructed to respect the periodicity of the
+       * brillouin_zone, i.e.
+       *
+       *   $$K = N * U$$
+       *
+       * where $K$ is the reciprocal matrix and $U$ are the unit vectors of the cluster-mesh.
+       *
+       * @param bz The Brillouin zone (domain)
+       * @param periodization_matrix Periodiziation matrix N of shape 3x3
+       */
       gf_mesh(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
-         : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), periodization_matrix_.transpose()) {
-        matrix<double> N_as_double = periodization_matrix_;
-        matrix<double> Nt_inv      = inverse(N_as_double.transpose());
-        units                      = Nt_inv * bz_.units();
+         : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), periodization_matrix_) {
+        units = inverse(matrix<double>(periodization_matrix)) * bz.units();
       }
 
-      ///backward compatibility
-      /** constructs simple bz mesh on square lattice with simple boundary conditions
-    */
+      /** 
+       * Construct a brzone mesh on a given brillouin zone
+       * with n_l mesh-points in each reciprocal direction
+       * i.e. using a diagonal periodization matrix
+       *
+       * @param bz The Brillouin zone (domain)
+       * @param n_l The number of grid-points for each dimension
+       */
       gf_mesh(brillouin_zone const &bz_, int n_l)
-         : bz(bz_),
-           cluster_mesh(matrix<double>{{{2 * M_PI / n_l, 0., 0.},
-                                        {0., bz_.lattice().dim() >= 2 ? 2 * M_PI / n_l : 2 * M_PI, 0.},
-                                        {0., 0., bz_.lattice().dim() >= 3 ? 2 * M_PI / n_l : 2 * M_PI}}},
-                        matrix<int>{{{n_l, 0, 0}, {0, bz_.lattice().dim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().dim() >= 3 ? n_l : 1}}}) {}
+         : gf_mesh(bz_, matrix<long>{{{n_l, 0, 0}, {0, bz_.lattice().dim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().dim() >= 3 ? n_l : 1}}}) {}
 
       /// ----------- Model the mesh concept  ----------------------
       using domain_t    = brillouin_zone;
@@ -70,46 +76,30 @@ namespace triqs {
 
       static constexpr int n_pts_in_linear_interpolation = (1 << 3);
 
-      // FIXME : INCORRECT
-      interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &x) const {
+      interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &k) const {
 
-        // FIXME pass in the units of the reciprocal lattice
-        // ONLY VALID for SQUARE LATTICE
+        // Calculate k in the units basis
+        auto kv      = arrays::vector<double>{k[0], k[1], k[2]};
+        auto k_units = inverse(transpose(units)) * kv;
 
-        // 0----1----2----3----4----5 : dim = 5, point 6 is 2 Pi
-        std::array<std::array<long, 3>, 2> ia;   // compute the neighbouring points ia, ja in all dimensions
-        std::array<std::array<double, 3>, 2> wa; // compute the weight in all dimensions
-        for (int u = 0; u < 3; ++u) {
-          double delta_k = 2 * M_PI / this->dims[u];
-          //double a = (x[u] + M_PI)/delta_k; // if the grid would be centered on 0
-          double a = (x[u]) / delta_k; // centered at pi
-          long i   = std::floor(a);
-          assert(i >= 0);
-          assert(i <= this->dims[u]);
-          double w = a - i;
-          ia[0][u] = i;
-          ia[1][u] = _modulo(ia[0][u] + 1, u);
-          wa[0][u] = 1 - w;
-          wa[1][u] = w;
-          //std::cout  << "-----------"<< std::endl;
-          //TRIQS_PRINT(dims[u]);
-          //TRIQS_PRINT(x[u]);
-          //TRIQS_PRINT(i);
-          //TRIQS_PRINT(a);
-          //TRIQS_PRINT(w);
+        // 0----1----2----3----4----5---- : dim = 5, point 6 is 2 Pi
+        std::array<std::array<long, 2>, 3> is;   // indices of the two neighbouring grid points
+        std::array<std::array<double, 2>, 3> ws; // weights for the two neighbouring grid points
+        for (int d = 0; d < 3; ++d) {
+          long i   = std::floor(k_units[d]); // Take modulo later
+          double w = k_units[d] - i;
+          is[d]    = {i, i + 1};
+          ws[d]    = {1 - w, w};
         }
-        //    TRIQS_PRINT( wa);
         interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> result;
         int c = 0;
-        for (int i = 0; i < 2; ++i)
-          for (int j = 0; j < 2; ++j)
-            for (int k = 0; k < 2; ++k) {
-              result.idx[c] = index_modulo(index_t{ia[i][0], ia[j][1], ia[k][2]});
-              result.w[c]   = wa[i][0] * wa[j][1] * wa[k][2];
+        for (int ix = 0; ix < 2; ++ix)
+          for (int iy = 0; iy < 2; ++iy)
+            for (int iz = 0; iz < 2; ++iz) {
+              result.idx[c] = index_modulo(index_t{is[0][ix], is[1][iy], is[2][iz]});
+              result.w[c]   = ws[0][ix] * ws[1][iy] * ws[2][iz];
               c++;
             }
-        //  TRIQS_PRINT(result.idx);
-        // TRIQS_PRINT(result.w);
         return result;
       }
 

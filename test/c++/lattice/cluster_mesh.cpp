@@ -39,13 +39,8 @@ TEST(ClusterMesh, FindCellDims) {
 }
 
 TEST(ClusterMesh, Basic) {
-
   auto m1 = cluster_mesh(make_unit_matrix<double>(3), 3 * make_unit_matrix<int>(3));
   EXPECT_EQ(m1.size(), 3 * 3 * 3);
-  auto m2 = cluster_mesh(make_unit_matrix<double>(3), matrix<int>({{1, 2, 0}, {2, 1, 0}, {0, 0, 1}}));
-  EXPECT_EQ(m2.size(), 3);
-  auto m3 = cluster_mesh(make_unit_matrix<double>(3), matrix<int>({{6, 6, 0}, {-6, 6, 0}, {0, 0, 1}}));
-  EXPECT_EQ(m3.size(), 72);
 }
 
 MAKE_MAIN;

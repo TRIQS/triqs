@@ -21,23 +21,46 @@ from numpy import *
 from numpy.linalg import *
 from triqs.gf import *
 from triqs.lattice import *
+from triqs.lattice.lattice_tools import *
 from math import pi
 
-# ---- square lattice : 16 x 16 x 1
-units = matrix([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]], float)
-per_mat = matrix([[16, 0, 0],[0, 16, 0],[0, 0, 1]], int32)
-bz=BrillouinZone(BravaisLattice(units))
-k_mesh = MeshBrillouinZone(bz, per_mat)
+import unittest
 
-assert all(k_mesh.locate_neighbours([pi/2,  pi, 0.0]) == [4, 8, 0])
-assert all(k_mesh.locate_neighbours([pi/8,2*pi, 0.0]) == [1, 16, 0])
+class test_brillouin_zone(unittest.TestCase):
 
-# ---- triangular lattice : 6 x 6 x 1
-units = matrix([[1.,0.,0.],[0.5,sqrt(3)/2.,0.],[0.,0.,1.]], float)
-per_mat=  matrix([[6, 6, 0],[-6, 6, 0],[0, 0, 1]], int32)
-bz=BrillouinZone(BravaisLattice(units))
-k_mesh = MeshBrillouinZone(bz, per_mat)
+    def test_mesh_construction(self):
 
-assert all(k_mesh.locate_neighbours([0.,5.,0.]) == [4, 4, 0])
-assert all(k_mesh.locate_neighbours([2.,1.,0.]) == [4, 0, 0])
-assert all(k_mesh.locate_neighbours([2.,0.,0.]) == [3, -1, 0])
+        # Helper function
+        def run(units, per_mat):
+            bl     = BravaisLattice(units)
+            bz     = BrillouinZone(bl)
+            k_mesh = MeshBrillouinZone(bz, per_mat)
+
+            p1, p2, p3 = per_mat
+            k1, k2, k3 = bz.units()
+            assert array_equal(k_mesh.locate_neighbours(k1), p1)
+            assert array_equal(k_mesh.locate_neighbours(k2), p2)
+            assert array_equal(k_mesh.locate_neighbours(k3), p3)
+            assert norm(dot(bl.units, bz.units().T) - eye(3)*2*pi) < 1e-14
+
+        # ---- square lattice : 16 x 16 x 1
+        units = array([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]], float)
+        per_mat = array([[16, 0, 0],[0, 16, 0],[0, 0, 1]], int32)
+        run(units, per_mat)
+
+        # ---- triangular lattice : 6 x 6 x 1
+        units = array([[1.,0.,0.],[0.5,sqrt(3)/2.,0.],[0.,0.,1.]], float)
+        per_mat = array([[6, 0, 0],[0, 6, 0],[0, 0, 1]], int32)
+        run(units, per_mat)
+
+        # ---- random ONB and per_mat
+        random.seed(seed=12345)
+        from scipy.stats import ortho_group
+        units = ortho_group.rvs(3) # Random orthonormal 3x3 matrix
+        per_mat = diag(random.randint(1, 10, size=(3,), dtype=int32))
+        while linalg.det(per_mat) == 0:
+            per_mat = diag(random.randint(1, 10, size=(3,), dtype=int32))
+        run(units, per_mat)
+
+if __name__ == '__main__':
+    unittest.main()
