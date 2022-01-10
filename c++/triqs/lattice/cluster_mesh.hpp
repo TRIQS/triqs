@@ -96,6 +96,15 @@ namespace triqs {
     */
       cluster_mesh(matrix<double> const &units_, matrix<int> const &periodization_matrix_)
          : units(units_), periodization_matrix(periodization_matrix_) {
+
+        // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
+        // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
+        //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
+        for (int i = 0; i < first_dim(periodization_matrix_); ++i)
+          for (int j = 0; j < first_dim(periodization_matrix_); ++j)
+            if (i != j and periodization_matrix_(i, j) != 0)
+              throw std::runtime_error{"Non-diagonal periodization matrices are currently not supported."};
+
         dims  = find_cell_dims(inverse(matrix<double>(periodization_matrix)));
         _size = dims[0] * dims[1] * dims[2];
         s1    = dims[2];           // stride
