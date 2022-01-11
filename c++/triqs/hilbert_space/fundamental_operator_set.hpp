@@ -166,7 +166,7 @@ namespace triqs::hilbert_space {
     /**
      * @return Iterator to the past-the-end element
      */
-    const_iterator end() const noexcept { return itertools::enumerate(vec).end(); }
+    auto end() const noexcept { return itertools::enumerate(vec).end(); }
 
     /// Equivalent to [[fundamental_operator_set_begin]]
     /**
@@ -178,7 +178,7 @@ namespace triqs::hilbert_space {
     /**
      * @return Iterator to the past-the-end element
      */
-    const_iterator cend() const noexcept { return itertools::enumerate(vec).cend(); }
+    auto cend() const noexcept { return itertools::enumerate(vec).cend(); }
 
     /// Write this set as an HDF5 attribute
     /**

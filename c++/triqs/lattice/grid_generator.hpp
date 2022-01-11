@@ -77,12 +77,12 @@ namespace triqs {
       }
 
       value_type dereference() const { return pt; }
-      bool equal(grid_generator const &other) const { return ((other.dim == dim) && (other.index_ == index_) && (other.nkpts == nkpts)); }
 
       public:
       /// dim : dimension, nkpts : number of k point in each dimension
       grid_generator(int dim_, int nkpts_) : dim(dim_), nkpts(nkpts_), pt(3) { init(); }
       grid_generator() : dim(3), nkpts(0), pt(3) { init(); }
+      bool operator==(grid_generator const &other) const { return ((other.dim == dim) && (other.index_ == index_) && (other.nkpts == nkpts)); }
       int size() const { return (N_X * N_Y * N_Z); }
       int index() const { return index_; }
       operator bool() const { return !(at_end); }

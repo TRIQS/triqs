@@ -22,6 +22,7 @@
 #include "./first_include.hpp"
 #include <iterator>
 #include <boost/iterator/iterator_facade.hpp>
+#include <itertools/itertools.hpp>
 #include "./macros.hpp"
 
 namespace triqs {
@@ -81,6 +82,9 @@ namespace triqs {
       DressingAuxiliaryArgumentPtrType *get_aux() { return _aux; }
       const DressingAuxiliaryArgumentPtrType *get_aux() const { return _aux; }
 
+      template <typename OtherSentinel>
+      bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
+
       private:
       friend class boost::iterator_core_access;
       void increment() { ++_it; }
@@ -113,6 +117,9 @@ namespace triqs {
       IteratorType const &get() const { return _it; }
       IteratorType &get() { return _it; }
       operator IteratorType() const { return _it; }
+
+      template <typename OtherSentinel>
+      bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
 
       private:
       friend class boost::iterator_core_access;

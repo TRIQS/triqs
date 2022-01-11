@@ -107,13 +107,11 @@ namespace triqs::mesh {
     typename Mesh::mesh_point_t pt;
     typename Mesh::mesh_point_t const &dereference() const { return pt; }
 
-    bool equal(mesh_pt_generator const &other) const { return ((other.u == u)); }
-    // do NOT check = of mesh, otherwise e.g. block iterator does not work (infinite loop...)
-    //bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
     public:
     mesh_pt_generator() = default;
-
     mesh_pt_generator(Mesh const *m, bool atEnd = false) : mesh(m), u(atEnd ? m->size() : 0), pt(*m) {}
+
+    bool operator==(mesh_pt_generator const &other) const { return ((other.u == u)); }
 
     void increment() {
       ++u;
