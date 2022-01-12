@@ -81,7 +81,7 @@ TEST(Gf, DensityFermionReFreq) {
   nda::matrix<dcomplex> n_dag(G.target_shape());
 
   //G(iw_) << inverse(w_ - h + eta); // FIXME
-  for (auto &w : G.mesh()) G[w] = inverse(w - h + 0.1i);
+  for (auto &w : G.mesh()) G[w] = inverse(w - h + 1e-8i);
 
   auto n = triqs::gfs::density(G);
   n_dag  = dagger(n);
