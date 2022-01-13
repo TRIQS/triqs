@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
+      libomp-${LLVM}-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
