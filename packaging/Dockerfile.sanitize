@@ -40,6 +40,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
 ENV PYTHON_VERSION=3.8 \
   CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++" \
   ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer \
-  ASAN_OPTIONS=symbolize=1:detect_leaks=0 \
+  ASAN_OPTIONS=symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0 \
   UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
