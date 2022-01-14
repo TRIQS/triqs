@@ -159,9 +159,10 @@ namespace triqs::gfs {
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
-    res = 0.5 * (res + dagger(res));     // A = i( g - g^+ )
-
-    return res;
+    
+    // writing back into res is problematic due to lazy expressionsreturn
+    // return directly instead
+    return 0.5 * (res + dagger(res));     // A = i( g - g^+ )
   }
 
   /// Finite temperature density from integration on the real frequency axis
@@ -180,9 +181,10 @@ namespace triqs::gfs {
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
-    res = 0.5 * (res + dagger(res));                   // A = i( g - g^+ )
 
-    return res;
+    // writing back into res is problematic due to lazy expressionsreturn
+    // return directly instead
+    return 0.5 * (res + dagger(res));     // A = i( g - g^+ )
   }
 
   //-------------------------------------------------------
