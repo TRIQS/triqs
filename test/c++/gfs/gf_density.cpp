@@ -78,14 +78,12 @@ TEST(Gf, DensityFermionReFreq) {
   int N       = 1000;
   auto h      = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
   auto G      = gf<refreq>{{-wmax, wmax, N}, {2, 2}};
-  nda::matrix<dcomplex> n_dag(G.target_shape());
 
   //G(iw_) << inverse(w_ - h + eta); // FIXME
   for (auto &w : G.mesh()) G[w] = inverse(w - h + 1e-8i);
 
   auto n = triqs::gfs::density(G);
-  n_dag  = dagger(n);
-  EXPECT_ARRAY_EQ(n, n_dag);
+  EXPECT_ARRAY_EQ(n, dagger(n));
 }
 
 MAKE_MAIN;
