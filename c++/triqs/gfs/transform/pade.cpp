@@ -33,6 +33,11 @@ namespace triqs {
       // make sure the GFs have the same structure
       //assert(gw.shape() == gr.shape());
 
+      if (n_points < 0 || n_points > gw.mesh().last_index() + 1)
+        TRIQS_RUNTIME_ERROR << "Pade argument n_points (" << n_points
+                            << ") should be positive and not be greater than the positive number of Matsubara frequencies ("
+                            << gw.mesh().last_index() + 1 << ")\n";
+
       gr() = 0.0;
 
       auto sh = stdutil::front_pop(gw.data().shape());
