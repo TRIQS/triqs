@@ -16,7 +16,9 @@
 # Authors: Nils Wentzell
 
 import unittest
+from triqs.gf import GfImFreq, MeshImFreq, BlockGf
 from triqs.lattice import BravaisLattice, BrillouinZone
+from triqs.sumk import SumkDiscreteFromLattice
 from triqs.lattice.utils import k_space_path, TB_from_wannier90, TB_from_pythTB
 
 import numpy as np
@@ -146,6 +148,20 @@ class test_utils(unittest.TestCase):
         # Obtain H_k as Gf
         H_k = tbl_ptb.fourier(tbl_ptb.get_kmesh(11))
         self.assertTrue(H_k.data.shape == (1331, 3, 3))
+
+    def test_sumk_discrete(self):
+        tbl_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False)
+
+        SK = SumkDiscreteFromLattice(lattice=tbl_w90, n_points=10)
+        Sigma_proto = GfImFreq(mesh=MeshImFreq(beta=40, S='Fermion', n_max=1025),
+                               target_shape=[tbl_w90.n_orbitals, tbl_w90.n_orbitals])
+        Sigma_iw = BlockGf(name_list=['up', 'down'], block_list=[Sigma_proto, Sigma_proto], make_copies=True)
+
+        # Sumk only accepts Sigma of MeshImFreq
+        Gloc = SK(Sigma=Sigma_iw, mu=12.3461)
+        # check if density is close to 1, not to strict since nkpts is relatively small
+        assert abs(Gloc.total_density().real - 1.0) < 1e-2
+
 
 if __name__ == '__main__':
     unittest.main()
