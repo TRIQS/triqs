@@ -47,7 +47,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         self.SL = lattice
         self.patch,self.method = patch,method
         # init the array
-        SumkDiscrete.__init__ (self, dim = self.SL.ndim, gf_struct = lattice.OrbitalNames)
+        SumkDiscrete.__init__ (self, dim = self.SL.ndim, gf_struct = lattice.orbital_names)
         self.Recompute_Grid(n_points,  method)
 
      #-------------------------------------------------------------
