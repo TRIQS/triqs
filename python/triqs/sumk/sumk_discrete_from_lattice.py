@@ -19,6 +19,7 @@
 
 
 from .sumk_discrete import SumkDiscrete
+import numpy as np
 from triqs.lattice.tight_binding import TBLattice
 
 class SumkDiscreteFromLattice (SumkDiscrete):
@@ -46,7 +47,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         self.SL = lattice
         self.patch,self.method = patch,method
         # init the array
-        SumkDiscrete.__init__ (self, dim = self.SL.dim, gf_struct = lattice.OrbitalNames)
+        SumkDiscrete.__init__ (self, dim = self.SL.ndim, gf_struct = lattice.orbital_names)
         self.Recompute_Grid(n_points,  method)
 
      #-------------------------------------------------------------
@@ -112,7 +113,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         # A shift
         if Q:
             try:
-                Q = numpy.array(Q)
+                Q = np.array(Q)
                 assert len(Q.shape) ==1
             except:
                 raise RuntimeError("Q is not of correct type")
@@ -120,16 +121,16 @@ class SumkDiscreteFromLattice (SumkDiscrete):
                 self.bz_points[k_index,:] +=Q
 
         # Compute the discretized hoppings from the Superlattice
-        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose().copy()).transpose(2,0,1)
+        self.hopping[:,:,:] = self.SL.fourier(self.bz_points)
 
         if self.orthogonal_basis:
-            self.mu_pattern[:,:] = numpy.identity(self.SL.n_orbitals)
+            self.mu_pattern[:,:] = np.identity(self.SL.n_orbitals)
         else:
             assert 0 , "not checked"
             self.overlap[:,:,:] = self.SL.Overlap(bz_points.transpose().copy())
-            mupat = numpy.identity(self.SL.n_orbitals)
+            mupat = np.identity(self.SL.n_orbitals)
             for k_index in range(self.N_kpts()):
-                self.mu_pattern[:,:,k_index] = Num.dot( mupat ,self.Overlap[:,:,k_index])
+                self.mu_pattern[:,:,k_index] = np.dot( mupat ,self.Overlap[:,:,k_index])
 
     #-------------------------------------------------------------
 
@@ -139,7 +140,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         Internal
         """
 
-        tritemp = numpy.array(patch._triangles)
+        tritemp = np.array(patch._triangles)
         ntri = len(tritemp)/3
         nk = n_bz*n_bz*ntri
         self.resize_arrays(nk)
@@ -168,7 +169,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
         self.bz_weights /= total_weight
 
         # Compute the discretized hoppings from the Superlattice
-        self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose().copy()).transpose(2,0,1)
+        self.hopping[:,:,:] = self.SL.fourier(self.bz_points)
 
         if self.orthogonal_basis:
             self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]

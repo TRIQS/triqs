@@ -70,7 +70,7 @@ class SumkDiscrete:
 
     #-------------------------------------------------------------
 
-    def __call__ (self, Sigma, mu=0, eta=0, field=None, epsilon_hat=None, result=None, selected_blocks=()):
+    def __call__ (self, Sigma, mu=0, field=None, epsilon_hat=None, result=None, selected_blocks=()):
         """
         - Computes:
            result <- \[ \sum_k (\omega + \mu - field - t(k) - Sigma(k,\omega)) \]
@@ -123,6 +123,7 @@ class SumkDiscrete:
 
         G = result if result else model.copy()
         assert isinstance(G,BlockGf), "G must be a BlockGf"
+        assert isinstance(G.mesh, MeshImFreq), "G.mesh must be MeshImFreq but is {}".format(type(G.mesh))
 
         # check input
         assert self.orthogonal_basis, "Local_G: must be orthogonal. non ortho cases not checked."
