@@ -1,10 +1,25 @@
 Version 3.0.2
 =============
 
-TRIQS Version 3.0.2 is a patch release that fixes a few smaller issues
-to restore compatibility with Python 3.10 and C++20 compilers.
+TRIQS Version 3.0.2 is a patch release that fixes a number of issues
+and restores compatibility with Python 3.10 and C++20 compilers.
 
 We provide a more detailed description of the changes and fixes below.
+
+atom_diag
+---------
+* Fix an issue where triqs::atom_diag::quantum_number_eigenvalues returns incorrect values when constraining the number of particles (#825)
+
+gf
+--
+* Fix density function for GfReFreq resulting in non hermitian density matrix (#829)
+* Protect against bug in cluster_mesh: Throw for non-diagonal periodization matrices
+* Fix a bug in the interpolation for Green functions with a gf_mesh<brillouin_zone>
+  that occured when the underlying bravais_lattice was not a square lattice
+
+cmake
+-----
+* Switch default for cmake option Build_Deps from IfNotFound to Always
 
 Python 3.10
 -----------
@@ -15,7 +30,7 @@ c++20
 * Stop using deprecated template class std::iterator<...>
 * Replace std::result_of by std::invoke_result
 
-Contributors: Weh Andreas, Nils Wentzell
+Contributors: Weh Andreas, Alexander Hampel, Igor Krivenko, Nils Wentzell
 
 
 Version 3.0.1
