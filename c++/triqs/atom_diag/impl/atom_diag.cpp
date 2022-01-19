@@ -139,12 +139,20 @@ namespace triqs {
 	    op_mat.block_mat[b] += term.coef * mat;
 	  }
 	}
-	// Transform to Hamiltonian eigen basis
-	if( op_mat.connection(b) != -1 ) {
-	  auto U_left = dagger(eigensystems[op_mat.connection(b)].unitary_matrix);
-	  auto U_right = eigensystems[b].unitary_matrix;
-	  op_mat.block_mat[b] = U_left * op_mat.block_mat[b] * U_right;
-	}
+
+        // Given the environment variable CHECK_ISSUE833 was set by the user
+        // throw an exception if the result of this function was previously effected by issue 833
+        // https://github.com/TRIQS/triqs/issues/833
+        static const bool check_issue833 = std::getenv("CHECK_ISSUE833");
+        if (check_issue833) {
+          auto U_left  = dagger(eigensystems[op_mat.connection(b)].unitary_matrix);
+          auto U_right = eigensystems[b].unitary_matrix;
+          auto diff    = op_mat.block_mat[b] - U_left * op_mat.block_mat[b] * U_right;
+          if (max_element(abs(make_regular(diff))) > 1e-10)
+            TRIQS_RUNTIME_ERROR
+               << "ERROR: The result of the get_op_mat function was previously affected by issue 833 (https://github.com/TRIQS/triqs/issues/833).\n"
+                  "If you used the function prior to release 3.1.0 of TRIQS the result was incorrect.";
+        }
       }
       return std::move(op_mat);
     }
