@@ -323,7 +323,7 @@ def make_delta(V, eps, mesh, block_names=None):
 
 
 def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
-                    cmplx=False, method='BFGS', constr_tol=1e-10):
+                    cmplx=False, method='BFGS'):
     """
     discretizes a given Delta_iw with Nb bath sites using
     scipy.optimize.minimize using the Nelder-Mead algorithm.
@@ -364,10 +364,6 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
         allow the hoppings V to be complex
     method : string, optional, default=BFGS
         method for minimizing the function in scipy minimize
-    constr_tol : float, optional, default=1e-10
-        tolerance threshold of delta_fit(i,j) for i!=j
-        if delta_fit(i,j) is larger then given value a penalty is applied
-        in the norm to suppress occuring delta elements
 
     Returns
     -------
@@ -457,15 +453,6 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
 
     mesh_values = np.array([w.value for w in delta_disc.mesh][opt_idx:])
 
-    # find constrained elements of delta_in
-    # max_{i,j,tau} |Delta[tau][i,j]| < tol for off-diag terms
-    # not used atm, but could be used to constrain minimizer
-    constr_orbs = []
-    for i in range(n_orb):
-        for j in range(n_orb):
-            if i != j and np.max(np.abs(delta_in.data[:, i, j])) < constr_tol:
-                constr_orbs.append((i, j))
-
     # initialize bath_hoppings
     # create bath hoppings V with dim (Nb)
     if isinstance(V0, np.ndarray):
@@ -505,7 +492,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
             V0 = V0.real
 
         # norm V0 with the sqrt(# of occurences of this col)
-        V0 = V0 / np.sqrt(norm[:,None])
+        V0 = V0 / np.sqrt(norm[:, None])
     else:
         raise ValueError('V0 has invalid type {}, should be one of: None, float, complex, or np.ndarray'.format(type(V0)))
 
@@ -523,10 +510,11 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     start_time = timer()
     if method == 'BFGS':
         result = minimize(minimizer, parameters, method='L-BFGS-B',
-                options={'ftol': tol, 'gtol': 1e-15, 'maxiter': maxiter, "disp": False, "maxfun": maxiter})
+                          options={'ftol': tol, 'gtol': 1e-15, 'maxiter': maxiter, "disp": False, "maxfun": maxiter})
     elif method == 'basinhopping':
         result = basinhopping(minimizer, parameters, niter_success=30, niter=maxiter, disp=False, stepsize=0.8,
-                minimizer_kwargs={'method': 'L-BFGS-B', 'options': {'ftol': tol, 'gtol': 1e-15, "disp": False, "maxfun" : 1000000}})
+                              minimizer_kwargs={'method': 'L-BFGS-B',
+                                                'options': {'ftol': tol, 'gtol': 1e-15, "disp": False, "maxfun": 10000000}})
     elif method == 'Nelder-Mead':
         result = minimize(minimizer, parameters, method='Nelder-Mead', options={'xatol': tol, 'maxiter': maxiter, 'adaptive': True})
     else:
