@@ -27,4 +27,4 @@ endif()
 
 mark_as_advanced(MATHJAX_PATH)
 
-find_package_handle_standard_args(MATHJAX DEFAULT_MSG MATHJAX_PATH)
+find_package_handle_standard_args(MathJax DEFAULT_MSG MATHJAX_PATH)
