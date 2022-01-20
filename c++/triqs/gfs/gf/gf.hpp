@@ -402,9 +402,9 @@ namespace triqs::gfs {
   template <typename Tag, typename L, typename R> struct gf_expr;
 
   template <typename Tag, typename L, typename R>
-  gf(gf_expr<Tag, L, R> &&) -> gf<typename gf_expr<Tag, L, R>::variable_t, typename gf_expr<Tag, L, R>::target_t>;
+  gf(gf_expr<Tag, L, R> &&) -> gf<typename gf_expr<Tag, L, R>::mesh_t, typename gf_expr<Tag, L, R>::target_t>;
 
   template <typename Tag, typename L, typename R>
-  gf(gf_expr<Tag, L, R> const &) -> gf<typename gf_expr<Tag, L, R>::variable_t, typename gf_expr<Tag, L, R>::target_t>;
+  gf(gf_expr<Tag, L, R> const &) -> gf<typename gf_expr<Tag, L, R>::mesh_t, typename gf_expr<Tag, L, R>::target_t>;
 
 } // namespace triqs::gfs

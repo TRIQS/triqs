@@ -63,17 +63,17 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
 
         # make_gf_from_fourier with known moments
         m.add_function(name = "make_gf_from_fourier",
-               signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in, gf_mesh<%s> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+               signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in, %s mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
         # FIXME We are making copies of the tail
         m.add_function(name = "make_gf_from_fourier",
-                signature="block_gf<%s, %s> make_gf_from_fourier(block_gf_view<%s, %s> g_in, gf_mesh<%s> mesh, std::vector<array<dcomplex, %s::rank + 1>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+                signature="block_gf<%s, %s> make_gf_from_fourier(block_gf_view<%s, %s> g_in, %s mesh, std::vector<array<dcomplex, %s::rank + 1>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
         # FIXME We are making copies of the tail
         m.add_function(name = "make_gf_from_fourier",
-                signature="block2_gf<%s, %s> make_gf_from_fourier(block2_gf_view<%s, %s> g_in, gf_mesh<%s> mesh, std::vector<std::vector<array<dcomplex, %s::rank + 1>>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+                signature="block2_gf<%s, %s> make_gf_from_fourier(block2_gf_view<%s, %s> g_in, %s mesh, std::vector<std::vector<array<dcomplex, %s::rank + 1>>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
     # Additional overloads for make_gf_from_fourier

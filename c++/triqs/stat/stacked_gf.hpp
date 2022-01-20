@@ -29,16 +29,16 @@ namespace triqs::gfs {
 
   template <typename G> struct stacked_gf {
 
-    using mesh_disc_t = gf_mesh<discrete<discrete_domain>>;
-    using var_t       = typename decltype(mesh_disc_t{0} * std::declval<gf_mesh<typename G::variable_t>>())::var_t;
-    using g_t         = gf<var_t, typename G::target_t>;
     using base_mesh_t = typename G::mesh_t;
+    using mesh_disc_t = mesh::discrete<mesh::discrete_domain>;
+    using mesh_t      = typename decltype(mesh_disc_t{0} * base_mesh_t());
+    using g_t         = gf<mesh_t, typename G::target_t>;
 
     base_mesh_t base_mesh;
     g_t _g;
 
     auto _extract_base_mesh(typename g_t::mesh_t const &m) {
-      if constexpr (get_n_variables<typename G::variable_t>::value == 1) // === single mesh
+      if constexpr (get_n_variables<typename G::mesh_t>::value == 1) // === single mesh
         return std::get<1>(m);
       else
         return triqs::tuple::pop_front(m.components());
