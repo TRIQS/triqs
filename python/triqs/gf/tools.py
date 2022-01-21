@@ -314,20 +314,14 @@ def make_delta(V, eps, mesh, block_names=None):
     delta_res = Gf(mesh=mesh, target_shape=[V.shape[0], V.shape[0]])
 
     if isinstance(mesh, MeshImFreq):
-        # only optimize pos frequencies
-        opt_idx = len(mesh)//2 if mesh.positive_only() else 0
-        mesh_values = np.linspace(mesh(mesh.first_index()), mesh(mesh.last_index()), len(mesh))[opt_idx:]
+        mesh_values = np.linspace(mesh(mesh.first_index()), mesh(mesh.last_index()), len(mesh))
         one_fermion = 1/(mesh_values[:, None] - eps[None, :])
     elif isinstance(mesh, MeshImTime):
         mesh_values = np.linspace(0, mesh.beta, len(mesh))
-        opt_idx = 0
         one_fermion = -np.exp(-mesh_values[:, None] * eps[None, :] + mesh.beta * ((eps < 0.0) * eps)
                               [None, :]) / (1. + np.exp(-mesh.beta * np.abs(eps[None, :])))
 
-    delta_res.data[opt_idx:] = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
-
-    if opt_idx > 0:
-        delta_res.data[:opt_idx] = delta_res.data[opt_idx:].conj()[::-1]
+    delta_res.data[:] = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
 
     return delta_res
 
@@ -509,4 +503,10 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     eps_opt = eps_opt[order]
     V_opt = V_opt[:, order]
 
-    return V_opt, eps_opt, make_delta(V_opt, eps_opt, delta_in.mesh)
+    delta_disc = make_delta(V_opt, eps_opt, delta_in.mesh)
+
+    # if Gf is scalar-valued we have to squeeze the trivial axes
+    if len(delta_in.target_shape) == 0:
+        delta_disc = delta_disc[0, 0]
+
+    return V_opt, eps_opt, delta_disc
