@@ -412,12 +412,12 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     def unflatten(x):
         # first half of parameters are hoppings, second half are bath energies
         if cmplx:
-            V = x[0:2*Nb*n_orb].view(complex).reshape(n_orb, Nb)
-            e = x[2*Nb*n_orb:]
+            V   = x[0:2*Nb*n_orb].view(complex).reshape(n_orb, Nb)
+            eps = x[2*Nb*n_orb:]
         else:
-            V = x[0:Nb*n_orb].reshape(n_orb, Nb)
-            e = x[Nb*n_orb:]
-        return V, e
+            V   = x[0:Nb*n_orb].reshape(n_orb, Nb)
+            eps = x[Nb*n_orb:]
+        return V, eps
 
     ####
     # define minimizer for scipy
