@@ -313,15 +313,21 @@ def make_delta(V, eps, mesh, block_names=None):
 
     delta_res = Gf(mesh=mesh, target_shape=[V.shape[0], V.shape[0]])
 
-    mesh_values = np.array([mp.value for mp in mesh])
-
     if isinstance(mesh, MeshImFreq):
+        # only optimize pos frequencies
+        opt_idx = len(mesh)//2 if mesh.positive_only() else 0
+        mesh_values = np.linspace(mesh(mesh.first_index()), mesh(mesh.last_index()), len(mesh))[opt_idx:]
         one_fermion = 1/(mesh_values[:, None] - eps[None, :])
     elif isinstance(mesh, MeshImTime):
+        mesh_values = np.linspace(0, mesh.beta, len(mesh))
+        opt_idx = 0
         one_fermion = -np.exp(-mesh_values[:, None] * eps[None, :] + mesh.beta * ((eps < 0.0) * eps)
                               [None, :]) / (1. + np.exp(-mesh.beta * np.abs(eps[None, :])))
 
-    delta_res.data[:] = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
+    delta_res.data[opt_idx:] = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
+
+    if opt_idx > 0:
+        delta_res.data[:opt_idx] = delta_res.data[opt_idx:].conj()[::-1]
 
     return delta_res
 
@@ -402,9 +408,6 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
 
     # enforce hermiticity
     delta_in << make_hermitian(delta_in)
-    # prepare discretized delta with same mesh
-    delta_disc = delta_in.copy()
-    delta_disc.zero()
 
     def unflatten(x):
         # first half of parameters are hoppings, second half are bath energies
@@ -421,30 +424,15 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     def minimizer(parameters):
         V, eps = unflatten(parameters)
 
-        # Build discretized bath function as
-        # delta = sum_j V_kj^* f(eps_j) * V_jl  with
-        #     f = [(iw - eps_j)]^-1
-        # for Matsubara and
-        #     f = -exp(-tau * eps_j + beta * (eps_j < 0) * eps_j) / [1 + exp(-beta * |eps_j|)]
-        # for imaginary time.
-        # delta.data has shape (Nmesh, Norb, Nb)
-        if isinstance(delta_in.mesh, MeshImFreq):
-            one_fermion = 1/(mesh_values[:, None] - eps[None, :])
-        elif isinstance(delta_in.mesh, MeshImTime):
-            one_fermion = -np.exp(-mesh_values[:, None] * eps[None, :] + delta_in.mesh.beta * ((eps < 0.0) * eps)
-                                  [None, :]) / (1. + np.exp(-delta_in.mesh.beta * np.abs(eps[None, :])))
-
-        delta = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
+        # Build discretized bath function
+        delta_disc = make_delta(V, eps, delta_in.mesh)
 
         # if Gf is scalar-valued we have to squeeze the trivial axes
         if len(delta_in.target_shape) == 0:
-            delta_disc.data[opt_idx:] = delta.squeeze()
-        else:
-            delta_disc.data[opt_idx:] = delta
+            delta_disc = delta_disc[0, 0]
 
         # calculate norm
-        norm = np.linalg.norm(delta_disc.data[opt_idx:] - delta_in.data[opt_idx:])/np.sqrt(len(mesh_values))
-
+        norm = np.linalg.norm(delta_disc.data - delta_in.data)/np.sqrt(len(delta_disc.mesh))
         return norm
     ####
 
@@ -452,14 +440,6 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
         n_orb = 1
     else:
         n_orb = delta_in.target_shape[0]
-
-    # only optimize pos frequencies
-    if isinstance(delta_in.mesh, MeshImFreq) and not delta_disc.mesh.positive_only():
-        opt_idx = len(delta_disc.mesh)//2
-    else:
-        opt_idx = 0
-
-    mesh_values = np.array([mp.value for mp in delta_disc.mesh][opt_idx:])
 
     # initialize bath_hoppings
     # create bath hoppings V with dim (Nb)
@@ -487,8 +467,8 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
         # chol has shape n_orb x n_orb. We repeat columns
         # of chol until V matrix is filled and normalize each
         # col by the sqrt(#occurances)
-        col_idxs = [i%n_orb for i in range(Nb)]
-        V0 = np.block([chol[:,i:i+1] / np.sqrt(col_idxs.count(i)) for i in col_idxs])
+        col_idxs = [i % n_orb for i in range(Nb)]
+        V0 = np.block([chol[:, i:i+1] / np.sqrt(col_idxs.count(i)) for i in col_idxs])
     else:
         raise ValueError('V0 has invalid type {}, should be one of: None, float, complex, or np.ndarray'.format(type(V0)))
 
@@ -524,12 +504,9 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     # results
     V_opt, eps_opt = unflatten(result.x)
 
-    if opt_idx > 0:
-        delta_disc.data[:opt_idx] = delta_disc.data[opt_idx:].conj()[::-1]
-
     # sort by energy
     order = np.argsort(eps_opt)
     eps_opt = eps_opt[order]
     V_opt = V_opt[:, order]
 
-    return V_opt, eps_opt, delta_disc
+    return V_opt, eps_opt, make_delta(V_opt, eps_opt, delta_in.mesh)

@@ -42,6 +42,15 @@ V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=3, eps0=2.5,
 V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=1, eps0=2.5, V0=None, tol=1e-10)
 
 #################################################
+# test basin hopping
+V_opt, e_opt, delta_disc_iw = discretize_bath(delta_in=delta_iw, Nb=2, eps0=energies, V0=None, tol=1e-10, maxiter=100, method='basinhopping')
+print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
+# compare to given values
+assert np.max(np.abs(hoppings) - np.abs(V_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
+assert np.max(np.abs(energies - e_opt)) < 1e-6, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
+assert_gfs_are_close(delta_disc_iw, delta_iw)
+
+#################################################
 # second test with 2x2 delta input and init guess
 mesh = MeshImTime(beta=40, S='Fermion', n_max=1001)
 
@@ -83,14 +92,3 @@ for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delt
     assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
     assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-8, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
     assert_gfs_are_close(delta_disc, delta_tau[block])
-
-
-#################################################
-# and test without providing input parameters
-V_opt, e_opt, delta_disc_tau = discretize_bath(delta_in=delta_tau, Nb=4, eps0=2, V0=None, tol=1e-15, maxiter=200, method='basinhopping')
-print('max hopping deviation', np.max(np.abs(hoppings) - np.abs(V_opt)))
-# compare to given values
-for i, (block, delta_disc) in zip(range(len(list(delta_disc_tau.indices))), delta_disc_tau):
-    assert np.max(np.abs(hoppings[i]) - np.abs(V_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(V_opt)+' vs \n'+str(hoppings)
-    assert np.max(np.abs(energies[i] - e_opt[i])) < 1e-3, 'did not achieved requiered accuracy for bath fit \n'+str(e_opt)+' vs \n'+str(energies)
-    assert_gfs_are_close(delta_disc, delta_tau[block], precision=1e-3)
