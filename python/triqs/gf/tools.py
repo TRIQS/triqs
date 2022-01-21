@@ -22,10 +22,12 @@ from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
 from .block_gf import BlockGf
 from .gf import Gf
+from .gf_factories import make_hermitian
 import numpy as np
 from itertools import product
 from .backwd_compat.gf_refreq import GfReFreq
 from .map_block import map_block
+from timeit import default_timer as timer
 
 def inverse(x):
     """
@@ -265,95 +267,246 @@ def fit_legendre(g_t, order=10):
 
     return g_l
 
-def discretize_bath(delta_iw, Nb, bandwidth = 3, t_init = 0.0, tol=1e-8, maxiter = 10000):
+
+def make_delta(V, eps, mesh, block_names=None):
     """
-    discretizes a given Delta_iw with Nb bath sites using
-    scipy.optimize.minimize using the Nelder-Mead algorithm.
-    The tolerance is ensuring the converging of the input
-    hopping and energy values. The discretized delta_disc_iw
-    is constructed as:
-    .. math:: \Delta^{disc} (i \omega_n) = \sum_{n=1}^{Nb} \frac{t^2_n}{i \omega_n - \epsilon_n}.
+    Create a hybridization function from given hoppings and bath energies
+    as
+    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{j=1}^{Nb} V_{kj} S V_{jl}^* .
+    where S is either
+    .. math:: [i \omega_n - eps_j]^{-1}
+    for MeshImFreq or
+    .. math:: - exp(-tau * eps_j) / (1 + exp(-\beta * eps_j) )
+    for MeshImTime
 
-    and the norm to minimize the difference between delta_disc_iw and delta_iw for scipy is:
-    .. math:: \left[ \sum_{i \omega_n} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
+    Parameters
+    -----------
+    V : np.array (shape Norb x NB) or list thereof
+            Bath hopping matrix or matrix for each Gf block
+    eps : list(float) or list(list(float))
+            Bath energies or energies for each Gf block
+    mesh : MeshImFreq or MeshImTime
+            Mesh of the hybridization function
+    block_names : list(str)
+            List of block names, used if V, eps are lists
 
-    CAUTION: This function works only for scalar valued Gf objects.
-    if necessary call for each orbital in input Delta_iw separately.
+    Returns
+    -------
+    delta : Gf or BlockGf
+            Hybridization function on given mesh
+
+    """
+
+    if isinstance(V, list):
+
+        if block_names is None:
+            block_names = [str(i) for i in range(len(V))]
+
+        assert isinstance(block_names, list), 'block_names should be a list(str)'
+        assert len(V) == len(eps) and len(V) == len(block_names), \
+            'mismatch between list size of V, eps and block_names'
+
+        delta_list = [make_delta(v, e, mesh) for v, e in zip(V, eps)]
+        return BlockGf(name_list=block_names, block_list=delta_list)
+
+    assert V.shape[1] == len(eps), 'number of bath sides in V and eps does not match'
+
+    delta_res = Gf(mesh=mesh, target_shape=[V.shape[0], V.shape[0]])
+
+    if isinstance(mesh, MeshImFreq):
+        mesh_values = np.linspace(mesh(mesh.first_index()), mesh(mesh.last_index()), len(mesh))
+        one_fermion = 1/(mesh_values[:, None] - eps[None, :])
+    elif isinstance(mesh, MeshImTime):
+        mesh_values = np.linspace(0, mesh.beta, len(mesh))
+        one_fermion = -np.exp(-mesh_values[:, None] * eps[None, :] + mesh.beta * ((eps < 0.0) * eps)
+                              [None, :]) / (1. + np.exp(-mesh.beta * np.abs(eps[None, :])))
+
+    delta_res.data[:] = np.einsum('wkj, jl -> wkl', V[None, :, :] * one_fermion[:, None, :], V.conj().T)
+
+    return delta_res
+
+
+def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
+                    cmplx=False, method='BFGS'):
+    """
+    Discretize a given hybridization function using Nb bath sites.
+
+    The discretized hybridization is constructed as
+    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{j=1}^{Nb} V_{kj} S  V_{jl}^* .
+    where S is either:
+    .. math:: [i \omega_n - eps_j]^{-1}
+    for MeshImFreq or
+    .. math:: - exp(-tau * eps_j) / (1 + exp(-\beta * eps_j) )
+    for MeshImTime.
+
+    The hoppings V and energies eps are chosen to minimize the norm
+    .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{i \omega_n}^{N} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
+    and for MeshImTime
+    .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{\tau}^{N} | \Delta^{disc} (\tau) - \Delta (\tau) |^2 \right]^{\frac{1}{2}}
+    This minimization is performed using scipy.optimize.minimize with the
+    Nelder-Mead algorithm with the given tolerance.
 
     Parameters
     ----------
-    delta_iw : Gf
-        Matsubara hybridization function to discretize (scalar valued)
+    delta_in : Gf or BlockGf
+        Matsubara or imaginary-time hybridization function to discretize
     Nb : int
-        number of bath sites
-    bandwidth : float, optional
-        approximate bandwidth, used in choice of initial of bath energies [default=3.0]
-    t_init : float, optional
-        initial guess used for all hopping values [default=0.0]
-    tol: float, optional
-        tolerance for scipy minimize on data to optimize (xatol Nelder-Mead) [default=1e-8]
-    maxiter: float, optional
-        maximal number of optimization steps [default=10000]
+        Number of bath sites per Gf block
+    eps0: float or list(float), default=3.0
+        Approximate bandwith or initial guesses for bath energies.
+    V0 : float or np.ndarray (shape norb X Nb), optional
+        If float: initial guess used for all hopping values.
+        If np.ndarray: initial guess for V.
+        Otherwise use the cholesky decomposition of
+        .. math:: \lim_{\omega->\infty} i\omega*\Delta(i\omega)
+        or
+        .. math:: -\Delta(\tau=0^+) - \Delta(\tau=\beta^-)
+        to obtain an initial guess for V.
+    tol : float, default=1e-15
+        Tolerance for scipy minimize on data to optimize (xatol / ftol)
+    maxiter : int, default=10000
+        Maximum number of optimization steps
+    complx : bool, default=False
+        Allow the hoppings V to be complex
+    method : string, default=BFGS
+        Method for minimizing the function in scipy minimize
+
     Returns
     -------
-    t_opt : list of optimized bath hopping parameters
-    e_opt : sorted list of optimized bath energies
-    delta_disc_iw : Gf
-               Discretized Matsubara hybridization function
+    V_opt : np.array (shape norb x Nb) or list thereof
+        Optimized bath hoppings
+    eps_opt : list(float) or list(list(float)
+        Optimized bath energies (sorted)
+    delta_disc : Gf or BlockGf
+        Discretized hybridization function
     """
-    from scipy.optimize import minimize
+    from scipy.optimize import minimize, basinhopping
+    if isinstance(delta_in, BlockGf):
+        V_opt, eps_opt, delta_list = [], [], []
+        for j, (block, delta) in enumerate(delta_in):
+            res = discretize_bath(delta, Nb,
+                                  eps0[j] if isinstance(eps0, list) else eps0,
+                                  V0[j] if isinstance(V0, list) else V0,
+                                  tol, maxiter, cmplx, method)
+            V_opt.append(res[0])
+            eps_opt.append(res[1])
+            delta_list.append(res[2])
+
+        return V_opt, eps_opt, BlockGf(name_list=list(delta_in.indices), block_list=delta_list)
 
     # some tests if input is okay
-    assert not isinstance(delta_iw, BlockGf), 'delta_iw needs to be a GfImFreq not BlockGf'
-    assert isinstance(delta_iw.mesh, MeshImFreq), 'input delta_iw should have a mesh MeshImFreq'
-    assert len(delta_iw.target_shape)==0, 'delta_iw should have rank 0, i.e. a scalar valued Green function'
+    assert isinstance(delta_in.mesh, MeshImFreq) or isinstance(delta_in.mesh, MeshImTime), 'input delta_in should have a mesh MeshImFreq or MeshImTime'
 
-    # prepare discretized delta with same mesh
-    delta_disc_iw = delta_iw.copy()
-    delta_disc_iw.zero()
+    if isinstance(delta_in.mesh, MeshImFreq):
+        assert delta_in.is_gf_real_in_tau()
+
+    # enforce hermiticity
+    delta_in << make_hermitian(delta_in)
+
+    def unflatten(x):
+        # first half of parameters are hoppings, second half are bath energies
+        if cmplx:
+            V   = x[0:2*Nb*n_orb].view(complex).reshape(n_orb, Nb)
+            eps = x[2*Nb*n_orb:]
+        else:
+            V   = x[0:Nb*n_orb].reshape(n_orb, Nb)
+            eps = x[Nb*n_orb:]
+        return V, eps
 
     ####
     # define minimizer for scipy
     def minimizer(parameters):
-        # first half of parameters are hoppings
-        t = parameters[0:Nb]
-        # second half are bath energies
-        e = parameters[Nb:]
+        V, eps = unflatten(parameters)
 
-        # build discretized bath function as
-        # delta = sum_nb t_n / (iw - eps_n)
-        for w in delta_disc_iw.mesh:
-            delta_disc_iw[w] = np.sum(t**2 / ( w.value - e ) )
+        # Build discretized bath function
+        delta_disc = make_delta(V, eps, delta_in.mesh)
+
+        # if Gf is scalar-valued we have to squeeze the trivial axes
+        if len(delta_in.target_shape) == 0:
+            delta_disc = delta_disc[0, 0]
 
         # calculate norm
-        norm = np.linalg.norm(delta_disc_iw.data - delta_iw.data)
+        norm = np.linalg.norm(delta_disc.data - delta_in.data)/np.sqrt(len(delta_disc.mesh))
         return norm
     ####
 
-    # initialize bath_hoppings by setting to the provided value
-    bath_hoppings = np.array( Nb*[t_init] )
+    if len(delta_in.target_shape) == 0:
+        n_orb = 1
+    else:
+        n_orb = delta_in.target_shape[0]
 
-    # bath energies are initialized as linspace over the approximate bandwidth
-    bath_energies = np.linspace(0, bandwidth, Nb)
+    # initialize bath_hoppings
+    # create bath hoppings V with dim (Nb)
+    if isinstance(V0, np.ndarray):
+        assert V0.shape == (n_orb, Nb), 'V0 shape is incorrect. Must be ({},{}), but is {}'.format(n_orb, Nb, V0.shape)
+    elif isinstance(V0, (float, complex)):
+        if isinstance(V0, complex) and not cmplx:
+            raise ValueError('V0 initialized with a complex value, but cmplx=False')
+        V0 = V0*np.ones((n_orb, Nb))
+    elif V0 is None:
+        print('initial guess of V from cholesky decomposition of leading order moment of delta_in')
+        # get 1st moment of delta_in
+        if isinstance(delta_in.mesh, MeshImFreq):
+            known_moments = make_zero_tail(delta_in, n_moments=1)
+            delta_in.mesh.set_tail_fit_parameters(tail_fraction=0.3)
+            tail, err = delta_in.fit_hermitian_tail(known_moments=known_moments)
+            leading_moment = tail[1]
+        else:
+            leading_moment = -delta_in.data[0, ...]-delta_in.data[-1, ...]
+        # obtain guess from cholesky decomposition of 1st moment (tail[1])
+        chol = np.linalg.cholesky(leading_moment)
+        # chol always returns complex arrays
+        if not cmplx:
+            chol = chol.real
+        # chol has shape n_orb x n_orb. We repeat columns
+        # of chol until V matrix is filled and normalize each
+        # col by the sqrt(#occurances)
+        col_idxs = [i % n_orb for i in range(Nb)]
+        V0 = np.block([chol[:, i:i+1] / np.sqrt(col_idxs.count(i)) for i in col_idxs])
+    else:
+        raise ValueError('V0 has invalid type {}, should be one of: None, float, complex, or np.ndarray'.format(type(V0)))
+
+    # bath energies are initialized as linspace over the approximate bandwidth or given as list
+    if (isinstance(eps0, list) or isinstance(eps0, np.ndarray)):
+        assert len(eps0) == Nb, 'len(eps) does not match number of bath sides'
+    else:
+        eps0 = np.linspace(-eps0, eps0, Nb)
 
     # parameters for scipy must be a 1D array
-    parameters = np.concatenate( [bath_hoppings, bath_energies] )
+    parameters = np.concatenate([V0.view(float).flatten(), eps0])
 
-    # run the minimizer if method Nelder-Mead and optimize the hoppings and energies to given
+    # run the minimizer with method Nelder-Mead and optimize the hoppings and energies to given
     # tolerance
-    result = minimize(minimizer, parameters, method='Nelder-Mead', options = {'xatol' : tol, 'maxiter' : maxiter, 'adaptive': True})
+    start_time = timer()
+    if method == 'BFGS':
+        result = minimize(minimizer, parameters, method='L-BFGS-B',
+                          options={'ftol': tol, 'gtol': 1e-15, 'maxiter': maxiter, "disp": False, "maxfun": maxiter})
+    elif method == 'basinhopping':
+        result = basinhopping(minimizer, parameters, niter_success=30, niter=maxiter, disp=False, stepsize=0.8,
+                              minimizer_kwargs={'method': 'L-BFGS-B',
+                                                'options': {'ftol': tol, 'gtol': 1e-15, "disp": False, "maxfun": 10000000}})\
+                              .lowest_optimization_result
+    elif method == 'Nelder-Mead':
+        result = minimize(minimizer, parameters, method='Nelder-Mead', options={'xatol': tol, 'maxiter': maxiter, 'adaptive': True})
+    else:
+        raise ValueError('method for minimizer not recognized')
+
+    print('optimization finished in {:.2f} s after {} iterations with norm {:.3e}'.format(timer()-start_time, result.nit, result.fun))
 
     if not result.success:
-        raise RuntimeError('optimization has failed, scipy minimize signaled no success: {}'.format(result.message))
-
-    # results, taking absolute values of hoppings
-    e_opt = result.x[Nb:]
-    t_opt = np.abs(result.x[0:Nb])
+        print('optimization finished, but scipy minimize signaled no success, check result: {}'.format(result.message))
+    # results
+    V_opt, eps_opt = unflatten(result.x)
 
     # sort by energy
-    order = np.argsort(e_opt)
-    e_opt = e_opt[order]
-    t_opt = t_opt[order]
+    order = np.argsort(eps_opt)
+    eps_opt = eps_opt[order]
+    V_opt = V_opt[:, order]
 
-    return t_opt, e_opt, delta_disc_iw
+    delta_disc = make_delta(V_opt, eps_opt, delta_in.mesh)
 
+    # if Gf is scalar-valued we have to squeeze the trivial axes
+    if len(delta_in.target_shape) == 0:
+        delta_disc = delta_disc[0, 0]
+
+    return V_opt, eps_opt, delta_disc
