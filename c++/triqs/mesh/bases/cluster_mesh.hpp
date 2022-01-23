@@ -20,10 +20,10 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
-#include <triqs/utility/index_generator.hpp>
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 #include "../details/mesh_tools.hpp"
+#include "../details/mesh_point.hpp"
 
 namespace triqs::mesh {
 
@@ -58,7 +58,7 @@ namespace triqs::mesh {
     nda::matrix<double> units;
 
     lattice_point() : index({0, 0, 0}), units(nda::eye<double>(3)) {}
-    lattice_point(std::array<long, 3>  const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
+    lattice_point(std::array<long, 3> const &index_, matrix<double> const &units_) : index(index_), units(units_) {}
     using cast_t = nda::vector<double>;
     operator cast_t() const {
       cast_t M(3);
@@ -72,8 +72,25 @@ namespace triqs::mesh {
   };
 
   struct cluster_mesh : tag::mesh {
-
     public:
+    /// ---------- Model the domain concept  ---------------------
+    using domain_t = cluster_mesh;
+
+    domain_t const &domain() const { return *this; }
+
+    using point_t = nda::vector<double>; // domain concept. PUT on STACK
+
+    //  bool contains(point_t const & pt) {return }; // TODO
+
+    // using domain_pt_t = point_t;
+
+    // ------
+
+    using index_t        = std::array<long, 3>;
+    using linear_index_t = long;
+
+    // --- Ctors
+
     cluster_mesh() = default;
 
     /**
@@ -100,36 +117,7 @@ namespace triqs::mesh {
       stride1 = dims_[2];
     }
 
-    int rank() const { return (dims_[2] > 1 ? 3 : (dims_[1] > 1 ? 2 : 1)); }
-
-    /// The extent of each dimension
-    std::array<long, 3> dims() const { return dims_; }
-
-    /// Matrix containing the mesh basis vectors as rows
-    matrix_const_view<double> units() const { return units_; }
-
-    // The matrix defining the periodization on the mesh
-    matrix_const_view<long> periodization_matrix() const { return periodization_matrix_; }
-
-    /// ---------- Model the domain concept  ---------------------
-
-    using domain_t = cluster_mesh;
-
-    domain_t const &domain() const { return *this; }
-
-    using point_t = nda::vector<double>; // domain concept. PUT on STACK
-
     /// ----------- Model the mesh concept  ----------------------
-
-    using index_t = std::array<long, 3>;
-
-    using linear_index_t = long;
-
-    /// Reduce index modulo to the lattice
-    index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
-
-    /// The total number of points in the mesh
-    size_t size() const { return size_; }
 
     /// from the index (n_i) to the cartesian coordinates
     /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
@@ -152,26 +140,93 @@ namespace triqs::mesh {
       return i[0] * stride0 + i[1] * stride1 + i[2];
     }
 
-    /// Is the point in the mesh ? Always true
-    template <typename T> static constexpr bool is_within_boundary(T const &) { return true; }
-
-    using mesh_point_t = mesh_point<cluster_mesh>;
-
-    /// Accessing a point of the mesh from its index
-    inline mesh_point_t operator[](index_t i) const; // impl below
-
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<cluster_mesh>;
-    inline const_iterator begin() const; // impl below
-    inline const_iterator end() const;
-    inline const_iterator cbegin() const;
-    inline const_iterator cend() const;
-
-    /// Mesh comparison
-    bool operator==(cluster_mesh const &M) const {
-      return ((dims_ == M.dims_) && (units_ == M.units_) && (periodization_matrix_ == M.periodization_matrix_));
+    // unflatten index
+    index_t linear_to_index(linear_index_t const &i) const {
+      int i0 = i / stride0;
+      int r0 = i % stride0;
+      int i1 = r0 / stride1;
+      int i2 = i0 % stride1;
+      return {i0, i1, i2};
     }
-    bool operator!=(cluster_mesh const &M) const { return !(operator==(M)); }
+
+    class index3_generator {
+      std::array<long, 3> d, i;
+      long i_flat  = 0;
+      bool _at_end = false;
+
+      public:
+      index3_generator() = default;
+      index3_generator(std::array<long, 3> const &dims, std::array<long, 3> const &i) : d(dims), i(i) { i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2]; }
+      // void advance() {
+      //   ++i_flat;
+      //   ++i[2];
+      //   if (i[2] < d[2]) return;
+      //   i[2] = 0;
+      //   ++i[1];
+      //   if (i[1] < d[1]) return;
+      //   i[1] = 0;
+      //   ++i[0];
+      //   if (i[0] < d[0]) return;
+      //   // i[0]=0;
+      //   _at_end = true;
+      // }
+      std::array<long, 3> const &index() const { return i; }
+      long raw_index() const { return i_flat; }
+      // bool at_end() const { return _at_end; }
+      // void reset() {
+      //   _at_end = false;
+      //   i_flat  = 0;
+      //   i[0]    = 0;
+      //   i[1]    = 0;
+      //   i[2]    = 0;
+      // }
+    };
+
+    struct mesh_point_t : public index3_generator, public utility::arithmetic_ops_by_cast<mesh_point<cluster_mesh>, typename cluster_mesh::index_t> {
+      // from index3_generator
+      
+      
+      // -------------------------------------------------
+      
+      using mesh_t = cluster_mesh;
+
+      mesh_t const *m = nullptr;
+
+      typename cluster_mesh::index_t index_;
+      typename cluster_mesh::domain_t::point_t value_{};
+      typename cluster_mesh::linear_index_t linear_index_{};
+      std::size_t mesh_hash_{};
+
+      [[nodiscard]] auto index() const { return index_; }
+      [[nodiscard]] auto value() const { return value_; }
+      [[nodiscard]] auto linear_index() const { return linear_index_; }
+      [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
+
+      using index_t        = typename mesh_t::index_t;
+      using point_t        = typename mesh_t::point_t;
+      using linear_index_t = typename mesh_t::linear_index_t;
+
+      // size_t mesh_hash_ = 0;
+
+      // size_t mesh_hash() const { return mesh_hash_; }
+
+      mesh_point_t() = default;
+      explicit mesh_point_t(mesh_t const &mesh, index_t const &index) : index3_generator(mesh.dims(), index), m(&mesh) {}
+      mesh_point_t(mesh_t const &mesh) : mesh_point_t(mesh, {0, 0, 0}) {}
+
+      using cast_t = point_t; // FIXME : decide what we want.
+
+      operator point_t() const { return m->index_to_point(index()); }
+      operator lattice_point() const { return lattice_point(index(), m->units()); }
+      operator index_t() const { return index(); }
+
+      // The mesh point behaves like a vector
+      /// d: component (0, 1 or 2)
+      double operator()(int d) const { return m->index_to_point(index())[d]; }
+      double operator[](int d) const { return operator()(d); }
+      friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << (lattice_point)x; }
+      mesh_point_t operator-() const { return mesh_point_t{*m, m->index_modulo({-index()[0], -index()[1], -index()[2]})}; }
+    };
 
     /// locate the closest point
     inline index_t closest_index(point_t const &x) const {
@@ -179,21 +234,56 @@ namespace triqs::mesh {
       return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
     }
 
-    protected:
-    matrix<double> units_;
-    matrix<long> periodization_matrix_;
-    std::array<long, 3> dims_;
-    size_t size_;
-    long stride1, stride0;
+    /// Accessing a point of the mesh from its index
 
-    long _modulo(long r, int i) const {
-      long res = r % dims_[i];
-      return (res >= 0 ? res : res + dims_[i]);
+    auto operator[](index_t i) const {
+      EXPECTS(i == index_modulo(i));
+      return mesh_point_t{*this, i};
     }
+    [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &liner_index) const { return operator[](linear_to_index(liner_index)); }
+
+    // -------------------- Comparison -------------------
+
+    bool operator==(cluster_mesh const &M) const {
+      return ((dims_ == M.dims_) && (units_ == M.units_) && (periodization_matrix_ == M.periodization_matrix_));
+    }
+    bool operator!=(cluster_mesh const &M) const = default;
+
+    // -------------------- Accessors -------------------
+
+    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+
+    /// Reduce index modulo to the lattice
+    index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
+
+    /// The total number of points in the mesh
+    size_t size() const { return size_; }
+
+    int rank() const { return (dims_[2] > 1 ? 3 : (dims_[1] > 1 ? 2 : 1)); }
+
+    /// The extent of each dimension
+    std::array<long, 3> dims() const { return dims_; }
+
+    /// Matrix containing the mesh basis vectors as rows
+    matrix_const_view<double> units() const { return units_; }
+
+    // The matrix defining the periodization on the mesh
+    matrix_const_view<long> periodization_matrix() const { return periodization_matrix_; }
+
+    // -------------------------- Other --------------------------
+
+    /// Is the point in the mesh ? Always true
+    template <typename T> static constexpr bool is_within_boundary(T const &) { return true; }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    auto begin() const { return r_.begin(); }
+    auto end() const { return r_.end(); }
+    auto cbegin() const { return r_.begin(); }
+    auto cend() const { return r_.end(); }
 
     // -------------- HDF5  --------------------------
 
-    public:
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string subgroup_name, cluster_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
@@ -211,56 +301,29 @@ namespace triqs::mesh {
       m                         = cluster_mesh(units, periodization_matrix);
     }
 
-    friend std::ostream &operator<<(std::ostream &sout, cluster_mesh_base const &m) {
+    // -------------------- print  -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) {
       return sout << "cluster_mesh of size " << m.dims() << "\n units = " << m.units() << "\n periodization_matrix = " << m.periodization_matrix()
                   << "\n";
     }
+
+    // ------------------------------------------------
+
+    protected:
+    long _modulo(long r, int i) const {
+      long res = r % dims_[i];
+      return (res >= 0 ? res : res + dims_[i]);
+    }
+
+    matrix<double> units_;
+    matrix<long> periodization_matrix_;
+    std::array<long, 3> dims_;
+    size_t size_;
+    long stride1, stride0;
+
+    size_t mesh_hash_ = 0;
+    make_mesh_range_rtype<cluster_mesh> r_;
   };
 
-  // ---------------------------------------------------------------------------
-  //                     The mesh point
-  // ---------------------------------------------------------------------------
-  template <>
-  struct mesh_point<cluster_mesh> : public utility::index3_generator,
-                                    public utility::arithmetic_ops_by_cast<mesh_point<cluster_mesh>, cluster_mesh::index_t> {
-    public:
-    using mesh_t = cluster_mesh;
-
-    private:
-    mesh_t const *m = nullptr;
-
-    public:
-    using index_t        = mesh_t::index_t;
-    using point_t        = mesh_t::point_t;
-    using linear_index_t = mesh_t::linear_index_t;
-
-    mesh_point() = default;
-    explicit mesh_point(mesh_t const &mesh, mesh_t::index_t const &index) : index3_generator(mesh.dims(), index), m(&mesh) {}
-    mesh_point(mesh_t const &mesh) : mesh_point(mesh, {0, 0, 0}) {}
-
-    using cast_t = point_t; // FIXME : decide what we want.
-
-    operator mesh_t::point_t() const { return m->index_to_point(index()); }
-    operator lattice_point() const { return lattice_point(index(), m->units()); }
-    operator mesh_t::index_t() const { return index(); }
-    linear_index_t linear_index() const { return m->index_to_linear(index()); }
-    // The mesh point behaves like a vector
-    /// d: component (0, 1 or 2)
-    double operator()(int d) const { return m->index_to_point(index())[d]; }
-    double operator[](int d) const { return operator()(d); }
-    friend std::ostream &operator<<(std::ostream &out, mesh_point const &x) { return out << (lattice_point)x; }
-    mesh_point operator-() const { return mesh_point{*m, m->index_modulo({-index()[0], -index()[1], -index()[2]})}; }
-    mesh_t const &mesh() const { return *m; }
-  };
-
-  // --- impl
-  inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const {
-    EXPECTS(i == index_modulo(i));
-    return mesh_point<cluster_mesh>{*this, i};
-  }
-
-  inline cluster_mesh::const_iterator cluster_mesh::begin() const { return const_iterator(this); }
-  inline cluster_mesh::const_iterator cluster_mesh::end() const { return const_iterator(this, true); }
-  inline cluster_mesh::const_iterator cluster_mesh::cbegin() const { return const_iterator(this); }
-  inline cluster_mesh::const_iterator cluster_mesh::cend() const { return const_iterator(this, true); }
 } // namespace triqs::mesh
