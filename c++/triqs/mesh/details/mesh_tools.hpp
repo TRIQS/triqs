@@ -84,6 +84,4 @@ namespace triqs::mesh {
   template <typename T> auto operator*(T &&x, one_t) { return std::forward<T>(x); }
   inline one_t operator*(one_t, one_t) { return {}; } // avoid ambiguity
 
-  //-----------------------------------------------------------------------------------------------------------------------------
-
 } // namespace triqs::mesh

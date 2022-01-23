@@ -69,6 +69,4 @@ namespace triqs::mesh {
     static std::string hdf5_format() { return "real_interval_domain"; }
   };
 
-  // abstract base class or generic implement
-
 } // namespace triqs::mesh
