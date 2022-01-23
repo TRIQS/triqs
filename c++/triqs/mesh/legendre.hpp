@@ -19,15 +19,13 @@
 
 #pragma once
 #include "./domains/legendre.hpp"
-#include "./discrete.hpp"
+#include "bases/linear.hpp"
 
 namespace triqs::mesh {
 
-  ///
-  struct legendre : discrete<legendre_domain> {
-    using B = discrete<legendre_domain>;
-
+  struct legendre : public linear_mesh<legendre_domain> {
     legendre() = default;
+    legendre(legendre_domain domain) : linear_mesh(std::move(domain), 0, domain.max_n, domain.max_n + 1) {}
 
     /**
      *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,max_n]
@@ -36,12 +34,12 @@ namespace triqs::mesh {
      *  @param S Statistic, Fermion or Boson
      *  @param max_n Largest degree
      */
-    legendre(double beta, statistic_enum S, size_t max_n) : B(typename B::domain_t(beta, S, max_n)) {}
+    legendre(double beta, statistic_enum S, long max_n) : linear_mesh(legendre_domain(beta, S, max_n), 0, max_n, max_n + 1) {}
 
+    // -------------------- HDF5 -------------------
     static std::string hdf5_format() { return "MeshLegendre"; }
-
     friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
-
     friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) { h5_read_impl(fg, subgroup_name, m, "MeshLegendre"); }
   };
+
 } // namespace triqs::mesh

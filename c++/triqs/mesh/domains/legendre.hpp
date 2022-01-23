@@ -27,16 +27,16 @@
 namespace triqs::mesh {
 
   struct legendre_domain {
-    using point_t = long;
+    using point_t = int; // fix this to long (but then conflict of is within boundary)
 
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    long max_n               = 1; // Is this inclusive order not??
+    long max_n               = 1; // Note: includes endpoint. Change from previous?
 
     [[nodiscard]] constexpr point_t min() const { return 0; }
     [[nodiscard]] point_t max() const { return max_n; }
 
-    // Do we need this ctor??
+    // Ctor
     legendre_domain() = default;
     /**
      *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,n_l]
@@ -64,7 +64,7 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre_domain &d) {
       h5::group gr = fg.open_group(subgroup_name);
-      std::string statistic{};
+      std::string statistic = " ";
       if (not h5_try_read(gr, "max_n", d.max_n)) h5_read(gr, "n_max", d.max_n);
       h5_read(gr, "beta", d.beta);
       h5_read(gr, "statistic", statistic);
