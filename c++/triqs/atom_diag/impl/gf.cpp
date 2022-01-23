@@ -194,7 +194,7 @@ namespace triqs {
     template <bool Complex>
     block_gf<imtime> atomic_g_tau(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, size_t n_tau,
                                   excluded_states_t const &excluded_states) {
-      auto g = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
+      auto g = block_gf<imtime>{{beta, Fermion, static_cast<long>(n_tau)}, gf_struct};
       atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, make_term_proc<Complex>(beta, g()));
       return g;
     }
@@ -284,7 +284,7 @@ namespace triqs {
     template <bool Complex>
     block_gf<legendre> atomic_g_l(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_l,
                                   excluded_states_t const &excluded_states) {
-      auto g = block_gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct};
+      auto g = block_gf<legendre>{{beta, Fermion, n_l}, gf_struct};
       atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, make_term_proc<Complex>(beta, g()));
       return g;
     }

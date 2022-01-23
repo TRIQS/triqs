@@ -25,7 +25,6 @@
 namespace triqs::mesh {
 
   struct refreq : linear_mesh<real_domain>, tail_fitter_handle {
-
     refreq() = default;
 
     /**
@@ -36,8 +35,7 @@ namespace triqs::mesh {
      *  @param w_max Largest frequency
      *  @param n_w Number of frequencies
      */
-    refreq(double x_min, double x_max, int n_w) : linear_mesh<real_domain>(real_domain{}, x_min, x_max, n_w) {}
-    template <typename... T> refreq(T &&... x) : linear_mesh<real_domain>(std::forward<T>(x)...) {}
+    refreq(real_domain::point_t w_min, real_domain::point_t w_max, long n_w) : linear_mesh<real_domain>(real_domain{}, w_min, w_max, n_w) {}
 
     refreq(std::pair<double, double> window, int n_w) : refreq(std::get<0>(window), std::get<1>(window), n_w) {}
 
@@ -61,11 +59,8 @@ namespace triqs::mesh {
     double omega_max() const { return x_max(); }
 
     // -------------------- HDF5 -------------------
-
     static std::string hdf5_format() { return "MeshReFreq"; }
-
     friend void h5_write(h5::group fg, std::string const &subgroup_name, refreq const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReFreq"); }
-
     friend void h5_read(h5::group fg, std::string const &subgroup_name, refreq &m) { h5_read_impl(fg, subgroup_name, m, "MeshReFreq"); }
   };
 

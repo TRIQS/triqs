@@ -68,7 +68,7 @@ TEST(atom_diag_complex, QuantumNumbers) {
 #endif
 
   auto sp_dim1 = ad1.get_subspace_dims();
-  auto qn1 = ad1.get_quantum_numbers();
+  auto qn1     = ad1.get_quantum_numbers();
   for (int sp : range(sp_dim1.size())) {
 #ifndef GENERATE_REF_H5
     EXPECT_EQ(sp_dim_ref[sp], sp_dim1[sp]);
@@ -89,7 +89,7 @@ TEST(atom_diag_complex, QuantumNumbers) {
 #endif
 
   auto sp_dim2 = ad2.get_subspace_dims();
-  auto qn2 = ad2.get_quantum_numbers();
+  auto qn2     = ad2.get_quantum_numbers();
   for (int sp : range(sp_dim2.size())) {
 #ifndef GENERATE_REF_H5
     EXPECT_EQ(sp_dim_ref[sp], sp_dim2[sp]);
@@ -353,10 +353,10 @@ TEST(atom_diag_complex, Functions) {
   // GF
   gf_struct_t gf_struct = {{"dn", 3}, {"up", 3}};
 
-  int n_tau        = 1000;
-  int n_iw         = 400;
-  unsigned int n_l = 25;
-  int n_w          = 1000;
+  int n_tau   = 1000;
+  size_t n_iw = 400;
+  int n_l     = 25;
+  int n_w     = 1000;
 
   triqs::atom_diag::excluded_states_t excluded_states = {{1, 0}, {1, 1}, {3, 0}, {3, 1}, {3, 2}, {3, 3}};
   auto G_tau                                          = atomic_g_tau(ad, beta, gf_struct, n_tau, excluded_states);

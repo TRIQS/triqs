@@ -43,7 +43,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data), g.indices()};
+    return {mesh::imfreq{g.mesh().domain(), static_cast<size_t>(L)}, std::move(new_data), g.indices()};
   }
 
   /// Make a const view of the positive frequency part of the function

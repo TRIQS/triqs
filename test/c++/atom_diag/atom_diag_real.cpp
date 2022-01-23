@@ -355,7 +355,7 @@ TEST(atom_diag_real, Functions) {
   gf_struct_t gf_struct = {{"dn", 3}, {"up", 3}};
 
   int n_tau        = 1000;
-  int n_iw         = 400;
+  size_t n_iw         = 400;
   unsigned int n_l = 25;
   int n_w          = 1000;
 

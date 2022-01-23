@@ -109,7 +109,7 @@ TEST(FitTailMatsubara, Complex) { // NOLINT
 
   triqs::clef::placeholder<0> iw_;
   double beta = 10;
-  int N       = 200;
+  size_t N       = 200;
 
   auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
 
@@ -137,8 +137,8 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
 
   int N_k     = 4;
   double beta = 10;
-  int N_iW    = 4;
-  int N_iw    = 100;
+  size_t N_iW    = 4;
+  size_t N_iw    = 100;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
   auto BZ        = brillouin_zone{BL};

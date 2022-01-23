@@ -50,7 +50,7 @@ namespace triqs::gfs {
   // FIXME : DOC
   inline imtime make_adjoint_mesh(imfreq const &m, int n_tau = -1) {
     if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
-    return {triqs::mesh::matsubara_time_domain{m.domain()}, static_cast<size_t>(n_tau)};
+    return {triqs::mesh::matsubara_time_domain{m.domain()}, n_tau};
   }
 
   // FIXME : DOC

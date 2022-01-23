@@ -25,8 +25,8 @@ template <int TARGET_RANK> void test_fourier() {
   double precision = 1e-7;
   triqs::clef::placeholder<0> iw_;
   double beta               = 1;
-  int N_iw                  = 1000;
-  int N_tau                 = 6 * N_iw + 1;
+  size_t N_iw                  = 1000;
+  long N_tau                 = 6 * N_iw + 1;
   std::vector<double> E_vec = {1.0, 2.0, -4.0}; // Poles
 
   std::array<long, TARGET_RANK> shape{};

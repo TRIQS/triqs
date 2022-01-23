@@ -30,7 +30,7 @@ int main(int argc, const char *argv[]) {
   // diferent representations
 
   int n_tau        = 200;
-  int n_iw         = 100;
+  size_t n_iw         = 100;
   unsigned int n_l = 20;
   int n_w          = 200;
 

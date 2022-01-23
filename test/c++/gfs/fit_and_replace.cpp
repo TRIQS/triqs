@@ -23,7 +23,7 @@ TEST(Gf, RestrictedView) {
 
   triqs::clef::placeholder<0> iw_;
   double beta = 10;
-  int N_iw    = 100;
+  size_t N_iw    = 100;
 
   auto iw_mesh = mesh::imfreq{beta, Fermion, N_iw};
   auto G_iw    = gf<imfreq>{iw_mesh, {2, 2}};
@@ -43,7 +43,7 @@ TEST(Gf, FitAndReplace) {
 
   triqs::clef::placeholder<0> iw_;
   double beta = 10;
-  int N_iw    = 100;
+  size_t N_iw    = 100;
 
   auto iw_mesh  = mesh::imfreq{beta, Fermion, N_iw};
   auto G_iw     = gf<imfreq>{iw_mesh, {2, 2}};

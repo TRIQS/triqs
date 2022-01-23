@@ -24,7 +24,6 @@
 namespace triqs::mesh {
 
   struct retime : linear_mesh<real_domain> {
-
     retime() = default;
 
     /**
@@ -37,7 +36,7 @@ namespace triqs::mesh {
      *  @param t_max Largest time
      *  @param n_t Number of time-points
      */
-    retime(double t_min, double t_max, int n_t) : linear_mesh(real_domain{}, t_min, t_max, n_t) {}
+    retime(real_domain::point_t t_min, real_domain::point_t t_max, long n_t) : linear_mesh(real_domain{}, t_min, t_max, n_t) {}
 
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
 
@@ -52,11 +51,9 @@ namespace triqs::mesh {
     double t_max() const { return x_max(); }
 
     // -------------------- HDF5 -------------------
-
     static std::string hdf5_format() { return "MeshReTime"; }
-
     friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
-
     friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
   };
+  
 } // namespace triqs::mesh

@@ -23,7 +23,7 @@ using triqs::clef::placeholder;
 
 int main() {
   double beta = 100.0;
-  int n_iw    = 1025;
+  size_t n_iw    = 1025;
   double e    = -1.25;
 
   auto G_iw = gf<imfreq>{{beta, Fermion, n_iw}, {1, 1}};

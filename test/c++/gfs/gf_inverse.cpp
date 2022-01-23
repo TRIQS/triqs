@@ -25,7 +25,7 @@ using namespace triqs::lattice;
 
 TEST(CtHyb, gf_inverse1) {
   double beta = 100.0;
-  int n_iw    = 1025;
+  size_t n_iw    = 1025;
 
   auto G_iw = gf<imfreq>{{beta, Fermion, n_iw}, {1, 1}};
   triqs::clef::placeholder<0> om_;
