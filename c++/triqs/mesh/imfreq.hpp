@@ -21,6 +21,7 @@
 #include "./details/mesh_tools.hpp"
 #include "./domains/matsubara.hpp"
 #include "./details/tail_fitter.hpp"
+#include "./details/mesh_point.hpp"
 
 namespace triqs::mesh {
 
@@ -29,9 +30,6 @@ namespace triqs::mesh {
     double value = 0;
     explicit operator double() const { return value; }
   };
-
-  class imfreq;
-  template <> struct mesh_point<imfreq>; //forward
 
   /**
    *  Matsubara frequencies 
@@ -45,7 +43,6 @@ namespace triqs::mesh {
    * @figure matsubara_freq_mesh.png: Pictorial representation of ``imfreq({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <imfreq_constructor>` for more details.
    */
   class imfreq : tag::mesh, public tail_fitter_handle {
-
     public:
     ///type of the domain: matsubara_freq_domain
     using domain_t = matsubara_freq_domain;
@@ -74,7 +71,8 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(domain_t dom, size_t n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
+    imfreq(domain_t dom, size_t n_iw = 1025, option opt = option::all_frequencies)
+       : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt), r_{make_mesh_range(*this)} {
       _last_index = n_iw - 1; // total number of points
       if (opt == option::positive_frequencies_only) {
         _first_index = 0;
@@ -95,6 +93,8 @@ namespace triqs::mesh {
      * @param option Wether to use all frequencies, or only the positive ones
      */
     imfreq(double beta, statistic_enum S, size_t n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}
+
+    imfreq(double beta, statistic_enum S, int n_iw, option opt = option::all_frequencies) : imfreq({beta, S}, size_t(n_iw), opt) {}
 
     /**
      * @param dom
@@ -117,6 +117,8 @@ namespace triqs::mesh {
 
     // -------------------- Accessors (from concept) -------------------
 
+    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+
     /// The corresponding domain
     domain_t const &domain() const { return _dom; }
 
@@ -132,7 +134,7 @@ namespace triqs::mesh {
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
-      return 1i * M_PI * (2 * idx.value + (_dom.statistic == Fermion)) / _dom.beta;
+      return {idx.value, _dom.beta, _dom.statistic};
     }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
@@ -162,10 +164,10 @@ namespace triqs::mesh {
     // -------------------- tail -------------------
 
     /// maximum freq of the mesh
-    dcomplex omega_max() const { return index_to_point(_last_index); }
+    auto omega_max() const { return index_to_point(_last_index); }
 
-    ///
-    dcomplex index_to_point(int n) const { return 1i * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
+    // ///
+    // dcomplex index_to_point(int n) const { return 1i * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // -------------------- mesh_point -------------------
 
@@ -176,22 +178,19 @@ namespace triqs::mesh {
      * Accessing a point of the mesh from its index
      * @param i Matsubara index
      */
-    inline mesh_point_t operator[](index_t i) const; //impl below
+    [[nodiscard]] mesh_point_t operator[](index_t i) const { return {i, index_to_point(i), index_to_linear(i), mesh_hash_}; }
 
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<imfreq>;
+    [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &linear_index) const {
+      auto index = linear_to_index(linear_index);
+      return {index, index_to_point(index), linear_index, mesh_hash_};
+    }
 
-    ///
-    inline const_iterator begin() const; // impl below
+    // -------------------------- Range & Iteration --------------------------
 
-    ///
-    inline const_iterator end() const;
-
-    ///
-    inline const_iterator cbegin() const;
-
-    ///
-    inline const_iterator cend() const;
+    [[nodiscard]] auto begin() const { return r_.begin(); }
+    [[nodiscard]] auto end() const { return r_.end(); }
+    [[nodiscard]] auto cbegin() const { return r_.begin(); }
+    [[nodiscard]] auto cend() const { return r_.end(); }
 
     // -------------- Evaluation of a function on the grid --------------------------
 
@@ -223,8 +222,8 @@ namespace triqs::mesh {
       if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
       if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
       size_t n_iw = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
-      auto opt  = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
-      m         = imfreq{std::move(dom), n_iw, opt};
+      auto opt     = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
+      m            = imfreq{std::move(dom), n_iw, opt};
     }
 
     // -------------------- boost serialization -------------------
@@ -245,38 +244,41 @@ namespace triqs::mesh {
     size_t _n_iw;
     option _opt;
     long _first_index, _last_index;
+    size_t mesh_hash_ = 0;
+    make_mesh_range_rtype<imfreq> r_;
   };
 
-  // ---------------------------------------------------------------------------
-  //                     The mesh point
-  //  NB : the mesh point is also in this case a matsubara_freq.
-  // ---------------------------------------------------------------------------
+  // // ---------------------------------------------------------------------------
+  // //                     The mesh point
+  // //  NB : the mesh point is also in this case a matsubara_freq.
+  // // ---------------------------------------------------------------------------
 
-  template <> struct mesh_point<imfreq> : matsubara_freq {
-    using index_t = typename imfreq::index_t;
-    mesh_point()  = default;
-    mesh_point(imfreq const &m, index_t const &index_)
-       : matsubara_freq(index_, m.domain().beta, m.domain().statistic), first_index(m.first_index()), last_index(m.last_index()), _mesh(&m) {}
-    mesh_point(imfreq const &m) : mesh_point(m, m.first_index()) {}
-    void advance() { ++n; }
-    long linear_index() const { return n - first_index; }
-    long index() const { return n; }
-    bool at_end() const { return (n == last_index + 1); } // at_end means " one after the last one", as in STL
-    void reset() { n = first_index; }
-    imfreq const &mesh() const { return *_mesh; }
+  // template <int ntemp> struct mesh_point<imfreq_base<ntemp>> : matsubara_freq {
+  //   using index_t = typename imfreq_base<ntemp>::index_t;
+  //   mesh_point()  = default;
+  //   mesh_point(imfreq_base<ntemp> const &m, index_t const &index_)
+  //      : matsubara_freq(index_, m.domain().beta, m.domain().statistic), first_index(m.first_index()), last_index(m.last_index()), _mesh(&m) {}
+  //   mesh_point(imfreq_base<ntemp> const &m) : mesh_point(m, m.first_index()) {} // explicit
+  //   // void advance() { ++n; }
+  //   long linear_index() const { return n - first_index; }
+  //   long index() const { return n; }
 
-    private:
-    long first_index, last_index;
-    imfreq const *_mesh;
-  };
+  //   index_t index_                                            = 0;
+  //   typename imfreq_base<ntemp>::domain_pt_t value            = 0.0;
+  //   typename imfreq_base<ntemp>::linear_index_t linear_index_ = 0;
 
-  // ------------------- implementations -----------------------------
-  inline mesh_point<imfreq> imfreq::operator[](index_t i) const { return {*this, i}; }
+  //   size_t mesh_hash_ = 0;
+  //   [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
 
-  inline imfreq::const_iterator imfreq::begin() const { return const_iterator(this); }
-  inline imfreq::const_iterator imfreq::end() const { return const_iterator(this, true); }
-  inline imfreq::const_iterator imfreq::cbegin() const { return const_iterator(this); }
-  inline imfreq::const_iterator imfreq::cend() const { return const_iterator(this, true); }
+  //   private:
+  //   long first_index, last_index;
+  //   imfreq_base<ntemp> const *_mesh;
+  // };
+
+  // class imfreq : public imfreq_base<123> {
+  //   public:
+  //   template <typename... T> imfreq(T &&...x) : imfreq_base<123>(std::forward<T>(x)...) {}
+  // };
 
   inline std::array<std::pair<imfreq::linear_index_t, one_t>, 1> get_interpolation_data(imfreq const &m, long n) {
     return {std::make_pair(m.index_to_linear(imfreq::index_t(n)), one_t{})};

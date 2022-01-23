@@ -51,21 +51,16 @@ namespace triqs::mesh {
   *   and work on the index
   **/
   struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
-    long n; // index
-    long linear_index;
-    std::complex<double> value;
-    std::size_t mesh_hash;
+    long n                   = 0; // Matsubara Index
+    double beta              = 0.0;
+    statistic_enum statistic = Fermion;
 
-    double beta;
-    statistic_enum statistic;
-
-    // operator std::complex<double>() const { return value; }
-
-    matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
+    matsubara_freq() = default;
     matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
     matsubara_freq(_long n_, double beta_, statistic_enum stat_) : n(n_.value), beta(beta_), statistic(stat_) {}
+
     using cast_t = std::complex<double>;
-    operator cast_t() const { return {0, M_PI * (2 * n + statistic) / beta}; }
+    operator cast_t() const { return std::complex<double>(0, std::numbers::pi * (2 * n + statistic) / beta); }
     operator _long() const { return {n}; }
   };
 
@@ -94,25 +89,21 @@ namespace triqs::mesh {
   struct matsubara_time_domain; // Advance Declaration
 
   struct matsubara_freq_domain {
-    using point_t = std::complex<double>;
+    using point_t = matsubara_freq;
 
     double beta              = 0.0;
-    statistic_enum statistic = Fermion;
+    statistic_enum statistic = Fermion; // FIXME: What should default be?
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
-      double n_guess   = pt.imag() / (2 * std::numbers::pi / beta);
-      bool double_comp = (std::abs(n_guess - std::round(n_guess)) < 1.e-15); // TODO: Fix the double comparrison!!
-      return (pt.real() == 0.0) && double_comp;
-    }
+    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (pt.beta == beta) && (pt.statistic == statistic); }
 
+    matsubara_freq_domain() = default;
     matsubara_freq_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
       if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction : beta < 0 : beta =" << beta << "\n";
     }
-
-    matsubara_freq_domain() = default;
     explicit matsubara_freq_domain(matsubara_time_domain const &x);
 
-    bool operator==(matsubara_freq_domain const &D) const = default;
+    bool operator==(matsubara_freq_domain const &) const = default;
+    bool operator!=(matsubara_freq_domain const &) const = default;
 
     static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
 
@@ -120,16 +111,16 @@ namespace triqs::mesh {
     friend void h5_write(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain const &d) {
       h5::group gr = fg.create_group(subgroup_name);
       h5_write(gr, "beta", d.beta);
-      h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
+      h5_write(gr, "statistic", (d.statistic == Fermion) ? "F" : "B");
     }
 
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain &d) {
-      h5::group gr = fg.open_group(subgroup_name);
-      std::string statistic{};
+      h5::group gr          = fg.open_group(subgroup_name);
+      std::string statistic = " ";
       h5_read(gr, "beta", d.beta);
       h5_read(gr, "statistic", statistic);
-      d.statistic = "F" ? Fermion : Boson;
+      d.statistic = statistic == "F" ? Fermion : Boson;
     }
 
     //  BOOST Serialization
@@ -149,7 +140,7 @@ namespace triqs::mesh {
     using point_t = double;
 
     double beta              = 0.0;
-    statistic_enum statistic = Fermion;
+    statistic_enum statistic = Fermion; // FIXME: What should default be?
 
     [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (pt <= beta) && (0.0 <= pt); }
 
@@ -160,10 +151,10 @@ namespace triqs::mesh {
     matsubara_time_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
       if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction : beta < 0 : beta =" << beta << "\n";
     }
-
     explicit matsubara_time_domain(matsubara_freq_domain const &x);
 
     bool operator==(matsubara_time_domain const &) const = default;
+    bool operator!=(matsubara_time_domain const &) const = default;
 
     static std::string hdf5_format() { return "MatsubaraTimeDomain"; }
 
