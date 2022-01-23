@@ -21,18 +21,33 @@
 
 #include <ranges>
 #include <itertools/itertools.hpp>
+#include <tuple>
 #include <type_traits>
 #include "../mesh_concepts.hpp"
+#include "triqs/utility/tuple_tools.hpp"
+#include "triqs/utility/arithmetic_ops_by_cast.hpp"
 #include <iostream>
 
 namespace triqs::mesh {
 
   // Generic Implemenation of Mesh Point. Can be specialized for specific meshes.
-  template <typename M> struct mesh_point {
-    typename M::index_t index{};
-    typename M::linear_index_t linear_index{};
-    typename M::domain_t::point_t value{};
-    std::size_t mesh_hash{};
+  template <typename M> struct mesh_point : public utility::arithmetic_ops_by_cast<mesh_point<M>, typename M::domain_t::point_t> {
+    typename M::index_t index_{};
+    typename M::domain_t::point_t value_{};
+    typename M::linear_index_t linear_index_{};
+    std::size_t mesh_hash_{};
+
+    // Need Explicit Constructor because of inheritance for arithmetic_ops
+    mesh_point(typename M::index_t index, typename M::domain_pt_t value, typename M::linear_index_t linear_index, size_t mesh_hash)
+       : index_(index), linear_index_(linear_index), value_(value), mesh_hash_(mesh_hash) {}
+
+    [[nodiscard]] auto index() const { return index_; }
+    [[nodiscard]] auto value() const { return value_; }
+    [[nodiscard]] auto linear_index() const { return linear_index_; }
+    [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
+
+    using cast_t = typename M::domain_t::point_t;
+    operator cast_t() const { return value(); }
   };
 
   // ----------------------

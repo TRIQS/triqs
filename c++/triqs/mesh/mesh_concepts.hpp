@@ -94,10 +94,10 @@ namespace triqs::mesh {
 
   template <typename M>
   concept MeshPoint = Mesh<M> && requires(mesh_point<M> const &mp) {
-    { mp.index } -> std::same_as<typename M::index_t>;
-    { mp.linear_index } -> std::same_as<typename M::linear_index_t>;
-    { mp.value } -> std::same_as<typename M::domain_t::point_t>;
-    { mp.mesh_hash } -> std::convertible_to<std::size_t>;
+    { mp.index() } -> std::same_as<typename M::index_t>;
+    { mp.linear_index() } -> std::same_as<typename M::linear_index_t>;
+    { mp.value() } -> std::same_as<typename M::domain_t::point_t>;
+    { mp.mesh_hash() } -> std::convertible_to<std::size_t>;
   };
 
 } // namespace triqs::mesh
