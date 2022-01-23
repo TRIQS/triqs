@@ -79,4 +79,46 @@ namespace triqs::mesh {
 
 #endif
 
+  /// ----------------
+  // Product mesh specialization:
+
+  template <typename... Ms> class prod;
+
+  template <typename... Ms> struct mesh_point<prod<Ms...>> {
+    std::tuple<typename Ms::mesh_point_t...> components_;
+
+    [[nodiscard]] auto components_tuple() const { return components_; }
+
+    [[nodiscard]] auto index() const {
+      return triqs::tuple::map([](auto const &mp) { return mp.index(); }, components_);
+    }
+    [[nodiscard]] auto value() const {
+      return triqs::tuple::map([](auto const &mp) { return mp.value(); }, components_);
+    }
+    [[nodiscard]] auto linear_index() const {
+      return triqs::tuple::map([](auto const &mp) { return mp.linear_index(); }, components_);
+    }
+    [[nodiscard]] auto mesh_hash() const {
+      return triqs::tuple::map([](auto const &mp) { return mp.mesh_hash(); }, components_);
+    }
+
+    using cast_t = typename prod<Ms...>::domain_t::point_t;
+    operator cast_t() const { return value; }
+  };
+
+  template <typename... Ms> struct mesh_point_maker<prod<Ms...>> {
+    prod<Ms...> *mesh = nullptr;
+    mesh_point<prod<Ms...>> operator()(std::tuple<typename Ms::mesh_point_t...> const &t_mp) const { return {t_mp}; }
+  };
+
+  //  product range not part of c++20 standard
+  template <typename... Ms> auto make_mesh_prod_range(prod<Ms...> &m) {
+    auto f = [](auto... x) { return itertools::details::multiplied<Ms...>(x...); };
+    return itertools::transform(triqs::tuple::apply(f, m.components()), mesh_point_maker<prod<Ms...>>{&m});
+  }
+
+  template <typename... Ms>
+  using make_mesh_range_prod_rtype =
+     itertools::details::transformed<itertools::details::multiplied<Ms...>, triqs::mesh::mesh_point_maker<prod<Ms...>>>;
+
 } // namespace triqs::mesh

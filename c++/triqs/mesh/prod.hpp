@@ -21,6 +21,8 @@
 #pragma once
 #include "./domains/product.hpp"
 #include "./details/mesh_tools.hpp"
+#include "./details/mesh_point.hpp"
+
 #include "mesh_concepts.hpp"
 
 namespace triqs::mesh {
@@ -62,7 +64,7 @@ namespace triqs::mesh {
       // construct with at least 2 arguments
       // The mesh point are replaced by their index.
       template <typename Arg0, typename Arg1, typename... Args>
-      index_t(Arg0 &&arg0, Arg1 &&arg1, Args &&... args)
+      index_t(Arg0 &&arg0, Arg1 &&arg1, Args &&...args)
          : _i(detail::get_index(std::forward<Arg0>(arg0)), detail::get_index(std::forward<Arg1>(arg1)),
               detail::get_index(std::forward<Args>(args))...) {}
       // Construct the index_t from a tuple of indices
@@ -79,10 +81,12 @@ namespace triqs::mesh {
     // -------------------- Constructors -------------------
 
     prod() = default;
-    prod(Ms const &... mesh) : m_tuple(mesh...), _dom(mesh.domain()...) {}
-    prod(std::tuple<Ms...> const &mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
-    template<typename... U>
-    prod(std::tuple<U...> const &mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
+    prod(Ms const &...mesh) : m_tuple(mesh...), _dom(mesh.domain()...), r_{make_mesh_prod_range<Ms...>(*this)} {}
+    prod(std::tuple<Ms...> const &mesh_tpl)
+       : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)), r_{make_mesh_prod_range<Ms...>(*this)} {}
+    template <typename... U>
+    prod(std::tuple<U...> const &mesh_tpl)
+       : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)), r_{make_mesh_prod_range<Ms...>(*this)} {}
     prod(prod const &) = default;
 
     /// Mesh comparison
@@ -106,27 +110,27 @@ namespace triqs::mesh {
       return res;
     }
 
-      /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
-      template <typename... Args> bool is_within_boundary(Args const &... args) const {
-        return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, std::tie(args...), true);
-      }
-      template <typename... Args> bool is_within_boundary(index_t const &idx) const {
-        return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, idx._i, true);
-      }
+    /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
+    template <typename... Args> bool is_within_boundary(Args const &...args) const {
+      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, std::tie(args...), true);
+    }
+    template <typename... Args> bool is_within_boundary(index_t const &idx) const {
+      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, idx._i, true);
+    }
 
-      /// Conversions point <-> index <-> linear_index
-      typename domain_t::point_t index_to_point(index_t const &idx) const {
-        EXPECTS(is_within_boundary(idx));
-        auto l = [](auto const &m, auto const &i) { return m.index_to_point(i); };
-        return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
-      }
+    /// Conversions point <-> index <-> linear_index
+    typename domain_t::point_t index_to_point(index_t const &idx) const {
+      EXPECTS(is_within_boundary(idx));
+      auto l = [](auto const &m, auto const &i) { return m.index_to_point(i); };
+      return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
+    }
 
-      /// The linear_index is the tuple of the linear_index of the components
-      linear_index_t index_to_linear(index_t const &idx) const {
-        EXPECTS(is_within_boundary(idx));
-        auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
-        return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
-      }
+    /// The linear_index is the tuple of the linear_index of the components
+    linear_index_t index_to_linear(index_t const &idx) const {
+      EXPECTS(is_within_boundary(idx));
+      auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
+      return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
+    }
 
     // -------------------- Accessors (other) -------------------
 
@@ -144,7 +148,7 @@ namespace triqs::mesh {
     }
 
     // Same but a variadic list of mesh_point_t
-    template <typename... MP> size_t mesh_pt_components_to_linear(MP const &... mp) const {
+    template <typename... MP> size_t mesh_pt_components_to_linear(MP const &...mp) const {
       static_assert(std::is_same<std::tuple<MP...>, m_pt_tuple_t>::value, "Call incorrect ");
       return mp_to_linear(std::forward_as_tuple(mp...));
     }
@@ -157,12 +161,19 @@ namespace triqs::mesh {
     mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }
     mesh_point_t operator()(typename Ms::index_t... i) const { return (*this)[index_t{i...}]; }
 
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<prod>;
-    const_iterator begin() const { return const_iterator(this); }
-    const_iterator end() const { return const_iterator(this, true); }
-    const_iterator cbegin() const { return const_iterator(this); }
-    const_iterator cend() const { return const_iterator(this, true); }
+    // -------------------------- Range & Iteration --------------------------
+
+    auto begin() const { return r_.begin(); }
+    auto end() const { return r_.end(); }
+    auto cbegin() const { return r_.cbegin(); }
+    auto cend() const { return r_.cend(); }
+
+    // /// Iterating on all the points...
+    // using const_iterator = mesh_pt_generator<prod>;
+    // const_iterator begin() const { return const_iterator(this); }
+    // const_iterator end() const { return const_iterator(this, true); }
+    // const_iterator cbegin() const { return const_iterator(this); }
+    // const_iterator cend() const { return const_iterator(this, true); }
 
     // -------------- Evaluation of a function on the grid --------------------------
 
@@ -209,69 +220,73 @@ namespace triqs::mesh {
     private:
     m_tuple_t m_tuple;
     domain_t _dom;
+    make_mesh_range_prod_rtype<Ms...> r_;
   }; //end of class
 
   // ---------- Class template argument deduction rules (CTAD) -------------
-  template <typename M1, typename M2, typename... Ms> prod(M1, M2, Ms...)->prod<M1, M2, Ms...>;
+  template <typename M1, typename M2, typename... Ms> prod(M1, M2, Ms...) -> prod<M1, M2, Ms...>;
 
-  template <typename M1, typename M2, typename... Ms> prod(std::tuple<M1, M2, Ms...>)->prod<std::decay_t<M1>, std::decay_t<M2>, std::decay_t<Ms>...>;
+  template <typename M1, typename M2, typename... Ms>
+  prod(std::tuple<M1, M2, Ms...>) -> prod<std::decay_t<M1>, std::decay_t<M2>, std::decay_t<Ms>...>;
 
-  // ------------------------------------------------
-  /// The wrapper for the mesh point
+  //   // ------------------------------------------------
+  //   /// The wrapper for the mesh point
 
-  template <typename... Ms> struct mesh_point<prod<Ms...>> : tag::mesh_point {
-    using mesh_t         = prod<Ms...>;
-    using index_t        = typename mesh_t::index_t;
-    using m_pt_tuple_t   = typename mesh_t::m_pt_tuple_t;
-    using linear_index_t = typename mesh_t::linear_index_t;
-    using domain_pt_t    = typename mesh_t::domain_pt_t;
+  //   template <typename... Ms> struct mesh_point<prod<Ms...>> : tag::mesh_point {
+  //     using mesh_t         = prod<Ms...>;
+  //     using index_t        = typename mesh_t::index_t;
+  //     using m_pt_tuple_t   = typename mesh_t::m_pt_tuple_t;
+  //     using linear_index_t = typename mesh_t::linear_index_t;
+  //     using domain_pt_t    = typename mesh_t::domain_pt_t;
 
-    const mesh_t *m;
-    m_pt_tuple_t _c;
-    bool _atend;
-    struct F1 {
-      template <typename M> typename M::mesh_point_t operator()(M const &m) const { return {m}; }
-    };
+  //     const mesh_t *m;
+  //     m_pt_tuple_t _c;
+  //     bool _atend;
+  //     struct F1 {
+  //       template <typename M> typename M::mesh_point_t operator()(M const &m) const { return {m}; }
+  //     };
 
-    public:
-    mesh_point() = default;
-    mesh_point(mesh_t const &m_, index_t index_)
-       : m(&m_), _c(triqs::tuple::map_on_zip([](auto const &m, auto const &i) { return m[i]; }, m_.components(), index_._i)), _atend(false) {}
-    mesh_point(mesh_t const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.components())), _atend(false) {}
-    m_pt_tuple_t const &components_tuple() const { return _c; }
-    linear_index_t linear_index() const { return m->mp_to_linear(_c); }
-    index_t index() const {
-      return triqs::tuple::map([](auto const &mesh_pt) { return mesh_pt.index(); }, _c);
-    }
-    const mesh_t &mesh() const { return *m; }
+  //     public:
+  //     mesh_point() = default;
+  //     mesh_point(mesh_t const &m_, index_t index_)
+  //        : m(&m_), _c(triqs::tuple::map_on_zip([](auto const &m, auto const &i) { return m[i]; }, m_.components(), index_._i)), _atend(false) {}
+  //     mesh_point(mesh_t const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.components())), _atend(false) {}
+  //     m_pt_tuple_t const &components_tuple() const { return _c; }
+  //     linear_index_t linear_index() const { return m->mp_to_linear(_c); }
+  //     index_t index() const {
+  //       return triqs::tuple::map([](auto const &mesh_pt) { return mesh_pt.index(); }, _c);
+  //     }
+  //     const mesh_t &mesh() const { return *m; }
 
-    using cast_t = domain_pt_t;
-    operator cast_t() const { return _c; }
+  //     using cast_t = domain_pt_t;
+  //     operator cast_t() const { return _c; }
 
-    // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
-    void advance() {
-      auto l = [](auto &p, bool done) {
-        if (done) return true;
-        p.advance();
-        if (!p.at_end()) return true;
-        p.reset();
-        return false;
-      };
-      _atend = !(triqs::tuple::fold(l, _c, false));
-    }
-    // index_t index() const { return _index;} // not implemented yet
-    bool at_end() const { return _atend; }
+  //     // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
+  //     //
+  //     // void advance() {
+  //     //   auto l = [](auto &p, bool done) {
+  //     //     if (done) return true;
+  //     //     p.advance();
+  //     //     if (!p.at_end()) return true;
+  //     //     p.reset();
+  //     //     return false;
+  //     //   };
+  //     //   _atend = !(triqs::tuple::fold(l, _c, false));
+  //     // }
+  //     //
+  //     // index_t index() const { return _index;} // not implemented yet
+  //     // bool at_end() const { return _atend; }
 
-    void reset() {
-      _atend = false;
-      triqs::tuple::for_each(_c, [](auto &m) { m.reset(); });
-    }
+  //     // void reset() {
+  //     //   _atend = false;
+  //     //   triqs::tuple::for_each(_c, [](auto &m) { m.reset(); });
+  //     // }
 
-    // std::get should work FIXME ? redondant
-    template <int N> decltype(auto) get() { return std::get<N>(_c); }
-    template <int N> decltype(auto) get() const { return std::get<N>(_c); }
+  //     // std::get should work FIXME ? redondant
+  //     template <int N> decltype(auto) get() { return std::get<N>(_c); }
+  //     template <int N> decltype(auto) get() const { return std::get<N>(_c); }
 
-  }; // end mesh_point
+  //   }; // end mesh_point
 
 } // namespace triqs::mesh
 
@@ -305,18 +320,18 @@ namespace std {
   template <size_t N, typename M> class tuple_element<N, M> { using type = M; };
 */
 
-  // mesh_point as tuple
-  template <int pos, typename... Ms> decltype(auto) get(triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>> const &m) {
-    return std::get<pos>(m.components_tuple());
-  }
+  // // mesh_point as tuple
+  // template <int pos, typename... Ms> decltype(auto) get(triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>> const &m) {
+  //   return std::get<pos>(m.components_tuple());
+  // }
 
-  template <typename... Ms> class tuple_size<triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> {
-    public:
-    static const int value = sizeof...(Ms);
-  };
+  // template <typename... Ms> class tuple_size<triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> {
+  //   public:
+  //   static const int value = sizeof...(Ms);
+  // };
 
-  template <size_t N, typename... Ms>
-  class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
+  // template <size_t N, typename... Ms>
+  // class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
 
 } // namespace std
 
@@ -336,8 +351,9 @@ namespace triqs::mesh {
   }
 
   template <typename M1, typename M2>
-  auto operator*(M1 const &m1, M2 const &m2) //
-     requires(models_mesh_concept_v<M1> or Mesh<M1>) and (models_mesh_concept_v<M2> or Mesh<M2>) {
+     auto operator*(M1 const &m1, M2 const &m2) //
+     requires(models_mesh_concept_v<M1> or Mesh<M1>)
+     and (models_mesh_concept_v<M2> or Mesh<M2>) {
     return prod<M1, M2>{m1, m2};
   }
 } // namespace triqs::mesh

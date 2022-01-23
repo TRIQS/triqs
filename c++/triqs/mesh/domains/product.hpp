@@ -18,18 +18,23 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include "triqs/utility/tuple_tools.hpp"
 #include <tuple>
 
 namespace triqs::mesh {
 
   template <typename... Domains> struct domain_product {
     using point_t = std::tuple<typename Domains::point_t...>;
-    std::tuple<Domains...> domains{};
+    std::tuple<Domains...> domains;
 
     domain_product() = default;
     domain_product(std::tuple<Domains...> const &dom_tpl) : domains(dom_tpl) {}
     domain_product(std::tuple<Domains...> &&dom_tpl) : domains(std::move(dom_tpl)) {}
     domain_product(Domains const &...doms) : domains(doms...) {}
+
+    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
+      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, domains, pt, true);
+    }
 
     friend bool operator==(domain_product const &D1, domain_product const &D2) { return D1.domains == D2.domains; }
     // implement boost serializable, hdf5 if needed... (done at the mesh level).
