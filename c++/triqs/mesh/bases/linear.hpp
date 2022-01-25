@@ -66,7 +66,7 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
 
-    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b - a) / (L - 1)) {}
+    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)) {}
 
     linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
 
