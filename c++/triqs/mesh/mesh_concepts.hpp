@@ -62,19 +62,21 @@ namespace triqs::mesh {
   // Mesh must be h5 serializable and hashable (to quickly check if a mesh point originates from a mesh)
   template <typename M>
   concept Mesh = std::regular<M> && H5Serializable<M> && requires(M const &m) {
-    // Mesh has a domain
-    requires Domain<std::remove_cvref_t<decltype(m.domain())>>;
+    // Has a domain:
     typename M::domain_t;
+    requires Domain<typename M::domain_t>;
+    std::same_as<std::remove_cvref_t<decltype(m.domain())>, typename M::domain_t>;
 
     // mesh_point_t does not need to be mesh_point<M>, because of inheritance returning iter with mesh_point<Base>
     typename M::mesh_point_t;
+
+    // Is range which iterates over mesh points:
 
 // libc++ does not yet fully implement ranges for now: use itertools
 #if defined(_LIBCPP_VERSION) and (__clang_major__ < 14)
     // requires std::forward_iterator<std::ranges::iterator_t<M>>;  // Currently itertools::transform is not constructible
     {m.size()};
 #else
-    // Has linear index and a range which iterates over mesh points
     requires std::ranges::random_access_range<M>;
     requires std::ranges::sized_range<M>;
 #endif
