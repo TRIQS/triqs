@@ -32,7 +32,7 @@ namespace triqs::mesh {
     domain_product(std::tuple<Domains...> &&dom_tpl) : domains(std::move(dom_tpl)) {}
     domain_product(Domains const &...doms) : domains(doms...) {}
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
+    [[nodiscard]] bool contains(point_t const &pt) const {
       return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, domains, pt, true);
     }
 

@@ -43,10 +43,10 @@ namespace triqs::mesh {
   };
 
   // A domain is a set of type point_t elements and knows if a point_t is included in it
-  template <typename T>
-  concept Domain = std::regular<T> && H5Serializable<T> && requires(T t, typename T::point_t const &pt) {
-    typename T::point_t;
-    { t.is_in_domain(pt) } -> std::same_as<bool>;
+  template <typename D>
+  concept Domain = std::regular<D> && H5Serializable<D> && requires(D d, typename D::point_t const &pt) {
+    typename D::point_t;
+    { d.contains(pt) } -> std::same_as<bool>;
   };
 
   template <typename D>

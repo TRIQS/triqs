@@ -47,6 +47,8 @@ namespace triqs::mesh {
      */
     legendre_domain(double beta_, statistic_enum statistic_, long max_n_) : beta{beta_}, statistic{statistic_}, max_n{max_n_} {};
 
+    [[nodiscard]] bool contains(point_t const &pt) const { return (0 <= pt) && (pt <= max_n); };
+
     [[nodiscard]] long size() const { return max_n + 1; };
 
     bool operator==(legendre_domain const &) const = default;
@@ -63,7 +65,7 @@ namespace triqs::mesh {
 
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre_domain &d) {
-      h5::group gr = fg.open_group(subgroup_name);
+      h5::group gr          = fg.open_group(subgroup_name);
       std::string statistic = " ";
       if (not h5_try_read(gr, "max_n", d.max_n)) h5_read(gr, "n_max", d.max_n);
       h5_read(gr, "beta", d.beta);

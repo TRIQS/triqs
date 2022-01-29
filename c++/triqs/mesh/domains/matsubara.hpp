@@ -94,7 +94,7 @@ namespace triqs::mesh {
     double beta              = 0.0;
     statistic_enum statistic = Fermion; // FIXME: What should default be?
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (pt.beta == beta) && (pt.statistic == statistic); }
+    [[nodiscard]] bool contains(point_t const &pt) const { return (pt.beta == beta) && (pt.statistic == statistic); }
 
     matsubara_freq_domain() = default;
     matsubara_freq_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
@@ -142,7 +142,7 @@ namespace triqs::mesh {
     double beta              = 0.0;
     statistic_enum statistic = Fermion; // FIXME: What should default be?
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (pt <= beta) && (0.0 <= pt); }
+    [[nodiscard]] bool contains(point_t const &pt) const { return (pt <= beta) && (0.0 <= pt); }
 
     [[nodiscard]] constexpr point_t min() const { return 0.0; }
     [[nodiscard]] point_t max() const { return beta; }

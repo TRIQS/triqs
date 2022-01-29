@@ -25,18 +25,17 @@
 
 #include <string_view>
 
-
 TEST(DomainRealComplex, RealDomain) {
 
   triqs::mesh::real_domain rd1{};
 
-  EXPECT_TRUE(rd1.is_in_domain(0.0));
-  EXPECT_TRUE(rd1.is_in_domain(17.0));
-  EXPECT_TRUE(rd1.is_in_domain(-17.0));
-  EXPECT_TRUE(rd1.is_in_domain(-std::numeric_limits<double>::infinity()));
-  EXPECT_TRUE(rd1.is_in_domain(+std::numeric_limits<double>::infinity()));
-  EXPECT_FALSE(rd1.is_in_domain(+std::numeric_limits<double>::quiet_NaN()));
-  EXPECT_FALSE(rd1.is_in_domain(+std::numeric_limits<double>::signaling_NaN()));
+  EXPECT_TRUE(rd1.contains(0.0));
+  EXPECT_TRUE(rd1.contains(17.0));
+  EXPECT_TRUE(rd1.contains(-17.0));
+  EXPECT_TRUE(rd1.contains(-std::numeric_limits<double>::infinity()));
+  EXPECT_TRUE(rd1.contains(+std::numeric_limits<double>::infinity()));
+  EXPECT_FALSE(rd1.contains(+std::numeric_limits<double>::quiet_NaN()));
+  EXPECT_FALSE(rd1.contains(+std::numeric_limits<double>::signaling_NaN()));
 
   // TODO: Q: Should hdf5 schema label be tested?
 
@@ -49,20 +48,20 @@ TEST(DomainRealComplex, ComplexDomain) {
 
   triqs::mesh::complex_domain cd1{};
 
-  EXPECT_TRUE(cd1.is_in_domain({0.0, 0.0}));
-  EXPECT_TRUE(cd1.is_in_domain({0.0, 17.0}));
-  EXPECT_TRUE(cd1.is_in_domain({-17.0, 0.0}));
-  EXPECT_TRUE(cd1.is_in_domain({-std::numeric_limits<double>::infinity(), 0}));
-  EXPECT_TRUE(cd1.is_in_domain({0, +std::numeric_limits<double>::infinity()}));
-  EXPECT_TRUE(cd1.is_in_domain({+std::numeric_limits<double>::infinity(), +std::numeric_limits<double>::infinity()}));
-  EXPECT_TRUE(cd1.is_in_domain({-std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(cd1.contains({0.0, 0.0}));
+  EXPECT_TRUE(cd1.contains({0.0, 17.0}));
+  EXPECT_TRUE(cd1.contains({-17.0, 0.0}));
+  EXPECT_TRUE(cd1.contains({-std::numeric_limits<double>::infinity(), 0}));
+  EXPECT_TRUE(cd1.contains({0, +std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(cd1.contains({+std::numeric_limits<double>::infinity(), +std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(cd1.contains({-std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}));
 
-  EXPECT_FALSE(cd1.is_in_domain({0.0, +std::numeric_limits<double>::quiet_NaN()}));
-  EXPECT_FALSE(cd1.is_in_domain({0.0, +std::numeric_limits<double>::signaling_NaN()}));
-  EXPECT_FALSE(cd1.is_in_domain({+std::numeric_limits<double>::quiet_NaN(), 0.0}));
-  EXPECT_FALSE(cd1.is_in_domain({+std::numeric_limits<double>::signaling_NaN(), 0.0}));
-  EXPECT_FALSE(cd1.is_in_domain({+std::numeric_limits<double>::quiet_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
-  EXPECT_FALSE(cd1.is_in_domain({+std::numeric_limits<double>::signaling_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(cd1.contains({0.0, +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(cd1.contains({0.0, +std::numeric_limits<double>::signaling_NaN()}));
+  EXPECT_FALSE(cd1.contains({+std::numeric_limits<double>::quiet_NaN(), 0.0}));
+  EXPECT_FALSE(cd1.contains({+std::numeric_limits<double>::signaling_NaN(), 0.0}));
+  EXPECT_FALSE(cd1.contains({+std::numeric_limits<double>::quiet_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(cd1.contains({+std::numeric_limits<double>::signaling_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
 
   // TODO: Q: Should hdf5 schema label be tested?
 
@@ -75,19 +74,19 @@ TEST(DomainRealComplex, Real2Domain) {
 
   triqs::mesh::real_N_domain<2> rd1{};
 
-  EXPECT_TRUE(rd1.is_in_domain({0.0, 1.0}));
-  EXPECT_TRUE(rd1.is_in_domain({-5.0, 1.0}));
-  EXPECT_TRUE(rd1.is_in_domain({-std::numeric_limits<double>::infinity(), 0}));
-  EXPECT_TRUE(rd1.is_in_domain({0, +std::numeric_limits<double>::infinity()}));
-  EXPECT_TRUE(rd1.is_in_domain({+std::numeric_limits<double>::infinity(), +std::numeric_limits<double>::infinity()}));
-  EXPECT_TRUE(rd1.is_in_domain({-std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(rd1.contains({0.0, 1.0}));
+  EXPECT_TRUE(rd1.contains({-5.0, 1.0}));
+  EXPECT_TRUE(rd1.contains({-std::numeric_limits<double>::infinity(), 0}));
+  EXPECT_TRUE(rd1.contains({0, +std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(rd1.contains({+std::numeric_limits<double>::infinity(), +std::numeric_limits<double>::infinity()}));
+  EXPECT_TRUE(rd1.contains({-std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}));
 
-  EXPECT_FALSE(rd1.is_in_domain({0.0, +std::numeric_limits<double>::quiet_NaN()}));
-  EXPECT_FALSE(rd1.is_in_domain({0.0, +std::numeric_limits<double>::signaling_NaN()}));
-  EXPECT_FALSE(rd1.is_in_domain({+std::numeric_limits<double>::quiet_NaN(), 0.0}));
-  EXPECT_FALSE(rd1.is_in_domain({+std::numeric_limits<double>::signaling_NaN(), 0.0}));
-  EXPECT_FALSE(rd1.is_in_domain({+std::numeric_limits<double>::quiet_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
-  EXPECT_FALSE(rd1.is_in_domain({+std::numeric_limits<double>::signaling_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(rd1.contains({0.0, +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(rd1.contains({0.0, +std::numeric_limits<double>::signaling_NaN()}));
+  EXPECT_FALSE(rd1.contains({+std::numeric_limits<double>::quiet_NaN(), 0.0}));
+  EXPECT_FALSE(rd1.contains({+std::numeric_limits<double>::signaling_NaN(), 0.0}));
+  EXPECT_FALSE(rd1.contains({+std::numeric_limits<double>::quiet_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
+  EXPECT_FALSE(rd1.contains({+std::numeric_limits<double>::signaling_NaN(), +std::numeric_limits<double>::quiet_NaN()}));
 
   // TODO: Q: Should hdf5 schema label be tested?
 

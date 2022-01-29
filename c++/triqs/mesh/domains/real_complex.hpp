@@ -46,7 +46,7 @@ namespace triqs::mesh {
   template <typename T> struct numerical_type_domain_base {
     using point_t = T;
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const {
+    [[nodiscard]] bool contains(point_t const &pt) const {
       using std::isnan;
       using triqs::mesh::impl::isnan;
       return !isnan(pt);

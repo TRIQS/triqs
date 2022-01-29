@@ -40,7 +40,7 @@ namespace triqs::mesh {
     [[nodiscard]] point_t min() const { return min_; }
     [[nodiscard]] point_t max() const { return max_; }
 
-    [[nodiscard]] bool is_in_domain(point_t const &pt) const { return (min_ <= pt) && (pt <= max_); }
+    [[nodiscard]] bool contains(point_t const &pt) const { return (min_ <= pt) && (pt <= max_); }
 
     bool operator==(interval_domain_base const &) const = default;
 
@@ -57,7 +57,7 @@ namespace triqs::mesh {
     }
 
     friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive & ar, const unsigned int version) {
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
       ar &min_;
       ar &max_;
     }
