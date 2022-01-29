@@ -55,12 +55,6 @@ namespace triqs::mesh {
       h5::read(gr, "min", d.min_);
       h5::read(gr, "max", d.max_);
     }
-
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &min_;
-      ar &max_;
-    }
   };
 
   // ---------------------------------------------

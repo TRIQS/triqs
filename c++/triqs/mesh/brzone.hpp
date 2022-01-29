@@ -86,17 +86,6 @@ namespace triqs::mesh {
                   << "\n -- periodization_matrix = " << m.periodization_matrix() << "\n -- Domain: " << m.domain();
     }
 
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &units_;
-      ar &periodization_matrix_;
-      ar &dims_;
-      ar &size_;
-      ar &stride0;
-      ar &stride1;
-      ar &bz;
-    }
-
     // -------------- HDF5  --------------------------
 
     static std::string hdf5_format() { return "MeshBrillouinZone"; }

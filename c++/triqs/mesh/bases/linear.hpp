@@ -142,18 +142,6 @@ namespace triqs::mesh {
       m = linear_mesh(std::move(dom), a, b, L);
     }
 
-    // -------------------- boost serialization -------------------
-
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &_dom;
-      ar &xmin;
-      ar &xmax;
-      ar &del;
-      ar &del_inv;
-      ar &L;
-    }
-
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }

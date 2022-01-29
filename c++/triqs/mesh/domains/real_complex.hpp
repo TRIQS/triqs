@@ -56,9 +56,6 @@ namespace triqs::mesh {
 
     friend void h5_write(h5::group, std::string const &subgroup_name, numerical_type_domain_base const &) {} //TODO ??
     friend void h5_read(h5::group, std::string const &subgroup_name, numerical_type_domain_base &) {}        //TODO ??
-
-    // friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &, const unsigned int) {}
   };
 
   // ---------------------------------------------

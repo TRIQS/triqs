@@ -211,19 +211,7 @@ namespace triqs::mesh {
       m                         = cluster_mesh(units, periodization_matrix);
     }
 
-    //  --------- BOOST Serialization ---------
-
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &units_;
-      ar &periodization_matrix_;
-      ar &dims_;
-      ar &size_;
-      ar &stride0;
-      ar &stride1;
-    }
-
-    friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) {
+    friend std::ostream &operator<<(std::ostream &sout, cluster_mesh_base const &m) {
       return sout << "cluster_mesh of size " << m.dims() << "\n units = " << m.units() << "\n periodization_matrix = " << m.periodization_matrix()
                   << "\n";
     }

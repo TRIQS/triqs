@@ -226,18 +226,6 @@ namespace triqs::mesh {
       m            = imfreq{std::move(dom), n_iw, opt};
     }
 
-    // -------------------- boost serialization -------------------
-
-    // not implemented: the _opt need to be serialized.
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &_dom;
-      ar &_n_iw;
-      ar &_opt;
-      ar &_first_index;
-      ar &_last_index;
-    }
-
     // ------------------------------------------------
     private:
     domain_t _dom;

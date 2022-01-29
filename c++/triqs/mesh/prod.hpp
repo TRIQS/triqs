@@ -200,14 +200,6 @@ namespace triqs::mesh {
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 
-    // -------------------- boost serialization -------------------
-
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      auto l = [&ar](int N, auto &m) { ar &m; };
-      triqs::tuple::for_each_enumerate(m_tuple, l);
-    }
-
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, prod const &prod_mesh) {

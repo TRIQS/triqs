@@ -123,13 +123,6 @@ namespace triqs::mesh {
       d.statistic = statistic == "F" ? Fermion : Boson;
     }
 
-    //  BOOST Serialization
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &beta;
-      ar &statistic;
-    }
-
     friend std::ostream &operator<<(std::ostream &sout, matsubara_freq_domain const &d) {
       auto stat_cstr = (d.statistic == Boson ? "Boson" : "Fermion");
       return sout << fmt::format("Matsubara frequency domain with beta = {}, statistic = {}", d.beta, stat_cstr);
@@ -173,13 +166,6 @@ namespace triqs::mesh {
       h5_read(gr, "beta", beta);
       h5_read(gr, "statistic", statistic);
       d = matsubara_time_domain(beta, (statistic == "F" ? Fermion : Boson));
-    }
-
-    //  BOOST Serialization
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &beta;
-      ar &statistic;
     }
 
     friend std::ostream &operator<<(std::ostream &sout, matsubara_time_domain const &d) {
