@@ -48,14 +48,14 @@ TEST(MeshConcepts, DomainConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_domain<real_interval_domain>() << std::endl;
 }
 
-TEST(MeshConcepts, IntervalDomainConceptTest) {
-  //
-  std::cout << "Check Domain Concept: " << type_name_interval_domain<legendre_domain>() << std::endl;
-  //
-  std::cout << "Check Domain Concept: " << type_name_interval_domain<matsubara_time_domain>() << std::endl;
-  //
-  std::cout << "Check Domain Concept: " << type_name_interval_domain<real_interval_domain>() << std::endl;
-}
+// TEST(MeshConcepts, IntervalDomainConceptTest) {
+//   //
+//   std::cout << "Check Domain Concept: " << type_name_interval_domain<legendre_domain>() << std::endl;
+//   //
+//   std::cout << "Check Domain Concept: " << type_name_interval_domain<matsubara_time_domain>() << std::endl;
+//   //
+//   std::cout << "Check Domain Concept: " << type_name_interval_domain<real_interval_domain>() << std::endl;
+// }
 
 TEST(MeshConcepts, MeshConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_mesh<retime>() << std::endl;
