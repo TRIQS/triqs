@@ -30,14 +30,16 @@ namespace triqs::mesh {
   requires std::totally_ordered<typename D::point_t> // Addable and dividable
   class linear_mesh {
     public:
+    using domain_t    = D;
+    using domain_pt_t = typename D::point_t; // Syntactic sugar
+
     // linear_index and index are identical for this mesh
     using index_t        = long;
     using linear_index_t = long;
-    using domain_t       = D;
-    using mesh_point_t   = mesh_point<linear_mesh>;
 
-    // Syntax Sugar: No longer part of domain concept
-    using domain_pt_t = typename D::point_t;
+    struct mesh_point_t : public mesh_point_impl<linear_mesh<D>> {
+      template <typename... T> mesh_point_t(T &&...x) : mesh_point_impl<linear_mesh<D>>(std::forward<T>(x)...) {}
+    };
 
     // -------------------- Index Bijection -------------------
 

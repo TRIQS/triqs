@@ -30,15 +30,15 @@
 
 namespace triqs::mesh {
 
-  // Generic Implemenation of Mesh Point. Can be specialized for specific meshes.
-  template <typename M> struct mesh_point : public utility::arithmetic_ops_by_cast<mesh_point<M>, typename M::domain_t::point_t> {
+  // Generic Implemenation of Mesh Point
+  template <typename M> struct mesh_point_impl : public utility::arithmetic_ops_by_cast<mesh_point_impl<M>, typename M::domain_t::point_t> {
     typename M::index_t index_{};
     typename M::domain_t::point_t value_{};
     typename M::linear_index_t linear_index_{};
     std::size_t mesh_hash_{};
 
     // Need Explicit Constructor because of inheritance for arithmetic_ops
-    mesh_point(typename M::index_t index, typename M::domain_pt_t value, typename M::linear_index_t linear_index, size_t mesh_hash)
+    mesh_point_impl(typename M::index_t index, typename M::domain_pt_t value, typename M::linear_index_t linear_index, size_t mesh_hash)
        : index_(index), linear_index_(linear_index), value_(value), mesh_hash_(mesh_hash) {}
 
     [[nodiscard]] auto index() const { return index_; }
@@ -58,7 +58,7 @@ namespace triqs::mesh {
   // This is needed for having a consistent type in range transform.
   template <typename M> struct mesh_point_maker {
     M *mesh = nullptr;
-    mesh_point<M> operator()(typename M::linear_index_t const &i) const { return mesh->linear_to_mesh_pt(i); }
+    typename M::mesh_point_t operator()(typename M::linear_index_t const &i) const { return mesh->linear_to_mesh_pt(i); }
   };
 
 // libc++ does not yet implement ranges for now: use itertools
@@ -84,31 +84,9 @@ namespace triqs::mesh {
 
   template <typename... Ms> class prod;
 
-  template <typename... Ms> struct mesh_point<prod<Ms...>> {
-    std::tuple<typename Ms::mesh_point_t...> components_;
-
-    [[nodiscard]] auto components_tuple() const { return components_; }
-
-    [[nodiscard]] auto index() const {
-      return triqs::tuple::map([](auto const &mp) { return mp.index(); }, components_);
-    }
-    [[nodiscard]] auto value() const {
-      return triqs::tuple::map([](auto const &mp) { return mp.value(); }, components_);
-    }
-    [[nodiscard]] auto linear_index() const {
-      return triqs::tuple::map([](auto const &mp) { return mp.linear_index(); }, components_);
-    }
-    [[nodiscard]] auto mesh_hash() const {
-      return triqs::tuple::map([](auto const &mp) { return mp.mesh_hash(); }, components_);
-    }
-
-    using cast_t = typename prod<Ms...>::domain_t::point_t;
-    operator cast_t() const { return value; }
-  };
-
   template <typename... Ms> struct mesh_point_maker<prod<Ms...>> {
     prod<Ms...> *mesh = nullptr;
-    mesh_point<prod<Ms...>> operator()(std::tuple<typename Ms::mesh_point_t...> const &t_mp) const { return {t_mp}; }
+    typename prod<Ms...>::mesh_point_t operator()(std::tuple<typename Ms::mesh_point_t...> const &t_mp) const { return {t_mp}; }
   };
 
   //  product range not part of c++20 standard

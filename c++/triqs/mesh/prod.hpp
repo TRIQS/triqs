@@ -31,9 +31,9 @@ namespace triqs::mesh {
     // a function that take the index for the mesh_point and let the rest pass through
     // used below in index_t constructor
     template <typename T> decltype(auto) get_index(T &&x) { return std::forward<T>(x); }
-    template <typename T> auto get_index(mesh_point<T> const &x) { return x.index(); }
-    template <typename T> auto get_index(mesh_point<T> &&x) { return x.index(); }
-    template <typename T> auto get_index(mesh_point<T> &x) { return x.index(); }
+    template <typename M> auto get_index(typename M::mesh_point_t const &x) { return x.index(); }
+    template <typename M> auto get_index(typename M::mesh_point_t &&x) { return x.index(); }
+    template <typename M> auto get_index(typename M::mesh_point_t &x) { return x.index(); }
   } // namespace detail
 
   template <typename... Ms> class prod;
@@ -57,6 +57,28 @@ namespace triqs::mesh {
     using domain_pt_t        = typename domain_t::point_t;
     using linear_index_t     = std::tuple<typename Ms::linear_index_t...>;
     static constexpr int dim = sizeof...(Ms);
+
+    struct mesh_point_t {
+      std::tuple<typename Ms::mesh_point_t...> components_;
+
+      [[nodiscard]] auto components_tuple() const { return components_; }
+
+      [[nodiscard]] auto index() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.index(); }, components_);
+      }
+      [[nodiscard]] auto value() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.value(); }, components_);
+      }
+      [[nodiscard]] auto linear_index() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.linear_index(); }, components_);
+      }
+      [[nodiscard]] auto mesh_hash() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.mesh_hash(); }, components_);
+      }
+
+      using cast_t = typename prod<Ms...>::domain_t::point_t;
+      operator cast_t() const { return value; }
+    };
 
     /// The index
     struct index_t {
@@ -154,8 +176,6 @@ namespace triqs::mesh {
     }
 
     // -------------------- mesh_point -------------------
-
-    using mesh_point_t = mesh_point<prod>;
 
     /// Accessing a point of the mesh
     mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }

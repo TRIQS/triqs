@@ -46,8 +46,8 @@ namespace cpp2py {
   template <> struct py_converter<triqs::mesh::real_domain> : py_converter_from_reductor<triqs::mesh::real_domain> {};
 
   // template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
-   template <> struct py_converter<triqs::mesh::matsubara_time_domain> : py_converter_from_reductor<triqs::mesh::matsubara_time_domain> {};
-   template <> struct py_converter<triqs::mesh::matsubara_freq_domain> : py_converter_from_reductor<triqs::mesh::matsubara_freq_domain> {};
+  template <> struct py_converter<triqs::mesh::matsubara_time_domain> : py_converter_from_reductor<triqs::mesh::matsubara_time_domain> {};
+  template <> struct py_converter<triqs::mesh::matsubara_freq_domain> : py_converter_from_reductor<triqs::mesh::matsubara_freq_domain> {};
 
   // -----------------------------------
   // all_t mapped to all
@@ -109,9 +109,9 @@ namespace cpp2py {
   template <typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())>> = true;
 
   // Converter of mesh_point
-  template <typename M> struct py_converter<triqs::mesh::mesh_point<M>> {
+  template <typename M> struct py_converter<M::mesh_point_t> {
 
-    using c_type = triqs::mesh::mesh_point<M>;
+    using c_type = M::mesh_point_t;
 
     static PyObject *c2py(c_type const &p) {
 

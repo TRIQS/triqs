@@ -55,7 +55,7 @@ namespace triqs::gfs {
   template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
 
   // mesh_point
-  template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
+  template <typename M, typename X> tuple_com<typename M::mesh_point_t, std::decay_t<X>> operator,(typename M::mesh_point_t m, X &&x) {
     return {std::make_tuple(std::move(m), std::forward<X>(x))};
   }
 
@@ -66,7 +66,8 @@ namespace triqs::gfs {
 
   // integer types
   template <typename Int> tuple_com<Int, all_t> operator,(Int i, all_t) requires(std::is_integral_v<Int>) { return {std::make_tuple(i, all_t{})}; }
-  template <typename Int, typename M> tuple_com<Int, mesh_point<M>> operator,(Int i, mesh_point<M> m) requires(std::is_integral_v<Int>) {
+  template <typename Int, typename M>
+  tuple_com<Int, typename M::mesh_point_t> operator,(Int i, typename M::mesh_point_t m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(i, std::move(m))};
   }
   template <typename Int> tuple_com<Int, matsubara_freq> operator,(Int i, matsubara_freq m) requires(std::is_integral_v<Int>) {
@@ -79,7 +80,8 @@ namespace triqs::gfs {
     return {std::make_tuple(a, all_t{})};
   }
   template <typename Int, size_t R, typename M>
-  tuple_com<std::array<Int, R>, mesh_point<M>> operator,(std::array<Int, R> const &a, mesh_point<M> m) requires(std::is_integral_v<Int>) {
+  tuple_com<std::array<Int, R>, typename M::mesh_point_t> operator,(std::array<Int, R> const &a,
+                                                                    typename M::mesh_point_t m) requires(std::is_integral_v<Int>) {
     return {std::make_tuple(a, std::move(m))};
   }
   template <typename Int, size_t R>

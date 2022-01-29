@@ -164,7 +164,7 @@ namespace triqs::mesh {
     // -------------------- tail -------------------
 
     /// maximum freq of the mesh
-    auto omega_max() const { return index_to_point(_last_index); }
+    dcomplex omega_max() const { return index_to_point(_last_index); }
 
     // ///
     // dcomplex index_to_point(int n) const { return 1i * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
@@ -172,7 +172,21 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     /// Type of the mesh point
-    using mesh_point_t = mesh_point<imfreq>;
+    struct mesh_point_t : public matsubara_freq {
+      long index_; // NB: typename imfreq::index_t is _long. Non-convertible!
+      typename imfreq::domain_t::point_t value_{};
+      typename imfreq::linear_index_t linear_index_{};
+      std::size_t mesh_hash_{};
+
+      // Need Explicit Constructor because of inheritance for arithmetic_ops
+      mesh_point_t(typename imfreq::index_t index, typename imfreq::domain_pt_t value, typename imfreq::linear_index_t linear_index, size_t mesh_hash)
+         : matsubara_freq(), index_(index.value), linear_index_(linear_index), value_(value), mesh_hash_(mesh_hash) {}
+
+      [[nodiscard]] auto index() const { return index_; }
+      [[nodiscard]] auto value() const { return value_; }
+      [[nodiscard]] auto linear_index() const { return linear_index_; }
+      [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
+    };
 
     /**
      * Accessing a point of the mesh from its index

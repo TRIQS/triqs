@@ -15,7 +15,7 @@ namespace triqs::mesh {
   bool mesh_point_compatible_to_mesh_impl(std::index_sequence<Is...>, MP const &mp, prod<M...> const &m) {
     return (mesh_point_compatible_to_mesh(std::get<Is>(mp.components_tuple()), std::get<Is>(m.components())) and ...);
   }
-  template <typename... M> bool mesh_point_compatible_to_mesh(mesh_point<prod<M...>> const &mp, prod<M...> const &m) {
+  template <typename... M> bool mesh_point_compatible_to_mesh(typename prod<M...>::mesh_point_t const &mp, prod<M...> const &m) {
     return mesh_point_compatible_to_mesh_impl(std::index_sequence_for<M...>{}, mp, m);
   }
 } // namespace triqs::mesh
