@@ -83,22 +83,22 @@ namespace triqs::mesh {
 
     { *std::begin(m) } -> std::same_as<typename M::mesh_point_t>;
 
-    // Has linear_index and index as well as a bijection between them
-    requires std::same_as<typename M::linear_index_t, long>;
+    // Has raw_index and index as well as a bijection between them
+    typename M::raw_index_t; // What is used to internally access data in gf.data[r_idx]
     typename M::index_t;
 
-  } && requires(M const &m, typename M::index_t const &idx) {
-    { m.index_to_linear(idx) } -> std::same_as<typename M::linear_index_t>; // TODO: naming!
-    { m.operator[](idx) } -> std::same_as<typename M::mesh_point_t>;
-  } && requires(M const &m, typename M::linear_index_t const &idx_lin) {
-    { m.linear_to_index(idx_lin) } -> std::same_as<typename M::index_t>;        // TODO:  naming!
-    { m.linear_to_mesh_pt(idx_lin) } -> std::same_as<typename M::mesh_point_t>; // TODO: naming!
+  } && requires(M const &m, typename M::index_t const &index) {
+    { m.raw_index_from_index(index) } -> std::same_as<typename M::raw_index_t>;
+    { m.operator[](index) } -> std::same_as<typename M::mesh_point_t>;
+  } && requires(M const &m, typename M::raw_index_t const &r_index) {
+    { m.index_from_raw_index(r_index) } -> std::same_as<typename M::index_t>;
+    { m.mesh_pt_from_raw_index(r_index) } -> std::same_as<typename M::mesh_point_t>;
   };
 
   template <typename M>
   concept MeshPoint = Mesh<M> && requires(mesh_point<M> const &mp) {
     { mp.index() } -> std::same_as<typename M::index_t>;
-    { mp.linear_index() } -> std::same_as<typename M::linear_index_t>;
+    { mp.raw_index() } -> std::same_as<typename M::raw_index_t>;
     { mp.value() } -> std::same_as<typename M::domain_t::point_t>;
     { mp.mesh_hash() } -> std::convertible_to<std::size_t>;
   };
