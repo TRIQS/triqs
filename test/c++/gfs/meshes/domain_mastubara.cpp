@@ -56,14 +56,14 @@ TEST(DomainMatsubara, FreqDomain) {
   double beta1 = 1000.0;
   triqs::mesh::matsubara_freq_domain m1(beta1, triqs::mesh::Boson);
 
-  EXPECT_TRUE(m1.contains({0.0, 0.0}));
-  EXPECT_TRUE(m1.contains({0.0, 2 * std::numbers::pi / beta1 * 5}));
-  EXPECT_TRUE(m1.contains({0.0, 2 * std::numbers::pi / beta1 * (-200)}));
-  EXPECT_TRUE(m1.contains({0.0, 2 * std::numbers::pi / beta1 * (2500)}));
+  EXPECT_TRUE(m1.contains(triqs::mesh::matsubara_freq{0, beta1, triqs::mesh::Boson}));
+  EXPECT_TRUE(m1.contains(triqs::mesh::matsubara_freq{5, beta1, triqs::mesh::Boson}));
+  EXPECT_TRUE(m1.contains(triqs::mesh::matsubara_freq{250, beta1, triqs::mesh::Boson}));
+  EXPECT_TRUE(m1.contains(triqs::mesh::matsubara_freq{-3000, beta1, triqs::mesh::Boson}));
 
-  EXPECT_FALSE(m1.contains({1.0, 0.0}));
-  EXPECT_FALSE(m1.contains({1.0, 2 * std::numbers::pi * 5 / beta1}));
-  EXPECT_FALSE(m1.contains({-5.0, 2 * std::numbers::pi * 5 / beta1}));
+  EXPECT_FALSE(m1.contains(triqs::mesh::matsubara_freq{0, 10.0, triqs::mesh::Boson}));
+  EXPECT_FALSE(m1.contains(triqs::mesh::matsubara_freq{0, beta1, triqs::mesh::Fermion}));
+  EXPECT_FALSE(m1.contains(triqs::mesh::matsubara_freq{2, beta1, triqs::mesh::Fermion}));
 
   std::cout << m1 << std::endl;
 }
