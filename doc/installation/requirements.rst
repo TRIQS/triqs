@@ -16,12 +16,14 @@ C++ compilers
 
 TRIQS is written in modern C++, i.e. using the latest `C++ standard <https://isocpp.org/std/status>`_ as defined by the ISO standardization committee.
 It is our philsophy to follow the C++ language evolution closely in order to keep the TRIQS code-base as simple and
-maintainable as possible. For this reason we have decided to limit the compilation of TRIQS to the rapidly evolving gcc and clang compilers.
+maintainable as possible. For this reason we have decided to limit the compilation of TRIQS to the rapidly evolving gcc and LLVM based compilers, including clang and IntelLLVM.
 We support the following compiler versions:
 
-* g++ 7.x and higher
+* g++ 10.x and higher
 
-* :ref:`clang 5.0<install_clang>` and higher.
+* :ref:`clang 13.0<install_clang>` and higher
+
+* IntelLLVM (icx) 2021.3.0 and higher
 
 Tools and Libraries
 -------------------
@@ -29,7 +31,7 @@ Tools and Libraries
 +------------------------+----------+-----------------------------------------------------------------------------+
 | Tool/Library           | Version  | Comment                                                                     |
 +========================+==========+=============================================================================+
-| cmake                  | >= 3.3.2 | CMake is used to control the software compilation process                   |
+| cmake                  | >= 3.12.4| CMake is used to control the software compilation process                   |
 +------------------------+----------+-----------------------------------------------------------------------------+
 | python                 | >= 3.6   | The Python interpreter                                                      |
 +------------------------+----------+-----------------------------------------------------------------------------+
@@ -62,7 +64,7 @@ If you want to build the documentation of the TRIQS library locally on your mach
 +========================+==========+=============================================================================+
 | sphinx                 | >= 1.0.1 | Python Package - Documentation tools                                        |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| libclang               | 5.0      | C interface to clang                                                        |
+| libclang               | 13.0     | C interface to clang                                                        |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| clang                  | 5.0      | Python Package - Libclang bindings                                          |
+| clang                  | 13.0     | Python Package - Libclang bindings                                          |
 +------------------------+----------+-----------------------------------------------------------------------------+
