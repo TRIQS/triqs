@@ -30,7 +30,6 @@ repl_dict = {
         "PYTHON_INTERPRETER": "PYTHON_EXECUTABLE",
         # r"(\d)_j": r"\1i"
         # --- Meshes Merge ---
-        "( *)using namespace triqs::gfs;\n(?! *using namespace triqs::mesh)": r"\1using namespace triqs::gfs;\n\1using namespace triqs::mesh;\n",
         "#include <triqs/gfs.hpp>\n(?!#include <triqs/mesh.hpp>)": "#include <triqs/gfs.hpp>\n#include <triqs/mesh.hpp>\n",
         "#include <triqs/gfs/meshes/": "#include <triqs/mesh/",
         "::variable_t": "::mesh_t",
@@ -43,7 +42,7 @@ repl_dict = {
         "MeshBrillouinZone": "MeshBrZone",
         "MeshCyclicLattice": "MeshCycLat",
         "gf_closest_point": "closest_point",
-        "gf_mesh{": "prod{", # may be probematic if not constructing a prod??
+        "gf_mesh{": "mesh::prod{",
         "gf_mesh<(.?)>": r"\1", # really necessary?
         "matsubara_mesh_opt": "imfreq::option",
         "get_dimensions()": "dims()",
