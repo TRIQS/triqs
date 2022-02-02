@@ -8,71 +8,418 @@ This document describes the main changes in TRIQS.
 
 ## Version 3.1.0
 
+TRIQS Version 3.1.0 is a release that
+* separates out the multi-array functionality into [TRIQS/nda](https://github.com/triqs/nda)
+* restructures the C++ Green function meshes
+* improves the lattice functionality
+* introduces reworked statistics component
+* introduces a new website theme
+* fixes several library issues
 
-### Green function meshes (C++ only)
+We thank all the people who have contributed to this release: Weh Andreas, Maxime Charlebois, Philipp D, Philipp Dumitrescu, Alexander Hampel, Jonathan Karp, Igor Krivenko, Henri Menke, Olivier Parcollet, Markus Richter, Dylan Simon, Hugo U. R. Strand, Nils Wentzell, Sophie Beck, Rok Žitko
 
 
-* The Green functions are now templated directly on the mesh, while the previous tags have been removed.
-  This has little consequence in practice, except for the special case of brillouin_zone (cf below).
+### Porting Script
 
-* The meshes are regrouped in triqs::mesh namespace
+TRIQS 3.1.0 introduced a changes (summarized below) that require adjustments in TRIQS-based applications.
+For convenient porting, we have updated our [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3)
+that you can download and run in the top-level directory of your respository.
 
-* Some meshes have been abbreviated (with backward compat. aliases).
+```bash
+wget https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3
+chmod u+x port_to_triqs3
+./port_to_triqs3
+```
 
-Before we had : 
+Make sure to review all changes before you commit them.
+If you run into problems porting your application to this release, feel free to contact us by opening a [discussion](https://github.com/TRIQS/triqs/discussions) on github.
+
+### Green function meshes (C++)
+
+The Green functions are now templated directly on the mesh types, making the `gf_mesh` template obsolete.
+The meshes were further regrouped in the `triqs::mesh` namespace with some renamings:
+
+* `gf_mesh<imfreq>` -> `mesh::imfreq`
+* `gf_mesh<cyclic_lattice>` -> `mesh::cyclat`
+* `gf_mesh<brillouin_zone>` -> `mesh::brzone`
+* `gf_mesh<cartesian_product<..>>` -> `mesh::prod<..>`
+
+We have kept aliases for backward compatibility.
+
+This means for example that 
 
 ```cpp
  auto m = gf_mesh<imfreq>{....};
  auto g = gf<imfreq>{m, {1,1}};
 ```
 
-Now we have simply
+should now read
 
 ```cpp
  auto m = mesh::imfreq{....};
  auto g = gf<imfreq>{m, {1,1}}; // as before
 ```
 
-* Due to a name collision, the mesh over brillouin_zone has been renamed `brzone`.
-  So now : 
+The `triqs::lattice::brillouin_zone` was previously used both as the Brillouin Zone domain type
+and as the tag for the associated mesh. If your code uses this class you should replace
+those occurances where the latter meaning applies with `mesh::brzone`. In short:
 
-  * brillouin_zone is the triqs::lattice::brillouin_zone representing the Brillouin Zone
-  * triqs::mesh::brzone is the mesh on such object
+* triqs::lattice::brillouin_zone represents the Brillouin Zone domain
+* triqs::mesh::brzone is the mesh on this domain
 
-Before : 
+Before: 
 ```cpp
   auto m = gf_mesh<brillouin_zone>{....};
   auto g = gf<cartesian_product<brillouin_zone,imfreq>> {{m, ...}, ....}; 
 ```
-Now : 
 
+Now: 
 ```cpp
   auto m = mesh::brzone{....};
   auto g = gf<prod<brzone,imfreq>>{{m, ...}, ....};
 ```
 
-* Backward compatibility help : 
+Backward compatibility help: 
 
  * gf_mesh<T> is aliased to T, with deprecation.
-
- * Regex Vim to replace the gf_mesh : 
-  ```
-  :bufdo %s/gf_mesh<\(.\{-}\)>/mesh::\1/gce|w 
-  ```
+ * [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3) mentioned above
  
-* brillouin_zone : the codes have to be modified manually (Find/Replace with confirm. Replace only in gf/gf_mesh template).
 
- * Aliases are provided for cartesian_product (renamed prod), cyclic_lattice (renamed torus)
-   but it does not take care of the direct construction, which has to be modified. 
+### Move multi-array to TRIQS/nda library
 
+We have moved the multi-array functionality out of the TRIQS library
+and into the [TRIQS/nda](https://github.com/triqs/nda) repository.
+TRIQS/nda is a standalone multi-array library that does not depend
+on any components of triqs.
+
+Note that most of the classes and functions previously available
+in the `triqs::arrays` namespace are now defined in the `nda` namespace.
+The relevant header files for nda are
+
+* `nda/nda.hpp` for array, matrix, vector, their view classes, arithmetic ops and algorithms
+* `nda/h5.hpp` for hdf5 read and write functions
+* `nda/mpi.hpp` for mpi functionalities
+* `nda/linalg.hpp` for linear algebra functions
+
+### Deprecate use of string indices for Green functions
+
+In previous versions of TRIQS it was possible to use string indices when accessing
+the matrix structure of a Green function in Python
+
+```python
+g = GfReFreq(indices = ['s','d'], window = (-2, 2), name = "s+d")
+g['d','d'] << Omega - 1.0
+g['d','s'] << V
+g['s','d'] << V
+g['s','s'] << Omega - 2.0
 ```
-   auto m = cartesian_product {mesh1, mesh2};
+
+We are deprecating this feature due to lack of use and the implementational
+complexity that this introduces in the library. Integer indices should be used instead
+
+```python
+g = GfReFreq(target_shape = (2, 2), window = (-2, 2), name = "s+d")
+g[0, 0] << Omega - 1.0
+g[0, 1] << V
+g[1, 0] << V
+g[1, 1] << Omega - 2.0
 ```
-   can be rewritten simply
-```
-   auto m = mesh1 * mesh2; // Simpler
-   auto m = prod {mesh1, mesh2}; // Ok too.
-```
+
+### Change in gf_struct objects
+
+The aforementioned deprectation goes along with a change in the objects describing the structure
+of block-diagonal green functions, in our documentation and tutorials often called `gf_struct`.
+
+Python expressions of the kind
+
+``gf_struct = [ ("up", [0, 1]), ("dn" : [0, 1]) ]``
+
+should be replaced by
+
+``gf_struct = [ ("up", 2), ("dn", 2) ]``
+
+In other words, we ask that you only provide the linear matrix size of each block instead of
+a list of indices. Correspondingly, the C++ type `triqs::gfs::gf_struct_t` has changed from
+
+`std::vector<std::pair<std::string,std::vector<std::variant<int, std::string>>>>`
+
+to
+
+`std::vector<std::pair<std::string,long>>`
+
+Note that we provide backward compatibility layers in most effected functions and in particular
+in the interfaces of our applications TRIQS/cthyb, TRIQS/tprf and TRIQS/dft_tools.
+
+### triqs::stat Rework
+
+TBW
+
+### Bath discretization function
+
+TBW
+
+### Jenkins Sanitizer Checks
+
+We have extended our [Jenkins](https://jenkins.flatironinstitute.org/job/TRIQS/) CI setup to run the tests of TRIQS and compiled applications with
+LLVM sanitizer checks enabled. In particular we make use of the [AdressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html) and the
+[UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) to catch various kinds of memory errors
+(e.g. out of bounds memory access) and undefined behavior during testing. This helps us to catch dangerous bugs early.
+
+### New website theme
+
+TBW
+
+### TightBinding and TBLattice improvements
+
+We have improved the user interface for the tight-binding objects both in C++ and Python.
+This effects the C++ class `triqs::lattice::tight_binding` as well as the Python classes
+`triqs.lattice.TightBinding` and `triqs.lattice.TBLattice`. All classes now provide
+member functions `fourier(k)` and `dispersion(k)` to calculate `h(k)` and its energy spectrum
+for single k-points, arrays of k-points and even on a given k-point mesh.
+
+We have further added additional Python utility functions `triqs.lattice.utils`
+* `TB_from_wannier90`: Create TBLattice object from a wannier90 output file
+* `TB_from_pythTB`: Create TBLattice object from [pythtb](https://www.physics.rutgers.edu/pythtb/).tb_model
+* `k_space_path`: Generate a Brillouin Zone path and relevant plotting information
+
+### Require C++20 capable compiler
+
+TRIQS 3.1.0 uses features from the [C++20](https://en.cppreference.com/w/cpp/20) standard.
+To compile this release from source, a modern compiler is required. In particular we support
+
+* g++ 10.0 and higher
+
+* clang 13.0 and higher
+
+* IntelLLVM (icx) 2021.3.0 and higher
+
+
+See below for an itemized list of changes in this release
+
+### General
+* Major update to port_to_triqs3 porting script including mesh, lattice and nda changes
+* Allow compilation with IntelLLVM One-API Compiler
+* Add discretize bath function for Delta_tau and Delta_iw objects (#802)
+* Add operator utility functions: filter_op, quadratic_terms, quartic_terms, block_matrix_from_op, op_from_block_matrix
+* Generalize triqs::utility::kronecker for arbitrary arithmetic types and refs
+* Protect pade function against invalid n_points arguments
+* Extend table_imports in __init__.py to include mesh namespace
+* Fix printing of cxxflags and ldflags in triqs++ compiler wrapper
+* Fix numpy.int/float/complex deprecation warnings
+* Replace REQUIRES macro with requires
+* Fix various compiler warnings
+
+### atom_diag
+* Fix #833: Incorrect transform to eigenbasis in get_op_mat function
+* Fix #825: quantum_number_eigenvalues returned incorrect values when constraining the number of particles
+* Expose atom_diag constructor for limiting particle subspaces to python
+* Provide access to fock_states and unitary matrix by subspace without copy
+* Implement autopartition with additionnal effective hybridization term in block determination of atom_diag.
+* Adjust atomdiag implementation after change in convention of nda::linalg::eigenelements
+* Add function get_subspace_dims to atom_diag
+* Expose block-structure constraining constructor to python
+* Allow broadcasting of the eigensystem_t
+* Smaller code cleanups
+
+### cmake
+* Bump cmake version requirement to 3.12.4
+* Bump TRIQS version number to 3.1.0
+* Require c++20 standard and specify through target_compile_features(... cxx_std_20)
+* Bump compiler version checks to guarantee gcc>=10 or clang>=13
+* Install triqsvars.sh into share/triqs and not share, update doc
+* Switch Build_Deps default from IfNotFound to Always
+* Add dependency on nda version 1.1 and adjust triqs build accordingly
+* Bump version requirements for mpi, itertools and h5 to 1.1
+* Allow use of IntelLLVM compiler starting version 2021.3
+* Do not install triqsvars.sh when install prefix is /usr/local
+* Fix issues with build option -DPythonSupport=OFF
+* No longer set CPLUS_INCLUDE_PATH and LIBRARY_PATH in triqsvars.sh, already done through cmake target
+* Force-set imported targets to global also in TRIQS.config.cmake.in
+* Fix warnings in FindMathJax.cmake and FindSphinx.cmake
+* Use googletest main branch (live-at-head) instead of release-1.10.0
+* Remove use of linktime optimizations and cleanup IPO section in CMakeLists.txt
+* Treat all cmake options before adding subdirectories
+* Fail if Build_Documentation AND NOT PythonSupport
+* In extract_flags.cmake inspect INTERFACE_COMPILE_FEATURES and add -std=.. flags accordingly
+* Use find_XXX(.. HINTS ..) over find_XXX(.. PATHS ..) to not prioritize system dirs
+
+### cpp2py
+* Fix py_converter<gf> should always return a gf, cleanup in gf converters
+* Require C order for conversion from numpy to nda::array and vice versa
+
+### doc
+* Change website theme to sphinx rtd
+* Update install instructions extend conda installation instruction (#796)
+* Remove doc for triqs::arrays and old statistic tool
+* Update documentation examples after triqs mesh rework
+* Merge 3.0.1 and 3.0.2 changelog
+* For osx install numpy, scipy, mpi4py through pip3 instead of brew
+* Remove first_mesh(...) function
+* Fix various rst errors and warnings
+* Various smaller doc improvements
+* Make sure to install ttf, woff2 and eot files
+
+### gf
+* Change gf_struct_t to vector<pair<string, long>>
+* Add h5 backward compatibility layer through h5_read_gf_struct function
+* Extended tests of the multivar clef functionality
+* Fix density function for GfReFreq resulting in non hermitian density matrix (#829)
+* Add helper function imag(gf) + test
+* Add block_gf constructor from mesh and std::vector<std::integral>
+* Add function block_sizes to block_gf and block_gf_view
+* Wrap make_gf_from_fourier(block_gf, n_iw / n_tau) to python
+* Fix issue in block[2]_gf scalar arithmetic + test
+* Fix python gf multiplication for nondiagonal matrix shapes + Test
+* Fix make_real_in_tau and is_gf_real_in_tau for matrix_valued Gfs
+* Add test for on comparison of gf with transpose of self
+* Protect evaluate template function to take only gf types
+* Replace conj_r by conj to match changes in nda
+* No longer use mako.template for block_gf implementation
+* Bugfix: Fix __getitem__ and __setitem__ for rank1 Gfs
+* Check that block sizes provided in gf_struct are of type int
+* Fix issue in operator= for default constructed block2_gf
+* Adjust set_operator_structure function to gf_struct changes and and backward compat layer
+* Extend gf_base test to cover slicing in combination with gf evaluation
+* Add function fix_gf_struct_type for the conversion of old gf_struct objects
+
+### jenkins
+* Use gcc-10 or LLVM 13 in all Ubuntu build environments
+* Add LLVM sanitizer instructed build for TRIQS and all applications
+* Disable bionic and centos builds
+* Use gcc-11 for OSX builds
+* Add nda dependency build trigger
+* For cpp2py/itertools/mpi/h5 trigger builds only through nda
+* Increase parallelism to -j4
+* Install rtd-theme sphinx and nbsphinx through apt
+* Install libomp in all Docker build environments
+* Ignore build directories in dockerignore
+* In packaging/Dockerfile.msan add msan instructed zlib and use it in libhdf5
+* Set MSAN_OPTIONS in packaging/Dockerfile.msan
+* In MSAN image fix build of libcxx / libcxxabi and bump libevent / openmpi versions
+* Consistently install libgfortran5 over libgfortran4 in ubuntu Dockerfiles
+* Update Ubuntu version in Dockerfile.ubuntu-clang to 21.04 to resolve sphinx comp issues
+* In Dockerfile.sanitize disable asan alloc_dealloc_mismatch to avoid libc++-13 false positive
+* Install libunwind-dev for ubuntu-clang doc building environment
+* Remove ambiguous Dockerfile.ubuntu-focal-clang
+* Set OMP_NUM_THREADS=2
+* Update osx python path for 3.9
+* More explicit node allocation
+* Add ansiColor support
+
+### lattice
+* Fix mesh::brzone interpolation for non-orthogonal basis vectors, extend python and c++ tests
+* Rework cluster_mesh API and clean-up implementation
+* Add function fourier(k) to tight_binding to calculate h_k
+* Add function dispersion(k) to tight_binding to calculate eigenvalues of h_k
+* Expose tighbinding functions fourier(k) and dispersion(k) to python
+* Add displ_vec and overlap_mat_vec member functions to tight_binding and add python bindings
+* Make all triqs.lattice objects h5read/writeable, printable, comparable
+* Add TBLattice parser for pythTB and add test
+* Add TBLattice parser for wannier90 and add test
+* Add TBLattice.get_kmesh(n_k) and TBLattice.get_rmesh(n_k) functions
+* Document/Cleanup TBLattice and deprecate inconsistent API, Extend bravais_lattice interface
+* Add function k_space_path to triqs.lattice.utils + test
+* Fix error in TBSuperLattice `__repr__function`
+* Extend lattice_utils.py test with np.linalg.eigvalsh check of dispersion
+* Change type of periodization_matrix from matrix<int> to matrix<long>
+* Expose brillouin_zone.units as property to python and not as function
+* Merge tprf extensions to TBLattice and TBSuperLattice
+* Make cross-construction between bravais_lattice and brillouin_zone explicit
+* For both brillouin_zone and bravais_lattice use ndim instead of dim to get the number of dimensions
+* Update python bindings for MeshBrZone and MeshCycLat
+* Fix C order problems in SumK
+
+### mc_generic
+* Use mpi::monitor to properly stop on rank-selective exception
+* Simplify logic flow in mc_generic exception logic
+* Revert to using report stream for mc_generic status message
+* Clear move statistics in the beginning of each call to run(...)
+* Fix: In clear_statistics of move_set, properly recurse into other move_sets
+* Add functions to clear list of measurements
+
+### mesh
+* In linear mesh set del to zero for meshes with n_pts==1
+* Introduce MeshBrZone and MeshCycLat in Python
+* Use abbreviation brzone instead of b_zone, 
+* Regroup all mesh types and template gf directly on the mesh
+* Simplify return type for get_interpolation
+* Rewrite and cleanup the multivar evaluation
+* Regroup evaluation code in one file
+* Rename matsubara_mesh_opt to imfreq::option
+* Remove size_of_components from concept
+* Remove foreach
+
+### mpi
+* Make sure that the triqs.utility.mpi functionality works without mpi environment
+* FIX: Do not specify root argument for call to mpi::all_reduce
+* In test main function call initialize mpi only when mpi::has_env
+
+### nda
+* Replace macros.hpp by nda/macros.hpp 
+* Remove arrays, clef, no-built example, minivec, old statistics
+* Generic make_regular implementation is provided by nda
+* Change range_all to nda::range::all_t
+* Consistently use nda:: over arrays::
+* Replace any occurance of clef::_ph by clef::placeholder to account for renaming in nda
+* Replace any clef::placeholder_prime by clef::placeholder
+
+### stat
+* Add missing conversion from complex to real in mean_error.hpp
+* Correct module name in triqs/stat/histograms_desc.py
+* Fix sqrt usage in jacknife.hpp
+* Move stacked_array to nda namespace
+* In autocorr and jacknife test use relative double accuracy check, Adjust for IntelLLVM compat
+* Fix type inconsistency in mpi_reduce_MQ
+* Fix type inconsistency in log_bin_errors_all_reduce
+* Make rng based autocorr test compatible with libstdcxx
+* fix in MQ reduce type and test
+* fix log_bin_errors_all_reduce pivot index
+* internal simplification of all_reduce log bins
+* name change to log_bin_errors_all_reduce
+* fix test for single mpi thread
+* return counts in log_bin_errors
+* adjust double accuracy in test
+* MPI reduce log errors of unequal length
+* make mpi reducer for M,Q data
+* fix log_bin_error_mpi
+* quickfix for mpi reduction of log binner
+* update test to use complex literal
+* fix fragile move construct in lin_binner
+* Replace conj_r by conj, use nda::real over std::real, add make_real and get_real_t
+* add make_real function for types
+* start fixing real(M[0]) issues
+* nda include fix
+* histogram update for new nda library
+* run port_to_triqs3 on stat files
+* fix rebase code error
+* adjusts golden ratio test
+* adjust precision on test
+* Clean  hdf5
+* add stat doc and examples
+* accumulator << now return *this to chain; clean up stat tests
+* reworks log_binning
+* fixes casting to real issue in log_bin; adds tests
+* Documentation
+* Add documentation
+* Clang format
+* Fix mpi jacknife
+* Fix mean_err in mpi and test
+* updates doc descriptions and adds examples for docs
+* improves tests and fixes bug in mean_error_mpi
+* adds documentation
+* adds documentation for stat; moves golden_ration test
+* propagates change of statistics to stat folder rename
+* renames statistics folders to stat
+* updates in code documentation
+* updates histograms.hpp comments for new doc generator
+* updates stat.hpp header
+* renames general header statistics.hpp to stat.hpp
+* change namespace of histogram
+* fixes include to accumulator_gold_test
+* separates out mean_error functions; adds docs
+* reworks entire accumulator class:
+* fixes mpi & intertool includes and naming
+
 
 ## Version 3.0.2
 
@@ -1164,6 +1511,7 @@ Deprecation
 ### c++2py
 
 * Support for rich comparison methods.
+* Make sure to include array converter in gf converter
 * New C++ attribute `ignore_in_python` that prevents a class method from wrapping in Python.
 * One can use two special line prefixes, `type:` and `default:` when documenting a member of the parameter class. They allow to override the corresponding fields in the generated table.
 * Converters for `unsigned int`, `unsigned long` and `unsigned long long`.
