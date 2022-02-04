@@ -53,17 +53,18 @@ namespace triqs {
       indices_t indices;
       // Order: dagger < non dagger, and then indices
       // Example: c+_1 < c+_2 < c+_3 < c_3 < c_2 < c_1
-      friend bool operator<(canonical_ops_t const &a, canonical_ops_t const &b) {
-        if (a.dagger != b.dagger) return (a.dagger > b.dagger);
-        if (a.dagger) // a.indices < b.indices
-          return std::lexicographical_compare(a.indices.begin(), a.indices.end(), b.indices.begin(), b.indices.end());
-        else // b.indices < a.indices
-          return std::lexicographical_compare(b.indices.begin(), b.indices.end(), a.indices.begin(), a.indices.end());
+      auto operator<=>(canonical_ops_t const &b) const {
+        if (dagger != b.dagger) return !dagger <=> !b.dagger; // c+ < c
+        auto three_way_cmp = [](auto &is, auto &js) {
+          if (is == js) return std::strong_ordering::equal;
+          return (is < js) ? std::strong_ordering::less : std::strong_ordering::greater;
+        };
+        return dagger ? three_way_cmp(indices, b.indices) : three_way_cmp(b.indices, indices);
+
+        // FIXME Replace by (clang14+)
+        //return dagger ? indices <=> b.indices : b.indices <=> indices;
       }
-      friend bool operator>(canonical_ops_t const &a, canonical_ops_t const &b) { return b < a; }
-      friend bool operator==(canonical_ops_t const &a, canonical_ops_t const &b) {
-        return (a.dagger == b.dagger && a.indices.size() == b.indices.size() && std::equal(a.indices.begin(), a.indices.end(), b.indices.begin()));
-      }
+      bool operator==(canonical_ops_t const &b) const { return (*this <=> b) == 0; }
 
       template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &dagger &indices; }
     };

@@ -62,12 +62,8 @@ namespace triqs {
       time_pt &operator=(double v) = delete;
 
       /// Comparisons (using integer, so it is safe)
-      bool operator==(const time_pt &tp) const { return n == tp.n; }
-      bool operator!=(const time_pt &tp) const { return n != tp.n; }
-      bool operator<(const time_pt &tp) const { return n < tp.n; }
-      bool operator<=(const time_pt &tp) const { return n <= tp.n; }
-      bool operator>(const time_pt &tp) const { return n > tp.n; }
-      bool operator>=(const time_pt &tp) const { return n >= tp.n; }
+      auto operator<=>(time_pt const &tp) const { return n <=> tp.n; }
+      bool operator==(time_pt const &tp) const { return n == tp.n; }
 
       /// adding and substracting is cyclic on [0, beta]
       inline friend time_pt operator+(time_pt const &a, time_pt const &b) {
