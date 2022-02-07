@@ -16,7 +16,7 @@ TRIQS Version 3.1.0 is a release that
 * introduces a new website theme
 * fixes several library issues
 
-We thank all the people who have contributed to this release: Weh Andreas, Maxime Charlebois, Philipp D, Philipp Dumitrescu, Alexander Hampel, Jonathan Karp, Igor Krivenko, Henri Menke, Olivier Parcollet, Markus Richter, Dylan Simon, Hugo U. R. Strand, Nils Wentzell, Sophie Beck, Rok Žitko
+We thank all the people who have contributed to this release: Weh Andreas, Maxime Charlebois, Philipp Dumitrescu, Alexander Hampel, Jonathan Karp, Igor Krivenko, Henri Menke, Olivier Parcollet, Markus Richter, Dylan Simon, Hugo U. R. Strand, Nils Wentzell, Sophie Beck, Rok Žitko
 
 
 ### Porting Script
@@ -33,73 +33,6 @@ chmod u+x port_to_triqs3
 
 Make sure to review all changes before you commit them.
 If you run into problems porting your application to this release, feel free to contact us by opening a [discussion](https://github.com/TRIQS/triqs/discussions) on github.
-
-### Green function meshes (C++)
-
-The Green functions are now templated directly on the mesh types, making the `gf_mesh` template obsolete.
-The meshes were further regrouped in the `triqs::mesh` namespace with some renamings:
-
-* `gf_mesh<imfreq>` -> `mesh::imfreq`
-* `gf_mesh<cyclic_lattice>` -> `mesh::cyclat`
-* `gf_mesh<brillouin_zone>` -> `mesh::brzone`
-* `gf_mesh<cartesian_product<..>>` -> `mesh::prod<..>`
-
-We have kept aliases for backward compatibility.
-
-This means for example that 
-
-```cpp
- auto m = gf_mesh<imfreq>{....};
- auto g = gf<imfreq>{m, {1,1}};
-```
-
-should now read
-
-```cpp
- auto m = mesh::imfreq{....};
- auto g = gf<imfreq>{m, {1,1}}; // as before
-```
-
-The `triqs::lattice::brillouin_zone` was previously used both as the Brillouin Zone domain type
-and as the tag for the associated mesh. If your code uses this class you should replace
-those occurances where the latter meaning applies with `mesh::brzone`. In short:
-
-* triqs::lattice::brillouin_zone represents the Brillouin Zone domain
-* triqs::mesh::brzone is the mesh on this domain
-
-Before: 
-```cpp
-  auto m = gf_mesh<brillouin_zone>{....};
-  auto g = gf<cartesian_product<brillouin_zone,imfreq>> {{m, ...}, ....}; 
-```
-
-Now: 
-```cpp
-  auto m = mesh::brzone{....};
-  auto g = gf<prod<brzone,imfreq>>{{m, ...}, ....};
-```
-
-Backward compatibility help: 
-
- * gf_mesh<T> is aliased to T, with deprecation.
- * [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3) mentioned above
- 
-
-### Move multi-array to TRIQS/nda library
-
-We have moved the multi-array functionality out of the TRIQS library
-and into the [TRIQS/nda](https://github.com/triqs/nda) repository.
-TRIQS/nda is a standalone multi-array library that does not depend
-on any components of triqs.
-
-Note that most of the classes and functions previously available
-in the `triqs::arrays` namespace are now defined in the `nda` namespace.
-The relevant header files for nda are
-
-* `nda/nda.hpp` for array, matrix, vector, their view classes, arithmetic ops and algorithms
-* `nda/h5.hpp` for hdf5 read and write functions
-* `nda/mpi.hpp` for mpi functionalities
-* `nda/linalg.hpp` for linear algebra functions
 
 ### Deprecate use of string indices for Green functions
 
@@ -149,6 +82,72 @@ to
 
 Note that we provide backward compatibility layers in most effected functions and in particular
 in the interfaces of our applications TRIQS/cthyb, TRIQS/tprf and TRIQS/dft_tools.
+
+### Green function meshes (C++)
+
+The Green functions are now templated directly on the mesh types, making the `gf_mesh` template obsolete.
+The meshes were further regrouped in the `triqs::mesh` namespace with some renamings:
+
+* `gf_mesh<imfreq>` -> `mesh::imfreq`
+* `gf_mesh<cyclic_lattice>` -> `mesh::cyclat`
+* `gf_mesh<brillouin_zone>` -> `mesh::brzone`
+* `gf_mesh<cartesian_product<..>>` -> `mesh::prod<..>`
+
+We have kept aliases for backward compatibility.
+
+This means for example that
+
+```cpp
+ auto m = gf_mesh<imfreq>{....};
+ auto g = gf<imfreq>{m, {1,1}};
+```
+
+should now read
+
+```cpp
+ auto m = mesh::imfreq{....};
+ auto g = gf<imfreq>{m, {1,1}}; // as before
+```
+
+The `triqs::lattice::brillouin_zone` was previously used both as the Brillouin Zone domain type
+and as the tag for the associated mesh. If your code uses this class you should replace
+those occurances where the latter meaning applies with `mesh::brzone`. In short:
+
+* triqs::lattice::brillouin_zone represents the Brillouin Zone domain
+* triqs::mesh::brzone is the mesh on this domain
+
+Before:
+```cpp
+  auto m = gf_mesh<brillouin_zone>{....};
+  auto g = gf<cartesian_product<brillouin_zone,imfreq>> {{m, ...}, ....};
+```
+
+Now:
+```cpp
+  auto m = mesh::brzone{....};
+  auto g = gf<prod<brzone,imfreq>>{{m, ...}, ....};
+```
+
+Backward compatibility help:
+
+ * gf_mesh<T> is aliased to T, with deprecation.
+ * [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3) mentioned above
+
+### Move multi-array into TRIQS/nda library
+
+We have moved the multi-array functionality out of the TRIQS library
+and into the [TRIQS/nda](https://github.com/triqs/nda) repository.
+TRIQS/nda is a standalone multi-array library that does not depend
+on any components of triqs.
+
+Note that most of the classes and functions previously available
+in the `triqs::arrays` namespace are now defined in the `nda` namespace.
+The relevant header files for nda are
+
+* `nda/nda.hpp` for array, matrix, vector, their view classes, arithmetic ops and algorithms
+* `nda/h5.hpp` for hdf5 read and write functions
+* `nda/mpi.hpp` for mpi functionalities
+* `nda/linalg.hpp` for linear algebra functions
 
 ### triqs::stat Rework
 
@@ -268,7 +267,7 @@ See below for an itemized list of changes in this release
 * Add block_gf constructor from mesh and std::vector<std::integral>
 * Add function block_sizes to block_gf and block_gf_view
 * Wrap make_gf_from_fourier(block_gf, n_iw / n_tau) to python
-* Fix issue in block[2]_gf scalar arithmetic + test
+* Fix issue in block_gf and block2_gf scalar arithmetic + test
 * Fix python gf multiplication for nondiagonal matrix shapes + Test
 * Fix make_real_in_tau and is_gf_real_in_tau for matrix_valued Gfs
 * Add test for on comparison of gf with transpose of self
@@ -340,7 +339,7 @@ See below for an itemized list of changes in this release
 ### mesh
 * In linear mesh set del to zero for meshes with n_pts==1
 * Introduce MeshBrZone and MeshCycLat in Python
-* Use abbreviation brzone instead of b_zone, 
+* Use abbreviation brzone instead of b_zone,
 * Regroup all mesh types and template gf directly on the mesh
 * Simplify return type for get_interpolation
 * Rewrite and cleanup the multivar evaluation
@@ -355,70 +354,13 @@ See below for an itemized list of changes in this release
 * In test main function call initialize mpi only when mpi::has_env
 
 ### nda
-* Replace macros.hpp by nda/macros.hpp 
+* Replace macros.hpp by nda/macros.hpp
 * Remove arrays, clef, no-built example, minivec, old statistics
 * Generic make_regular implementation is provided by nda
 * Change range_all to nda::range::all_t
 * Consistently use nda:: over arrays::
 * Replace any occurance of clef::_ph by clef::placeholder to account for renaming in nda
 * Replace any clef::placeholder_prime by clef::placeholder
-
-### stat
-* Add missing conversion from complex to real in mean_error.hpp
-* Correct module name in triqs/stat/histograms_desc.py
-* Fix sqrt usage in jacknife.hpp
-* Move stacked_array to nda namespace
-* In autocorr and jacknife test use relative double accuracy check, Adjust for IntelLLVM compat
-* Fix type inconsistency in mpi_reduce_MQ
-* Fix type inconsistency in log_bin_errors_all_reduce
-* Make rng based autocorr test compatible with libstdcxx
-* fix in MQ reduce type and test
-* fix log_bin_errors_all_reduce pivot index
-* internal simplification of all_reduce log bins
-* name change to log_bin_errors_all_reduce
-* fix test for single mpi thread
-* return counts in log_bin_errors
-* adjust double accuracy in test
-* MPI reduce log errors of unequal length
-* make mpi reducer for M,Q data
-* fix log_bin_error_mpi
-* quickfix for mpi reduction of log binner
-* update test to use complex literal
-* fix fragile move construct in lin_binner
-* Replace conj_r by conj, use nda::real over std::real, add make_real and get_real_t
-* add make_real function for types
-* start fixing real(M[0]) issues
-* nda include fix
-* histogram update for new nda library
-* run port_to_triqs3 on stat files
-* fix rebase code error
-* adjusts golden ratio test
-* adjust precision on test
-* Clean  hdf5
-* add stat doc and examples
-* accumulator << now return *this to chain; clean up stat tests
-* reworks log_binning
-* fixes casting to real issue in log_bin; adds tests
-* Documentation
-* Add documentation
-* Clang format
-* Fix mpi jacknife
-* Fix mean_err in mpi and test
-* updates doc descriptions and adds examples for docs
-* improves tests and fixes bug in mean_error_mpi
-* adds documentation
-* adds documentation for stat; moves golden_ration test
-* propagates change of statistics to stat folder rename
-* renames statistics folders to stat
-* updates in code documentation
-* updates histograms.hpp comments for new doc generator
-* updates stat.hpp header
-* renames general header statistics.hpp to stat.hpp
-* change namespace of histogram
-* fixes include to accumulator_gold_test
-* separates out mean_error functions; adds docs
-* reworks entire accumulator class:
-* fixes mpi & intertool includes and naming
 
 
 ## Version 3.0.2
