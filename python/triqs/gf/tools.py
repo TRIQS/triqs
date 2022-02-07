@@ -343,8 +343,8 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{i \omega_n}^{N} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
     and for MeshImTime
     .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{\tau}^{N} | \Delta^{disc} (\tau) - \Delta (\tau) |^2 \right]^{\frac{1}{2}}
-    This minimization is performed using scipy.optimize.minimize with the
-    Nelder-Mead algorithm with the given tolerance.
+    This minimization is performed with the given tolerance using scipy.optimize.minimize
+    or the scipy.optimize.basinhopping frontend.
 
     Parameters
     ----------
@@ -369,7 +369,8 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
     complx : bool, default=False
         Allow the hoppings V to be complex
     method : string, default=BFGS
-        Method for minimizing the function in scipy minimize
+        Method for minimizing the function.
+        Should be one of 'BFGS', 'Nelder-Mead' and 'basinhopping'.
 
     Returns
     -------
