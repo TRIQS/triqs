@@ -111,7 +111,7 @@ should now read
 
 The `triqs::lattice::brillouin_zone` was previously used both as the Brillouin Zone domain type
 and as the tag for the associated mesh. If your code uses this class you should replace
-those occurances where the latter meaning applies with `mesh::brzone`. In short:
+those occurrences where the latter meaning applies with `mesh::brzone`. In short:
 
 * triqs::lattice::brillouin_zone represents the Brillouin Zone domain
 * triqs::mesh::brzone is the mesh on this domain
@@ -155,7 +155,21 @@ TBW
 
 ### Bath discretization function
 
-TBW
+To fit a given hybridization function, either in imaginary frequency or time we provide now a bath discretization function (triqs.gf.tools.discretize_bath).
+Given a input `delta_in` and a number of bath sites `Nb` the function will fit `Nb` bath energies and hoppings on the input Green function mesh.
+The optimization is performed using scipy optimize minimizer BFGS (+basin hopping) or Nelder-Mead. More information can be found in the doc string.
+
+We also added a function `make_delta` in `triqs.gf.tools` to construct a hybridization function on the imaginary axis for given hoppings and bath energies.
+
+features of `discretize_bath`:
+* allow to fit BlockGf objects, with blocks of arbitrary size
+* allow to fit complex hybridization functions
+* fit is directly performed on `iw` or `tau` depending on the input
+* Nelder-Mead, or gradient based minimizer BFGS and basin hopping BFGS from scipy
+* input guesses can be provided either as complete guess for the hoppings and / or energies, or as a single value for all hoppings
+* if no guess for the hoppings is passed, the first guess is constructed from:
+  `lim_{iw->inf} iw * Delta(iw)` or from `-Delta(0) - Delta(beta)` correspondingly.
+
 
 ### Jenkins Sanitizer Checks
 
@@ -166,7 +180,11 @@ LLVM sanitizer checks enabled. In particular we make use of the [AdressSanitizer
 
 ### New website theme
 
-TBW
+We changed the sphinx theme of the documentation to the [read the docs theme](https://sphinx-rtd-theme.readthedocs.io/).
+The navigation of the website is done with a vertical sidebar on the left.
+Additionally we fixed various broken references in the code manual, that sphinx could not build.
+This theme is also deployed for all other triqs applications in version 3.1.0.
+If you should find any broken websites please open an [issue](https://github.com/TRIQS/triqs/issues).
 
 ### TightBinding and TBLattice improvements
 
@@ -175,6 +193,7 @@ This effects the C++ class `triqs::lattice::tight_binding` as well as the Python
 `triqs.lattice.TightBinding` and `triqs.lattice.TBLattice`. All classes now provide
 member functions `fourier(k)` and `dispersion(k)` to calculate `h(k)` and its energy spectrum
 for single k-points, arrays of k-points and even on a given k-point mesh.
+We also deprecate the function `hopping`, which is now equivalent to `fourier` due to its confusing name.
 
 We have further added additional Python utility functions `triqs.lattice.utils`
 * `TB_from_wannier90`: Create TBLattice object from a wannier90 output file
@@ -213,7 +232,7 @@ See below for an itemized list of changes in this release
 * Fix #825: quantum_number_eigenvalues returned incorrect values when constraining the number of particles
 * Expose atom_diag constructor for limiting particle subspaces to python
 * Provide access to fock_states and unitary matrix by subspace without copy
-* Implement autopartition with additionnal effective hybridization term in block determination of atom_diag.
+* Implement autopartition with additional effective hybridization term in block determination of atom_diag.
 * Adjust atomdiag implementation after change in convention of nda::linalg::eigenelements
 * Add function get_subspace_dims to atom_diag
 * Expose block-structure constraining constructor to python
