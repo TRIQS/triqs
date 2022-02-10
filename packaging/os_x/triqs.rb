@@ -1,8 +1,8 @@
 class Triqs < Formula
   desc "Toolbox for Research on Interacting Quantum Systems"
   homepage "https://triqs.github.io"
-  url "https://github.com/TRIQS/triqs/archive/2.1-rc1.tar.gz"
-  sha256 "461e9493616bb5b9c26227914ee292d6c3ffad8841238668449633724fb7d2e5"
+  url "https://github.com/TRIQS/triqs/releases/download/3.0.2/triqs-3.0.2.tar.gz"
+  sha256 "0420d214f66436b2652d0bdd17c41e96f72d7eacff636a88c1649f18a585711c"
   head "https://github.com/TRIQS/triqs.git"
 
   # doi "10.1016/j.cpc.2015.04.023"
@@ -14,15 +14,14 @@ class Triqs < Formula
   depends_on "gmp"
   depends_on "fftw"
   depends_on "open-mpi"
-  depends_on "python@2"
+  depends_on "python"
   depends_on "scipy"
   depends_on "numpy"
   depends_on "pkg-config" => :run
 
   def install
     system "pip", "install", "--user", "--upgrade", "pip"
-    system "pip", "install", "--user", "--upgrade", "--force-reinstall", "--no-binary=h5py", "h5py"
-    system "pip", "install", "--user", "--upgrade", "--force-reinstall", "--no-binary=mpi4py", "mpi4py"
+    system "pip", "install", "--user", "--upgrade", "mpi4py"
     system "pip", "install", "--user", "--upgrade", "matplotlib"
     system "pip", "install", "--user", "--upgrade", "mako"
     system "pip", "install", "--user", "--upgrade", "jupyter"
@@ -46,6 +45,6 @@ class Triqs < Formula
   end
 
   test do
-    system "python -c 'import pytriqs'"
+    system "python -c 'import triqs'"
   end
 end
