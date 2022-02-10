@@ -22,6 +22,3 @@ install(TARGETS meshes gf_fnt gf_factories wrapped_aux DESTINATION ${TRIQS_PYTHO
 
 add_subdirectory(backwd_compat)
 add_subdirectory(plot)
-
-# Backward compatibility only
-add_subdirectory(local)

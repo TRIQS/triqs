@@ -8,7 +8,6 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/mpi.py
   ${CMAKE_CURRENT_BINARY_DIR}/mpi_mpi4py.py
   ${CMAKE_CURRENT_BINARY_DIR}/mpi_nompi.py
-  ${CMAKE_CURRENT_BINARY_DIR}/mpi_boost.py
   ${CMAKE_CURRENT_SOURCE_DIR}/redirect.py
   ${CMAKE_CURRENT_SOURCE_DIR}/capture_stdout.py
   ${CMAKE_CURRENT_SOURCE_DIR}/comparison_tests.py
