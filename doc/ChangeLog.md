@@ -219,6 +219,7 @@ See below for an itemized list of changes in this release
 * Allow compilation with IntelLLVM One-API Compiler
 * Add discretize bath function for Delta_tau and Delta_iw objects (#802)
 * Add operator utility functions: filter_op, quadratic_terms, quartic_terms, block_matrix_from_op, op_from_block_matrix
+* Remove deprecated python modules triqs.archive, triqs.gf.local, triqs.utility.mpi_boost
 * Generalize triqs::utility::kronecker for arbitrary arithmetic types and refs
 * Protect pade function against invalid n_points arguments
 * Extend table_imports in __init__.py to include mesh namespace

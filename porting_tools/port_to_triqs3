@@ -9,9 +9,10 @@ import re
 ignore_lst = [".git/", "port.py"]
 
 repl_dict = {
-        "pytriqs\.archive": "h5",
-        "pytriqs\.archive\.hdf_archive": "h5.archive",
         "pytriqs": "triqs",
+        "triqs\.gf\.local": "triqs.gf",
+        "triqs\.archive": "h5",
+        "triqs\.archive\.hdf_archive": "h5.archive",
         "hdf_archive_schemes": "formats",
         "set_from_inverse_fourier": "set_from_fourier",
         "make_gf_from_inverse_fourier": "make_gf_from_fourier",
