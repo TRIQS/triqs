@@ -117,7 +117,7 @@ namespace triqs::mesh {
 
     /// Mesh comparison
     bool operator==(prod const &m) const { return m_tuple == m.m_tuple; }
-    bool operator!=(prod const &m) const { return !(operator==(m)); }
+    bool operator!=(prod const &m) const = default;
 
     // -------------------- Accessors (from concept) -------------------
 

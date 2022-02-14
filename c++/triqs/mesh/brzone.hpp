@@ -77,7 +77,7 @@ namespace triqs::mesh {
 
     bool operator==(brzone const &M) const { return bz == M.domain() && cluster_mesh::operator==(M); }
 
-    bool operator!=(brzone const &M) const { return !(operator==(M)); }
+    bool operator!=(brzone const &M) const = default;
 
     // -------------------- print -------------------
 
@@ -134,7 +134,8 @@ namespace triqs::mesh {
     for (int ix = 0; ix < 2; ++ix)
       for (int iy = 0; iy < 2; ++iy)
         for (int iz = 0; iz < 2; ++iz) {
-          result[c] = std::make_pair(m.index_to_linear(m.index_modulo(brzone::index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
+          result[c] =
+             std::make_pair(m.index_to_linear(m.index_modulo(brzone::index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
           c++;
         }
     return result;
