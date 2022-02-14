@@ -32,14 +32,16 @@ namespace triqs::mesh {
 
   // Generic Implemenation of Mesh Point
   template <typename M> struct mesh_point_impl : public utility::arithmetic_ops_by_cast<mesh_point_impl<M>, typename M::domain_t::point_t> {
-    typename M::index_t index_{};
-    typename M::domain_t::point_t value_{};
-    typename M::linear_index_t linear_index_{};
-    std::size_t mesh_hash_{};
+    using mesh_t = M;
+    typename mesh_t::index_t index_{};
+    typename mesh_t::domain_t::point_t value_{};
+    typename mesh_t::linear_index_t linear_index_{};
+    std::size_t mesh_hash_ = 0;
 
-    // Need Explicit Constructor because of inheritance for arithmetic_ops
-    mesh_point_impl(typename M::index_t index, typename M::domain_pt_t value, typename M::linear_index_t linear_index, size_t mesh_hash)
-       : index_(index), linear_index_(linear_index), value_(value), mesh_hash_(mesh_hash) {}
+    // Need constructor because of inheritance for arithmetic_ops
+    explicit mesh_point_impl(typename mesh_t::index_t index, typename mesh_t::domain_t::point_t value, typename mesh_t::linear_index_t linear_index,
+                             size_t mesh_hash)
+       : index_(index), value_(value), linear_index_(linear_index), mesh_hash_(mesh_hash) {}
 
     [[nodiscard]] auto index() const { return index_; }
     [[nodiscard]] auto value() const { return value_; }

@@ -58,6 +58,15 @@ namespace triqs::mesh {
   //   { m.max() } -> std::same_as<typename D::point_t>;
   // };
 
+  template <typename MP>
+  concept MeshPoint = requires(MP const &mp) {
+    typename MP::mesh_t;
+    // { mp.index() } -> std::same_as<typename MP::mesh_t::index_t>;
+    { mp.linear_index() } -> std::same_as<typename MP::mesh_t::linear_index_t>;
+    { mp.value() } -> std::same_as<typename MP::mesh_t::domain_t::point_t>;
+    { mp.mesh_hash() } -> std::convertible_to<std::size_t>;
+  };
+
   // A mesh is a domain and a iterator ("std::range") over a subset of that domain (which may be the full domain).
   // Mesh must be h5 serializable and hashable (to quickly check if a mesh point originates from a mesh)
   template <typename M>
@@ -67,8 +76,9 @@ namespace triqs::mesh {
     requires Domain<typename M::domain_t>;
     std::same_as<std::remove_cvref_t<decltype(m.domain())>, typename M::domain_t>;
 
-    // mesh_point_t does not need to be mesh_point<M>, because of inheritance returning iter with mesh_point<Base>
+    // mesh_point_t class is generally defined in the mesh itself
     typename M::mesh_point_t;
+    requires MeshPoint<typename M::mesh_point_t>;
 
     // Is range which iterates over mesh points:
 
@@ -95,12 +105,8 @@ namespace triqs::mesh {
     { m.mesh_pt_from_raw_index(r_index) } -> std::same_as<typename M::mesh_point_t>;
   };
 
-  template <typename M>
-  concept MeshPoint = Mesh<M> && requires(mesh_point<M> const &mp) {
-    { mp.index() } -> std::same_as<typename M::index_t>;
-    { mp.raw_index() } -> std::same_as<typename M::raw_index_t>;
-    { mp.value() } -> std::same_as<typename M::domain_t::point_t>;
-    { mp.mesh_hash() } -> std::convertible_to<std::size_t>;
-  };
+
+
+  
 
 } // namespace triqs::mesh
