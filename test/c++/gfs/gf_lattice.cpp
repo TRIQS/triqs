@@ -53,7 +53,7 @@ TEST(Gfs, brillouin_zone) {
   ASSERT_EQ(k_mesh.size(), n_k * n_k);
   auto Gk = gf<brzone, scalar_valued>{k_mesh};
 
-  for (auto &k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
+  for (auto const &k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
 
   // Clef Assignment
   auto Gk2 = Gk;
@@ -67,7 +67,7 @@ TEST(Gfs, brillouin_zone) {
   EXPECT_COMPLEX_NEAR(Gk(K_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
 
   // Evaluate on the mesh itself.
-  for (auto &k : Gk.mesh()) {
+  for (auto const &k : Gk.mesh()) {
     EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
     EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k(0)) + cos(k(1)));
@@ -98,7 +98,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   ASSERT_EQ(k_mesh.size(), n_k * n_k);
   auto Gk = gf<brzone, matrix_valued>{k_mesh, {2, 2}};
 
-  for (auto &k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
+  for (auto const &k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
 
   // Clef Assignment
   auto Gk2 = Gk;
@@ -111,7 +111,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0})(1, 1), -4);
 
   // Evaluate on the mesh itself.
-  for (auto &k : Gk.mesh()) {
+  for (auto const &k : Gk.mesh()) {
     EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
     EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k(0)) + cos(k(1)));
@@ -148,7 +148,7 @@ TEST(Gfs, brillouin_zone_triangular) {
     auto k_rec_x_2PI = bl.units() * k;
     return -2 * (cos(k_rec_x_2PI(0)) + cos(k_rec_x_2PI(1)));
   };
-  for (auto &k : Gk.mesh()) Gk[k] = disp(k);
+  for (auto const &k : Gk.mesh()) Gk[k] = disp(k);
 
   ASSERT_EQ(Gk.mesh().closest_index(nda::vector<double>{0, 0, 0}), (index_t{0, 0, 0}));
 
@@ -166,7 +166,7 @@ TEST(Gfs, brillouin_zone_triangular) {
   EXPECT_COMPLEX_NEAR(Gk(Kx_half + Ky_half), 4.0, 1e-14);
 
   // Evaluate on the mesh itself.
-  for (auto &k : Gk.mesh()) {
+  for (auto const &k : Gk.mesh()) {
     double res = disp(k);
     EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), k(2)}), res, 1.e-14);
   }
