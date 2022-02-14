@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/arrays.hpp>
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
+#include <utility>
 
 #include "../details/mesh_tools.hpp"
 #include "../details/mesh_point.hpp"
@@ -89,6 +90,44 @@ namespace triqs::mesh {
     using index_t        = std::array<long, 3>;
     using linear_index_t = long;
 
+    struct mesh_point_t : public utility::arithmetic_ops_by_cast<mesh_point_t, typename cluster_mesh::index_t> {
+      using mesh_t = cluster_mesh;
+
+      mesh_t const *m = nullptr;
+
+      typename cluster_mesh::index_t index_;
+      typename cluster_mesh::domain_t::point_t value_{};
+      typename cluster_mesh::linear_index_t linear_index_{};
+      std::size_t mesh_hash_ = 0;
+
+      [[nodiscard]] auto index() const { return index_; }
+      [[nodiscard]] auto value() const { return value_; }
+      [[nodiscard]] auto linear_index() const { return linear_index_; }
+      [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
+
+      mesh_point_t() = default;
+      mesh_point_t(typename mesh_t::index_t index, typename mesh_t::domain_t::point_t value, typename mesh_t::linear_index_t linear_index,
+                   size_t mesh_hash, mesh_t const &mesh)
+         : index_(index), linear_index_(linear_index), value_(std::move(value)), mesh_hash_(mesh_hash), m(&mesh) {}
+
+      using cast_t = cluster_mesh::domain_t::point_t; // FIXME : decide what we want.
+
+      operator cluster_mesh::domain_t::point_t() const { return value_; }
+      operator lattice_point() const { return lattice_point(index(), m->units()); }
+      operator cluster_mesh::index_t() const { return index_; }
+
+      // The mesh point behaves like a vector
+      /// d: component (0, 1 or 2)
+      double operator()(int d) const { return value_[d]; }
+      double operator[](int d) const { return value_[d]; }
+
+      friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << (lattice_point)x; }
+      mesh_point_t operator-() const {
+        auto index_new = m->index_modulo({-index()[0], -index()[1], -index()[2]});
+        return mesh_point_t{index_new, m->index_to_point(index_new), m->index_to_linear(index_new), mesh_hash_, *m};
+      }
+    };
+
     // --- Ctors
 
     cluster_mesh() = default;
@@ -117,22 +156,7 @@ namespace triqs::mesh {
       stride1 = dims_[2];
     }
 
-    /// ----------- Model the mesh concept  ----------------------
-
-    /// from the index (n_i) to the cartesian coordinates
-    /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
-    *     $$ OM_i = \sum_j n_j X_{ji} $$
-    * @param index_t the (integer) coordinates of the point (in basis a_i)
-    * @warning can be made faster by writing this a matrix-vector multiplication
-    */
-    point_t index_to_point(index_t const &n) const {
-      EXPECTS(n == index_modulo(n));
-      point_t M(3);
-      M() = 0.0;
-      for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++) M(i) += n[j] * units_(j, i);
-      return M;
-    }
+    // -------------------- Index Bijection -------------------
 
     /// flatten the index
     linear_index_t index_to_linear(index_t const &i) const {
@@ -149,98 +173,33 @@ namespace triqs::mesh {
       return {i0, i1, i2};
     }
 
-    class index3_generator {
-      std::array<long, 3> d, i;
-      long i_flat  = 0;
-      bool _at_end = false;
+    // -------------------- Mesh Implemenation & Mesh Point Access -------------------
 
-      public:
-      index3_generator() = default;
-      index3_generator(std::array<long, 3> const &dims, std::array<long, 3> const &i) : d(dims), i(i) { i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2]; }
-      // void advance() {
-      //   ++i_flat;
-      //   ++i[2];
-      //   if (i[2] < d[2]) return;
-      //   i[2] = 0;
-      //   ++i[1];
-      //   if (i[1] < d[1]) return;
-      //   i[1] = 0;
-      //   ++i[0];
-      //   if (i[0] < d[0]) return;
-      //   // i[0]=0;
-      //   _at_end = true;
-      // }
-      std::array<long, 3> const &index() const { return i; }
-      long raw_index() const { return i_flat; }
-      // bool at_end() const { return _at_end; }
-      // void reset() {
-      //   _at_end = false;
-      //   i_flat  = 0;
-      //   i[0]    = 0;
-      //   i[1]    = 0;
-      //   i[2]    = 0;
-      // }
-    };
-
-    struct mesh_point_t : public index3_generator, public utility::arithmetic_ops_by_cast<mesh_point<cluster_mesh>, typename cluster_mesh::index_t> {
-      // from index3_generator
-      
-      
-      // -------------------------------------------------
-      
-      using mesh_t = cluster_mesh;
-
-      mesh_t const *m = nullptr;
-
-      typename cluster_mesh::index_t index_;
-      typename cluster_mesh::domain_t::point_t value_{};
-      typename cluster_mesh::linear_index_t linear_index_{};
-      std::size_t mesh_hash_{};
-
-      [[nodiscard]] auto index() const { return index_; }
-      [[nodiscard]] auto value() const { return value_; }
-      [[nodiscard]] auto linear_index() const { return linear_index_; }
-      [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
-
-      using index_t        = typename mesh_t::index_t;
-      using point_t        = typename mesh_t::point_t;
-      using linear_index_t = typename mesh_t::linear_index_t;
-
-      // size_t mesh_hash_ = 0;
-
-      // size_t mesh_hash() const { return mesh_hash_; }
-
-      mesh_point_t() = default;
-      explicit mesh_point_t(mesh_t const &mesh, index_t const &index) : index3_generator(mesh.dims(), index), m(&mesh) {}
-      mesh_point_t(mesh_t const &mesh) : mesh_point_t(mesh, {0, 0, 0}) {}
-
-      using cast_t = point_t; // FIXME : decide what we want.
-
-      operator point_t() const { return m->index_to_point(index()); }
-      operator lattice_point() const { return lattice_point(index(), m->units()); }
-      operator index_t() const { return index(); }
-
-      // The mesh point behaves like a vector
-      /// d: component (0, 1 or 2)
-      double operator()(int d) const { return m->index_to_point(index())[d]; }
-      double operator[](int d) const { return operator()(d); }
-      friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << (lattice_point)x; }
-      mesh_point_t operator-() const { return mesh_point_t{*m, m->index_modulo({-index()[0], -index()[1], -index()[2]})}; }
-    };
-
-    /// locate the closest point
-    inline index_t closest_index(point_t const &x) const {
-      auto idbl = transpose(inverse(units_)) * x;
-      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+    /// from the index (n_i) to the cartesian coordinates
+    /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
+    *     $$ OM_i = \sum_j n_j X_{ji} $$
+    * @param index_t the (integer) coordinates of the point (in basis a_i)
+    * @warning can be made faster by writing this a matrix-vector multiplication
+    */
+    [[nodiscard]] point_t index_to_point(index_t const &n) const {
+      EXPECTS(n == index_modulo(n));
+      point_t M(3);
+      M() = 0.0;
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++) M(i) += n[j] * units_(j, i);
+      return M;
     }
 
     /// Accessing a point of the mesh from its index
 
-    auto operator[](index_t i) const {
-      EXPECTS(i == index_modulo(i));
-      return mesh_point_t{*this, i};
+    [[nodiscard]] mesh_point_t operator[](index_t i) const {
+      EXPECTS(i == index_modulo(i)); // TODO: Is this requirement correct?
+      return {i, index_to_point(i), index_to_linear(i), mesh_hash_, *this};
     }
-    [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &liner_index) const { return operator[](linear_to_index(liner_index)); }
+    [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &linear_index) const {
+      auto i = linear_to_index(linear_index);
+      return {i, index_to_point(i), linear_index, mesh_hash_, *this};
+    }
 
     // -------------------- Comparison -------------------
 
@@ -271,6 +230,12 @@ namespace triqs::mesh {
     matrix_const_view<long> periodization_matrix() const { return periodization_matrix_; }
 
     // -------------------------- Other --------------------------
+
+    /// locate the closest point
+    inline index_t closest_index(point_t const &x) const {
+      auto idbl = transpose(inverse(units_)) * x;
+      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+    }
 
     /// Is the point in the mesh ? Always true
     template <typename T> static constexpr bool is_within_boundary(T const &) { return true; }

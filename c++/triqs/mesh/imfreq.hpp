@@ -173,17 +173,18 @@ namespace triqs::mesh {
 
     /// Type of the mesh point
     struct mesh_point_t : public matsubara_freq {
-      long index_; // NB: typename imfreq::index_t is _long. Non-convertible!
-      typename imfreq::domain_t::point_t value_{};
+      using mesh_t = imfreq;
+      // long index_; // NB: typename imfreq::index_t is _long. Non-convertible!
+      // typename imfreq::domain_t::point_t value_{};
       typename imfreq::linear_index_t linear_index_{};
-      std::size_t mesh_hash_{};
+      std::size_t mesh_hash_ = 0;
 
-      // Need Explicit Constructor because of inheritance for arithmetic_ops
-      mesh_point_t(typename imfreq::index_t index, typename imfreq::domain_pt_t value, typename imfreq::linear_index_t linear_index, size_t mesh_hash)
-         : matsubara_freq(), index_(index.value), linear_index_(linear_index), value_(value), mesh_hash_(mesh_hash) {}
+      mesh_point_t(matsubara_freq_domain const &domain, typename imfreq::index_t index, typename imfreq::linear_index_t linear_index,
+                   size_t mesh_hash)
+         : matsubara_freq(index, domain.beta, domain.statistic), linear_index_(linear_index), mesh_hash_(mesh_hash) {}
 
-      [[nodiscard]] auto index() const { return index_; }
-      [[nodiscard]] auto value() const { return value_; }
+      [[nodiscard]] auto index() const { return n; } // Use inherited n from matsubara_freq. This is long not _long!
+      [[nodiscard]] imfreq::domain_t::point_t value() const { return matsubara_freq{n, beta, statistic}; }
       [[nodiscard]] auto linear_index() const { return linear_index_; }
       [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
     };
@@ -192,11 +193,11 @@ namespace triqs::mesh {
      * Accessing a point of the mesh from its index
      * @param i Matsubara index
      */
-    [[nodiscard]] mesh_point_t operator[](index_t i) const { return {i, index_to_point(i), index_to_linear(i), mesh_hash_}; }
+    [[nodiscard]] mesh_point_t operator[](index_t i) const { return {domain(), i, index_to_linear(i), mesh_hash_}; }
 
     [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &linear_index) const {
       auto index = linear_to_index(linear_index);
-      return {index, index_to_point(index), linear_index, mesh_hash_};
+      return {domain(), index, linear_index, mesh_hash_};
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -249,38 +250,6 @@ namespace triqs::mesh {
     size_t mesh_hash_ = 0;
     make_mesh_range_rtype<imfreq> r_;
   };
-
-  // // ---------------------------------------------------------------------------
-  // //                     The mesh point
-  // //  NB : the mesh point is also in this case a matsubara_freq.
-  // // ---------------------------------------------------------------------------
-
-  // template <int ntemp> struct mesh_point<imfreq_base<ntemp>> : matsubara_freq {
-  //   using index_t = typename imfreq_base<ntemp>::index_t;
-  //   mesh_point()  = default;
-  //   mesh_point(imfreq_base<ntemp> const &m, index_t const &index_)
-  //      : matsubara_freq(index_, m.domain().beta, m.domain().statistic), first_index(m.first_index()), last_index(m.last_index()), _mesh(&m) {}
-  //   mesh_point(imfreq_base<ntemp> const &m) : mesh_point(m, m.first_index()) {} // explicit
-  //   // void advance() { ++n; }
-  //   long linear_index() const { return n - first_index; }
-  //   long index() const { return n; }
-
-  //   index_t index_                                            = 0;
-  //   typename imfreq_base<ntemp>::domain_pt_t value            = 0.0;
-  //   typename imfreq_base<ntemp>::linear_index_t linear_index_ = 0;
-
-  //   size_t mesh_hash_ = 0;
-  //   [[nodiscard]] auto mesh_hash() const { return mesh_hash_; }
-
-  //   private:
-  //   long first_index, last_index;
-  //   imfreq_base<ntemp> const *_mesh;
-  // };
-
-  // class imfreq : public imfreq_base<123> {
-  //   public:
-  //   template <typename... T> imfreq(T &&...x) : imfreq_base<123>(std::forward<T>(x)...) {}
-  // };
 
   inline std::array<std::pair<imfreq::linear_index_t, one_t>, 1> get_interpolation_data(imfreq const &m, long n) {
     return {std::make_pair(m.index_to_linear(imfreq::index_t(n)), one_t{})};
