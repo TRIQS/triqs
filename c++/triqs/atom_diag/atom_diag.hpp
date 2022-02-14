@@ -139,9 +139,9 @@ namespace triqs {
        * @note See :ref:`space_partition` for more details on the auto-partition scheme.
        */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
-      
+
       atom_diag(many_body_op_t const &h, many_body_op_t const &hyb, fundamental_operator_set const &fops);
-      
+
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
 
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
@@ -287,6 +287,15 @@ namespace triqs {
        */
       matrix_t const &cdag_matrix(int op_linear_index, int sp_index) const { return cdag_matrices[op_linear_index][sp_index]; }
 
+      /// Get matrix representation for a monomial operator
+      /**
+       * @param op_vec A product of canonical operators operators (a monomial)
+       * @param B Initial subspace B
+       * @return Index of the subspace connected from by :ref:`op_vec` from :ref:`B` and the corresponding matrix (not necessarily square)
+       *
+       */
+      std::pair<int, matrix_t> get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const;
+
       /// Get block matrix representation for general operator
       /**
        * @param op Many body operator
@@ -321,7 +330,6 @@ namespace triqs {
       std::vector<int> first_eigenstate_of_subspace; // Index of the first eigenstate of each subspace
       void fill_first_eigenstate_of_subspace();
       void compute_vacuum();
-      std::pair<int, matrix_t> get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const;
 
       /* Friend declarations of a template class are a bit ugly */
       friend std::ostream &operator<<<Complex>(std::ostream &os, atom_diag const &ss);

@@ -22,6 +22,8 @@
 #include "./worker.hpp"
 
 #include <triqs/arrays.hpp>
+#include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
 
 using namespace triqs::arrays;
 
@@ -47,7 +49,6 @@ namespace triqs {
       fill_first_eigenstate_of_subspace();
       compute_vacuum();
     }
-    
 
     // -----------------------------------------------------------------
 
@@ -107,17 +108,48 @@ namespace triqs {
     auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const
       -> std::pair<int, matrix_t> {
 
-      auto m = nda::eye<scalar_t>(get_subspace_dim(B));
+      imperative_operator<class hilbert_space, scalar_t, false>
+        monomial_op(many_body_op_t(1.0, op_vec), fops);
 
-      auto const &fops = get_fops();
-      for (int i = op_vec.size() - 1; i >= 0; --i) {
-        int ind = fops[op_vec[i].indices];
-        int Bp  = (op_vec[i].dagger ? cdag_connection(ind, B) : c_connection(ind, B));
-        if (Bp == -1) return {-1, std::move(m)};
-        m = (op_vec[i].dagger ? cdag_matrix(ind, B) : c_matrix(ind, B)) * m;
-        B = Bp;
+      state<class hilbert_space, scalar_t, true> initial_st(full_hs);
+      state<class hilbert_space, scalar_t, true> final_st(full_hs);
+
+      matrix_t m;
+      int Bp = -1;
+      bool found_nonzero_element = false;
+
+      auto const& B_fock_states = get_fock_states(B);
+      for(fock_state_t i_index = 0; i_index < B_fock_states.size(); ++i_index) {
+        fock_state_t i = B_fock_states[i_index];
+        initial_st(i) = scalar_t(1.0);
+
+        final_st = monomial_op(initial_st);
+
+        foreach(final_st, [&](fock_state_t j, scalar_t x) {
+          for(auto const& sp : sub_hilbert_spaces) {
+            if(sp.has_state(j)) {
+              Bp = sp.get_index();
+
+              if(not found_nonzero_element) {
+                m.resize(get_subspace_dim(Bp), get_subspace_dim(B));
+                m() = scalar_t(.0);
+                found_nonzero_element = true;
+              }
+
+              m(sp.get_state_index(j), i_index) = x;
+              continue;
+            }
+          }
+        });
+
+        initial_st(i) = scalar_t(0.);
       }
-      return {B, std::move(m)};
+
+      if(Bp == -1)
+        return {-1, std::move(m)};
+      else {
+        return {Bp, dagger(get_unitary_matrix(Bp)) * m * get_unitary_matrix(B)};
+      }
     }
 
     // -----------------------------------------------------------------
@@ -129,7 +161,7 @@ namespace triqs {
 	for( auto const &term : op ) {
 	  auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
 	  if(bb == -1) continue;
-	  
+
 	  if( op_mat.connection(b) == -1 ) {
 	    op_mat.connection(b) = bb;
 	    op_mat.block_mat[b] = term.coef * mat;
