@@ -242,9 +242,15 @@ namespace triqs::mesh {
 
     // -------------------------- Range & Iteration --------------------------
 
-    auto begin() const { return r_.begin(); }
+    auto begin() const {
+      r_ = make_mesh_range(*this);
+      return r_.begin();
+    }
     auto end() const { return r_.end(); }
-    auto cbegin() const { return r_.begin(); }
+    auto cbegin() const {
+      r_ = make_mesh_range(*this);
+      return r_.begin();
+    }
     auto cend() const { return r_.end(); }
 
     // -------------- HDF5  --------------------------
@@ -288,7 +294,7 @@ namespace triqs::mesh {
     long stride1, stride0;
 
     size_t mesh_hash_ = 0;
-    make_mesh_range_rtype<cluster_mesh> r_;
+    mutable make_mesh_range_rtype<cluster_mesh> r_;
   };
 
 } // namespace triqs::mesh

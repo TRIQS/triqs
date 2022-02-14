@@ -59,14 +59,14 @@ namespace triqs::mesh {
   // A "named" lambda function, capturing a mesh const& and calling linear_to_mesh_pt.
   // This is needed for having a consistent type in range transform.
   template <typename M> struct mesh_point_maker {
-    M *mesh = nullptr;
+    const M *mesh = nullptr;
     typename M::mesh_point_t operator()(typename M::linear_index_t const &i) const { return mesh->linear_to_mesh_pt(i); }
   };
 
 // libc++ does not yet implement ranges for now: use itertools
 #if defined(_LIBCPP_VERSION) and (__clang_major__ < 14)
 
-  template <typename M> auto make_mesh_range(M &m) { return itertools::transform(itertools::range(0, m.size()), mesh_point_maker<M>{&m}); }
+  template <typename M> auto make_mesh_range(M const &m) { return itertools::transform(itertools::range(0, m.size()), mesh_point_maker<M>{&m}); }
 
   template <typename M> using make_mesh_range_rtype = itertools::details::transformed<itertools::range, triqs::mesh::mesh_point_maker<M>>;
 
@@ -87,12 +87,12 @@ namespace triqs::mesh {
   template <typename... Ms> class prod;
 
   template <typename... Ms> struct mesh_point_maker<prod<Ms...>> {
-    prod<Ms...> *mesh = nullptr;
+    const prod<Ms...> *mesh = nullptr;
     typename prod<Ms...>::mesh_point_t operator()(std::tuple<typename Ms::mesh_point_t...> const &t_mp) const { return {t_mp}; }
   };
 
   //  product range not part of c++20 standard
-  template <typename... Ms> auto make_mesh_prod_range(prod<Ms...> &m) {
+  template <typename... Ms> auto make_mesh_prod_range(prod<Ms...> const &m) {
     auto f = [](auto... x) { return itertools::details::multiplied<Ms...>(x...); };
     return itertools::transform(triqs::tuple::apply(f, m.components()), mesh_point_maker<prod<Ms...>>{&m});
   }

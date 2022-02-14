@@ -187,17 +187,16 @@ namespace triqs::mesh {
 
     // -------------------------- Range & Iteration --------------------------
 
-    auto begin() const { return r_.begin(); }
+    auto begin() const {
+      r_ = make_mesh_prod_range<Ms...>(*this);
+      return r_.begin();
+    }
     auto end() const { return r_.end(); }
-    auto cbegin() const { return r_.cbegin(); }
+    auto cbegin() const {
+      r_ = make_mesh_prod_range<Ms...>(*this);
+      return r_.cbegin();
+    }
     auto cend() const { return r_.cend(); }
-
-    // /// Iterating on all the points...
-    // using const_iterator = mesh_pt_generator<prod>;
-    // const_iterator begin() const { return const_iterator(this); }
-    // const_iterator end() const { return const_iterator(this, true); }
-    // const_iterator cbegin() const { return const_iterator(this); }
-    // const_iterator cend() const { return const_iterator(this, true); }
 
     // -------------- Evaluation of a function on the grid --------------------------
 
@@ -236,7 +235,7 @@ namespace triqs::mesh {
     private:
     m_tuple_t m_tuple;
     domain_t _dom;
-    make_mesh_range_prod_rtype<Ms...> r_;
+    mutable make_mesh_range_prod_rtype<Ms...> r_;
   }; //end of class
 
   // ---------- Class template argument deduction rules (CTAD) -------------

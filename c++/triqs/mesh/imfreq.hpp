@@ -71,8 +71,7 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(domain_t dom, size_t n_iw = 1025, option opt = option::all_frequencies)
-       : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt), r_{make_mesh_range(*this)} {
+    imfreq(domain_t dom, size_t n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
       _last_index = n_iw - 1; // total number of points
       if (opt == option::positive_frequencies_only) {
         _first_index = 0;
@@ -82,6 +81,7 @@ namespace triqs::mesh {
         _last_index     = n_iw - 1;
         _first_index    = -(_last_index + (is_fermion ? 1 : 0));
       }
+      r_ = make_mesh_range(*this);
     }
 
     /**
@@ -202,9 +202,15 @@ namespace triqs::mesh {
 
     // -------------------------- Range & Iteration --------------------------
 
-    [[nodiscard]] auto begin() const { return r_.begin(); }
+    [[nodiscard]] auto begin() const {
+      r_ = make_mesh_range(*this);
+      return r_.begin();
+    }
     [[nodiscard]] auto end() const { return r_.end(); }
-    [[nodiscard]] auto cbegin() const { return r_.begin(); }
+    [[nodiscard]] auto cbegin() const {
+      r_ = make_mesh_range(*this);
+      return r_.begin();
+    }
     [[nodiscard]] auto cend() const { return r_.end(); }
 
     // -------------- Evaluation of a function on the grid --------------------------
@@ -248,7 +254,7 @@ namespace triqs::mesh {
     option _opt;
     long _first_index, _last_index;
     size_t mesh_hash_ = 0;
-    make_mesh_range_rtype<imfreq> r_;
+    mutable make_mesh_range_rtype<imfreq> r_;
   };
 
   inline std::array<std::pair<imfreq::linear_index_t, one_t>, 1> get_interpolation_data(imfreq const &m, long n) {
