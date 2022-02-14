@@ -24,6 +24,7 @@
 #include <ostream>
 #include <cmath>
 #include <algorithm>
+#include <utility>
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
@@ -129,6 +130,11 @@ namespace triqs {
       explicit many_body_operator_generic(scalar_t const &x) {
         using triqs::utility::is_zero;
         if (!is_zero(x)) monomials.insert({{}, x});
+      }
+
+      many_body_operator_generic(scalar_t const &x, monomial_t monomial) {
+        using triqs::utility::is_zero;
+        if (!is_zero(x)) monomials.emplace(std::move(monomial), x);
       }
 
       struct _cdress;
