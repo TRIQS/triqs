@@ -1,7 +1,8 @@
 
 #pragma once
 
-#include <triqs/mesh/mesh_concepts.hpp>
+#include <triqs/mesh.hpp>
+
 #include <triqs/test_tools/arrays.hpp>
 #include <h5/h5.hpp>
 #include <iterator>

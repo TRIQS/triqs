@@ -16,18 +16,12 @@
 // Authors: Philipp Dumitrescu
 
 #include "mesh_concept_test.hpp"
-#include "triqs/mesh/bases/linear.hpp"
 // Domains
 #include <triqs/mesh/domains/real_complex.hpp>
 #include <triqs/mesh/domains/legendre.hpp>
 #include <triqs/mesh/domains/matsubara.hpp>
 #include <triqs/mesh/domains/interval.hpp>
-// Meshes
-#include <triqs/mesh/retime.hpp>
-#include <triqs/mesh/refreq.hpp>
-#include <triqs/mesh/imtime.hpp>
-#include <triqs/mesh/imfreq.hpp>
-#include <triqs/mesh/legendre.hpp>
+
 
 using namespace triqs::mesh;
 
@@ -49,11 +43,8 @@ TEST(MeshConcepts, DomainConceptTest) {
 }
 
 // TEST(MeshConcepts, IntervalDomainConceptTest) {
-//   //
 //   std::cout << "Check Domain Concept: " << type_name_interval_domain<legendre_domain>() << std::endl;
-//   //
 //   std::cout << "Check Domain Concept: " << type_name_interval_domain<matsubara_time_domain>() << std::endl;
-//   //
 //   std::cout << "Check Domain Concept: " << type_name_interval_domain<real_interval_domain>() << std::endl;
 // }
 
@@ -62,6 +53,12 @@ TEST(MeshConcepts, MeshConceptTest) {
   std::cout << "Check Domain Concept: " << type_name_mesh<refreq>() << std::endl;
   std::cout << "Check Domain Concept: " << type_name_mesh<imtime>() << std::endl;
   std::cout << "Check Domain Concept: " << type_name_mesh<imfreq>() << std::endl;
+
+  std::cout << "Check Domain Concept: " << type_name_mesh<cyclat>() << std::endl;
+  std::cout << "Check Domain Concept: " << type_name_mesh<brzone>() << std::endl;
+
+  std::cout << "Check Domain Concept: " << type_name_mesh<prod<retime,refreq>>() << std::endl;
+
 }
 
 MAKE_MAIN;
