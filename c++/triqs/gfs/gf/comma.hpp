@@ -19,7 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
+#include "nda/traits.hpp"
 #include <triqs/mesh/details/mesh_tools.hpp>
+#include <triqs/mesh/mesh_concepts.hpp>
 
 namespace triqs::gfs {
 
@@ -58,6 +60,11 @@ namespace triqs::gfs {
   template <typename M, typename X> tuple_com<typename M::mesh_point_t, std::decay_t<X>> operator,(typename M::mesh_point_t m, X &&x) {
     return {std::make_tuple(std::move(m), std::forward<X>(x))};
   }
+
+  // mesh_point
+  template <triqs::mesh::MeshPoint MP, typename X> // TODO: Constrain this to not work for prod
+  requires(!nda::is_instantiation_of_v<triqs::mesh::prod, typename MP::mesh_t>) tuple_com<MP, std::decay_t<X>>
+  operator,(MP m, X &&x) { return {std::make_tuple(std::move(m), std::forward<X>(x))}; }
 
   // matsubara_freq
   template <typename X> tuple_com<matsubara_freq, std::decay_t<X>> operator,(matsubara_freq m, X &&x) {

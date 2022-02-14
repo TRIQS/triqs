@@ -50,35 +50,13 @@ namespace triqs::mesh {
                   "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
     public:
-    using domain_t  = domain_product<typename Ms::domain_t...>;
-    using m_tuple_t = std::tuple<Ms...>;
-    //using ms_tuple_t         = std::tuple<Ms...>;
-    using m_pt_tuple_t       = std::tuple<typename Ms::mesh_point_t...>;
-    using domain_pt_t        = typename domain_t::point_t;
-    using linear_index_t     = std::tuple<typename Ms::linear_index_t...>;
+    using domain_t       = domain_product<typename Ms::domain_t...>;
+    using m_tuple_t      = std::tuple<Ms...>;
+    using m_pt_tuple_t   = std::tuple<typename Ms::mesh_point_t...>;
+    using domain_pt_t    = typename domain_t::point_t;
+    using linear_index_t = std::tuple<typename Ms::linear_index_t...>;
+
     static constexpr int dim = sizeof...(Ms);
-
-    struct mesh_point_t {
-      std::tuple<typename Ms::mesh_point_t...> components_;
-
-      [[nodiscard]] auto components_tuple() const { return components_; }
-
-      [[nodiscard]] auto index() const {
-        return triqs::tuple::map([](auto const &mp) { return mp.index(); }, components_);
-      }
-      [[nodiscard]] auto value() const {
-        return triqs::tuple::map([](auto const &mp) { return mp.value(); }, components_);
-      }
-      [[nodiscard]] auto linear_index() const {
-        return triqs::tuple::map([](auto const &mp) { return mp.linear_index(); }, components_);
-      }
-      [[nodiscard]] auto mesh_hash() const {
-        return triqs::tuple::map([](auto const &mp) { return mp.mesh_hash(); }, components_);
-      }
-
-      using cast_t = typename prod<Ms...>::domain_t::point_t;
-      operator cast_t() const { return value; }
-    };
 
     /// The index
     struct index_t {
@@ -100,10 +78,36 @@ namespace triqs::mesh {
       index_t &operator=(index_t &&idx) = default;
     };
 
+    struct mesh_point_t {
+      using mesh_t = prod<Ms...>;
+      mesh_t::m_pt_tuple_t components_;
+
+      [[nodiscard]] auto components_tuple() const { return components_; }
+
+      [[nodiscard]] auto index() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.index(); }, components_);
+      }
+      [[nodiscard]] auto value() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.value(); }, components_);
+      }
+      [[nodiscard]] auto linear_index() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.linear_index(); }, components_);
+      }
+      [[nodiscard]] auto mesh_hash() const {
+        return triqs::tuple::map([](auto const &mp) { return mp.mesh_hash(); }, components_);
+      }
+
+      using cast_t = domain_pt_t;
+      operator cast_t() const { return value; }
+
+      template <int N> decltype(auto) get() { return std::get<N>(components_); }
+      template <int N> decltype(auto) get() const { return std::get<N>(components_); }
+    };
+
     // -------------------- Constructors -------------------
 
     prod() = default;
-    prod(Ms const &...mesh) : m_tuple(mesh...), _dom(mesh.domain()...), r_{make_mesh_prod_range<Ms...>(*this)} {}
+    prod(Ms const &...mesh) requires(sizeof...(Ms) > 0) : m_tuple(mesh...), _dom(mesh.domain()...), r_{make_mesh_prod_range<Ms...>(*this)} {}
     prod(std::tuple<Ms...> const &mesh_tpl)
        : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)), r_{make_mesh_prod_range<Ms...>(*this)} {}
     template <typename... U>
@@ -241,72 +245,13 @@ namespace triqs::mesh {
   template <typename M1, typename M2, typename... Ms>
   prod(std::tuple<M1, M2, Ms...>) -> prod<std::decay_t<M1>, std::decay_t<M2>, std::decay_t<Ms>...>;
 
-  //   // ------------------------------------------------
-  //   /// The wrapper for the mesh point
-
-  //   template <typename... Ms> struct mesh_point<prod<Ms...>> : tag::mesh_point {
-  //     using mesh_t         = prod<Ms...>;
-  //     using index_t        = typename mesh_t::index_t;
-  //     using m_pt_tuple_t   = typename mesh_t::m_pt_tuple_t;
-  //     using linear_index_t = typename mesh_t::linear_index_t;
-  //     using domain_pt_t    = typename mesh_t::domain_pt_t;
-
-  //     const mesh_t *m;
-  //     m_pt_tuple_t _c;
-  //     bool _atend;
-  //     struct F1 {
-  //       template <typename M> typename M::mesh_point_t operator()(M const &m) const { return {m}; }
-  //     };
-
-  //     public:
-  //     mesh_point() = default;
-  //     mesh_point(mesh_t const &m_, index_t index_)
-  //        : m(&m_), _c(triqs::tuple::map_on_zip([](auto const &m, auto const &i) { return m[i]; }, m_.components(), index_._i)), _atend(false) {}
-  //     mesh_point(mesh_t const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.components())), _atend(false) {}
-  //     m_pt_tuple_t const &components_tuple() const { return _c; }
-  //     linear_index_t linear_index() const { return m->mp_to_linear(_c); }
-  //     index_t index() const {
-  //       return triqs::tuple::map([](auto const &mesh_pt) { return mesh_pt.index(); }, _c);
-  //     }
-  //     const mesh_t &mesh() const { return *m; }
-
-  //     using cast_t = domain_pt_t;
-  //     operator cast_t() const { return _c; }
-
-  //     // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
-  //     //
-  //     // void advance() {
-  //     //   auto l = [](auto &p, bool done) {
-  //     //     if (done) return true;
-  //     //     p.advance();
-  //     //     if (!p.at_end()) return true;
-  //     //     p.reset();
-  //     //     return false;
-  //     //   };
-  //     //   _atend = !(triqs::tuple::fold(l, _c, false));
-  //     // }
-  //     //
-  //     // index_t index() const { return _index;} // not implemented yet
-  //     // bool at_end() const { return _atend; }
-
-  //     // void reset() {
-  //     //   _atend = false;
-  //     //   triqs::tuple::for_each(_c, [](auto &m) { m.reset(); });
-  //     // }
-
-  //     // std::get should work FIXME ? redondant
-  //     template <int N> decltype(auto) get() { return std::get<N>(_c); }
-  //     template <int N> decltype(auto) get() const { return std::get<N>(_c); }
-
-  //   }; // end mesh_point
-
 } // namespace triqs::mesh
 
 /// std::get (mesh) return the component...
 namespace std {
 
   // mesh as tuple
-  // redondant with .get<pos>, but seems necessary.
+  // redundant with .get<pos>, but seems necessary.
   template <size_t pos, typename... Ms> decltype(auto) get(triqs::mesh::prod<Ms...> const &m) { return std::get<pos>(m.components()); }
 
   template <typename... Ms> class tuple_size<triqs::mesh::prod<Ms...>> {
@@ -318,7 +263,7 @@ namespace std {
 
   /*
    * // NON PRODUCT mesh, for generic code std::get<0> should work
-  // redondant with .get<pos>, but seems necessary.
+  // redundant with .get<pos>, but seems necessary.
   template <size_t pos, typename M> auto const &get(M const &m) requires(models_mesh_concept<M>) {
     static_assert(pos == 0, "std::get<N>() of a non cartesiant product mesh for N>0");
     return m;
@@ -332,18 +277,17 @@ namespace std {
   template <size_t N, typename M> class tuple_element<N, M> { using type = M; };
 */
 
-  // // mesh_point as tuple
-  // template <int pos, typename... Ms> decltype(auto) get(triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>> const &m) {
-  //   return std::get<pos>(m.components_tuple());
-  // }
+  template <triqs::mesh::MeshPoint MP> class tuple_size<MP> : public std::integral_constant<size_t, tuple_size<typename MP::mesh_t>::value> {};
 
-  // template <typename... Ms> class tuple_size<triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> {
-  //   public:
-  //   static const int value = sizeof...(Ms);
-  // };
+  // mesh_point as tuple
+  template <int pos, typename... Ms> decltype(auto) get(typename triqs::mesh::prod<Ms...>::mesh_point_t const &m) {
+    return std::get<pos>(m.components_tuple());
+  }
 
-  // template <size_t N, typename... Ms>
-  // class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
+  template <size_t N, triqs::mesh::MeshPoint MP> class tuple_element<N, MP> {
+    public:
+    using type = typename tuple_element<N, typename MP::mesh_t>::type::mesh_point_t;
+  };
 
 } // namespace std
 
