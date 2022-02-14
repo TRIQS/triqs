@@ -108,9 +108,9 @@ namespace triqs::mesh {
     // -------------------------- Other --------------------------
 
     /// Is the point in mesh ?
-    static constexpr bool is_within_boundary(all_t) { return true; }
-    [[nodiscard]] bool is_within_boundary(domain_pt_t x) const { return (x >= xmin) && (x <= xmax); } // FIXME NAME
-    [[nodiscard]] bool is_within_boundary(index_t idx) const { return (idx >= 0) && (idx < L); }      // FIXME NAME
+    static constexpr bool is_within_boundary(all_t) { return true; }                                  // ????? is index valid
+    [[nodiscard]] bool is_within_boundary(domain_pt_t x) const { return (x >= xmin) && (x <= xmax); } // FIXME NAME: is within boundary
+    [[nodiscard]] bool is_within_boundary(index_t idx) const { return (idx >= 0) && (idx < L); }      // FIXME NAME: is index valid
 
     // -------------------------- Range & Iteration --------------------------
 
