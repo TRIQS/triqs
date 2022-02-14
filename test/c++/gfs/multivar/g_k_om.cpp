@@ -19,6 +19,7 @@
 
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
+#include <triqs/gfs/gf/comma.hpp>
 using namespace triqs::clef;
 using namespace triqs::lattice;
 using triqs::clef::placeholder;
