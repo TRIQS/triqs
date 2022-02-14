@@ -65,6 +65,7 @@ namespace triqs::mc_tools {
        : RandomGenerator(random_name, random_seed),
          AllMoves(RandomGenerator),
          AllMeasures(),
+         ReportMeasures(),
          AllMeasuresAux(),
          report(&std::cout, verbosity),
          rethrow_exception(rethrow_exception) {}
@@ -96,9 +97,13 @@ namespace triqs::mc_tools {
    *
    */
     template <typename MeasureType>
-    typename measure_set<MCSignType>::measure_itr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true) {
+    typename measure_set<MCSignType>::measure_itr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true, bool report_measure = false) {
       static_assert(!std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
-      return AllMeasures.insert(std::forward<MeasureType>(m), name, enable_timer);
+      auto new_measure = AllMeasures.insert(std::forward<MeasureType>(m), name, enable_timer);
+      if (report_measure) {
+        ReportMeasures.insert({new_measure->first, &new_measure->second});
+      }
+      return new_measure;
     }
 
     /**
@@ -254,6 +259,10 @@ namespace triqs::mc_tools {
             nmeasures++;
             for (auto &x : AllMeasuresAux) x();
             AllMeasures.accumulate(sign);
+          } else {
+            for (auto &&rm : ReportMeasures) {
+              rm.second->accumulate(sign);
+            }
           }
         } catch (triqs::signal_handler::exception const &) {
           std::cerr << "mc_generic: Signal caught on node " << c.rank() << "\n" << std::endl;
@@ -269,10 +278,13 @@ namespace triqs::mc_tools {
 
         // recompute fraction done
         done_percent = uint64_t(floor(((NC + 1) * 100.0) / n_cycles));
-        if (timer > next_info_time) {
+        if (timer > next_info_time || done_percent == 100) {
           report(3) << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
                     << " ETA " << estimate_time_left(n_cycles, NC, timer) << " cycle " << NC << " of " << n_cycles << "\n"
                     << std::flush;
+          for (auto &&rm : ReportMeasures) {
+            report(3) << "[Rank " << c.rank() << "] " << rm.first << " = " << rm.second->report() << "\n" << std::flush;
+          }
           next_info_time = 1.25 * timer + 2.0; // Increase time interval non-linearly
         }
         finished = NC + 1 >= n_cycles;
@@ -406,6 +418,7 @@ namespace triqs::mc_tools {
     random_generator RandomGenerator;
     move_set<MCSignType> AllMoves;
     measure_set<MCSignType> AllMeasures;
+    std::map<std::string, measure<MCSignType>*> ReportMeasures;
     std::vector<measure_aux> AllMeasuresAux;
     utility::report_stream report;
     uint64_t nmeasures, current_cycle_number = 0;

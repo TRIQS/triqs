@@ -36,6 +36,7 @@ namespace triqs {
       std::shared_ptr<void> impl_;
       std::function<void(MCSignType const &)> accumulate_;
       std::function<void(mpi::communicator const &)> collect_results_;
+      std::function<std::string()> report_;
       std::function<void(h5::group, std::string const &)> h5_r, h5_w;
 
       uint64_t count_;
@@ -55,6 +56,15 @@ namespace triqs {
         accumulate_      = [p](MCSignType const &x) { p->accumulate(x); };
         count_           = 0;
         collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
+        report_          = [p]() -> std::string {
+          if constexpr (requires { p->report(); }) {
+            return p->report();
+          } else {
+            // Cannot be static_assert because this would also trigger if report
+            // is not actually called
+            TRIQS_ASSERT(false && "This measure does not implement the report function");
+          }
+        };
         h5_r = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_read(g, name, *p); }) h5_read(g, name, *p);
         };
@@ -81,6 +91,9 @@ namespace triqs {
         collect_results_(c);
         if(enable_timer) Timer.stop();
       }
+      std::string report() const {
+        return report_();
+      }
 
       uint64_t count() const { return count_; }
       double duration() const { return double(Timer); }
@@ -102,7 +115,7 @@ namespace triqs {
       m_map_t m_map;
 
       public:
-      using measure_itr_t = typename m_map_t::const_iterator;
+      using measure_itr_t = typename m_map_t::iterator;
 
       measure_set()                       = default;
       measure_set(measure_set const &rhs) = delete;
@@ -143,6 +156,14 @@ namespace triqs {
         std::vector<std::string> res;
         for (auto &[name, m] : m_map) res.push_back(name);
         return res;
+      }
+
+      std::string report() const {
+        std::string result{};
+        for (auto &nmp : m_map) {
+          result += " " + nmp.first + "=" + nmp.second.report();
+        }
+        return result;
       }
 
       /// Pretty print the timings of all measures
