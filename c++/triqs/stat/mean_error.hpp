@@ -99,13 +99,13 @@ namespace triqs::stat {
       using nda::conj;
       using nda::real;
 
-      long count_total = mpi::all_reduce(count_i, c);
+      long count_total  = mpi::all_reduce(count_i, c);
       double count_frac = double(count_i) / count_total;
 
       T M = Mi * count_frac;
       mpi::all_reduce_in_place(M, c);
 
-      T diff = Mi - M;
+      T diff          = Mi - M;
       get_real_t<T> Q = Qi + count_i * make_real(conj(diff) * diff);
 
       mpi::reduce_in_place(Q, c, root);

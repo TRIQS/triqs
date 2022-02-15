@@ -40,31 +40,27 @@ namespace triqs::stat {
     long n_bins;                        // number of points on the mesh (for double only)
     unsigned long long _n_data_pts = 0; // number of data points
     unsigned long long _n_lost_pts = 0; // number of discarded points
-    nda::vector<double> _data;       // histogram data
+    nda::vector<double> _data;          // histogram data
     double _step;                       // number of bins per unit length
 
     void _init(); // initialize _step
 
-    inline friend histogram pdf(histogram const &h); // probability distribution function = normalised histogram
-    inline friend histogram cdf(histogram const &h); // cumulative distribution function = normalised histogram integrated
+    inline friend histogram pdf(histogram const &h); // probability distribution function = normalized histogram
+    inline friend histogram cdf(histogram const &h); // cumulative distribution function = normalized histogram integrated
 
     public:
     /// Constructs a histogram over :math:`[a; b]` range with bin length equal to 1.
     ///
     /// @param a Left end of the sampling range
     /// @param b Right end of the sampling range
-    histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(nda::vector<double>::zeros({n_bins})) {
-      _init();
-    }
+    histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(nda::vector<double>::zeros({n_bins})) { _init(); }
 
     /// Constructs a histogram over :math:`[a; b]` range with a given number of bins.
     ///
     /// @param a Left end of the sampling range
     /// @param b Right end of the sampling range
     /// @param n_bins Number of bins
-    histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(nda::vector<double>::zeros({n_bins})) {
-      _init();
-    }
+    histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(nda::vector<double>::zeros({n_bins})) { _init(); }
 
     /// Default constructor
     histogram() = default;
@@ -222,7 +218,7 @@ namespace triqs::stat {
   //-------------------------------------------------------------------------------
 
   /// Normalise histogram to get probability density function (PDF)
-  /// @param h Histogram to be normalised
+  /// @param h Histogram to be normalized
   /// @return Probability density function
   /// @brief Get histogram probability density function (PDF)
   inline histogram pdf(histogram const &h) {
@@ -232,7 +228,7 @@ namespace triqs::stat {
   }
 
   /// Integrate and normalise histogram to get cumulative distribution function (CDF)
-  /// @param h Histogram to be integrated and normalised
+  /// @param h Histogram to be integrated and normalized
   /// @return Cumulative distribution function
   /// @brief Get histogram cumulative distribution function (CDF)
   inline histogram cdf(histogram const &h) {

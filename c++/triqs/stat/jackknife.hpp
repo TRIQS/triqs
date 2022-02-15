@@ -69,7 +69,7 @@ namespace triqs::stat {
 
     // implementation of jacknife.
     // mpi iif the c pointer is not null. If null the computation is on this node only.
-    template <typename F, typename... Jacknifed> auto jackknife_impl(mpi::communicator *c, F &&f, Jacknifed const &... ja) {
+    template <typename F, typename... Jacknifed> auto jackknife_impl(mpi::communicator *c, F &&f, Jacknifed const &...ja) {
 
       // N is the size of the series, it should be all equal and !=0
       std::array<long, sizeof...(Jacknifed)> dims{long(ja.original_series.size())...};
@@ -142,7 +142,7 @@ namespace triqs::stat {
   ///     $$\Delta{f}_J = \sqrt{N-1} \cdot \sigma_f$$
   /// where $\sigma_f$ is the standard deviation of $\left\{f(\tilde{\mathbf{a}}[0]), f(\tilde{\mathbf{a}}[1]), \ldots, f(\tilde{\mathbf{a}}[N])\right\}$.
   /// @brief Calculate mean and error of derived data using jackknife resampling
-  template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
+  template <typename F, typename... A> auto jackknife(F &&f, A const &...a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
                   "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
     return details::jackknife_impl(nullptr, std::forward<F>(f), details::jackknifed_t{a}...);
@@ -150,7 +150,7 @@ namespace triqs::stat {
 
   /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>`
   /// @tparam T type of data stored in the accumulators
-  template <typename F, typename... T> auto jackknife(F &&f, accumulator<T> const &... a) {
+  template <typename F, typename... T> auto jackknife(F &&f, accumulator<T> const &...a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
                   "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
     return jackknife(std::forward<F>(f), a.linear_bins()...);
@@ -181,13 +181,13 @@ namespace triqs::stat {
   ///     $$\Delta{f}_J = \sqrt{N-1} \cdot \sigma_f$$
   /// where $\sigma_f$ is the standard deviation of $\left\{f(\tilde{\mathbf{a}}[0]), f(\tilde{\mathbf{a}}[1]), \ldots, f(\tilde{\mathbf{a}}[N])\right\}$.
   /// @brief Calculate mean and error of derived data using jackknife resampling (MPI Version)
-  template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
+  template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &...a) {
     return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a, c}...);
   }
 
   /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>`
   /// @tparam T type of data stored in the accumulators
-  template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
+  template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &...a) {
     return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);
   }
 
