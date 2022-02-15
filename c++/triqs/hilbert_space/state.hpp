@@ -76,7 +76,7 @@ namespace triqs {
                                                   boost::multiplicative<state<HilbertSpace, ScalarType, true>, ScalarType> {
       // derivations implement the vector space operations over ScalarType from the compounds operators +=, *=, ....
       const HilbertSpace *hs_p;
-      using amplitude_t = std::unordered_map<std::size_t, ScalarType>;
+      using amplitude_t = std::unordered_map<fock_state_t, ScalarType>;
       amplitude_t ampli;
 
       public:
@@ -107,13 +107,13 @@ namespace triqs {
    @param i index of the requested amplitude
    @return Reference to the requested amplitude
   */
-      value_type &operator()(int i) { return ampli[i]; }
+      value_type &operator()(fock_state_t i) { return ampli[i]; }
       /// Access to individual amplitudes
       /**
    @param i index of the requested amplitude
    @return Constant reference to the requested amplitude
   */
-      value_type const &operator()(int i) const { return ampli[i]; }
+      value_type const &operator()(fock_state_t i) const { return ampli[i]; }
 
       /// In-place addition of another state
       /**
