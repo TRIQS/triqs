@@ -111,38 +111,33 @@ namespace triqs {
       imperative_operator<class hilbert_space, scalar_t, false>
         monomial_op(many_body_op_t(1.0, op_vec), fops);
 
-      state<class hilbert_space, scalar_t, true> initial_st(full_hs);
-      state<class hilbert_space, scalar_t, true> final_st(full_hs);
-
       matrix_t m;
       int Bp = -1;
       bool found_nonzero_element = false;
 
-      auto const& B_fock_states = get_fock_states(B);
-      for(fock_state_t i_index = 0; i_index < B_fock_states.size(); ++i_index) {
-        fock_state_t i = B_fock_states[i_index];
-        initial_st(i) = scalar_t(1.0);
+      for(auto [i_index, i]: itertools::enumerate(get_fock_states(B))) {
+        state<class hilbert_space, scalar_t, true> initial_st(full_hs, i);
 
-        final_st = monomial_op(initial_st);
+        auto final_st = monomial_op(initial_st);
 
-        foreach(final_st, [&](fock_state_t j, scalar_t x) {
+        // The initializer for i_index is needed here because of the Core Language Defect #2313.
+        // https://stackoverflow.com/a/46115028
+        foreach(final_st, [&, i_index = i_index, j_count = 0](fock_state_t j, scalar_t x) mutable {
+          assert(++j_count == 1);
           for(auto const& sp : sub_hilbert_spaces) {
             if(sp.has_state(j)) {
               Bp = sp.get_index();
 
               if(not found_nonzero_element) {
-                m.resize(get_subspace_dim(Bp), get_subspace_dim(B));
-                m() = scalar_t(.0);
+                m = matrix_t::zeros({get_subspace_dim(Bp), get_subspace_dim(B)});
                 found_nonzero_element = true;
               }
 
               m(sp.get_state_index(j), i_index) = x;
-              continue;
+              break;
             }
           }
         });
-
-        initial_st(i) = scalar_t(0.);
       }
 
       if(Bp == -1)
