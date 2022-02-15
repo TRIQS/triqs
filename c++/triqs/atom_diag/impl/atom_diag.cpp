@@ -113,7 +113,6 @@ namespace triqs {
 
       matrix_t m;
       int Bp = -1;
-      bool found_nonzero_element = false;
 
       for(auto [i_index, i]: itertools::enumerate(get_fock_states(B))) {
         state<class hilbert_space, scalar_t, true> initial_st(full_hs, i);
@@ -128,9 +127,8 @@ namespace triqs {
             if(sp.has_state(j)) {
               Bp = sp.get_index();
 
-              if(not found_nonzero_element) {
+              if(m.empty()) {
                 m = matrix_t::zeros({get_subspace_dim(Bp), get_subspace_dim(B)});
-                found_nonzero_element = true;
               }
 
               m(sp.get_state_index(j), i_index) = x;
