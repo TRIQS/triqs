@@ -96,6 +96,15 @@ namespace triqs {
   */
       state(HilbertSpace const &hs) : hs_p(&hs) {}
 
+      /// Construct a new state object and set the st-th amplitude to 1.
+      /**
+       * @param hs Hilbert space the new state belongs to
+       * @param st Basis state with the unity amplitude
+       */
+      state(HilbertSpace const &hs, fock_state_t st) : hs_p(&hs) {
+        ampli[st] = value_type(1.0);
+      }
+
       /// Return the dimension of the associated Hilbert space
       /**
    @return Dimension of the associated Hilbert space
@@ -241,6 +250,15 @@ namespace triqs {
    @param hs Hilbert space the new state belongs to
   */
       state(HilbertSpace const &hs) : hs_p(&hs), ampli(nda::zeros<ScalarType>(hs.size())) {}
+
+      /// Construct a new state object and set the st-th amplitude to 1.
+      /**
+       * @param hs Hilbert space the new state belongs to
+       * @param st Basis state with the unity amplitude
+       */
+      state(HilbertSpace const &hs, fock_state_t st) : hs_p(&hs), ampli(nda::zeros<ScalarType>(hs.size())) {
+        ampli[st] = value_type(1.0);
+      }
 
       /// Return the dimension of the associated Hilbert space
       /**
