@@ -20,6 +20,7 @@
    triqs/plotting_protocols/contents
    triqs/provenance/contents
    triqs/random_generator/contents
+   triqs/stat/contents
    triqs/utilities/contents
    triqs/conventions
 

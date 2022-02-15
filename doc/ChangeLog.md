@@ -151,7 +151,25 @@ The relevant header files for nda are
 
 ### triqs::stat Rework
 
-TBW
+This release includes a rework of the statistics routines in triqs. Associated with this, we have renamed this part of
+triqs from "statistics" to "stat" in C++ namespace, C++ headers, python module (where wrapped), and documentation. 
+
+The main object of triqs::stat is the so-called `accumulator` class. This class takes in measurements during a Monte
+Carlo simulation and serves a dual purpose: (a) to perform logarithmic binning which can be used to estimate the
+auto-correlation time, (b) to perform linear binning to compress and the store data for further processing. The design
+is flexible –- either log or lin binning can be turned off -- in order to be useful in different cases. (Note: In this
+version, the estimation of the auto-correlation time is purposefully not fully automatic. Some user choice is required
+to turn the binning data into an auto-correlation time estimate).
+
+triqs::stat also includes function to calculate mean and standard errors (both single thread and mpi version) as well as
+new jackknife routines (single thread and mpi versions).
+
+Throughout, care has been taken to use numerically stable algorithms, especially when computing variances (mostly
+two-pass or Welford).
+
+The deprecated "statistics.hpp" including classes binned_series, ts_observer, jackknife, observable were removed.
+
+The histogram class `histogram` is generally unchanged except header name / namespace changes.
 
 ### Bath discretization function
 
