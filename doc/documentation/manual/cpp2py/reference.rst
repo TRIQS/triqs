@@ -1,10 +1,8 @@
 
 .. _documentation/manual/cpp2py:
 
-
 Python API of the desc file
-============================
-
+===========================
 
 .. toctree::
    :maxdepth: 1
@@ -12,5 +10,3 @@ Python API of the desc file
    module
    cfunction
    class
-
-

@@ -25,14 +25,13 @@ Let us first document :class:`HDFArchive`.
    Check however the :class:`HDFArchiveInert` below.   
  
 HDFArchive
-=======================================
+==========
 
 .. autoclass::  h5.HDFArchive
 
 
-
 HDFArchiveGroup
-=======================================
+===============
 
 .. class::  HDFArchiveGroup
 
@@ -131,8 +130,7 @@ HDFArchiveGroup
            - an hdf-compliant value   : the leaf is replaced by the value
  
 HDFArchiveInert
-=======================================
-
+===============
 
 .. class:: HDFArchiveInert
  
@@ -162,7 +160,7 @@ HDFArchiveInert
 .. _HDF_Protocol:
 
 Hdf-compliant objects
-=======================================
+=====================
 
 By definition, hdf-compliant objects are those which can be stored/retrieved in an :class:`HDFArchive`.
 In order to be hdf-compliant, a class must: 
@@ -173,7 +171,7 @@ In order to be hdf-compliant, a class must:
 .. _HDF_Protocol_data_scheme:
 
 HDF5 data scheme
------------------------
+----------------
 
 To each hdf-compliant object, we associate
 a `data scheme` which describes how the data is stored in the hdf5 tree, 
@@ -204,14 +202,10 @@ The function is
 
 .. _HDF_Protocol_details:
 
-How does a class become hdf-compliant ?
----------------------------------------
-
-There are two ways in which a class can become hdf-compliant: 
+How does a class become hdf-compliant?
+--------------------------------------
 
 .. toctree::
   :maxdepth: 1
 
-  protocol1
-  protocol2
-
+  protocol

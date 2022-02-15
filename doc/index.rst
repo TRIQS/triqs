@@ -7,10 +7,10 @@
 Welcome
 =======
 
-.. sidebar:: TRIQS 3.0
+.. sidebar:: TRIQS 3.1
 
-   This is the homepage TRIQS Version 3.0
-   For the changes in 3.0, Cf :ref:`changelog page <changelog>`
+   This is the homepage TRIQS Version 3.1
+   For the changes in 3.1, Cf :ref:`changelog page <changelog>`
 
       .. image:: _static/logo_github.png
          :width: 75%

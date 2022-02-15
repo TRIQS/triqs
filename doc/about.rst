@@ -20,7 +20,7 @@ Other developers include:
  I. Krivenko, T. Ayral, H. Strand, D. Simons, H. Hafermann, L. Messio, P. Seth.
 
 Citation
-=========
+========
 
 TRIQS is a part of our scientific work and we kindly request that
 projects using it include a citation to the following paper. In

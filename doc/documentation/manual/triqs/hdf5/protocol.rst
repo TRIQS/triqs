@@ -2,10 +2,10 @@
 .. _HDF_Protocol1:
 
 Solution 1. The class provides the transformation into a dict of hdf-compliant objects
-----------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 
 Principle
-^^^^^^^^^^^^^^
+^^^^^^^^^
 
 The object which can be reduced to and reconstructed from a dictionary whose keys are strings,
 and whose values are of one of the following types: 
@@ -35,7 +35,7 @@ A class `cls` has to implement :
    :rtype: a new object of type `cls`
  
 Example
-^^^^^^^^^^^^^
+^^^^^^^
 
 A little example::
 
@@ -58,9 +58,8 @@ A little example::
  # Testing it: 
  HDFArchive("myfile2.h5")['e'] = Example( [1,2,3], 56)
 
-
-What happens in details  ? 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+What happens in detail? 
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~h5.hdf_archive.HDFArchive`/:py:class:`~h5.hdf_archive.HDFArchiveGroup`  `H`.
 
@@ -87,5 +86,3 @@ Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~
        * Cls.__factory_from_dict__(name,D) is called and returns a new object Obj of type Cls, which is returned as `res`.
    
      * Otherwise, a new :py:class:`~h5.hdf_archive.HDFArchiveGroup` is constructed with `S` as root, and returned as `res`.
-
-   

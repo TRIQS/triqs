@@ -41,7 +41,7 @@ or :ref:`compilation from source <triqs_compilation>` and be sure to enable `arc
 Ubuntu Debian packages
 ----------------------
 
-We provide Debian packages for the Ubuntu LTS Versions 18.04 (bionic) and 20.04 (focal).
+We provide Debian packages for the Ubuntu LTS Version 20.04 (focal).
 They are hosted in a **TRIQS 3 specific** repository that can be added with::
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl

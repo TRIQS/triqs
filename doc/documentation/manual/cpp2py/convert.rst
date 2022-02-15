@@ -2,7 +2,7 @@ Convertion  vs wrapping
 =======================
 
 Wrapping classes from C++ to Python
---------------------------------------
+-----------------------------------
 
 The *wrapping*  of a C++ function or class consist in 
 creating a *new* function or class in Python which exposes its data and functionnality.
@@ -12,7 +12,7 @@ new Python module, written in C/C++, with new Python objects.
 This notion is to be distinguished from the more general notion of *convertion*.
 
 Convertion
------------
+----------
 
 Each time a function in C++ is called from python:
 

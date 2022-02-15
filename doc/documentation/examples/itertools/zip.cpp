@@ -10,4 +10,3 @@ int main() {
   for (auto [x,y] : itertools::zip(v1, v2)) 
     std::cout << x << "  " << y << std::endl;
 }
-

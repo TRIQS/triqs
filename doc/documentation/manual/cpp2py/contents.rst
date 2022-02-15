@@ -4,10 +4,10 @@
 
 .. _wrapper:
 
-c++2py: a C++/Python interfacing tool 
-=========================================
+Cpp2Py: a C++/Python interfacing tool 
+=====================================
 
-This TRIQS tool aims at generating the necessary wrapping code between C++ and Python.
+`Cpp2Py <https://github.com/triqs/cpp2py>`_ is a standalone tool that generates the necessary wrapping code between C++ and Python.
 Wrapping C++ functions and classes in Python is a non trivial problem because the two languages are quite different
 (e.g. C++ uses typically value semantics, while Python uses only counted documentation/manual/triqss, the C++ equivalent of std::shared_ptr).
 
@@ -21,12 +21,6 @@ This tool has the following main features:
 .. toctree::
    :maxdepth: 2
 
-   cfunction
-   class
    convert
-   magic
-   module
    principle
    reference
-   tutorial
-   wrap

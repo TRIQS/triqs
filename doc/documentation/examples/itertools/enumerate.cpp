@@ -9,4 +9,3 @@ int main() {
   for (auto [n,x] : itertools::enumerate(v)) 
     std::cout << n << "  " << x << std::endl;
 }
-

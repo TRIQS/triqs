@@ -1,14 +1,10 @@
 .. _documentation/manual:
 
-
-
 .. toctree::
    :caption: Manual
    :maxdepth: 1
  
-   triqs/arrays/contents
    triqs/atom_diag/contents
-   triqs/c++/mpi/mpi
    triqs/clef/contents
    triqs/det_manip/contents
    triqs/gfs/contents
@@ -24,4 +20,5 @@
    triqs/utilities/contents
    triqs/conventions
 
+   mpi/contents
    cpp2py/contents

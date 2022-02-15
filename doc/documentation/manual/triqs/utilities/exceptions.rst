@@ -1,11 +1,9 @@
-
 .. highlight:: c
 
 .. _util_exceptions:
 
 Exceptions
-=============
-
+==========
 
 TRIQS defines special exceptions, with the following characteristics :
 
@@ -21,7 +19,7 @@ TRIQS defines special exceptions, with the following characteristics :
 
 In addition, we provide a TRIQS_RUNTIME_ERROR macro to throw exception easily, Cf example below.
 
-.. warning::
+.. note::
   
    For uniformity, it is highly recommended to use these macros when developing for TRIQS.
 

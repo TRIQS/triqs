@@ -1,14 +1,9 @@
 triqs/MPI
-===============
+=========
 
-.. warning::
-
-   Library of beta quality.
-
-   More functionality may be added in the future.
 
 Introduction
---------------
+------------
 
 The purpose of the MPi library is to provide a simplified, C++-style API to the MPI routines for standard types
 (those for which an MPI type exists) and for composite higher-level objects, in particular the TRIQS arrays and Green's functions.
@@ -28,7 +23,7 @@ This allows us to write
 .. code-block:: c
 
   int a = 5;
-  triqs::mpi::reduce(a);
+  mpi::reduce(a);
 
 Such an interface is simpler to use and much less error prone. For higher-level objects, such as vectors or higher-dimensional arrays, the simplifcation is even more significant. Take the scatter and gather operations as examples:
 
@@ -53,25 +48,23 @@ Using the library these operations look as follows:
 .. code-block:: c
 
  nda::array<int, 3> A(8, 8, 8); // a three-dimensional array
- triqs::mpi::scatter(A);
+ mpi::scatter(A);
  //do something with the corresponding part of A on each node
- triqs::mpi::gather(A);
+ mpi::gather(A);
  
-All index computations are encapsulated in the triqs::mpi library calls.
-
-
-In principle, the Boost.MPI library provides a similar interface for basic types and standard library containers. Transmission of the data however requires serialization and doubles the required memory. This poses a severe limitation when large amounts of data are to be transmitted.
+All index computations are encapsulated in the mpi library calls.
 
 In this library, we employ metaprogramming techniques for type deduction as well as a lazy mechanism to avoid unecessary copyies of data.
  
-MPI documentation/manual/triqs
-----------------
 
-In this document, we describe the use of the TRIQS MPI library. For more information on MPI, see, e.g., the `open MPI web pages <http://www.open-mpi.org>`_ or consult the MPI documentation/manual/triqs documentation/manual. For more information on Boost.MPI, refer to the `Boost library documentation <http://www.boost.org>`_.
+MPI documentation/manual/triqs
+------------------------------
+
+In this document, we describe the use of the TRIQS MPI library. For more information on MPI, see, e.g., the `open MPI web pages <http://www.open-mpi.org>`_ or consult the MPI documentation/manual/triqs documentation/manual.
 
 
 Supported functions and types
-------------------------------
+-----------------------------
 
 Currently, the TRIQS MPI library supports the following operations::
 
@@ -96,11 +89,10 @@ We also support ``std::vector<T>`` for ``T`` being a basic type, as well as the 
 In addition, the library provides a mechanism to enable MPI support for custom containers based on the array or gf libraries.
 
 
-
 Basic usage
--------------
+-----------
 
-The syntax is inspired by Boost.MPI. In order to create an MPI environment, set up the communicator and broadcast a variable, use the following code block: 
+In order to create an MPI environment, set up the communicator and broadcast a variable, use the following code block: 
 
 .. code-block:: c
 
@@ -124,28 +116,20 @@ All collective operations have the same signature. They take up to three argumen
 
 Here T can be any supported type. The communicator is optional. By default, the data will be collected on (or transmitted from) the process with id 0.
 
+
 Headers
---------------
+-------
 
-Support for basic types is provided by the header ``triqs/mpi/base.hpp`` and for vectors and arrays by ``triqs/mpi/vector.hpp`` and ``tiqs/mpi/array.hpp``. For custom container types, the header ``triqs/mpi/generic.hpp`` is required. Support for Boost.MPI is provided by the ``triqs/mpi/boost.hpp`` header file. 
-
-For convenience, we provide the header::
-
-  triqs/mpi.hpp
-
-which includes the headers for basic, vector, array and generic type support.
-
+Support for built-in types is provided by the header ``mpi/mpi.hpp``, while string, pair and vector have their own headers ``mpi/string.hpp``, ``mpi/pair.hpp`` and ``mpi/vector.hpp``.
+Support for array types is provided by ``nda/mpi.hpp``.
 
 
 MPI example  
--------------
+-----------
 
-.. literalinclude:: /documentation/manual/triqs/c++/mpi/mpi_0.cpp
+.. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.cpp
   :language: cpp
 
-.. literalinclude:: /documentation/manual/triqs/c++/mpi/mpi_0.output
+.. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.output
 
 Simple MPI example.
-
-
-

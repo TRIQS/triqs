@@ -3,8 +3,7 @@
 .. module:: h5
 
 **[triqs/h5]** The HDF5 format
-###################################
-
+##############################
 
 In TRIQS, the main data storage format is `HDF5 <http://www.hdfgroup.org/HDF5/>`_ (Hierarchical Data Format v5).
 
@@ -55,5 +54,3 @@ and new subgroup for other hdf-compliant data.
 
    ref
    /userguide/hdf5/hdf5_tutorial
-
-

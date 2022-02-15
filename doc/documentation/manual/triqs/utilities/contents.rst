@@ -1,5 +1,5 @@
 **[triqs/utility]** Utilities: exceptions, tuple-tools, etc.
-*************************************************************
+************************************************************
 
 .. highlight:: c
 
@@ -8,8 +8,5 @@
    :numbered:
 
    exceptions
-   factory
    tupletools
-   std::array
    python_include_mess 
-    

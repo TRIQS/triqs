@@ -3,9 +3,9 @@
 .. _util_tuple:
 
 Tuple tools
-=============================
+===========
 
-Various standard functional operations on tuple (which should be in the STL but are not ...).
+Various standard functional operations on tuple.
 
 .. 
   .. note::
@@ -13,8 +13,9 @@ Various standard functional operations on tuple (which should be in the STL but 
     Simple measures have shown that these routines are **as fast as native code** (tested on gcc, clang, icc),
     due to inlining. They can therefore be used in critical parts of codes.
 
+
 apply
------------------------------------------------
+-----
 
 *Purpose*: `apply a function on a tuple of arguments`
 
@@ -37,7 +38,7 @@ apply
    :language: cpp
 
 for_each 
--------------------------------------------------------------------------
+--------
 
 *Purpose*: `apply a function for each element of a tuple (in order)`
 
@@ -62,7 +63,7 @@ for_each
     :language: cpp
 
 for_each_zip
--------------------------------------------------------------------------
+------------
 
 *Purpose*: `apply a function for each element of tuple zip (in order)`
 
@@ -86,7 +87,7 @@ for_each_zip
    :language: cpp
 
 map
--------------------------------------------------------------------------
+---
 
 *Purpose*: `map a function on a tuple to create a new tuple`
 
@@ -111,7 +112,7 @@ map
    :language: cpp
 
 fold
--------------------------------------------------------------------------
+----
 
 *Purpose*: `reduction of a tuple with a function`
 
@@ -171,7 +172,7 @@ fold
    :language: cpp
 
 reverse
--------------------------------------------------------------------------
+-------
 
 *Purpose*: `lazy reverse of a tuple`
 
