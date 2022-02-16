@@ -171,6 +171,8 @@ The deprecated "statistics.hpp" including classes binned_series, ts_observer, ja
 
 The histogram class `histogram` is generally unchanged except header name / namespace changes.
 
+Documentation can be found at https://triqs.github.io/triqs/latest/documentation/manual/triqs/stat/contents.html
+
 ### Bath discretization function
 
 To fit a given hybridization function, either in imaginary frequency or time we provide now a bath discretization function (triqs.gf.tools.discretize_bath).
