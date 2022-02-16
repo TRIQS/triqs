@@ -1,6 +1,7 @@
 .. index:: wrapper
 
 .. module:: cpp2py.wrap_generator
+   :noindex:
 
 .. _wrapper:
 

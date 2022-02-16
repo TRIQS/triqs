@@ -1,6 +1,7 @@
 .. index:: Second-quantization operators
 
 .. module:: triqs.operators
+   :noindex:
 
 .. _operators:
 

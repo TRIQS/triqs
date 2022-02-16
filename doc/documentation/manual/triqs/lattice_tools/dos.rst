@@ -1,6 +1,7 @@
 .. index:: lattices; dos
 
 .. module:: triqs.dos.dos
+   :noindex:
 
 .. _dos:
 
