@@ -288,6 +288,7 @@ See below for an itemized list of changes in this release
 
 ### doc
 * Change website theme to sphinx rtd
+* Generate Python Reference Documentation using sphinx autosummary + templates
 * Update install instructions extend conda installation instruction (#796)
 * Remove doc for triqs::arrays and old statistic tool
 * Update documentation examples after triqs mesh rework
