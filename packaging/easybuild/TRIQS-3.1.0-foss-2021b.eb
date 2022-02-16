@@ -1,8 +1,7 @@
 easyblock = 'CMakeMake'
 
 name = 'TRIQS'
-version = '3.0.2'
-versionsuffix = '-Python-%(pyver)s'
+version = '3.1.0'
 
 homepage = 'https://triqs.github.io/triqs'
 description = """
@@ -19,14 +18,14 @@ toolchainopts = {'pic': True, 'usempi': True}
 
 source_urls = ['https://github.com/TRIQS/triqs/releases/download/%(version)s/']
 sources = ['triqs-%(version)s.tar.gz']
-checksums = ['0420d214f66436b2652d0bdd17c41e96f72d7eacff636a88c1649f18a585711c']
+checksums = ['']
 
 dependencies = [
     ('Python', '3.9.6'),
     ('SciPy-bundle', '2021.10'),
     ('Boost', '1.77.0'),
     ('Clang', '13.0.1'),
-    ('Clang-Python-bindings', '13.0.1', '-Python-%(pyver)s'),
+    ('Clang-Python-bindings', '13.0.1'),
     ('GMP', '6.2.1'),
     ('HDF5', '1.10.7'),
     ('Mako', '1.1.4')
@@ -42,7 +41,7 @@ separate_build_dir = True
 # failing builds in the presence of preexisting installation.
 preconfigopts = "rm -rf %(installdir)s && "
 
-configopts = "-DBuild_Deps=Always"
+configopts = ""
 
 runtest = 'test'
 
