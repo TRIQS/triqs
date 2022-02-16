@@ -2,6 +2,7 @@
 .. index:: Green's functions
 
 .. module:: triqs.gf
+   :noindex:
 
 .. _green_py:
 

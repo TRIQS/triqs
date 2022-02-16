@@ -1,5 +1,6 @@
 
 .. module:: triqs.fit.fit
+   :noindex:
 
 Fitting data
 ============

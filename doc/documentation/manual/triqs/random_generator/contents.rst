@@ -1,6 +1,7 @@
 .. index:: Random number generator
 
 .. module:: triqs.random_generator
+   :noindex:
 
 .. _random_generator:
 

@@ -1,6 +1,7 @@
 .. index:: lattices
 
 .. module:: triqs.lattice
+   :noindex:
 
 .. _lattice:
 

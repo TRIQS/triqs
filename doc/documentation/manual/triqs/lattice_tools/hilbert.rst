@@ -1,6 +1,7 @@
 .. _hilbert_transform:
 
 .. module:: triqs.dos.hilbert_transform
+   :noindex:
 
 
 Hilbert Transform

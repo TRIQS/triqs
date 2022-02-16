@@ -2,6 +2,7 @@
 .. index:: matplotlib plotter
 
 .. module:: triqs.plot
+   :noindex:
 
 .. _plotting:
 
