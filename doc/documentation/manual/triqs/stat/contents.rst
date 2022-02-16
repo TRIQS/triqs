@@ -29,7 +29,7 @@ the mean and standard error are:
 
 .. math:: \bar{X} \approx \frac{1}{N} \sum_{i=0}^{N-1} x_{i} \\  (\Delta \bar{X})^2 \approx \frac{N-1}{N} \frac{ \sigma^2(x)}{N}
 
-Functions to perform these calculations (including mpi versions), are :ref:`implemented in the library <triqs__stat>`.
+Functions to perform these calculations (including mpi versions), are :ref:`implemented in the library </documentation/cpp_api/triqs/stat>`.
 
 We often want to computing the mean and error for quantities which are derived from our measured and binned data.
 Consider a general function :math:`f` that depend on several observables :math:`X,Y,\ldots`:
@@ -38,7 +38,7 @@ Consider a general function :math:`f` that depend on several observables :math:`
 
 Unless :math:`f` is linear, calculating a reliable estimate the error :math:`\Delta f` is a difficult problem, which can
 be addressed using resampling methods -- the simplest of these is the jackknife. We implement the :ref:`jacknife
-function <jackknife>` (and a :ref:`MPI version <jackknife_mpi>`), which allows for general user-specified functions
+function <triqs__stat__jackknife>` (and a :ref:`MPI version <triqs__stat__jackknife_mpi>`), which allows for general user-specified functions
 :math:`f` and input data :math:`X,Y,\ldots`.
 
-:ref: `C++ API Reference: </documentation/cpp_api/triqs/stat>`
+:ref:`C++ API Reference: </documentation/cpp_api/triqs/stat>`
