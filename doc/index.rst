@@ -73,7 +73,7 @@ To get an overview of the main TRIQS classes and their organizations, you can br
 After those steps, you will be familiar with the library and can use the complete :ref:`Documentation <documentation>` to answer your questions.
 
 If you experience any problem with the library, we have set up
-a platform for discussions with other users and developers as a `Google group <https://triqs.github.io/announcements>`_.
+a platform for discussions with other users and developers through the `Github Discussions <https://github.com/TRIQS/triqs/discussions>`_ forum.
 You can also post an issue on the `TRIQS GitHub <https://github.com/TRIQS/triqs>`_.
 
 Finally, if you want to contribute to the project, please check our :ref:`Contributing <triqs_contributing>` section.

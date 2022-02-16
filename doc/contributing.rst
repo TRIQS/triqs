@@ -35,6 +35,6 @@ directly with the TRIQS developers.
 Google group / mailing list
 ---------------------------
 
-As a platform for discussions with other users and developers we have set up
-a `Google group <https://triqs.github.io/announcements>`_.
+You can engage in discussions with other users and developers through the
+`Github Discussions <https://github.com/TRIQS/triqs/discussions>`_ forum.
 This channel is also used for the announcement of new releases and code updates.
