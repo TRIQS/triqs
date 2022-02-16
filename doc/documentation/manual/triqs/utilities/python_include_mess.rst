@@ -1,5 +1,5 @@
 Python include warnings
-===============================
+=======================
 
 Very often compile warnings of Python can be seen, something like ::
 
@@ -12,17 +12,15 @@ Very often compile warnings of Python can be seen, something like ::
     # define _POSIX_C_SOURCE 200809L
     ...
     #define _XOPEN_SOURCE 600
-    
 
-It is due to the fact that Python.h must be included 
+
+It is due to the fact that Python.h must be included
 before some other headers (cf python documentation).
 
-Solutions: 
+Solutions:
 
 #. include first some triqs library, like arrays.hpp, gfs.hpp, etc...
 
 #. include first <utility/first_include.hpp>
    that conditionally includes python if python is to be supported.
    (used by all triqs libs, hence the first point).
-
-

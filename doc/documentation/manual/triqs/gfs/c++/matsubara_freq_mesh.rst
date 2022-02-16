@@ -122,7 +122,7 @@ Non Member functions
 
 .. toctree::
 
-  :hidden:
+   :hidden:
 
    gf_mesh<imfreq>/mpi_scatter
    gf_mesh<imfreq>/mpi_gather

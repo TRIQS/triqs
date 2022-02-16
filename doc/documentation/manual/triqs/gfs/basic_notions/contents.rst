@@ -3,7 +3,7 @@
 
 .. _green:
 
-.. warning:: THIS IS BEING REWRITTEN. 
+.. warning:: THIS IS BEING REWRITTEN.
 
 
 Basic notions
@@ -38,7 +38,7 @@ in the Matsubara formalism:
 
   G_{\alpha \beta} (\tau) \equiv - \mathcal{T} \langle c_{\alpha}(\tau) c^{\dagger}_{\beta} (0)\rangle \qquad \text{ for } 0 \leq \tau \leq \beta
 
- 
+
 :ref:`Matsubara Green's function in imaginary frequencies <GfImFreq>` <GfImFreq>
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

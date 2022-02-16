@@ -8,7 +8,7 @@ for e.g. Fourier transforms and density calculations.
 .. math::
 
    G(i\omega) \approx \sum_{n = 0}^N \frac{a_n}{(i\omega)^n}
-   
+
 The TRIQS library provides functionalities to determine these tail coefficiencts
 through a least-square fitting procedure.
 

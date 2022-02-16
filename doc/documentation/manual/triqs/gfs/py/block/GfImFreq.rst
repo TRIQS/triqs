@@ -11,7 +11,8 @@ Reference
 ---------------
 
 .. autoclass:: triqs.gf.GfImFreq
-  :members: density, set_from_fourier, set_from_legendre
+   :noindex:
+   :members: density, set_from_fourier, set_from_legendre
 
 .. warning::
 
@@ -27,21 +28,21 @@ Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 Mesh                        MeshGf                       The mesh
 Data                        3d numpy of complex          Data[n,i1,i2] is the element of the Green function where:
-                                                          * n is the Matsubara index 
+                                                          * n is the Matsubara index
                                                           * i1, i2 are the indices
-                                                         
+
                                                          For real GF in time, we store only starting from n=0 and the
                                                          rest is deduced by symmetry
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
-                                                         repr(this_string) reproduces the indices 
+                                                         repr(this_string) reproduces the indices
 Name                        string                       Name of the Green function block
-Note                        string                       Note 
+Note                        string                       Note
 =========================   ===========================  ===========================================================================
 
 
-Example 
---------------- 
+Example
+---------------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_imfreq.py
    :include-source:
-   :scale: 70 
+   :scale: 70

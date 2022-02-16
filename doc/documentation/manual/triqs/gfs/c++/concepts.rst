@@ -3,43 +3,43 @@
 Concepts
 #################
 
-A Green function is simply a function, which has: 
+A Green function is simply a function, which has:
 
 * a `domain` for its variable(s) (e.g. Matsubara/real time/frequencies, Legendre coefficients).
-* a `target` space, i.e. the value of the Green function which can be: 
-   
+* a `target` space, i.e. the value of the Green function which can be:
+
    * a scalar (double, complex)
-   * a matrix, 
+   * a matrix,
    * another Green function (See below, currying Green functions ... REF ... ).
- 
+
 In this section, we define the general concepts for these objects.
 
 First, we need to distinguish the `domain` on which the function is defined
 from its representation in a computer, which we call a `mesh`.
 
 .. note::
-   
+
     "mesh" should be understood here in a general and abstract way,
     as the representation of the domain in the computer.
-    In most cases, it is indeed a real mesh on a domain (e.g. a Brillouin zone), 
+    In most cases, it is indeed a real mesh on a domain (e.g. a Brillouin zone),
     but the set of Legendre coefficients is also a mesh in our sense.
 
-We will therefore now formally define the concept for `domain`, for `mesh`, 
+We will therefore now formally define the concept for `domain`, for `mesh`,
 the notion of `pure function on a domain` (i.e. a mathematical Green function)
 and the notion of `function on a grid`.
 
 
 .. _Concept_Domain:
 
-Domain 
-------------------------------------------------- 
+Domain
+-------------------------------------------------
 
 * **Purpose** : The domain of definition of a function. It is a mathematical definition of the domain,
   and does not contain any mesh, or details on its representation in a computer.
 
 * **Refines**: RegularType.
 
-* **Definition**: 
+* **Definition**:
 
 +----------+--------------------------------------------------------------------+
 | Elements | Comment                                                            |
@@ -49,27 +49,27 @@ Domain
 +----------+--------------------------------------------------------------------+
 
 * **Examples** :
-  
+
  * Matsubara time
  * Matsubara frequencies (boson/fermion): in this case, point_t is `matsubara_freq`, a simple type containing (n, beta, statistics).
  * Real frequencies
- * Real time 
+ * Real time
  * Brillouin zone
  * Cartesian product of previous domains to build multi-variable functions.
 
 .. _Concept_PureFunctionOnDomain:
 
-PureFunctionOnDomain 
+PureFunctionOnDomain
 -----------------------
 
-* **Purpose** : 
-   A mathematical (pure) function from a domain to a target space. 
+* **Purpose** :
+   A mathematical (pure) function from a domain to a target space.
        * it has a domain of definition
        * it can be called on any point of the domain, as a *pure* function, i.e. without any side effect.
 
 * **Refines**   :
 
-* **Definition**: 
+* **Definition**:
 
 +--------------------------------------+----------------------------------------------------------+
 | Elements                             | Comment                                                  |
@@ -80,23 +80,23 @@ PureFunctionOnDomain
 |                                      | if it is in the domain...                                |
 +--------------------------------------+----------------------------------------------------------+
 
-* NB: Note that the return type of the function is *NOT* part of the concept, 
+* NB: Note that the return type of the function is *NOT* part of the concept,
   it has to be deduced by the compiler (using C++11 decltype, std::result_of, eg..).
 
 
 .. _Concept_Mesh:
 
-Mesh 
-------------------------------------------------- 
+Mesh
+-------------------------------------------------
 
 * **Purpose** : A mesh over a domain, and more generally the practical representation of the domain in a computer.
-  It does not really need to be a mesh: e.g. if the function is represented on a polynomial basis, 
+  It does not really need to be a mesh: e.g. if the function is represented on a polynomial basis,
   it is the parameters of this representation (max number of coordinates, e.g.)
 
 * **Refines**: RegularType,  H5-serializable
 
-* **Definition**: 
-  
+* **Definition**:
+
 +-------------------------------------------------------+-------------------------------------------------------------------------------+
 | Elements                                              | Comment                                                                       |
 +=======================================================+===============================================================================+
@@ -134,14 +134,14 @@ Mesh
 
 .. _Concept_MeshPoint:
 
-MeshPoint 
-------------------------------------------------- 
+MeshPoint
+-------------------------------------------------
 
 * **Purpose** : Abstraction of a point on a mesh. A little more than a ref to the mesh and a index.
 
 * **Refines**:  CopyConstructible.
 
-* **Definition**: 
+* **Definition**:
 
 +------------------------------------------------+--------------------------------------------------------------------+
 | Elements                                       | Comment                                                            |
@@ -173,23 +173,23 @@ MeshPoint
 For one dimensional mesh, we also require that the MeshPoint implement the basic arithmetic operations
 using the cast.
 
-* **Discussion**: 
+* **Discussion**:
 
 A MeshPoint is just an index of a point on the mesh, and containers like gf can easily be overloaded for this type
 to have a direct access to the grid (Cf [] operator of gf).
 
-However, since the MeshPoint can be implicitely casted into the domain point, simple 
+However, since the MeshPoint can be implicitely casted into the domain point, simple
 expression like  ::
 
   g[p] = 1/ (p +2)
 
 make sense and fill the corresponding point wiht the evaluation of 1/ (p+2) in the domain.
 
-As a result, because iterating on a mesh result in a series of object modelling MeshPoint, 
+As a result, because iterating on a mesh result in a series of object modelling MeshPoint,
 one can write naturally ::
 
     // example of g, a Green function in Matsubara frequencies w
-    for (auto w: g.mesh()) 
+    for (auto w: g.mesh())
        g[w] = 1/(w + 2)
     // This runs overs the mesh, and fills the function with 1/(w+2)
     // In this expression, w is casted to the domain_t::point_t, here a complex<double>

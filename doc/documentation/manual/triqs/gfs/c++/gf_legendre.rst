@@ -1,6 +1,6 @@
 .. highlight:: c
 
-.. _gf_legendre: 
+.. _gf_legendre:
 
 **[gf<legendre>]** Legendre representation
 ==========================================================
@@ -17,8 +17,8 @@ Synopsis
 
   gf<legendre, Target, Opt>
 
-The *Target* template parameter can take the following values: 
- 
+The *Target* template parameter can take the following values:
+
 +-------------------------+-----------------------------------------------------+
 | Target                  | Meaning                                             |
 +=========================+=====================================================+

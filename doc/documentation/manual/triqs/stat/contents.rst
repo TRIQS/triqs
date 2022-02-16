@@ -11,7 +11,7 @@ provides routines for:
 (b) calculating averages and errors for data and functions of data
 (c) constructing histograms
 
-Processing Correlated Data 
+Processing Correlated Data
 ---------------------------
 
 In general, the output samples produced in Monte Carlo type simulations are *not* independent of one another, but
@@ -21,7 +21,7 @@ have to obtain independent samples from by binning the raw samples. The central 
 :ref:`accumulator class <triqs__stat__accumulator>`. This provides functions to both to estimate :math:`\tau` and to
 actually bin and store data.
 
-Averages and Standard Errors 
+Averages and Standard Errors
 -----------------------------
 
 For independent samples :math:`\lbrace x_i\rbrace _{i=0\dots N-1}` of the elementary observable :math:`X`, estimates of

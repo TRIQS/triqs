@@ -4,7 +4,7 @@ C++ documentation
 =========================
 
 The TRIQS library provides a generic container `gf` and its views `gf_view` and `gf_const_view`, to store and manipulate
-various Green functions on various meshes, e.g.: 
+various Green functions on various meshes, e.g.:
 
 * Matsubara frequency(ies),
 * Matsubara time(s),
@@ -14,7 +14,7 @@ various Green functions on various meshes, e.g.:
 * Block of other green functions.
 * Cartesian product of green functions.
 
-Various free functions are also provided to handle transformations between various representation of a Green function, 
+Various free functions are also provided to handle transformations between various representation of a Green function,
 such as Fourier transforms.
 
 

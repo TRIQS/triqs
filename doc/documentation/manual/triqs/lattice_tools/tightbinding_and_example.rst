@@ -23,7 +23,7 @@ TightBinding
 
 A tight-binding lattice is defined by the relation:
 
-.. math::  \mathbf{t}_k  = \sum_{\mathbf{R}\in \mathrm{BL}} e^{i \mathbf{k}\cdot \mathbf{R}} \mathbf{t}_\mathbf{R} 
+.. math::  \mathbf{t}_k  = \sum_{\mathbf{R}\in \mathrm{BL}} e^{i \mathbf{k}\cdot \mathbf{R}} \mathbf{t}_\mathbf{R}
 
 where :math:`\mathbf{t}_i` is the matrix of the hoppings from a
 documentation/manual/triqs unit cell (:math:`\mathbf{R}=O`\ ) to a unit cell indexed by

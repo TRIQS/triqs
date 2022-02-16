@@ -9,7 +9,7 @@ Parameter & construction
 The template parameter is the **FunctionType**, the type of F,
 which is completely general but has to model the concept
 
-  * return_type: type returned by the function 
+  * return_type: type returned by the function
   * argument_type: type of the argument of the function (type of x and y).
 
 
@@ -87,7 +87,7 @@ Public member functions
 Synopsis
 -----------
 
-* The possible operations on the matrix M are: 
+* The possible operations on the matrix M are:
 
 +------------+--------------------------------+
 | Operation  | Effect                         |
@@ -106,14 +106,14 @@ Synopsis
 +------------+--------------------------------+
 
 
-* Each operation *OP* is called in two steps: 
+* Each operation *OP* is called in two steps:
 
-  * 
+  *
     .. code-block:: c
 
-       value_type try_OP(arguments ...) 
+       value_type try_OP(arguments ...)
 
-    Returns the ratio 
+    Returns the ratio
 
     .. math:: \frac{det M'}{det M}
 
@@ -121,16 +121,16 @@ Synopsis
 
     try_OP **does NOT** modify the matrix :math:`M`.
 
-  * 
+  *
     .. code-block:: c
-   
-       void complete_operation() 
 
-    Complete the last operation OP (the last called try_OP), by updating the list of x and y 
+       void complete_operation()
+
+    Complete the last operation OP (the last called try_OP), by updating the list of x and y
     and the inverse of the matrix to :math:`(M')^{-1}`.
 
-* This structure is designed to write  Monte Carlo algorithms: 
-  
+* This structure is designed to write  Monte Carlo algorithms:
+
   * the try part of the move calls some try_OP
   * if and only if the move is accepted, is the complete_operation called.
 
@@ -139,17 +139,17 @@ Under the hood ...
 
 * All matrix algebra is made with BLAS calls.
 
-* The storage is done in a compact way: when a column or row is added, 
+* The storage is done in a compact way: when a column or row is added,
   no data are shifted, it is added at the end of the matrix.
   However, the permutation of row and columns are handled by this class
   so that this is transparent for the user.
 
 
-Full documentation/manual/triqs 
+Full documentation/manual/triqs
 --------------------------------
 
 .. warning::
-    In construction 
+    In construction
 
 
 .. toctree::
@@ -158,7 +158,7 @@ Full documentation/manual/triqs
    /triqs/det_manip/det_manip
 
 
-Example  
+Example
 ---------
 
 .. literalinclude:: /documentation/manual/triqs/det_manip/det_manip_0.cpp

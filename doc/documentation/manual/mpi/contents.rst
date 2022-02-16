@@ -15,10 +15,10 @@ The communication routines in the C API of the MPI library have require several 
   int MPI_Reduce(void *sendbuf, void *recvbuf, int count,
                  MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)
 
-In principle, all parameters except for the communicator and id of the root process can be determined from the variable or object to be transmitted. 
+In principle, all parameters except for the communicator and id of the root process can be determined from the variable or object to be transmitted.
 In most cases, we use ``MPI_COMM_WORLD`` as the communicator, take the id 0 for the root process and use ``MPI_SUM`` as the operation.
 
-This allows us to write 
+This allows us to write
 
 .. code-block:: c
 
@@ -41,7 +41,7 @@ Such an interface is simpler to use and much less error prone. For higher-level 
 
 In order to scatter a (contiguos) multidimensional array across all nodes, apply some operations to it and gather it back on the master one requires several lines of relatively complex code.
 The leading dimension of the array needs to be sliced, slice length and adress of the first element of each slice have to be computed and finally the MPI C API function has to be called.
-This can be packaged in the library once and for all. 
+This can be packaged in the library once and for all.
 
 Using the library these operations look as follows:
 
@@ -51,11 +51,11 @@ Using the library these operations look as follows:
  mpi::scatter(A);
  //do something with the corresponding part of A on each node
  mpi::gather(A);
- 
+
 All index computations are encapsulated in the mpi library calls.
 
 In this library, we employ metaprogramming techniques for type deduction as well as a lazy mechanism to avoid unecessary copyies of data.
- 
+
 
 MPI documentation/manual/triqs
 ------------------------------
@@ -92,7 +92,7 @@ In addition, the library provides a mechanism to enable MPI support for custom c
 Basic usage
 -----------
 
-In order to create an MPI environment, set up the communicator and broadcast a variable, use the following code block: 
+In order to create an MPI environment, set up the communicator and broadcast a variable, use the following code block:
 
 .. code-block:: c
 
@@ -124,11 +124,11 @@ Support for built-in types is provided by the header ``mpi/mpi.hpp``, while stri
 Support for array types is provided by ``nda/mpi.hpp``.
 
 
-MPI example  
+MPI example
 -----------
 
 .. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.cpp
-  :language: cpp
+   :language: cpp
 
 .. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.output
 

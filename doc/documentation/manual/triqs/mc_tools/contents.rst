@@ -8,7 +8,6 @@ Monte Carlo algorithms in a simple framework. The class takes care of the basic
 mechanics which is common to any Monte Carlo method so that you can focus on
 the implementation details of your specific algorithm.
 
-
 .. toctree::
    :maxdepth: 1
 
@@ -19,4 +18,3 @@ the implementation details of your specific algorithm.
    full_ref
    random
    ising
-    

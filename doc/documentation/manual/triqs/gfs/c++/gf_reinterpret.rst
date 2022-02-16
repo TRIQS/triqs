@@ -5,18 +5,18 @@
 Target reinterpretation
 =========================
 
-**Synopsis** :: 
+**Synopsis** ::
 
-    gf_view<Variable, matrix_valued, Opt> 
+    gf_view<Variable, matrix_valued, Opt>
        reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<Variable, scalar_valued, Opt>);
-    
-    gf_view<Variable, matrix_valued, Opt> 
+
+    gf_view<Variable, matrix_valued, Opt>
        reinterpret_scalar_valued_gf_as_matrix_valued(gf<Variable, scalar_valued, Opt> &);
 
-    gf_const view<Variable, matrix_valued, Opt> 
+    gf_const view<Variable, matrix_valued, Opt>
        reinterpret_scalar_valued_gf_as_matrix_valued(gf_const_view<Variable, scalar_valued, Opt>);
-    
-    gf_const_view<Variable, matrix_valued, Opt> 
+
+    gf_const_view<Variable, matrix_valued, Opt>
        reinterpret_scalar_valued_gf_as_matrix_valued(gf<Variable, scalar_valued, Opt> const &);
 
 

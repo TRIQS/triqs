@@ -3,7 +3,7 @@
 .. toctree::
    :caption: Manual
    :maxdepth: 1
- 
+
    triqs/atom_diag/contents
    triqs/clef/contents
    triqs/det_manip/contents

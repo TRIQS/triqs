@@ -11,7 +11,8 @@ Reference
 ---------------
 
 .. autoclass:: triqs.gf.GfReFreq
-  :members: set_from_fourier, inverse_fourier, transpose, conjugate, set_from_pade
+   :noindex:
+   :members: set_from_fourier, inverse_fourier, transpose, conjugate, set_from_pade
 
 .. warning::
 
@@ -27,16 +28,16 @@ Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 Mesh                        MeshGf                       The mesh
 Data                        3d numpy of complex          Data[n,i1,i2] is the element of the Green function where:
-                                                          * n is the frequency index 
+                                                          * n is the frequency index
                                                           * i1, i2 are the indices
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
-                                                         repr(this_string) reproduces the indices 
+                                                         repr(this_string) reproduces the indices
 Name                        string                       Name of the Green function block
-Note                        string                       Note 
+Note                        string                       Note
 =========================   ===========================  ===========================================================================
 
 
-Examples 
+Examples
 ---------------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_refreq.py

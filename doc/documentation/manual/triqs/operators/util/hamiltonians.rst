@@ -10,5 +10,6 @@ The Hamiltonians can be written for any set of spin and orbital names. Note that
 simply identify a division of the GF structure into non-hybridizing blocks.
 
 .. automodule:: triqs.operators.util.hamiltonians
+   :noindex:
    :members:
    :member-order: bysource

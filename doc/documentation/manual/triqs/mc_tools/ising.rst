@@ -42,6 +42,6 @@ The Monte-Carlo itself can now be written:
 
 .. literalinclude:: /documentation/manual/triqs/mc_tools/ising.cpp
     :language: cpp
-  
+
 .. literalinclude:: /documentation/manual/triqs/mc_tools/ising.output
 

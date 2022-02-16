@@ -12,9 +12,9 @@ For example ::
   template<ImmutableArray A> void f(A const & a);
 
 means that f is a template ::
-  
+
   template<typename A> void f(A const & a);
- 
+
 which is enabled or valid only for types A which models the `ImmutableArray` concept.
 
 
@@ -27,7 +27,7 @@ The c++ source code is documented with `Doxygen <http://www.doxygen.org>`_-like 
  - **return**: description of the return type
  - **note**: a note on the class/functions
  - **warning**: a warning
- 
+
 Latex code is written between dollar signs (e.g $f(x)=x$), and links to other classes or functions are to be put between double brackets (e.g. [[imfreq]]).
 
 For the rest, we use the `RST <http://sphinx-doc.org/rest.html>`_ syntax.

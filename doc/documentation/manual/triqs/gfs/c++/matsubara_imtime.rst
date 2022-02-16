@@ -59,7 +59,7 @@ Member functions
 
 .. toctree::
 
-  :hidden:
+   :hidden:
 
    gf_mesh<imtime>/constructor
    gf_mesh<imtime>/get_interpolation_data

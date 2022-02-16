@@ -4,7 +4,7 @@
 
 .. _wrapper:
 
-Cpp2Py: a C++/Python interfacing tool 
+Cpp2Py: a C++/Python interfacing tool
 =====================================
 
 `Cpp2Py <https://github.com/triqs/cpp2py>`_ is a standalone tool that generates the necessary wrapping code between C++ and Python.
@@ -13,7 +13,7 @@ Wrapping C++ functions and classes in Python is a non trivial problem because th
 
 This tool has the following main features:
 
- * it is entirely automatic in most cases, i.e. except for some advanced features that require additionnal inputs. 
+ * it is entirely automatic in most cases, i.e. except for some advanced features that require additionnal inputs.
  * it is quite flexible.
  * it can be used with a magic cell command in the Python notebook.
 

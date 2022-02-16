@@ -10,7 +10,7 @@ for e.g. Fourier transforms and density calculations.
 .. math::
 
    G(i\omega) \approx \sum_{n = 0}^N \frac{a_n}{(i\omega)^n}
-   
+
 The TRIQS library provides functionalities to determine these tail coefficiencts
 through a least-square fitting procedure.
 
@@ -28,7 +28,7 @@ Given a Matsubara or Real-frequency Green function :math:`G(i\omega)` with arbit
 
 * This function will consider twenty percent of the frequencies (the largest by absolute value) for the least square fit.
   The largest order :math:`N` for the fit is automatically determined based on the value of the largest frequency such that
-  :math:`\|\omega_{max}\|^{1-N} > 10^{-16}`. The function will return a pair containing both the resulting high-frequency
+   :math:`\|\omega_{max}\|^{1-N} > 10^{-16}`. The function will return a pair containing both the resulting high-frequency
   moment array and an error corresponding to the mean deviation from the data.
 
 .. code-block:: c
@@ -63,7 +63,7 @@ Adjusting the fit parameters (Advanced)
 The experienced user can adjust the parameters of the fitting procedure directly:
 
 .. code-block:: c
-   
+
    G.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order)
 
 The fitting parameters are

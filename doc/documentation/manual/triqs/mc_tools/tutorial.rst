@@ -106,7 +106,7 @@ they don't have inheritance links with ``mc_generic``).  Actually you are
 almost completely free to design these classes as you want, **as long as they
 satisfy the correct concept**.
 
-The move 
+The move
 **********
 
 Let's go back to the beginning of the code and have a look at the ``flip``
@@ -145,7 +145,7 @@ return type of ``attempt`` and ``accept`` has to be the same as the template of 
 Monte Carlo class.  In our example, nothing has to be done if the move is
 rejected. If it is accepted, the spin should be flipped.
 
-The measure 
+The measure
 ************
 
 Just in the same way, the measures are expected to satisfy a concept.
@@ -179,7 +179,7 @@ the simulation with::
 
     SpinMC.warmup_and_accumulate(n_warmup_cycles, n_cycles, length_cycle, triqs::utility::clock_callback(600));
 
-The ``warmup`` method takes several arguments. 
+The ``warmup`` method takes several arguments.
 
 The first three parameters determine the warmup length, number of measurements
 and the length of the Monte Carlo cycles.  The definition of these variables

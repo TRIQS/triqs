@@ -11,12 +11,12 @@
 The blocks: matrix-valued Green's functions
 ===============================================
 
-In this section, we present the matrix-valued Green's functions, 
+In this section, we present the matrix-valued Green's functions,
 i.e. the blocks of the full local Green's function.
-They are available in various flavours: 
+They are available in various flavours:
 
 .. toctree::
-  :maxdepth: 1
+   :maxdepth: 1
 
   block/GfImTime
   block/GfImFreq
@@ -38,11 +38,11 @@ Block Green's functions support various simple operations.
 * compound operators, `+=`, `-=`, `*=`, `\=`: the RHS can be a Green's function of the same type or an expression
 
 * arithmetic operations: `+`, `-`, `*`, `/`, e.g.::
-   
+
    g = g1 + 2*g2
 
 * inversion, e.g.::
-  
+
    inv = inverse(g)
    g2 = inverse(inverse(g) - sigma) # this is Dyson's equation
 
@@ -103,7 +103,7 @@ This sets the data and tail of g with the RHS.
   * If RHS is Green's function, it must be of the same type and size must match
   * If RHS is a formal expression, it must be of the same size
 
-To simplify the notation, in the case where one accesses the Green's function with a [ ] operation, 
+To simplify the notation, in the case where one accesses the Green's function with a [ ] operation,
 the = sign is possible and equivalent to the `<<` operator.
 
 .. warning::
@@ -113,20 +113,20 @@ the = sign is possible and equivalent to the `<<` operator.
    Let us illustrate this issue on a simple example::
 
     from triqs.gf import *
-    # Create the Matsubara-frequency Green's function 
+    # Create the Matsubara-frequency Green's function
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
 
-    g    << inverse( Omega + 0.5 )   # correct 
+    g    << inverse( Omega + 0.5 )   # correct
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
 
 
    However, the following line is almost certainly NOT what you have in mind::
 
-    g = inverse( Omega + 0.5 )  
+    g = inverse( Omega + 0.5 )
 
-   * The documentation/manual/triqs g is reassigned to the object `inverse( Omega + 0.5 )`, which is not a block Green's function but a lazy expression. 
+   * The documentation/manual/triqs g is reassigned to the object `inverse( Omega + 0.5 )`, which is not a block Green's function but a lazy expression.
    * The block created earlier is destroyed immediately.
- 
+
 
 Lazy expressions
 ----------------
@@ -134,25 +134,25 @@ Lazy expressions
 To initialize the Green's function, one can use lazy_expression, made of Green's functions, `descriptors`
 assembled with basic operations.
 
-:ref:`descriptors<descriptors>` are abstract objects that do not contain data, but describe a simple function and 
+:ref:`descriptors<descriptors>` are abstract objects that do not contain data, but describe a simple function and
 can be evaluated, can compute the high-frequency expansion, and so on. For example:
 
- * `Omega`: is the function :math:`f(\omega) = \omega`. 
+ * `Omega`: is the function :math:`f(\omega) = \omega`.
  * `SemiCircular(D)`: is a Green's function corresponding to free fermions with a semicircular density of states of half-bandwith `D`.
  * `Flat`: is a Green's function corresponding to fermions with a flat density of states of half-bandwidth `D`.
 
 .. toctree::
-  :maxdepth: 1
+   :maxdepth: 1
 
   descriptors
 
-shelve / pickle 
+shelve / pickle
 ---------------
 
 Green's functions are `picklable`, i.e. they support the standard python serialization techniques.
 
 * It can be used with the `shelve <http://docs.python.org/library/shelve.html>`_ and `pickle <http://docs.python.org/library/pickle.html>`_  module::
-  
+
      import shelve
      s = shelve.open('myfile','c')
      s['G'] = g  # g is stored in the file.
@@ -170,14 +170,14 @@ Green's functions are `picklable`, i.e. they support the standard python seriali
 Plot options
 ------------
 
-There is one important option that you will find very useful when plotting Green's functions, which we 
+There is one important option that you will find very useful when plotting Green's functions, which we
 saw already in the previous section:
 
 * `mode` = 'R' or 'I' or 'S'
 
 It tells the plotter, what part of the Green's function you want to plot. 'R' for the real part, 'I'
-for the imaginary part, and 'S' for the spectral function, :math:`-1/\pi{\rm Im}G`. Of course, 
-depending on the type of Green's function under consideration, one or more of these options do not make a lot of sense, e.g. 
+for the imaginary part, and 'S' for the spectral function, :math:`-1/\pi{\rm Im}G`. Of course,
+depending on the type of Green's function under consideration, one or more of these options do not make a lot of sense, e.g.
 calculating the spectral function of an imaginary-time Green's function is not useful.
 
 

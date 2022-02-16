@@ -11,7 +11,8 @@ Reference
 ---------------
 
 .. autoclass:: triqs.gf.GfImTime
-  :members: set_from_fourier, set_from_legendre, transpose, conjugate
+   :noindex:
+   :members: set_from_fourier, set_from_legendre, transpose, conjugate
 
 .. warning::
 
@@ -31,9 +32,9 @@ Data                        3d numpy of double           Data[n,i1,i2] is the el
                                                           * n is the index of the time slice, starting at tau=0
                                                           * i1, i2 are the indices
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
-                                                         repr(this_string) reproduces the indices 
+                                                         repr(this_string) reproduces the indices
 Name                        string                       Name of the Green function block
-Note                        string                       Note 
+Note                        string                       Note
 =========================   ===========================  ===========================================================================
 
 Example
@@ -41,5 +42,5 @@ Example
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_imtime.py
    :include-source:
-   :scale: 70 
+   :scale: 70
 

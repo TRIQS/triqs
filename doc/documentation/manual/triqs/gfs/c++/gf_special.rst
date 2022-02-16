@@ -4,7 +4,7 @@ Specializations
 -------------------
 
 In this section, we describe the various specializations of the generic container *gf*.
-We concentrate only on specific properties, since every specialization has the members and functions described 
+We concentrate only on specific properties, since every specialization has the members and functions described
 for :ref:`gf container<gf_and_view:>`.
 
 .. toctree::

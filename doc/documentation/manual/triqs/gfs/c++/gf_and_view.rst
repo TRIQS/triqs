@@ -2,16 +2,16 @@
 
 .. _gf_and_view:
 
-gf and views 
+gf and views
 ==============
 
 **Synopsis**:
 
 .. code-block:: c
 
-  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;      
-  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view; 
-  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_const_view; 
+  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;
+  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;
+  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_const_view;
 
 Hereafter, we describe the containers, the views.
 Properties specific to each :ref:`specializations<gf_special>` are described in a specific page, linked in the table below.
@@ -33,7 +33,7 @@ Template parameters
 
 The various specializations of the container and its views are decribed in in the :ref:`specializations<gf_special>` page.
 
-The *Variable* template parameter can take the following values: 
+The *Variable* template parameter can take the following values:
 
 +--------------------------+--------------------------------------------+
 | Variable                 | Meaning                                    |
@@ -53,8 +53,8 @@ The *Variable* template parameter can take the following values:
 | prod<Gs...> | Cartesian product of gf<Gs> ... functions.              |
 +--------------------------+--------------------------------------------+
 
-The *Target* template parameter can take the following values: 
- 
+The *Target* template parameter can take the following values:
+
 +-------------------------+-----------------------------------------------------+
 | Target                  | Meaning                                             |
 +=========================+=====================================================+
@@ -66,7 +66,7 @@ The *Target* template parameter can take the following values:
 +-------------------------+-----------------------------------------------------+
 
 
-Member types 
+Member types
 --------------------------------------
 
 +----------------+-------------------------------------------------------------+
@@ -126,9 +126,9 @@ Member functions
    gf_call
    gf_subcript
    compound_ops
-   call 
+   call
    resize
-   STL 
+   STL
 
 Non-member functions
 ------------------------
@@ -150,6 +150,6 @@ Non-member functions
 
    stream
    swap
-  
-   
+
+
 

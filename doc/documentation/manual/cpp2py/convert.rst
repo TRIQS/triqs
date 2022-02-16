@@ -4,9 +4,9 @@ Convertion  vs wrapping
 Wrapping classes from C++ to Python
 -----------------------------------
 
-The *wrapping*  of a C++ function or class consist in 
+The *wrapping*  of a C++ function or class consist in
 creating a *new* function or class in Python which exposes its data and functionnality.
-For example, by wrapping a C++ Green function class, one produces a 
+For example, by wrapping a C++ Green function class, one produces a
 new Python module, written in C/C++, with new Python objects.
 
 This notion is to be distinguished from the more general notion of *convertion*.
@@ -25,7 +25,7 @@ E.g. a Python integer is *not* simply a C++ int.
 
 The convertion is determined by the C++ type.
 
-The wrapped classes are automatically convertible, as well as a list of 
+The wrapped classes are automatically convertible, as well as a list of
 C++/Python types.
 The t able of possible convertions is (here by convertion T\ :sub:`p` is the Python convertion of C++ T):
 
@@ -52,7 +52,7 @@ The t able of possible convertions is (here by convertion T\ :sub:`p` is the Pyt
 
 
 
- 
+
 
 
 

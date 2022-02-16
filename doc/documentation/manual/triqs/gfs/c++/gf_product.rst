@@ -1,6 +1,6 @@
-.. _gf_product: 
+.. _gf_product:
 
-**[gf<prod<X,Y,...>>]** Multiple variables 
+**[gf<prod<X,Y,...>>]** Multiple variables
 ========================================================
 
 Domain & mesh
@@ -52,7 +52,7 @@ built from the linear interpolation of the domains.
 Data storage
 ---------------
 
-Like single variables gf, the first index of the array is a flattening 
+Like single variables gf, the first index of the array is a flattening
 of the indices of the composite mesh.
 
 
@@ -65,15 +65,15 @@ so that the first indices are *not* flatten. EXPLAIN.
 Functional techniques
 ------------------------
 
-See: 
+See:
 
 .. toctree::
-  
+
    :maxdepth: 1
 
    gf_part_eval_curry
 
- 
+
 Examples
 ---------
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_product_0.cpp

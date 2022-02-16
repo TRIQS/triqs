@@ -1,6 +1,6 @@
 .. highlight:: c
 
-.. _gf_misc: 
+.. _gf_misc:
 
 Misc
 ==========================================================
@@ -13,4 +13,4 @@ Statistic
 The enum statistic_enum encode the statistic ::
 
    enum statistic_enum {Boson,Fermion};
- 
+

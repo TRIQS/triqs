@@ -4,7 +4,7 @@
 Evaluating CLEF expressions
 ===============================
 
-Forming expressions is nice, but completely useless unless one can *evaluate* them 
+Forming expressions is nice, but completely useless unless one can *evaluate* them
 by affecting some values to the placeholder and actually *do* the computation.
 
 Expressions are evaluated with the eval function ::
@@ -24,7 +24,7 @@ Complete evaluation
 
 .. literalinclude:: /documentation/manual/triqs/clef/expressions_eval_0.cpp
 
-Note that: 
+Note that:
 
 * The order of placeholder does not matter in calling eval.
 * It is an error to put the same placeholder twice.
@@ -39,7 +39,7 @@ and rebuild a new expression tree.
 Example ::
 
  auto e1 = x_  + 2*y_;
-                                          // return type  ---> value 
+                                          // return type  ---> value
  auto r  = eval( e1 , x_ =1);             // expression   ---> 1 + (2 * y_)
  auto e2 = eval( e1 , x_ =x_ + y_);       // expression   ---> ((x_ + y_) + (2 * y_))
  auto r  = eval( e2,  x_ = 1, y_ = 2);    // int          ---> 7

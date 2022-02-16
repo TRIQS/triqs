@@ -1,6 +1,6 @@
 .. highlight:: c
 
-.. _gf_imfreq: 
+.. _gf_imfreq:
 
 **[gf<imfreq>]** Green function on Matsubara frequencies
 ==========================================================
@@ -14,8 +14,8 @@ Synopsis
 
   gf<imfreq, Target, Opt>
 
-The *Target* template parameter can take the following values: 
- 
+The *Target* template parameter can take the following values:
+
 +-------------------------+-----------------------------------------------------+
 | Target                  | Meaning                                             |
 +=========================+=====================================================+
@@ -29,9 +29,9 @@ Domain & mesh
 
 The domain is triqs::gfs::matsubara_domain.
 
-The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermions and :math:`\omega_n=\frac{2n\pi}{\beta}` for bosons. 
+The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermions and :math:`\omega_n=\frac{2n\pi}{\beta}` for bosons.
 
-The mesh is :ref:`gf_mesh_imfreq`. 
+The mesh is :ref:`gf_mesh_imfreq`.
 
 
 Evaluation method
@@ -39,9 +39,9 @@ Evaluation method
 
 * No interpolation.
 
-* Return type: 
+* Return type:
 
-  * If Target==scalar_valued: a complex 
+  * If Target==scalar_valued: a complex
   * If Target==matrix_valued: an object modeling ImmutableMatrix concept.
 
 * When the point is outside of the mesh, the high-frequency moments of the
@@ -53,7 +53,7 @@ Data storage
 ---------------
 
 * If Target==scalar_valued :
-  
+
   * `data_t`: 1d array of complex<double>.
 
   * g.data()(i) is the value of g for the i-th point of the mesh.
@@ -76,7 +76,7 @@ Examples
 
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_imfreq_0.cpp
-  :language: cpp
+   :language: cpp
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_imfreq_0.output
 
@@ -84,7 +84,7 @@ Free functions
 ---------------------
 
 .. toctree::
-  :maxdepth: 1
+   :maxdepth: 1
 
   /documentation/cpp_api/triqs/gfs/is_gf_real
   /documentation/cpp_api/triqs/gfs/is_gf_real_in_tau

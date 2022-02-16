@@ -57,5 +57,6 @@ Python
 ------
 
 .. automodule:: triqs.operators.util.extractors
-    :members:
+    :noindex:
+   :members:
     :member-order: bysource

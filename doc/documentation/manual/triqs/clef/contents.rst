@@ -5,13 +5,13 @@
 
 .. warning::
 
-    This library is still a prototype. Its basic features are used in our codes, but 
+    This library is still a prototype. Its basic features are used in our codes, but
     there are probably still some dark corners ...
-    
+
     Documentation in progress.
 
 The CLEF library (**C**\ompile time **L**\azy **E**\xpressions and **F**\unctions) is a little
-library to manipulate simple expressions at compile-time and use them e.g. 
+library to manipulate simple expressions at compile-time and use them e.g.
 to automatically fill containers.
 
 

@@ -1,6 +1,6 @@
 .. highlight:: c
 
-.. _gf_imtime: 
+.. _gf_imtime:
 
 **[gf<imtime>]** Matsubara imaginary time
 ==========================================================
@@ -14,8 +14,8 @@ Synopsis
 
   gf<imtime, Target, Opt>
 
-The *Target* template parameter can take the following values: 
- 
+The *Target* template parameter can take the following values:
+
 +-------------------------+-----------------------------------------------------+
 | Target                  | Meaning                                             |
 +=========================+=====================================================+
@@ -33,7 +33,7 @@ since the function is periodic (resp. antiperiodic) for bosons (resp. fermions),
 * :math:`G(\tau+\beta)=-G(\tau)`  for fermions
 * :math:`G(\tau+\beta)=G(\tau)` for bosons.
 
-The domain is implemented in 
+The domain is implemented in
 
 The mesh is :ref:`gf_mesh_imtime`.
 
@@ -49,12 +49,12 @@ Evaluation method
 
 * Use a linear interpolation between the two closest point of the mesh.
 
-* Return type: 
+* Return type:
 
-  * If Target==scalar_valued: a complex 
+  * If Target==scalar_valued: a complex
   * If Target==matrix_valued: an object modeling ImmutableMatrix concept.
 
-* When the point is outside of the mesh, the evaluation of the gf returns: 
+* When the point is outside of the mesh, the evaluation of the gf returns:
 
   * the evaluation of the high frequency tail
 
@@ -63,7 +63,7 @@ Data storage
 ---------------
 
 * If Target==scalar_valued :
-  
+
   * `data_t`: 1d array of complex<double>.
 
   * g.data()(i) is the value of g for the i-th point of the mesh.
@@ -87,6 +87,6 @@ Examples
 ---------
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_imtime_0.cpp
-  :language: cpp
+   :language: cpp
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_imtime_0.output

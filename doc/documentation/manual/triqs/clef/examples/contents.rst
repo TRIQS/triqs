@@ -4,7 +4,7 @@ More complex examples
 =======================
 
 .. warning::
-   
+
    To be written.
 
 .. toctree::

@@ -1,12 +1,12 @@
 .. highlight:: c
 
-.. _gf_retime: 
+.. _gf_retime:
 
 **[gf<retime>]** Real time
 ===================================================
 
 This is a specialisation of :ref:`gf_and_view` for imaginary Matsubara frequencies.
- 
+
 
 
 Synopsis
@@ -16,8 +16,8 @@ Synopsis
 
   gf<retime, Target, Opt>
 
-The *Target* template parameter can take the following values: 
- 
+The *Target* template parameter can take the following values:
+
 +-------------------------+-----------------------------------------------------+
 | Target                  | Meaning                                             |
 +=========================+=====================================================+
@@ -41,12 +41,12 @@ Evaluation method
 
 * Linear interpolation on the mesh.
 
-* Return type: 
+* Return type:
 
-  * If Target==scalar_valued: a complex 
+  * If Target==scalar_valued: a complex
   * If Target==matrix_valued: an object modeling ImmutableMatrix concept.
 
-* When the point is outside of the mesh, the evaluation of the gf returns: 
+* When the point is outside of the mesh, the evaluation of the gf returns:
 
   * the evaluation of the high frequency tail
 
@@ -55,7 +55,7 @@ Data storage
 ---------------
 
 * If Target==scalar_valued :
-  
+
   * `data_t`: 1d array of complex<double>.
 
   * g.data()(i) is the value of g for the i-th point of the mesh.
@@ -75,6 +75,6 @@ Examples
 ---------
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_retime_0.cpp
-  :language: cpp
+   :language: cpp
 
 .. literalinclude:: /documentation/examples/triqs/gfs/gf_retime_0.output

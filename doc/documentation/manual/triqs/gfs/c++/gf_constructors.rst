@@ -1,7 +1,7 @@
 .. highlight:: c
 
 .. _gf_constr:
- 
+
 Constructors
 ====================
 

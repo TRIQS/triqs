@@ -36,8 +36,8 @@ and group these blocks into a full Green's function `G` with::
 
 where:
 
-* `name_list` is the ordered list of the names of the blocks. 
-* `block_list` is the corresponding list of block Green's function. 
+* `name_list` is the ordered list of the names of the blocks.
+* `block_list` is the corresponding list of block Green's function.
 * `make_copies` lets you specify if the blocks of the full Green's function are **copies** of the blocks given in
   `block_list` or if they are **views** of these blocks, see :ref:`below<fullgreencopypolicy>`
 
@@ -52,11 +52,12 @@ These names will be used when we try to access a particular block, for example :
   gf_view
 
 
-Reference 
+Reference
 ----------------
 
 .. autoclass:: triqs.gf.BlockGf
-  :members: copy, copy_from
+   :noindex:
+   :members: copy, copy_from
 
 
 Operations
@@ -96,7 +97,7 @@ Iterator
 
 One can iterate on the blocks ::
 
-    for name, g in G: 
+    for name, g in G:
       do_something()
 
 In the example above ::
@@ -127,22 +128,22 @@ makes a partial view of some of the blocks selected by the `Test` condition.
 View or copies?
 ---------------------
 
-The Green's function is to be thought like a dict, hence accessing the 
-block returns documentation/manual/triqss. When constructing the Green's function BlockGf, 
-the parameter `make_copies` determines if a copy of the blocks must be made 
+The Green's function is to be thought like a dict, hence accessing the
+block returns documentation/manual/triqss. When constructing the Green's function BlockGf,
+the parameter `make_copies` determines if a copy of the blocks must be made
 before putting them in the Green's function.
 
 .. note::
    This is the standard behaviour in python for a list or a dict.
 
-Example: 
+Example:
 
 * If you define a Green's function with::
 
    G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
-  .. note:: 
- 
+  .. note::
+
     `make_copies` is optional; its default value is False. We keep it here for clarity.
 
   The ``make_copies = False`` implies that the blocks of ``G`` are *documentation/manual/triqss* ``g1`` and ``g2``.
@@ -154,7 +155,7 @@ Example:
    G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
   Then, G1 and G2 are exactly the same object, because they both have blocks
-  which are views of ``g1`` and ``g2``. 
+  which are views of ``g1`` and ``g2``.
 
 * Instead, if you write::
 
@@ -175,13 +176,13 @@ Example:
     G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
     G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
 
-shelve / pickle 
+shelve / pickle
 ---------------------
 
 Green's functions are `picklable`, i.e. they support the standard python serialization techniques.
 
 * It can be used with the `shelve <http://docs.python.org/library/shelve.html>`_ and `pickle <http://docs.python.org/library/pickle.html>`_  module::
-  
+
      import shelve
      s = shelve.open('myfile','w')
      s['G'] = G  # G is stored in the file.
@@ -209,8 +210,8 @@ Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 indices                     string                       The python repr of the list of blocks, e.g.  ('up', 'down')
 name                        string                       Name of the Green's function block
-note                        string                       Note 
-For each block name         type of the block            The Block Green's function 
+note                        string                       Note
+For each block name         type of the block            The Block Green's function
 =========================   ===========================  ===========================================================================
 
 Example::
@@ -221,7 +222,7 @@ Example::
  /Gtau/__Note             Dataset {SCALAR}
  /Gtau/down               Group
  /Gtau/down/Data          Dataset {1, 1, 1000}
- /Gtau/down/ ... 
+ /Gtau/down/ ...
  ...
  /Gtau/up                 Group
  /Gtau/up/Data            Dataset {1, 1, 1000}

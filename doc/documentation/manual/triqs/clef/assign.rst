@@ -2,12 +2,12 @@
 
 .. _clef_auto_assign:
 
-Automatic assignment of containers 
+Automatic assignment of containers
 ===================================
 
 Another use of expression is the automatic assignment of containers.
 
-**Synopsis**: 
+**Synopsis**:
 
  If C is a container, ::
 
@@ -17,7 +17,7 @@ Another use of expression is the automatic assignment of containers.
   C[x_](i_,j_) << some_expression_of_x_i_j
 
 depending of course of the operator that the container support.
-The Right Hand Side (RHS) of the << statement can be any expression, 
+The Right Hand Side (RHS) of the << statement can be any expression,
 while Left Hand Side (LHS) of the << sign is a container supporting the operation (see below).
 
 This statement simply will be rewritten by the CLEF library as ::
@@ -36,7 +36,7 @@ Example :
 .. literalinclude:: /documentation/manual/triqs/clef/assign_0.cpp
    :language: cpp
 
-.. literalinclude:: /documentation/manual/triqs/clef/assign_1.output  
+.. literalinclude:: /documentation/manual/triqs/clef/assign_1.output
 
 **Details**
 
@@ -50,7 +50,7 @@ The compiler will then rewrite ::
 
 into ::
 
-   triqs_clef_auto_assign (obj, make_function( expression, x_, y_, ....)) 
+   triqs_clef_auto_assign (obj, make_function( expression, x_, y_, ....))
 
 The function must be found by ADL. It is therefore useful to implement it e.g. as a friend function.
 
@@ -64,11 +64,11 @@ The compiler will rewrite ::
 
 into ::
 
-   triqs_clef_auto_assign_subscript (obj, make_function( expression, i_)) 
+   triqs_clef_auto_assign_subscript (obj, make_function( expression, i_))
 
 
 
-A complete example: 
+A complete example:
 
 .. literalinclude:: /documentation/manual/triqs/clef/assign_1.cpp
    :language: cpp
