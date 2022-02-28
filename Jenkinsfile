@@ -13,7 +13,7 @@ def platforms = [:]
 
 /****************** linux builds (in docker) */
 /* Each platform must have a cooresponding Dockerfile.PLATFORM in triqs/packaging */
-def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "centos-gcc"]
+def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
   def platform = dockerPlatforms[i]
@@ -35,50 +35,48 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
 
 /****************** osx builds (on host) */
 def osxPlatforms = [
-  ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
-  ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
+  ["gcc", ['CC=gcc-11', 'CXX=g++-11', 'FC=gfortran-11']],
+  ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'FC=gfortran-11', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
 ]
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
   def platform = platformEnv[0]
   platforms["osx-$platform"] = { -> node('osx && triqs') {
-    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') {
-      def workDir = pwd()
+    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
+      def srcDir = pwd()
       def tmpDir = pwd(tmp:true)
       def buildDir = "$tmpDir/build"
       /* install real branches in a fixed predictable place so apps can find them */
       def installDir = keepInstall ? "${env.HOME}/install/${projectName}/${env.BRANCH_NAME}/${platform}" : "$tmpDir/install"
+      def venv = installDir
 
       checkout scm
 
       def hdf5 = "${env.BREW}/opt/hdf5@1.10"
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
-          "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
+          "PATH=$venv/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
           "HDF5_ROOT=$hdf5",
           "C_INCLUDE_PATH=$hdf5/include:${env.BREW}/include",
-          "CPLUS_INCLUDE_PATH=$installDir/include:$hdf5/include:${env.BREW}/include",
-          "LIBRARY_PATH=$installDir/lib:$hdf5/lib:${env.BREW}/lib",
+          "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
+          "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
-          "CMAKE_PREFIX_PATH=$installDir/lib/cmake/triqs"]) {
+          "OMP_NUM_THREADS=2",
+          "PYTHONPATH=$installDir/lib/python3.9/site-packages",
+          "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
         deleteDir()
-        sh """#!/bin/bash -ex
-          virtualenv $installDir
-          # install numpy first to deps (h5py) find it
-          pip install numpy
-          DYLD_LIBRARY_PATH=\$BREW/lib pip install --no-binary=h5py,mpi4py -U -r $workDir/requirements.txt
-        """
-
-        sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir"
-        sh "make -j3"
-        try {
+        sh "python3 -m venv $venv"
+        sh "DYLD_LIBRARY_PATH=\$BREW/lib pip3 install -U -r $srcDir/requirements.txt"
+        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always"
+        sh "make -j2"
+        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
           throw exc
-        }
+        } }
         sh "make install"
       } }
-    } }
+    } } }
   } }
 }
 
