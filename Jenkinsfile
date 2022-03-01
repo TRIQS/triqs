@@ -52,7 +52,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
       checkout scm
 
-      def hdf5 = "${env.BREW}/opt/hdf5@1.10"
+      def hdf5 = "${env.BREW}/opt/hdf5"
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$venv/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
           "HDF5_ROOT=$hdf5",
