@@ -16,7 +16,7 @@ TRIQS Version 3.1.0 is a release that
 * introduces a new website theme
 * fixes several library issues
 
-We thank all the people who have contributed to this release: Weh Andreas, Maxime Charlebois, Philipp Dumitrescu, Alexander Hampel, Jonathan Karp, Igor Krivenko, Henri Menke, Olivier Parcollet, Markus Richter, Dylan Simon, Hugo U. R. Strand, Nils Wentzell, Sophie Beck, Rok Žitko
+We thank all the people who have contributed to this release: Sophie Beck, Maxime Charlebois, Philipp Dumitrescu, Alexander Hampel, Jonathan Karp, Igor Krivenko, Henri Menke, Olivier Parcollet, Markus Richter, Dylan Simon, Hugo U. R. Strand, Andreas Weh, Nils Wentzell, Rok Žitko
 
 
 ### Porting Script
