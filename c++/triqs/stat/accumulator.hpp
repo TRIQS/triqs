@@ -44,6 +44,7 @@ namespace triqs::stat {
       long bin_capacity   = 1; // Current capacity of each bin (must be >= 1)
       long last_bin_count = 0; // Number of data points the currently active bin [bins.back()]
       std::vector<T> bins;     // Bins with accumulated data (stores means)
+      long count = 0;          // Total number of elements added to accumulator: Information only
 
       // static std::string hdf5_format() { return "linear_bins"; }
 
@@ -57,9 +58,10 @@ namespace triqs::stat {
         bins.emplace_back(std::move(data_instance_local));
       }
 
-      long n_bins() const { return bins.size(); }
+      [[nodiscard]] long n_bins() const { return bins.size(); }
 
       template <typename U> lin_binning<T> &operator<<(U &&x) {
+        ++count;
         if (max_n_bins == 0) return *this;
         // Check if all bins are full and compress if needed
         if (max_n_bins > 1 && n_bins() == max_n_bins && last_bin_count == bin_capacity) {
@@ -79,12 +81,12 @@ namespace triqs::stat {
       // Compresses bins by scaling up bin_capacity by compression_factor (>= 2).
       void compress(int compression_factor) {
         if (max_n_bins == 0 || compression_factor < 2) return;
-        const int bins_left    = n_bins() % compression_factor;
-        int n_bins_new         = n_bins() / compression_factor;
-        int n_bins_last_chunck = compression_factor;
+        const int bins_left   = n_bins() % compression_factor;
+        int n_bins_new        = n_bins() / compression_factor;
+        int n_bins_last_chunk = compression_factor;
         if (bins_left != 0) {
           n_bins_new++;
-          n_bins_last_chunck = bins_left;
+          n_bins_last_chunk = bins_left;
         }
         // Compress data into new bins, except the last new bin
         for (int i = 0; i < n_bins_new - 1; ++i) {
@@ -92,15 +94,15 @@ namespace triqs::stat {
           for (int j = 1; j < compression_factor; j++) { bins[i] += bins[compression_factor * i + j]; }
           bins[i] /= compression_factor;
         }
-        // Last new bin is special: last old bin could be filled below cpacity
-        int new_last_bin_count = last_bin_count + (n_bins_last_chunck - 1) * bin_capacity;
+        // Last new bin is special: last old bin could be filled below capacity
+        int new_last_bin_count = last_bin_count + (n_bins_last_chunk - 1) * bin_capacity;
         auto &new_last_bin     = bins[n_bins_new - 1];
         new_last_bin           = std::move(bins[compression_factor * (n_bins_new - 1)]);
-        // If n_bins_last_chunck == 1, we have already copied its value above
-        if (n_bins_last_chunck > 1) {
-          for (int j = 1; j < n_bins_last_chunck - 1; j++) { new_last_bin += bins[compression_factor * (n_bins_new - 1) + j]; }
+        // If n_bins_last_chunk == 1, we have already copied its value above
+        if (n_bins_last_chunk > 1) {
+          for (int j = 1; j < n_bins_last_chunk - 1; j++) { new_last_bin += bins[compression_factor * (n_bins_new - 1) + j]; }
           new_last_bin *= bin_capacity; // full bins in last chunk
-          new_last_bin += bins[compression_factor * (n_bins_new - 1) + (n_bins_last_chunck - 1)] * last_bin_count;
+          new_last_bin += bins[compression_factor * (n_bins_new - 1) + (n_bins_last_chunk - 1)] * last_bin_count;
           new_last_bin /= new_last_bin_count;
         }
         // Adjust final parameters
@@ -168,7 +170,7 @@ namespace triqs::stat {
         Mk.emplace_back(std::move(data_instance_local));
       }
 
-      long n_bins() const { return Qk.size(); }
+      [[nodiscard]] long n_bins() const { return Qk.size(); }
 
       template <typename U> log_binning<T> &operator<<(U const &x) {
         if (max_n_bins == 0) return *this;
@@ -290,6 +292,7 @@ namespace triqs::stat {
   /// @brief Bins and analyzes correlated data
   template <typename T> class accumulator {
     private:
+    long count = 0;
     details::log_binning<T> log_bins;
     details::lin_binning<T> lin_bins;
 
@@ -298,12 +301,14 @@ namespace triqs::stat {
       auto gr = g.create_group(name);
       h5_write(gr, "log_bins", l.log_bins);
       h5_write(gr, "lin_bins", l.lin_bins);
+      h5_write(gr, "count", l.count);
     }
 
     friend void h5_read(h5::group g, std::string const &name, accumulator<T> &l) {
       auto gr = g.open_group(name);
       h5_read(gr, "log_bins", l.log_bins);
       h5_read(gr, "lin_bins", l.lin_bins);
+      h5_read(gr, "count", l.count);
     }
 
     public:
@@ -349,26 +354,26 @@ namespace triqs::stat {
     /// Returns the maximum number of bins the logarithmic part of the accumulator can hold.
     /// @brief Max. number of bins in the logarithmic accumulator
     /// @return Maximum number of bins
-    int n_log_bins_max() const { return log_bins.max_n_bins; }
+    [[nodiscard]] int n_log_bins_max() const { return log_bins.max_n_bins; }
 
     /// Returns the number of bins currently in the logarithmic part of the accumulator
-    /// When the accumulator is active (n_log_bins_max != 0), there is always at least one zeroed bin even if data has been passed to the accumulator.
+    /// When the accumulator is active (n_log_bins_max != 0), there is always at least one zeroed bin even if no data has been passed to the accumulator.
     /// @brief Number of bins in the logarithmic accumulator
     /// @return Number of bins
     /// @example triqs/stat/acc_nlogbin.cpp
-    int n_log_bins() const { return log_bins.n_bins(); }
+    [[nodiscard]] int n_log_bins() const { return log_bins.n_bins(); }
 
     /// Returns the maximum number of bins the linear part of the accumulator can hold.
     /// @brief Max. number of bins in the linear accumulator
     /// @return Maximum number of bins
-    int n_lin_bins_max() const { return lin_bins.max_n_bins; }
+    [[nodiscard]] int n_lin_bins_max() const { return lin_bins.max_n_bins; }
 
     /// Returns the number of bins currently in the linear part of the accumulator.
-    /// When the accumulator is active (n_lin_bins_max != 0), there is always at least one zeroed bin even if data has been passed to the accumulator.
+    /// When the accumulator is active (n_lin_bins_max != 0), there is always at least one zeroed bin even if no data has been passed to the accumulator.
     /// @brief Number of bins in the linear accumulator
     /// @return Number of bins
     /// @example triqs/stat/acc_nlinbin.cpp
-    int n_lin_bins() const { return lin_bins.n_bins(); }
+    [[nodiscard]] int n_lin_bins() const { return lin_bins.n_bins(); }
 
     /// Returns the current capacity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started.
     /// The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
@@ -377,7 +382,7 @@ namespace triqs::stat {
     ///
     /// @brief Capacity of a linear bin
     /// @return Bin capacity
-    int lin_bin_capacity() const { return lin_bins.bin_capacity; }
+    [[nodiscard]] int lin_bin_capacity() const { return lin_bins.bin_capacity; }
 
     /// Input a measurement into the accumulator. This measurement is then added to the linear and logarithmic binning parts, unless a part as been turned off (lin_bin_size = 0 or log_bin_size = 0).
     ///
@@ -388,6 +393,7 @@ namespace triqs::stat {
     /// @returns Returns the current accumulator so that :code:`<<` operations can be chained together
     /// @example triqs/stat/acc_data_entry.cpp
     template <typename U> accumulator<T> &operator<<(U const &x) {
+      ++count;
       log_bins << x;
       lin_bins << x;
       return *this;
@@ -396,7 +402,7 @@ namespace triqs::stat {
     /// Returns the standard errors for data with different power-of-two capacity.
     /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator.
     /// @brief Get standard errors of log binned data
-    auto log_bin_errors() const {
+    [[nodiscard]] auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
       std::vector<long> count_vec{};
 
@@ -421,7 +427,7 @@ namespace triqs::stat {
     /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     ///
-    auto log_bin_errors_all_reduce(mpi::communicator c) const {
+    [[nodiscard]] auto log_bin_errors_all_reduce(mpi::communicator c) const {
       std::vector<get_real_t<T>> result_vec{};
       std::vector<long> count_vec{};
 
@@ -447,7 +453,7 @@ namespace triqs::stat {
         }
       }
 
-      for (int n = min_n_bins; n < max_n_bins; n++) {
+      for (auto n = min_n_bins; n < max_n_bins; n++) {
         int split_color           = (n < n_log_bins_i) ? 0 : MPI_UNDEFINED;
         int split_key             = (c.rank() == max_n_bins_rank) ? 0 : 1 + c.rank();
         mpi::communicator c_split = c.split(split_color, split_key);
@@ -479,13 +485,16 @@ namespace triqs::stat {
       return std::make_pair(result_vec, count_vec);
     }
 
-    auto log_bin_count() const { return log_bins.count; }
+    /// Returns the total number of data points that were put into the accumulator
+    /// @brief Number of data points put into the accumulator
+    /// @return Number of data points
+    [[nodiscard]] auto data_input_count() const { return count; }
 
     /// Returns vector with data stored from linear binning
     /// @brief Returns data stored from linear binning
     /// @return Vector with the data of type T, which defines the accumulator
     /// @example triqs/stat/acc_linear_bins.cpp
-    std::vector<T> const &linear_bins() const { return lin_bins.bins; }
+    [[nodiscard]] std::vector<T> const &linear_bins() const { return lin_bins.bins; }
 
     /// Increases the capacity of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new capacity.
     /// @brief Increases linear bin capacity and compresses data within
