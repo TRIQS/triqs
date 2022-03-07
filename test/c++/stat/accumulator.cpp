@@ -283,7 +283,7 @@ template <typename T> void CheckLogBinSize(log_binning<T> bins, long n_size) {
 }
 
 TEST(Stat, Details_LogBins_AddDataComplex) {
-    using namespace std::complex_literals;
+  using namespace std::complex_literals;
 
   log_binning<std::complex<double>> bins{0.0, 3};
   EXPECT_EQ(bins.Mk, vec_c({0.0 * 1i}));
@@ -341,6 +341,8 @@ TEST(Stat, Accumulator_LinBinOnly) {
   EXPECT_EQ(my_acc.n_log_bins(), 0);
   EXPECT_EQ(my_acc.n_log_bins_max(), 0);
 
+  EXPECT_EQ(my_acc.data_input_count(), 4);
+
   auto [errors_i, count_i] = my_acc.log_bin_errors();
   EXPECT_EQ(errors_i, std::vector<double>());
   EXPECT_EQ(count_i, std::vector<long>());
@@ -348,7 +350,6 @@ TEST(Stat, Accumulator_LinBinOnly) {
   auto [errors_all, count_all] = my_acc.log_bin_errors_all_reduce(c);
   EXPECT_EQ(errors_all, std::vector<double>());
   EXPECT_EQ(count_all, std::vector<long>());
-
 }
 
 TEST(Stat, Accumulator_LogBinOnly) {
@@ -367,6 +368,7 @@ TEST(Stat, Accumulator_LogBinOnly) {
 
   EXPECT_EQ(my_acc.n_log_bins(), 3);
   EXPECT_EQ(my_acc.n_log_bins_max(), 3);
+  EXPECT_EQ(my_acc.data_input_count(), 8);
 }
 
 TEST(Stat, Accumulator_Off) {
@@ -384,6 +386,7 @@ TEST(Stat, Accumulator_Off) {
 
   EXPECT_EQ(my_acc.n_log_bins(), 0);
   EXPECT_EQ(my_acc.n_log_bins_max(), 0);
+  EXPECT_EQ(my_acc.data_input_count(), 4);
 
   auto [errors_i, count_i] = my_acc.log_bin_errors();
   EXPECT_EQ(errors_i, std::vector<double>());
@@ -405,6 +408,7 @@ TEST(Stat, Accumulator_LogBinErrors) {
 
   EXPECT_EQ(my_acc.n_log_bins(), 3);
   EXPECT_EQ(my_acc.n_log_bins_max(), 3);
+  EXPECT_EQ(my_acc.data_input_count(), 8);
 
   vec_d ans({std::sqrt(3.0 / 4.0), std::sqrt(5.0 / 3.0), 2.0});
   auto [errors, counts] = my_acc.log_bin_errors();
@@ -418,6 +422,7 @@ TEST(Stat, Accumulator_Chaining) {
   my_acc << 0.0 << 1.0 << 2.0 << 3.0;
   EXPECT_EQ(my_acc.linear_bins(), std::vector<double>({0.0, 1.0, 2.0, 3.0}));
   EXPECT_EQ(my_acc.n_log_bins(), 3);
+  EXPECT_EQ(my_acc.data_input_count(), 4);
 }
 
 // *****************************************************************************
@@ -427,7 +432,7 @@ TEST(Stat, Tau_From_Errors) {
   typedef nda::array<double, 2> double_array_2d;
   double_array_2d a = double_array_2d{{1., 1., 1., 1.}, {1., 1., 1., 1.}};
   double_array_2d b = 2 * a;
-  auto taus = tau_estimate_from_errors(b, a);
+  auto taus         = tau_estimate_from_errors(b, a);
   EXPECT_ARRAY_EQ(taus, 1.5 * a);
 }
 
