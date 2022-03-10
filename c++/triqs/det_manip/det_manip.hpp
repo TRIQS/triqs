@@ -73,7 +73,7 @@ namespace triqs {
         ChangeRowCol,
         Insert2 = 10,
         Remove2 = 11,
-        Refill  = 20
+        Refill  = 20,
       } last_try = NoTry; // keep in memory the last operation not completed
       std::vector<size_t> row_num, col_num;
       std::vector<x_type> x_values;
@@ -430,6 +430,28 @@ namespace triqs {
       }
 
       // ------------------------- OPERATIONS -----------------------------------------------
+
+      /** Simply swap two lines
+         NB very quick, we just change the permutation table internally
+	 This operation is so simple that it has no try, complete.
+       */
+      void swap_row(size_t i, size_t j) {
+        if (i == j) return;
+        std::swap(row_num[i], row_num[j]);
+        sign = -sign;
+        // we do not need to change the det, or the matrix, just the permutation
+      }
+      //FIXME : we could implement try_swap_row, try_swap_col
+
+      /** Simply swap two lines and cols.
+         NB very quick, we just change the permutation table internally
+	 This operation is so simple that it has no try, complete.
+       */
+      void swap_col(size_t i, size_t j) {
+        if (i == j) return;
+        std::swap(col_num[i], col_num[j]);
+        sign = -sign;
+      }
 
       /**
      * Insert operation at column j0 and row i0.
