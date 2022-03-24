@@ -18,7 +18,7 @@ toolchainopts = {'pic': True, 'usempi': True}
 
 source_urls = ['https://github.com/TRIQS/triqs/releases/download/%(version)s/']
 sources = ['triqs-%(version)s.tar.gz']
-checksums = ['']
+checksums = ['f1f358ec73498bc7ac3ed9665829d8605908f7f7fc876a5c2a01efe37d368f0e']
 
 dependencies = [
     ('Python', '3.9.6'),
