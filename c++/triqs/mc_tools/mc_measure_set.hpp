@@ -44,7 +44,10 @@ namespace triqs {
       utility::timer Timer;
 
       public:
-      template <typename MeasureType> measure(bool, MeasureType &&m, bool enable_timer) : enable_timer(enable_timer) {
+      bool report_measure;
+
+      template <typename MeasureType>
+      measure(bool, MeasureType &&m, bool enable_timer, bool report_measure) : enable_timer(enable_timer), report_measure(report_measure) {
         static_assert(std::is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
         static_assert(
            requires { m.accumulate(std::declval<MCSignType>()); }, " This measure has no accumulate method !");
@@ -60,9 +63,7 @@ namespace triqs {
           if constexpr (requires { p->report(); }) {
             return p->report();
           } else {
-            // Cannot be static_assert because this would also trigger if report
-            // is not actually called
-            TRIQS_ASSERT(false && "This measure does not implement the report function");
+            TRIQS_RUNTIME_ERROR << "This measure does not implement the report function";
           }
         };
         h5_r = [p](h5::group g, std::string const &name) {
@@ -126,11 +127,11 @@ namespace triqs {
       /**
     * Register the Measure M with a name
     */
-      template <typename MeasureType> measure_itr_t insert(MeasureType &&M, std::string const &name, bool enable_timer) {
+      template <typename MeasureType> measure_itr_t insert(MeasureType &&M, std::string const &name, bool enable_timer, bool report_measure) {
         if (has(name)) TRIQS_RUNTIME_ERROR << "measure_set : insert : measure '" << name << "' already inserted";
         // workaround for all gcc
         // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
-        auto [itr, was_inserted] = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M), enable_timer));
+        auto [itr, was_inserted] = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M), enable_timer, report_measure));
         return itr;
       }
 
@@ -160,8 +161,8 @@ namespace triqs {
 
       std::string report() const {
         std::string result{};
-        for (auto &nmp : m_map) {
-          result += " " + nmp.first + "=" + nmp.second.report();
+        for (auto &[name, m] : m_map) {
+          if (m.report_measure) result += m.report() + "\n";
         }
         return result;
       }
