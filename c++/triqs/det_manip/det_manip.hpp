@@ -659,7 +659,7 @@ namespace triqs {
         std::vector<size_t> idy = argsort(j);
 
         // store it for complete_operation
-        if (N >= Nmax - 1) reserve(2 * Nmax, Nk);
+        if (N > Nmax - Nk) reserve(2 * Nmax, Nk);
         if (w2.k != Nk) reserve(Nmax, Nk);
         last_try = InsertK;
         for (size_t k = 0; k < w2.k; ++k) {
