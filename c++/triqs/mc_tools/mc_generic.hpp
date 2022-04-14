@@ -214,10 +214,26 @@ namespace triqs::mc_tools {
       return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback, c);
     }
 
-    private:
-    // implementation
-
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c) {
+    /**
+     * Generic function to run the Monte-Carlo. Used by both warmup and accumulate.
+     *
+     * @param n_cycles         Number of QMC cycles
+     * @param length_cycle     Number of QMC move attempts in one cycle
+     * @param stop_callback    A callback function () -> bool. It is called after each cycle
+     *                         to and the computation stops when it returns true.
+     *                         Typically used to set up the time limit, cf doc.
+     * @param do_measure       Whether or not to accumulate for each measurement
+     * @param c                The mpi communicator [optional]. If not provided use the default-constructed one.
+     *
+     * @return
+     *    =  =============================================
+     *    0  if the computation has run until the end
+     *    1  if it has been stopped by stop_callback
+     *    2  if it has been stopped by receiving a signal
+     *    =  =============================================
+     *
+     */
+    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{}) {
 
       AllMoves.clear_statistics();
 
@@ -309,7 +325,6 @@ namespace triqs::mc_tools {
       return status;
     }
 
-    public:
     /// Reduce the results of the measures, and reports some statistics
     void collect_results(mpi::communicator const &c) {
       report(3) << "[Rank " << c.rank() << "] Collect results: Waiting for all mpi-threads to finish accumulating...\n";
