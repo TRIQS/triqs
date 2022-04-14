@@ -271,8 +271,8 @@ namespace triqs {
           w1.reserve(Nmax);
         }
         // FIXME: fuse w2.k != k case with other block
-        if (!(new_size <= Nmax && w2.k == k))
-          w2.reserve(Nmax, k);
+        if (!(new_size + k <= Nmax && w2.k == k))
+          w2.reserve(new_size + k, k);
       }
 
       /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
@@ -876,7 +876,7 @@ namespace triqs {
         last_try = RemoveK;
 
         size_t const Nk = i.size();
-        if (w2.k != Nk) reserve(N, Nk);
+        if (w2.k != Nk) reserve(Nmax, Nk);
         for (size_t k = 0; k < w2.k; ++k) {
           w2.i[k] = i[k];
           w2.j[k] = j[k];
