@@ -7,12 +7,12 @@
 Installing required libraries on Ubuntu
 =======================================
 
-TRIQS has been installed and tested on Ubuntu 18.04 and later. Earlier versions are not supported.
+TRIQS has been installed and tested on Ubuntu 20.04 and later. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
-  sudo apt-get install cmake g++ gfortran git hdf5-tools \
-       libblas-dev libboost-dev libfftw3-dev libgfortran4 \
+  sudo apt-get install cmake g++-10 gfortran git hdf5-tools \
+       libblas-dev libboost-dev libfftw3-dev libgfortran5 \
        libgmp-dev libhdf5-dev liblapack-dev libopenmpi-dev \
        python3-dev python3-mako python3-matplotlib \
        python3-mpi4py python3-numpy python3-scipy
