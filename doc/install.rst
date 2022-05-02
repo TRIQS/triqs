@@ -167,12 +167,14 @@ Prerequisites
 The TRIQS library relies on a certain number of standard libraries and tools
 described in the :ref:`list of requirements <requirements>`. Please pay
 particular attention to the :ref:`C++ compilers<require_cxx_compilers>` and to
-:ref:`Python virtual environments<python_virtualenv>`.  Here are instructions to
-install these necessary libraries on two standard systems:
+:ref:`Python virtual environments<python_virtualenv>`.  We provide explicit
+version requirements and instructions on how to install these necessary libraries
+on two standard systems:
 
 .. toctree::
    :maxdepth: 1
 
+   installation/requirements
    installation/ubuntu
    installation/osx_install
 
@@ -215,5 +217,5 @@ Further reading
 
    installation/install_options
    installation/environment_vars
-   installation/python
+   installation/python_virtualenv
    installation/clang
