@@ -104,5 +104,5 @@ external_dependency(h5
 external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.1
-  GIT_TAG unstable
+  GIT_TAG DEV_CUDA_LINALG_MIGUEL
 )

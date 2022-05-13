@@ -126,7 +126,7 @@ namespace triqs::gfs {
     static constexpr int data_rank = arity + Target::rank;
 
     /// Type of the data array
-    using data_t = nda::basic_array<scalar_t, data_rank, Layout, 'A', nda::heap>;
+    using data_t = nda::basic_array<scalar_t, data_rank, Layout, 'A', nda::heap<>>;
 
     // FIXME : std::array with NDA
     using target_shape_t = std::array<long, Target::rank>;

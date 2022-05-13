@@ -26,7 +26,7 @@ using gf_bz_imfreq_mat = gf<prod<brzone, imfreq>, matrix_valued>;
 auto _                 = all_t{};
 
 static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::complex<double>, 2,
-      nda::C_layout, 'M', nda::heap> &>> == 'M', "oops");
+      nda::C_layout, 'M', nda::heap<>> &>> == 'M', "oops");
 
 // --------------------------------------------------------------------------------
 
