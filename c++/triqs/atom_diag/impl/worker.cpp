@@ -105,18 +105,16 @@ namespace triqs {
 
       for (auto const &o : fops) {
         int n = o.linear_index;
-        for (auto const &e : creation_melem[n]) {
-          fock_state_t i, f;
-          std::tie(i, f)                                                  = e.first;
+        for (auto const &[fs_pair, val] : creation_melem[n]) {
+          auto [i, f] = fs_pair;
           auto i_remap_it = remap.find(SP.lookup_basis_state(i));
           if(i_remap_it == remap.end()) continue;
           auto f_remap_it = remap.find(SP.lookup_basis_state(f));
           if(f_remap_it == remap.end()) continue;
           hdiag->creation_connection(n, i_remap_it->second) = f_remap_it->second;
         }
-        for (auto const &e : annihilation_melem[n]) {
-          fock_state_t i, f;
-          std::tie(i, f)                                                      = e.first;
+        for (auto const &[fs_pair, val] : annihilation_melem[n]) {
+          auto [i, f] = fs_pair;
           auto i_remap_it = remap.find(SP.lookup_basis_state(i));
           if(i_remap_it == remap.end()) continue;
           auto f_remap_it = remap.find(SP.lookup_basis_state(f));
