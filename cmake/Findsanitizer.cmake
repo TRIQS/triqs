@@ -18,15 +18,19 @@
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-resource-dir
     OUTPUT_VARIABLE clang_resource_dir OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(prefix clang_rt.)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(search_path ${clang_resource_dir}/lib/darwin)
+    set(search_paths ${clang_resource_dir}/lib/darwin ${clang_resource_dir}/../)
     set(suffix _osx_dynamic)
   elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(search_path ${clang_resource_dir}/lib/linux)
+    set(search_paths ${clang_resource_dir}/lib/linux ${clang_resource_dir}/../)
     set(suffix -${CMAKE_SYSTEM_PROCESSOR})
   else()
     message(FATAL_ERROR "Unknown platform")
+  endif()
+  if(${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER_EQUAL 13.0.0)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-runtime-dir
+      OUTPUT_VARIABLE clang_runtime_dir OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(APPEND search_paths ${clang_runtime_dir})
   endif()
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-libgcc-file-name
@@ -43,9 +47,10 @@ foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
     set(component ubsan_minimal)
   endif()
 
+  set(prefix clang_rt.)
   find_library(${COMPONENT}_RT_LIBRARY
-    NAMES ${prefix}${component}${suffix} ${prefix}${component}_standalone${suffix}
-    HINTS ${search_path} ${search_path}/../../../)
+    NAMES ${prefix}${component} ${prefix}${component}_standalone ${prefix}${component}${suffix} ${prefix}${component}_standalone${suffix}
+    PATHS ${search_paths})
   mark_as_advanced(${COMPONENT}_RT_LIBRARY)
 
   # Imported target
