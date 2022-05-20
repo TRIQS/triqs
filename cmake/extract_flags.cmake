@@ -112,8 +112,8 @@ macro(extract_flags)
   endif()
 
   # Remove all remaining generator expressions
-  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
-  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^ ]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^ ]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
 
   # Filter out system directories from LDFLAGS and CXXFLAGS
   string(REGEX REPLACE " -L/usr/lib " " " ${target}_LDFLAGS "${${target}_LDFLAGS}")
