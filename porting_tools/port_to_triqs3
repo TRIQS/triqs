@@ -44,7 +44,7 @@ repl_dict = {
         "MeshCyclicLattice": "MeshCycLat",
         "gf_closest_point": "closest_point",
         "gf_mesh{": "mesh::prod{",
-        "gf_mesh<(.?)>": r"\1", # really necessary?
+        "gf_mesh<(.+?)>": r"mesh::\1", # really necessary?
         "matsubara_mesh_opt": "imfreq::option",
         "get_dimensions()": "dims()",
         "locate_neighbours": "closest_index",
