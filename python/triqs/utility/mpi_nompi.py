@@ -50,7 +50,7 @@ def is_master_node(): return True
 
 def bcast(x, root = 0): return x
 
-def barrier() : return
+def barrier(poll_msec=1) : return
 
 def all_reduce(WORLD, x, F) : return x
 
