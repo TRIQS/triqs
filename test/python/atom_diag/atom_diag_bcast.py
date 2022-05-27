@@ -69,6 +69,10 @@ if mpi.is_master_node():
 else:
     ad = None
 
+# test custom mpi barrier in python
+mpi.barrier(None)
+mpi.barrier(10)
+
 ad_bcast = mpi.bcast(ad_bcast)
 
 assert isinstance(ad_bcast, AtomDiagReal)

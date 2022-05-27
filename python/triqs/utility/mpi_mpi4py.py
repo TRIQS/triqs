@@ -18,7 +18,7 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 
-import os,sys,datetime
+import os,sys,datetime, time
 myprint_err = lambda x : sys.stderr.write("%s\n"%x)
 myprint_out = lambda x : sys.stdout.write("%s\n"%x)
 
@@ -47,33 +47,47 @@ def recv(source = 0):
     #print "node ", rank, " receives ", r, " from node ", source
     return r
 
-def barrier() : 
-    world.barrier()
+
+def barrier(poll_msec=1):
+    """
+    Use asynchronous synchronization, otherwise mpi.barrier uses up all the CPU time during
+    the run of subprocess. if poll_interval is 0.0 or None the default mpi barrier of mpi4py
+    is used.
+    Parameters
+    ----------
+    poll_interval: float, time step for pinging the status of the sleeping ranks in msec
+    """
+    if not poll_msec:
+        world.barrier()
+    else:
+        req = world.Ibarrier()
+        while not req.Test():
+            time.sleep(poll_msec / 1000)
 
 # temporary patch
 # need to change the code for all all_reduce to use this layer....
-def all_reduce(WORLD, x, F) : 
+def all_reduce(WORLD, x, F) :
     return world.allreduce(x)
 
 
 Verbosity_Level_Report_Max = 1
 def report(*x,**opt):
     """ print on the master, do nothing on the nodes """
-    try : 
+    try :
         if opt['Verbosity_Level'] >  Verbosity_Level_Report_Max : return
     except :
         pass
     if All_Nodes_report and rank!=0 :
           for y in x:
               open('report_node%s'%rank,'a').write(str(y) + '\n') #             print y
-              
+
     if rank==0 :
-        myprint,myflush = (myprint_err,sys.stderr.flush)  if 'stderr' in opt and opt['stderr'] else (myprint_out,sys.stdout.flush)   
+        myprint,myflush = (myprint_err,sys.stderr.flush)  if 'stderr' in opt and opt['stderr'] else (myprint_out,sys.stdout.flush)
         for y in x:
           myprint( y)  # open('report','a').write(str(y) + '\n') #             print y
-          myflush() # be sure to flush the buffer!  
-        
-def slice_inf(imin,imax) : 
+          myflush() # be sure to flush the buffer!
+
+def slice_inf(imin,imax) :
   j=(imax - imin + 1)//size
   i= imax - imin + 1 - size*j
   return imin + rank*(j+1)  if  rank<=i-1 else imin + rank*j + i
