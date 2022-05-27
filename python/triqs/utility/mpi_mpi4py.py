@@ -55,7 +55,7 @@ def barrier(poll_msec=1):
     is used.
     Parameters
     ----------
-    poll_interval: float, time step for pinging the status of the sleeping ranks in msec
+    poll_msec: float, time step for pinging the status of the sleeping ranks in msec
     """
     if not poll_msec:
         world.barrier()
