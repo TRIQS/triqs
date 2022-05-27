@@ -51,7 +51,7 @@ def recv(source = 0):
 def barrier(poll_msec=1):
     """
     Use asynchronous synchronization, otherwise mpi.barrier uses up all the CPU time during
-    the run of subprocess. if poll_interval is 0.0 or None the default mpi barrier of mpi4py
+    the run of subprocess. if poll_msec is 0.0 or None the default mpi barrier of mpi4py
     is used.
     Parameters
     ----------
