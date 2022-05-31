@@ -7,7 +7,7 @@
 Installing required libraries on Ubuntu
 =======================================
 
-TRIQS has been installed and tested on Ubuntu 20.04 and later. Earlier versions are not supported.
+TRIQS 3.1 has been tested on the Ubuntu LTS versions 20.04 and 22.04. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
@@ -16,6 +16,10 @@ Install the following packages which are necessary to build TRIQS and use it::
        libgmp-dev libhdf5-dev liblapack-dev libopenmpi-dev \
        python3-dev python3-mako python3-matplotlib \
        python3-mpi4py python3-numpy python3-scipy
+
+We need to further specify the compiler to be used for the TRIQS compilation using::
+
+    export CXX=g++-10
 
 If you wish to use the jupyter notebook with triqs you can install it using::
 
