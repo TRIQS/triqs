@@ -76,14 +76,14 @@ namespace triqs::mesh {
      * @param tail_order : order of computation of the tail
      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
      */
-    imfreq(domain_t dom, long n_pts = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
-      _last_index = n_pts - 1; // total number of points
+    imfreq(domain_t dom, long n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
+      _last_index = n_iw - 1; // total number of points
       if (opt == option::positive_frequencies_only) {
         _first_index = 0;
-        _last_index  = n_pts - 1;
+        _last_index  = n_iw - 1;
       } else {
         bool is_fermion = (_dom.statistic == Fermion);
-        _last_index     = n_pts - 1;
+        _last_index     = n_iw - 1;
         _first_index    = -(_last_index + (is_fermion ? 1 : 0));
       }
     }
@@ -94,7 +94,7 @@ namespace triqs::mesh {
      * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
      */
-    imfreq(double beta, statistic_enum S, long n_pts = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_pts, opt) {}
+    imfreq(double beta, statistic_enum S, long n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}
 
     /**
      * @param dom
@@ -110,7 +110,7 @@ namespace triqs::mesh {
     // -------------------- Comparisons -------------------
 
     ///
-    bool operator==(imfreq const &M) const { return (std::tie(_dom, _n_pts, _opt) == std::tie(M._dom, M._n_pts, M._opt)); }
+    bool operator==(imfreq const &M) const { return (std::tie(_dom, _n_iw, _opt) == std::tie(M._dom, M._n_iw, M._opt)); }
 
     ///
     bool operator!=(imfreq const &M) const { return !(operator==(M)); }
@@ -157,7 +157,7 @@ namespace triqs::mesh {
 
     // -------------------- Get the grid for positive freq only -------------------
 
-    imfreq get_positive_freq() const { return {domain(), _n_pts, option::positive_frequencies_only}; }
+    imfreq get_positive_freq() const { return {domain(), _n_iw, option::positive_frequencies_only}; }
 
     // -------------------- tail -------------------
 
@@ -225,9 +225,9 @@ namespace triqs::mesh {
       int pos_freq = 0;
       if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
       if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
-      int n_pts = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
+      int n_iw  = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
       auto opt  = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
-      m         = imfreq{std::move(dom), n_pts, opt};
+      m         = imfreq{std::move(dom), n_iw, opt};
     }
 
     // -------------------- boost serialization -------------------
@@ -236,7 +236,7 @@ namespace triqs::mesh {
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
       ar &_dom;
-      ar &_n_pts;
+      ar &_n_iw;
       ar &_opt;
       ar &_first_index;
       ar &_last_index;
@@ -245,7 +245,7 @@ namespace triqs::mesh {
     // ------------------------------------------------
     private:
     domain_t _dom;
-    int _n_pts;
+    int _n_iw;
     option _opt;
     long _first_index, _last_index;
   };
