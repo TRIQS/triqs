@@ -45,17 +45,22 @@ namespace triqs::mesh {
     imtime(imtime const &x) = default;
 
     /**
-    * @param d domain
-    * @param n_time_slices number of time slices
-    */
-    imtime(matsubara_time_domain d, long n_time_slices) : B(d, 0, d.beta, n_time_slices) {}
+     * Construct a Mesh of imaginary times on a Matsubara time domain
+     *
+     * @param dom Matsubara time domain
+     * @param n_tau Number of mesh-points
+     */
+    imtime(matsubara_time_domain d, long n_tau) : B(d, 0, d.beta, n_tau) {}
 
     /**
-    * @param beta inverse temperature
-    * @param S statistic (Fermion/Boson)
-    * @param n_time_slices number of time slices
-    */
-    imtime(double beta, statistic_enum S, long n_time_slices) : imtime({beta, S}, n_time_slices) {}
+     * Construct a Mesh of imaginary times on the interval [0,beta]
+     * including points at both edges.
+     *
+     * @param beta Inverse temperature
+     * @param S Statistic (Fermion or Boson)
+     * @param n_tau Number of mesh-points
+     */
+    imtime(double beta, statistic_enum S, long n_tau) : imtime({beta, S}, n_tau) {}
 
     // -------------------- print -------------------
 

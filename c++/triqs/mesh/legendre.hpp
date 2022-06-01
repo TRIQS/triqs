@@ -28,7 +28,15 @@ namespace triqs::mesh {
     using B = discrete<legendre_domain>;
 
     legendre() = default;
-    legendre(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
+
+    /**
+     *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,max_n]
+     *
+     *  @param beta Inverse temperature
+     *  @param S Statistic, Fermion or Boson
+     *  @param max_n Largest degree
+     */
+    legendre(double beta, statistic_enum S, size_t max_n) : B(typename B::domain_t(beta, S, max_n)) {}
 
     static std::string hdf5_format() { return "MeshLegendre"; }
 

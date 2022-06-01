@@ -34,18 +34,25 @@ namespace triqs::mesh {
 
     public:
     /**
-     * @param bl_ bravais lattice
-     * @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
+     * Construct a periodic Mesh on a BravaisLattice
+     *
+     * @param bl Object representing the underlying Bravais Lattice (domain)
+     * @param N Periodization matrix (diagonal), shape=3x3
      */
-    cyclat(bravais_lattice const &bl_, matrix_const_view<long> periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
+    cyclat(bravais_lattice const &bl, matrix_const_view<long> N) : bl(bl), cluster_mesh{bl.units(), N} {}
+
+    /**
+     *  Construct a Mesh with on a BravaisLattice with periodicity L in each spacial direction
+     *
+     *  @param bl Object representing the underlying Bravais Lattice (domain)
+     *  @param L Number of mesh-points in each spacial direction
+     */
+    cyclat(bravais_lattice const &bl, int L)
+       : bl(bl), cluster_mesh{bl.units(), matrix<long>{{{L, 0, 0}, {0, bl.ndim() >= 2 ? L : 1, 0}, {0, 0, bl.ndim() >= 3 ? L : 1}}}} {}
 
     ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
     cyclat(int L1 = 1, int L2 = 1, int L3 = 1)
        : bl{eye<double>(3)}, cluster_mesh{eye<double>(3), matrix<long>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
-
-    ///Construct from domain (bravais_lattice) and int L (linear size of Cluster mesh)
-    cyclat(bravais_lattice const &bl_, int L)
-       : bl(bl_), cluster_mesh{bl_.units(), matrix<long>{{{L, 0, 0}, {0, bl_.ndim() >= 2 ? L : 1, 0}, {0, 0, bl_.ndim() >= 3 ? L : 1}}}} {}
 
     using domain_t = bravais_lattice;
     domain_t const &domain() const { return bl; }

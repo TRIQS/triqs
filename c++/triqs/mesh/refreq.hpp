@@ -25,8 +25,17 @@ namespace triqs::mesh {
 
   struct refreq : segment_mesh, tail_fitter_handle {
 
-    template <typename... T> refreq(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-    // using segment_mesh::segment_mesh;
+    refreq() = default;
+
+    /**
+     *  Construct a Mesh of real frequencies evenly distributed in the interval
+     *  [w_min, w_max] including values at both edges.
+     *
+     *  @param w_min Smallest frequency
+     *  @param w_max Largest frequency
+     *  @param n_w Number of frequencies
+     */
+    refreq(double w_min, double w_max, int n_w) : segment_mesh(w_min, w_max, n_w) {}
 
     /// Is the mesh only for positive omega
     static constexpr bool positive_only() { return false; }
