@@ -26,6 +26,10 @@ namespace triqs::mesh {
     using segment_mesh::segment_mesh;
     // template <typename... T> retime(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
+    friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
+      return sout << "Real Time Mesh of size " << m.size() << ", t_min: " << m.t_min() << ", t_max: " << m.t_max();
+    }
+
     // Smallest frequency in the mesh
     double t_min() const { return x_min(); }
 
