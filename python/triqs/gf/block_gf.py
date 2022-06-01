@@ -266,7 +266,7 @@ class BlockGf:
         return s
 
     def __str__ (self):
-           return self.name if self.name else repr(self)
+        return self.__repr__()
 
     #--------------  Bracket operator []  -------------------------
 
