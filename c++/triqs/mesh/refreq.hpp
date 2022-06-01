@@ -31,7 +31,9 @@ namespace triqs::mesh {
     /// Is the mesh only for positive omega
     static constexpr bool positive_only() { return false; }
 
-    // -------------------- tail -------------------
+    friend std::ostream &operator<<(std::ostream &sout, refreq const &m) {
+      return sout << "Real Freq Mesh of size " << m.size() << ", omega_min: " << m.omega_min() << ", omega_max: " << m.omega_max();
+    }
 
     // First index of the mesh
     static constexpr long first_index() { return 0; }
@@ -39,8 +41,11 @@ namespace triqs::mesh {
     // Last index of the mesh
     long last_index() const { return size() - 1; }
 
+    // Smallest frequency in the mesh
+    double omega_min() const { return x_min(); }
+
     // Largest frequency in the mesh
-    double omega_max() const { return index_to_point(last_index()); }
+    double omega_max() const { return x_max(); }
 
     // -------------------- HDF5 -------------------
 
