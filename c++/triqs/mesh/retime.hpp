@@ -26,6 +26,14 @@ namespace triqs::mesh {
     using segment_mesh::segment_mesh;
     // template <typename... T> retime(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
+    // Smallest frequency in the mesh
+    double t_min() const { return x_min(); }
+
+    // Largest frequency in the mesh
+    double t_max() const { return x_max(); }
+
+    // -------------------- HDF5 -------------------
+
     static std::string hdf5_format() { return "MeshReTime"; }
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
