@@ -68,13 +68,11 @@ namespace triqs::mesh {
     imfreq() : imfreq(domain_t{}, 0) {}
 
     /**
-     * Full constructor
+     * Construct a Mesh of Matsubara frequencies on a Matsubara domain
      *
-     * @param dom domain
-     * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-     * @param tail_fraction : percent of the function in the tail.
-     * @param tail_order : order of computation of the tail
-     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
+     * @param dom Matsubara domain
+     * @param n_iw Number of positive Matsubara frequencies
+     * @param option Wether to use all frequencies, or only the positive ones
      */
     imfreq(domain_t dom, long n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
       _last_index = n_iw - 1; // total number of points
@@ -89,9 +87,15 @@ namespace triqs::mesh {
     }
 
     /**
-     * @param beta inverse temperature
-     * @param S statistic (Fermion or Boson)
-     * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+     * Construct a Mesh of Matsubara frequencies on a Matsubara domain
+     *
+     * @param dom The Matsubara domain
+     * @param n_iw The number of positive Matsubara frequencies
+     * @param option Wether to use all frequencies, or only the positive ones
+     *
+     * @param beta Inverse temperature
+     * @param S Statistic (Fermion or Boson)
+     * @param n_iw defined as n_iw = n_max + 1 (n_max: last matsubara index)
      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
      */
     imfreq(double beta, statistic_enum S, long n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}

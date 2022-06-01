@@ -35,17 +35,15 @@ namespace triqs::mesh {
     brzone() = default;
 
     /**
-     * Construct a brzone mesh on a given brillouin zone
-     * The underlying cluster-mesh will be constructed with the provided periodization matrix N.
+     * Construct mesh on a Brillouin-zone
      *
-     * The unit vectors of the cluster-mesh are constructed to respect the periodicity of the
-     * brillouin_zone, i.e.
+     * The unit vectors $U$ of the cluster-mesh are constructed such that
      *
      *   $$K = N * U$$
      *
-     * where $K$ is the reciprocal matrix and $U$ are the unit vectors of the cluster-mesh.
+     * where $K$ is the reciprocal matrix and $N$ the periodization matrix.
      *
-     * @param bz The Brillouin zone (domain)
+     * @param bz Brillouin zone (domain)
      * @param periodization_matrix Periodiziation matrix N of shape 3x3
      */
     brzone(brillouin_zone const &bz, matrix<long> const &periodization_matrix) : bz(bz), cluster_mesh(nda::eye<double>(3), periodization_matrix) {
@@ -57,8 +55,9 @@ namespace triqs::mesh {
      * with n_l mesh-points in each reciprocal direction
      * i.e. using a diagonal periodization matrix
      *
-     * @param bz The Brillouin zone (domain)
-     * @param n_l The number of grid-points for each dimension
+     * @param bz Brillouin zone (domain)
+     * @param n_l Number of mesh-points in each reciprocal direction
+
      */
     brzone(brillouin_zone const &bz_, int n_l)
        : brzone(bz_, matrix<long>{{{n_l, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_l : 1}}}) {}

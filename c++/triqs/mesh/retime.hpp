@@ -23,8 +23,20 @@
 namespace triqs::mesh {
 
   struct retime : segment_mesh {
-    using segment_mesh::segment_mesh;
-    // template <typename... T> retime(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+
+    retime() = default;
+
+    /**
+     *  Construct a Mesh of real times
+     *
+     *  Times are evenly distributed in the interval [t_min, t_max]
+     *  including values at both edges.
+     *
+     *  @param t_min Smallest time
+     *  @param t_max Largest time
+     *  @param n_t Number of time-points
+     */
+    retime(double t_min, double t_max, int n_t) : segment_mesh(t_min, t_max, n_t) {}
 
     friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
       return sout << "Real Time Mesh of size " << m.size() << ", t_min: " << m.t_min() << ", t_max: " << m.t_max();
