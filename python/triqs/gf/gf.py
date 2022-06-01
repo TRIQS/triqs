@@ -77,8 +77,8 @@ class Gf(metaclass=AddMethod):
     Parameters
     ----------
 
-    mesh: TRIQS Greens function mesh
-          One of the meshes of the module 'meshes'.
+    mesh: Types defined in triqs.gf beginning with 'Mesh'
+          The mesh on which the Green function is defined.
 
     data: numpy.array, optional
           The data of the Greens function.
@@ -92,12 +92,6 @@ class Gf(metaclass=AddMethod):
              If true, and target_shape is set, the data will be real.
              Mutually exclusive with argument ``data``.
 
-    indices: WARNING: The Use of string indices is deprecated!
-             GfIndices or list of str or list of list of str, optional
-             Optional string indices for the target space, to allow e.g. ``['eg', 'eg']``.
-             list of list of str: the list of indices for each dimension.
-             list of str: all indices are assumed to be the same for all dimensions.
-   
     name: str 
           The name of the Greens function for plotting.
 
@@ -285,7 +279,7 @@ class Gf(metaclass=AddMethod):
         self.__check_invariants()
 
     def __repr__(self):
-        return "Greens Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
+        return "Greens Function %s with mesh %s and target_shape %s: \n"%(self.name, self.mesh, self.target_shape)
  
     def __str__ (self): 
         return self.__repr__()

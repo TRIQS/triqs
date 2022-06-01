@@ -29,6 +29,11 @@ def call_factory_from_dict(cl, name, l):
 class MeshProduct:
     """
     The cartesian Mesh product
+
+    Parameters
+    ----------
+    mlist: list
+        The list of Meshes in the MeshProduct
     """
 
     def __init__(self, *mlist):

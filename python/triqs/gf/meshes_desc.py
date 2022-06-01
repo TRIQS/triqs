@@ -42,7 +42,7 @@ module.add_enum(c_name = "triqs::mesh::imfreq::option",
 ##   Mesh generic
 ########################
 
-def make_mesh(py_type, c_tag, index_type='long'):
+def make_mesh(py_type, c_tag, index_type='long', doc=""):
 
     m = class_( py_type = py_type,
             c_type = "%s"%c_tag,
@@ -50,7 +50,8 @@ def make_mesh(py_type, c_tag, index_type='long'):
             hdf5 = True,
             serializable= "tuple",
             is_printable= True,
-            comparisons = "== !="
+            comparisons = "== !=",
+            doc = doc
            )
 
     m.add_method("long index_to_linear(%s i)"%index_type, doc = "index -> linear index")
@@ -62,7 +63,7 @@ def make_mesh(py_type, c_tag, index_type='long'):
                     pyref args = PyTuple_Pack(1, self);
                     auto result = PyObject_CallObject(cls, args);
                  """, doc = "A numpy array of all the values of the mesh points")
-    
+
     m.add_method_copy()
     m.add_method_copy_from()
 
@@ -72,8 +73,19 @@ def make_mesh(py_type, c_tag, index_type='long'):
 ##   MeshImFreq
 ########################
 
-m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq")
-m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
+m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq",
+        doc="""Mesh of Matsubara frequencies
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            'Fermion' or 'Boson'
+        n_iw : int [default=1025]
+            Number of positive Matsubara frequencies
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_iw=1025)")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
@@ -93,8 +105,22 @@ module.add_class(m)
 ##   MeshImTime
 ########################
 
-m = make_mesh(py_type = "MeshImTime", c_tag = "imtime")
-m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
+m = make_mesh(py_type = "MeshImTime", c_tag = "imtime",
+        doc =  """Mesh of imaginary times
+
+        Mesh-points are evenly distributed in the interval [0,beta]
+        including points at both edges.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            'Fermion' or 'Boson'
+        n_tau : int
+            Number of mesh-points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_tau)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
@@ -116,12 +142,23 @@ dom = class_( py_type = "GfLegendreDomain",
         c_type_absolute = "triqs::mesh::legendre_domain",
         serializable= "tuple",
        )
-dom.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
+dom.add_constructor(signature = "(double beta, statistic_enum S, int max_n)")
 module.add_class(dom)
 
 # the mesh
-m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre")
-m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
+m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre",
+        doc =  """Mesh representing Legendre polynomials with degrees in the interval [0,max_n]
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        S : str
+            Statistic, 'Fermion' or 'Boson'
+        max_n : int
+            Largest degree
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, int max_n)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
@@ -136,18 +173,32 @@ module.add_class(m)
 ##   MeshReFreq
 ########################
 
-m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq")
-m.add_constructor(signature = "(double omega_min, double omega_max, int n_max)")
+m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq",
+        doc =  """Mesh of real frequencies
+
+        Frequencies are evenly distributed in the interval [omega_min, omega_max]
+        including values at both edges.
+
+        Parameters
+        ----------
+        omega_min : float
+            Smallest frequency
+        omega_max : float
+            Largest frequency
+        n_w : int
+            Number of frequencies
+        """)
+m.add_constructor(signature = "(double omega_min, double omega_max, int n_w)")
 
 m.add_property(name = "omega_min",
-               getter = cfunction(calling_pattern="double result = self_c.x_min()",
+               getter = cfunction(calling_pattern="double result = self_c.omega_min()",
                signature = "double()",
-               doc = "Inverse temperature"))
+               doc = "Smallest frequency"))
 
 m.add_property(name = "omega_max",
-               getter = cfunction(calling_pattern="double result = self_c.x_max()",
+               getter = cfunction(calling_pattern="double result = self_c.omega_max()",
                signature = "double()",
-               doc = "Inverse temperature"))
+               doc = "Largest frequency"))
 
 m.add_property(name = "delta",
                getter = cfunction(calling_pattern="double result = self_c.delta()",
@@ -160,18 +211,32 @@ module.add_class(m)
 ##   MeshReTime
 ########################
 
-m = make_mesh(py_type = "MeshReTime", c_tag = "retime")
-m.add_constructor(signature = "(double t_min, double t_max, int n_max)")
+m = make_mesh(py_type = "MeshReTime", c_tag = "retime",
+        doc =  """Mesh of real times
+
+        Times are evenly distributed in the interval [t_min, t_max]
+        including values at both edges.
+
+        Parameters
+        ----------
+        t_min : float
+            Smallest time
+        t_max : float
+            Largest time
+        n_t : int
+            Number of time-points
+        """)
+m.add_constructor(signature = "(double t_min, double t_max, int n_t)")
 
 m.add_property(name = "t_min",
                getter = cfunction(calling_pattern="double result = self_c.x_min()",
                signature = "double()",
-               doc = "Inverse temperature"))
+               doc = "Smallest time"))
 
 m.add_property(name = "t_max",
                getter = cfunction(calling_pattern="double result = self_c.x_max()",
                signature = "double()",
-               doc = "Inverse temperature"))
+               doc = "Largest time"))
 
 m.add_property(name = "delta",
                getter = cfunction(calling_pattern="double result = self_c.delta()",
@@ -184,9 +249,31 @@ module.add_class(m)
 ##   MeshBrZone
 ########################
 
-m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::array<long,3>' )
-m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
-m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<long> periodization_matrix)")
+m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::array<long,3>',
+        doc =  """Momentum mesh on a BrillouinZone
+
+        The unit vectors $U$ of the mesh are constructed such that
+
+        $$K = N * U$$
+
+        where $K$ is the reciprocal matrix and $N$ the periodization matrix.
+
+        Parameters (Option 1)
+        ---------------------
+        bz : BrillouinZone
+            The underlying Brillouin Zone (domain)
+        N: Diagonal numpy.ndarray of integers, shape=(3,3)
+            The periodization matrix
+
+        Parameters (Option 2)
+        ---------------------
+        bz : BrillouinZone
+            The underlying Brillouin Zone (domain)
+        n_l : int
+            Number of mesh-points in each reciprocal direction
+        """)
+m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, matrix_view<long> N)")
+m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, int n_k)")
 m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 
 m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Linear dimensions")
@@ -199,10 +286,26 @@ module.add_class(m)
 ##   MeshCycLat
 ########################
 
-m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat", index_type = 'std::array<long,3>' )
-m.add_constructor(signature = "(int L1, int L2, int L3)")
+m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat", index_type = 'std::array<long,3>',
+        doc =  """Mesh with finite periodicity on a BravaisLattice
+
+        Parameters (Option 1)
+        ---------------------
+        bl : BravaisLattice
+            The underlying Bravais Lattice (domain)
+        N : diagonal numpy.ndarray of integers, shape=(3,3)
+            The periodization matrix
+
+        Parameters (Option 2)
+        ---------------------
+        bl : BravaisLattice
+            The underlying Bravais Lattice (domain)
+        L : int
+            Number of mesh-points in each spacial direction
+        """)
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<long> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
+m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_method(name="closest_index", signature="std::array<long,3> closest_index(triqs::arrays::vector<double> x)")
 
 m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Extent of each dimension")
