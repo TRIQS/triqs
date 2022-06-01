@@ -38,11 +38,20 @@ namespace triqs {
       public:
       using point_t = std::vector<int>; // domain concept. PUT on STACK
 
-      bravais_lattice(matrix<double> const &units, std::vector<r_t> atom_orb_pos, std::vector<std::string> atom_orb_name);
-      bravais_lattice(matrix<double> const &units, std::vector<r_t> atom_orb_pos)
-         : bravais_lattice(units, atom_orb_pos, std::vector<std::string>(atom_orb_pos.size(), "")) {}
-      bravais_lattice(matrix<double> const &units) : bravais_lattice(units, std::vector<r_t>{{0, 0, 0}}) {}
-      bravais_lattice() : bravais_lattice(nda::eye<double>(2)) {}
+      /**
+       * Construct a Bravais Lattice with given unit vectors and atomic positions
+       *
+       * @param units Matrix with unit vectors of the Bravais Lattice as rows.
+       * @param atom_orb_pos Vector of atomic orbital positions within the unit cell.
+       *  Defaults to {{0,0,0}}
+       * @param atom_orb_name Vector of atomic orbitals names.
+       *  Defaults to vector of empty strings.
+       */
+      bravais_lattice(matrix<double> const &units, std::vector<r_t> atom_orb_pos = std::vector<r_t>{{0, 0, 0}},
+                      std::vector<std::string> atom_orb_name = {});
+
+      // Default construction, 3d cubic lattice
+      bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
 
       /// Number of dimensions
       int ndim() const { return ndim_; }
