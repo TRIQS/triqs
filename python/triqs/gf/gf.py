@@ -288,7 +288,7 @@ class Gf(metaclass=AddMethod):
         return "Greens Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
  
     def __str__ (self): 
-        return self.name if self.name else repr(self)
+        return self.__repr__()
 
     #--------------  Bracket operator []  -------------------------
     
