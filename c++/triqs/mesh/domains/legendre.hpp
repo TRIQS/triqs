@@ -27,19 +27,28 @@ namespace triqs::mesh {
     public:
     double beta;
     statistic_enum statistic;
-    size_t Nmax;
+    size_t max_n;
 
     using point_t = long;
-    size_t size() const { return Nmax; };
+    size_t size() const { return max_n; };
 
-    legendre_domain(double beta_ = 1, statistic_enum stat_ = Fermion, size_t Nmax_ = 1) : beta(beta_), statistic(stat_), Nmax(Nmax_) {}
+    /**
+     *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,n_l]
+     *
+     *  @param beta Inverse temperature
+     *  @param S Statistic, Fermion or Boson
+     *  @param n_l Largest degree
+     */
+    legendre_domain(double beta = 1, statistic_enum S = Fermion, size_t max_n = 1) : beta(beta), statistic(S), max_n(max_n) {}
 
-    bool operator==(legendre_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic) && (Nmax == D.Nmax)); }
+    bool operator==(legendre_domain const &D) const {
+      return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic) && (max_n == D.max_n));
+    }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string subgroup_name, legendre_domain const &d) {
       h5::group gr = fg.create_group(subgroup_name);
-      h5_write(gr, "n_max", d.Nmax);
+      h5_write(gr, "max_n", d.max_n);
       h5_write(gr, "beta", d.beta);
       h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
     }
@@ -50,7 +59,7 @@ namespace triqs::mesh {
       size_t n;
       double beta;
       std::string statistic = " ";
-      h5_read(gr, "n_max", n);
+      if (not h5_try_read(gr, "max_n", n)) h5_read(gr, "n_max", n);
       h5_read(gr, "beta", beta);
       h5_read(gr, "statistic", statistic);
       d = legendre_domain(beta, (statistic == "F" ? Fermion : Boson), n);
@@ -59,7 +68,7 @@ namespace triqs::mesh {
     //  BOOST Serialization
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &Nmax;
+      ar &max_n;
       ar &beta;
       ar &statistic;
     }
