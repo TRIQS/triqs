@@ -109,7 +109,8 @@ namespace triqs::mesh {
       ar &statistic;
     }
     friend std::ostream &operator<<(std::ostream &sout, matsubara_domain const &d) {
-      return sout << "Matsubara domain with beta = " << d.beta << ", statistic = " << d.statistic;
+      auto stat_cstr = (d.statistic == Boson ? "Boson" : "Fermion");
+      return sout << "Matsubara domain with beta = " << d.beta << ", statistic = " << stat_cstr;
     }
   };
 
