@@ -26,7 +26,7 @@ namespace triqs {
 
     const double almost_zero = 1e-10;
 
-    brillouin_zone::brillouin_zone(bravais_lattice const &bl_) : lattice_(bl_), K_reciprocal(3, 3) {
+    brillouin_zone::brillouin_zone(bravais_lattice const &bl) : lattice_(bl), K_reciprocal(3, 3) {
       using nda::blas::dot;
       using nda::linalg::cross_product;
 

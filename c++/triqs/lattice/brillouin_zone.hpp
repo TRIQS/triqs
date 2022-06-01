@@ -28,7 +28,8 @@ namespace triqs {
       public:
       using point_t = k_t; // domain concept
 
-      brillouin_zone() { // default construction, 3d cubic lattice
+      // Default construction, 3d cubic lattice
+      brillouin_zone() {
         K_reciprocal     = nda::eye<double>(3);
         K_reciprocal_inv = K_reciprocal;
       }
@@ -38,8 +39,12 @@ namespace triqs {
       brillouin_zone& operator =( brillouin_zone const&) = default;
       brillouin_zone& operator =( brillouin_zone &&) = default;
 
-      /// Construct from a bravais_lattice
-      explicit brillouin_zone(bravais_lattice const &bl_);
+      /**
+       * Construct a Brillouin Zone from a Bravais Lattice
+       *
+       * @param bl The Bravais Lattice
+       */
+      explicit brillouin_zone(bravais_lattice const &bl);
 
       /// Access to the underlying bravais lattice
       bravais_lattice const & lattice() const { return lattice_; }
