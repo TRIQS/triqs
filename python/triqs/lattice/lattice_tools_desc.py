@@ -25,18 +25,26 @@ bl = class_(py_type = "BravaisLattice",
         hdf5 = True,
         comparisons = "== !=",
         serializable= "tuple",
+        doc = """
+        Bravais Lattice with given unit vectors and atomic positions
+
+        Parameters
+        ----------
+        units: numpy.ndarray of float, shape=(d,d), 1<=d<=3
+            Matrix with unit vectors of the Bravais Lattice as rows
+        atom_orb_pos: list of three-vectors of float, optional
+            The atomic orbital positions within the unit cell.
+            Defaults to [(0,0,0)]
+        atom_orb_name: list of str, optional
+            The atomic orbital names. Defaults to list of empty strings.
+        """
        )
 
-bl.add_constructor(signature = "(triqs::lattice::brillouin_zone bz)",
-                   doc = "")
-bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions, std::vector<std::string> atom_orb_name)",
-                   doc = "")
-bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions)",
-                   doc = "")
-bl.add_constructor(signature = "(matrix<double> units)",
-                   doc = "")
-bl.add_constructor(signature = "()",
-                   doc = "")
+bl.add_constructor(signature = "(triqs::lattice::brillouin_zone bz)")
+bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions, std::vector<std::string> atom_orb_name)")
+bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions)")
+bl.add_constructor(signature = "(matrix<double> units)")
+bl.add_constructor(signature = "()")
 
 bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing lattice basis vectors as rows")
 bl.add_property(getter = cfunction("int ndim()"), doc = "Number of dimensions")
@@ -45,7 +53,7 @@ bl.add_property(getter = cfunction("std::vector<r_t> orbital_positions()"), doc 
 bl.add_property(getter = cfunction("std::vector<std::string> orbital_names()"), doc = "Return the list of orbital names")
 
 
-bl.add_method(name = "lattice_to_real_coordinates", 
+bl.add_method(name = "lattice_to_real_coordinates",
               signature = "r_t lattice_to_real_coordinates(r_t x)",
               doc = "Transform into real coordinates.")
 
@@ -56,11 +64,18 @@ c = class_(
         py_type = "BrillouinZone",  # name of the python class
         c_type = "brillouin_zone",   # name of the C++ class
         c_type_absolute = "triqs::lattice::brillouin_zone",
-        doc = r"",   # doc of the C++ class
         is_printable = True,
         hdf5 = True,
         comparisons = "== !=",
         serializable= "tuple",
+        doc = """
+        Brillouin Zone for a given Bravais Lattice
+
+        Parameters
+        ----------
+        bl: BravaisLattice
+            The associated Bravais Lattice
+        """
 )
 
 c.add_constructor("""(triqs::lattice::bravais_lattice bl_)""",
@@ -84,9 +99,9 @@ tb = class_(py_type = "TightBinding",
        )
 
 tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hoppings)",
-                   calling_pattern = 
+                   calling_pattern =
                    """
-                    // We need to rewrite manually the call to the constructor : 
+                    // We need to rewrite manually the call to the constructor :
                     // hoppings is a dict : displacement -> matrix
                     // we flatten it into 2 vector of vector and matrix resp.
                     // for the tight_binding constructor
@@ -103,7 +118,7 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hoppings)",
                      mats.push_back(convert_from_python<matrix<dcomplex>>(value));
                     }
                     auto result = tight_binding(latt, displs, mats);
-                   """, 
+                   """,
                    doc = " ")
 
 tb.add_constructor(signature = "(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)",
