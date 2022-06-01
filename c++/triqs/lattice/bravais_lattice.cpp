@@ -27,7 +27,11 @@ namespace triqs {
     const double almost_zero = 1e-10;
 
     bravais_lattice::bravais_lattice(matrix<double> const &units__, std::vector<r_t> atom_orb_pos_, std::vector<std::string> atom_orb_name_)
-       : units_(3, 3), atom_orb_pos(atom_orb_pos_), atom_orb_name(atom_orb_name_) {
+       : units_(3, 3), atom_orb_pos(atom_orb_pos_) {
+
+      atom_orb_name = atom_orb_name_.empty() ? std::vector<std::string>(atom_orb_pos.size(), "") : atom_orb_name_;
+      EXPECTS(atom_orb_pos.size() == atom_orb_name.size());
+
       using nda::blas::dot;
       using nda::linalg::cross_product;
 
