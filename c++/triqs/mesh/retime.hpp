@@ -38,6 +38,8 @@ namespace triqs::mesh {
      */
     retime(double t_min, double t_max, int n_t) : segment_mesh(t_min, t_max, n_t) {}
 
+    retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
+
     friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
       return sout << "Real Time Mesh of size " << m.size() << ", t_min: " << m.t_min() << ", t_max: " << m.t_max();
     }
