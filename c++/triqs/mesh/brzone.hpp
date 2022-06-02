@@ -52,15 +52,15 @@ namespace triqs::mesh {
 
     /** 
      * Construct a brzone mesh on a given brillouin zone
-     * with n_l mesh-points in each reciprocal direction
+     * with n_k mesh-points in each reciprocal direction
      * i.e. using a diagonal periodization matrix
      *
      * @param bz Brillouin zone (domain)
-     * @param n_l Number of mesh-points in each reciprocal direction
+     * @param n_k Number of mesh-points in each reciprocal direction
 
      */
-    brzone(brillouin_zone const &bz_, int n_l)
-       : brzone(bz_, matrix<long>{{{n_l, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_l : 1}}}) {}
+    brzone(brillouin_zone const &bz_, int n_k)
+       : brzone(bz_, matrix<long>{{{n_k, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_k : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_k : 1}}}) {}
 
     /// ----------- Model the mesh concept  ----------------------
     using domain_t    = brillouin_zone;
