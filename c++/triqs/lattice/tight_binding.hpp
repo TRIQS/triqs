@@ -41,10 +41,11 @@ namespace triqs {
       std::vector<matrix<dcomplex>> overlap_mat_vec_;
 
       public:
-      /** 
+      /**
        * Construct a tight_binding Hamiltonian on a given bravais_lattice,
-       * given the displacements {r_j} in units of the lattice basis vectors (units)
-       * and the associated overlap (hopping) matrices {m_j}.
+       * given the displacements in units of the lattice basis vectors (units)
+       * and the associated overlap (hopping) matrices.
+       * The matrix structure is w.r.t. the atoms in the unit cell.
        *
        * @param bl The underlying bravais lattice
        * @param displ_vec The vector of displacement vectors in units of the lattice basis vectors

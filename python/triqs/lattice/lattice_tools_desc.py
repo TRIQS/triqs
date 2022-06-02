@@ -95,10 +95,24 @@ tb = class_(py_type = "TightBinding",
         c_type_absolute = "triqs::lattice::tight_binding",
         is_printable = True,
         hdf5 = True,
-        comparisons = "== !="
+        comparisons = "== !=",
+        doc = """
+        A tight-binding Hamiltonian on a Bravais lattice.
+
+        Requires the displacements in units of the lattice basis vectors (units)
+        and the associated overlap (hopping) matrices.
+        The matrix structure is w.r.t. the atoms in the unit cell.
+
+        Parameters
+        ----------
+        bl : BravaisLattice
+            Underlying bravais lattice
+        hoppings : dict(vector->matrix)
+            The mapping between displacement vectors and overlap (hopping) matrices
+        """
        )
 
-tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hoppings)",
+tb.add_constructor(signature = "(bravais_lattice bl, PyObject* hoppings)",
                    calling_pattern =
                    """
                     // We need to rewrite manually the call to the constructor :
@@ -117,7 +131,7 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hoppings)",
                      displs.push_back(convert_from_python<nda::vector<long>>(key));
                      mats.push_back(convert_from_python<matrix<dcomplex>>(value));
                     }
-                    auto result = tight_binding(latt, displs, mats);
+                    auto result = tight_binding(bl, displs, mats);
                    """,
                    doc = " ")
 
