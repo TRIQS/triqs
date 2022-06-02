@@ -130,7 +130,7 @@ class test_tail_issues(unittest.TestCase):
         d = C.copy()
         d << C - tail[0]
         tail[0] = 0.
-        tau_mesh = MeshImTime(beta = 1, S = "Fermion", n_max = 2001)
+        tau_mesh = MeshImTime(beta = 1, S = "Fermion", n_tau = 2001)
         dt = make_gf_from_fourier(d, tau_mesh, tail)
         max_im = np.max(np.abs(dt.data.imag))
         # print "Imag Delta", max_im

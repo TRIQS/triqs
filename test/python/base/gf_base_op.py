@@ -38,7 +38,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
     def test_Base_Op(self):
 
-        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_max = 1000)
+        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 1000)
 
         ga = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "a1Block")
         gb = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "b1Block")
@@ -146,7 +146,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
     def test_Mat_Prod(self):
 
-        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_max = 50)
+        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 50)
 
         Mat = np.matrix([[1, 2], [3, 4]])
 
@@ -182,7 +182,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert_gfs_are_close(Mat * G * linalg.inv(Mat), G_exact)
 
     def test_different_rank_prod(self):
-        mesh = MeshImFreq(beta=self.beta, S="Fermion", n_max=10)
+        mesh = MeshImFreq(beta=self.beta, S="Fermion", n_iw=10)
         G1 = Gf(mesh=mesh, target_shape=[2,2])
         G1 << inverse(iOmega_n + 2)
         G2 = Gf(mesh=mesh, target_shape=[])

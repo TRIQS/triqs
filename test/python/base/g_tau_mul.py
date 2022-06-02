@@ -30,8 +30,8 @@ BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ]) #square lattice
 nk=20
 mk = MeshBrZone(BrillouinZone(BL), nk)
 
-mtf=MeshImTime (beta=1., S="Fermion", n_max=100)
-mtb=MeshImTime (beta=1., S="Boson", n_max=100)
+mtf=MeshImTime (beta=1., S="Fermion", n_tau=100)
+mtb=MeshImTime (beta=1., S="Boson", n_tau=100)
 
 f= Gf(mesh = mtf, target_shape = [1,1])
 b= Gf(mesh = mtb, target_shape = [1,1])

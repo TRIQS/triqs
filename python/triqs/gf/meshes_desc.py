@@ -86,6 +86,7 @@ m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq",
             Number of positive Matsubara frequencies
         """)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_iw=1025)")
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
@@ -121,6 +122,7 @@ m = make_mesh(py_type = "MeshImTime", c_tag = "imtime",
             Number of mesh-points
         """)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_tau)")
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
@@ -159,6 +161,7 @@ m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre",
             Largest degree
         """)
 m.add_constructor(signature = "(double beta, statistic_enum S, int max_n)")
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
@@ -189,6 +192,7 @@ m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq",
             Number of frequencies
         """)
 m.add_constructor(signature = "(double omega_min, double omega_max, int n_w)")
+m.add_constructor(signature = "(double omega_min, double omega_max, int n_max)")
 
 m.add_property(name = "omega_min",
                getter = cfunction(calling_pattern="double result = self_c.omega_min()",
@@ -227,6 +231,7 @@ m = make_mesh(py_type = "MeshReTime", c_tag = "retime",
             Number of time-points
         """)
 m.add_constructor(signature = "(double t_min, double t_max, int n_t)")
+m.add_constructor(signature = "(double t_min, double t_max, int n_max)")
 
 m.add_property(name = "t_min",
                getter = cfunction(calling_pattern="double result = self_c.x_min()",

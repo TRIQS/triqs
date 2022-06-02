@@ -23,7 +23,7 @@ from triqs.gf.tools import discretize_bath, make_delta
 from triqs.utility.comparison_tests import assert_gfs_are_close
 
 # build delta from discretized values
-mesh = MeshImFreq(beta=40, S='Fermion', n_max=200)
+mesh = MeshImFreq(beta=40, S='Fermion', n_iw=200)
 
 hoppings = np.array([[0.2, 0.6]])
 energies = np.array([0.0, 0.5])
@@ -52,7 +52,7 @@ assert_gfs_are_close(delta_disc_iw, delta_iw)
 
 #################################################
 # second test with 2x2 delta input and init guess
-mesh = MeshImTime(beta=40, S='Fermion', n_max=1001)
+mesh = MeshImTime(beta=40, S='Fermion', n_tau=1001)
 
 hoppings = np.array([[6.1916012067e-01, 0.0, 3.4998359745e-01, 0.0, 1.3545326772e-01, 0.0, 2.4378742241e-01, 0.0],
                      [0.0, 3.3503877422e-01, 0.0, 1.8849071562e-01, 0.0, -2.2889123931e-01, 0.0, -4.7688592983e-02]])
@@ -73,7 +73,7 @@ assert_gfs_are_close(delta_disc_tau, delta_tau)
 
 #################################################
 # test blockGf
-mesh = MeshImTime(beta=40, S='Fermion', n_max=501)
+mesh = MeshImTime(beta=40, S='Fermion', n_tau=501)
 
 hoppings = [np.array([[0.2, 0.1, -0.5, 0.15]]),
             np.array([[0.2, -0.35, 0.7, 0.1]])]

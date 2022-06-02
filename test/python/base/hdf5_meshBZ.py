@@ -26,8 +26,8 @@ bz = BrillouinZone(BravaisLattice([[1,0],[0,1]]))
 bzmesh = MeshBrZone(bz, n_k=4)
 
 beta = 1.2345
-fmesh = MeshImFreq(beta=beta, S='Fermion', n_max=8)
-bmesh = MeshImFreq(beta=beta, S='Boson', n_max=6)
+fmesh = MeshImFreq(beta=beta, S='Fermion', n_iw=8)
+bmesh = MeshImFreq(beta=beta, S='Boson', n_iw=6)
 prodmesh = MeshProduct(bzmesh, bmesh, fmesh, fmesh)
 
 ek = Gf(mesh=bzmesh, target_shape=[1, 1])

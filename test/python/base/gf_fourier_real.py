@@ -20,7 +20,7 @@ from triqs.gf import *
 # ==== Matrix-valued Green functions
 
 n_w = 1001
-w_mesh = MeshReFreq(omega_min=-10, omega_max=10, n_max = n_w)
+w_mesh = MeshReFreq(omega_min=-10, omega_max=10, n_w = n_w)
 gw = GfReFreq(mesh=w_mesh, target_shape=(1,1))
 gw2 = gw.copy()
 #gw << SemiCircular(2.0)

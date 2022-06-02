@@ -29,7 +29,7 @@ class test_Gf_Block(unittest.TestCase):
     def setUp(self):
 
         beta = 1.0
-        self.iw_mesh = MeshImFreq(beta=beta, S = "Fermion", n_max = 5)
+        self.iw_mesh = MeshImFreq(beta=beta, S = "Fermion", n_iw = 5)
 
     def test_Construct(self):
 
