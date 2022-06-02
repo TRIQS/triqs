@@ -182,8 +182,15 @@ m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq",
         Frequencies are evenly distributed in the interval [omega_min, omega_max]
         including values at both edges.
 
-        Parameters
-        ----------
+        Parameters (Option 1)
+        ---------------------
+        window : pair of float
+            The frequency interval
+        n_w : int
+            Number of frequencies
+
+        Parameters (Option 2)
+        ---------------------
         omega_min : float
             Smallest frequency
         omega_max : float
@@ -193,6 +200,8 @@ m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq",
         """)
 m.add_constructor(signature = "(double omega_min, double omega_max, int n_w)")
 m.add_constructor(signature = "(double omega_min, double omega_max, int n_max)")
+
+m.add_constructor(signature = "(std::pair<double, double> window, int n_w)")
 
 m.add_property(name = "omega_min",
                getter = cfunction(calling_pattern="double result = self_c.omega_min()",
@@ -221,8 +230,15 @@ m = make_mesh(py_type = "MeshReTime", c_tag = "retime",
         Times are evenly distributed in the interval [t_min, t_max]
         including values at both edges.
 
-        Parameters
-        ----------
+        Parameters (Option 1)
+        ---------------------
+        window : pair of float
+            The time interval
+        n_t : int
+            Number of time-points
+
+        Parameters (Option 2)
+        ---------------------
         t_min : float
             Smallest time
         t_max : float
@@ -232,6 +248,8 @@ m = make_mesh(py_type = "MeshReTime", c_tag = "retime",
         """)
 m.add_constructor(signature = "(double t_min, double t_max, int n_t)")
 m.add_constructor(signature = "(double t_min, double t_max, int n_max)")
+
+m.add_constructor(signature = "(std::pair<double, double> window, int n_t)")
 
 m.add_property(name = "t_min",
                getter = cfunction(calling_pattern="double result = self_c.x_min()",

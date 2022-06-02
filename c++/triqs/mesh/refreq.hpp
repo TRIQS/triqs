@@ -37,6 +37,8 @@ namespace triqs::mesh {
      */
     refreq(double w_min, double w_max, int n_w) : segment_mesh(w_min, w_max, n_w) {}
 
+    refreq(std::pair<double, double> window, int n_w) : refreq(std::get<0>(window), std::get<1>(window), n_w) {}
+
     /// Is the mesh only for positive omega
     static constexpr bool positive_only() { return false; }
 
