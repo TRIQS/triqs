@@ -23,8 +23,8 @@ from h5 import *
 from itertools import product
 
 beta = 3.0
-m_b = MeshImFreq(beta=beta, S = "Boson", n_max = 10)
-m_f = MeshImFreq(beta=beta, S = "Fermion", n_max = 5)
+m_b = MeshImFreq(beta=beta, S = "Boson", n_iw = 10)
+m_f = MeshImFreq(beta=beta, S = "Fermion", n_iw = 5)
 block_mesh = MeshProduct(m_b,m_f,m_f)
 
 spin_blocks = ('up','dn')

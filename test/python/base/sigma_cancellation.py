@@ -40,7 +40,7 @@ from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 
 def delta_inv(beta, nw, nk=100):
 
-    mesh = MeshImFreq(beta, 'Fermion', n_max=nw)
+    mesh = MeshImFreq(beta, 'Fermion', n_iw=nw)
 
     Sigma0, Sigma1 = 1.337, 3.5235
     ek = 2.*np.random.random(nk) - 1.

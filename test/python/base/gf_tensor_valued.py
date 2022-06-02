@@ -21,7 +21,7 @@ from triqs.gf import *
 from h5 import *
 
 #one constructor
-m=MeshImFreq(beta=1, S='Fermion', n_max=10)
+m=MeshImFreq(beta=1, S='Fermion', n_iw=10)
 G=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2']])
 
 #another constructor

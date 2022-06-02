@@ -71,7 +71,7 @@ for idx, tau in enumerate(g_tau.mesh):
 
 # -- three imaginary time gf
 
-imtime = MeshImTime(beta=beta, S='Fermion', n_max=ntau)
+imtime = MeshImTime(beta=beta, S='Fermion', n_tau=ntau)
 g4_tau = Gf(name='g4_tau', mesh= MeshProduct(imtime, imtime, imtime), indices=[1])
 
 for t1, t2, t3 in g4_tau.mesh:

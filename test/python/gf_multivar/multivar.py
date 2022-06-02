@@ -23,8 +23,8 @@ from h5 import *
 from itertools import product
 
 ##construct product mesh
-m1=MeshImFreq(beta=1., S="Fermion", n_max=100)
-m2=MeshImFreq(beta=1., S="Boson", n_max=100)
+m1=MeshImFreq(beta=1., S="Fermion", n_iw=100)
+m2=MeshImFreq(beta=1., S="Boson", n_iw=100)
 mprod=MeshProduct(m1,m2)
 
 assert len(mprod)==len(m1)*len(m2), "not ok: %s"%(mprod.size)
@@ -100,8 +100,8 @@ if not mpi.is_master_node():
 
 #ImTime
 ##construct product mesh
-m1=MeshImTime(beta=1., S="Fermion", n_max=100)
-m2=MeshImTime(beta=1., S="Boson", n_max=100)
+m1=MeshImTime(beta=1., S="Fermion", n_tau=100)
+m2=MeshImTime(beta=1., S="Boson", n_tau=100)
 mprod=MeshProduct(m1,m2)
 g=Gf(mesh = mprod, target_shape = [1,1,1])
 f=Gf(mesh = mprod, target_shape =[1,1,1])
@@ -125,9 +125,9 @@ assert H["a"].data[0,0,0,0,0]==15.0, "not ok: %s"%H["a"].data[0,0,0,0,0]
 assert H["b"].data[0,0,0,0,0]==10.0, "not ok: %s"%H["b"].data[0,0,0,0,0]
 
 # Legendre
-m1 = MeshImFreq(beta=2., S = "Boson", n_max=20)
-m2 = MeshLegendre(beta=2., S = "Fermion", n_max=10)
-m3 = MeshLegendre(beta=2., S = "Fermion", n_max=10)
+m1 = MeshImFreq(beta=2., S = "Boson", n_iw=20)
+m2 = MeshLegendre(beta=2., S = "Fermion", max_n=10)
+m3 = MeshLegendre(beta=2., S = "Fermion", max_n=10)
 mprod = MeshProduct(m1,m2,m3)
 assert len(mprod) == len(m1)*len(m2)*len(m3)
 

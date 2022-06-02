@@ -21,7 +21,7 @@ from triqs.gf import *
 from triqs.utility.comparison_tests import *
 import numpy as np
 
-iw_mesh = MeshImFreq(beta=40, S='Fermion', n_max=1025)
+iw_mesh = MeshImFreq(beta=40, S='Fermion', n_iw=1025)
 
 # create upfolded Gf with 5x5 dim
 G_upf = Gf(mesh=iw_mesh, target_shape=[5, 5])
