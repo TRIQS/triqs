@@ -274,7 +274,7 @@ m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone", index_type = 'std::arra
         ---------------------
         bz : BrillouinZone
             The underlying Brillouin Zone (domain)
-        n_l : int
+        n_k : int
             Number of mesh-points in each reciprocal direction
         """)
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, matrix_view<long> N)")
