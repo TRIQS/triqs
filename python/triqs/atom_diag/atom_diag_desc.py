@@ -56,7 +56,26 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
         is_printable = True,
         hdf5 = True,
         serializable = "h5",
-        doc = "Lightweight exact diagonalization solver (%s version)" % c_py
+        doc = """Lightweight exact diagonalization solver ({s})
+
+        Use the QR algorithm to diagonalize the Hamiltonian.
+        Auto-partitions the Hamiltonian into subspaces (blocks)
+        such that all creation and annihilation operators map one
+        subspace to exactly one other subspace.
+
+        Parameters
+        ----------
+        h: Operator ({s})
+            Hamiltonian to be diagonalized.
+        fops: list of tuple of strings and ints
+            List of all annihilation / creation operator flavors (indices).
+            Must at least contain all flavors met in `h`.
+        qn_vector: list of Operator ({s}), optional
+            Vector of quantum number operators to be used for the auto-partitioning
+        n_min, n_max: integers, optional
+            Truncate the Fock-space to states with particle number in [n_min, n_max]
+            Cannot be combined with qn_vector
+        """.format(s=c_py)
     )
 
     c.add_constructor("(many_body_operator h, fundamental_operator_set fops)",
