@@ -11,6 +11,7 @@ module.add_include("<cpp2py/converters/string.hpp>")
 module.add_include("<cpp2py/converters/vector.hpp>")
 module.add_include("<cpp2py/converters/function.hpp>")
 module.add_include("<cpp2py/converters/optional.hpp>")
+module.add_include("<cpp2py/converters/pair.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 
