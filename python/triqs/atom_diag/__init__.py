@@ -25,8 +25,6 @@ from .atom_diag import atomic_g_tau, atomic_g_iw, atomic_g_l, atomic_g_w
 
 # Construct real/complex AtomDiag
 def AtomDiag(*args, **kwargs):
-    """Lightweight exact diagonalization solver"""
-
     if len(args) > 0: h = args[0]
     elif 'h' in kwargs: h = kwargs['h']
     else:
@@ -38,6 +36,8 @@ def AtomDiag(*args, **kwargs):
         return AtomDiagComplex(*args, **kwargs)
     else:
         return AtomDiagReal(*args, **kwargs)
+
+AtomDiag.__doc__ = AtomDiagReal.__doc__.replace(" (Real)", "")
 
 __all__ = ['AtomDiag','AtomDiagReal','AtomDiagComplex',
            'partition_function','atomic_density_matrix','trace_rho_op','act',
