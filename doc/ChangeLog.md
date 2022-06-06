@@ -5,6 +5,43 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 3.1.1
+
+TRIQS Version 3.1.1 is a patch-release that improves/adds documentation for
+* Ubuntu 22.04 install instructions + Packages
+* various mesh, domain-types and lattice-tools in C++ and Python
+* wrapped classes: AtomDiagReal, AtomDiagComplex
+This release also introduces small API improvements to some mesh-types.
+
+Find below an itemized list of changes in this release.
+
+### cmake
+* Revert a7a4cd: CPLUS_INCLUDE_PATH and LIBRARY_PATH still relevant to cpp2py
+* Fix Findsanitizer.cmake for new asan/ubsan runtime location with clang13+
+
+### doc
+* Update install instructions to include Ubuntu 22.04, remove 18.04, mention new packages
+* Add/improve documentation for various wrapped mesh-types and lattice-tools classes
+* Add/improve documentation for various triqs::mesh constructors
+* Add doc string to AtomDiag python-function and classes
+* Add documentation to wrapped class TightBinding
+* Include list of requirements in toctree for build-from-source prerequisites
+
+### gf
+* Printing a Gf/BlockGf in python now yields the same string as repr(G), no longer print only 'name'
+
+### Meshes
+* Allow passing a window (pair of float) to mesh::imfreq/refreq and MeshImFreq/MeshReFreq
+* Improved keywords (n_iw, n_tau, ..) for python mesh construction + backward compatibility layer
+* Add proper ostream overload for mesh::retime, mesh::refreq
+* Add t_min() and t_max() member functions to mesh::retime
+* Add omega_min() member function to mesh::refreq
+* Make variable naming more consistent in various C++ mesh and domain implementations
+* matsubara_domain now prints statistic field as string
+* Update 3.1 easybuild script with sha256 of release tarball
+
+Contributors: Nils Wentzell
+
 
 ## Version 3.1.0
 
