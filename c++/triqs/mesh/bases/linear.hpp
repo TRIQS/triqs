@@ -66,7 +66,9 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
 
-    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)) {}
+    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)) {
+      EXPECTS(a<=b);
+    }
 
     linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
 
@@ -103,7 +105,10 @@ namespace triqs::mesh {
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
-      return xmin + idx * del;
+      double wr = double(idx) / (L - 1);
+      double res = xmin * (1 - wr) + xmax * wr;
+      ASSERT(is_within_boundary(res));
+      return res;
     }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
