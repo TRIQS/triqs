@@ -68,6 +68,16 @@ foreach(example ${ExampleList})
   add_dependencies(docs_example_output doc_${f})
 endforeach()
 
+# --------------------------------------------------------
+# Clone the triqs tutorials with the output included
+# --------------------------------------------------------
+
+add_custom_target(docs_tutorial_notebooks)
+add_custom_command(
+  TARGET docs_tutorial_notebooks
+  COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch unstable_executed https://github.com/triqs/tutorials ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials || true
+)
+
 # ---------------------------------
 # Top Sphinx target
 # ---------------------------------
@@ -87,7 +97,7 @@ if(NOT Sphinx_Only)
   add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
 
   # Generation of C++ Api and Example Outputs
-  add_dependencies(docs_sphinx docs_cpp2rst docs_example_output)
+  add_dependencies(docs_sphinx docs_cpp2rst docs_example_output docs_tutorial_notebooks)
 endif()
 
 # ---------------------------------

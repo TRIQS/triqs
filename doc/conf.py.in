@@ -33,6 +33,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.napoleon',
               'myst_parser',
+              'nbsphinx',
               'matplotlib.sphinxext.plot_directive',
               ]
 
@@ -240,6 +241,8 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+# Disable nbsphinx notebook execution
+nbsphinx_execute = 'never'
 
 # open links in new tabs
 # open links in new tab instead of same window

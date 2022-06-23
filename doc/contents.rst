@@ -7,10 +7,10 @@ Table of contents
    index
    install
    documentation
-   applications
    userguide
-   contributing
+   applications
    versions
    ChangeLog.md
+   contributing
    about
    faqs

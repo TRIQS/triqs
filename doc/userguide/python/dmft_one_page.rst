@@ -36,7 +36,7 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
    n_loops = 10
 
    # Construct the impurity solver
-   S = Solver(beta = beta, gf_struct = [('up',[0]), ('down',[0])] )
+   S = Solver(beta = beta, gf_struct = [('up',1), ('down',1)] )
 
    # This is a first guess for G
    S.G_iw << SemiCircular(2*t)

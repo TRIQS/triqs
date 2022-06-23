@@ -35,11 +35,11 @@ is realized in... one page!
 .. toctree::
    :maxdepth: 1
 
-   userguide/dmft
+   userguide/python/dmft_one_page
 
 
-A quick tour in Python
-----------------------
+Python Tutorials
+----------------
 
 
 We here provide a little tour of some aspects of TRIQS and its applications, at the Python
@@ -48,18 +48,16 @@ level.
 .. toctree::
    :maxdepth: 1
 
-   userguide/gfs/gfs_tutorial_python
-   userguide/gfs/lattice_gfs_tutorial_python
-   userguide/gfs/multivar_gfs_tutorial_python
-   userguide/hdf5/hdf5_tutorial_python
-   userguide/tight_binding
+   userguide/python/basics
+   userguide/python/model_dmft
+   userguide/python/two_particle_response
 
 If you want to learn more about Python, iPython and the notebook, you can check our external resources:
 
 .. toctree::
    :maxdepth: 1
 
-   userguide/external_resources_python
+   userguide/python/external_resources
 
 A quick tour in C++
 -------------------
@@ -70,13 +68,13 @@ level.
 .. toctree::
    :maxdepth: 1
 
-   userguide/gfs/gfs_tutorial_cpp
-   userguide/arrays/array_tutorial_cpp
-   userguide/det_manip/det_manip_tutorial_cpp
-   userguide/hdf5/hdf5_tutorial_cpp
+   userguide/c++/gfs/gfs_tutorial_cpp
+   userguide/c++/arrays/array_tutorial_cpp
+   userguide/c++/det_manip/det_manip_tutorial_cpp
+   userguide/c++/hdf5/hdf5_tutorial_cpp
 
 
 .. toctree::
    :maxdepth: 1
 
-   userguide/using_the_lib/contents
+   userguide/c++/using_the_lib/contents

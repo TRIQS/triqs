@@ -1,5 +1,3 @@
-
-
 A tight-binding model on a square lattice
 -----------------------------------------
 
