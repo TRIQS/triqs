@@ -53,4 +53,5 @@ and new subgroup for other hdf-compliant data.
    :maxdepth: 5
 
    ref
-   /userguide/hdf5/hdf5_tutorial
+   /userguide/c++/hdf5/tutorial
+   /userguide/python/tutorials/Basics/02-Archiving_your_data.ipynb

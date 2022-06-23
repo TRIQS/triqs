@@ -1,5 +1,5 @@
 Multidimensional arrays
-============================================
+=======================
 
 .. highlight:: c
 
@@ -14,7 +14,7 @@ Here are a couple of simple examples showing the basic use of this class.
 Declaring and printing an array
 -------------------------------
 .. literalinclude:: array_tutorial_0.cpp
-:language: cpp
+   :language: cpp
 
 Simple operations
 -------------------
@@ -56,5 +56,5 @@ Map and fold
 -------------
 .. literalinclude:: array_tutorial_7.cpp
    :language: cpp
-The full reference of the array library can be found :doc:`here <../../reference/arrays/contents>`.
 
+The full reference of the array library can be found :doc:`here <../../reference/arrays/contents>`.

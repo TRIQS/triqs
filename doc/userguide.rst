@@ -66,10 +66,10 @@ level.
 .. toctree::
    :maxdepth: 1
 
-   userguide/c++/gfs/gfs_tutorial_cpp
-   userguide/c++/arrays/array_tutorial_cpp
-   userguide/c++/det_manip/det_manip_tutorial_cpp
-   userguide/c++/hdf5/hdf5_tutorial_cpp
+   userguide/c++/gfs/tutorial
+   userguide/c++/arrays/tutorial
+   userguide/c++/det_manip/tutorial
+   userguide/c++/hdf5/tutorial
 
 
 .. toctree::

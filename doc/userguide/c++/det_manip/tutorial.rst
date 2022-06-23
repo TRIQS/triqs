@@ -1,5 +1,5 @@
-Determinants for Continuous-Time Monte-Carlo
-================================================================
+det_manip: Determinant manipulations for CTQMC
+==============================================
 
 .. highlight:: c
 
@@ -68,5 +68,3 @@ Replace one line and column
    :language: cpp
 
 Learn more in the full reference, see :ref:`det_manip`
-
-
