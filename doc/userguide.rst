@@ -41,12 +41,10 @@ is realized in... one page!
 Python Tutorials
 ----------------
 
-
-We here provide a little tour of some aspects of TRIQS and its applications, at the Python
-level.  
+We provide here three different Tutorial series, with increasing difficulty, that introduce you to various aspects of the TRIQS Python interface. These Tutorials are also provided as Jupyter Notebooks in our `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_ repository.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    userguide/python/basics
    userguide/python/model_dmft
