@@ -1,5 +1,5 @@
 Green's functions
-=====================================
+=================
 
 .. highlight:: c
 
@@ -81,5 +81,3 @@ You simply have to call the GF with the coordinates of the point:
     :language: cpp
 
 Learn more in the full reference, see :ref:`greenfunctions`
-
-

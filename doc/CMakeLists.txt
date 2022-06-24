@@ -58,14 +58,16 @@ file(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 foreach(example ${ExampleList})
   get_filename_component(f ${example} NAME_WE)
   get_filename_component(d ${example} DIRECTORY)
-  add_executable(doc_${f} EXCLUDE_FROM_ALL ${example})
-  set_property(TARGET doc_${f} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
-  target_link_libraries(doc_${f} triqs)
-  add_custom_command(TARGET doc_${f}
-   COMMAND doc_${f} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output
+  get_filename_component(pd ${d} NAME_WE)
+  set(bin doc_${pd}_${f})
+  add_executable(${bin} EXCLUDE_FROM_ALL ${example})
+  set_property(TARGET ${bin} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
+  target_link_libraries(${bin} triqs)
+  add_custom_command(TARGET ${bin}
+   COMMAND ${bin} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output
    WORKING_DIRECTORY ${d}
   )
-  add_dependencies(docs_example_output doc_${f})
+  add_dependencies(docs_example_output ${bin})
 endforeach()
 
 # --------------------------------------------------------

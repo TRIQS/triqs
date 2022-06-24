@@ -25,5 +25,5 @@ under action of a given operator.
 Example of use
 --------------
 
-.. literalinclude:: ./hilbert_example.cpp
+.. literalinclude:: ./example.cpp
    :language: cpp
