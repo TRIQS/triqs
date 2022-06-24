@@ -127,9 +127,9 @@ Support for array types is provided by ``nda/mpi.hpp``.
 MPI example
 -----------
 
-.. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.cpp
+.. literalinclude:: mpi_0.cpp
    :language: cpp
 
-.. literalinclude:: /documentation/manual/triqs/mpi/mpi_0.output
+.. literalinclude:: mpi_0.output
 
 Simple MPI example.
