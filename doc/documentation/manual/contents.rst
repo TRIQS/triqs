@@ -8,7 +8,6 @@
    triqs/clef/contents
    triqs/det_manip/contents
    triqs/gfs/contents
-   triqs/hdf5/contents
    triqs/hilbert_space/contents
    triqs/lattice_tools/contents
    triqs/mc_tools/contents
@@ -20,5 +19,6 @@
    triqs/utilities/contents
    triqs/conventions
 
+   hdf5/contents
    mpi/contents
    cpp2py/contents
