@@ -49,3 +49,19 @@ WARRANTY of any kind, as stated in the license.  In particular, its authors and
 contributors will take no responsability for any possible bugs or any improper
 use of these programs, including those resulting in incorrect scientific
 publications.
+
+
+Logo files
+==========
+
+This is the official TRIQS logo:
+
+.. image:: _static/triqs_logo.png
+    :width: 40%
+
+Official version with all white colors to be used on colored background:
+
+.. image:: _static/triqs_logo_white.png
+    :width: 40%
+
+Link to the original vector graphics file: :download:`TRIQS svg logo<_static/triqs_logo.svg>`.
