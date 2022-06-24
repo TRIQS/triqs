@@ -32,8 +32,8 @@ directly with the TRIQS developers.
    contributing/documentation
 
 
-Google group / mailing list
----------------------------
+Github discussions 
+------------------
 
 You can engage in discussions with other users and developers through the
 `Github Discussions <https://github.com/TRIQS/triqs/discussions>`_ forum.
