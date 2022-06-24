@@ -32,11 +32,11 @@ since it can only treat problems of a moderate size.
 Example of use: Python
 ----------------------
 
-.. literalinclude:: ./example.py
+.. literalinclude:: example.py
     :language: python
 
 Example of use: C++
 --------------------
 
-.. literalinclude:: ./example.cpp
+.. literalinclude:: example.cpp
     :language: cpp

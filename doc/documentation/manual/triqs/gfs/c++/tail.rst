@@ -54,7 +54,7 @@ Given a Matsubara or Real-frequency Green function :math:`G(i\omega)` with arbit
 Example
 ~~~~~~~
 
-.. literalinclude:: ./tail.cpp
+.. literalinclude:: tail.cpp
    :language: cpp
 
 Adjusting the fit parameters (Advanced)

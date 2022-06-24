@@ -25,5 +25,5 @@ under action of a given operator.
 Example of use
 --------------
 
-.. literalinclude:: ./example.cpp
+.. literalinclude:: example.cpp
    :language: cpp
