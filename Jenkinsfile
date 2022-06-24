@@ -26,7 +26,7 @@ def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "sanitize"]
 for (int i = 0; i < dockerPlatforms.size(); i++) {
   def platform = dockerPlatforms[i]
   platforms[platform] = { -> node('linux && docker && triqs') {
-    stage(platform) { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
+    stage(platform) { timeout(time: 2, unit: 'HOURS') { ansiColor('xterm') {
       checkout scm
       /* construct a Dockerfile for this base */
       sh """
