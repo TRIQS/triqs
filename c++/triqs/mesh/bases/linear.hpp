@@ -105,6 +105,7 @@ namespace triqs::mesh {
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
+      if (L == 1) return xmin;
       double wr = double(idx) / (L - 1);
       double res = xmin * (1 - wr) + xmax * wr;
       ASSERT(is_within_boundary(res));
