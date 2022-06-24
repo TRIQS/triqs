@@ -126,7 +126,7 @@ html_theme = 'sphinx_rtd_theme'
 
 # options for the the rtd theme
 html_theme_options = {
-    'logo_only': False,
+    'logo_only': True,
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
     'style_external_links': False,
@@ -145,6 +145,8 @@ html_context = {'header_title': 'triqs',
                 'header_subtitle': 'a Toolbox for Research on Interacting Quantum Systems'}
 
 html_style = 'css/custom.css'
+html_favicon = '@CMAKE_CURRENT_SOURCE_DIR@/_static/triqs_favicon.ico'
+html_logo = '@CMAKE_CURRENT_SOURCE_DIR@/_static/triqs_logo_white.png'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

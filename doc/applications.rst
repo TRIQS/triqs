@@ -45,7 +45,7 @@ For publications based on results produced with this application please cite `Co
 
 *Homepage:* `<https://triqs.github.io/cthyb/>`_
 
-**Hubbard I solver (external)**
+**Hubbard I solver**
 -------------------------------
 
 This solver gives the Hubbard I solution of a quantum impurity problem,
@@ -53,6 +53,18 @@ i.e. it solves the atomic limit. This simple approximation allows for
 very quick answers even for large multiband systems.
 
 *Homepage:* `<https://triqs.github.io/hubbardI/>`_
+
+**Hartree Fock solver**
+-------------------------------
+
+This solver uses either the Hartree or Hartree Fock approximation to
+solve the quantum impurity problem, i.e. in a static mean field. The
+solver uses gradient descent to find the optimal solution for a given
+occupation. An in-build lattice solver option solves a lattice problem 
+with local interaction directly for given chemical potential or 
+particle number.
+
+*Homepage:* `<https://triqs.github.io/hartree_fock/>`_
 
 **PYED - Exact diagonalization for finite quantum systems (external)**
 ----------------------------------------------------------------------
@@ -109,16 +121,16 @@ For publications based on results produced with this application please cite `Co
 
 *Homepage:* `<https://triqs.github.io/dft_tools/>`_
 
-**TPRF - The Two-Particle Response Function tool box**
-------------------------------------------------------
+**solid_dmft - Python wrapper to perform DFT+DMFT calculations using TRIQS**
+----------------------------------------------------------------------------
 
-The two-particle response function tool box (TPRF) is an official TRIQS application that provides efficient (C++/OpenMP/MPI)
-implementations of the basic operations for higher order response functions such as inversion, products,
-the random phase approximation, the Bethe Salpeter equation, etc.
+solid_dmft allows to perform DFT+DMFT ''one-shot'' and charge self-consistent
+(CSC) calculations from h5 archives, created by DFTTools or VASP/Quantum Espresso
+input files for multiband systems. It takes advantage of various impurity solvers 
+available in TRIQS. Postprocessing scripts are available to perform analytic 
+continuation and calculate spectral functions. 
 
-For publications based on results produced with this application please cite `10.5281/zenodo.2638058 <https://doi.org/10.5281/zenodo.2638058>`_
-
-*Homepage:* `<https://triqs.github.io/tprf/>`_
+*Homepage:* `<https://triqs.github.io/solid_dmft/>`_
 
 
 .. _analytic_continuation:
@@ -160,6 +172,17 @@ For publications based on results produced with this application please cite `Ph
 
 **Other Applications**
 ======================
+
+**TPRF - The Two-Particle Response Function tool box**
+------------------------------------------------------
+
+The two-particle response function tool box (TPRF) is an official TRIQS application that provides efficient (C++/OpenMP/MPI)
+implementations of the basic operations for higher order response functions such as inversion, products,
+the random phase approximation, the Bethe Salpeter equation, etc.
+
+For publications based on results produced with this application please cite `10.5281/zenodo.2638058 <https://doi.org/10.5281/zenodo.2638058>`_
+
+*Homepage:* `<https://triqs.github.io/tprf/>`_
 
 **TRIQS Solver benchmarks**
 ---------------------------
