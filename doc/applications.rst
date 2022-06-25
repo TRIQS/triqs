@@ -57,12 +57,10 @@ very quick answers even for large multiband systems.
 **Hartree Fock solver**
 -------------------------------
 
-This solver uses either the Hartree or Hartree Fock approximation to
-solve the quantum impurity problem, i.e. in a static mean field. The
-solver uses gradient descent to find the optimal solution for a given
-occupation. An in-build lattice solver option solves a lattice problem 
-with local interaction directly for given chemical potential or 
-particle number.
+This solver calculates the self-consistent Hartree or Hartree Fock approximation for
+a given quantum impurity or lattice problem. It uses gradient descent to solve the
+self-consistency at fixed density or chemical potential. The solver is limited to
+static and local interactions.
 
 *Homepage:* `<https://triqs.github.io/hartree_fock/>`_
 
