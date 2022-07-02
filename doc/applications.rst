@@ -149,6 +149,9 @@ This official TRIQS application provides a modular Maximum Entropy program to pe
 This external TRIQS application is an optimized implementation of an analytic
 continuation method proposed by Andrey S. Mishchenko.
 A detailed description of the method can be found `here <http://www.cond-mat.de/events/correl12/manuscripts/mishchenko.pdf>`_.
+It also supports the Stochastic Optimization with Consistent Constraints extensions proposed by Olga Goulko et al in
+`Phys. Rev. B 95, 014102 (2017) <https://doi.org/10.1103/PhysRevB.95.014102>`_.
+
 
 For publications based on results produced with this application please cite `Comput. Phys. Commun. 239, 166 (2019) <https://www.sciencedirect.com/science/article/pii/S0010465519300402?via%3Dihub>`_
 
