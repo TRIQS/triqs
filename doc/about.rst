@@ -56,12 +56,12 @@ Logo files
 
 This is the official TRIQS logo:
 
-.. image:: _static/triqs_logo.png
+.. image:: _static/triqs_logo/Logo/PNG/Triqs_Logo_RGB_Full.png
     :width: 40%
 
 Official version with all white colors to be used on colored background:
 
-.. image:: _static/triqs_logo_white.png
+.. image:: _static/triqs_logo/Logo/PNG/Triqs_Logo_RGB_White.png
     :width: 40%
 
-Link to the original vector graphics file: :download:`TRIQS svg logo<_static/triqs_logo.svg>`.
+Various other file formats for the logo (including high-resolution svg and pdf files), and files only for the spin icon can be found on the Github repository `here <https://github.com/TRIQS/triqs/tree/unstable/doc/triqs_logo>`_.
