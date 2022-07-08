@@ -1,22 +1,24 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
+using namespace triqs;
 using namespace triqs::gfs;
-using namespace triqs::mesh;
 using nda::clef::placeholder;
 
 int main() {
 
-  double beta = 1;                                       //inverse temperature
-  int nw      = 100;                                     //number of Matsubara frequencies
-  auto g      = gf<imfreq>{{beta, Fermion, nw}, {1, 1}}; //{1,1} : 1x1 Green's function
+  // Create a Matsubara-frequency mesh
+  double beta  = 1;   // inverse temperature
+  int n_iw     = 100; // number of Matsubara frequencies
+  auto iw_mesh = mesh::imfreq{beta, Fermion, n_iw};
 
-  //the shortest way to fill a gf
-  placeholder<0> w_;
-  g(w_) << 1 / (w_ - 3);
+  // Create and fill a 1x1 Matsubara Green function
+  auto g = gf{iw_mesh, {1, 1}};
+  placeholder<0> iw_;
+  g[iw_] << 1 / (iw_ - 3);
   std::cout << g(0) << std::endl;
 
+  // An equivalent way to initialize
   g() = 0.0;
-  //an equivalent way
   for (auto const &w : g.mesh()) g[w] = 1 / (w - 3);
   std::cout << g(0) << std::endl;
 
