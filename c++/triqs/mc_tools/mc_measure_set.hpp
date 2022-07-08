@@ -25,7 +25,6 @@
 #include <functional>
 #include <map>
 #include <cassert>
-#include "./impl_tools.hpp"
 
 namespace triqs {
   namespace mc_tools {
@@ -45,16 +44,22 @@ namespace triqs {
       public:
       template <typename MeasureType> measure(bool, MeasureType &&m, bool enable_timer) : enable_timer(enable_timer) {
         static_assert(std::is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
-        static_assert(has_accumulate<MCSignType, MeasureType>::value, " This measure has no accumulate method !");
-        static_assert(has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
+        static_assert(
+           requires { m.accumulate(std::declval<MCSignType>()); }, " This measure has no accumulate method !");
+        static_assert(
+           requires { m.collect_results(std::declval<mpi::communicator>()); }, " This measure has no collect_results method !");
         using m_t        = std::decay_t<MeasureType>;
         m_t *p           = new m_t(std::forward<MeasureType>(m));
         impl_            = std::shared_ptr<m_t>(p);
         accumulate_      = [p](MCSignType const &x) { p->accumulate(x); };
         count_           = 0;
         collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
-        h5_r             = make_h5_read(p);
-        h5_w             = make_h5_write(p);
+        h5_r = [p](h5::group g, std::string const &name) {
+          if constexpr (requires { h5_read(g, name, *p); }) h5_read(g, name, *p);
+        };
+        h5_w = [p](h5::group g, std::string const &name) {
+          if constexpr (requires { h5_write(g, name, *p); }) h5_write(g, name, *p);
+        };
       }
 
       //
@@ -111,8 +116,8 @@ namespace triqs {
         if (has(name)) TRIQS_RUNTIME_ERROR << "measure_set : insert : measure '" << name << "' already inserted";
         // workaround for all gcc
         // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
-        auto iter_b = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M), enable_timer));
-        return iter_b.first;
+        auto [itr, was_inserted] = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M), enable_timer));
+        return itr;
       }
 
       /**

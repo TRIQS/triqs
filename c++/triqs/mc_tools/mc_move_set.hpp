@@ -23,7 +23,6 @@
 #include <mpi/mpi.hpp>
 #include <functional>
 #include "./random_generator.hpp"
-#include "./impl_tools.hpp"
 
 namespace triqs {
   namespace mc_tools {
@@ -59,18 +58,27 @@ namespace triqs {
       /// Construct from any m modeling MoveType. bool is here to disambiguate with basic copy/move construction.
       template <typename MoveType> move(bool, MoveType &&m) {
         static_assert(std::is_move_constructible<MoveType>::value, "This move is not MoveConstructible");
-        static_assert(has_attempt<MCSignType, MoveType>::value, "This move has no attempt method (or is has an incorrect signature) !");
-        static_assert(has_accept<MCSignType, MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
-        static_assert(has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
+        static_assert(
+           requires { m.attempt(); }, "This move has no attempt method (or is has an incorrect signature) !");
+        static_assert(
+           requires { m.accept(); }, "This move has no accept method (or is has an incorrect signature) !");
+        static_assert(
+           requires { m.reject(); }, "This move has no reject method (or is has an incorrect signature) !");
         using m_t           = std::decay_t<MoveType>;
         m_t *p              = new m_t(std::forward<MoveType>(m)); // moving or copying
         impl_               = std::shared_ptr<m_t>(p);
         attempt_            = [p]() { return p->attempt(); };
         accept_             = [p]() { return p->accept(); };
         reject_             = [p]() { p->reject(); };
-        collect_statistics_ = make_collect_statistics(p); // cf impl_tools
-        h5_r                = make_h5_read(p);
-        h5_w                = make_h5_write(p);
+        collect_statistics_ = [p](mpi::communicator c) {
+          if constexpr (requires { p->collect_statistics(c); }) p->collect_statistics(c);
+        };
+        h5_r = [p](h5::group g, std::string const &name) {
+          if constexpr (requires { h5_read(g, name, *p); }) h5_read(g, name, *p);
+        };
+        h5_w = [p](h5::group g, std::string const &name) {
+          if constexpr (requires { h5_write(g, name, *p); }) h5_write(g, name, *p);
+        };
         NProposed           = 0;
         Naccepted           = 0;
         acceptance_rate_    = -1;
