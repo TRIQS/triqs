@@ -96,7 +96,7 @@ namespace triqs {
       m_map_t m_map;
 
       public:
-      using measure_ptr_t = typename m_map_t::const_iterator;
+      using measure_itr_t = typename m_map_t::const_iterator;
 
       measure_set()                       = default;
       measure_set(measure_set const &rhs) = delete;
@@ -107,7 +107,7 @@ namespace triqs {
       /**
     * Register the Measure M with a name
     */
-      template <typename MeasureType> measure_ptr_t insert(MeasureType &&M, std::string const &name, bool enable_timer) {
+      template <typename MeasureType> measure_itr_t insert(MeasureType &&M, std::string const &name, bool enable_timer) {
         if (has(name)) TRIQS_RUNTIME_ERROR << "measure_set : insert : measure '" << name << "' already inserted";
         // workaround for all gcc
         // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
@@ -118,7 +118,7 @@ namespace triqs {
       /**
        * Remove the measure m.
        */
-      void remove(measure_ptr_t const &m) { m_map.erase(m); }
+      void remove(measure_itr_t const &m) { m_map.erase(m); }
 
       /**
        * Removes all measures
@@ -129,13 +129,13 @@ namespace triqs {
       bool has(std::string const &name) const { return m_map.find(name) != m_map.end(); }
 
       ///
-      void accumulate(MCSignType const &signe) {
-        for (auto &nmp : m_map) nmp.second.accumulate(signe);
+      void accumulate(MCSignType const &sign) {
+        for (auto &[name, m] : m_map) m.accumulate(sign);
       }
 
       std::vector<std::string> names() const {
         std::vector<std::string> res;
-        for (auto &nmp : m_map) res.push_back(nmp.first);
+        for (auto &[name, m] : m_map) res.push_back(name);
         return res;
       }
 
@@ -145,13 +145,13 @@ namespace triqs {
         double total_time = 0;
         int wsec          = 10;
         size_t wlab       = 18; // measure label width, find max length
-        for (auto &nmp : m_map) wlab = wlab > nmp.first.size() ? wlab : nmp.first.size();
+        for (auto &[name, m] : m_map) wlab = wlab > name.size() ? wlab : name.size();
         s << std::left << std::setw(wlab) << "Measure"
           << " | " << std::setw(wsec) << "seconds" << std::endl;
         ;
-        for (auto &nmp : m_map) {
-          s << std::left << std::setw(wlab) << nmp.first << " | " << std::setw(wsec) << nmp.second.duration() << "\n";
-          total_time += nmp.second.duration();
+        for (auto &[name, m] : m_map) {
+          s << std::left << std::setw(wlab) << name << " | " << std::setw(wsec) << m.duration() << "\n";
+          total_time += m.duration();
         }
         s << std::left << std::setw(wlab) << "Total measure time"
           << " | " << std::setw(wsec) << total_time << "\n";
@@ -160,18 +160,18 @@ namespace triqs {
 
       // gather result for all measure, on communicator c
       void collect_results(mpi::communicator const &c) {
-        for (auto &nmp : m_map) nmp.second.collect_results(c);
+        for (auto &[name, m] : m_map) m.collect_results(c);
       }
 
       // HDF5 interface
-      friend void h5_write(h5::group g, std::string const &name, measure_set const &ms) {
-        auto gr = g.create_group(name);
-        for (auto &p : ms.m_map) h5_write(gr, p.first, p.second);
+      friend void h5_write(h5::group g, std::string const &key, measure_set const &ms) {
+        auto gr = g.create_group(key);
+        for (auto &[name, m] : ms.m_map) h5_write(gr, name, m);
       }
 
-      friend void h5_read(h5::group g, std::string const &name, measure_set &ms) {
-        auto gr = g.open_group(name);
-        for (auto &p : ms.m_map) h5_read(gr, p.first, p.second);
+      friend void h5_read(h5::group g, std::string const &key, measure_set &ms) {
+        auto gr = g.open_group(key);
+        for (auto &[name, m] : ms.m_map) h5_read(gr, name, m);
       }
     };
 

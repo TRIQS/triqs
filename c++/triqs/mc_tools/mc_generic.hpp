@@ -95,7 +95,7 @@ namespace triqs::mc_tools {
    *
    */
     template <typename MeasureType>
-    typename measure_set<MCSignType>::measure_ptr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true) {
+    typename measure_set<MCSignType>::measure_itr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true) {
       static_assert(!std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
       return AllMeasures.insert(std::forward<MeasureType>(m), name, enable_timer);
     }
@@ -111,7 +111,7 @@ namespace triqs::mc_tools {
    * @param m      The measure. Must be the return value of add_measure
    *
    */
-    void rm_measure(typename measure_set<MCSignType>::measure_ptr_t const &m) { AllMeasures.remove(m); }
+    void rm_measure(typename measure_set<MCSignType>::measure_itr_t const &m) { AllMeasures.remove(m); }
 
     /**
      * Clear all registered measurements
