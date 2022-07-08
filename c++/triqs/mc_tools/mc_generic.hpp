@@ -27,6 +27,7 @@
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/signal_handler.hpp>
 #include <triqs/utility/macros.hpp>
+#include <h5/h5.hpp>
 #include <mpi/mpi.hpp>
 #include <mpi/monitor.hpp>
 #include "./mc_measure_aux_set.hpp"

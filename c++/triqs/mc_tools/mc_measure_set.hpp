@@ -19,6 +19,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
 #pragma once
+#include <h5/h5.hpp>
 #include <mpi/mpi.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/timer.hpp>
