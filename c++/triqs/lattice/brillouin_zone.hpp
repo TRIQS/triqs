@@ -23,10 +23,12 @@
 namespace triqs {
   namespace lattice {
 
+    using k_t = nda::vector<double>;
+
     class brillouin_zone {
 
       public:
-      using point_t = k_t; // domain concept
+      using value_t = k_t; // domain concept
 
       // Default construction, 3d cubic lattice
       brillouin_zone() {
@@ -46,29 +48,32 @@ namespace triqs {
        */
       explicit brillouin_zone(bravais_lattice const &bl);
 
+      /// Check if a k_t is part of the domain
+      [[nodiscard]] bool contains(k_t const &) const { return true; }
+
       /// Access to the underlying bravais lattice
       bravais_lattice const & lattice() const { return lattice_; }
 
       /// Allow cast to bravais lattice
       explicit operator bravais_lattice() const { return lattice_; }
 
-      /// Matrix containing reciprocal basis vectors as rows
-      nda::matrix_const_view<double> units() const { return K_reciprocal; }
-
       /// Number of dimensions
       int ndim() const { return lattice_.ndim(); }
 
       /// Matrix containing reciprocal basis vectors as rows
-      nda::matrix_const_view<double> reciprocal_matrix() const { return K_reciprocal; }
+      matrix_t const & units() const { return K_reciprocal; }
+
+      /// Matrix containing reciprocal basis vectors as rows
+      matrix_t const & reciprocal_matrix() const { return K_reciprocal; }
 
       /// Inverse of the reciprocal matrix
-      nda::matrix_const_view<double> reciprocal_matrix_inv() const { return K_reciprocal_inv; }
+      matrix_t const & reciprocal_matrix_inv() const { return K_reciprocal_inv; }
 
       /// Transform from lattice to real coordinates
-      template <typename K> k_t lattice_to_real_coordinates(K const &k) const { return _transfo_impl(k, K_reciprocal); }
+      template <typename K> k_t lattice_to_real_coordinates(K const &k) const {return transpose(K_reciprocal)(range::all, range(ndim())) * nda::basic_array_view{k}; }
 
       /// Transform from real to lattice coordinates
-      template <typename K> k_t real_to_lattice_coordinates(K const &k) const { return _transfo_impl(k, K_reciprocal_inv); }
+      template <typename K> k_t real_to_lattice_coordinates(K const &k) const { return transpose(K_reciprocal_inv)(range::all, range(ndim())) * nda::basic_array_view{k}; }
 
       // ------------------- Comparison -------------------
 
@@ -86,7 +91,7 @@ namespace triqs {
 
       // -------------------- hdf5 -------------------
 
-      static std::string hdf5_format() { return "brillouin_zone"; }
+      [[nodiscard]] static std::string hdf5_format() { return "brillouin_zone"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const &bz);
@@ -96,25 +101,10 @@ namespace triqs {
 
       // ---------------------------------------
 
-      //  BOOST Serialization
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-	ar &lattice_ ;
-	ar &K_reciprocal;
-       ar &K_reciprocal_inv;
-      }
-
       private:
       bravais_lattice lattice_;
-      nda::matrix<double> K_reciprocal, K_reciprocal_inv;
-
-      ///FIXME
-      template <typename K> k_t _transfo_impl(K const &k, nda::matrix<double> const &K_base) const {
-        if (first_dim(k) != lattice().ndim()) TRIQS_RUNTIME_ERROR << "latt_to_real_k : dimension of k must be " << lattice().ndim();
-        auto res = k_t::zeros({3});
-        for (int i = 0; i < lattice().ndim(); i++) res += k(i) * K_base(i, range{});
-        return res;
-      }
+      matrix_t K_reciprocal = matrix_t::zeros(3,3);
+      matrix_t K_reciprocal_inv = matrix_t::zeros(3,3);
     };
   } // namespace lattice
 } // namespace triqs

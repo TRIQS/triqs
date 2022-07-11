@@ -312,7 +312,7 @@ namespace triqs::stat {
     }
 
     public:
-    static std::string hdf5_format() { return "accumulator"; }
+    [[nodiscard]] static std::string hdf5_format() { return "accumulator"; }
 
     accumulator() = default;
 

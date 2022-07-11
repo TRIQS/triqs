@@ -36,8 +36,8 @@ namespace triqs {
         S s;
         template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
         no_mesh_t mesh() const { return {}; } // Fake for combine_mesh
-        template <typename KeyType> S operator[](KeyType &&key) const { return s; }
-        template <typename... Args> inline S operator()(Args &&... args) const { return s; }
+        template <typename... Keys> S operator[](Keys &&...keys) const { return s; }
+        template <typename... Args> inline S operator()(Args &&...args) const { return s; }
         friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
       };
 
@@ -56,14 +56,14 @@ namespace triqs {
 
         // FIXME C++17 constexpr
         if (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) {
-          bool eq = (std::abs(l.domain().beta - r.domain().beta) < 1.e-15) and (l.size() == r.size());
+          bool eq = (std::abs(l.beta - r.beta) < 1.e-15) and (l.size() == r.size());
           if (!eq)
             TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;
 
           // compute the stat of the product, divide.
-          int s               = (int(l.domain().statistic) + int(r.domain().statistic)) % 2;
+          int s               = (int(l.statistic) + int(r.statistic)) % 2;
           statistic_enum stat = (s == 0 ? Boson : Fermion);
-          return mesh::imtime{{l.domain().beta, stat}, l.size()};
+          return mesh::imtime{l.beta, stat, l.size()};
         } else {
           if (!(l == r))
             TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;
@@ -78,8 +78,7 @@ namespace triqs {
           return {combine_mesh<Tag>(std::get<Is>(l), std::get<Is>(r))...};
         }
       } // namespace details
-      template <typename Tag, typename... M>
-      mesh::prod<M...> combine_mesh(mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
+      template <typename Tag, typename... M> mesh::prod<M...> combine_mesh(mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
         return details::combine_mesh_impl_cp<Tag>(std::index_sequence_for<M...>{}, l, r);
       }
 
@@ -108,11 +107,21 @@ namespace triqs {
 
       template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename remove_rvalue_ref<T>::type>;
 
-      template <typename A, typename B> struct _or_ { using type = void; };
-      template <typename A> struct _or_<A, A> { using type = A; };
-      template <typename A> struct _or_<void, A> { using type = A; };
-      template <typename A> struct _or_<A, void> { using type = A; };
-      template <> struct _or_<void, void> { using type = void; };
+      template <typename A, typename B> struct _or_ {
+        using type = void;
+      };
+      template <typename A> struct _or_<A, A> {
+        using type = A;
+      };
+      template <typename A> struct _or_<void, A> {
+        using type = A;
+      };
+      template <typename A> struct _or_<A, void> {
+        using type = A;
+      };
+      template <> struct _or_<void, void> {
+        using type = void;
+      };
 
     } // namespace gfs_expr_tools
 
@@ -128,14 +137,21 @@ namespace triqs {
       R r;
       template <typename LL, typename RR> gf_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
-      decltype(auto) mesh() const { return gfs_expr_tools::combine_mesh<Tag>(l.mesh(), r.mesh()); }
+      private:
+      mutable std::optional<mesh_t> _mesh;
+
+      public:
+      auto const &mesh() const {
+        if (not _mesh) _mesh.emplace(gfs_expr_tools::combine_mesh<Tag>(l.mesh(), r.mesh()));
+        return *_mesh;
+      }
       auto data_shape() const { return gfs_expr_tools::combine_shape()(l, r); }
       decltype(auto) indices() const { return gfs_expr_tools::combine_indices()(l, r); }
 
-      template <typename KeyType> decltype(auto) operator[](KeyType &&key) const {
-        return utility::operation<Tag>()(l[std::forward<KeyType>(key)], r[std::forward<KeyType>(key)]);
+      template <typename... Keys> decltype(auto) operator[](Keys &&...keys) const {
+        return utility::operation<Tag>()(l.operator[](std::forward<Keys>(keys)...), r.operator[](std::forward<Keys>(keys)...)); // Clang Fix
       }
-      template <typename... Args> decltype(auto) operator()(Args &&... args) const {
+      template <typename... Args> decltype(auto) operator()(Args &&...args) const {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
       friend std::ostream &operator<<(std::ostream &sout, gf_expr const &expr) {
@@ -157,8 +173,8 @@ namespace triqs {
       auto data_shape() const { return l.data_shape(); }
       decltype(auto) indices() const { return l.indices(); }
 
-      template <typename KeyType> auto operator[](KeyType &&key) const { return -l[key]; }
-      template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
+      template <typename... Keys> auto operator[](Keys &&...keys) const { return -l.operator[](std::forward<Keys>(keys)...); } // Clang Fix
+      template <typename... Args> auto operator()(Args &&...args) const { return -l(std::forward<Args>(args)...); }
       friend std::ostream &operator<<(std::ostream &sout, gf_unary_m_expr const &expr) { return sout << '-' << expr.l; }
     };
 
@@ -194,7 +210,7 @@ namespace triqs {
     // we implement them trivially.
 
 #define DEFINE_OPERATOR(OP1, OP2)                                                                                                                    \
-  template <typename Mesh, typename Target, typename T> void operator OP1(gf_view<Mesh, Target> g, T const &x) { g = g OP2 x; }                        \
+  template <typename Mesh, typename Target, typename T> void operator OP1(gf_view<Mesh, Target> g, T const &x) { g = g OP2 x; }                      \
   template <typename Mesh, typename Target, typename T> void operator OP1(gf<Mesh, Target> &g, T const &x) { g = g OP2 x; }
 
     DEFINE_OPERATOR(+=, +);

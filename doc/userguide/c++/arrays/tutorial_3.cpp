@@ -7,7 +7,7 @@ int main() {
   A() = 2.5;
   std::cout << A << std::endl;
 
-  array_view<double, 1> B = A(1, range()); // select the first line of the matrix
+  array_view<double, 1> B = A(1, range::all); // select the first line of the matrix
   std::cout << "B = " << B << std::endl;
   B(0) = 1;
 

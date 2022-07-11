@@ -40,7 +40,7 @@ namespace triqs {
       t() = 0.0;
 
       for (int p = 0; p < order; p++)
-        for (auto l : gl.mesh()) t(p, _) += (triqs::utility::legendre_t(l.index(), p) / std::pow(gl.domain().beta, p)) * gl[l];
+        for (auto l : gl.mesh()) t(p, _) += (triqs::utility::legendre_t(l.idx, p) / std::pow(gl.mesh().beta, p)) * gl[l];
 
       return t;
     }
@@ -51,16 +51,16 @@ namespace triqs {
       double norm = 0.0;
       nda::vector<double> t(gl.data().shape()[0]);
       for (int i = 0; i < t.size(); ++i) {
-        t(i) = triqs::utility::legendre_t(i, 1) / gl.domain().beta;
+        t(i) = triqs::utility::legendre_t(i, 1) / gl.mesh().beta;
         norm += t(i) * t(i);
       }
 
       nda::array<dcomplex, 2> corr(disc.shape());
       corr() = 0;
-      for (auto const &l : gl.mesh()) corr += t(l.index()) * gl[l];
+      for (auto const &l : gl.mesh()) corr += t(l.idx) * gl[l];
 
-      auto _ = nda::range{};
-      for (auto const &l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
+      auto _ = nda::range::all;
+      for (auto const &l : gl.mesh()) gl.data()(l.idx, _, _) += (disc - corr) * t(l.idx) / norm;
     }
 
   } // namespace gfs

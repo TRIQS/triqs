@@ -24,20 +24,11 @@
 #include <fmt/core.h>
 #include <h5/h5.hpp>
 
-#include "../details/mesh_tools.hpp"
+#include "../utils.hpp"
 #include "../../utility/exceptions.hpp"
-
-#include "../../utility/arithmetic_ops_by_cast.hpp"
 #include "../../utility/kronecker.hpp"
 
 namespace triqs::mesh {
-
-  // a long with no cast, no operation
-  struct _long {
-    long value;
-    _long(int i) : value{i} {}
-    _long(long i) : value{i} {}
-  };
 
   /**
   * A matsubara frequency, i.e.
@@ -45,23 +36,22 @@ namespace triqs::mesh {
   *   * beta : double, the temperature inverse
   *   * statistic : Fermion or Boson
   *
-  * * Can be casted into a complex.
+  * * Can be cast into a complex.
   *
-  * * Every operations is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
+  * * Every operation is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
   *   and work on the index
   **/
-  struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
+  struct matsubara_freq {
     long n                   = 0; // Matsubara Index
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
+    long idx                 = n;
 
     matsubara_freq() = default;
     matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
-    matsubara_freq(_long n_, double beta_, statistic_enum stat_) : n(n_.value), beta(beta_), statistic(stat_) {}
 
     using cast_t = std::complex<double>;
-    operator cast_t() const { return std::complex<double>(0, std::numbers::pi * (2 * n + statistic) / beta); }
-    operator _long() const { return {n}; }
+    operator cast_t() const { return std::complex<double>{0, std::numbers::pi * (2 * n + statistic) / beta}; }
   };
 
   inline std::ostream &operator<<(std::ostream &out, matsubara_freq const &y) { return out << std::complex<double>(y); }
@@ -76,9 +66,30 @@ namespace triqs::mesh {
 
   inline matsubara_freq operator-(matsubara_freq const &mp) { return {-(mp.n + (mp.statistic == Fermion ? 1 : 0)), mp.beta, mp.statistic}; }
 
+  inline std::complex<double> operator/(matsubara_freq const &x, matsubara_freq const &y) {
+     return std::complex<double>{x} * std::complex<double>{y};
+  }
+
   inline std::complex<double> operator*(matsubara_freq const &x, matsubara_freq const &y) {
     return std::complex<double>{x} * std::complex<double>{y};
   }
+
+#define IMPL_OP(OP)                                                                                                                                  \
+  template <typename T>                                                                                                                              \
+    requires(not std::is_base_of_v<matsubara_freq, T>)                                                                                               \
+  inline auto operator OP(matsubara_freq const &iw, T const &y) {                                                                                    \
+    return dcomplex(iw) OP y;                                                                                                                        \
+  }                                                                                                                                                  \
+  template <typename T>                                                                                                                              \
+    requires(not std::is_base_of_v<matsubara_freq, T>)                                                                                               \
+  inline auto operator OP(T const &x, matsubara_freq const &iw) {                                                                                    \
+    return x OP dcomplex(iw);                                                                                                                        \
+  }
+  IMPL_OP(+);
+  IMPL_OP(-);
+  IMPL_OP(*);
+  IMPL_OP(/);
+#undef IMPL_OP
 
   inline bool kronecker(matsubara_freq const &freq) { return freq.n == 0; }
   inline bool kronecker(matsubara_freq const &f1, matsubara_freq const &f2) { return f1.n == f2.n; }
@@ -86,15 +97,15 @@ namespace triqs::mesh {
   //---------------------------------------------------------------------------------------------------------
   // Domains
 
-  struct matsubara_time_domain; // Advance Declaration
+  struct matsubara_time_domain; // Forward Declaration
 
   struct matsubara_freq_domain {
-    using point_t = matsubara_freq;
+    using value_t = matsubara_freq;
 
     double beta              = 0.0;
-    statistic_enum statistic = Fermion; // FIXME: What should default be?
+    statistic_enum statistic = Fermion;
 
-    [[nodiscard]] bool contains(point_t const &pt) const { return (pt.beta == beta) && (pt.statistic == statistic); }
+    [[nodiscard]] bool contains(value_t const &pt) const { return (pt.beta == beta) && (pt.statistic == statistic); }
 
     matsubara_freq_domain() = default;
     matsubara_freq_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
@@ -105,7 +116,7 @@ namespace triqs::mesh {
     bool operator==(matsubara_freq_domain const &) const = default;
     bool operator!=(matsubara_freq_domain const &) const = default;
 
-    static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
+    [[nodiscard]] static std::string hdf5_format() { return "MatsubaraFreqDomain"; }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain const &d) {
@@ -130,15 +141,15 @@ namespace triqs::mesh {
   };
 
   struct matsubara_time_domain {
-    using point_t = double;
+    using value_t = double;
 
     double beta              = 0.0;
-    statistic_enum statistic = Fermion; // FIXME: What should default be?
+    statistic_enum statistic = Fermion;
 
-    [[nodiscard]] bool contains(point_t const &pt) const { return (pt <= beta) && (0.0 <= pt); }
+    [[nodiscard]] bool contains(value_t const &pt) const { return (0 <= pt) && (pt <= beta); }
 
-    [[nodiscard]] constexpr point_t min() const { return 0.0; }
-    [[nodiscard]] point_t max() const { return beta; }
+    [[nodiscard]] constexpr value_t min() const { return 0.0; }
+    [[nodiscard]] value_t max() const { return beta; }
 
     matsubara_time_domain() = default;
     matsubara_time_domain(double beta_, statistic_enum statistic_) : beta{beta_}, statistic(statistic_) {
@@ -169,7 +180,8 @@ namespace triqs::mesh {
     }
 
     friend std::ostream &operator<<(std::ostream &sout, matsubara_time_domain const &d) {
-      return sout << fmt::format("Matsubara time domain with beta = {}, statistic = {}", d.beta, d.statistic);
+      auto stat_cstr = (d.statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Matsubara time domain with beta = {}, statistic = {}", d.beta, stat_cstr);
     }
   };
 

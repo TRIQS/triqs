@@ -19,175 +19,187 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../mesh_concepts.hpp"
-#include "../details/mesh_tools.hpp"
-#include "../details/mesh_point.hpp"
 #include <ranges>
 #include <stdexcept>
+
+#include "../utils.hpp"
+
 namespace triqs::mesh {
 
-  template <Domain D>
-  requires std::totally_ordered<typename D::point_t> // Addable and dividable
-  class linear_mesh {
+  template <typename Mesh, typename Value> class linear {
+    static_assert(std::totally_ordered<Value>);
+
     public:
-    using domain_t    = D;
-    using domain_pt_t = typename D::point_t; // Syntactic sugar
+    using value_t  = Value;
+    using idx_t    = long;
+    using datidx_t = long;
 
-    // linear_index and index are identical for this mesh
-    using index_t        = long;
-    using linear_index_t = long;
-
-    struct mesh_point_t : public mesh_point_impl<linear_mesh<D>> {
-      template <typename... T> mesh_point_t(T &&...x) : mesh_point_impl<linear_mesh<D>>(std::forward<T>(x)...) {}
-    };
-
-    // -------------------- Index Bijection -------------------
-
-    [[nodiscard]] linear_index_t index_to_linear(index_t const &index) const {
-      EXPECTS(is_within_boundary(index));
-      return index;
-    }
-    [[nodiscard]] index_t linear_to_index(linear_index_t const &liner_index) const { return liner_index; }
-
-    // -------------------- Mesh Implemenation & Mesh Point Access -------------------
-
-    /// From an index of a point in the mesh, returns the corresponding point in the domain
-    [[nodiscard]] domain_pt_t index_to_point(index_t idx) const {
-      EXPECTS(is_within_boundary(idx));
-      if (L == 1) return xmin;
-      double wr = double(idx) / (L - 1);
-      double res = xmin * (1 - wr) + xmax * wr;
-      ASSERT(is_within_boundary(res));
-      return res;
-    }
-
-    [[nodiscard]] mesh_point_t operator[](index_t i) const { return {i, index_to_point(i), i, mesh_hash_}; }
-    [[nodiscard]] mesh_point_t linear_to_mesh_pt(linear_index_t const &linear_index) const { return operator[](linear_to_index(linear_index)); }
+    // --  data
+    protected:
+    long L;
+    value_t xmin, xmax, del;
+    double del_inv;
+    size_t mesh_hash_ = 0;
 
     // -------------------- Constructors -------------------
-
-    explicit linear_mesh(D dom, domain_pt_t a, domain_pt_t b, long n_pts)
-       : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)), del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del}, r_{make_mesh_range(*this)} {
-      EXPECTS(a<=b);
+    public:
+    linear(value_t a = 0, value_t b = 1, long n_pts = 2)
+       : L(n_pts),
+         xmin(a),
+         xmax(b),
+         del(L == 1 ? 0. : (b - a) / (L - 1)),
+         del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del},
+         mesh_hash_(hash(L, xmin, xmax)) {
+      EXPECTS(a <= b);
     }
-
-    linear_mesh() : linear_mesh(D{}, 0, 1, 2) {}
 
     // -------------------- Comparison -------------------
 
     /// Mesh comparison
-    bool operator==(linear_mesh const &m) const {
-      // Not default since we can't directly compare itertool range
-      return (_dom == m._dom) && (size() == m.size()) && (xmin == m.xmin) && (xmax == m.xmax);
+    bool operator==(linear const &) const = default;
+    bool operator!=(linear const &) const = default;
+
+    // --------------------  Mesh Point -------------------
+
+    struct mesh_point_t {
+      using mesh_t       = Mesh;
+      long idx           = 0;
+      long datidx        = 0;
+      uint64_t mesh_hash = 0;
+      value_t val        = {};
+      value_t value() const { return val; }
+      operator value_t() const { return val; }
+
+      // https://godbolt.org/z/xoYP3vTW4
+#define IMPL_OP(OP)                                                                                                                                  \
+  friend auto operator OP(mesh_point_t const &mp, auto const &y)                                                                                     \
+    requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
+  {                                                                                                                                                  \
+    return mp.val OP y;                                                                                                                              \
+  }                                                                                                                                                  \
+  friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
+    requires(not std::is_same_v<decltype(x), mesh_point_t const &>)                                                                                  \
+  {                                                                                                                                                  \
+    return x OP mp.val;                                                                                                                              \
+  }
+      IMPL_OP(+);
+      IMPL_OP(-);
+      IMPL_OP(*);
+      IMPL_OP(/);
+#undef IMPL_OP
+    };
+
+    // -------------------- idx checks and conversions -------------------
+
+    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < L; }
+    [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
+
+    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
+      EXPECTS(is_idx_valid(idx));
+      return idx;
     }
-    bool operator!=(linear_mesh const &) const = default;
+
+    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const noexcept {
+      EXPECTS(mesh_hash_ == mp.mesh_hash);
+      return mp.datidx;
+    }
+
+    [[nodiscard]] idx_t to_datidx(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+      EXPECTS(is_value_valid(cmp.value));
+      return to_datidx(to_idx(cmp));
+    }
+
+    [[nodiscard]] idx_t to_idx(datidx_t datidx) const noexcept {
+      EXPECTS(is_idx_valid(datidx));
+      return datidx;
+    }
+
+    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+      EXPECTS(is_value_valid(cmp.value));
+      return idx_t((cmp.value - xmin) * del_inv + 0.5);
+    }
+
+    [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
+
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+
+    [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
+      EXPECTS(is_idx_valid(idx));
+      return {idx, idx, mesh_hash_, to_value(idx)};
+    }
+
+    [[nodiscard]] value_t to_value(idx_t idx) const noexcept {
+      EXPECTS(is_idx_valid(idx));
+      if (L == 1) return xmin;
+      double wr  = double(idx) / (L - 1);
+      double res = xmin * (1 - wr) + xmax * wr;
+      return res;
+    }
 
     // -------------------- Accessors -------------------
 
-    /// Domain on which mesh is defined
-    auto const &domain() const { return _dom; }
-
     // Hash
-    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Size (linear) of the mesh of the window
-    [[nodiscard]] auto size() const { return L; }
+    [[nodiscard]] auto size() const noexcept { return L; }
 
     /// Step of the mesh
-    [[nodiscard]] domain_pt_t delta() const { return del; }
+    [[nodiscard]] value_t delta() const noexcept { return del; }
 
     /// Inverse of the step of the mesh
-    [[nodiscard]] domain_pt_t delta_inv() const { return del_inv; }
-
-    /// Min of the mesh
-    [[nodiscard]] domain_pt_t x_min() const { return xmin; }
-
-    /// Max of the mesh
-    [[nodiscard]] domain_pt_t x_max() const { return xmax; }
-
-    // -------------------------- Other --------------------------
-
-    /// Is the point in mesh ?
-    static constexpr bool is_within_boundary(all_t) { return true; }                                  // ????? is index valid
-    [[nodiscard]] bool is_within_boundary(domain_pt_t x) const { return (x >= xmin) && (x <= xmax); } // FIXME NAME: is within boundary
-    [[nodiscard]] bool is_within_boundary(index_t idx) const { return (idx >= 0) && (idx < L); }      // FIXME NAME: is index valid
+    [[nodiscard]] value_t delta_inv() const noexcept { return del_inv; }
 
     // -------------------------- Range & Iteration --------------------------
 
-    auto begin() const {
-      r_ = make_mesh_range(*this);
-      return r_.begin();
-    }
-    auto end() const { return r_.end(); }
-    auto cbegin() const {
-      r_ = make_mesh_range(*this);
-      return r_.cbegin();
-    }
-    auto cend() const { return r_.cend(); }
-
-    //  -------------------------- HDF5  --------------------------
-    /// Write into HDF5
-    friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m, const char *_type) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format_as_string(gr, _type);
-      h5_write(gr, "domain", m.domain());
-      h5_write(gr, "min", m.xmin);
-      h5_write(gr, "max", m.xmax);
-      h5_write(gr, "size", m.size());
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
     }
 
-    /// Read from HDF5
-    friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear_mesh &m, const char *tag_expected) {
-      h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format_as_string(gr, tag_expected, true);
-      domain_t dom;
-      domain_pt_t a, b;
-      long L;
-      h5_read(gr, "domain", dom);
-      h5_read(gr, "min", a);
-      h5_read(gr, "max", b);
-      h5_read(gr, "size", L);
-      m = linear_mesh(std::move(dom), a, b, L);
-    }
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
 
     // -------------------- print  -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
+    friend std::ostream &operator<<(std::ostream &sout, linear const &m) { return sout << "linear mesh of size " << m.l; }
 
-    // ------------------------------------------------
-    private:
-    D _dom;
-    long L;
-    domain_pt_t xmin, xmax, del, del_inv;
-    mutable make_mesh_range_rtype<linear_mesh> r_;
-    size_t mesh_hash_ = 0;
+    //  -------------------------- HDF5  --------------------------
+
+    /// Write into HDF5
+    friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear const &m, const char *format) {
+      h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format_as_string(gr, format);
+
+      h5::write(gr, "min", m.xmin);
+      h5::write(gr, "max", m.xmax);
+      h5::write(gr, "size", m.size());
+    }
+
+    /// Read from HDF5
+    friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear &m, const char *format_expected) {
+      h5::group gr = fg.open_group(subgroup_name);
+      assert_hdf5_format_as_string(gr, format_expected, true);
+
+      auto a = h5::read<value_t>(gr, "min");
+      auto b = h5::read<value_t>(gr, "max");
+      auto L = h5::read<long>(gr, "size");
+      m      = linear(a, b, L);
+    }
+
+    // ------------------------- Evaluate -----------------------------
+
+    friend auto evaluate(linear const &m, auto const &f, double x) {
+      EXPECTS(m.is_value_valid(x) and m.size() > 1);
+      x        = std::max(x, m.xmin);
+      double a = (x - m.xmin) * m.delta_inv();
+      long i   = std::min(static_cast<long>(a), m.size() - 2);
+      double w = std::min(a - i, 1.0);
+      return (1 - w) * f(i) + w * f(i + 1);
+    }
   };
-
-  //-----------------------------------------------------------------------
-
-  /**
-   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
-   * @param x : the point
-   * @param i_max : maximum index
-   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
-   * @param delta_x
-   *
-   * 
-   * Throws if x is not in the window
-   * */
-  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, double delta_x_inv, long imax) noexcept {
-    EXPECTS(x_min <= x and x <= x_min + imax * delta_x);
-    x = std::max(x, x_min);
-    double a = (x - x_min) * delta_x_inv;
-    long i   = std::min(static_cast<long>(a), imax - 1);
-    double w = std::min(a - i, 1.0);
-    return {std::make_pair(i, 1 - w), std::make_pair(i + 1, w)};
-  }
-
-  template <typename Domain> inline std::array<std::pair<long, double>, 2> get_interpolation_data(linear_mesh<Domain> const &m, double x) {
-    return interpolate_on_segment(x, m.x_min(), m.delta(), m.delta_inv(), long(m.size()) - 1);
-  }
-
-  //-----------------------------------------------------------------------
 
 } // namespace triqs::mesh

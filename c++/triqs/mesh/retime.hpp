@@ -23,8 +23,9 @@
 
 namespace triqs::mesh {
 
-  struct retime : linear_mesh<real_domain> {
-    retime() = default;
+  struct retime : linear<retime, double> {
+
+    // -------------------- Constructors -------------------
 
     /**
      *  Construct a Mesh of real times
@@ -36,24 +37,35 @@ namespace triqs::mesh {
      *  @param t_max Largest time
      *  @param n_t Number of time-points
      */
-    retime(real_domain::point_t t_min, real_domain::point_t t_max, long n_t) : linear_mesh(real_domain{}, t_min, t_max, n_t) {}
+    retime(double t_min = 0.0, double t_max = 0.0, long n_t = 2) : linear(t_min, t_max, n_t) {}
 
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
 
-    friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
-      return sout << "Real Time Mesh of size " << m.size() << ", t_min: " << m.t_min() << ", t_max: " << m.t_max();
-    }
+    // -------------------- Accessors -------------------
 
-    // Smallest frequency in the mesh
-    double t_min() const { return x_min(); }
+    /// Smallest time in the mesh
+    double t_min() const { return xmin; }
 
-    // Largest frequency in the mesh
-    double t_max() const { return x_max(); }
+    /// Largest time in the mesh
+    double t_max() const { return xmax; }
 
     // -------------------- HDF5 -------------------
-    static std::string hdf5_format() { return "MeshReTime"; }
+
+    [[nodiscard]] static std::string hdf5_format() { return "MeshReTime"; }
+
     friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
+
     friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
+
+    // -------------------- Print -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
+      return sout << fmt::format("Real Time Mesh with t_min = {}, t_max = {}, n_t = {}", m.xmin, m.xmax, m.L);
+    }
   };
-  
+
+  inline auto evaluate(retime const &m, auto const &f, double x) { return evaluate(static_cast<linear<retime, double>>(m), f, x); }
+
+  static_assert(Mesh<retime>);
+
 } // namespace triqs::mesh

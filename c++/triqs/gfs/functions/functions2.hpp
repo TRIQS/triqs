@@ -62,7 +62,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G, typename A = typename G::const_view_type::data_t>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) requires(is_gf_v<G>) {
-    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true,
                                                  make_array_const_view(known_moments));
@@ -117,7 +117,7 @@ namespace triqs::gfs {
       inner_matrix_dim = g.target_shape()[0];
     } else
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
-    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
@@ -214,7 +214,7 @@ namespace triqs::gfs {
   template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
     auto &a           = g.data();
     auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
-    nda::for_each(mesh_lengths, [&a, _ = nda::range()](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+    nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
   }
 
   // FIXME : 2 overloads :  or PASS BY VALUE
@@ -295,14 +295,14 @@ namespace triqs::gfs {
   //
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, nda::range(), nda::range());
+      matrix_view<T> v = a(i, nda::range::all, nda::range::all);
       v                = v * r;
     }
   }
 
   template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, nda::range(), nda::range());
+      matrix_view<T> v = a(i, nda::range::all, nda::range::all);
       v                = l * v;
     }
   }
@@ -324,7 +324,7 @@ namespace triqs::gfs {
 
   template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A &a, M const &l, B const &b, M const &r) {
     auto tmp = matrix<typename M::value_type>(second_dim(b), second_dim(r));
-    auto _   = nda::range{};
+    auto _   = nda::range::all;
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       auto rhs_v = make_matrix_view(b(i, _, _));
       auto lhs_v = make_matrix_view(a(i, _, _));

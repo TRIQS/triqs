@@ -33,10 +33,10 @@ namespace triqs {
       // make sure the GFs have the same structure
       //assert(gw.shape() == gr.shape());
 
-      if (n_points < 0 || n_points > gw.mesh().last_index() + 1)
+      if (n_points < 0 || n_points > gw.mesh().last_idx() + 1)
         TRIQS_RUNTIME_ERROR << "Pade argument n_points (" << n_points
                             << ") should be positive and not be greater than the positive number of Matsubara frequencies ("
-                            << gw.mesh().last_index() + 1 << ")\n";
+                            << gw.mesh().last_idx() + 1 << ")\n";
 
       gr() = 0.0;
 
@@ -48,8 +48,10 @@ namespace triqs {
           nda::vector<dcomplex> z_in(n_points); // complex points
           nda::vector<dcomplex> u_in(n_points); // values at these points
 
-          for (int i = 0; i < n_points; ++i) z_in(i) = gw.mesh()[i];
-          for (int i = 0; i < n_points; ++i) u_in(i) = gw.on_mesh(i)(n1, n2);
+          for (int i = 0; i < n_points; ++i) {
+	    z_in(i) = gw.mesh()[gw.mesh().to_datidx(i)];
+            u_in(i) = gw[i](n1, n2); 
+	  }
 
           triqs::utility::pade_approximant PA(z_in, u_in);
 

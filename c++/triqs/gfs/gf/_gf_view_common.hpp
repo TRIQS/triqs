@@ -19,175 +19,118 @@
 
 // ------------- All the call operators arguments -----------------------------
 
-template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
-  if constexpr (sizeof...(Args) == 0)
-    return const_view_type{*this};
-  else {
-    static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
-      return clef::make_expr_call(*this, std::forward<Args>(args)...);
+// FIXME :  C++23 when implemented.
+#if __cpp_explicit_this_parameter >= 202110L
+template <typename Self, typename... Args> decltype(auto) operator()(this Self &&self, Args &&...args) {
+#else
+template <typename Self, typename... Args> static decltype(auto) call_impl(Self &&self, Args &&...args) {
+#endif
+  if constexpr (sizeof...(Args) == 0) {
+    if constexpr (std::is_const_v<std::remove_reference_t<Self>>) 
+      return const_view_type{std::forward<Self>(self)};
     else
-      return evaluator_t()(*this, std::forward<Args>(args)...);
+      return view_type{std::forward<Self>(self)};
+  }
+  else {
+    static_assert((sizeof...(Args) == n_variables<mesh_t>), "Incorrect number of arguments");
+    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
+      return clef::make_expr_call(std::forward<Self>(self), std::forward<Args>(args)...);
+    else
+      return evaluator_t()(std::forward<Self>(self), std::forward<Args>(args)...);
   }
 }
-template <typename... Args> decltype(auto) operator()(Args &&... args) & {
-  if constexpr (sizeof...(Args) == 0)
-    return view_type{*this};
-  else {
-    static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
-      return clef::make_expr_call(*this, std::forward<Args>(args)...);
-    else
-      return evaluator_t()(*this, std::forward<Args>(args)...);
-  }
-}
-template <typename... Args> decltype(auto) operator()(Args &&... args) && {
-  if constexpr (sizeof...(Args) == 0)
-    return view_type{std::move(*this)};
-  else {
-    static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
-    if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
-      return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-    else
-      return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
-  }
-}
+#if __cpp_explicit_this_parameter < 202110L
+template <typename... Args> decltype(auto) operator()(Args &&...args) const & { return call_impl(*this, std::forward<Args>(args)...); }
+template <typename... Args> decltype(auto) operator()(Args &&...args) & { return call_impl(*this, std::forward<Args>(args)...); }
+template <typename... Args> decltype(auto) operator()(Args &&...args) && { return call_impl(std::move(*this), std::forward<Args>(args)...); }
+#endif
 
-// ------------- All the [] operators without lazy arguments -----------------------------
+// ------------- [] operator -----------------------------
 
-private:
 #ifdef NDA_ENFORCE_BOUNDCHECK
 static constexpr bool has_no_boundcheck = false;
 #else
 static constexpr bool has_no_boundcheck = true;
 #endif
 
-// Self can not be a rvalue, since we return a view !
-// similar coding as for nda
-template <typename Self> FORCEINLINE static decltype(auto) call_data(Self &&self, long i) noexcept(has_no_boundcheck) {
-  return data_t::template call<(target_t::is_matrix ? 'M' : 'A'), false>(std::forward<Self>(self)._data, i, ellipsis{});
+// Special treatement for [ tuple(...)] : flatten it.
+// Ensures backward compatibility and easy use when arguments are stored in a tuple
+template <typename... T>
+decltype(auto) operator[](std::tuple<T...> const &tu) const noexcept(has_no_boundcheck)
+  requires(sizeof...(T) == arity)
+{
+  return std::apply([this](auto &... x) -> decltype(auto) { return this->operator[](x...); }, tu);
+}
+template <typename... T>
+decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck)
+  requires(sizeof...(T) == arity)
+{
+  return std::apply([this](auto &... x) -> decltype(auto) { return this->operator[](x...); }, tu);
 }
 
-template <typename Self, auto... Is, typename Tu>
-FORCEINLINE static decltype(auto) call_data_impl(Self &&self, std::index_sequence<Is...>, Tu const &tu) noexcept(has_no_boundcheck) {
-  return data_t::template call<(target_t::is_matrix ? 'M' : 'A'), false>(std::forward<Self>(self)._data, std::get<Is>(tu)..., ellipsis{});
+// ------------------------------------------
+// General implementation for any set of arguments.
+// https://godbolt.org/z/sbqYv3oeE
+template <typename Self, typename... Arg>
+static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof...(Arg) == arity) {
+  if constexpr ((clef::is_any_lazy<Arg> or ... or false))
+    return clef::make_expr_subscript(std::forward<Self>(self), std::forward<Arg>(arg)...);
+  else {
+    // Count the number of all_t
+    static constexpr auto mesh_filter = std::array<int, sizeof...(Arg)>{std::is_same_v<range::all_t, std::decay_t<Arg>>...};
+    static constexpr auto n_all       = std::accumulate(begin(mesh_filter), end(mesh_filter), 0);
+
+    //FIXME remove the call and retest. Cf nda ... It is a bit ugly
+    decltype(auto) new_data = [&self,
+                               &arg...]<size_t... Is>(std::index_sequence<Is...>) -> decltype(auto) { // the trailing ->decltype(auto) is crucial
+      return data_t::template call<(target_t::is_matrix and n_all == 0 ? 'M' : 'A'), false>(
+         std::forward<Self>(self)._data, detail::to_datidx(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
+    }(std::make_index_sequence<arity>{}); //keep arity here. we could authorize to pass additional integers for direct access here ??
+
+    if constexpr (n_all == 0)
+      return new_data;
+    else {
+      // mesh is a tuple of meshes
+      auto new_mesh = detail::filter_mesh<detail::compute_position<n_all>(mesh_filter)>(self.mesh());
+      using mesh_t  = decltype(new_mesh);
+      using self_t = std::remove_reference_t<Self>;
+      if constexpr (self_t::is_const or std::is_const_v<self_t>)
+        return gf_const_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data, self.indices()};
+      else
+        return gf_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data, self.indices()};
+    }
+  }
 }
 
-template <typename Self, typename... T>
-FORCEINLINE static decltype(auto) call_data(Self &&self, std::tuple<T...> const &tu) noexcept(has_no_boundcheck) {
-  return call_data_impl(std::forward<Self>(self), std::make_index_sequence<sizeof...(T)>{}, tu);
+// ------------------------------------------
+
+#if __cpp_explicit_this_parameter < 202110L
+template <typename... Arg>
+decltype(auto) operator[](Arg &&...arg) const & noexcept(has_no_boundcheck)
+  requires(sizeof...(Arg) == arity)
+{
+  return _subscript_impl(*this, std::forward<Arg>(arg)...);
+}
+template <typename... Arg>
+decltype(auto) operator[](Arg &&...arg) & noexcept(has_no_boundcheck)
+  requires(sizeof...(Arg) == arity)
+{
+  return _subscript_impl(*this, std::forward<Arg>(arg)...);
 }
 
-public:
-// pass a index_t of the mesh
-decltype(auto) operator[](mesh_index_t const &arg) {
-  EXPECTS(_mesh.is_within_boundary(arg));
-  return call_data(*this, _mesh.index_to_linear(arg));
+template <typename... Arg>
+decltype(auto) operator[](Arg &&...arg) && noexcept(has_no_boundcheck)
+  requires(sizeof...(Arg) == arity)
+{
+  return _subscript_impl(std::move(*this), std::forward<Arg>(arg)...);
 }
 
-decltype(auto) operator[](mesh_index_t const &arg) const {
-  EXPECTS(_mesh.is_within_boundary(arg));
-  return call_data(*this, _mesh.index_to_linear(arg));
-}
-
-// pass a mesh_point of the mesh
-decltype(auto) operator[](mesh_point_t const &x) {
-#ifdef TRIQS_DEBUG
-  if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
-  return call_data(*this, x.linear_index());
-}
-
-decltype(auto) operator[](mesh_point_t const &x) const {
-#ifdef TRIQS_DEBUG
-  if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-  return call_data(*this, x.linear_index());
-}
-
-private:
-using cp_worker = mesh::closest_point<Mesh, Target>;
-
-public:
-// pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
-template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
-  return call_data(*this, _mesh.index_to_linear(cp_worker::invoke(_mesh, p)));
-}
-template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
-  return call_data(*this, _mesh.index_to_linear(cp_worker::invoke(_mesh, p)));
-}
-
-// -------------- operator [] with tuple_com. Distinguich the lazy and non lazy case
-public:
-template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & {
-  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
-    return clef::make_expr_subscript(*this, tu);
-  else {
-    static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
-    return triqs::tuple::apply(l, tu._t);
-  }
-}
-
-template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) const & {
-  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
-    return clef::make_expr_subscript(*this, tu);
-  else {
-    static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
-    return triqs::tuple::apply(l, tu._t);
-  }
-}
-
-template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) && {
-  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
-  if constexpr ((... or clef::is_any_lazy<U>)) // any argument is lazy ?
-    return clef::make_expr_subscript(std::move(*this), tu);
-  else {
-    static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
-    return triqs::tuple::apply(l, tu._t);
-  }
-}
-
-// ------------- [] with lazy arguments -----------------------------
-
-template <typename Arg> auto operator[](Arg &&arg) const &requires(clef::is_any_lazy<Arg>) {
-  return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-}
-
-template <typename Arg> auto operator[](Arg &&arg) & requires(clef::is_any_lazy<Arg>) {
-  return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-}
-
-template <typename Arg> auto operator[](Arg &&arg) && requires(clef::is_any_lazy<Arg>) {
-  return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-}
-
-// --------------------- A direct access to the grid point --------------------------
-
-template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) {
-  return call_data(*this, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-}
-
-template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) const {
-  return call_data(*this, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-}
-
-template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) {
-  return call_data(*this, linear_mesh_index_t(std::forward<Args>(args)...));
-}
-
-template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) const {
-  return call_data(*this, linear_mesh_index_t(std::forward<Args>(args)...));
-}
 
 //----------------------------- HDF5 -----------------------------
 
 /// HDF5 name
-static std::string hdf5_format() { return "Gf"; }
+[[nodiscard]] static std::string hdf5_format() { return "Gf"; }
 
 friend struct gf_h5_rw<Mesh, Target>;
 
@@ -227,6 +170,8 @@ friend std::ostream &operator<<(std::ostream &out, this_t const &x) { return out
 
 //----------------------------- MPI  -----------------------------
 
+// FIXME : Remove the macro for the doc ....
+
 // mako <%def name="mpidoc(OP)">
 /**
      * Initiate (lazy) MPI ${OP}
@@ -251,7 +196,7 @@ friend void mpi_broadcast(this_t &g, mpi::communicator c = {}, int root = 0) {
 
 // mako ${mpidoc("Reduce")}
 friend mpi::lazy<mpi::tag::reduce, const_view_type> mpi_reduce(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false,
-                                                              MPI_Op op = MPI_SUM) {
+                                                               MPI_Op op = MPI_SUM) {
   return {a(), c, root, all, op};
 }
 

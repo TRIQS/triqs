@@ -1,2 +1,2 @@
-Checks: '-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type'
+Checks: '-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-virtual-class-destructor'
 HeaderFilterRegex: 'triqs'

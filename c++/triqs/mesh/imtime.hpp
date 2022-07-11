@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./details/mesh_tools.hpp"
+#include "./utils.hpp"
 #include "./domains/matsubara.hpp"
 #include "./bases/linear.hpp"
 
@@ -34,9 +34,24 @@ namespace triqs::mesh {
    *
    *  @figure ../../../triqs/mesh/matsubara_imtime.png: Pictorial representation of ``imtime{beta, Fermion/Boson, 4}``.
    */
-  struct imtime : public linear_mesh<matsubara_time_domain> {
-    // -------------------- Ctor -------------------
-    imtime() = default;
+  struct imtime : public linear<imtime, double> {
+
+    // -------------------- Data -------------------
+
+    double beta;
+    statistic_enum statistic;
+
+    // -------------------- Constructors -------------------
+
+    /**
+     * Construct a Mesh of imaginary times on the interval [0,beta]
+     * including points at both edges.
+     *
+     * @param beta Inverse temperature
+     * @param statistic Statistic (Fermion or Boson)
+     * @param n_tau Number of mesh-points
+     */
+    imtime(double beta = 0.0, statistic_enum statistic = Fermion, long n_tau = 2) : linear(0, beta, n_tau), beta(beta), statistic(statistic) {}
 
     /**
      * Construct a Mesh of imaginary times on a Matsubara time domain
@@ -44,28 +59,56 @@ namespace triqs::mesh {
      * @param dom Matsubara time domain
      * @param n_tau Number of mesh-points
      */
-    imtime(matsubara_time_domain d, long n_tau) : linear_mesh<matsubara_time_domain>(std::move(d), 0, d.beta, n_tau) {}
+    imtime(matsubara_time_domain d, long n_tau) : imtime(d.beta, d.statistic, n_tau) {}
 
-    /**
-     * Construct a Mesh of imaginary times on the interval [0,beta]
-     * including points at both edges.
-     *
-     * @param beta Inverse temperature
-     * @param S Statistic (Fermion or Boson)
-     * @param n_tau Number of mesh-points
-     */
-    imtime(double beta, statistic_enum S, long n_tau) : imtime({beta, S}, n_tau) {}
+    // -------------------- Comparison -------------------
+
+    bool operator==(imtime const &) const = default;
+    bool operator!=(imtime const &) const = default;
+
+    // -------------------- Accessors -------------------
+
+    /// The associated domain
+    [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta, statistic}; }
+
+    // -------------------- HDF5 -------------------
+
+    [[nodiscard]] static std::string hdf5_format() { return "MeshImTime"; }
+
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, imtime const &m) {
+      h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format(gr, m);
+
+      h5::write(gr, "beta", m.beta);
+      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "n_tau", m.size());
+    }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, imtime &m) {
+      h5::group gr = fg.open_group(subgroup_name);
+      assert_hdf5_format(gr, m, true);
+
+      long n_tau;
+      if (not h5::try_read(gr, "n_tau", n_tau)) h5::read(gr, "size", n_tau); // Backward Compat
+
+      if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
+      double beta    = h5::read<double>(gr, "beta");
+      auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+
+      m = imtime(beta, statistic, n_tau);
+    }
 
     // -------------------- Print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, imtime const &m) {
-      return sout << "Imaginary Time Mesh of size " << m.size() << ", Domain: " << m.domain();
+      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary Time Mesh with beta = {}, statistic = {}, n_tau = {}", m.beta, stat_cstr, m.size());
     }
-
-    // -------------------- HDF5 -------------------
-    static std::string hdf5_format() { return "MeshImTime"; }
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, imtime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshImTime"); }
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, imtime &m) { h5_read_impl(fg, subgroup_name, m, "MeshImTime"); }
   };
+
+  inline auto evaluate(imtime const &m, auto const &f, double x) { return evaluate(static_cast<linear<imtime, double>>(m), f, x); }
+
+  // check concept
+  static_assert(MeshWithValues<imtime>);
 
 } // namespace triqs::mesh

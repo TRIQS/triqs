@@ -24,56 +24,6 @@
 
 namespace triqs::gfs {
 
-  using namespace triqs::arrays;
-  using mesh::brzone;
-  using mesh::cyclat;
-  using mesh::imfreq;
-  using mesh::imtime;
-  using mesh::legendre;
-  using mesh::prod;
-  using mesh::refreq;
-  using mesh::retime;
-
-  /*------------------------------------------------------------------------------------------------------
-  *                                  Mesh calculator
-  *-----------------------------------------------------------------------------------------------------*/
-
-  // general form. NB : options MUST have defaults (for traits later)
-  //Y make_adjoint_mesh( X const &, options ...);
-
-  // FIXME : DOC
-  inline imfreq make_adjoint_mesh(imtime const &m, int n_iw = -1) {
-    if (n_iw == -1) n_iw = (m.size() - 1) / 6;
-    return {triqs::mesh::matsubara_freq_domain{m.domain()}, static_cast<size_t>(n_iw)};
-  }
-
-  // FIXME : DOC
-  inline imtime make_adjoint_mesh(imfreq const &m, int n_tau = -1) {
-    if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
-    return {triqs::mesh::matsubara_time_domain{m.domain()}, n_tau};
-  }
-
-  // FIXME : DOC
-  inline refreq make_adjoint_mesh(retime const &m, bool shift_half_bin = false) {
-    int L       = m.size();
-    double wmax = M_PI * (L - 1) / (L * m.delta());
-    if (shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
-    return {-wmax, wmax, L};
-  }
-
-  inline retime make_adjoint_mesh(refreq const &m, bool shift_half_bin = false) {
-    int L       = m.size();
-    double tmax = M_PI * (L - 1) / (L * m.delta());
-    if (shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
-    return {-tmax, tmax, L};
-  }
-
-  // FIXME : DOC
-  inline brzone make_adjoint_mesh(cyclat const &m) { return {lattice::brillouin_zone{m.domain()}, m.periodization_matrix()}; }
-
-  // FIXME : DOC
-  inline cyclat make_adjoint_mesh(brzone const &m) { return {m.domain().lattice(), m.periodization_matrix()}; }
-
   // trait for error messages later
   template <typename V> using _mesh_fourier_image = decltype(make_adjoint_mesh(V()));
 
@@ -115,7 +65,7 @@ namespace triqs::gfs {
     // pb std::get<0> would not work on a non composite mesh. We use a little lambda to deduce ref and type
     auto const &out_mesh = [&gout]() -> auto const & { // NB must return a reference
       using m_t = std::decay_t<decltype(gout.mesh())>;
-      if constexpr (mesh::is_product_v<m_t>)
+      if constexpr (mesh::is_product<m_t>)
         return std::get<N>(gout.mesh());
       else
         return gout.mesh();
@@ -133,9 +83,9 @@ namespace triqs::gfs {
       // inverse operation as flatten_2d, exactly
       auto g_rot = nda::rotate_index_view<N>(gout.data());
       for (auto const &mp : out_mesh) {
-        auto g_rot_sl = g_rot(mp.linear_index(), _); // if the array is long, it is faster to precompute the view ...
-        auto gout_col = gout_flatten.data()(mp.linear_index(), _);
-	nda::for_each(g_rot_sl.shape(), [&g_rot_sl, &gout_col, c = long(0)](auto &&... i) mutable { return g_rot_sl(i...) = gout_col(c++); });
+        auto g_rot_sl = g_rot(mp.datidx, _); // if the array is long, it is faster to precompute the view ...
+        auto gout_col = gout_flatten.data()(mp.datidx, _);
+        nda::for_each(g_rot_sl.shape(), [&g_rot_sl, &gout_col, c = long(0)](auto &&...i) mutable { return g_rot_sl(i...) = gout_col(c++); });
       }
     }
   }
@@ -150,11 +100,11 @@ namespace triqs::gfs {
   // split : No N for 1 mesh ...
   template <int N = 0, typename M1, typename M2, typename T, typename... OptArgs>
   auto make_gf_from_fourier(gf_const_view<M1, T> gin, M2 const &mesh, OptArgs const &... opt_args) {
-    static_assert(N >= 0 && N < get_n_variables<M1>::value, "Mesh index exceeds Gf Mesh Rank");
-    static_assert(get_n_variables<M2>::value == 1, "Cannot fourier transform on cartesian product mesh");
+    static_assert(N >= 0 && N < n_variables<M1>, "Mesh index exceeds Gf Mesh Rank");
+    static_assert(n_variables<M2> == 1, "Cannot fourier transform on cartesian product mesh");
 
-    if constexpr (get_n_variables<M1>::value == 1) { // === single mesh
-      static_assert(get_n_variables<M2>::value == 1, "Incompatible mesh ranks");
+    if constexpr (n_variables<M1> == 1) { // === single mesh
+      static_assert(n_variables<M2> == 1, "Incompatible mesh ranks");
       static_assert(N == 0, "Fourier transforming gf with mesh of rank 1 but fourier index N > 1");
       static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two meshes");
       auto gout = gf<M2, typename T::complex_t>{mesh, gin.target_shape()};
@@ -318,7 +268,7 @@ namespace triqs::gfs {
   void triqs_gf_view_assign_delegation(gf_view<M1, T1> lhs_g, _fourier_lazy<N, gf_const_view<M2, T2>, Args...> const &rhs) {
     static_assert(std::is_same_v<typename T1::real_t, typename T2::real_t>, "Error : in gx = fourier(gy), gx and gy must have the same target");
 
-    if constexpr (get_n_variables<M1>::value == 1) // === single mesh
+    if constexpr (n_variables<M1> == 1) // === single mesh
       static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two meshes");
     else { // === prod mesh
       using mesh_res_t = decltype(triqs::tuple::replace<N>(rhs.g.mesh().components(), make_adjoint_mesh(std::get<N>(rhs.g.mesh()))));

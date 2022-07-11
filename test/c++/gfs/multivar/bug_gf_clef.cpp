@@ -65,7 +65,7 @@ TEST(Gf, AutoAssignImagTime) {
     for (auto const &t2 : std::get<1>(g.mesh())) {
       for (auto const &t3 : std::get<2>(g.mesh())) {
         double ref_val = 2 * t1 - 0.3 * t2 - 10. * t3;
-        double val     = g[closest_mesh_pt(t1, t2, t3)](0, 0).real();
+        double val     = g[closest_mesh_pt(t1.value(), t2.value(), t3.value())](0, 0).real();
         //std::cout << t1 << ", " << t2 << ", " << t3 << ", " << val << " -- " << ref_val << "\n";
         EXPECT_CLOSE(val, ref_val);
       }
@@ -94,7 +94,7 @@ TEST(Gf, AutoAssignAccumulateImagTime) {
     for (auto const &t2 : std::get<1>(g.mesh())) {
       for (auto const &t3 : std::get<2>(g.mesh())) {
         double ref_val = 2 * t1 - 0.3 * t2 - 10. * t3;
-        double val     = g[closest_mesh_pt(t1, t2, t3)](0, 0).real();
+        double val     = g[closest_mesh_pt(t1.value(), t2.value(), t3.value())](0, 0).real();
         //std::cout << t1 << ", " << t2 << ", " << t3 << ", " << val << " -- " << ref_val << "\n";
         EXPECT_CLOSE(val, ref_val);
       }
@@ -145,10 +145,10 @@ TEST(Gf, MixedIndexSliceClefImFreq) {
   placeholder<0> a;
   placeholder<1> b;
 
-  g[{Omega, n, Omega - n}](a, b) << a + b + 2 * Omega - 0.2 * n;
+  g[Omega, n, Omega - n](a, b) << a + b + 2 * Omega - 0.2 * n;
 
   dcomplex ref_val = 2 * Omega - 0.2 * n;
-  dcomplex val     = g[{Omega, n, Omega - n}](0, 0);
+  dcomplex val     = g[Omega, n, Omega - n](0, 0);
 
   EXPECT_CLOSE(val, ref_val);
 }

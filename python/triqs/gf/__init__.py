@@ -27,6 +27,7 @@ It is imported with the command::
 
 from .mesh_point import MeshPoint, MeshValueGenerator
 from .gf import *
+from .matsubara_freq import MatsubaraFreq
 from .block_gf import BlockGf, fix_gf_struct_type
 from .block2_gf import Block2Gf
 from .map_block import map_block

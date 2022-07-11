@@ -91,7 +91,7 @@ template <typename Arg> auto operator[](Arg &&arg) && requires(nda::clef::is_cle
 //----------------------------- HDF5 -----------------------------
 
 /// HDF5 name
-static std::string hdf5_format() {
+[[nodiscard]] static std::string hdf5_format() {
   if constexpr (Arity == 1)
     return "BlockGf";
   else

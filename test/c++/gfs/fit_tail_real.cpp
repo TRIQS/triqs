@@ -117,8 +117,8 @@ TEST(FitTailReal, Multivar) { // NOLINT
 
   // Fix both the 0th and 1st moment
   auto known_moments              = array<dcomplex, 4>(2, N_k * N_k, 1, 1);
-  known_moments(0, range(), 0, 0) = 0.0;
-  known_moments(1, range(), 0, 0) = 1.0;
+  known_moments(0, range::all, 0, 0) = 0.0;
+  known_moments(1, range::all, 0, 0) = 1.0;
 
   // Fit for all k-points. Resulting shape is (N_orders, N_k * N_k, 1, 1)
   auto [tail, err] = fit_tail<1>(g, known_moments);
@@ -127,10 +127,10 @@ TEST(FitTailReal, Multivar) { // NOLINT
   auto tail_exact = array<dcomplex, 2>(5, N_k * N_k);
   for (auto const &k : k_mesh) {
     dcomplex pole                         = cos(k[0]) * cos(k[1]) + ieta;
-    tail_exact(range(), k.linear_index()) = array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
+    tail_exact(range::all, k.datidx)      = array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
   }
 
-  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-7);
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range::all, 0, 0), 1e-7);
 }
 
 MAKE_MAIN;

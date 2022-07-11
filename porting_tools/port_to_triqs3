@@ -81,6 +81,29 @@ repl_dict = {
         "conj_r": "conj",
         # --- C++20 ---
         "REQUIRES": "requires",
+        # --- triqs 3.2 ---
+        "range\(\)": "range::all",
+        "range{}": "range::all",
+        "last_index\(\)": "last_idx()",
+        "first_index\(\)": "first_idx()",
+        "\.linear_index\(\)": ".datidx",
+        "\.linear_index": ".datidx",
+        "is_product_v": "is_product",
+        "\[{(.*?)}\]": r"[\1]",
+        "for *\( *auto *(?:const)? *& *(.*?) *: *(.*?)mesh(.*?)\)": r"for (auto \1 : \2mesh\3)",
+        "index_modulo": "idx_modulo",
+        "h5_try_read": "h5::try_read",
+        "x_min\(\)": "t_min()",
+        "x_max\(\)": "t_max()",
+        "omega_min\(\)": "w_min()",
+        "omega_max\(\)": "w_max()",
+        "omega_min": "w_min",
+        "omega_max": "w_max",
+        "domain\(\).beta": "beta",
+        "domain\(\).statistic": "statistic",
+        "domain.beta": "beta",
+        "domain.statistic": "statistic",
+        "reshaped_view": "reshape",
         }
 # :bufdo :%s#\(\w *\)/\( *[Nn0-9]\)#\1//\2#gc
 

@@ -107,7 +107,7 @@ namespace triqs {
       auto begin() const { return std::begin(_data); }
       auto end() const { return std::end(_data); }
 
-      static std::string hdf5_format() { return "GfIndices"; }
+      [[nodiscard]] static std::string hdf5_format() { return "GfIndices"; }
 
       friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices const &g);
       friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices &g);

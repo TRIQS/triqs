@@ -31,14 +31,14 @@ namespace triqs {
   namespace lattice {
 
     /**
-   For tightbinding Hamiltonian with fully localised orbitals
-   Overlap between orbital is taken as unit matrix.
-  */
+     * For tightbinding Hamiltonian with fully localised orbitals
+     * Overlap between orbital is taken as unit matrix.
+     */
     class tight_binding {
 
       bravais_lattice bl_;
       std::vector<nda::vector<long>> displ_vec_;
-      std::vector<matrix<dcomplex>> overlap_mat_vec_;
+      std::vector<nda::matrix<dcomplex>> overlap_mat_vec_;
 
       public:
       /**
@@ -51,7 +51,7 @@ namespace triqs {
        * @param displ_vec The vector of displacement vectors in units of the lattice basis vectors
        * @param overlap_mat_vec The vector of overlap (hopping) matrices
        */
-      tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
+      tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec);
 
       /// Underlying lattice
       bravais_lattice const &lattice() const { return bl_; }
@@ -92,7 +92,7 @@ namespace triqs {
 
         auto vals = [&](int j) {
           if constexpr (nda::ArrayOfRank<K, 1>) {
-            return std::exp(2i * M_PI * nda::blas::dot(k_ndim, displ_vec_[j])) * overlap_mat_vec_[j];
+            return std::exp(2i * M_PI * nda::blas::dot_generic(k_ndim, displ_vec_[j])) * overlap_mat_vec_[j];
           } else { // Rank==2
             auto k_mat = nda::make_matrix_view(k_ndim);
             auto exp   = [](auto d) { return std::exp(d); };
@@ -114,8 +114,8 @@ namespace triqs {
        */
       inline auto fourier(mesh::brzone const &k_mesh) {
         auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
-        for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range()) = nda::vector<double>(k); }
-        auto kvecs_rec = make_regular(kvecs * k_mesh.domain().reciprocal_matrix_inv());
+        for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
+        auto kvecs_rec = make_regular(kvecs * k_mesh.bz().reciprocal_matrix_inv());
         auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_orbitals(), n_orbitals()});
         h_k.data()     = fourier(kvecs_rec);
         return h_k;
@@ -149,7 +149,7 @@ namespace triqs {
           auto h_k = fourier(k);
           auto n_k = h_k.shape()[0];
           auto res = nda::array<double, 2>(n_k, n_orbitals());
-          for (auto l : range(n_k)) res(l, range()) = nda::linalg::eigenvalues(h_k(l, nda::ellipsis()));
+          for (auto l : range(n_k)) res(l, range::all) = nda::linalg::eigenvalues(h_k(l, nda::ellipsis()));
           return res;
         }
       }
@@ -200,7 +200,7 @@ namespace triqs {
 
       // ------------------- HDF5 Read / Write -------------------
 
-      static std::string hdf5_format() { return "tight_binding"; }
+      [[nodiscard]] static std::string hdf5_format() { return "tight_binding"; }
 
       // Function that writes the solver_core to hdf5 file
       friend void h5_write(h5::group fg, std::string subgroup_name, tight_binding const &tb) {
@@ -217,25 +217,25 @@ namespace triqs {
         auto grp = g.open_group(subgroup_name);
         auto bl              = h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
         auto displ_vec       = h5::h5_read<std::vector<nda::vector<long>>>(grp, "displ_vec");
-        auto overlap_mat_vec = h5::h5_read<std::vector<matrix<dcomplex>>>(grp, "overlap_mat_vec");
+        auto overlap_mat_vec = h5::h5_read<std::vector<nda::matrix<dcomplex>>>(grp, "overlap_mat_vec");
         return tight_binding(bl, displ_vec, overlap_mat_vec);
       }
 
     }; // tight_binding
 
-    std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
-    std::pair<array<double, 1>, array<double, 1>> dos_patch(tight_binding const &TB, const array<double, 2> &triangles, int neps, int ndiv);
+    std::pair<nda::array<double, 1>, nda::array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
+    std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps, int ndiv);
 
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<dcomplex, 3>
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<dcomplex, 3>
     hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
 
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<double, 2>
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<double, 2>
     energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
 
-    [[deprecated("Use tight_binding member-function 'fourier' instead")]] array<dcomplex, 3>
+    [[deprecated("Use tight_binding member-function 'fourier' instead")]] nda::array<dcomplex, 3>
     energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
 
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] array<double, 2> energies_on_bz_grid(tight_binding const &TB,
+    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<double, 2> energies_on_bz_grid(tight_binding const &TB,
                                                                                                                             int n_pts);
   } // namespace lattice
 } // namespace triqs

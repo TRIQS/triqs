@@ -109,7 +109,7 @@ TEST(FitTailMatsubara, Complex) { // NOLINT
 
   triqs::clef::placeholder<0> iw_;
   double beta = 10;
-  size_t N       = 200;
+  long N       = 200;
 
   auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
 
@@ -137,8 +137,8 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
 
   int N_k     = 4;
   double beta = 10;
-  size_t N_iW    = 4;
-  size_t N_iw    = 100;
+  int N_iW    = 4;
+  int N_iw    = 100;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
   auto BZ        = brillouin_zone{BL};
@@ -154,8 +154,8 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
 
   // Fix both the 0th and 1st moment
   auto known_moments                       = array<dcomplex, 5>(2, N_k * N_k, 2 * N_iW - 1, 1, 1);
-  known_moments(0, range(), range(), 0, 0) = 0.0;
-  known_moments(1, range(), range(), 0, 0) = 1.0;
+  known_moments(0, range::all, range::all, 0, 0) = 0.0;
+  known_moments(1, range::all, range::all, 0, 0) = 1.0;
 
   // Fit for all k-points. Resulting shape is (N_orders, N_k * N_k, 1, 1)
   auto [tail, err] = fit_tail<2>(g, known_moments);
@@ -164,11 +164,11 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
   auto tail_exact = array<dcomplex, 3>(5, N_k * N_k, 2 * N_iW - 1);
   for (auto [k, iW] : itertools::product(k_mesh, iW_mesh)) {
     dcomplex pole = cos(k[0]) * cos(k[1]) - iW;
-    tail_exact(range(), k.linear_index(), iW.linear_index()) =
+    tail_exact(range::all, k.datidx, iW.datidx) =
        array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
   }
 
-  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), range(), 0, 0), 1e-6);
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range::all, range::all, 0, 0), 1e-6);
 }
 
 MAKE_MAIN;

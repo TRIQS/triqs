@@ -90,7 +90,7 @@ namespace triqs {
         }
 
         // HDF5
-        static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
+        [[nodiscard]] static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
 
         friend void h5_write(h5::group fg, std::string const &name, eigensystem_t const &es) {
           auto gr = fg.create_group(name);
@@ -106,7 +106,7 @@ namespace triqs {
 
       /// Block matrix representation for operators
       struct op_block_mat_t {
-        op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range()) = -1; };
+        op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range::all) = -1; };
         array<long, 1> connection;
         std::vector<matrix_t> block_mat;
         int n_blocks() const { return block_mat.size(); }
@@ -337,7 +337,7 @@ namespace triqs {
       friend void h5_read<Complex>(h5::group gr, std::string const &name, atom_diag &);
 
       public:
-      static std::string hdf5_format() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
+      [[nodiscard]] static std::string hdf5_format() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
     };
 
   } // namespace atom_diag

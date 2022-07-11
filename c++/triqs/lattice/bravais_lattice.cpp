@@ -26,8 +26,8 @@ namespace triqs {
 
     const double almost_zero = 1e-10;
 
-    bravais_lattice::bravais_lattice(matrix<double> const &units__, std::vector<r_t> atom_orb_pos_, std::vector<std::string> atom_orb_name_)
-       : units_(3, 3), atom_orb_pos(atom_orb_pos_) {
+    bravais_lattice::bravais_lattice(nda::matrix<double> const &units__, std::vector<r_t> atom_orb_pos_, std::vector<std::string> atom_orb_name_)
+       : atom_orb_pos(atom_orb_pos_) {
 
       atom_orb_name = atom_orb_name_.empty() ? std::vector<std::string>(atom_orb_pos.size(), "") : atom_orb_name_;
       EXPECTS(atom_orb_pos.size() == atom_orb_name.size());
@@ -38,13 +38,13 @@ namespace triqs {
       ndim_ = first_dim(units__);
       if ((ndim_ < 1) || (ndim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
       //using itertools::range;
-      auto r       = range(0, ndim_);
+      auto r       = range(ndim_);
       units_()     = 0;
       units_(r, r) = units__(r, r);
       // First complete the basis. Add some tests for safety
       nda::vector<double> ux(3), uy(3), uz(3);
       double delta;
-      auto _ = range{};
+      auto _ = range::all;
       switch (ndim_) {
         case 1:
           ux    = units_(0, _);
@@ -81,6 +81,7 @@ namespace triqs {
           if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << units__;
           break;
       }
+      units_inv_ = inverse(units_);
     }
     //------------------------------------------------------------------------------------
 
@@ -89,22 +90,22 @@ namespace triqs {
       auto gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, bl);
       auto _       = range(0, bl.ndim());
-      h5_write(gr, "units", bl.units_(_, _));
-      h5_write(gr, "atom_orb_pos", bl.atom_orb_pos);
-      h5_write(gr, "atom_orb_name", bl.atom_orb_name);
+      h5::write(gr, "units", bl.units_(_, _));
+      h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
+      h5::write(gr, "atom_orb_name", bl.atom_orb_name);
     }
 
     /// Read from HDF5
     void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl) {
       h5::group gr = fg.open_group(subgroup_name);
-      matrix<double> units__;
-      h5_read(gr, "units", units__);
+      nda::matrix<double> units__;
+      h5::read(gr, "units", units__);
 
       auto atom_orb_pos = std::vector<r_t>{{0, 0, 0}};
-      h5_try_read(gr, "atom_orb_pos", atom_orb_pos);
+      h5::try_read(gr, "atom_orb_pos", atom_orb_pos);
 
       auto atom_orb_name = std::vector<std::string>(atom_orb_pos.size(), "");
-      h5_try_read(gr, "atom_orb_name", atom_orb_name);
+      h5::try_read(gr, "atom_orb_name", atom_orb_name);
 
       bl = bravais_lattice{units__, atom_orb_pos, atom_orb_name};
     }

@@ -1,6 +1,7 @@
 // Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2018-2020 Simons Foundation
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,7 +39,7 @@ namespace triqs::gfs {
     // Assume vanishing 0th moment in tail fit
     if (known_moments.is_empty()) return density(g, make_zero_tail(g, 1));
 
-    double _abs_tail0 = max_element(abs(known_moments(0, range(), range())));
+    double _abs_tail0 = max_element(abs(known_moments(0, range::all, range::all)));
     TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                   "ERROR: Density implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0) + "\n");
 
@@ -51,16 +52,16 @@ namespace triqs::gfs {
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Density implementation requires at least a proper 3rd high-frequency moment\n");
-      return density(g, tail); //(range(1, 4), range(), range()));
+      return density(g, tail); //(range(1, 4), range::all, range::all));
     } else
-      mom_123.rebind(known_moments(range(1, 4), range(), range()));
+      mom_123.rebind(known_moments(range(1, 4), range::all, range::all));
 
     auto sh = g.target_shape();
     int N1 = sh[0], N2 = sh[1];
     nda::matrix<dcomplex> res(sh);
-    auto beta = g.domain().beta;
+    auto beta = g.mesh().beta;
 
-    auto S = g.mesh().domain().statistic;
+    auto S = g.mesh().statistic;
     double b1, b2, b3; // pole location for tail model
     double xi;         // +1, -1 for boson/fermion
 
@@ -121,7 +122,7 @@ namespace triqs::gfs {
   //-------------------------------------------------------
   dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_const_view<dcomplex, 1> known_moments) {
     auto km = array<dcomplex, 3>(make_shape(known_moments.shape()[0], 1, 1));
-    if (!known_moments.is_empty()) km(range(), 0, 0) = known_moments();
+    if (!known_moments.is_empty()) km(range::all, 0, 0) = known_moments();
     auto res = density(reinterpret_scalar_valued_gf_as_matrix_valued(g), km)(0, 0);
     return res;
   }
@@ -134,7 +135,7 @@ namespace triqs::gfs {
   nda::matrix<dcomplex> density(gf_const_view<refreq> g) {
 
     int N       = g.mesh().size(); // no mesh points
-    double wmin = g.mesh().x_min();
+    double wmin = g.mesh().w_min();
     double dw   = g.mesh().delta();
 
     assert(wmin < 0.);
@@ -203,8 +204,8 @@ namespace triqs::gfs {
     res() = 0.0;
 
     // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145
-    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
-    res /= gl.domain().beta;
+    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.idx + 1) * gl[l];
+    res /= gl.mesh().beta;
 
     // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
     return transpose(res);

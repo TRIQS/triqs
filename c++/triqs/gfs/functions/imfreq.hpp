@@ -32,7 +32,7 @@ namespace triqs::gfs {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
     auto sh         = dat.shape();
-    int is_boson    = (g.mesh().domain().statistic == Boson);
+    int is_boson    = (g.mesh().statistic == Boson);
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
@@ -43,7 +43,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().domain(), static_cast<size_t>(L)}, std::move(new_data), g.indices()};
+    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data), g.indices()};
   }
 
   /// Make a const view of the positive frequency part of the function
@@ -53,7 +53,7 @@ namespace triqs::gfs {
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
-    int is_boson = (g.mesh().domain().statistic == Boson);
+    int is_boson = (g.mesh().statistic == Boson);
     return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis()), g.indices()};
   }
 
@@ -238,11 +238,11 @@ namespace triqs::gfs {
   // ------------------------------------------------------------------------------------------------------
 
   template <template <typename, typename, typename ...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
-    auto iw_mesh = mesh::imfreq{g.mesh().domain().beta, Fermion, n_max};
+    auto iw_mesh = mesh::imfreq{g.mesh().beta, Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
-    int idx_min          = old_mesh.index_to_linear(iw_mesh.first_index());
-    int idx_max          = old_mesh.index_to_linear(iw_mesh.last_index());
+    int idx_min          = old_mesh.to_datidx(iw_mesh.first_idx());
+    int idx_max          = old_mesh.to_datidx(iw_mesh.last_idx());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
     return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view, g.indices()};
@@ -250,12 +250,12 @@ namespace triqs::gfs {
 
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
     for (auto const &iw : g.mesh())
-      if (iw.index() >= n_min or iw.index() < -n_min) g[iw] = tail_eval(tail, iw);
+      if (iw.n >= n_min or iw.n < -n_min) g[iw] = tail_eval(tail, iw);
   }
 
   template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
     int n_pts_in_fit_range = int(std::round(g.mesh().get_tail_fitter().get_tail_fraction() * g.mesh().size() / 2));
-    int n_min              = g.mesh().last_index() - n_pts_in_fit_range;
+    int n_min              = g.mesh().last_idx() - n_pts_in_fit_range;
     replace_by_tail(g, tail, n_min);
   }
 
@@ -264,7 +264,7 @@ namespace triqs::gfs {
   template <template <typename, typename, typename ...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
-    if (n_max == -1) n_max = g.mesh().last_index();
+    if (n_max == -1) n_max = g.mesh().last_idx();
     auto g_rview         = restricted_view(g, n_max);
     double tail_fraction = double(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
@@ -275,7 +275,7 @@ namespace triqs::gfs {
   template <template <typename, typename ...> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {
-    if (n_max == -1) n_max = g.mesh().last_index();
+    if (n_max == -1) n_max = g.mesh().last_idx();
     auto g_rview         = restricted_view(g, n_max);
     double tail_fraction = double(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);

@@ -21,8 +21,8 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <nda/stdutil/array.hpp>
 
-using index_t = std::array<long, 3>;
-using K_t     = std::array<double, 3>;
+using idx_t   = std::array<long, 3>;
+using k_t     = std::array<double, 3>;
 
 TEST(Gfs, cyclat) {
   double beta = 1;
@@ -36,7 +36,7 @@ TEST(Gfs, cyclat) {
 
   // Clef Assignment
   Gr(r_) << 1. + r_(0) + r_(1);
-  EXPECT_COMPLEX_NEAR(Gr(index_t{0, 0, 0})(0, 0), 1);
+  EXPECT_COMPLEX_NEAR(Gr(idx_t{0, 0, 0})(0, 0), 1);
   Gr(r_) << exp(-r_(0));
 
   std::cout << Gr.mesh() << "\n";
@@ -61,17 +61,17 @@ TEST(Gfs, brillouin_zone) {
   Gk2[k_] << -2 * (cos(k_(0)) + cos(k_(1)));
   EXPECT_GF_NEAR(Gk, Gk2, 1e-14);
 
-  ASSERT_EQ(Gk.mesh().closest_index(nda::vector<double>{0, 0, 0}), (index_t{0, 0, 0}));
-  EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0}), -4);
-  EXPECT_COMPLEX_NEAR(Gk(K_t{M_PI, M_PI, M_PI}), 4);
-  EXPECT_COMPLEX_NEAR(Gk(K_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
+  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(k_t{0, 0, 0})), (idx_t{0, 0, 0}));
+  EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0}), -4);
+  EXPECT_COMPLEX_NEAR(Gk(k_t{M_PI, M_PI, M_PI}), 4);
+  EXPECT_COMPLEX_NEAR(Gk(k_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
 
   // Evaluate on the mesh itself.
   for (auto const &k : Gk.mesh()) {
-    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(0), k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(1), k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k(0)) + cos(k(1)));
-    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0}), res, 1.e-14);
+    EXPECT_COMPLEX_NEAR(Gk(k_t{k(0), k(1), 0}), res, 1.e-14);
   }
 
   // Evaluate on a larger grid
@@ -81,7 +81,7 @@ TEST(Gfs, brillouin_zone) {
       double kx  = nkx / double(n_k2) * 2 * M_PI;
       double ky  = nky / double(n_k2) * 2 * M_PI;
       double res = -2 * (cos(kx) + cos(ky));
-      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0}), res, 0.01);
+      EXPECT_COMPLEX_NEAR(Gk(k_t{kx, ky, 0}), res, 0.01);
     }
 }
 
@@ -106,16 +106,16 @@ TEST(Gfs, brillouin_zoneMatrix) {
   Gk2[k_] << -2 * (cos(k_(0)) + cos(k_(1)));
   EXPECT_GF_NEAR(Gk, Gk2, 1e-14);
 
-  ASSERT_EQ(Gk.mesh().closest_index(nda::vector<double>{0, 0, 0}), (index_t{0, 0, 0}));
-  EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0})(0, 0), -4);
-  EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0})(1, 1), -4);
+  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
+  EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0})(0, 0), -4);
+  EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0})(1, 1), -4);
 
   // Evaluate on the mesh itself.
   for (auto const &k : Gk.mesh()) {
-    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(0), k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(1), k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k(0)) + cos(k(1)));
-    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0})(0, 0), res, 1.e-14);
+    EXPECT_COMPLEX_NEAR(Gk(k_t{k(0), k(1), 0})(0, 0), res, 1.e-14);
   }
 
   // Evaluate on a larger grid
@@ -125,7 +125,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
       double kx  = nkx / double(n_k2) * 2 * M_PI;
       double ky  = nky / double(n_k2) * 2 * M_PI;
       double res = -2 * (cos(kx) + cos(ky));
-      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0})(0, 0), res, 0.01);
+      EXPECT_COMPLEX_NEAR(Gk(k_t{kx, ky, 0})(0, 0), res, 0.01);
     }
 }
 
@@ -144,21 +144,21 @@ TEST(Gfs, brillouin_zone_triangular) {
   auto Gk = gf<brzone, scalar_valued>{k_mesh};
 
   // Represent k in reciprocal basis and evaluate dispersion
-  auto disp = [&](mesh::brzone::point_t k) {
+  auto disp = [&](mesh::brzone::value_t k) {
     auto k_rec_x_2PI = bl.units() * k;
     return -2 * (cos(k_rec_x_2PI(0)) + cos(k_rec_x_2PI(1)));
   };
   for (auto const &k : Gk.mesh()) Gk[k] = disp(k);
 
-  ASSERT_EQ(Gk.mesh().closest_index(nda::vector<double>{0, 0, 0}), (index_t{0, 0, 0}));
+  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
 
   auto K       = bz.reciprocal_matrix();
-  auto Kx_half = K_t{0.5 * K(0, 0), 0.5 * K(0, 1), 0.5 * K(0, 2)};
-  auto Ky_half = K_t{0.5 * K(1, 0), 0.5 * K(1, 1), 0.5 * K(1, 2)};
+  auto Kx_half = k_t{0.5 * K(0, 0), 0.5 * K(0, 1), 0.5 * K(0, 2)};
+  auto Ky_half = k_t{0.5 * K(1, 0), 0.5 * K(1, 1), 0.5 * K(1, 2)};
   auto Kx      = Kx_half + Kx_half;
   auto Ky      = Ky_half + Ky_half;
 
-  EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0}), -4);
+  EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0}), -4);
   EXPECT_COMPLEX_NEAR(Gk(Kx), -4, 1e-14);
   EXPECT_COMPLEX_NEAR(Gk(Ky), -4, 1e-14);
   EXPECT_COMPLEX_NEAR(Gk(Kx_half), 0.0, 1e-14);
@@ -168,17 +168,17 @@ TEST(Gfs, brillouin_zone_triangular) {
   // Evaluate on the mesh itself.
   for (auto const &k : Gk.mesh()) {
     double res = disp(k);
-    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), k(2)}), res, 1.e-14);
+    EXPECT_COMPLEX_NEAR(Gk(k_t{k(0), k(1), k(2)}), res, 1.e-14);
   }
 
   // Evaluate on a larger grid
   int n_k2 = 3 * n_k;
   for (int nkx = 0; nkx < n_k2; ++nkx)
     for (int nky = 0; nky < n_k2; ++nky) {
-      auto k_rec = mesh::brzone::point_t{nkx / double(n_k2), nky / double(n_k2), 0.0};
+      auto k_rec = mesh::brzone::value_t{nkx / double(n_k2), nky / double(n_k2), 0.0};
       auto k     = bz.reciprocal_matrix() * k_rec;
       double res = disp(k);
-      EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), k(2)}), res, 0.01);
+      EXPECT_COMPLEX_NEAR(Gk(k_t{k(0), k(1), k(2)}), res, 0.01);
     }
 }
 

@@ -43,4 +43,4 @@ m = mpi.bcast(m)
 print(mesh)
 print(m)
 
-assert(mesh.domain.lattice.ndim == m.domain.lattice.ndim)
+assert(mesh.bz.ndim == m.bz.ndim)

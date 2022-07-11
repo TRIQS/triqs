@@ -25,18 +25,13 @@
 namespace triqs {
   namespace lattice {
 
-    using r_t      = nda::vector<double>;
-    using k_t      = nda::vector<double>;
-    using dcomplex = std::complex<double>;
-    using nda::array;
-    using nda::matrix;
-
-    // --------------------------------------------------------
+    using r_t = nda::vector<double>;
+    using matrix_t = nda::matrix<double>;
 
     class bravais_lattice {
 
       public:
-      using point_t = std::vector<int>; // domain concept. PUT on STACK
+      using value_t = r_t;
 
       /**
        * Construct a Bravais Lattice with given unit vectors and atomic positions
@@ -47,17 +42,20 @@ namespace triqs {
        * @param atom_orb_name Vector of atomic orbitals names.
        *  Defaults to vector of empty strings.
        */
-      bravais_lattice(matrix<double> const &units, std::vector<r_t> atom_orb_pos = std::vector<r_t>{{0, 0, 0}},
+      bravais_lattice(matrix_t const &units, std::vector<r_t> atom_orb_pos = std::vector<r_t>{{0, 0, 0}},
                       std::vector<std::string> atom_orb_name = {});
 
       // Default construction, 3d cubic lattice
       bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
 
+      /// Check if a k_t is part of the domain
+      [[nodiscard]] bool contains(r_t const &) const { return true; }
+
       /// Number of dimensions
       int ndim() const { return ndim_; }
 
       /// Matrix containing lattice basis vectors as rows
-      nda::matrix_const_view<double> units() const { return units_; }
+      matrix_t const & units() const { return units_; }
 
       // Number of orbitals in the unit cell
       int n_orbitals() const { return atom_orb_name.size(); }
@@ -68,11 +66,14 @@ namespace triqs {
       /// Return the vector of orbital names
       std::vector<std::string> const & orbital_names() { return atom_orb_name; }
 
-      /// Transform into real coordinates.
+      /// Transform from lattice to real coordinates.
       template <typename R> r_t lattice_to_real_coordinates(R const &x) const {
-        auto res = r_t::zeros({3});
-        for (int i = 0; i < ndim_; i++) res += x(i) * units_(i, range{});
-        return res;
+	return transpose(units_)(range::all, range(ndim())) * nda::basic_array_view{x};
+      }
+
+      /// Transform from lattice to real coordinates.
+      template <typename R> r_t real_to_lattice_coordinates(R const &x) const {
+	return transpose(units_inv_)(range::all, range(ndim())) * nda::basic_array_view{x};
       }
 
       // ------------------- Comparison -------------------
@@ -89,7 +90,7 @@ namespace triqs {
 
       // -------------------- hdf5 -------------------
 
-      static std::string hdf5_format() { return "bravais_lattice"; }
+      [[nodiscard]] static std::string hdf5_format() { return "bravais_lattice"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl);
@@ -99,17 +100,9 @@ namespace triqs {
 
       // ---------------------------------------
 
-      //  BOOST Serialization
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &ndim_;
-        ar &units_;
-        ar &atom_orb_pos;
-        ar &atom_orb_name;
-      }
-
       private:
-      matrix<double> units_;
+      matrix_t units_ = matrix_t::zeros(3,3);
+      matrix_t units_inv_ = matrix_t::zeros(3,3);
       std::vector<r_t> atom_orb_pos;          // atom_orb_pos[i] = position of ith atoms/orbitals in the unit cell
       std::vector<std::string> atom_orb_name; // names of these atoms/orbitals.
       int ndim_;

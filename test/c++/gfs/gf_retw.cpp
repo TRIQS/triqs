@@ -63,10 +63,5 @@ TEST(Gf, Real) {
   EXPECT_CLOSE(Gw2(w0), w0);
   EXPECT_CLOSE(Git(it0)(0, 0), it0);
   EXPECT_CLOSE(Git2(it0), it0);
-
-  //verification of windowing for imaginary times outside from [0,beta]
-  EXPECT_CLOSE(Gw2.on_mesh(N / 3), Gw2[N / 3]);
-  EXPECT_CLOSE(Gt2.on_mesh(N / 3), Gt2[N / 3]);
-  EXPECT_CLOSE(Git2.on_mesh(N / 3), Git2[N / 3]);
 }
 MAKE_MAIN;

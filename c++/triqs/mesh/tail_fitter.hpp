@@ -115,8 +115,8 @@ namespace triqs::mesh {
       idx_vec.reserve(2 * n_tail);
 
       double step = double(n_pts_in_fit_range) / n_tail;
-      double idx1 = m.first_index();
-      double idx2 = m.last_index() - n_pts_in_fit_range;
+      double idx1 = m.first_idx();
+      double idx2 = m.last_idx() - n_pts_in_fit_range;
 
       for (int n : range(n_tail)) {
         idx_vec.push_back(long(idx1));
@@ -147,17 +147,17 @@ namespace triqs::mesh {
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
 
       // Set Up full Vandermonde matrix up to order expansion_order if not set
-      double om_max = std::abs(m.omega_max());
+      double om_max = std::abs(m.w_max());
       if (_vander.is_empty()) {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
-        for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
+        for (long n : _fit_idx_lst) C.push_back(om_max / m.to_value(n));
         _vander = vander(C, _expansion_order);
       }
 
       if (n_fixed_moments + 1 > _vander.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
 
-      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range(), range(n_fixed_moments, n + 1))); };
+      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range::all, range(n_fixed_moments, n + 1))); };
 
       auto &lss = get_lss<enforce_hermiticity>();
 
@@ -165,8 +165,8 @@ namespace triqs::mesh {
         lss[n_fixed_moments] = l(_expansion_order);
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
         lss[n_fixed_moments].reset();
-        // Ensure that |m.omega_max()|^(1-N) > 10^{-16}
-        long n_max = std::min<long>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
+        // Ensure that |m.w_max()|^(1-N) > 10^{-16}
+        long n_max = std::min<long>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.w_max())));
         // We use at least two times as many data-points as we have moments to fit
         n_max = std::min(n_max, _vander.extent(0) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {
@@ -225,11 +225,9 @@ namespace triqs::mesh {
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       for (auto [i, n] : enumerate(_fit_idx_lst)) {
         if constexpr (R == 1)
-          g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
+          g_mat(i, 0) = g_data_swap_idx(m.to_datidx(n));
         else
-          for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) {
-            g_mat(i, j) = x;
-          }
+          for (auto [j, x] : enumerate(g_data_swap_idx(m.to_datidx(n), ellipsis()))) { g_mat(i, j) = x; }
       }
 
       // If an array with known_moments was passed, flatten the array into a matrix
@@ -243,7 +241,7 @@ namespace triqs::mesh {
 
         // We have to scale the known_moments by 1/Omega_max^n
         double z      = 1.0;
-        double om_max = std::abs(m.omega_max());
+        double om_max = std::abs(m.w_max());
 
         for (int order : range(n_fixed_moments)) {
           if constexpr (R == 1)
@@ -254,20 +252,20 @@ namespace triqs::mesh {
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -=  _vander(range(), range(n_fixed_moments)) * km_mat;
+        g_mat -=  _vander(range::all, range(n_fixed_moments)) * km_mat;
       
       }
       // Call least square solver
       auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, inner_matrix_dim); // coef + error
 
-      // === The result a_mat contains the fitted moments divided by omega_max()^n
+      // === The result a_mat contains the fitted moments divided by w_max()^n
       // Here we extract the real moments
       if (normalize) {
         double z      = 1.0;
-        double om_max = std::abs(m.omega_max());
+        double om_max = std::abs(m.w_max());
         for (int i : range(n_fixed_moments)) z *= om_max;
         for (int i : range(a_mat.extent(0))) {
-          a_mat(i, range()) *= z;
+          a_mat(i, range::all) *= z;
           z *= om_max;
         }
       }

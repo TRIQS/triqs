@@ -18,28 +18,147 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include "./domains/legendre.hpp"
-#include "bases/linear.hpp"
+
+#include "utils.hpp"
+
+#include <triqs/utility/legendre.hpp>
 
 namespace triqs::mesh {
 
-  struct legendre : public linear_mesh<legendre_domain> {
+  struct legendre {
+
+    using idx_t    = long;
+    using datidx_t = long;
+
+    // -------------------- Data -------------------
+
+    double beta              = 0.0;
+    statistic_enum statistic = Fermion;
+
+    private:
+    long max_n_         = 1;
+    uint64_t mesh_hash_ = 0;
+
+    // -------------------- Constructors -------------------
+    public:
     legendre() = default;
-    legendre(legendre_domain domain) : linear_mesh(std::move(domain), 0, domain.max_n, domain.max_n + 1) {}
 
     /**
      *  Construct a Mesh of Legendre polynomials with degrees in the interval [0,max_n]
      *
      *  @param beta Inverse temperature
-     *  @param S Statistic, Fermion or Boson
+     *  @param statistic, Fermion or Boson
      *  @param max_n Largest degree
      */
-    legendre(double beta, statistic_enum S, long max_n) : linear_mesh(legendre_domain(beta, S, max_n), 0, max_n, max_n + 1) {}
+    legendre(double beta, statistic_enum statistic, long max_n)
+       : beta(beta), statistic(statistic), max_n_(max_n), mesh_hash_(hash(beta, statistic, max_n)) {}
+
+    // -------------------- Comparison -------------------
+
+    bool operator==(legendre const &) const = default;
+    bool operator!=(legendre const &) const = default;
+
+    // --------------------  Mesh Point -------------------
+
+    struct mesh_point_t {
+      using mesh_t       = legendre;
+      long idx           = 0;
+      long datidx        = 0;
+      uint64_t mesh_hash = 0;
+    };
+
+    // -------------------- idx checks and conversions -------------------
+
+    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < max_n_; }
+
+    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
+      EXPECTS(is_idx_valid(idx));
+      return idx;
+    }
+
+    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const noexcept {
+      EXPECTS(mesh_hash_ == mp.mesh_hash);
+      return mp.datidx;
+    }
+
+    [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
+      EXPECTS(is_idx_valid(datidx));
+      return datidx;
+    }
+
+    [[nodiscard]] mesh_point_t operator[](long datidx) const { return {to_idx(datidx), datidx, mesh_hash_}; }
+
+    [[nodiscard]] mesh_point_t operator()(long idx) const { return {idx, to_datidx(idx), mesh_hash_}; }
+
+    // -------------------- Accessors -------------------
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+
+    /// The total number of points in the mesh
+    [[nodiscard]] size_t size() const { return max_n_; }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
+    }
+
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
+
+    // -------------------- print  -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, legendre const &m) {
+      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Legendre mesh with beta = {}, statistic = {}, max_n = {}", m.beta, stat_cstr, m.size());
+    }
 
     // -------------------- HDF5 -------------------
-    static std::string hdf5_format() { return "MeshLegendre"; }
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) { h5_read_impl(fg, subgroup_name, m, "MeshLegendre"); }
+
+    [[nodiscard]] static std::string hdf5_format() { return "MeshLegendre"; }
+
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) {
+      h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format(gr, m);
+
+      h5::write(gr, "beta", m.beta);
+      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "max_n", m.max_n_);
+    }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) {
+      h5::group gr = fg.open_group(subgroup_name);
+      assert_hdf5_format(gr, m, true);
+
+      if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
+      auto beta      = h5::read<double>(gr, "beta");
+      auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+
+      long max_n{};
+      if (not h5::try_read(gr, "max_n", max_n)) h5::read(gr, "n_max", max_n); // Backward Compat
+
+      m = legendre(beta, statistic, max_n);
+    }
   };
+
+  inline auto evaluate(legendre const &m, auto const &f, double tau) {
+    EXPECTS(m.size() > 0);
+
+    utility::legendre_generator L{};
+    L.reset(2 * tau / m.beta - 1);
+
+    auto res = make_regular(f(0) * L.next() / m.beta);
+    for (auto l : range(1, m.size())) { res += make_regular(f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta); }
+
+    return res;
+  }
+
+  // check concept
+  static_assert(Mesh<legendre>);
 
 } // namespace triqs::mesh

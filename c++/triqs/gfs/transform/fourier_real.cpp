@@ -40,10 +40,10 @@ namespace triqs::gfs {
       return _fourier_impl(w_mesh, gt, make_zero_tail(gt, 3));
     else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 2.")
-      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      double _abs_tail0 = max_element(abs(known_moments(0, range::all)));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
-      mom_12.rebind(known_moments(range(1, 3), range()));
+      mom_12.rebind(known_moments(range(1, 3), range::all));
     }
 
     size_t L = gt.mesh().size();
@@ -55,25 +55,25 @@ namespace triqs::gfs {
     array<dcomplex, 2> _gout(L, n_others);
     array<dcomplex, 2> _gin(L, n_others);
 
-    const double tmin = gt.mesh().x_min();
-    const double wmin = w_mesh.x_min();
+    const double tmin = gt.mesh().t_min();
+    const double wmin = w_mesh.w_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
     const double a = w_mesh.delta() * std::sqrt(double(L));
 
-    auto _  = range();
+    auto _  = range::all;
     auto m1 = mom_12(0, _);
     auto m2 = mom_12(1, _);
 
     array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
 
-    for (auto const &t : gt.mesh()) _gin(t.index(), _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
+    for (auto const &t : gt.mesh()) _gin(t.idx, _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
-    auto gw = gf_vec_t<refreq>{w_mesh, {int(n_others)}};
+    auto gw = gf_vec_t<mesh::refreq>{w_mesh, {int(n_others)}};
     for (auto const &w : w_mesh)
-      gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.index(), _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
+      gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.idx, _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
 
     return std::move(gw);
   }
@@ -90,11 +90,11 @@ namespace triqs::gfs {
     else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct Real-Frequency Fourier transform requires known moments up to order 2.")
 
-      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      double _abs_tail0 = max_element(abs(known_moments(0, range::all)));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
-      mom_12.rebind(known_moments(range(1, 3), range()));
+      mom_12.rebind(known_moments(range(1, 3), range::all));
     }
 
     size_t L = gw.mesh().size();
@@ -102,8 +102,8 @@ namespace triqs::gfs {
     double test = std::abs(t_mesh.delta() * gw.mesh().delta() * L / (2 * M_PI) - 1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
 
-    const double tmin = t_mesh.x_min();
-    const double wmin = gw.mesh().x_min();
+    const double tmin = t_mesh.t_min();
+    const double wmin = gw.mesh().w_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
     const double a = gw.mesh().delta() * std::sqrt(double(L));
 
@@ -112,20 +112,20 @@ namespace triqs::gfs {
     array<dcomplex, 2> _gin(L, n_others);
     array<dcomplex, 2> _gout(L, n_others);
 
-    auto _  = range();
+    auto _  = range::all;
     auto m1 = mom_12(0, _);
     auto m2 = mom_12(1, _);
 
     array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
 
-    for (auto const &w : gw.mesh()) _gin(w.index(), _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
+    for (auto const &w : gw.mesh()) _gin(w.idx, _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
     auto gt           = gf_vec_t<retime>{t_mesh, {int(n_others)}};
     const double corr = 1.0 / (t_mesh.delta() * L);
-    for (auto const &t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
+    for (auto const &t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.idx, _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
 
     return std::move(gt);
   }

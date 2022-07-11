@@ -38,8 +38,8 @@ TEST(Gf, RebinTau) {
   auto res1 = array<dcomplex, 1>{-0.28125, -0.46875, -0.6875};
   auto res2 = array<dcomplex, 1>{-0.6944444444444, -0.5, -0.305555555555};
 
-  EXPECT_ARRAY_NEAR(res1, gt1_new.data()(range(), 0, 0));
-  EXPECT_ARRAY_NEAR(res2, gt2_new.data()(range(), 0, 0), 1.);
+  EXPECT_ARRAY_NEAR(res1, gt1_new.data()(range::all, 0, 0));
+  EXPECT_ARRAY_NEAR(res2, gt2_new.data()(range::all, 0, 0), 1.);
 
   // Apply rebinning_tau to all blocks in a full GF
   auto bgf   = make_block_gf({"up", "dn"}, {gt1, gt2});

@@ -19,18 +19,32 @@
  *
  ******************************************************************************/
 #pragma once
+#include "utils.hpp"
 #include <triqs/lattice/brillouin_zone.hpp>
-#include "./bases/cluster_mesh.hpp"
 
 namespace triqs::mesh {
 
   using lattice::brillouin_zone;
 
-  ///Mesh on Brillouin zone
-  class brzone : public cluster_mesh {
-    private:
-    brillouin_zone bz;
+  /// Mesh on Brillouin zone
+  class brzone {
 
+    public:
+    using idx_t    = std::array<long, 3>;
+    using datidx_t = long;
+    using value_t  = brillouin_zone::value_t;
+
+    // -------------------- Data -------------------
+    private:
+    brillouin_zone bz_        = {};
+    std::array<long, 3> dims_ = {1, 1, 1};
+    long size_                = 1;
+    long stride1 = 1, stride0 = 1;
+    nda::matrix<double> units_     = nda::eye<double>(3);
+    nda::matrix<double> units_inv_ = nda::eye<double>(3);
+    uint64_t mesh_hash_            = 0;
+
+    // -------------------- Constructors -------------------
     public:
     brzone() = default;
 
@@ -44,10 +58,26 @@ namespace triqs::mesh {
      * where $K$ is the reciprocal matrix and $N$ the periodization matrix.
      *
      * @param bz Brillouin zone (domain)
-     * @param periodization_matrix Periodiziation matrix N of shape 3x3
+     * @param dims The extents for each of the three dimensions
      */
-    brzone(brillouin_zone const &bz, matrix<long> const &periodization_matrix) : bz(bz), cluster_mesh(nda::eye<double>(3), periodization_matrix) {
-      units_ = inverse(matrix<double>(periodization_matrix)) * bz.units();
+    brzone(brillouin_zone const &bz, std::array<long, 3> const &dims)
+       : bz_(bz),
+         dims_(dims),
+         size_(nda::stdutil::product(dims)),
+         stride1(dims_[2]),
+         stride0(dims_[1] * dims_[2]),
+         units_(inverse(1.0 * nda::diag(dims)) * bz.units()),
+         units_inv_(inverse(units_)),
+         mesh_hash_(hash(sum(bz.units()), dims[0], dims[1], dims[2])) {}
+
+    ///
+    brzone(brillouin_zone const &bz, nda::matrix<long> const &pm) : brzone(bz, {pm(0, 0), pm(1, 1), pm(2, 2)}) {
+      // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
+      // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
+      //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
+      // nda::is_diagonal(mat, precision) --> add to lib
+      EXPECTS((pm.shape() == std::array{3l, 3l}));
+      if (not is_matrix_diagonal(pm)) throw std::runtime_error{"Non-diagonal periodization matrices are currently not supported."};
     }
 
     /** 
@@ -59,90 +89,222 @@ namespace triqs::mesh {
      * @param n_k Number of mesh-points in each reciprocal direction
 
      */
-    brzone(brillouin_zone const &bz_, int n_k)
-       : brzone(bz_, matrix<long>{{{n_k, 0, 0}, {0, bz_.lattice().ndim() >= 2 ? n_k : 1, 0}, {0, 0, bz_.lattice().ndim() >= 3 ? n_k : 1}}}) {}
-
-    /// ----------- Model the mesh concept  ----------------------
-    using domain_t    = brillouin_zone;
-    using domain_pt_t = typename domain_t::point_t;
-
-    domain_t const &domain() const { return bz; }
-
-    // -------------- Evaluation of a function on the grid --------------------------
-
-    /// Reduce index modulo to the lattice.
-    index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
+    brzone(brillouin_zone const &bz_, long n_k)
+       : brzone(bz_, std::array{n_k, (bz_.lattice().ndim() >= 2 ? n_k : 1l), (bz_.lattice().ndim() >= 3 ? n_k : 1)}) {}
 
     // ------------------- Comparison -------------------
 
-    bool operator==(brzone const &M) const { return bz == M.domain() && cluster_mesh::operator==(M); }
+    bool operator==(brzone const &M) const { return dims_ == M.dims() and bz_ == M.bz(); }
+    bool operator!=(brzone const &M) const { return !(operator==(M)); }
 
-    bool operator!=(brzone const &M) const = default;
+    // ------------------- Accessors -------------------
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+
+    /// The total number of points in the mesh
+    [[nodiscard]] size_t size() const { return size_; }
+
+    /// The extent of each dimension
+    [[nodiscard]] std::array<long, 3> dims() const { return dims_; }
+
+    /// Matrix containing the mesh basis vectors as rows
+    [[nodiscard]] nda::matrix_const_view<double> units() const { return units_; }
+
+    brillouin_zone const &bz() const noexcept { return bz_; }
+
+    // ----------------------------------------
+
+    idx_t idx_modulo(idx_t const &r) const {
+      return {positive_modulo(r[0], dims_[0]), positive_modulo(r[1], dims_[1]), positive_modulo(r[2], dims_[2])};
+    }
+
+    // -------------------- mesh_point -------------------
+
+    struct mesh_point_t {
+      using mesh_t            = brzone;
+      std::array<long, 3> idx = {0, 0, 0};
+      brzone const *m_ptr;
+      long datidx                        = 0;
+      uint64_t mesh_hash                 = 0;
+      mutable std::optional<value_t> val = {};
+
+      [[nodiscard]] value_t const &value() const {
+        if (val)
+          return *val;
+        else
+          return *(val = m_ptr->to_value(idx));
+      }
+
+      [[nodiscard]] operator value_t() const { return value(); }
+
+      // The mesh point behaves like a vector
+      double operator()(int d) const { return value()[d]; }
+      double operator[](int d) const { return value()[d]; }
+
+      friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
+
+      mesh_point_t operator+(mesh_point_t const &other) const {
+        auto new_idx = m_ptr->idx_modulo(idx + other.idx);
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+      }
+
+      mesh_point_t operator-(mesh_point_t const &other) const {
+        auto new_idx = m_ptr->idx_modulo(idx - other.idx);
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+      }
+
+      mesh_point_t operator-() const {
+        auto new_idx = m_ptr->idx_modulo(-idx);
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+      }
+    };
+
+    // -------------------- index checks and conversions -------------------
+
+    [[nodiscard]] bool is_idx_valid(idx_t const &idx) const noexcept {
+      for (auto i : range(3))
+        if (idx[i] < 0 or idx[i] >= dims_[i]) return false;
+      return true;
+    }
+
+    [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
+      EXPECTS(is_idx_valid(idx));
+      return idx[0] * stride0 + idx[1] * stride1 + idx[2];
+    }
+
+    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const {
+      EXPECTS(mesh_hash_ == mp.mesh_hash);
+      return mp.datidx;
+    }
+
+    template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(to_idx(cmp)); }
+
+    [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
+      EXPECTS(0 <= datidx and datidx < size());
+      long i0 = datidx / stride0;
+      long r0 = datidx % stride0;
+      long i1 = r0 / stride1;
+      long i2 = i0 % stride1;
+      return {i0, i1, i2};
+    }
+
+    template <typename V>
+      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
+    [[nodiscard]] idx_t closest_idx(V const &v) const {
+      PRINT(v);
+      PRINT(units_inv_);
+      auto idbl = transpose(units_inv_) * nda::basic_array_view{v};
+      PRINT(idbl);
+      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+    }
+
+    template <typename V>
+      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
+    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<V> const &cmp) const {
+      return closest_idx(cmp.value);
+    }
+
+    /// Make a mesh point from a linear index
+    [[nodiscard]] mesh_point_t operator[](long datidx) const {
+      auto idx = to_idx(datidx);
+      EXPECTS(is_idx_valid(idx));
+      return {idx, this, datidx, mesh_hash_};
+    }
+
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+
+    [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
+      EXPECTS(is_idx_valid(idx));
+      auto datidx = to_datidx(idx);
+      return {idx, this, datidx, mesh_hash_};
+    }
+
+    /// Convert an index to the domain value
+    [[nodiscard]] virtual value_t to_value(idx_t const &idx) const {
+      EXPECTS(is_idx_valid(idx));
+      return transpose(units_)(range::all, range(bz_.lattice().ndim())) * nda::basic_array_view{idx}(range(bz_.lattice().ndim()));
+    }
 
     // -------------------- print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
-      return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units()
-                  << "\n -- periodization_matrix = " << m.periodization_matrix() << "\n -- Domain: " << m.domain();
+      return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- brillouin_zone: " << m.bz();
     }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
+    }
+
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
 
     // -------------- HDF5  --------------------------
 
-    static std::string hdf5_format() { return "MeshBrillouinZone"; }
+    [[nodiscard]] static std::string hdf5_format() { return "MeshBrillouinZone"; }
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, brzone const &m) {
-      h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
-      h5::group gr = fg.open_group(subgroup_name);
-      h5_write(gr, "brillouin_zone", m.bz);
+      h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format(gr, m);
+
+      h5::write(gr, "dims", m.dims_);
+      h5::write(gr, "brillouin_zone", m.bz_);
     }
 
     friend void h5_read(h5::group fg, std::string const &subgroup_name, brzone &m) {
-      h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
       h5::group gr = fg.open_group(subgroup_name);
-      if (gr.has_key("bz")) {
-        h5_read(gr, "bz", m.bz);
-      } else if (gr.has_key("brillouin_zone")) {
-        h5_read(gr, "brillouin_zone", m.bz);
+      assert_hdf5_format(gr, m, true);
+
+      std::array<long, 3> dims;
+      if (gr.has_key("dims")) {
+        h5::read(gr, "dims", dims);
+      } else { // Backward Compat periodization_matrix
+        auto pm = h5::read<matrix<long>>(gr, "periodization_matrix");
+        dims    = {pm(0, 0), pm(1, 1), pm(2, 2)};
+      }
+
+      brillouin_zone bz{};
+      if (gr.has_key("brillouin_zone")) {
+        h5::read(gr, "brillouin_zone", bz);
+      } else if (gr.has_key("bz")) { // Backward Compatibility
+        h5::read(gr, "bz", bz);
       } else {
         std::cout << "WARNING: Reading old MeshBrillouinZone without BrillouinZone\n";
       }
+
+      m = brzone(bz, dims);
+    }
+
+    // -------------- Evalulation --------------------------
+
+    private:
+    // Evaluation helpers
+    struct brzone1d {
+      long dim;
+    };
+
+    friend auto evaluate(brzone1d const &m, auto f, double vi) {
+      long i   = std::floor(vi);
+      double w = vi - i;
+      return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
+    }
+
+    // Use the cartesian product evaluation to evaluate on domain pts
+    template <typename V>
+      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
+    friend auto evaluate(brzone const &m, auto f, V const &v) {
+      auto v_idx = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
+      auto g     = [&f](auto &x, auto &y, auto &z) { return f(typename brzone::idx_t{x, y, z}); };
+      return evaluate(std::tuple{brzone1d{m.dims()[0]}, brzone1d{m.dims()[1]}, brzone1d{m.dims()[2]}}, g, v_idx[0], v_idx[1], v_idx[2]);
     }
   };
 
-  // -------------- Evaluation of a function on the grid --------------------------
-
-  static constexpr int n_pts_in_linear_interpolation = (1 << 3);
-
-  inline std::array<std::pair<brzone::linear_index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(brzone const &m,
-                                                                                                                     std::array<double, 3> const &k) {
-
-    // Calculate k in the units basis
-    auto kv      = nda::vector_const_view<double>{{3}, k.data()};
-    auto k_units = transpose(inverse(m.units())) * kv;
-
-    // 0----1----2----3----4----5---- : dim = 5, point 6 is 2 Pi
-    std::array<std::array<long, 2>, 3> is;   // indices of the two neighbouring grid points
-    std::array<std::array<double, 2>, 3> ws; // weights for the two neighbouring grid points
-    for (int d = 0; d < 3; ++d) {
-      long i   = std::floor(k_units[d]); // Take modulo later
-      double w = k_units[d] - i;
-      is[d]    = {i, i + 1};
-      ws[d]    = {1 - w, w};
-    }
-    std::array<std::pair<brzone::linear_index_t, double>, n_pts_in_linear_interpolation> result;
-    int c = 0;
-    for (int ix = 0; ix < 2; ++ix)
-      for (int iy = 0; iy < 2; ++iy)
-        for (int iz = 0; iz < 2; ++iz) {
-          result[c] =
-             std::make_pair(m.index_to_linear(m.index_modulo(brzone::index_t{is[0][ix], is[1][iy], is[2][iz]})), ws[0][ix] * ws[1][iy] * ws[2][iz]);
-          c++;
-        }
-    return result;
-  }
-
-  inline std::array<std::pair<brzone::linear_index_t, one_t>, 1> get_interpolation_data(brzone const &m, brzone::index_t const &x) {
-    return {std::pair<brzone::linear_index_t, one_t>{m.index_to_linear(m.index_modulo(x)), {}}};
-  }
+  static_assert(MeshWithValues<brzone>);
 
 } // namespace triqs::mesh

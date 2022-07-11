@@ -19,10 +19,14 @@
  *
  ******************************************************************************/
 #pragma once
+
 #include <itertools/itertools.hpp>
 #include <nda/nda.hpp>
-#include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/tuple_tools.hpp>
+
+#include <fmt/core.h>
+
+#include "./concepts.hpp"
 
 namespace triqs::mesh {
 
@@ -31,41 +35,30 @@ namespace triqs::mesh {
   using nda::array;
   using nda::array_view;
   using nda::ellipsis;
-  // using nda::make_shape;
   using nda::eye;
   using nda::matrix;
   using nda::matrix_const_view;
   using nda::matrix_view;
-
   using nda::range;
 
-  //-----------------------------------------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------
 
-  namespace tag {
-    struct mesh {};
-    struct product : mesh {};
-    struct mesh_point {};
-  } // namespace tag
+  template <typename... T> uint64_t hash(T &&...ts) { return (std::hash<std::decay_t<T>>()(ts) ^ ...); }
 
-  /// Checks if the mesh M is a product
-  template <typename M> struct is_product : std::is_base_of<tag::product, M> {};
+  //------------------------------------------------------------------------
 
-  ///
-  template <typename M> constexpr bool is_product_v = is_product<M>::value;
+  inline long positive_modulo(long r, long d) {
+    long res = r % d;
+    return (res >= 0 ? res : res + d);
+  }
 
-  // A default implementation. Specialize for non-intrusive usage.
-  template <typename M> struct models_mesh_concept : std::is_base_of<tag::mesh, M> {};
+  //------------------------------------------------------------------------
 
-  /// Check if M models the mesh concept FIXME 20 : use true concept here
-  template <typename M> constexpr bool models_mesh_concept_v = models_mesh_concept<M>::value;
-
-  //
-  template <typename Mesh> struct get_n_variables { static const int value = 1; };
-
-  //-----------------------------------------------------------------------------------------------------------------------------
+  template <Mesh M>  static constexpr bool is_product = false;
+  template <Mesh Ms> static constexpr int n_variables = 1;
 
   /// A place holder for : or *all*
-  struct all_t {};
+  using all_t = nda::range::all_t;
 
   /** The statistics : Boson or Fermion */
   enum statistic_enum { Boson = 0, Fermion = 1 };
@@ -76,12 +69,30 @@ namespace triqs::mesh {
   /// Boson*Fermion -> Fermion, others -> Boson
   inline statistic_enum operator*(statistic_enum i, statistic_enum j) { return (i == j ? Boson : Fermion); }
 
-  //-----------------------------------------------------------------------------------------------------------------------------
+  //------------------------------ closest_mesh_pt -------------------------
+
+  template <typename T> struct closest_mesh_point_t {
+    T value;
+  };
+
+  // Returns a lazy structure containing x that will be used by the [] operator of gf e.g.
+  template <typename... T> auto closest_mesh_pt(T &&...x) {
+    if constexpr (sizeof...(T) == 1)
+      return closest_mesh_point_t<std::decay_t<T>...>{std::forward<T>(x)...};
+    else
+      return std::tuple{closest_mesh_point_t<std::decay_t<T>>{std::forward<T>(x)}...};
+  }
 
   // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
   struct one_t {};
   template <typename T> auto operator*(one_t, T &&x) { return std::forward<T>(x); }
   template <typename T> auto operator*(T &&x, one_t) { return std::forward<T>(x); }
   inline one_t operator*(one_t, one_t) { return {}; } // avoid ambiguity
+
+  template <typename M> // do NOT constrain here .. 
+  auto make_mesh_range_from_subscript(M const * m, long l) {
+    return itertools::transform(itertools::range(l), [m](long i){ return (*m)[i];});
+	// return std::ranges::views::iota(0l, l) | std::ranges::views::transform([&m](long i){ return m[i];});
+  }
 
 } // namespace triqs::mesh

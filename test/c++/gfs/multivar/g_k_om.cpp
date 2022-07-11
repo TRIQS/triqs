@@ -19,7 +19,6 @@
 
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/gf/comma.hpp>
 using namespace triqs::clef;
 using namespace triqs::lattice;
 using triqs::clef::placeholder;
@@ -90,13 +89,15 @@ TEST(Gkom, Eval) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<prod<brzone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
+  static_assert(std::tuple_size_v<prod<brzone, imfreq>> == 2);
+  static_assert(std::tuple_size_v<prod<brzone, imfreq>::mesh_point_t> == 2);
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
 
   // reevaluate on the mesh itself.
   for (auto [k, w] : g.mesh()) {
-    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(0), k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(1), k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
     dcomplex res = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
     EXPECT_COMPLEX_NEAR(g(K_t{k(0), k(1), 0}, w), res, 1.e-14);
   }

@@ -35,15 +35,6 @@ namespace triqs::gfs {
     //ASSERT_EQUAL(g_in.data().indexmap().strides()[1], g_in.data().shape()[1], "Unexpected strides in fourier implementation");
     //ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
 
-    //check periodization_matrix is diagonal
-    auto const &period_mat = g_in.mesh().periodization_matrix();
-    for (auto [i, j] : itertools::product_range(period_mat.shape()[0], period_mat.shape()[1]))
-      if (i != j and period_mat(i, j) != 0) {
-        std::cerr
-           << "WARNING: Fourier Transform of k-mesh with non-diagonal periodization matrix. Please make sure that the order of real and reciprocal space vectors is compatible for FFTW to work. (Cf. discussion doi:10.3929/ethz-a-010657714, p.26)\n";
-        break;
-      }
-
     auto g_out    = gf_vec_t<M1>{out_mesh, std::array{g_in.target_shape()[0]}};
     long n_others = second_dim(g_in.data());
 

@@ -44,9 +44,9 @@ namespace triqs::mesh {
   // Generic Implemenation for Numerical Types (~ is_iec559 or std::complex<is_iec559>)
   // Domain is full Type except NaNs, but including +-Inf
   template <typename T> struct numerical_type_domain_base {
-    using point_t = T;
+    using value_t = T;
 
-    [[nodiscard]] bool contains(point_t const &pt) const {
+    [[nodiscard]] bool contains(value_t const &pt) const {
       using std::isnan;
       using triqs::mesh::impl::isnan;
       return !isnan(pt);
@@ -61,19 +61,19 @@ namespace triqs::mesh {
   // ---------------------------------------------
 
   struct real_domain : numerical_type_domain_base<double> {
-    static std::string hdf5_format() { return "real_domain"; }
+    [[nodiscard]] static std::string hdf5_format() { return "real_domain"; }
   };
 
   struct complex_domain : numerical_type_domain_base<std::complex<double>> {
-    static std::string hdf5_format() { return "complex_domain"; }
+    [[nodiscard]] static std::string hdf5_format() { return "complex_domain"; }
   };
 
   template <int N> struct real_N_domain : numerical_type_domain_base<std::array<double, N>> {
-    static std::string hdf5_format() { return fmt::format("real_N_domain_{:d}", N); } // labels
+    [[nodiscard]] static std::string hdf5_format() { return fmt::format("real_N_domain_{:d}", N); } // labels
   };
 
   template <int N> struct complex_N_domain : numerical_type_domain_base<std::array<std::complex<double>, N>> {
-    static std::string hdf5_format() { return fmt::format("complex_N_domain_{:d}", N); } // labels
+    [[nodiscard]] static std::string hdf5_format() { return fmt::format("complex_N_domain_{:d}", N); } // labels
   };
 
 } // namespace triqs::mesh

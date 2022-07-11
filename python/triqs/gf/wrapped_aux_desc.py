@@ -6,6 +6,7 @@ m = module_(full_name = "triqs.gf.wrapped_aux", doc = "C++ wrapping of functions
 m.add_imports("triqs.gf.meshes", "triqs.gf.gf_fnt")
 
 m.add_include("<triqs/gfs.hpp>")
+m.add_include("<triqs/mesh.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 
 m.add_include("<cpp2py/converters/vector.hpp>")
@@ -23,25 +24,25 @@ m.add_preamble("""
 #------------------------------------------------------------
 def all_calls():
     for M in ['imfreq']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['int'] # R =2
-        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['int'] # R =2
+        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['int', 'matsubara_freq'] # R =0
+        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['int', 'matsubara_freq'] # R =2
         for R in [3,4]:
-            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int']
+            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int', 'matsubara_freq']
 
     for M in ['imtime', 'refreq', 'retime']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =1
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =0
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
 
     for M in ['brzone']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =1
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =0
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>']
 
     for M in ['cyclat']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>'] # R =1
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>'] # R =0
         yield M,["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>'] # R =2
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>']

@@ -298,13 +298,13 @@ class Gf(metaclass=AddMethod):
         # Only one argument. Must be a mesh point, idx or slicing rank1 target space
         if not isinstance(key, tuple):
             if isinstance(key, (MeshPoint, Idx)):
-                return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
+                return self.data[key.datidx if isinstance(key, MeshPoint) else self._mesh.to_datidx(key.idx)]
             else: key = (key,)
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         if all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            return self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in zip(key,self._mesh._mlist))]
+            return self.data[tuple(x.datidx if isinstance(x, MeshPoint) else m.to_datidx(x.idx) for x,m in zip(key,self._mesh._mlist))]
 
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
         elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
@@ -315,7 +315,7 @@ class Gf(metaclass=AddMethod):
             for x in key:
                 if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented")
             # slice the data
-            k = tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
+            k = tuple(x.datidx if isinstance(x, MeshPoint) else m.to_datidx(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
             dat = self._data[k]
             # list of the remaining lists
             mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), zip(key, mlist))]
@@ -362,12 +362,12 @@ class Gf(metaclass=AddMethod):
 
         # Only one argument and not a slice. Must be a mesh point, Idx
         if isinstance(key, (MeshPoint, Idx)):
-            self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)] = val
+            self.data[key.datidx if isinstance(key, MeshPoint) else self._mesh.to_datidx(key.idx)] = val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in zip(key,self._mesh._mlist))] = val
+            self.data[tuple(x.datidx if isinstance(x, MeshPoint) else m.to_datidx(x.idx) for x,m in zip(key,self._mesh._mlist))] = val
 
         else:
             self[key] << val
@@ -418,7 +418,7 @@ class Gf(metaclass=AddMethod):
     
     def __call__(self, *args) : 
         assert self._c_proxy, " no proxy"
-        return self._c_proxy(*args) 
+        return self._c_proxy(*[x.value if isinstance(x, MeshPoint) else x for x in args]) 
 
     # -------------- Various operations -------------------------------------
  

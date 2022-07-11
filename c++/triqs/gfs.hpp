@@ -38,11 +38,10 @@
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
-#include "./gfs/gf/slice_or_access.hpp"
-#include "./gfs/gf/evaluate.hpp"
+//#include "./gfs/gf/evaluate.hpp"
 
 // multivar
-#include "./mesh/prod.hpp"
+//#include "./mesh/prod.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"
@@ -71,19 +70,24 @@
 #include "./gfs/functions/legendre.hpp"
 #include "./gfs/functions/density.hpp"
 
-// fourier
-#include "./gfs/transform/fourier.hpp"
-#include "./gfs/transform/legendre_matsubara.hpp"
-
-#include "./mesh/mesh_concepts.hpp"
+#include "./mesh/concepts.hpp"
 
 //----------------------------------------------------------------
 // Backward compatibility :  aliases, etc..
 //----------------------------------------------------------------
 namespace triqs::gfs {
 
-  template <typename M>
-  requires (mesh::models_mesh_concept_v<M> or triqs::mesh::Mesh<M>)
+  using mesh::brzone;
+  using mesh::cyclat;
+  using mesh::imfreq;
+  using mesh::imtime;
+  using mesh::legendre;
+  using mesh::prod;
+  using mesh::refreq;
+  using mesh::retime;
+  using mesh::make_adjoint_mesh;
+
+  template <triqs::mesh::Mesh M>
   using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
 
   // Get shape of the data or of the target
@@ -92,3 +96,6 @@ namespace triqs::gfs {
 
 } // namespace triqs::gfs
 
+// fourier
+#include "./gfs/transform/fourier.hpp"
+#include "./gfs/transform/legendre_matsubara.hpp"

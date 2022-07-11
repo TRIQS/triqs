@@ -68,12 +68,12 @@ namespace triqs {
 
     // --- h5
     void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &f) {
-      h5::h5_write_attribute(obj, name, to_vec_vec_string(f));
+      h5::write_attribute(obj, name, to_vec_vec_string(f));
     }
 
     void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &f) {
       std::vector<std::vector<std::string>> fops1;
-      h5::h5_read_attribute(obj, name, fops1);
+      h5::read_attribute(obj, name, fops1);
       f = fundamental_operator_set(fops1);
     }
   } // namespace hilbert_space

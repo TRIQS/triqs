@@ -787,8 +787,8 @@ namespace triqs {
         N--;
         RN = range(N);
 
-        std::remove(row_num.begin(), row_num.end(), N);
-        std::remove(col_num.begin(), col_num.end(), N);
+	std::remove(row_num.begin(), row_num.end(), N);
+	std::remove(col_num.begin(), col_num.end(), N);
 
         row_num.pop_back();
         col_num.pop_back();

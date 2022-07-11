@@ -114,7 +114,7 @@ namespace triqs {
       /**
    @return Name of the scheme
  */
-      static std::string hdf5_format() { return "hilbert_space"; }
+      [[nodiscard]] static std::string hdf5_format() { return "hilbert_space"; }
 
       private:
       /// Write a Hilbert space to an HDF5 group
@@ -259,7 +259,7 @@ namespace triqs {
       /**
    @return Name of the scheme
  */
-      static std::string hdf5_format() { return "sub_hilbert_space"; }
+      [[nodiscard]] static std::string hdf5_format() { return "sub_hilbert_space"; }
 
       /// Write a Hilbert subspace to an HDF5 group
       /**

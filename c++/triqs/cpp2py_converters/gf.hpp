@@ -18,6 +18,8 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <triqs/gfs.hpp>
+#include <triqs/mesh/utils.hpp>
 #include <triqs/utility/typeid_name.hpp>
 #include <triqs/cpp2py_converters/arrays.hpp>
 
@@ -39,103 +41,6 @@ namespace cpp2py {
   template <typename M, typename T> struct is_view<triqs::gfs::gf_const_view<M, T>> : std::true_type {};
 
   template <typename M, typename T, int A, bool C> struct is_view<triqs::gfs::block_gf_view<M, T, A, C>> : std::true_type {};
-
-  // -----------------------------------
-  // domains
-  // -----------------------------------
-  template <> struct py_converter<triqs::mesh::real_domain> : py_converter_from_reductor<triqs::mesh::real_domain> {};
-
-  // template <bool B> struct py_converter<triqs::mesh::matsubara_domain<B>> : py_converter_from_reductor<triqs::mesh::matsubara_domain<B>> {};
-  template <> struct py_converter<triqs::mesh::matsubara_time_domain> : py_converter_from_reductor<triqs::mesh::matsubara_time_domain> {};
-  template <> struct py_converter<triqs::mesh::matsubara_freq_domain> : py_converter_from_reductor<triqs::mesh::matsubara_freq_domain> {};
-
-  // -----------------------------------
-  // all_t mapped to all
-  // -----------------------------------
-
-  template <> struct py_converter<triqs::mesh::all_t> {
-
-    static PyObject *c2py(triqs::mesh::all_t m) {
-      static pyref all = pyref::get_class("builtins", "all", true);
-      if (all.is_null()) return NULL;
-      return all.new_ref();
-    }
-
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      static pyref all = pyref::get_class("builtins", "all", true);
-      return (all == ob);
-    }
-
-    static triqs::mesh::all_t py2c(PyObject *ob) { return {}; }
-  };
-
-  // -----------------------------------
-  //     Mesh Product
-  // -----------------------------------
-
-  template <typename... Ms> struct py_converter<triqs::mesh::prod<Ms...>> {
-
-    using c_type      = triqs::mesh::prod<Ms...>;
-    using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
-
-    static PyObject *c2py(c_type m) {
-      static pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
-      if (cls.is_null()) return NULL;
-      pyref m_tuple = mtuple_conv::c2py(m.components()); // take the C++ tuple of meshes and make the corresponding Python tuple
-      if (m_tuple.is_null()) return NULL;
-      return PyObject_Call(cls, m_tuple, NULL);
-    }
-
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      static pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
-
-      // first check it is a MeshProduct
-      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
-      pyref x = borrowed(ob);
-
-      // check conversion of the mesh list
-      pyref ml = x.attr("_mlist");
-      return mtuple_conv::is_convertible(ml, raise_exception);
-    }
-
-    static c_type py2c(PyObject *ob) {
-      pyref x  = borrowed(ob);
-      pyref ml = x.attr("_mlist");
-      return triqs::tuple::apply_construct<c_type>(mtuple_conv::py2c(ml));
-    }
-  };
-
-  template <typename M, typename V = void> constexpr bool has_weights                                     = false;
-  template <typename M> constexpr bool has_weights<M, std::void_t<decltype(std::declval<M>().weights())>> = true;
-
-  // Converter of mesh_point
-  template <typename M> struct py_converter<M::mesh_point_t> {
-
-    using c_type = M::mesh_point_t;
-
-    static PyObject *c2py(c_type const &p) {
-
-      static pyref cls = pyref::get_class("triqs.gf", "MeshPoint", /* raise_exception */ true);
-      if (cls.is_null()) return NULL;
-
-      pyref lidx = convert_to_python(p.linear_index());
-      if (lidx.is_null()) return NULL;
-
-      pyref idx = convert_to_python(p.index());
-      if (idx.is_null()) return NULL;
-
-      pyref val = convert_to_python(static_cast<typename c_type::cast_t>(p));
-      if (val.is_null()) return NULL;
-
-      if constexpr (has_weights<M>) {
-        pyref weight = convert_to_python(p.weight());
-        if (weight.is_null()) return NULL;
-        return PyObject_Call(cls, pyref::make_tuple(lidx, idx, val, weight), NULL);
-      }
-
-      return PyObject_Call(cls, pyref::make_tuple(lidx, idx, val), NULL);
-    }
-  };
 
   // -----------------------------------
   //   gf
@@ -383,7 +288,6 @@ namespace cpp2py {
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
       static pyref cls = pyref::get_class("triqs.gf", "Block2Gf", true);
-      //if (cls.is_null()) CPP2PY_RUNTIME_ERROR << "Cannot find the triqs.gf.Block2Gf";
       if (cls.is_null()) throw std::runtime_error("Cannot find the triqs.gf.Block2Gf");
 
       // first check it is a Block2Gf

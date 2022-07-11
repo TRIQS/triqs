@@ -18,15 +18,8 @@
 #pragma once
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
-#include "./comma.hpp"
 
 namespace triqs::gfs {
-
-  // forward
-  namespace details {
-    template <typename Mesh, typename... A> struct is_ok;
-    template <typename G, typename... Args> decltype(auto) slice_or_access_general(G &g, Args const &... args);
-  } // namespace details
 
   /*------------------------------------------------------------------------
    *   Forward Declaration of the main types : gf, gf_view, gf_const_view
@@ -75,7 +68,7 @@ namespace triqs::gfs {
   template <typename Mesh, typename Target, typename Layout, typename EvalPolicy> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
     static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>,
-                  "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
+		"Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
     using this_t = gf<Mesh, Target, Layout, EvalPolicy>; // used in common code
 
@@ -103,30 +96,26 @@ namespace triqs::gfs {
     /// Mesh type
     using mesh_t = Mesh;
 
-    /// Domain type
-    using domain_t = typename mesh_t::domain_t;
-
     /// Type of the mesh point
     using mesh_point_t = typename mesh_t::mesh_point_t;
 
     // NO DOC
-    using mesh_index_t        = typename mesh_t::index_t;
-    using linear_mesh_index_t = typename mesh_t::linear_index_t;
+    using mesh_idx_t = typename mesh_t::idx_t;
 
     using indices_t   = gf_indices;
-    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh, Target>;
+    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
 
     /// Arity of the function (number of variables)
-    static constexpr int arity = get_n_variables<Mesh>::value;
+    static constexpr int arity = n_variables<Mesh>;
 
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
 
     /// Type of the data array
-    using data_t = nda::basic_array<scalar_t, data_rank, Layout, 'A', nda::heap>;
+    using data_t = nda::basic_array<scalar_t, data_rank, Layout, 'A', nda::heap<>>;
 
     // FIXME : std::array with NDA
     using target_shape_t = std::array<long, Target::rank>;
@@ -141,9 +130,6 @@ namespace triqs::gfs {
 
     /// Access the  mesh
     mesh_t const &mesh() const { return _mesh; }
-
-    /// Access the domain of the mesh
-    domain_t const &domain() const { return _mesh.domain(); }
 
     // DOC : fix data type here array<scalar_t, data_rank> to avoid multiply type in visible part
 
@@ -232,7 +218,7 @@ namespace triqs::gfs {
     private:
     // FIXME : simplify
     template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
-      if constexpr (mesh::is_product_v<mesh_t>)
+      if constexpr (mesh::is_product<mesh_t>)
         return stdutil::join(m.size_of_components(), shap);
       else
         return stdutil::front_append(shap, m.size()); 

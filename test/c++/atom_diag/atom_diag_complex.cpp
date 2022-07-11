@@ -353,10 +353,10 @@ TEST(atom_diag_complex, Functions) {
   // GF
   gf_struct_t gf_struct = {{"dn", 3}, {"up", 3}};
 
-  int n_tau   = 1000;
-  size_t n_iw = 400;
-  int n_l     = 25;
-  int n_w     = 1000;
+  int n_tau = 1000;
+  int n_iw  = 400;
+  int n_l   = 25;
+  int n_w   = 1000;
 
   triqs::atom_diag::excluded_states_t excluded_states = {{1, 0}, {1, 1}, {3, 0}, {3, 1}, {3, 2}, {3, 3}};
   auto G_tau                                          = atomic_g_tau(ad, beta, gf_struct, n_tau, excluded_states);

@@ -57,24 +57,20 @@ namespace triqs::gfs {
     /// Mesh type
     using mesh_t = Mesh;
 
-    /// Domain type
-    using domain_t = typename mesh_t::domain_t;
-
     /// Type of the mesh point
     using mesh_point_t = typename mesh_t::mesh_point_t;
 
     // NO DOC
-    using mesh_index_t        = typename mesh_t::index_t;
-    using linear_mesh_index_t = typename mesh_t::linear_index_t;
+    using mesh_idx_t = typename mesh_t::idx_t;
 
     using indices_t   = gf_indices;
-    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh, Target>;
+    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
 
     /// Arity of the function (number of variables)
-    static constexpr int arity = get_n_variables<Mesh>::value;
+    static constexpr int arity = n_variables<Mesh>;
 
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
@@ -95,9 +91,6 @@ namespace triqs::gfs {
 
     /// Access the  mesh
     mesh_t const &mesh() const { return _mesh; }
-
-    /// Access the domain of the mesh
-    domain_t const &domain() const { return _mesh.domain(); }
 
     // DOC : fix data type here array<scalar_t, data_rank> to avoid multiply type in visible part
 

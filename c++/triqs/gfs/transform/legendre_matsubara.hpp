@@ -40,11 +40,10 @@ namespace triqs::gfs {
                   "Arguments to legendre_matsubara_direct require same target_t");
 
     gw() = 0.0;
-    itertools::range R;
 
     // Use the transformation matrix
     for (auto om : gw.mesh()) {
-      for (auto l : gl.mesh()) { gw[om] += triqs::utility::legendre_T(om.index(), l.index()) * gl[l]; }
+      for (auto l : gl.mesh()) { gw[om] += triqs::utility::legendre_T(om.idx, l.idx) * gl[l]; }
     }
   }
 
@@ -60,8 +59,8 @@ namespace triqs::gfs {
     utility::legendre_generator L;
 
     for (auto t : gt.mesh()) {
-      L.reset(2 * t / gt.domain().beta - 1);
-      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.index() + 1) / gt.domain().beta * gl[l] * L.next(); }
+      L.reset(2 * t / gt.mesh().beta - 1);
+      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.idx + 1) / gt.mesh().beta * gl[l] * L.next(); }
     }
   }
 
@@ -78,8 +77,8 @@ namespace triqs::gfs {
     // Construct a temporary imaginary-time Green's function gt
     // I set Nt time bins. This is ugly, one day we must code the direct
     // transformation without going through imaginary time
-    int Nt  = 50000;
-    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.domain(), Nt}, stdutil::front_pop(gw.data().shape())};
+    long Nt  = 50000;
+    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{mesh::matsubara_time_domain(gw.mesh().domain()), Nt}, stdutil::front_pop(gw.data().shape())};
 
     // We first transform to imaginary time because it's been coded with the knowledge of the tails
     gt() = fourier(gw);
@@ -101,12 +100,12 @@ namespace triqs::gfs {
 
     // Do the integral over imaginary time
     for (auto t : gt.mesh()) {
-      if (t.index() == 0 || t.index() == N)
+      if (t.idx == 0 || t.idx == N)
         coef = 0.5;
       else
         coef = 1.0;
-      L.reset(2 * t / gt.domain().beta - 1);
-      for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.index() + 1) * L.next() * gt[t]; }
+      L.reset(2 * t / gt.mesh().beta - 1);
+      for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.idx + 1) * L.next() * gt[t]; }
     }
     gl.data() *= gt.mesh().delta();
   }

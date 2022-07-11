@@ -36,13 +36,13 @@ using namespace triqs::operators;
 
 using h_scalar_t = double;
 
-using linindex_t = std::map<std::pair<int, int>, int>;
+using linidx_t = std::map<std::pair<int, int>, int>;
 
 using block_index_map_t = std::map<std::variant<long, std::string>, int>;
 
 // -----------------------------------------------------------------------------
-linindex_t make_linear_index(const gf_struct_t &gf_struct, const fundamental_operator_set &fops) {
-  linindex_t linindex;
+linidx_t make_linear_index(const gf_struct_t &gf_struct, const fundamental_operator_set &fops) {
+  linidx_t linindex;
   int block_index = 0;
   for (auto const &[bl, bl_size] : gf_struct) {
     for (long idx : itertools::range(bl_size)) { linindex[std::make_pair(block_index, idx)] = fops[{bl, idx}]; }

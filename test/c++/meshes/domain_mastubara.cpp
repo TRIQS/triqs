@@ -17,8 +17,8 @@
 //
 // Authors: Philipp Dumitrescu
 
-#include "triqs/mesh/details/mesh_tools.hpp"
-#include <triqs/mesh/domains/matsubara.hpp>
+//#include "triqs/mesh/utils.hpp"
+#include <triqs/mesh.hpp>
 
 #include <triqs/test_tools/arrays.hpp>
 #include <h5/h5.hpp>

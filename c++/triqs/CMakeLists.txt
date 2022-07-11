@@ -7,8 +7,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 # ---------------------------------
 
 # all .cpp files to get the dependencies
+#DEBUG
 file(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
-list(REMOVE_ITEM ALLSOURCES arrays/python/numpy_extractor.cpp)
 
 # ---------------------------------
 #  Define and configure the triqs target 
@@ -22,7 +22,7 @@ target_include_directories(triqs PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 # C++ Standard
-target_compile_features(triqs PUBLIC cxx_std_20)
+target_compile_features(triqs PUBLIC cxx_std_23)
 
 # Disable warnings about comma expression in array subscript
 target_compile_options(triqs PUBLIC
@@ -75,9 +75,7 @@ target_link_libraries(triqs PRIVATE h5::hdf5)
 target_link_libraries(triqs PUBLIC nda::nda_c)
 
 # FMT
-target_link_libraries(triqs PUBLIC fmt)
-install(TARGETS fmt EXPORT triqs-dependencies)
-
+target_link_libraries(triqs PUBLIC fmt::fmt-header-only)
 
 # ---------------------------------
 # Boost

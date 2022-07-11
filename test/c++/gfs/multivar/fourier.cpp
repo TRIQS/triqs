@@ -26,9 +26,9 @@ template <int TARGET_RANK> void test_fourier() {
   triqs::clef::placeholder<1> iOm_;
   triqs::clef::placeholder<2> iom_;
   double beta = 1;
-  size_t N_iw    = 100;
-  size_t N_iW    = 4;
-  size_t N_k     = 4;
+  int N_iw    = 100;
+  int N_iW    = 4;
+  int N_k     = 4;
 
   double E = 1;
 
