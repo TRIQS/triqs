@@ -232,7 +232,14 @@ def TB_from_pythTB(ptb):
     for hopp, orb_from, orb_to, displacement in ptb._hoppings:
         if tuple(displacement) not in hopp_dict:
             hopp_dict[tuple(displacement)] = m_zero.copy()
-        hopp_dict[tuple(displacement)][orb_from, orb_to] = hopp
+            # per default pythTB does not explicitly stores -R
+            hopp_dict[tuple(-np.array(displacement))] = m_zero.copy()
+
+        hopp_dict[tuple(displacement)][orb_from, orb_to] += hopp
+        # fill -R from +R using H_ij(+R)=[H_ji(-R)]*
+        # if the user specified -R explicitly we have to sum both hopping matrices
+        # according to pythTB documentation
+        hopp_dict[tuple(-np.array(displacement))][orb_to, orb_from] += np.conj(hopp)
 
     TBL = TBLattice(units=ptb.get_lat(), hopping=hopp_dict,
                     orbital_positions=ptb.get_orb(),

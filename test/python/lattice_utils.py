@@ -140,6 +140,10 @@ class test_utils(unittest.TestCase):
         epsilon_k = tbl_ptb.dispersion(kvecs)
         self.assertTrue(epsilon_k.shape == (101, 3))
 
+        # compare eigenvalues against pythTB dispersion
+        epsilon_k_ptb = ptb.solve_all(kvecs).T
+        self.assertTrue(np.allclose(epsilon_k_ptb, epsilon_k), 'eigenvalues between PythTB and TRIQS TBLattice do not match')
+
         # Obtain H_k on same path and compare eigenvalues against dispersion
         H_k = tbl_ptb.fourier(kvecs)
         evals = np.linalg.eigvalsh(H_k)
