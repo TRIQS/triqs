@@ -38,6 +38,19 @@ namespace triqs {
           TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(overlap_mat_vec_[i]) << " instead of " << n_orbitals();
         if (second_dim(overlap_mat_vec_[i]) != n_orbitals())
           TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(overlap_mat_vec_[i]) << " instead of " << n_orbitals();
+
+        // check hermiticity of hoppings: Hij(+R)= Hji(-R)* by looping of all displacements again
+        bool found = false;
+        for (int j = 0; j < displ_vec_.size(); ++j) {
+          if (displ_vec_[i] == -displ_vec_[j]) {
+            found = true;
+            if (max_element(abs(overlap_mat_vec_[i] - dagger(overlap_mat_vec_[j]))) > 1.e-12)
+              TRIQS_RUNTIME_ERROR << "hopping matrix of displacement " << displ_vec_[i] << overlap_mat_vec_[i]
+                                  << "\nis not hermitian conjugate of matrix for displacement " << displ_vec_[j] << overlap_mat_vec_[j] << "\n";
+            break;
+          }
+        }
+        if (not found) TRIQS_RUNTIME_ERROR << "opposite hopping vector of " << displ_vec_[i] << " cannot be found";
       }
     }
 
