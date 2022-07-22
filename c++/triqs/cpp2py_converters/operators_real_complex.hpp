@@ -28,11 +28,13 @@ namespace cpp2py {
     static PyObject *c2py(c_t const &x) { return conv_t::c2py(x); }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      bool ok = conv_t::is_convertible(ob, false);
-      // check the operator is real
-      auto op = conv_t::py2c(ob);
-      for (auto const &c_m : op) ok = ok && c_m.coef.is_real();
-      if (ok) return true;
+      bool ok = conv_t::is_convertible(ob, false /* we set the error ourselves */);
+      if (ok) {
+        // check the operator is real
+        auto op = conv_t::py2c(ob);
+        for (auto const &c_m : op) ok = ok && c_m.coef.is_real();
+        if (ok) return true;
+      }
       if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to many_body_operator_real"); }
       return false;
     }
