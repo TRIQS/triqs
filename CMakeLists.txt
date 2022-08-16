@@ -65,10 +65,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "IntelLLVM")
 else()
   message(FATAL_ERROR "TRIQS Has to be compiled with g++ (>= 10.0), clang (>= 11.0) or IntelLLVM (>= 2021.3). ${CMAKE_CXX_COMPILER_ID} is not supported.")
 endif()
-try_compile(_CXX_OK ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS -std=c++17)
-if (NOT _CXX_OK)
- message(FATAL_ERROR "The compiler does not support C++17")
-endif()
 
 #---------------------------------------------------------------------
 # CMake Options
