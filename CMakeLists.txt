@@ -231,14 +231,7 @@ endif(BIND_FORTRAN_LOWERCASE)
 #---------------------------------------
 message( STATUS "-------- Making TRIQSConfig.cmake -------------")
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
-else()
- configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY)
- # I assume there is a basic python available
- EXECUTE_PROCESS(COMMAND python -c  "import re;open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${PROJECT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
-endif()
-
+configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
 install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
