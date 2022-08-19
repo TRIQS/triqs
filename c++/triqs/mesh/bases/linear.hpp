@@ -66,7 +66,7 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
 
-    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)) {
+    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)), del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del} {
       EXPECTS(a<=b);
     }
 
@@ -82,6 +82,9 @@ namespace triqs::mesh {
 
     /// Step of the mesh
     double delta() const { return del; }
+
+    /// Inverse of the step of the mesh
+    double delta_inv() const { return del_inv; }
 
     /// Min of the mesh
     double x_min() const { return xmin; }
@@ -172,6 +175,7 @@ namespace triqs::mesh {
       ar &xmin;
       ar &xmax;
       ar &del;
+      ar &del_inv;
       ar &L;
     }
 
@@ -183,7 +187,7 @@ namespace triqs::mesh {
     private:
     domain_t _dom;
     long L;
-    double xmin, xmax, del;
+    double xmin, xmax, del, del_inv;
   };
 
   // ---------------------------------------------------------------------------

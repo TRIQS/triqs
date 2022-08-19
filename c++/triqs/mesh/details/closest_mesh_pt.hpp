@@ -29,11 +29,11 @@ namespace triqs::mesh {
   // ------------------------------------------------------
 
   template <typename Target> struct closest_point<imtime, Target> {
-    // index_t is int
     template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-      double x = double(p.value) + 0.5 * mesh.delta();
-      int n    = std::floor(x / mesh.delta());
-      return n;
+      EXPECTS(mesh.x_min() < mesh.x_max());
+      EXPECTS(mesh.x_min() <= p.value);
+      EXPECTS(p.value <= mesh.x_max());
+      return static_cast<int>(p.value * mesh.delta_inv() + 0.5);
     }
   };
 
@@ -42,11 +42,11 @@ namespace triqs::mesh {
   // ------------------------------------------------------
 
   struct closest_point_linear_mesh {
-    // index_t is int
     template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-      double x = double(p.value) - mesh.x_min() + 0.5 * mesh.delta();
-      int n    = std::floor(x / mesh.delta());
-      return n;
+      EXPECTS(mesh.x_min() < mesh.x_max());
+      EXPECTS(mesh.x_min() <= p.value);
+      EXPECTS(p.value <= mesh.x_max());
+      return static_cast<int>((p.value - mesh.x_min()) * mesh.delta_inv() + 0.5);
     }
   };
 
