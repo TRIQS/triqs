@@ -41,6 +41,8 @@ def check_for_mpi():
     # for MPICH and intel based MPI:
     elif os.environ.get('PMI_RANK'):
         is_mpi = True
+    elif os.environ.get('CRAY_MPICH_VERSION'):
+        is_mpi = True
     else:
         print('Warning: could not identify MPI environment!')
 
