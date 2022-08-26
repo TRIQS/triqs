@@ -68,6 +68,17 @@ external_dependency(GTest
   EXCLUDE_FROM_ALL
 )
 
+# -- google-bench --
+if(Build_Benchs)
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
+  external_dependency(google-bench
+    GIT_REPO https://github.com/google/benchmark
+    GIT_TAG v1.5.2
+    BUILD_ALWAYS
+    EXCLUDE_FROM_ALL
+  )
+endif()
+
 # -- itertools --
 external_dependency(itertools
   GIT_REPO https://github.com/TRIQS/itertools

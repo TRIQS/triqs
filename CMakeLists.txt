@@ -85,6 +85,9 @@ if(Build_Documentation AND NOT PythonSupport)
   message(FATAL_ERROR "Build_Documentation=ON requires PythonSupport to be enabled")
 endif()
 
+# Benchmarks
+option(Build_Benchs "Build Benchmarks" OFF)
+
 # Testing
 option(Build_Tests "Build tests" ON)
 if(Build_Tests)
@@ -199,6 +202,14 @@ endif()
 if(Build_Tests)
  message(STATUS "-------- Preparing tests  -------------")
  add_subdirectory(test)
+endif()
+
+#------------------------
+# build benchmarks
+#------------------------
+
+if(Build_Benchs AND NOT ASAN AND NOT UBSAN)
+  add_subdirectory(benchmarks)
 endif()
 
 #------------------------
