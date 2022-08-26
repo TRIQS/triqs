@@ -32,25 +32,13 @@ namespace triqs::mesh {
    * 
    * Throws if x is not in the window
    * */
-  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
-    double a = (x - x_min) / delta_x;
-    long i   = std::floor(a);
-    bool in  = (i >= 0) && (i < imax);
-    double w = a - i;
-    // We include both x_min and x_max and account
-    // for a small rounding error margin of 1e-8 for w
-    if (i == imax) {
-      --i;
-      in = (std::abs(w) < 1.e-8);
-      w  = 1.0;
-    }
-    if (i == -1) {
-      i  = 0;
-      in = (std::abs(1 - w) < 1.e-8);
-      w  = 0.0;
-    }
-    if (!in) TRIQS_RUNTIME_ERROR << "out of window x= " << x << " xmin = " << x_min << " xmax = " << x_min + imax * delta_x;
-    return {std::pair<long, double>{i, 1 - w}, std::pair<long, double>{i + 1, w}};
+  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, double delta_x_inv, long imax) noexcept {
+    EXPECTS(x_min <= x and x <= x_min + imax * delta_x);
+    x = std::max(x, x_min);
+    double a = (x - x_min) * delta_x_inv;
+    long i   = std::min(static_cast<long>(a), imax - 1);
+    double w = std::min(a - i, 1.0);
+    return {std::make_pair(i, 1 - w), std::make_pair(i + 1, w)};
   }
   //-----------------------------------------------------------------------
 
@@ -139,7 +127,7 @@ namespace triqs::mesh {
     // -------------- Evaluation of a function on the grid --------------------------
 
     std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
-      return interpolate_on_segment(x, x_min(), delta(), long(size()) - 1);
+      return interpolate_on_segment(x, x_min(), delta(), delta_inv(), long(size()) - 1);
     }
 
     // -------------- HDF5  --------------------------
