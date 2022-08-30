@@ -128,7 +128,7 @@ namespace triqs::mc_tools {
 
     int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nWarming up ..." << std::endl;
-      return run(n_warmup_cycles, length_cycle, stop_callback, false, c);
+      return run(n_warmup_cycles, length_cycle, stop_callback, false, false, c);
     }
 
     /**
@@ -179,7 +179,7 @@ namespace triqs::mc_tools {
     int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
                    mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nAccumulating ..." << std::endl;
-      return run(n_accumulation_cycles, length_cycle, stop_callback, true, c);
+      return run(n_accumulation_cycles, length_cycle, stop_callback, true, true, c);
     }
 
     int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
@@ -223,6 +223,7 @@ namespace triqs::mc_tools {
      *                         to and the computation stops when it returns true.
      *                         Typically used to set up the time limit, cf doc.
      * @param do_measure       Whether or not to accumulate for each measurement
+     * @param is_warmup        Whether or not the current run is a warmup.
      * @param c                The mpi communicator [optional]. If not provided use the default-constructed one.
      *
      * @return
@@ -233,7 +234,7 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure,
+    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, bool is_warmup,
             mpi::communicator c = mpi::communicator{}) {
 
       AllMoves.clear_statistics();
@@ -303,7 +304,7 @@ namespace triqs::mc_tools {
 
       current_cycle_number += NC;
       timer.stop();
-      if (do_measure) {
+      if (!is_warmup) {
         timer_accumulation = timer;
       } else {
         timer_warmup = timer;
