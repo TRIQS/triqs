@@ -86,10 +86,12 @@ class SumkDiscrete:
             - X is anything such that X[BlockName] can be added/subtracted to a GFBloc for BlockName in selected_blocks.
               e.g. X can be a BlockGf(with at least the selected_blocks), or a dictionnary Blockname -> array
               if the array has the same dimension as the GF blocks (for example to add a static Sigma).
+              if Sigma is a BlockGf, each block has to have the same dimension as self.hopping or
+              epsilon_hat(self.hopping[i]).
 
         - field: Any k independant object to be added to the GF
 
-        - epsilon_hat: a function of eps_k returning a matrix, the dimensions of Sigma
+        - epsilon_hat: a function of eps_k returning a matrix, the dimensions of each block in Sigma
 
         - selected_blocks: The calculation is done with the SAME t(k) for all blocks. If this list is not None
           only the blocks in this list are calculated.
@@ -127,9 +129,13 @@ class SumkDiscrete:
 
         # check input
         assert self.orthogonal_basis, "Local_G: must be orthogonal. non ortho cases not checked."
+        # check that each block has the same size
         assert len(list(set([g.target_shape[0] for i,g in G]))) == 1
         assert self.bz_weights.shape[0] == self.n_kpts(), "Internal Error"
         no = list(set([g.target_shape[0] for i,g in G]))[0]
+        # check that the target shape of each block matches self.hopping
+        eps_hat = epsilon_hat(self.hopping[0]) if epsilon_hat else self.hopping[0]
+        assert no == eps_hat.shape[0], (f"Target shape of each block in Sigma: {no} does not to match orbital dimension of the hopping matrix: {eps_hat.shape[0]}.")
 
         # Initialize
         G.zero()
