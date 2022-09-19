@@ -86,7 +86,7 @@ class SumkDiscrete:
             - X is anything such that X[BlockName] can be added/subtracted to a GFBloc for BlockName in selected_blocks.
               e.g. X can be a BlockGf(with at least the selected_blocks), or a dictionnary Blockname -> array
               if the array has the same dimension as the GF blocks (for example to add a static Sigma).
-              if Sigma is a BlockGf, each block has to have the same dimension as self.hopping or
+              Each block of X has to have the same shape as self.hopping or
               epsilon_hat(self.hopping[i]).
 
         - field: Any k independant object to be added to the GF
