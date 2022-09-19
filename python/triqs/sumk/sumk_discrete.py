@@ -135,7 +135,7 @@ class SumkDiscrete:
         no = list(set([g.target_shape[0] for i,g in G]))[0]
         # check that the target shape of each block matches self.hopping
         eps_hat = epsilon_hat(self.hopping[0]) if epsilon_hat else self.hopping[0]
-        assert no == eps_hat.shape[0], (f"Target shape of each block in Sigma: {no} does not to match orbital dimension of the hopping matrix: {eps_hat.shape[0]}.")
+        assert (no,no) == eps_hat.shape, (f"Target shape of each block in Sigma: {(no,no)} does not to match orbital dimension of the hopping matrix: {eps_hat.shape}.")
 
         # Initialize
         G.zero()
