@@ -91,7 +91,7 @@ class SumkDiscrete:
 
         - field: Any k independant object to be added to the GF
 
-        - epsilon_hat: a function of eps_k returning a matrix, the dimensions of each block in Sigma
+        - epsilon_hat: a function of eps_k returning a matrix with the same matrix-dimensions as each block in Sigma
 
         - selected_blocks: The calculation is done with the SAME t(k) for all blocks. If this list is not None
           only the blocks in this list are calculated.
