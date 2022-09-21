@@ -57,10 +57,13 @@ class GfReFreq(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
+        warnings.warn("Please use Gf(mesh=MeshReFreq(..), ..) instead of GfReFreq", DeprecationWarning)
+
         def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 10000, window = None):
             if mesh is None:
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshReFreq(window[0], window[1], n_points)
+            assert isinstance(mesh, MeshReFreq), "GfReFreq requires mesh to be of type MeshReFreq"
            
             super(GfReFreq, self).__init__(
                       mesh = mesh, 

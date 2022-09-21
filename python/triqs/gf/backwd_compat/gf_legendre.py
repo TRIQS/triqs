@@ -57,11 +57,14 @@ class GfLegendre(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
+        warnings.warn("Please use Gf(mesh=MeshLegendre(..), ..) instead of GfLegendre", DeprecationWarning)
+
         def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 30, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshLegendre(beta, statistic, n_points)
+            assert isinstance(mesh, MeshLegendre), "GfLegendre requires mesh to be of type MeshLegendre"
         
             super(GfLegendre, self).__init__(
                       mesh = mesh, 

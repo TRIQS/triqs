@@ -21,13 +21,13 @@ from triqs.gf import *
 
 n_w = 1001
 w_mesh = MeshReFreq(omega_min=-10, omega_max=10, n_w = n_w)
-gw = GfReFreq(mesh=w_mesh, target_shape=(1,1))
+gw = Gf(mesh=w_mesh, target_shape=(1,1))
 gw2 = gw.copy()
 #gw << SemiCircular(2.0)
 gw << inverse(Omega - 1 + 1j * 0.001)
 
 t_mesh = make_adjoint_mesh(w_mesh)
-gt2 = GfReFreq(mesh=t_mesh, target_shape=(1,1))
+gt2 = Gf(mesh=t_mesh, target_shape=(1,1))
 
 # ======== Without tail-fitting ========
 

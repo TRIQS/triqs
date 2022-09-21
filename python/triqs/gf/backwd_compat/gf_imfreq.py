@@ -57,11 +57,14 @@ class GfImFreq(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
+        warnings.warn("Please use Gf(mesh=MeshImFreq(..), ..) instead of GfImFreq", DeprecationWarning)
+
         def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 1025, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshImFreq(beta, statistic, n_points)
+            assert isinstance(mesh, MeshImFreq), "GfImFreq requires mesh to be of type MeshImFreq"
         
             super(GfImFreq, self).__init__(
                       mesh = mesh, 

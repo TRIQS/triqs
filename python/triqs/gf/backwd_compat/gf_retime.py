@@ -57,10 +57,13 @@ class GfReTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
+        warnings.warn("Please use Gf(mesh=MeshReTime(..), ..) instead of GfReTime", DeprecationWarning)
+
         def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 10000, window = None):
             if mesh is None:
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshReTime(window[0], window[1], n_points)
+            assert isinstance(mesh, MeshReTime), "GfReTime requires mesh to be of type MeshReTime"
            
             super(GfReTime, self).__init__(
                       mesh = mesh, 
