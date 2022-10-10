@@ -307,9 +307,11 @@ def spherical_to_cubic(l, convention=''):
             T[4,1] = 1.0/sqrt(2);   T[4,3] = 1.0/sqrt(2)
         elif convention == 'wannier90':
             cubic_names = ("z^2", "xz", "yz", "x^2-y^2", "xy")
-            T[0,4] = 1.0; T[1,2] = 1.0;
-            T[2,0] = 1.0; T[3,1] = 1.0;
-            T[4,3] = 1.0;
+            T[0,2] = 1.0;           T[1,1] = 1.0/sqrt(2);
+            T[1,3] =-1.0/sqrt(2);   T[2,1] = 1j/sqrt(2);
+            T[2,3] = 1j/sqrt(2);    T[3,0] = 1.0/sqrt(2);
+            T[3,4] = 1.0/sqrt(2);   T[4,0] = 1j/sqrt(2);    
+            T[4,4] = -1j/sqrt(2);
         else:
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
             T[0,0] = 1j/sqrt(2);    T[0,4] = -1j/sqrt(2)
