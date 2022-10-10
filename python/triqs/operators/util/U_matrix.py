@@ -181,7 +181,9 @@ def t2g_submatrix(U, convention=''):
                  Takes the values
 
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"). 
+
 
     Returns
     -------
@@ -191,6 +193,8 @@ def t2g_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(2,3,4)])
+    elif convention == 'wannier90':
+        return subarray(U, len(U.shape)*[(1,2,4)])
     elif convention== '':
         return subarray(U, len(U.shape)*[(0,1,3)])
     else:
@@ -209,7 +213,8 @@ def eg_submatrix(U, convention=''):
                  Takes the values
 
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"). 
 
 
     Returns
@@ -220,6 +225,8 @@ def eg_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(0,1)])
+    elif convention == 'wannier90':
+        return subarray(U, len(U.shape)*[(0,3)])
     elif convention == '':
         return subarray(U, len(U.shape)*[(2,4)])
     else:
@@ -267,6 +274,7 @@ def spherical_to_cubic(l, convention=''):
 
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
                  - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"). 
 
     Returns
     -------
@@ -275,7 +283,7 @@ def spherical_to_cubic(l, convention=''):
 
     """
 
-    if not convention in ('wien2k',''):
+    if not convention in ('wien2k','wannier90', ''):
         raise ValueError("Unknown convention: "+str(convention))
 
     size = 2*l+1
@@ -297,6 +305,11 @@ def spherical_to_cubic(l, convention=''):
             T[2,0] =-1.0/sqrt(2);   T[2,4] = 1.0/sqrt(2)
             T[3,1] = 1.0/sqrt(2);   T[3,3] =-1.0/sqrt(2)
             T[4,1] = 1.0/sqrt(2);   T[4,3] = 1.0/sqrt(2)
+        elif convention == 'wannier90':
+            cubic_names = ("z^2", "xz", "yz", "x^2-y^2", "xy")
+            T[0,4] = 1.0; T[1,2] = 1.0;
+            T[2,0] = 1.0; T[3,1] = 1.0;
+            T[4,3] = 1.0;
         else:
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
             T[0,0] = 1j/sqrt(2);    T[0,4] = -1j/sqrt(2)
