@@ -230,8 +230,10 @@ def eg_submatrix(U, convention='triqs'):
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(0,1)])
     elif convention == 'wannier90' or convention == 'qe':
-        return subarray(U, len(U.shape)*[(1,2,4)])
+        return subarray(U, len(U.shape)*[(0,3)])
     elif convention == 'triqs' or convention=='vasp':
+        return subarray(U, len(U.shape)*[(2,4)])
+
     else:
         raise ValueError("Unknown convention: "+str(convention))
 
