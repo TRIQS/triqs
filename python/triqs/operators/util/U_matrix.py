@@ -168,7 +168,7 @@ def U_matrix_kanamori(n_orb, U_int, J_hund):
     return U, Uprime
 
 # Get t2g or eg components
-def t2g_submatrix(U, convention=''):
+def t2g_submatrix(U, convention='triqs'):
     r"""
     Extract the t2g submatrix of the full d-manifold two- or four-index U matrix.
 
@@ -180,8 +180,12 @@ def t2g_submatrix(U, convention=''):
                  The basis convention.
                  Takes the values
 
-                 - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'triqs': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
+                 - 'vasp': same as 'triqs',
+                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"),
+                 - 'qe': same as 'wannier90'.
+
 
     Returns
     -------
@@ -191,12 +195,14 @@ def t2g_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(2,3,4)])
-    elif convention== '':
+    elif convention == 'wannier90' or convention == 'qe':
+        return subarray(U, len(U.shape)*[(1,2,4)])
+    elif convention == 'triqs' or convention=='vasp':
         return subarray(U, len(U.shape)*[(0,1,3)])
     else:
         raise ValueError("Unknown convention: "+str(convention))
 
-def eg_submatrix(U, convention=''):
+def eg_submatrix(U, convention='triqs'):
     r"""
     Extract the eg submatrix of the full d-manifold two- or four-index U matrix.
 
@@ -208,8 +214,11 @@ def eg_submatrix(U, convention=''):
                  The basis convention.
                  Takes the values
 
-                 - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'triqs': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
+                 - 'vasp': same as 'triqs',
+                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"),
+                 - 'qe': same as 'wannier90'.
 
 
     Returns
@@ -220,8 +229,11 @@ def eg_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(0,1)])
-    elif convention == '':
+    elif convention == 'wannier90' or convention == 'qe':
+        return subarray(U, len(U.shape)*[(0,3)])
+    elif convention == 'triqs' or convention=='vasp':
         return subarray(U, len(U.shape)*[(2,4)])
+
     else:
         raise ValueError("Unknown convention: "+str(convention))
 
@@ -253,7 +265,7 @@ def transform_U_matrix(U_matrix, T):
 
 # Rotation matrices: complex harmonics to cubic harmonics
 # Complex harmonics basis: ..., Y_{-2}, Y_{-1}, Y_{0}, Y_{1}, Y_{2}, ...
-def spherical_to_cubic(l, convention=''):
+def spherical_to_cubic(l, convention='triqs'):
     r"""
     Get the spherical harmonics to cubic harmonics transformation matrix.
 
@@ -265,8 +277,11 @@ def spherical_to_cubic(l, convention=''):
                  The basis convention.
                  Takes the values
 
-                 - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
+                 - 'triqs': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
+                 - 'vasp': same as 'triqs',
+                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"),
+                 - 'qe': same as 'wannier90'.
 
     Returns
     -------
@@ -275,13 +290,13 @@ def spherical_to_cubic(l, convention=''):
 
     """
 
-    if not convention in ('wien2k',''):
+    if not convention in ('wien2k','wannier90', 'triqs', 'vasp', 'qe'):
         raise ValueError("Unknown convention: "+str(convention))
 
     size = 2*l+1
     T = np.zeros((size,size),dtype=complex)
-    if convention == 'wien2k' and l != 2:
-        raise ValueError("spherical_to_cubic: wien2k convention implemented only for l=2")
+    if convention in ['wien2k', 'wannier90', 'qe'] and l != 2:
+        raise ValueError("spherical_to_cubic: [wien2k, wannier90, qe] convention implemented only for l=2")
     if l == 0:
         cubic_names = ("s")
     elif l == 1:
@@ -291,13 +306,22 @@ def spherical_to_cubic(l, convention=''):
         T[2,1] = 1.0
     elif l == 2:
         if convention == 'wien2k':
+            # projectors created in Wien2k are defined in the complex spherical
+            # basis (see dmftproj manual Sec. 1.3.3).
             cubic_names = ("z^2","x^2-y^2","xy","yz","xz")
             T[0,2] = 1.0
             T[1,0] = 1.0/sqrt(2);   T[1,4] = 1.0/sqrt(2)
             T[2,0] =-1.0/sqrt(2);   T[2,4] = 1.0/sqrt(2)
             T[3,1] = 1.0/sqrt(2);   T[3,3] =-1.0/sqrt(2)
             T[4,1] = 1.0/sqrt(2);   T[4,3] = 1.0/sqrt(2)
-        else:
+        elif convention == 'wannier90' or convention == 'qe':
+            cubic_names = ("z^2", "xz", "yz", "x^2-y^2", "xy")
+            T[0,2] = 1.0;           T[1,1] = 1.0/sqrt(2);
+            T[1,3] =-1.0/sqrt(2);   T[2,1] = 1j/sqrt(2);
+            T[2,3] = 1j/sqrt(2);    T[3,0] = 1.0/sqrt(2);
+            T[3,4] = 1.0/sqrt(2);   T[4,0] = 1j/sqrt(2);    
+            T[4,4] = -1j/sqrt(2);
+        elif convention == 'triqs' or convention == 'vasp':
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
             T[0,0] = 1j/sqrt(2);    T[0,4] = -1j/sqrt(2)
             T[1,1] = 1j/sqrt(2);    T[1,3] = 1j/sqrt(2)
