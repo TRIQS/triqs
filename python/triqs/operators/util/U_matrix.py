@@ -306,6 +306,8 @@ def spherical_to_cubic(l, convention='triqs'):
         T[2,1] = 1.0
     elif l == 2:
         if convention == 'wien2k':
+            # projectors created in Wien2k are defined in the complex spherical
+            # basis (see dmftproj manual Sec. 1.3.3).
             cubic_names = ("z^2","x^2-y^2","xy","yz","xz")
             T[0,2] = 1.0
             T[1,0] = 1.0/sqrt(2);   T[1,4] = 1.0/sqrt(2)
