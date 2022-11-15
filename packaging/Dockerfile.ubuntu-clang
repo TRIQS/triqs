@@ -1,6 +1,6 @@
 FROM ubuntu:jammy
 ARG RELEASE=jammy
-ARG LLVM=13
+ARG LLVM=15
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \

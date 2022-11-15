@@ -1,6 +1,6 @@
-FROM ubuntu:focal
-ARG RELEASE=focal
-ARG LLVM=13
+FROM ubuntu:jammy
+ARG RELEASE=jammy
+ARG LLVM=15
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
       wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.8 \
+ENV PYTHON_VERSION=3.10 \
   CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++" \
   ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer \
   ASAN_OPTIONS=symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0 \
