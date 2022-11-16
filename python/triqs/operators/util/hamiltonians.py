@@ -129,6 +129,7 @@ def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_s
 
     """
     if isinstance(n_orb, list):
+        import warnings
         warnings.warn("h_int_kanamori takes as a second argument the number of orbitals, not a list of orbital names")
         n_orb = len(n_orb)
 
