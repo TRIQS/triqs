@@ -558,9 +558,7 @@ class Gf(metaclass=AddMethod):
         if isinstance(y, np.ndarray):
             assert len(y.shape) == 2, "Multiplication only supported for matrices"
             assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
-            # FIXME Use moveaxis with latest numpy versions
-            # c.data[:] = np.moveaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -2)
-            c.data[:] = np.rollaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -1)
+            c.data[:] = np.moveaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -2)
         elif isinstance(y, numbers.Number):
             c *= y
         else:
