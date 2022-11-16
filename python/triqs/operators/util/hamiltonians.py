@@ -26,7 +26,7 @@ from functools import reduce
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
-def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False):
+def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False):
     r"""
     Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
 
@@ -35,9 +35,9 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     U_matrix : 4D matrix or array
                The fully rotationally-invariant 4-index interaction :math:`U_{ijkl}`.
     off_diag : boolean
@@ -60,6 +60,10 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
         The Hamiltonian.
 
     """
+    if isinstance(n_orb, list):
+        import warnings
+        warnings.warn("h_int_slater takes as a second argument the number of orbitals, not a list of orbital names")
+        n_orb = len(n_orb)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -68,8 +72,8 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
     H = Operator()
     mkind = get_mkind(off_diag,map_operator_structure)
     for s1, s2 in product(spin_names,spin_names):
-        for a1, a2, a3, a4 in product(orb_names,orb_names,orb_names,orb_names):
-            U_val = U_matrix[orb_names.index(a1),orb_names.index(a2),orb_names.index(a3),orb_names.index(a4)]
+        for a1, a2, a3, a4 in product(range(n_orb), range(n_orb), range(n_orb), range(n_orb)):
+            U_val = U_matrix[a1,a2,a3,a4]
             if abs(U_val.imag) > 1e-10 and not complex:
                 raise RuntimeError("Matrix elements of U are not real. Are you using a cubic basis?")
 
@@ -86,7 +90,7 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
 
     return H
 
-def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
     r"""
     Create a Kanamori Hamiltonian using the density-density, spin-fip and pair-hopping interactions.
 
@@ -98,25 +102,25 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     U : 2D matrix or array
-        :math:`U_{ij}^{\sigma \sigma} (same spins)`
+               :math:`U_{ij}^{\sigma \sigma} (same spins)`
     Uprime : 2D matrix or array
-             :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
+               :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
     J_hund : scalar
-             :math:`J`
+               :math:`J`
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
     map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+               Mapping of names of GF blocks names from one convention to another,
+               e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
+               If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
-             Name of the file to which the Hamiltonian should be written.
+               Name of the file to which the Hamiltonian should be written.
 
     Returns
     -------
@@ -124,6 +128,9 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
         The Hamiltonian.
 
     """
+    if isinstance(n_orb, list):
+        warnings.warn("h_int_kanamori takes as a second argument the number of orbitals, not a list of orbital names")
+        n_orb = len(n_orb)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -135,11 +142,11 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     # density terms:
     if H_dump: H_dump_file.write("Density-density terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
-        for a1, a2 in product(orb_names,orb_names):
+        for a1, a2 in product(range(n_orb), range(n_orb)):
             if (s1==s2):
-                U_val = U[orb_names.index(a1),orb_names.index(a2)]
+                U_val = U[a1,a2]
             else:
-                U_val = Uprime[orb_names.index(a1),orb_names.index(a2)]
+                U_val = Uprime[a1,a2]
 
             H_term = 0.5 * U_val * n(*mkind(s1,a1)) * n(*mkind(s2,a2))
             H += H_term
@@ -155,7 +162,7 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     for s1, s2 in product(spin_names,spin_names):
         if (s1==s2):
             continue
-        for a1, a2 in product(orb_names,orb_names):
+        for a1, a2 in product(range(n_orb), range(n_orb)):
             if (a1==a2):
                 continue
             H_term = -0.5 * J_hund * c_dag(*mkind(s1,a1)) * c(*mkind(s2,a1)) * c_dag(*mkind(s2,a2)) * c(*mkind(s1,a2))
@@ -172,7 +179,7 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     for s1, s2 in product(spin_names,spin_names):
         if (s1==s2):
             continue
-        for a1, a2 in product(orb_names,orb_names):
+        for a1, a2 in product(range(n_orb), range(n_orb)):
             if (a1==a2):
                 continue
             H_term = 0.5 * J_hund * c_dag(*mkind(s1,a1)) * c_dag(*mkind(s2,a1)) * c(*mkind(s2,a2)) * c(*mkind(s1,a2))
@@ -186,7 +193,7 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
     return H
 
-def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
     r"""
     Create a density-density Hamiltonian.
 
@@ -196,23 +203,23 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     U : 2D matrix or array
-        :math:`U_{ij}^{\sigma \sigma} (same spins)`
+               :math:`U_{ij}^{\sigma \sigma} (same spins)`
     Uprime : 2D matrix or array
-             :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
+               :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
     map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+               Mapping of names of GF blocks names from one convention to another,
+               e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
+               If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
-             Name of the file to which the Hamiltonian should be written.
+               Name of the file to which the Hamiltonian should be written.
 
     Returns
     -------
@@ -220,6 +227,10 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
         The Hamiltonian.
 
     """
+    if isinstance(n_orb, list):
+        import warnings
+        warnings.warn("h_int_density takes as a second argument the number of orbitals, not a list of orbital names")
+        n_orb = len(n_orb)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -229,11 +240,11 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
     mkind = get_mkind(off_diag,map_operator_structure)
     if H_dump: H_dump_file.write("Density-density terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
-        for a1, a2 in product(orb_names,orb_names):
+        for a1, a2 in product(range(n_orb),range(n_orb)):
             if (s1==s2):
-                U_val = U[orb_names.index(a1),orb_names.index(a2)]
+                U_val = U[a1,a2]
             else:
-                U_val = Uprime[orb_names.index(a1),orb_names.index(a2)]
+                U_val = Uprime[a1,a2]
 
             H_term = 0.5 * U_val * n(*mkind(s1,a1)) * n(*mkind(s2,a2))
             H += H_term
