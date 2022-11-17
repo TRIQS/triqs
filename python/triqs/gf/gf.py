@@ -104,6 +104,7 @@ class Gf(metaclass=AddMethod):
     """
     
     _hdf5_data_scheme_ = 'Gf'
+    __array_priority__ = 10000 # Makes sure the operations of this class are applied as priority
 
     def __init__(self, **kw): # enforce keyword only policy 
         
@@ -493,11 +494,11 @@ class Gf(metaclass=AddMethod):
                     self.data[:] *= arg.data[..., None, None]
                 else:
                     raise NotImplementedError("argument of in place multiplication must be rank 0 or 2")
-            
+
             elif self.target_rank == 0:
                 assert arg.target_rank == 0, "argument of in place multiplication must have rank 0 if self does"
                 self.data[:] = self.data * arg.data
-            
+
             else:
                 raise NotImplementedError("Green's functions must be of rank 0 or 2 for multiplication")
 
