@@ -104,6 +104,7 @@ class Gf(metaclass=AddMethod):
     """
     
     _hdf5_data_scheme_ = 'Gf'
+    __array_priority__ = 10000 # Makes sure the operations of this class are applied as priority
 
     def __init__(self, **kw): # enforce keyword only policy 
         
@@ -475,9 +476,9 @@ class Gf(metaclass=AddMethod):
         c += y
         return c
 
-    # ---------- Multiplication
+    # ---------- Matrix Multiplication (@)
 
-    def __imul__(self,arg):
+    def __imatmul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
         # If arg is a Gf
         if isinstance(arg, Gf):
@@ -493,11 +494,11 @@ class Gf(metaclass=AddMethod):
                     self.data[:] *= arg.data[..., None, None]
                 else:
                     raise NotImplementedError("argument of in place multiplication must be rank 0 or 2")
-            
+
             elif self.target_rank == 0:
                 assert arg.target_rank == 0, "argument of in place multiplication must have rank 0 if self does"
                 self.data[:] = self.data * arg.data
-            
+
             else:
                 raise NotImplementedError("Green's functions must be of rank 0 or 2 for multiplication")
 
@@ -526,7 +527,7 @@ class Gf(metaclass=AddMethod):
             assert abs(l.beta-r.beta) < 1.e-15 and len(l)== len(r), "Can not multiply two Gf with different mesh"
             return meshes.MeshImTime(l.beta, 'Boson' if l.statistic == r.statistic else 'Fermion', len(l)) 
 
-    def __mul__(self,y):
+    def __matmul__(self,y):
         if isinstance(y, Gf):
             # make a copy, but special treatment of the mesh in the Imtime case.
             result_mesh = Gf._combine_mesh_mul(self._mesh, y.mesh)
@@ -553,7 +554,7 @@ class Gf(metaclass=AddMethod):
             assert False, "Invalid operand type for Gf multiplication"
         return c
 
-    def __rmul__(self,y):
+    def __rmatmul__(self,y):
         c = self.copy()
         if isinstance(y, np.ndarray):
             assert len(y.shape) == 2, "Multiplication only supported for matrices"
@@ -564,6 +565,17 @@ class Gf(metaclass=AddMethod):
         else:
             assert False, "Invalid operand type for Gf multiplication"
         return c
+
+    # ---------- Multiplication (with *, for now it's equivalent to the matrix multiplication)
+    def __imul__(self,arg):
+        return self.__imatmul__(arg)
+
+    def __mul__(self,y):
+        return self.__matmul__(y)
+
+    def __rmul__(self,y):
+        return self.__rmatmul__(y)
+
     # ---------- Division
     def __itruediv__(self,arg):
         self._data[:] /= arg
