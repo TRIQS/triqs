@@ -26,7 +26,7 @@ from functools import reduce
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
-def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False):
+def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False,orb_names=None):
     r"""
     Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
 
@@ -60,6 +60,9 @@ def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=
         The Hamiltonian.
 
     """
+    if orb_names is not None:
+        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
+
     if isinstance(n_orb, list):
         import warnings
         warnings.warn("h_int_slater takes as a second argument the number of orbitals, not a list of orbital names")
@@ -90,7 +93,7 @@ def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=
 
     return H
 
-def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None,orb_names=None):
     r"""
     Create a Kanamori Hamiltonian using the density-density, spin-fip and pair-hopping interactions.
 
@@ -128,6 +131,9 @@ def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_s
         The Hamiltonian.
 
     """
+    if orb_names is not None:
+        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
+
     if isinstance(n_orb, list):
         import warnings
         warnings.warn("h_int_kanamori takes as a second argument the number of orbitals, not a list of orbital names")
@@ -194,7 +200,7 @@ def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_s
 
     return H
 
-def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None,orb_names=None):
     r"""
     Create a density-density Hamiltonian.
 
@@ -228,6 +234,9 @@ def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure
         The Hamiltonian.
 
     """
+    if orb_names is not None:
+        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
+
     if isinstance(n_orb, list):
         import warnings
         warnings.warn("h_int_density takes as a second argument the number of orbitals, not a list of orbital names")
