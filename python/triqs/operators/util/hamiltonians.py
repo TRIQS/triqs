@@ -24,6 +24,15 @@ from .op_struct import *
 from itertools import product
 from functools import reduce
 
+# Helper function for backward compat and improved error messages
+def check_backward_compat(fname):
+    if orb_names is not None:
+        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
+    if isinstance(n_orb, list):
+        import warnings
+        warnings.warn("{} takes as a second argument the number of orbitals, not a list of orbital names".format(fname))
+        n_orb = len(n_orb)
+
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
 def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False,orb_names=None):
@@ -60,13 +69,7 @@ def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=
         The Hamiltonian.
 
     """
-    if orb_names is not None:
-        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
-
-    if isinstance(n_orb, list):
-        import warnings
-        warnings.warn("h_int_slater takes as a second argument the number of orbitals, not a list of orbital names")
-        n_orb = len(n_orb)
+    check_backward_compat("h_int_slater")
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -131,13 +134,7 @@ def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_s
         The Hamiltonian.
 
     """
-    if orb_names is not None:
-        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
-
-    if isinstance(n_orb, list):
-        import warnings
-        warnings.warn("h_int_kanamori takes as a second argument the number of orbitals, not a list of orbital names")
-        n_orb = len(n_orb)
+    check_backward_compat("h_int_kanamori")
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -234,13 +231,7 @@ def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure
         The Hamiltonian.
 
     """
-    if orb_names is not None:
-        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
-
-    if isinstance(n_orb, list):
-        import warnings
-        warnings.warn("h_int_density takes as a second argument the number of orbitals, not a list of orbital names")
-        n_orb = len(n_orb)
+    check_backward_compat("h_int_density")
 
     if H_dump:
         H_dump_file = open(H_dump,'w')

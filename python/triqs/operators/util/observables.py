@@ -30,7 +30,16 @@ pauli_matrix = {'x' : np.array([[0,1],[1,0]]),
                 '+' : np.array([[0,2],[0,0]]),
                 '-' : np.array([[0,0],[2,0]])}
 
-def N_op(spin_names, orb_names, off_diag = None, map_operator_structure = None):
+# Helper function for backward compat and improved error messages
+def check_backward_compat(fname):
+    if orb_names is not None:
+        raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
+    if isinstance(n_orb, list):
+        import warnings
+        warnings.warn("Positional argument n_orb of function {} should provide the number of orbitals, not a list".format(fname))
+        n_orb = len(n_orb)
+
+def N_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
     r"""
     Create an operator of the total number of particles.
 
@@ -39,9 +48,9 @@ def N_op(spin_names, orb_names, off_diag = None, map_operator_structure = None):
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -57,12 +66,13 @@ def N_op(spin_names, orb_names, off_diag = None, map_operator_structure = None):
         The total number of particles.
 
     """
+    check_backward_compat("N_op")
     mkind = get_mkind(off_diag,map_operator_structure)
     N = Operator()
-    for sn, on in product(spin_names,orb_names): N += n(*mkind(sn,on))
+    for sn, o in product(spin_names,range(n_orb)): N += n(*mkind(sn,o))
     return N
 
-def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structure = None):
+def S_op(component, spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
     r"""
     Create a component of the spin vector operator.
 
@@ -73,11 +83,11 @@ def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     Parameters
     ----------
     component : string
-                Component to be created, one of 'x', 'y', 'z', '+', or '-'.
+               Component to be created, one of 'x', 'y', 'z', '+', or '-'.
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -93,17 +103,18 @@ def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
         The component of the spin vector operator.
 
     """
+    check_backward_compat("S_op")
     mkind  = get_mkind(off_diag,map_operator_structure)
     pm = pauli_matrix[component]
 
     S = Operator()
     spin_range = list(range(len(spin_names)))
     for n1, n2 in product(spin_range,spin_range):
-        for on in orb_names:
-            S += 0.5 * c_dag(*mkind(spin_names[n1],on)) * pm[n1,n2] * c(*mkind(spin_names[n2],on))
+        for o in range(n_orb):
+            S += 0.5 * c_dag(*mkind(spin_names[n1],o)) * pm[n1,n2] * c(*mkind(spin_names[n2],o))
     return S
 
-def S2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None):
+def S2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
     r"""
     Create the square of the total spin operator.
 
@@ -112,9 +123,9 @@ def S2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None)
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -130,10 +141,11 @@ def S2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None)
         The square of the total spin operator.
 
     """
-    Sz, Sp, Sm = [S_op(k,spin_names,orb_names,off_diag,map_operator_structure) for k in ('z','+','-')]
+    check_backward_compat("S2_op")
+    Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
     return Sz*Sz + 0.5*(Sp*Sm + Sm*Sp)
 
-def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structure = None, basis='spherical', T=None):
+def L_op(component, spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
     r"""
     Create a component of the orbital momentum vector operator.
 
@@ -147,11 +159,11 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     Parameters
     ----------
     component : string
-                Component to be created, one of 'x', 'y', 'z', '+', or '-'.
+               Component to be created, one of 'x', 'y', 'z', '+', or '-'.
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -165,7 +177,7 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
             Takes the values
 
             - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),
+            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
             - 'other': other basis type as given by the transformation matrix T.
 
     T : real/complex numpy array, optional
@@ -178,7 +190,8 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
         The component of the orbital momentum vector operator.
 
     """
-    l = (len(orb_names)-1)/2.0
+    check_backward_compat("L_op")
+    l = (n_orb-1)/2.0
     L_melem_dict = {'z' : lambda m,mp: m if np.isclose(m,mp) else 0,
                     '+' : lambda m,mp: np.sqrt(l*(l+1)-mp*(mp+1)) if np.isclose(m,mp+1) else 0,
                     '-' : lambda m,mp: np.sqrt(l*(l+1)-mp*(mp-1)) if np.isclose(m,mp-1) else 0,
@@ -200,10 +213,10 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     L = Operator()
     for sn in spin_names:
         for o1, o2 in product(orb_range,orb_range):
-            L += c_dag(*mkind(sn,orb_names[o1])) * L_matrix[o1,o2] * c(*mkind(sn,orb_names[o2]))
+            L += c_dag(*mkind(sn,o1)) * L_matrix[o1,o2] * c(*mkind(sn,o2))
     return L
 
-def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None, basis='spherical', T=None):
+def L2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
     r"""
     Create the square of the orbital momentum operator.
 
@@ -212,9 +225,9 @@ def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -228,7 +241,7 @@ def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
             Takes the values
 
             - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),
+            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
             - 'other': other basis type as given by the transformation matrix T.
 
     T : real/complex numpy array, optional
@@ -240,10 +253,11 @@ def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     L2 : Operator
         The square of the orbital momentum operator.
     """
-    Lz, Lp, Lm = [L_op(k,spin_names,orb_names,off_diag, map_operator_structure, basis, T) for k in ('z','+','-')]
+    check_backward_compat("L2_op")
+    Lz, Lp, Lm = [L_op(k,spin_names,n_orb,off_diag, map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Lz + 0.5*(Lp*Lm + Lm*Lp)
 
-def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None, basis='spherical', T=None):
+def LS_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
     r"""
     Create a spin-orbital coupling operator.
 
@@ -252,9 +266,9 @@ def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     Parameters
     ----------
     spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int
-                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+               Names of the spins, e.g. ['up','down'].
+    n_orb : int
+               Number of orbitals.
     off_diag : boolean
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
@@ -268,7 +282,7 @@ def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
             Takes the values
 
             - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),
+            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
             - 'other': other basis type as given by the transformation matrix T.
 
     T : real/complex numpy array, optional
@@ -280,6 +294,7 @@ def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     LS : Operator
         The spin-orbital coupling operator.
     """
-    Sz, Sp, Sm = [S_op(k,spin_names,orb_names,off_diag,map_operator_structure) for k in ('z','+','-')]
-    Lz, Lp, Lm = [L_op(k,spin_names,orb_names,off_diag,map_operator_structure, basis, T) for k in ('z','+','-')]
+    check_backward_compat("LS_op")
+    Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
+    Lz, Lp, Lm = [L_op(k,spin_names,n_orb,off_diag,map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Sz + 0.5*(Lp*Sm + Lm*Sp)
