@@ -25,13 +25,14 @@ from itertools import product
 from functools import reduce
 
 # Helper function for backward compat and improved error messages
-def check_backward_compat(fname):
+def backward_compat(fname,n_orb,orb_names):
     if orb_names is not None:
         raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
     if isinstance(n_orb, list):
         import warnings
         warnings.warn("{} takes as a second argument the number of orbitals, not a list of orbital names".format(fname))
         n_orb = len(n_orb)
+    return n_orb
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
@@ -69,7 +70,7 @@ def h_int_slater(spin_names,n_orb,U_matrix,off_diag=None,map_operator_structure=
         The Hamiltonian.
 
     """
-    check_backward_compat("h_int_slater")
+    n_orb = backward_compat("h_int_slater",n_orb,orb_names)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -134,7 +135,7 @@ def h_int_kanamori(spin_names,n_orb,U,Uprime,J_hund,off_diag=None,map_operator_s
         The Hamiltonian.
 
     """
-    check_backward_compat("h_int_kanamori")
+    n_orb = backward_compat("h_int_kanamori",n_orb,orb_names)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -231,7 +232,7 @@ def h_int_density(spin_names,n_orb,U,Uprime,off_diag=None,map_operator_structure
         The Hamiltonian.
 
     """
-    check_backward_compat("h_int_density")
+    n_orb = backward_compat("h_int_density",n_orb,orb_names)
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
