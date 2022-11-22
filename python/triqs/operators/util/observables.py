@@ -31,13 +31,14 @@ pauli_matrix = {'x' : np.array([[0,1],[1,0]]),
                 '-' : np.array([[0,0],[2,0]])}
 
 # Helper function for backward compat and improved error messages
-def check_backward_compat(fname):
+def check_backward_compat(fname,n_orb,orb_names):
     if orb_names is not None:
         raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
     if isinstance(n_orb, list):
         import warnings
         warnings.warn("Positional argument n_orb of function {} should provide the number of orbitals, not a list".format(fname))
         n_orb = len(n_orb)
+    return n_orb
 
 def N_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
     r"""
@@ -66,7 +67,7 @@ def N_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_
         The total number of particles.
 
     """
-    check_backward_compat("N_op")
+    n_orb = check_backward_compat("N_op",n_orb,orb_names)
     mkind = get_mkind(off_diag,map_operator_structure)
     N = Operator()
     for sn, o in product(spin_names,range(n_orb)): N += n(*mkind(sn,o))
@@ -103,7 +104,7 @@ def S_op(component, spin_names, n_orb, off_diag = None, map_operator_structure =
         The component of the spin vector operator.
 
     """
-    check_backward_compat("S_op")
+    n_orb = check_backward_compat("S_op",n_orb,orb_names)
     mkind  = get_mkind(off_diag,map_operator_structure)
     pm = pauli_matrix[component]
 
@@ -141,7 +142,7 @@ def S2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb
         The square of the total spin operator.
 
     """
-    check_backward_compat("S2_op")
+    n_orb = check_backward_compat("S2_op",n_orb,orb_names)
     Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
     return Sz*Sz + 0.5*(Sp*Sm + Sm*Sp)
 
@@ -190,7 +191,7 @@ def L_op(component, spin_names, n_orb, off_diag = None, map_operator_structure =
         The component of the orbital momentum vector operator.
 
     """
-    check_backward_compat("L_op")
+    n_orb = check_backward_compat("L_op",n_orb,orb_names)
     l = (n_orb-1)/2.0
     L_melem_dict = {'z' : lambda m,mp: m if np.isclose(m,mp) else 0,
                     '+' : lambda m,mp: np.sqrt(l*(l+1)-mp*(mp+1)) if np.isclose(m,mp+1) else 0,
@@ -253,7 +254,7 @@ def L2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, bas
     L2 : Operator
         The square of the orbital momentum operator.
     """
-    check_backward_compat("L2_op")
+    n_orb = check_backward_compat("L2_op",n_orb,orb_names)
     Lz, Lp, Lm = [L_op(k,spin_names,n_orb,off_diag, map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Lz + 0.5*(Lp*Lm + Lm*Lp)
 
@@ -294,7 +295,7 @@ def LS_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, bas
     LS : Operator
         The spin-orbital coupling operator.
     """
-    check_backward_compat("LS_op")
+    n_orb = check_backward_compat("LS_op",n_orb,orb_names)
     Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
     Lz, Lp, Lm = [L_op(k,spin_names,n_orb,off_diag,map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Sz + 0.5*(Lp*Sm + Lm*Sp)
