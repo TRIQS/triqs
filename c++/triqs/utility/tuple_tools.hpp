@@ -50,7 +50,7 @@ namespace std {
   // Reverse
   template <typename TU> struct _triqs_reversed_tuple { TU _x; };
 
-  template <typename... T> _triqs_reversed_tuple<std::tuple<T...>> reverse(std::tuple<T...> &&x) { return {move(x)}; }
+  template <typename... T> _triqs_reversed_tuple<std::tuple<T...>> reverse(std::tuple<T...> &&x) { return {std::move(x)}; }
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...> &> reverse(std::tuple<T...> &x) { return {x}; }
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...> const &> reverse(std::tuple<T...> const &x) { return {x}; }
 
@@ -63,7 +63,7 @@ namespace std {
   }
 
   template <int pos, typename TU> decltype(auto) get(_triqs_reversed_tuple<TU> &&t) {
-    return std::get<std::tuple_size<std::decay_t<TU>>::value - 1 - pos>(move(t)._x);
+    return std::get<std::tuple_size<std::decay_t<TU>>::value - 1 - pos>(std::move(t)._x);
   }
 
   template <typename TU> class tuple_size<_triqs_reversed_tuple<TU>> : public tuple_size<std::decay_t<TU>> {};
