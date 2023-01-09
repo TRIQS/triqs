@@ -83,7 +83,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
         # Matrix operations:
         ga2 = GfImFreq(indices = [1,2,3], beta = self.beta, n_points = 1000, name = "a1Block")
-        mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], np.complex)
+        mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], complex)
 
         ga2.from_L_G_R(mat.transpose(),ga,mat)
 
@@ -148,7 +148,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
         iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_max = 50)
 
-        Mat = np.matrix([[1, 2], [3, 4]])
+        Mat = np.array([[1, 2], [3, 4]])
 
         G = Gf(mesh=iw_mesh, target_shape=(2,2), name = "G_iw")
         G << iOmega_n * Mat
