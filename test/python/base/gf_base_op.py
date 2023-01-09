@@ -40,8 +40,8 @@ class test_Gf_Base_Op(unittest.TestCase):
 
         iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 1000)
 
-        ga = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "a1Block")
-        gb = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "b1Block")
+        ga = Gf(mesh=iw_mesh, target_shape=(2,2), name = "a1Block")
+        gb = Gf(mesh=iw_mesh, target_shape=(2,2), name = "b1Block")
 
         G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
         G << iOmega_n + 2.0
@@ -66,7 +66,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert abs(dens - 4.000001283004012) < self.precision, "oops dens =  %s"%dens
 
         # FT:
-        f = lambda g,L : GfImTime(indices = g.indices, beta = self.beta, n_points = L )
+        f = lambda g,L : Gf(indices = g.indices, mesh = MeshImTime(beta=self.beta, S="Fermion", n_tau = L))
         gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
         for (i,gtt) in gt : gtt.set_from_fourier(G[i])
 
@@ -82,8 +82,8 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert_arrays_are_close(gt['a'].data[:3], res, 1.e-3)
 
         # Matrix operations:
-        ga2 = GfImFreq(indices = [1,2,3], beta = self.beta, n_points = 1000, name = "a1Block")
-        mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], np.complex)
+        ga2 = Gf(indices = [1,2,3], mesh=MeshImFreq(beta=self.beta, S="Fermion", n_iw=1000), name = "a1Block")
+        mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], complex)
 
         ga2.from_L_G_R(mat.transpose(),ga,mat)
 
@@ -148,7 +148,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
         iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 50)
 
-        Mat = np.matrix([[1, 2], [3, 4]])
+        Mat = np.array([[1, 2], [3, 4]])
 
         G = Gf(mesh=iw_mesh, target_shape=(2,2), name = "G_iw")
         G << iOmega_n * Mat
