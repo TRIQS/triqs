@@ -144,8 +144,8 @@ namespace triqs {
         // MB = A^(-1)*B,
         // MC = C*A^(-1)
         matrix_type MB, MC, B, C, ksi;
-        void resize(long N, long k) {
-          k = k;
+        void resize(long N, long k_) {
+          k = k_;
           if (k < 2) return;
           x.resize(k);
           y.resize(k);
@@ -171,7 +171,8 @@ namespace triqs {
                ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
                ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
           } else {
-            return nda::determinant(ksi);
+            auto Rk = range(k);
+            return nda::determinant(ksi(Rk, Rk));
           };
         }
       };
@@ -316,7 +317,7 @@ namespace triqs {
           col_num.push_back(i);
           for (long j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
         }
-        range RN(0, N);
+        range RN(N);
         det             = nda::determinant(mat_inv(RN, RN));
         mat_inv(RN, RN) = inverse(mat_inv(RN, RN));
       }
@@ -505,7 +506,7 @@ namespace triqs {
           w1.B(l) = f(x_values[l], y);
           w1.C(l) = f(x, y_values[l]);
         }
-        range RN(0, N);
+        range RN(N);
         //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(RN, RN), w1.B(RN), 0.0, w1.MB(RN));
         w1.ksi  = f(x, y) - nda::blas::dot(w1.C(RN), w1.MB(RN));
@@ -539,7 +540,7 @@ namespace triqs {
           w1.B(l) = fx(x_values[l]);
           w1.C(l) = fy(y_values[l]);
         }
-        range RN(0, N);
+        range RN(N);
         //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(RN, RN), w1.B(RN), 0.0, w1.MB(RN));
         w1.ksi  = ksi - nda::blas::dot(w1.C(RN), w1.MB(RN));
@@ -564,14 +565,14 @@ namespace triqs {
           return;
         }
 
-        range RN(0, N);
+        range RN(N);
         //w1.MC(R1) = transpose(mat_inv(R1,R1)) * w1.C(R1); //OPTIMIZE BELOW
         blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.C(RN), 0.0, w1.MC(RN));
         w1.MC(N) = -1;
         w1.MB(N) = -1;
 
         N++;
-        RN = range(0, N);
+        RN = range(N);
 
         // keep the real position of the row/col
         // since we insert a col/row, we have first to push the col at the right
@@ -662,11 +663,11 @@ namespace triqs {
             wk.C(l, n) = f(wk.x[l], y_values[n]);
           }
         }
-        range RN(0, N), Rk(0, k);
+        range RN(N), Rk(k);
         //wk.MB(RN,Rk) = mat_inv(RN,N) * wk.B(RN,Rk); // OPTIMIZE BELOW
         blas::gemm(1.0, mat_inv(RN, RN), wk.B(RN, Rk), 0.0, wk.MB(RN, Rk));
         //ksi -= wk.C (Rk, RN) * wk.MB(RN, Rk); // OPTIMIZE BELOW
-        blas::gemm(-1.0, wk.C(Rk, RN), wk.MB(RN, Rk), 1.0, wk.ksi);
+        blas::gemm(-1.0, wk.C(Rk, RN), wk.MB(RN, Rk), 1.0, wk.ksi(Rk, Rk));
         auto ksi     = wk.det_ksi();
         newdet       = det * ksi;
         long idx_sum = 0;
@@ -694,7 +695,7 @@ namespace triqs {
         // treat empty matrix separately
         if (N == 0) {
           N               = k;
-          mat_inv(Rk, Rk) = inverse(wk.ksi);
+          mat_inv(Rk, Rk) = inverse(wk.ksi(Rk, Rk));
           for (long l = 0; l < k; ++l) {
             row_num[wk.i[l]] = l;
             col_num[wk.j[l]] = l;
@@ -702,7 +703,7 @@ namespace triqs {
           return;
         }
 
-        range RN(0, N);
+        range RN(N);
         //wk.MC(Rk,RN) = wk.C(Rk,RN) * mat_inv(RN,RN);// OPTIMIZE BELOW
         blas::gemm(1.0, wk.C(Rk, RN), mat_inv(RN, RN), 0.0, wk.MC(Rk, RN));
         wk.MC(Rk, range(N, N + k)) = -1; // -identity matrix
@@ -719,13 +720,13 @@ namespace triqs {
           for (long i = N - 2; i >= wk.j[l]; i--) col_num[i + 1] = col_num[i];
           col_num[wk.j[l]] = N - 1;
         }
-        RN = range(0, N);
+        RN = range(N);
 
-        wk.ksi                       = inverse(wk.ksi);
+        wk.ksi(Rk, Rk)               = inverse(wk.ksi(Rk, Rk));
         mat_inv(RN, range(N - k, N)) = 0;
         mat_inv(range(N - k, N), RN) = 0;
-        //mat_inv(RN,RN) += wk.MB(RN,Rk) * (wk.ksi * wk.MC(Rk,RN)); // OPTIMIZE BELOW
-        blas::gemm(1.0, wk.MB(RN, Rk), (wk.ksi * wk.MC(Rk, RN)), 1.0, mat_inv(RN, RN));
+        //mat_inv(RN,RN) += wk.MB(RN,Rk) * (wk.ksi(Rk, Rk) * wk.MC(Rk,RN)); // OPTIMIZE BELOW
+        blas::gemm(1.0, wk.MB(RN, Rk), (wk.ksi(Rk, Rk) * wk.MC(Rk, RN)), 1.0, mat_inv(RN, RN));
       }
       void complete_insert2() { complete_insert_k(); }
 
@@ -768,7 +769,7 @@ namespace triqs {
         // Adjust the x_values and y_values vector accordingly and
         // swap the associated row_num and col_num elements
         // Remember that for M row/col is interchanged by inversion, transposition.
-        range RN(0, N);
+        range RN(N);
         if (w1.ireal != N - 1) {
           deep_swap(mat_inv(RN, w1.ireal), mat_inv(RN, N - 1));
           x_values[w1.ireal] = x_values[N - 1];
@@ -784,7 +785,7 @@ namespace triqs {
           std::swap(*jitr, *titr);
         }
         N--;
-        RN = range(0, N);
+        RN = range(N);
 
         std::remove(row_num.begin(), row_num.end(), N);
         std::remove(col_num.begin(), col_num.end(), N);
@@ -868,7 +869,7 @@ namespace triqs {
         // Adjust the x_values and y_values vector accordingly and
         // swap the associated row_num and col_num elements
         // Remember that for M row/col is interchanged by inversion, transposition.
-        range RN(0, N);
+        range RN(N);
         for (long m = k - 1, target = N - 1; m >= 0; --m, --target) {
           if (ireal[m] != target) {
             deep_swap(mat_inv(RN, ireal[m]), mat_inv(RN, target));
@@ -886,7 +887,7 @@ namespace triqs {
           }
         }
         N -= k;
-        RN = range(0, N);
+        RN = range(N);
 
         // Clean up removed elements from row_num and col_num
         auto gtN = [&](auto i) { return i >= N; };
@@ -899,12 +900,12 @@ namespace triqs {
         y_values.resize(N);
 
         // M <- a - d^-1 b c with BLAS
-        range Rl(N, N + k);
-        wk.ksi = inverse(mat_inv(Rl, Rl));
+        range Rl(N, N + k), Rk(k);
+        wk.ksi(Rk, Rk) = inverse(mat_inv(Rl, Rl));
 
         // write explicitely the second product on ksi for speed ?
         //mat_inv(RN,RN) -= mat_inv(RN,Rl) * (wk.ksi * mat_inv(Rl,RN)); // OPTIMIZE BELOW
-        blas::gemm(-1.0, mat_inv(RN, Rl), wk.ksi * mat_inv(Rl, RN), 1.0, mat_inv(RN, RN));
+        blas::gemm(-1.0, mat_inv(RN, Rl), wk.ksi(Rk, Rk) * mat_inv(Rl, RN), 1.0, mat_inv(RN, RN));
       }
       void complete_remove2() { complete_remove_k(); }
 
@@ -926,7 +927,7 @@ namespace triqs {
 
         // Compute the col B.
         for (long i = 0; i < N; i++) w1.MC(i) = f(x_values[i], w1.y) - f(x_values[i], y_values[w1.jreal]);
-        range RN(0, N);
+        range RN(N);
         //w1.MB(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(RN, RN), w1.MC(RN), 0.0, w1.MB(RN));
 
@@ -941,7 +942,7 @@ namespace triqs {
       //------------------------------------------------------------------------------------------
       private:
       void complete_change_col() {
-        range RN(0, N);
+        range RN(N);
         y_values[w1.jreal] = w1.y;
 
         // modifying M : Mij += w1.ksi Bi Mnj
@@ -973,7 +974,7 @@ namespace triqs {
 
         // Compute the col B.
         for (long i = 0; i < N; i++) w1.MB(i) = f(w1.x, y_values[i]) - f(x_values[w1.ireal], y_values[i]);
-        range RN(0, N);
+        range RN(N);
         //w1.MC(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
         blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.MB(RN), 0.0, w1.MC(RN));
 
@@ -987,7 +988,7 @@ namespace triqs {
       //------------------------------------------------------------------------------------------
       private:
       void complete_change_row() {
-        range RN(0, N);
+        range RN(N);
         x_values[w1.ireal] = w1.x;
 
         // modifying M : M ij += w1.ksi Min Cj
@@ -1029,7 +1030,7 @@ namespace triqs {
         w1.MC(w1.ireal) = f(x, y) - f(x_values[w1.ireal], y_values[w1.jreal]);
         w1.MB(w1.jreal) = 0;
 
-        range RN(0, N);
+        range RN(N);
         // C : X, B : Y
         //w1.C(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
         blas::gemv(1.0, mat_inv(RN, RN), w1.MC(RN), 0.0, w1.C(RN));
@@ -1050,7 +1051,7 @@ namespace triqs {
       //------------------------------------------------------------------------------------------
       private:
       void complete_change_col_row() {
-        range RN(0, N);
+        range RN(N);
         x_values[w1.ireal] = w1.x;
         y_values[w1.jreal] = w1.y;
 
@@ -1112,7 +1113,7 @@ namespace triqs {
 
         for (long i = 0; i < s; ++i)
           for (long j = 0; j < s; ++j) w_refill.M(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
-        range R(0, s);
+        range R(s);
         newdet  = nda::determinant(w_refill.M(R, R));
         newsign = 1;
 
@@ -1141,7 +1142,7 @@ namespace triqs {
         std::iota(row_num.begin(), row_num.end(), 0);
         std::iota(col_num.begin(), col_num.end(), 0);
 
-        range RN(0, N);
+        range RN(N);
         mat_inv(RN, RN) = inverse(w_refill.M(RN, RN));
       }
 
@@ -1154,7 +1155,7 @@ namespace triqs {
           return;
         }
 
-        range RN(0, N);
+        range RN(N);
         matrix_type res(N, N);
         for (int i = 0; i < N; i++)
           for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
