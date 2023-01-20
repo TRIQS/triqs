@@ -1,5 +1,5 @@
-FROM ubuntu:focal
-ARG LLVM=13
+FROM ubuntu:22.04
+ARG LLVM=15
 ARG NTHREAD=10
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
@@ -16,53 +16,59 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libblas-dev \
       libboost-dev \
       libclang-${LLVM}-dev \
+      libomp-${LLVM}-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
       libssl-dev \
-      python-dev \
-      python3-dev \
+      pkg-config \
       python3-clang-${LLVM} \
+      python3-dev \
       python3-mako \
       python3-matplotlib \
       python3-numpy \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.8 \
-    CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.0
+ENV PYTHON_VERSION=3.10 \
+    CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.7
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
 
 # Build libcxx and libcxxabi with MSAN
+# c.f. https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo
 RUN git clone https://github.com/llvm/llvm-project --branch llvmorg-${LLVM_VERSION} --depth 1 -c advice.detachedHead=false /tmp/llvm_src && \
-      mkdir /tmp/build && cd /tmp/build && \
-      cmake /tmp/llvm_src/libcxxabi -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/llvm_src/libcxx -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} && make install && \
-      rm -rf * && \
-      cmake /tmp/llvm_src/libcxx -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/llvm_src/libcxxabi/include -DLLVM_USE_SANITIZER=MemoryWithOrigins && make -j${NTHREAD} install && \
-      rm -rf /tmp/llvm_src /tmp/build
+      mkdir /tmp/llvm_build && cd /tmp/llvm_build && \
+      cmake /tmp/llvm_src/llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} \
+      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_USE_SANITIZER=MemoryWithOrigins && \
+      make -j${NTHREAD} cxx cxxabi llvm-config
 
 # Build Environment using MSAN
-ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
-    CFLAGS="-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
-    LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib \
-    LDFLAGS="-fsanitize=memory" \
-    MSAN_OPTIONS=MSAN_OPTIONS=symbolize=1:halt_on_error=1 \
+# c.f. https://libcxx.llvm.org/UsingLibcxx.html#using-a-custom-built-libc
+ENV MSAN_FLAGS="-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins -ggdb3" \
+    CUSTOM_LIBCXX_FLAGS="-nostdinc++ -nostdlib++ -isystem/tmp/llvm_build/include/c++/v1 -isystem/tmp/llvm_build/include/aarch64-unknown-linux-gnu/c++/v1 -L/tmp/llvm_build/lib/aarch64-unknown-linux-gnu -Wl,-rpath,/tmp/llvm_build/lib/aarch64-unknown-linux-gnu -lc++ -lc++abi"
+ENV CXXFLAGS="$MSAN_FLAGS -Wno-unused-command-line-argument $CUSTOM_LIBCXX_FLAGS" \
+    CFLAGS="$MSAN_FLAGS" \
+    LDFLAGS="$MSAN_FLAGS" \
+    MSAN_OPTIONS=symbolize=1:halt_on_error=1 \
     MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer
 
 # Static zlib using fPIC to be linked into hdf5
-ADD https://cfhcable.dl.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/zlib-1.2.11.tar.gz && cd zlib-1.2.11 && \
+ADD https://www.zlib.net/zlib-1.2.13.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/zlib-1.2.13.tar.gz && cd zlib-1.2.13 && \
       CFLAGS="-fPIC $CFLAGS" ./configure --prefix=/opt/zlib && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/zlib*
 
 # HDF5
-ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/CMake-hdf5-1.12.0.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.0.tar.gz && chmod 1777 . && \
+ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.2/src/CMake-hdf5-1.12.2.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.2.tar.gz && chmod 1777 . && \
       mkdir build && cd build && \
-      cmake /tmp/CMake-hdf5-1.12.0/hdf5-1.12.0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+      cmake /tmp/CMake-hdf5-1.12.2/hdf5-1.12.2 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
                                                -DHDF5_ENABLE_Z_LIB_SUPPORT=ON -DZLIB_LIBRARY=/opt/zlib/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=/opt/zlib/include && \
       make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.0* /tmp/build
+      cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.2* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
 # libevent
@@ -79,16 +85,16 @@ RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd
       cd /tmp && rm -rf /tmp/hwloc*
 
 # OpenMPI
-ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2 /tmp/
-RUN cd /tmp && tar xf /tmp/openmpi-4.1.1.tar.bz2 && cd openmpi-4.1.1 && \
+ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.4.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/openmpi-4.1.4.tar.bz2 && cd openmpi-4.1.4 && \
       ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/openmpi-4.1.1*
-ENV MPI_ROOT=/opt/openmpi \
+      cd /tmp && rm -rf /tmp/openmpi-4.1.4*
+ENV MPI_HOME=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
 
 # Use libflame to provide blas / lapack
 RUN git clone https://github.com/Wentzell/libflame /tmp/libflame && cd /tmp/libflame && \
-      ./configure --prefix=/opt/libflame --enable-lapack2flame --enable-builtin-blas && make -j${NTHREAD} && make install && \
+      ./configure --prefix=/opt/libflame --enable-lapack2flame --enable-builtin-blas --build=aarch64-unknown-linux-gnu && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/libflame
 
 # Dockerfile.build with sanitization enabled
@@ -102,7 +108,7 @@ RUN useradd -m build
 ENV SRC=/src \
     BUILD=/home/build \
     INSTALL=/usr/local \
-    PYTHONPATH=/usr/local/lib/python3.8/site-packages \
+    PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages \
     CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs
 
 COPY . ${SRC}/triqs
