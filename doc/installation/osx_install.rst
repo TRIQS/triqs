@@ -78,11 +78,13 @@ They may work (possibly with some modifications) for earlier versions of OS X.
 
    As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>` and we set clang as the default compiler ::
 
-     export PATH=/usr/local/opt/llvm/bin:$PATH
-     export LIBRARY_PATH=/usr/local/opt/llvm/lib:$LIBRARY_PATH
-     export CC=/usr/local/opt/llvm/bin/clang
-     export CXX=/usr/local/opt/llvm/bin/clang++
+     __brew_prefix=$(brew --prefix)
+     export PATH=$__brew_prefix/opt/llvm/bin:$PATH
+     export LIBRARY_PATH=$__brew_prefix/opt/llvm/lib:$LIBRARY_PATH
+     export CC=$__brew_prefix/opt/llvm/bin/clang
+     export CXX=$__brew_prefix/opt/llvm/bin/clang++
+     unset __brew_prefix
 
-  To make this choice permanent, add these lines to your ``$HOME/.bash_profile``.
+  To make this choice permanent, add these lines to your ``$HOME/.zshrc``.
 
 You should now be set to :ref:`compile TRIQS from source <triqs_compilation>`.
