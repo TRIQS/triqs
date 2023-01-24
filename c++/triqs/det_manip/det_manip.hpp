@@ -1137,8 +1137,8 @@ namespace triqs {
         std::swap(x_values, w_refill.x_values);
         std::swap(y_values, w_refill.y_values);
 
-        row_num.resize(N);
-        col_num.resize(N);
+        row_num.resize(N, 0); // Zero Initialization avoids ASAN false positive
+        col_num.resize(N, 0);
         std::iota(row_num.begin(), row_num.end(), 0);
         std::iota(col_num.begin(), col_num.end(), 0);
 
