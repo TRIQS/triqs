@@ -110,6 +110,7 @@ class Gf(metaclass=AddMethod):
     """
     
     _hdf5_data_scheme_ = 'Gf'
+    __array_priority__ = 10000 # Makes sure the operations of this class are applied as priority
 
     def __init__(self, **kw): # enforce keyword only policy 
         
