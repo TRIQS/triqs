@@ -84,24 +84,34 @@ struct test {
           w = RNG(s);
           if (s > 0) detratio = D.try_remove(w, w);
           break;
-        case 2:
-          x  = RNG(10.0);
-          x1 = RNG(10.0);
-          w  = RNG(s);
-          w1 = RNG(s + 1);
-          if (w != w1) {
-            std::cout << " Insert2" << std::endl;
-            detratio = D.try_insert2(w, w1, w, w1, x, x1, x, x1);
+        case 2: {
+          long k = 2 + RNG(6);
+          std::vector<double> x(k);
+          std::vector<long> w(k);
+          for (auto m : itertools::range(k)) {
+            x.at(m) = RNG(10.0);
+            w.at(m) = RNG(s + m);
+          }
+          std::sort(w.begin(), w.end());
+          if (std::unique(w.begin(), w.end()) == w.end()) {
+            std::cout << " Insert" << k << std::endl;
+            detratio = D.try_insert_k(w, w, x, x);
           }
           break;
-        case 3:
-          std::cout << " Remove2" << std::endl;
+        }
+        case 3: {
+          long k = 2 + RNG(6);
+          std::cout << " Remove" << k << std::endl;
           if (D.size() >= 2) {
-            w  = RNG(s);
-            w1 = RNG(s);
-            if (w != w1) detratio = D.try_remove2(w, w1, w, w1);
+            std::vector<long> w(k);
+            for (auto m : itertools::range(k)) {
+              w.at(m) = RNG(s);
+            }
+            std::sort(w.begin(), w.end());
+            if (std::unique(w.begin(), w.end()) == w.end()) detratio = D.try_remove_k(w, w);
           }
           break;
+        }
         default: TRIQS_RUNTIME_ERROR << " TEST INTERNAL ERROR";
       };
 

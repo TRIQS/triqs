@@ -105,34 +105,46 @@ struct test {
           std::cerr << " Remove1" << std::endl;
           if (s > 0) detratio = D.try_remove(RNG(s), RNG(s));
           break;
-        case 2:
-          std::cerr << " Insert2" << std::endl;
-          x  = RNG(10.0);
-          x1 = RNG(10.0);
-          y  = RNG(10.0);
-          y1 = RNG(10.0);
-          i0 = RNG(s);
-          i1 = RNG(s + 1);
-          j0 = RNG(s);
-          j1 = RNG(s + 1);
-          if ((i0 != i1) && (j0 != j1)) {
-            detratio = D.try_insert2(i0, i1, j0, j1, x, x1, y, y1);
+        case 2: {
+          long k = 2 + RNG(6);
+          std::cerr << " Insert" << k << std::endl;
+          std::vector<double> x(k);
+          std::vector<double> y(k);
+          std::vector<long> i(k);
+          std::vector<long> j(k);
+          for (auto m : itertools::range(k)) {
+            x.at(m) = RNG(10.0);
+            y.at(m) = RNG(10.0);
+            i.at(m) = RNG(s + m);
+            j.at(m) = RNG(s + m);
+          }
+          std::sort(i.begin(), i.end());
+          std::sort(j.begin(), j.end());
+          if (std::unique(i.begin(), i.end()) == i.end() && std::unique(j.begin(), j.end()) == j.end()) {
+            detratio = D.try_insert_k(i, j, x, y);
           } else
             do_something = false;
           break;
-        case 3:
-          std::cerr << " Remove2" << std::endl;
-          if (D.size() >= 2) {
-            i0 = RNG(s);
-            i1 = RNG(s);
-            j0 = RNG(s);
-            j1 = RNG(s);
-            if ((i0 != i1) && (j0 != j1)) {
-              detratio = D.try_remove2(i0, i1, j0, j1);
+        }
+        case 3: {
+          long k = 2 + RNG(6);
+          std::cerr << " Remove" << k << std::endl;
+          if (D.size() >= k) {
+            std::vector<long> i(k);
+            std::vector<long> j(k);
+            for (auto m : itertools::range(k)) {
+              i.at(m) = RNG(s);
+              j.at(m) = RNG(s);
+            }
+            std::sort(i.begin(), i.end());
+            std::sort(j.begin(), j.end());
+            if (std::unique(i.begin(), i.end()) == i.end() && std::unique(j.begin(), j.end()) == j.end()) {
+              detratio = D.try_remove_k(i, j);
             } else
               do_something = false;
           }
           break;
+        }
         case 4:
           if (D.size()==0) break;
 	  y        = RNG(10.0);
