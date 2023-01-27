@@ -37,6 +37,7 @@
 #include "./mesh/retime.hpp"
 #include "./mesh/refreq.hpp"
 #include "./mesh/legendre.hpp"
+#include "./mesh/dlr.hpp"
 #include "./mesh/brzone.hpp"
 #include "./mesh/cyclat.hpp"
 #include "./mesh/prod.hpp"
