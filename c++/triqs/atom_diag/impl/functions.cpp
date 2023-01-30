@@ -76,7 +76,14 @@ namespace triqs {
           if (b_m.first == sp) result += x.coef * trace(b_m.second * density_matrix[sp]);
         }
       }
-      return result;
+      // check if op && density matrix is hermitian then return real(result)
+      auto is_block_matrix_hermitian = [](ATOM_DIAG_T::block_matrix_t const &bm) {
+        return std::all_of(bm.begin(), bm.end(), [](ATOM_DIAG_T::matrix_t const &mat) { return max_element(abs(mat - dagger(mat))) == 0.0; });
+      };
+      if (operators::is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {
+        return std::real(result);
+      } else
+        return result;
     }
     template ATOM_DIAG_R::scalar_t trace_rho_op(ATOM_DIAG_R::block_matrix_t const &, ATOM_DIAG_R::many_body_op_t const &, ATOM_DIAG_R const &);
     template ATOM_DIAG_C::scalar_t trace_rho_op(ATOM_DIAG_C::block_matrix_t const &, ATOM_DIAG_C::many_body_op_t const &, ATOM_DIAG_C const &);
