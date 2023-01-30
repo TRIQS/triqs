@@ -22,6 +22,11 @@
 #include "./details/mesh_tools.hpp"
 #include "./bases/linear.hpp"
 
+#include <cppdlr/dlr_imtime.hpp>
+#include <cppdlr/dlr_basis.hpp>
+#include <cppdlr/utils.hpp>
+#include <cppdlr/dlr_kernels.hpp>
+
 namespace triqs::mesh {
   /**
    *  Imaginary-time Discrete Lehmann representation mesh
@@ -52,7 +57,7 @@ namespace triqs::mesh {
      * @param lambda Lambda energy over beta parameter
      * @param eps Representation accuracy
      */
-    dlr_imtime(matsubara_time_domain d, double lambda, double eps) : _dom(d), _lambda(lambda), _eps(eps) {}
+    dlr_imtime(matsubara_time_domain d, double lambda, double eps) : _dom(d), _lambda(lambda), _eps(eps), dlr(lambda, cppdlr::dlr_freq(lambda, eps)) {}
 
     /**
      * Construct a Mesh of imaginary times on the interval [0,beta]
@@ -79,7 +84,7 @@ namespace triqs::mesh {
     domain_t const &domain() const { return _dom; }
 
     /// Size (linear) of the mesh of the window
-    long size() const { return -1; } // FIXME!
+    long size() const { return dlr.rank(); } // FIXME!
     
     // -------------------- print -------------------
 
@@ -114,6 +119,7 @@ namespace triqs::mesh {
     private:
     domain_t _dom;
     double _lambda, _eps;
+    cppdlr::imtime_ops dlr;
   };
 
 } // namespace triqs::mesh

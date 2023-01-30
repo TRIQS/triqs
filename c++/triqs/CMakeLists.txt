@@ -74,6 +74,9 @@ target_link_libraries(triqs PRIVATE h5::hdf5)
 # NDA (this provides blas/lapack linkeage)
 target_link_libraries(triqs PUBLIC nda::nda_c)
 
+# cppdlr (discrete Lehmann representation library)
+target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
+
 # ---------------------------------
 # Boost
 # ---------------------------------

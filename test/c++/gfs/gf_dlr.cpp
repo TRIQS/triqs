@@ -24,6 +24,8 @@ TEST(Gf, dlr_imtime) {
   double eps = 1e-10;
   auto mesh = gf_mesh<triqs::mesh::dlr_imtime>{beta, Fermion, lambda, eps};
 
+  std::cout << "Rank " << mesh.size() << "\n";
+  
   EXPECT_CLOSE(mesh.lambda(), lambda);
   EXPECT_CLOSE(mesh.eps(), eps);
   

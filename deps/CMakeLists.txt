@@ -105,4 +105,9 @@ external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.1
   GIT_TAG DEV_CUDA_LINALG_MIGUEL
+) 
+# -- cppdlr --
+external_dependency(cppdlr
+  GIT_REPO git@github.com:jasonkaye/cppdlr.git
+  GIT_TAG main
 )
