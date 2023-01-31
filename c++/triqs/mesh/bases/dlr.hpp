@@ -26,13 +26,24 @@
 #include <cppdlr/utils.hpp>
 #include <cppdlr/dlr_kernels.hpp>
 
+
+template<class T> struct dependent_false : std::false_type {};
+
+
 namespace triqs::mesh {
 
+  namespace tag {
+    struct dlr_repr_coeffs {};
+    struct dlr_repr_imtime {};
+    struct dlr_repr_imfreq {};
+  } // namespace tag
+  
   //-----------------------------------------------------------------------
 
-  template <typename Domain> struct dlr_mesh : triqs::mesh::tag::mesh {
+  template <typename Domain, typename Repr> struct dlr_mesh : triqs::mesh::tag::mesh {
 
     using domain_t       = Domain;
+    using repr_t         = Repr;
     using index_t        = long;
     using linear_index_t = long;
     using domain_pt_t    = typename domain_t::point_t;
@@ -53,6 +64,11 @@ namespace triqs::mesh {
       dlr(std::move(dlr)) {}
     
     dlr_mesh() : dlr_mesh(domain_t{}, 0, 0) {}
+
+    template <typename D, typename R>
+    explicit dlr_mesh(dlr_mesh<D, R> const &M) :
+      _dom(M.domain()), _lambda(M.lambda()), _eps(M.eps()),
+      dlr_freq(M.dlr_freq), dlr(M.dlr) {}
 
     /// Mesh comparison
     bool operator==(dlr_mesh const &M) const {
@@ -84,11 +100,19 @@ namespace triqs::mesh {
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
-      auto res = dlr.get_itnodes()[idx]; // make selective based on domain.. ?
-      if(res < 0) res = 1. + res;
-      res *= _dom.beta;
-      ASSERT(is_within_boundary(res));
-      return res;
+      if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_imtime> ) {
+	auto res = dlr.get_itnodes()[idx]; // make selective based on domain.. ?
+	if(res < 0) res = 1. + res;
+	res *= _dom.beta;
+	ASSERT(is_within_boundary(res));
+	return res;
+      } else if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_coeffs> ) {
+	auto res = dlr_freq[idx];
+	return res;
+      } else {
+	static_assert(dependent_false<Repr>::value,
+		      "Iteration only supported for dlr_coeffs and dlr_imtime.");
+      }
     }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
@@ -113,8 +137,6 @@ namespace triqs::mesh {
     const_iterator cend() const { return const_iterator(this, true); }
 
     // -------------- Evaluation of a function on the grid --------------------------
-
-    template<class T> struct dependent_false : std::false_type {};
 
     std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
       static_assert(dependent_false<Domain>::value,
@@ -177,9 +199,9 @@ namespace triqs::mesh {
   //                     The mesh point
   // ---------------------------------------------------------------------------
 
-  template <typename Domain>
-  struct mesh_point<dlr_mesh<Domain>> : public utility::arithmetic_ops_by_cast<mesh_point<dlr_mesh<Domain>>, typename Domain::point_t> {
-    using mesh_t  = dlr_mesh<Domain>;
+  template <typename Domain, typename Repr>
+  struct mesh_point<dlr_mesh<Domain, Repr>> : public utility::arithmetic_ops_by_cast<mesh_point<dlr_mesh<Domain, Repr>>, typename Domain::point_t> {
+    using mesh_t  = dlr_mesh<Domain, Repr>;
     using index_t = typename mesh_t::index_t;
     mesh_t const *m;
     index_t _index;

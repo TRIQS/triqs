@@ -35,6 +35,48 @@ TEST(Gf, dlr_imtime) {
   }
 }
 
+TEST(Gf, dlr_coeffs) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  auto mesh = gf_mesh<triqs::mesh::dlr_coeffs>{beta, Fermion, lambda, eps};
+
+  std::cout << mesh << "\n";
+  std::cout << "Rank " << mesh.size() << "\n";
+  
+  EXPECT_CLOSE(mesh.lambda(), lambda);
+  EXPECT_CLOSE(mesh.eps(), eps);
+  
+  for (const auto &dlr_rf : mesh ) {
+    std::cout << dlr_rf << "\n";
+  }
+}
+
+/*
+TEST(Gf, dlr_coeffs_imtime) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  auto cmesh = gf_mesh<triqs::mesh::dlr_coeffs>{beta, Fermion, lambda, eps};
+  auto tmesh = gf_mesh<triqs::mesh::dlr_imtime>{beta, Fermion, lambda, eps};
+
+  std::cout << cmesh << "\n";
+  std::cout << tmesh << "\n";
+
+  auto tmesh_ref = gf_mesh<triqs::mesh::dlr_imtime>(cmesh);
+  auto cmesh_ref = gf_mesh<triqs::mesh::dlr_coeffs(tmesh);
+  
+  for (const auto &[t1, t2] : itertools::zip(tmesh, tmesh_ref) ) {
+    EXPECT_CLOSE(t1, t2);
+  }
+  for (const auto &[c1, c2] : itertools::zip(cmesh, cmesh_ref) ) {
+    EXPECT_CLOSE(c1, c2);
+  } 
+}
+*/
+
 TEST(Gf, dlr_imtime_grid) {
 
   double beta   = 2.0;

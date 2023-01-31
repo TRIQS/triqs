@@ -23,6 +23,9 @@
 #include "./bases/dlr.hpp"
 
 namespace triqs::mesh {
+
+  class dlr_coeffs;
+  
   /**
    *  Imaginary-time Discrete Lehmann representation mesh
    *
@@ -30,8 +33,8 @@ namespace triqs::mesh {
    *
    *  The time points are computed using the cppdlr library
    */
-  class dlr_imtime : public dlr_mesh<matsubara_time_domain> {
-    using B = dlr_mesh<matsubara_time_domain>;
+  class dlr_imtime : public dlr_mesh<matsubara_time_domain, tag::dlr_repr_imtime> {
+    using B = dlr_mesh<matsubara_time_domain, tag::dlr_repr_imtime>;
     
     public:
 
@@ -45,7 +48,7 @@ namespace triqs::mesh {
 
     ///
     dlr_imtime(dlr_imtime const &x) = default;
-
+    
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
      * on a Matsubara time domain
@@ -82,5 +85,66 @@ namespace triqs::mesh {
     friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_imtime &m) { h5_read_impl(fg, subgroup_name, m, "MeshDLRImTime"); }
 
   };
+
+  /**
+   *  Discrete Lehmann representation mesh with coefficients
+   *
+   *  Mesh for the imaginary-time axis from $0$ to $\beta$.
+   *
+   *  The coefficients are computed using the cppdlr library
+   */
+  class dlr_coeffs : public dlr_mesh<matsubara_time_domain, tag::dlr_repr_coeffs> {
+    using B = dlr_mesh<matsubara_time_domain, tag::dlr_repr_coeffs>;
+    
+    public:
+
+    using domain_t       = matsubara_time_domain;
+    using index_t        = long;
+    using linear_index_t = long;
+    using domain_pt_t    = typename domain_t::point_t;
+
+    ///
+    dlr_coeffs() = default;
+
+    ///
+    dlr_coeffs(dlr_coeffs const &x) = default;
+
+    /**
+     * Construct a Mesh of Discrete Lehmann imaginary times
+     * on a Matsubara time domain
+     *
+     * @param dom Matsubara time domain
+     * @param lambda Lambda energy over beta parameter
+     * @param eps Representation accuracy
+     */
+    dlr_coeffs(matsubara_time_domain d, double lambda, double eps) : B(d, lambda, eps) {}
+
+    /**
+     * Construct a Mesh of imaginary times on the interval [0,beta]
+     * including points at both edges.
+     *
+     * @param beta Inverse temperature
+     * @param S Statistic (Fermion or Boson)
+     * @param lambda Lambda energy over beta parameter
+     * @param eps Representation accuracy
+     */
+    dlr_coeffs(double beta, statistic_enum S, double lambda, double eps) : dlr_coeffs({beta, S}, lambda, eps) {}
+
+    // -------------------- print -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, dlr_coeffs const &m) {
+      return sout << "DLR coefficient Mesh of size " << m.size() << ", Domain: " << m.domain();
+    }
+
+    // -------------------- hdf5 -------------------
+
+    static std::string hdf5_format() { return "MeshDLRCoeffs"; }
+
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr_coeffs const &m) { h5_write_impl(fg, subgroup_name, m, "MeshDLRCoeffs"); }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_coeffs &m) { h5_read_impl(fg, subgroup_name, m, "MeshDLRCoeffs"); }
+
+  };
+
   
 } // namespace triqs::mesh
