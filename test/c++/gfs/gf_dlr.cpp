@@ -24,26 +24,29 @@ TEST(Gf, dlr_imtime) {
   double eps = 1e-10;
   auto mesh = gf_mesh<triqs::mesh::dlr_imtime>{beta, Fermion, lambda, eps};
 
+  std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
   
   EXPECT_CLOSE(mesh.lambda(), lambda);
   EXPECT_CLOSE(mesh.eps(), eps);
   
+  for (const auto &tau : mesh ) {
+    std::cout << tau << "\n";
+  }
 }
 
-/*
 TEST(Gf, dlr_imtime_grid) {
 
   double beta   = 2.0;
   double lambda = 10.0;
-  double eps = 1e-10;
-  double omega = 1.337;
+  double eps    = 1e-10;
+  double omega  = 1.337;
 
-  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, lambda, eps};
-  auto G1 = gf<dlr_imtime, scalar_valued>{mesh};
+  auto mesh = gf_mesh<triqs::mesh::dlr_imtime>{beta, Fermion, lambda, eps};
+  auto G1 = gf<triqs::mesh::dlr_imtime, scalar_valued>{mesh};
   
   for (const auto &tau : mesh ) {
-    G1(tau) = std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
+    G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
   }
 
   auto Gc = G1; // copy
@@ -53,10 +56,10 @@ TEST(Gf, dlr_imtime_grid) {
   EXPECT_GF_NEAR(Gv, Gc);
   
   // Take view and assign
-  auto G2 = gf<dlr_imtime, scalar_valued>{mesh};
+  auto G2 = gf<triqs::mesh::dlr_imtime, scalar_valued>{mesh};
   auto G2v = gf_view(G2);
   for (const auto &tau : mesh ) {
-    G2v(tau) = std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
+    G2v[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
   }
   
   EXPECT_GF_NEAR(G2, G2v);
@@ -65,23 +68,47 @@ TEST(Gf, dlr_imtime_grid) {
 
   auto GpG = G1 + G2; // Addition
   for (const auto &tau : mesh ) {
-    EXPECT_CLOSE(GpG(tau), G1(tau) * 2.);
-    EXPECT_CLOSE(GpG(tau), 2. * G1(tau));
+    EXPECT_CLOSE(GpG[tau], G1[tau] * 2.);
+    EXPECT_CLOSE(GpG[tau], 2. * G1[tau]);
   }
 
   auto G4 = 4. * G2; // Multiply with scalar
   for (const auto &tau : mesh ) {
-    EXPECT_CLOSE(G4(tau), G1(tau) * 4.);
-    EXPECT_CLOSE(G4(tau), 4. * G1(tau));
+    EXPECT_CLOSE(G4[tau], G1[tau] * 4.);
+    EXPECT_CLOSE(G4[tau], 4. * G1[tau]);
   }
 
   auto GG = G1 * G2; // Multiplication
   for (const auto &tau : mesh ) {
-    EXPECT_CLOSE(GG(tau), G1(tau) * G1(tau));
+    EXPECT_CLOSE(GG[tau], G1[tau] * G1[tau]);
   }
-  EXPECT_TRUE(GG.mesh().domain().statistic == Boson);
+
+  std::cout << GG.mesh().domain() << "\n";
+  std::cout << GG.mesh().domain().statistic << "\n";
+  EXPECT_TRUE(GG.mesh().domain().statistic == Boson); // Currently fails. FIXME!  
 }
 
+TEST(Gf, dlr_imtime_grid_clef) {
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps    = 1e-10;
+  double omega  = 1.337;
+
+  auto G = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  triqs::clef::placeholder<0> tau_;
+  G(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+
+  auto mesh = gf_mesh<triqs::mesh::dlr_imtime>{beta, Fermion, lambda, eps};
+  auto G1 = gf<triqs::mesh::dlr_imtime, scalar_valued>{mesh};
+  
+  for (const auto &tau : mesh ) {
+    G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
+  }
+
+  EXPECT_GF_NEAR(G, G1);
+}
+
+/*
 TEST(Gf, dlr_interpolation) {
 
   double beta   = 2.0;
