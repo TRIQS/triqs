@@ -76,7 +76,7 @@ namespace triqs {
           if (b_m.first == sp) result += x.coef * trace(b_m.second * density_matrix[sp]);
         }
       }
-      // check if op && density matrix is hermitian then return real(result)
+      // check if op && density matrix are hermitian, if so return real(result)
       auto is_block_matrix_hermitian = [](ATOM_DIAG_T::block_matrix_t const &bm) {
         return std::all_of(bm.begin(), bm.end(), [](ATOM_DIAG_T::matrix_t const &mat) { return max_element(abs(mat - dagger(mat))) == 0.0; });
       };
