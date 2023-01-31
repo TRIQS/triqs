@@ -80,7 +80,7 @@ namespace triqs {
       auto is_block_matrix_hermitian = [](ATOM_DIAG_T::block_matrix_t const &bm) {
         return std::all_of(bm.begin(), bm.end(), [](ATOM_DIAG_T::matrix_t const &mat) { return max_element(abs(mat - dagger(mat))) == 0.0; });
       };
-      if (operators::is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {
+      if (is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {
         return std::real(result);
       } else
         return result;
