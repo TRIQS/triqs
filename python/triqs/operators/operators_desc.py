@@ -58,5 +58,7 @@ for name, doc in [("c","annihilation operator"), ("c_dag","creation operator"), 
 
 module.add_function("many_body_operator dagger(many_body_operator Op)", doc= "Return the dagger of the operator")
 
+module.add_function("bool is_op_hermitian(many_body_operator op, double tolerance = 0.0)", doc= "check if operator is hermitian up to given tolerance (default=0.0)")
+
 module.generate_code()
 

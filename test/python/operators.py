@@ -166,5 +166,17 @@ class test_operators(unittest.TestCase):
         print(U_dict2)
         print(dict_to_matrix(U_dict2, gf_struct))
 
+    def test_hermiticity(self):
+        from triqs.operators import is_op_hermitian
+
+        op_test_1 = n('up',0) * n('dn',0) + n('up',1) * n('dn',1)
+        assert is_op_hermitian(op_test_1)
+
+        op_test_2 = c(0,0) + c(1,0)
+        assert not is_op_hermitian(op_test_2)
+
+        op_test_3 = n('up',0) * n('dn',0) + 1e-10*c('up',0)
+        assert is_op_hermitian(op_test_3, 1e-9)
+
 if __name__ == '__main__':
     unittest.main()
