@@ -76,7 +76,21 @@ namespace triqs {
           if (b_m.first == sp) result += x.coef * trace(b_m.second * density_matrix[sp]);
         }
       }
-      return result;
+      // little helper function to check block matrix hermiticity
+      auto is_block_matrix_hermitian = [](ATOM_DIAG_T::block_matrix_t const &bm) {
+        return std::all_of(bm.begin(), bm.end(), [](ATOM_DIAG_T::matrix_t const &mat) { return max_element(abs(mat - dagger(mat))) == 0.0; });
+      };
+      // check if op && density matrix are hermitian, if so return real(result)
+      // The product of two hermitian matrices is hermitian, hence the Tr(rho * Op)
+      // needs to be real in this case. Here, each monomial b_m is represented in the 
+      // eigenbasis of atom diag. This unitary rotation should not change any of the 
+      // above statements (Tr is invariant under trafo) However, the eigenbasis is obtained 
+      // via LAPACK up to machine prec, introducing tiny imaginary elements. Here, we filter those.
+      // Note: Here it assumed that op & den mat are truely hermitian, 0 tolerance
+      if (is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {
+        return std::real(result);
+      } else
+        return result;
     }
     template ATOM_DIAG_R::scalar_t trace_rho_op(ATOM_DIAG_R::block_matrix_t const &, ATOM_DIAG_R::many_body_op_t const &, ATOM_DIAG_R const &);
     template ATOM_DIAG_C::scalar_t trace_rho_op(ATOM_DIAG_C::block_matrix_t const &, ATOM_DIAG_C::many_body_op_t const &, ATOM_DIAG_C const &);

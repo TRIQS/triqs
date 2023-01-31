@@ -421,6 +421,10 @@ namespace triqs {
       if (!(op1 - op2).is_almost_zero(precision)) TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
     }
 
+    template <typename scalar_t> bool is_op_hermitian(many_body_operator_generic<scalar_t> const &op, double tolerance = 0.0) {
+      return (dagger(op) - op).is_almost_zero(tolerance);
+    }
+
     // ---- factories --------------
 
     // Free functions to make creation/annihilation operators
