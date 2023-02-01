@@ -25,6 +25,7 @@
 namespace triqs::mesh {
 
   class dlr_coeffs;
+  class dlr_imtime;
   
   /**
    *  Imaginary-time Discrete Lehmann representation mesh
@@ -48,6 +49,9 @@ namespace triqs::mesh {
 
     ///
     dlr_imtime(dlr_imtime const &x) = default;
+    
+    //dlr_imtime(dlr_coeffs const &M) : B(M.domain(), M.lambda(), M.eps()) {}
+    //dlr_imtime(dlr_coeffs const &M);
     
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
@@ -109,6 +113,9 @@ namespace triqs::mesh {
     ///
     dlr_coeffs(dlr_coeffs const &x) = default;
 
+    //dlr_coeffs(dlr_imtime const &M) : B(M.domain(), M.lambda(), M.eps()) {}
+    //dlr_coeffs(dlr_imtime const &M);
+    
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
      * on a Matsubara time domain
@@ -145,6 +152,5 @@ namespace triqs::mesh {
     friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_coeffs &m) { h5_read_impl(fg, subgroup_name, m, "MeshDLRCoeffs"); }
 
   };
-
   
 } // namespace triqs::mesh

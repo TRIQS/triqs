@@ -66,7 +66,7 @@ TEST(Gf, dlr_coeffs_imtime) {
   std::cout << tmesh << "\n";
 
   auto tmesh_ref = gf_mesh<triqs::mesh::dlr_imtime>(cmesh);
-  auto cmesh_ref = gf_mesh<triqs::mesh::dlr_coeffs(tmesh);
+  auto cmesh_ref = gf_mesh<triqs::mesh::dlr_coeffs>(tmesh);
   
   for (const auto &[t1, t2] : itertools::zip(tmesh, tmesh_ref) ) {
     EXPECT_CLOSE(t1, t2);
