@@ -53,7 +53,6 @@ TEST(Gf, dlr_coeffs) {
   }
 }
 
-/*
 TEST(Gf, dlr_coeffs_imtime) {
 
   double beta   = 2.0;
@@ -75,7 +74,6 @@ TEST(Gf, dlr_coeffs_imtime) {
     EXPECT_CLOSE(c1, c2);
   } 
 }
-*/
 
 TEST(Gf, dlr_imtime_grid) {
 
@@ -150,37 +148,47 @@ TEST(Gf, dlr_imtime_grid_clef) {
   EXPECT_GF_NEAR(G, G1);
 }
 
-/*
 TEST(Gf, dlr_interpolation) {
 
   double beta   = 2.0;
   double lambda = 10.0;
   double eps = 1e-10;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
 
   double omega = 1.337;
   triqs::clef::placeholder<0> tau_;
-  G_tau(tau_) << std::exp(-omega * tau_) / (1 + std::exp(-beta * omega));
+  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
-  int ntau = 10
+  int ntau = 10;
   auto tmesh = mesh::imtime{beta, Fermion, ntau};
 
   // Interpolation on dlr_imtime grid should not be supported (by design)
+  /*
   for (auto const &tau : tmesh) {
     EXPECT_THROW(G_tau(tau), triqs::runtime_error);
   }
+  */
 
+  // Transform from dlr_imtime to dlr_coeffs
+  
+  //auto G_dlr = make_gf_from_fourier(G_tau);
+
+  auto cmesh = gf_mesh<triqs::mesh::dlr_coeffs>(G_tau.mesh());
+  auto G_dlr = gf<triqs::mesh::dlr_coeffs, scalar_valued>{cmesh};
+  G_dlr.data() = cmesh.dlr().vals2coefs(G_tau.data());
+  
   // Interpolation in imaginary time using dlr grid (efficient by design)
-  auto G_dlr = make_gf_from_fourier(G_tau);
+  
   for (auto const &tau : tmesh) {
-    EXPECT_CLOSE(G_dlr(tau), std::exp(-omega * tau) / (1 + std::exp(-beta * omega));
+    EXPECT_CLOSE(G_dlr(tau), std::exp(-omega * tau) / (1 + std::exp(-beta * omega)));
   }
 
   rw_h5(G_tau, "g_dlr_imtime");
   rw_h5(G_dlr, "g_dlr");
 }
 
+/*
 TEST(Gf, dlr_density) {
 
   double beta   = 2.0;

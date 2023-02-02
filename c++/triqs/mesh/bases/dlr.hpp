@@ -54,21 +54,21 @@ namespace triqs::mesh {
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
-      dlr_freq(cppdlr::dlr_freq(lambda, eps)),
-      dlr(lambda, dlr_freq) {}
+      _dlr_freq(cppdlr::dlr_freq(lambda, eps)),
+      _dlr(lambda, _dlr_freq) {}
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps,
 		      nda::vector<double> dlr_freq,  cppdlr::imtime_ops dlr) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
-      dlr_freq(std::move(dlr_freq)),
-      dlr(std::move(dlr)) {}
+      _dlr_freq(std::move(dlr_freq)),
+      _dlr(std::move(dlr)) {}
     
     dlr_mesh() : dlr_mesh(domain_t{}, 0, 0) {}
 
     template <typename D, typename R>
     explicit dlr_mesh(dlr_mesh<D, R> const &M) :
       _dom(M.domain()), _lambda(M.lambda()), _eps(M.eps()),
-      dlr_freq(M.dlr_freq), dlr(M.dlr) {}
+      _dlr_freq(M.dlr_freq()), _dlr(M.dlr()) {}
 
     /// Mesh comparison
     bool operator==(dlr_mesh const &M) const {
@@ -84,30 +84,33 @@ namespace triqs::mesh {
     /// Representation accuracy
     double eps() const { return _eps; }
 
+    auto dlr_freq() const { return _dlr_freq; }
+    auto dlr() const { return _dlr; }
+    
     // -------------------- Accessors (from concept) -------------------
 
     /// The corresponding domain
     domain_t const &domain() const { return _dom; }
 
     /// Size (linear) of the mesh of the window
-    long size() const { return dlr.rank(); }
+    long size() const { return _dlr.rank(); }
 
     /// Is the point in mesh ?
     static constexpr bool is_within_boundary(all_t) { return true; }
     bool is_within_boundary(double x) const { return ((x >= 0) && (x <= _dom.beta)); }
-    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < dlr.rank())); }
+    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < _dlr.rank())); }
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
       if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_imtime> ) {
-	auto res = dlr.get_itnodes()[idx]; // make selective based on domain.. ?
+	auto res = _dlr.get_itnodes()[idx]; // make selective based on domain.. ?
 	if(res < 0) res = 1. + res;
 	res *= _dom.beta;
 	ASSERT(is_within_boundary(res));
 	return res;
       } else if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_coeffs> ) {
-	auto res = dlr_freq[idx];
+	auto res = _dlr_freq[idx];
 	return res;
       } else {
 	static_assert(dependent_false<Repr>::value,
@@ -139,8 +142,16 @@ namespace triqs::mesh {
     // -------------- Evaluation of a function on the grid --------------------------
 
     std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
-      static_assert(dependent_false<Domain>::value,
-		    "Interpolation on dlr_mesh on the imaginary time domain not supported, use the dlr_mesh on the dlr_domain for interpolation.");
+      if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_imtime> ) {
+	static_assert(dependent_false<Domain>::value,
+		      "Interpolation on dlr_mesh on the imaginary time domain not supported, use the dlr_mesh on the dlr_domain for interpolation.");
+      } else if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_coeffs> ) {
+	return {std::make_pair(0, 1.0), std::make_pair(1, 1.0)};
+      } else {
+	static_assert(dependent_false<Repr>::value,
+		      "Interploation not supported.");
+      }
+	
       return std::array<std::pair<long, double>, 2>{};
     }
 
@@ -191,8 +202,8 @@ namespace triqs::mesh {
     private:
     domain_t _dom;
     double _lambda, _eps;
-    nda::vector<double> dlr_freq;    
-    cppdlr::imtime_ops dlr; 
+    nda::vector<double> _dlr_freq;    
+    cppdlr::imtime_ops _dlr; 
   };
 
   // ---------------------------------------------------------------------------

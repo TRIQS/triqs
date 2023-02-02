@@ -50,9 +50,8 @@ namespace triqs::mesh {
     ///
     dlr_imtime(dlr_imtime const &x) = default;
     
-    //dlr_imtime(dlr_coeffs const &M) : B(M.domain(), M.lambda(), M.eps()) {}
-    //dlr_imtime(dlr_coeffs const &M);
-    
+    template<typename M> dlr_imtime(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr()) {}
+
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
      * on a Matsubara time domain
@@ -113,8 +112,7 @@ namespace triqs::mesh {
     ///
     dlr_coeffs(dlr_coeffs const &x) = default;
 
-    //dlr_coeffs(dlr_imtime const &M) : B(M.domain(), M.lambda(), M.eps()) {}
-    //dlr_coeffs(dlr_imtime const &M);
+    template<typename M> dlr_coeffs(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr()) {}
     
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
