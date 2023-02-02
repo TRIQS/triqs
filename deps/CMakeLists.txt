@@ -109,5 +109,5 @@ external_dependency(nda
 # -- cppdlr --
 external_dependency(cppdlr
   GIT_REPO git@github.com:jasonkaye/cppdlr.git
-  GIT_TAG main
+  GIT_TAG dev_triqs
 )

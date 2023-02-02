@@ -172,20 +172,25 @@ TEST(Gf, dlr_interpolation) {
 
   // Transform from dlr_imtime to dlr_coeffs
   
+  // ================================================================================
   //auto G_dlr = make_gf_from_fourier(G_tau);
+  // ================================================================================
 
   auto cmesh = gf_mesh<triqs::mesh::dlr_coeffs>(G_tau.mesh());
   auto G_dlr = gf<triqs::mesh::dlr_coeffs, scalar_valued>{cmesh};
-  G_dlr.data() = cmesh.dlr().vals2coefs(G_tau.data());
   
+  G_dlr.data() = cmesh.dlr().vals2coefs(G_tau.data()); 
+  
+  // ================================================================================
+
   // Interpolation in imaginary time using dlr grid (efficient by design)
   
   for (auto const &tau : tmesh) {
     EXPECT_CLOSE(G_dlr(tau), std::exp(-omega * tau) / (1 + std::exp(-beta * omega)));
   }
 
-  rw_h5(G_tau, "g_dlr_imtime");
-  rw_h5(G_dlr, "g_dlr");
+  //rw_h5(G_tau, "g_dlr_imtime");
+  //rw_h5(G_dlr, "g_dlr");
 }
 
 /*
