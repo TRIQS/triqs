@@ -232,11 +232,7 @@ namespace triqs {
        * @param new_N The new size of the reserved memory
        */
       void reserve(long new_N, long new_k = 1) {
-        if (new_k > kmax) {
-          kmax = new_k;
-          if (new_N <= Nmax) wk.resize(Nmax, kmax);
-        }
-        if (new_N > Nmax) {
+        if (!(new_N <= Nmax)) {
           Nmax = 2 * new_N;
 
           matrix_type mcpy(mat_inv);
@@ -250,8 +246,10 @@ namespace triqs {
           y_values.reserve(Nmax);
 
           w1.resize(Nmax);
-          wk.resize(Nmax, kmax);
         }
+        // FIXME: fuse wk.k != k case with other block
+        if (!(new_N + new_k <= Nmax && wk.k == new_k))
+          wk.resize(new_N + new_k, new_k);
       }
 
       /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
