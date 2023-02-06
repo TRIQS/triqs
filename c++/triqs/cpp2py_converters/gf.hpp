@@ -378,18 +378,15 @@ namespace cpp2py {
     // ----------------------------------------------
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::module("triqs.gf").attr("Block2Gf");
+      static pyref cls = pyref::get_class("triqs.gf", "Block2Gf", true);
       if (cls.is_null()) CPP2PY_RUNTIME_ERROR << "Cannot find the triqs.gf.Block2Gf";
-      int i = PyObject_IsInstance(ob, cls);
-      if (i == -1) { // an error has occurred
-        i = 0;
-        if (!raise_exception) PyErr_Clear();
-      }
-      if ((i == 0) && (raise_exception)) PyErr_SetString(PyExc_TypeError, "The object is not a Block2Gf");
+
+      // first check it is a Block2Gf
+      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
 
       pyref x   = borrowed(ob);
       pyref gfs = x.attr("_Block2Gf__GFlist");
-      return (i && py_converter<std::vector<std::vector<gf_view_type>>>::is_convertible(gfs, raise_exception));
+      return py_converter<std::vector<std::vector<gf_view_type>>>::is_convertible(gfs, raise_exception);
     }
 
     // ----------------------------------------------
