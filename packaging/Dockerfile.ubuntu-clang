@@ -1,6 +1,6 @@
-FROM ubuntu:21.04
-ARG RELEASE=21.04
-ARG LLVM=13
+FROM ubuntu:jammy
+ARG RELEASE=jammy
+ARG LLVM=14
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
@@ -43,6 +43,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-sphinx-rtd-theme && \
       pip3 install myst-parser linkify-it-py
 
-ENV PYTHON_VERSION=3.9 \
+ENV PYTHON_VERSION=3.10 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
