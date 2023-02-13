@@ -20,6 +20,7 @@
 #pragma once
 #include "./domains/legendre.hpp"
 #include "./discrete.hpp"
+#include "../utility/legendre.hpp"
 
 namespace triqs::mesh {
 
@@ -39,6 +40,18 @@ namespace triqs::mesh {
     legendre(double beta, statistic_enum S, size_t max_n) : B(typename B::domain_t(beta, S, max_n)) {}
 
     static std::string hdf5_format() { return "MeshLegendre"; }
+
+    // Issue with return type, needs to be a nda::vector<std::pair<long, double>> of length max_n
+    nda::vector<double> get_interpolation_data(double tau) const {
+
+      auto res = nda::zeros<double>(size());
+
+      utility::legendre_generator L{};
+      L.reset(2 * tau / domain().beta - 1);
+      for (auto l : range(size())) { res[l] = std::sqrt(2 * l + 1) * L.next() / domain().beta; }
+
+      return res;
+    }
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
 

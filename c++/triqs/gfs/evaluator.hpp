@@ -94,8 +94,9 @@ namespace triqs::gfs {
       using r1_t = decltype(evaluate(g, std::forward<Args>(args)...));
  
       if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
+        // -> Shouldn't there be an is_within_boundary check here?
         return evaluate(g, std::forward<Args>(args)...);
-      } else {
+      } else { // -> Case of a single number / matrix as return value
         if (g.mesh().is_within_boundary(args...)) return make_regular(evaluate(g, std::forward<Args>(args)...));
         using rt = std::decay_t<decltype(make_regular(evaluate(g, std::forward<Args>(args)...)))>;
         return rt{nda::zeros<dcomplex>(g.target_shape())};
@@ -107,11 +108,11 @@ namespace triqs::gfs {
    * Legendre
    *--------------------------------------------------------*/
 
-  // Not finished, not tested
-  template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
-    static constexpr int arity = 1;
-    template <typename G> nda::matrix_view<dcomplex> operator()(G const &g, long n) const {
-      return g.data()(n, itertools::range(), itertools::range());
-    }
-  };
+  //// Not finished, not tested
+  //template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
+  //static constexpr int arity = 1;
+  //template <typename G> nda::matrix_view<dcomplex> operator()(G const &g, long n) const {
+  //return g.data()(n, itertools::range(), itertools::range());
+  //}
+  //};
 } // namespace triqs::gfs

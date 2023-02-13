@@ -44,6 +44,24 @@ namespace triqs::gfs {
       return ((a1[Is].second * slice_or_access(g, a1[Is].first)) + ...);
     }
 
+    template <typename G, nda::MemoryArrayOfRank<1> A1> FORCEINLINE auto multivar_eval(G const &g, A1 const &a1) {
+      long N = g.data().shape()[0];
+      EXPECTS(N == a1.size());
+
+      using r_t = decltype(make_regular(std::declval<typename G::target_t::value_t>() * std::declval<typename A1::value_type>()));
+      auto res  = [&g]() {
+        if constexpr (nda::is_scalar_v<r_t>) {
+          return r_t{0};
+        } else {
+          return r_t::zeros(g.target_shape());
+        }
+      }();
+
+      for (auto n : range(N)) res += make_regular(a1[n] * g.data()(n, nda::ellipsis{}));
+
+      return res;
+    }
+
     template <size_t... Is, typename G, typename A1, typename A2>
     FORCEINLINE auto _multivar_eval_impl(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2) {
       constexpr int N1 = std::tuple_size<A1>::value;
