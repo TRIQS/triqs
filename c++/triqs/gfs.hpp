@@ -70,6 +70,7 @@
 #include "./gfs/functions/imtime.hpp"
 #include "./gfs/functions/legendre.hpp"
 #include "./gfs/functions/density.hpp"
+#include "./gfs/functions/dlr.hpp"
 
 // fourier
 #include "./gfs/transform/fourier.hpp"
