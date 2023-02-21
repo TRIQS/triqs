@@ -22,6 +22,8 @@
 #include "./details/mesh_tools.hpp"
 #include "./bases/dlr.hpp"
 
+#include <cppdlr/dlr_kernels.hpp>
+
 namespace triqs::mesh {
 
   class dlr_coeffs;
@@ -141,6 +143,15 @@ namespace triqs::mesh {
       return sout << "DLR coefficient Mesh of size " << m.size() << ", Domain: " << m.domain();
     }
 
+    // -------------------- interpolation -------------------
+
+    nda::vector<double> get_interpolation_data(double tau) const {
+      auto res = nda::zeros<double>(size());
+      for (auto l : range(size()))
+	res[l] = cppdlr::kfun(tau / domain().beta, index_to_point(l));
+      return res;
+    }
+    
     // -------------------- hdf5 -------------------
 
     static std::string hdf5_format() { return "MeshDLRCoeffs"; }
