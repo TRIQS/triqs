@@ -181,26 +181,30 @@ TEST(Gf, dlr_interpolation) {
 
 }
 
-/*
-TEST(Gf, dlr_conversion) {
-  // ================================================================================  
+TEST(Gf, dlr_coeffs_imtime_conversion) {
 
-  
-  //int ntau = 10;
-  //auto tmesh = mesh::imtime{beta, Fermion, ntau};
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  double omega = 1.337;
 
-  
-  // Interpolation on dlr_imtime grid should not be supported (by design)
-  
-  //for (auto const &tau : tmesh) EXPECT_THROW(G_tau(tau), triqs::runtime_error);
+  triqs::clef::placeholder<0> tau_;
+
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
   // Transform from dlr_imtime to dlr_coeffs
-  
-  // ================================================================================
 
+  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+  for (auto const &tau : G_tau.mesh()) EXPECT_CLOSE(G_tau[tau], G_dlr(tau));
+  
+  // Transform from dlr_coeffs to dlr_imtime
+
+  auto G_tau_ref = dlr_imtime_from_dlr_coeffs(G_dlr);
+  EXPECT_GF_NEAR(G_tau, G_tau_ref);
+  
   // Problematic API
   //auto G_dlr = make_gf_from(G_tau);
-
   // -------- PROBLEMATIC ---------------
   //auto G_matsub = make_gf_from_fourier(G_dlr);
   //auto G_tau = make_gf_from_fourier(G_dlr);
@@ -213,18 +217,6 @@ TEST(Gf, dlr_conversion) {
 
   //G_dlr.set_from(G_matsub);
   //G_matsub.set_from(G_dlr);
-
-  // ================================================================================
-
-  //auto cmesh = gf_mesh<triqs::mesh::dlr_coeffs>(G_tau.mesh());
-  //auto G_dlr = gf<triqs::mesh::dlr_coeffs, scalar_valued>{cmesh};
-  
-  //G_dlr.data() = cmesh.dlr().vals2coefs(G_tau.data());
-
-  // CF G_dlr and G_tau
-  
-  //rw_h5(G_tau, "g_dlr_imtime");
-  //rw_h5(G_dlr, "g_dlr");
 }
 
 TEST(Gf, dlr_density) {
@@ -233,22 +225,20 @@ TEST(Gf, dlr_density) {
   double lambda = 10.0;
   double eps = 1e-10;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
 
   double omega = 1.337;
   triqs::clef::placeholder<0> tau_;
-  G_tau(tau_) << std::exp(-omega * tau_) / (1 + std::exp(-beta * omega));
+  G_tau(tau_) << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
   // Density from dlr_imtime not supported (by design)
-  EXPECT_THROW(triqs::gfs::density(G_tau), triqs::runtime_error);
+  //EXPECT_THROW(triqs::gfs::density(G_tau), triqs::runtime_error);
   
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
-  auto G_dlr = make_gf_from_fourier(G_tau); 
+  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau); 
   auto n = triqs::gfs::density(G_dlr);
-  EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(-beta * omega)), 1.e-9);
-
-  rw_h5(G, "DLRDensFerm");
+  EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(beta * omega)), 1.e-9);
 }
 
 TEST(Gf, dlr_tau_rev) {
@@ -257,21 +247,41 @@ TEST(Gf, dlr_tau_rev) {
   double lambda = 10.0;
   double eps = 1e-10;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
 
   double omega = 1.337;
   triqs::clef::placeholder<0> tau_;
-  G_tau(tau_) << std::exp(-omega * tau_) / (1 + std::exp(-beta * omega));
+  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
-  G_tau_rev = G_tau;
-  auto G_dlr = make_gf_from_fourier(G_tau);
+  auto G_tau_rev = G_tau; // copy
+  
+  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
   G_tau_rev(tau_) << G_dlr(beta - tau_);
 
   // Interpolation in imaginary time using dlr grid (efficient by design)
   for (auto const &tau : G_tau_rev.mesh()) {
-    EXPECT_CLOSE(G_tau_rev(tau), std::exp(-omega * (beta - tau)) / (1 + std::exp(-beta * omega)));
-    EXPECT_CLOSE(G_tau_rev(tau), G_dlr(beta - tau));
+    double val = std::exp(-omega * (beta - tau)) / (1 + std::exp(-beta * omega));
+    EXPECT_COMPLEX_NEAR(G_tau_rev[tau].real(), val, eps);
+    EXPECT_COMPLEX_NEAR(G_tau_rev[tau], G_dlr(beta - tau), eps);
   }
+}
+
+/*
+TEST(Gf, dlr_h5) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  double omega = 1.337;
+
+  triqs::clef::placeholder<0> tau_;
+
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+
+  rw_h5(G_tau, "g_dlr_imtime");
+  rw_h5(G_dlr, "g_dlr_coeffs");
 }
 */
 
