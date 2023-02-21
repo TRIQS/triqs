@@ -267,6 +267,55 @@ TEST(Gf, dlr_tau_rev) {
 }
 
 /*
+TEST(Gf, dlr_dyson) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  double omega = 1.337;
+  double U = 10.0;
+
+  triqs::clef::placeholder<0> tau_;
+
+  auto G0_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  G0_tau(tau_) << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+
+  auto G0_dlr = dlr_coeffs_from_dlr_imtime(G0_tau);
+
+  auto G0_tau_rev = G0_tau;
+  G0_tau_rev(tau_) << G0_dlr(beta - tau_);
+
+  auto Sigma_tau = G0_tau;
+  Sigma_tau(tau_) << U*U * G0_dlr(tau_) * G0_dlr(tau_) * G0_dlr(beta - tau_);
+  auto Sigma_dlr = dlr_coeffs_from_dlr_imtime(Sigma_tau);
+
+  // Solve Dyson equation in DLR coefficients
+
+  //auto G_dlr = G0_dlr; // Remove me.
+  auto G_dlr = solve_dyson_equation(G0_dlr, Sigma_dlr); // Implement!
+
+  // Solve Dyson equation in Matsubara frequency using equidistant meshes
+  
+  auto tmesh = mesh::imtime{beta, Fermion, 10000};
+  gf<imtime, scalar_valued> G0_tau_lin{tmesh};
+  G0_tau_lin(tau_) << G0_dlr(tau_);
+  auto G0_w = make_gf_from_fourier(G0_tau_lin);
+
+  gf<imtime, scalar_valued> Sigma_tau_lin{tmesh};
+  Sigma_tau_lin(tau_) << Sigma_dlr(tau_);
+  auto Sigma_w = make_gf_from_fourier(Sigma_tau_lin);
+  
+  gf<imfreq, scalar_valued> G_w{G0_w.mesh()};
+  triqs::clef::placeholder<0> w_;
+  G_w(w_) << G0_w(w_) / ( 1 - G0_w(w_) * Sigma_w(w_) );
+  auto G_tau_lin = make_gf_from_fourier(G_w, tmesh);
+
+  gf<imtime, scalar_valued> G_tau_lin_ref{tmesh};
+  G_tau_lin_ref(tau_) << G_dlr(tau_);
+
+  EXPECT_GF_NEAR(G_tau_lin, G_tau_lin_ref);
+}
+
 TEST(Gf, dlr_h5) {
 
   double beta   = 2.0;
