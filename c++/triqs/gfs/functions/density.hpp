@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2014-2018 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2018-2019 Simons Foundation
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,6 +38,9 @@ namespace triqs {
     nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
+    nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs> g);
+    dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g);
+    
     //-------------------------------------------------------
     // For Real Frequency functions
     // ------------------------------------------------------
