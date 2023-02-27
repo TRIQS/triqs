@@ -160,11 +160,12 @@ namespace triqs::mesh {
     friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, dlr_mesh const &m, const char *_type) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format_as_string(gr, _type);
+
       h5_write(gr, "domain", m.domain());
       h5_write(gr, "lambda", m.lambda());
       h5_write(gr, "eps", m.eps());
-      //h5_write(gr, "dlr_freq", m.dlr_freq);
-      //h5_write(gr, "dlr", m.dlr);
+      h5_write(gr, "dlr_freq", m.dlr_freq());
+      h5_write(gr, "dlr", m.dlr());
     }
 
     /// Read from HDF5
@@ -173,18 +174,21 @@ namespace triqs::mesh {
       assert_hdf5_format_as_string(gr, tag_expected, true);
       typename dlr_mesh::domain_t dom;
       double lambda, eps;
+      nda::vector<double> _dlr_freq;
+      cppdlr::imtime_ops _dlr;
+      
       h5_read(gr, "domain", dom);
       h5_read(gr, "lambda", lambda);
       h5_read(gr, "eps", eps);
-      //h5_read(gr, "dlf_freq", dlr_freq);
-      //h5_read(gr, "dlf", dlr);
-      m = dlr_mesh(std::move(dom), lambda, eps);
-      //m = dlr_mesh(std::move(dom), lambda, eps,
-      //	   std::move(dlr_freq), std::move(dlr));
+      h5_read(gr, "dlr_freq", _dlr_freq);
+      h5_read(gr, "dlr", _dlr);
+      
+      m = dlr_mesh(dom, lambda, eps, _dlr_freq, _dlr);
     }
 
     // -------------------- boost serialization -------------------
 
+    /*
     friend class boost::serialization::access;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
       ar &_dom;
@@ -193,7 +197,8 @@ namespace triqs::mesh {
       ar &dlr_freq;
       ar &dlr;
     }
-
+    */
+    
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_mesh const &m) { return sout << "DLR Mesh of size " << m.size(); }

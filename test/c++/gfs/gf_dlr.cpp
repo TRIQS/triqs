@@ -16,6 +16,7 @@
 // Authors: Hugo U. R. Strand
 
 #include <triqs/test_tools/gfs.hpp>
+#include <h5/serialization.hpp>
 
 TEST(Gf, dlr_imtime) {
 
@@ -266,6 +267,53 @@ TEST(Gf, dlr_tau_rev) {
   }
 }
 
+TEST(Gf, dlr_h5) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  double omega = 1.337;
+
+  triqs::clef::placeholder<0> tau_;
+
+  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+
+  auto filename = "data_dlr_h5_rw.h5";
+  auto name = "G_tau";
+  auto G_tau_ref = G_tau;
+
+  {
+    h5::file file(filename, 'w');
+    h5_write(file, name, G_tau);
+  }  
+  {
+    h5::file file(filename, 'r');
+    h5_read(file, name, G_tau_ref);
+  }
+
+  EXPECT_GF_NEAR(G_tau, G_tau_ref);
+
+  // The serialization used in rw_h5(...) causes Segfaults
+
+  // Serialize explicitly
+  std::cout << "serialize 1\n";
+  auto s  = h5::serialize(G_tau);
+  std::cout << "deserialize 1\n";
+  //auto x2 = h5::deserialize<gf<triqs::mesh::dlr_imtime, scalar_valued>>(s); // SEGFAULTs
+  std::cout << "serialize 2\n";
+  auto s2 = h5::serialize(G_tau);  
+
+  //EXPECT_EQ_ARRAY(s, s2); // << "Test h5 save, load, save, compare has failed !";
+  
+  //auto G_tau_ref2 = rw_h5(G_tau, "g_dlr_imtime"); // SEGFAULTS Fixme!
+  //EXPECT_GF_NEAR(G_tau, G_tau_ref2);
+
+  //auto G_dlr_ref2 = rw_h5(G_dlr, "g_dlr_coeffs");
+  //EXPECT_GF_NEAR(G_dlr, G_dlr_ref2);
+}
+
 /*
 TEST(Gf, dlr_dyson) {
 
@@ -316,22 +364,6 @@ TEST(Gf, dlr_dyson) {
   EXPECT_GF_NEAR(G_tau_lin, G_tau_lin_ref);
 }
 
-TEST(Gf, dlr_h5) {
-
-  double beta   = 2.0;
-  double lambda = 10.0;
-  double eps = 1e-10;
-  double omega = 1.337;
-
-  triqs::clef::placeholder<0> tau_;
-
-  auto G_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
-  G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
-
-  rw_h5(G_tau, "g_dlr_imtime");
-  rw_h5(G_dlr, "g_dlr_coeffs");
-}
 */
 
 MAKE_MAIN;
