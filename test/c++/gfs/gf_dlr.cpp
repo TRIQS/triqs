@@ -280,38 +280,8 @@ TEST(Gf, dlr_h5) {
   G_tau(tau_) << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
   auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
 
-  auto filename = "data_dlr_h5_rw.h5";
-  auto name = "G_tau";
-  auto G_tau_ref = G_tau;
-
-  {
-    h5::file file(filename, 'w');
-    h5_write(file, name, G_tau);
-  }  
-  {
-    h5::file file(filename, 'r');
-    h5_read(file, name, G_tau_ref);
-  }
-
-  EXPECT_GF_NEAR(G_tau, G_tau_ref);
-
-  // The serialization used in rw_h5(...) causes Segfaults
-
-  // Serialize explicitly
-  std::cout << "serialize 1\n";
-  auto s  = h5::serialize(G_tau);
-  std::cout << "deserialize 1\n";
-  //auto x2 = h5::deserialize<gf<triqs::mesh::dlr_imtime, scalar_valued>>(s); // SEGFAULTs
-  std::cout << "serialize 2\n";
-  auto s2 = h5::serialize(G_tau);  
-
-  //EXPECT_EQ_ARRAY(s, s2); // << "Test h5 save, load, save, compare has failed !";
-  
-  //auto G_tau_ref2 = rw_h5(G_tau, "g_dlr_imtime"); // SEGFAULTS Fixme!
-  //EXPECT_GF_NEAR(G_tau, G_tau_ref2);
-
-  //auto G_dlr_ref2 = rw_h5(G_dlr, "g_dlr_coeffs");
-  //EXPECT_GF_NEAR(G_dlr, G_dlr_ref2);
+  rw_h5(G_tau, "g_dlr_imtime");
+  rw_h5(G_dlr, "g_dlr_coeffs");
 }
 
 /*

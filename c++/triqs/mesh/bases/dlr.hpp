@@ -63,7 +63,7 @@ namespace triqs::mesh {
       _dlr_freq(std::move(dlr_freq)),
       _dlr(std::move(dlr)) {}
     
-    dlr_mesh() : dlr_mesh(domain_t{}, 0, 0) {}
+    dlr_mesh() : _dom(), _lambda(0), _eps(0), _dlr_freq(), _dlr() {}
 
     template <typename D, typename R>
     explicit dlr_mesh(dlr_mesh<D, R> const &M) :
