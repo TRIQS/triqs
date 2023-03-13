@@ -151,7 +151,7 @@ class HilbertTransform:
             # sum the res GF of all nodes and returns the results on all nodes...
             # Cf Boost.mpi.python, collective communicator for documentation.
             # The point is that res is pickable, hence can be transmitted between nodes without further code...
-            res << mpi.all_reduce(mpi.world, res, lambda x, y: x+y)
+            res << mpi.all_reduce(res)
             mpi.barrier()
         # END of HT
 

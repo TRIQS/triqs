@@ -160,7 +160,7 @@ class SumkDiscrete:
             tmp2 *= w
             G += tmp2
 
-        G << mpi.all_reduce(mpi.world,G,lambda x,y: x+y)
+        G << mpi.all_reduce(G)
         mpi.barrier()
 
         return G
