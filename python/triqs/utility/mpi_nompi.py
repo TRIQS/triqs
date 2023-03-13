@@ -52,7 +52,14 @@ def bcast(x, root = 0): return x
 
 def barrier(poll_msec=1) : return
 
-def all_reduce(WORLD, x, F) : return x
+# op doesn't do anything in serial so Ops like MINLOC or MAXLOC could fail
+def all_reduce(x, comm=world, op=lambda x, y: x + y):
+    if x is None:
+        report(
+            "WARNING: the signature for all_reduce is now 'all_reduce(x, comm=world, op=MPI.SUM)'\n\tattempting compatibility with old signature"
+        )
+        return comm
+    return x
 
 def send(val, dest):
     _sendval = val

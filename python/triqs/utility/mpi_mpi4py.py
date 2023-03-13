@@ -64,10 +64,16 @@ def barrier(poll_msec=1):
         while not req.Test():
             time.sleep(poll_msec / 1000)
 
-# temporary patch
-# need to change the code for all all_reduce to use this layer....
-def all_reduce(WORLD, x, F) :
-    return world.allreduce(x)
+def all_reduce(x, comm=world, op=MPI.SUM):
+    try:
+        return comm.allreduce(x, op=op)
+    except (AttributeError, TypeError) as e:
+        if isinstance(x, MPI.Intracomm):
+            report(
+                "WARNING: the signature for all_reduce is now 'all_reduce(x, comm=world, op=MPI.SUM)'\n\tattempting compatibility with old signature"
+            )
+            return world.allreduce(comm)
+        raise e
 
 
 Verbosity_Level_Report_Max = 1
