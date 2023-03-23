@@ -21,10 +21,11 @@
 #pragma once
 #include "../details/mesh_tools.hpp"
 
-#include <cppdlr/dlr_imtime.hpp>
-#include <cppdlr/dlr_basis.hpp>
 #include <cppdlr/utils.hpp>
+#include <cppdlr/dlr_basis.hpp>
 #include <cppdlr/dlr_kernels.hpp>
+#include <cppdlr/dlr_imtime.hpp>
+#include <cppdlr/dlr_imfreq.hpp>
 
 
 template<class T> struct dependent_false : std::false_type {};
@@ -55,20 +56,22 @@ namespace triqs::mesh {
     explicit dlr_mesh(domain_t dom, double lambda, double eps) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
       _dlr_freq(cppdlr::dlr_freq(lambda, eps)),
-      _dlr(lambda, _dlr_freq) {}
+      _dlr(lambda, _dlr_freq),
+      _dlr_if(lambda, _dlr_freq, dom.statistic == Fermion ? -1 : +1) {}
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps,
-		      nda::vector<double> dlr_freq,  cppdlr::imtime_ops dlr) :
+		      nda::vector<double> dlr_freq,
+		      cppdlr::imtime_ops dlr, cppdlr::imfreq_ops dlr_if) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
       _dlr_freq(std::move(dlr_freq)),
-      _dlr(std::move(dlr)) {}
+      _dlr(std::move(dlr)), _dlr_if(std::move(dlr_if)) {}
     
-    dlr_mesh() : _dom(), _lambda(0), _eps(0), _dlr_freq(), _dlr() {}
+    dlr_mesh() : _dom(), _lambda(0), _eps(0), _dlr_freq(), _dlr(), _dlr_if() {}
 
     template <typename D, typename R>
     explicit dlr_mesh(dlr_mesh<D, R> const &M) :
       _dom(M.domain()), _lambda(M.lambda()), _eps(M.eps()),
-      _dlr_freq(M.dlr_freq()), _dlr(M.dlr()) {}
+      _dlr_freq(M.dlr_freq()), _dlr(M.dlr()), _dlr_if(M.dlr_if()) {}
 
     /// Mesh comparison
     bool operator==(dlr_mesh const &M) const {
@@ -86,6 +89,7 @@ namespace triqs::mesh {
 
     auto dlr_freq() const { return _dlr_freq; }
     auto dlr() const { return _dlr; }
+    auto dlr_if() const { return _dlr_if; }
     
     // -------------------- Accessors (from concept) -------------------
 
@@ -166,6 +170,7 @@ namespace triqs::mesh {
       h5_write(gr, "eps", m.eps());
       h5_write(gr, "dlr_freq", m.dlr_freq());
       h5_write(gr, "dlr", m.dlr());
+      h5_write(gr, "dlr_if", m.dlr_if());
     }
 
     /// Read from HDF5
@@ -176,14 +181,16 @@ namespace triqs::mesh {
       double lambda, eps;
       nda::vector<double> _dlr_freq;
       cppdlr::imtime_ops _dlr;
+      cppdlr::imfreq_ops _dlr_if;
       
       h5_read(gr, "domain", dom);
       h5_read(gr, "lambda", lambda);
       h5_read(gr, "eps", eps);
       h5_read(gr, "dlr_freq", _dlr_freq);
       h5_read(gr, "dlr", _dlr);
+      h5_read(gr, "dlr_if", _dlr_if);
       
-      m = dlr_mesh(dom, lambda, eps, _dlr_freq, _dlr);
+      m = dlr_mesh(dom, lambda, eps, _dlr_freq, _dlr, _dlr_if);
     }
 
     // -------------------- boost serialization -------------------
@@ -209,6 +216,7 @@ namespace triqs::mesh {
     double _lambda, _eps;
     nda::vector<double> _dlr_freq;    
     cppdlr::imtime_ops _dlr; 
+    cppdlr::imfreq_ops _dlr_if; 
   };
 
   // ---------------------------------------------------------------------------
