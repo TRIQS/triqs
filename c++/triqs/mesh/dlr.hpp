@@ -53,7 +53,7 @@ namespace triqs::mesh {
     ///
     dlr_imtime(dlr_imtime const &x) = default;
     
-    template<typename M> dlr_imtime(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr(), m.dlr_if()) {}
+    template<typename M> dlr_imtime(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr_it(), m.dlr_if()) {}
 
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times
@@ -115,7 +115,7 @@ namespace triqs::mesh {
     ///
     dlr_imfreq(dlr_imfreq const &x) = default;
     
-    template<typename M> dlr_imfreq(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr(), m.dlr_if()) {}
+    template<typename M> dlr_imfreq(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr_it(), m.dlr_if()) {}
 
     /**
      * Construct a Mesh of Discrete Lehmann imaginary frequencies
@@ -176,7 +176,7 @@ namespace triqs::mesh {
     ///
     dlr_coeffs(dlr_coeffs const &x) = default;
 
-    template<typename M> dlr_coeffs(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr(), m.dlr_if()) {}
+    template<typename M> dlr_coeffs(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr_it(), m.dlr_if()) {}
     
     /**
      * Construct a Mesh of Discrete Lehmann imaginary times

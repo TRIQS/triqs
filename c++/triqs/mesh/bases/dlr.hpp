@@ -54,22 +54,22 @@ namespace triqs::mesh {
     explicit dlr_mesh(domain_t dom, double lambda, double eps) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
       _dlr_freq(cppdlr::dlr_freq(lambda, eps)),
-      _dlr(lambda, _dlr_freq),
+      _dlr_it(lambda, _dlr_freq),
       _dlr_if(lambda, _dlr_freq, dom.statistic == Fermion ? -1 : +1) {}
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps,
 		      nda::vector<double> dlr_freq,
-		      cppdlr::imtime_ops dlr, cppdlr::imfreq_ops dlr_if) :
+		      cppdlr::imtime_ops dlr_it, cppdlr::imfreq_ops dlr_if) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
       _dlr_freq(std::move(dlr_freq)),
-      _dlr(std::move(dlr)), _dlr_if(std::move(dlr_if)) {}
+      _dlr_it(std::move(dlr_it)), _dlr_if(std::move(dlr_if)) {}
     
-    dlr_mesh() : _dom(), _lambda(0), _eps(0), _dlr_freq(), _dlr(), _dlr_if() {}
+    dlr_mesh() : _dom(), _lambda(0), _eps(0), _dlr_freq(), _dlr_it(), _dlr_if() {}
 
     template <typename D, typename R>
     explicit dlr_mesh(dlr_mesh<D, R> const &M) :
       _dom(M.domain()), _lambda(M.lambda()), _eps(M.eps()),
-      _dlr_freq(M.dlr_freq()), _dlr(M.dlr()), _dlr_if(M.dlr_if()) {}
+      _dlr_freq(M.dlr_freq()), _dlr_it(M.dlr_it()), _dlr_if(M.dlr_if()) {}
 
     /// Mesh comparison
     bool operator==(dlr_mesh const &M) const {
@@ -86,7 +86,7 @@ namespace triqs::mesh {
     double eps() const { return _eps; }
 
     auto dlr_freq() const { return _dlr_freq; }
-    auto dlr() const { return _dlr; }
+    auto dlr_it() const { return _dlr_it; }
     auto dlr_if() const { return _dlr_if; }
     
     // -------------------- Accessors (from concept) -------------------
@@ -95,18 +95,18 @@ namespace triqs::mesh {
     domain_t const &domain() const { return _dom; }
 
     /// Size (linear) of the mesh of the window
-    long size() const { return _dlr.rank(); }
+    long size() const { return _dlr_it.rank(); }
 
     /// Is the point in mesh ?
     static constexpr bool is_within_boundary(all_t) { return true; }
     bool is_within_boundary(double x) const { return ((x >= 0) && (x <= _dom.beta)); }
-    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < _dlr.rank())); }
+    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < _dlr_it.rank())); }
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
       if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_imtime> ) {
-	auto res = _dlr.get_itnodes()[idx]; // make selective based on domain.. ?
+        auto res = _dlr_it.get_itnodes()[idx]; // make selective based on domain.. ?
 	if(res < 0) res = 1. + res;
 	res *= _dom.beta;
 	ASSERT(is_within_boundary(res));
@@ -174,7 +174,7 @@ namespace triqs::mesh {
       h5_write(gr, "lambda", m.lambda());
       h5_write(gr, "eps", m.eps());
       h5_write(gr, "dlr_freq", m.dlr_freq());
-      h5_write(gr, "dlr", m.dlr());
+      h5_write(gr, "dlr_it", m.dlr_it());
       h5_write(gr, "dlr_if", m.dlr_if());
     }
 
@@ -185,17 +185,17 @@ namespace triqs::mesh {
       typename dlr_mesh::domain_t dom;
       double lambda, eps;
       nda::vector<double> _dlr_freq;
-      cppdlr::imtime_ops _dlr;
+      cppdlr::imtime_ops _dlr_it;
       cppdlr::imfreq_ops _dlr_if;
       
       h5_read(gr, "domain", dom);
       h5_read(gr, "lambda", lambda);
       h5_read(gr, "eps", eps);
       h5_read(gr, "dlr_freq", _dlr_freq);
-      h5_read(gr, "dlr", _dlr);
+      h5_read(gr, "dlr_it", _dlr_it);
       h5_read(gr, "dlr_if", _dlr_if);
       
-      m = dlr_mesh(dom, lambda, eps, _dlr_freq, _dlr, _dlr_if);
+      m = dlr_mesh(dom, lambda, eps, _dlr_freq, _dlr_it, _dlr_if);
     }
 
     // -------------------- boost serialization -------------------
@@ -220,7 +220,7 @@ namespace triqs::mesh {
     domain_t _dom;
     double _lambda, _eps;
     nda::vector<double> _dlr_freq;    
-    cppdlr::imtime_ops _dlr; 
+    cppdlr::imtime_ops _dlr_it; 
     cppdlr::imfreq_ops _dlr_if; 
   };
 

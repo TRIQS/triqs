@@ -28,26 +28,26 @@ namespace triqs {
 
     gf<mesh::dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<mesh::dlr_imtime> const &g_tau) {
       gf<mesh::dlr_coeffs> g_dlr{g_tau.mesh(), g_tau.target_shape()};
-      g_dlr.data() = g_dlr.mesh().dlr().vals2coefs(g_tau.data());
+      g_dlr.data() = g_dlr.mesh().dlr_it().vals2coefs(g_tau.data());
       return g_dlr;
     }
 
     gf<mesh::dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(
       gf_const_view<mesh::dlr_imtime, scalar_valued> const &g_tau) {
       gf<mesh::dlr_coeffs, scalar_valued> g_dlr{g_tau.mesh()};
-      g_dlr.data() = g_dlr.mesh().dlr().vals2coefs(g_tau.data());
+      g_dlr.data() = g_dlr.mesh().dlr_it().vals2coefs(g_tau.data());
       return g_dlr;
     }
 
     gf<mesh::dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs> const &g_dlr) {
       auto g_tau = gf<triqs::mesh::dlr_imtime>{g_dlr.mesh()};
-      g_tau.data() = g_dlr.mesh().dlr().coefs2vals(g_dlr.data());
+      g_tau.data() = g_dlr.mesh().dlr_it().coefs2vals(g_dlr.data());
       return g_tau;
     }
     
     gf<mesh::dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs, scalar_valued> const &g_dlr) {
       auto g_tau = gf<triqs::mesh::dlr_imtime, scalar_valued>{g_dlr.mesh()};
-      g_tau.data() = g_dlr.mesh().dlr().coefs2vals(g_dlr.data());
+      g_tau.data() = g_dlr.mesh().dlr_it().coefs2vals(g_dlr.data());
       return g_tau;
     }
     
