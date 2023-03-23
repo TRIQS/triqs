@@ -49,8 +49,6 @@ namespace triqs::mesh {
     using linear_index_t = long;
     using domain_pt_t    = typename domain_t::point_t;
 
-    static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value, "Internal error : cannot use Linear Mesh in this case");
-
     // -------------------- Constructors -------------------
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps) :
@@ -113,6 +111,13 @@ namespace triqs::mesh {
 	res *= _dom.beta;
 	ASSERT(is_within_boundary(res));
 	return res;
+	
+      } else if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_imfreq> ) {
+	auto n = _dlr_if.get_ifnodes()[idx]; // Gives integer index
+	auto m = _dom.statistic == Fermion ? 2*n + 1 : 2*n;
+	auto res = nda::dcomplex(0, M_PI / _dom.beta * m);
+	return res; // TODO: Wrap this in a matsubara frequency mesh point
+
       } else if constexpr ( std::is_same_v<repr_t, tag::dlr_repr_coeffs> ) {
 	auto res = _dlr_freq[idx];
 	return res;
@@ -243,5 +248,8 @@ namespace triqs::mesh {
     void reset() { _index = 0; }
     mesh_t const &mesh() const { return *m; }
   };
+
+  inline std::ostream &operator<<(std::ostream &out, mesh_point<dlr_mesh<matsubara_domain<true>, tag::dlr_repr_imfreq> > const &y) { return out << std::complex<double>(y); }
+  
 
 } // namespace triqs::mesh

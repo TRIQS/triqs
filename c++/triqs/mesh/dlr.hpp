@@ -28,6 +28,7 @@ namespace triqs::mesh {
 
   class dlr_coeffs;
   class dlr_imtime;
+  class dlr_imfreq;
   
   /**
    *  Imaginary-time Discrete Lehmann representation mesh
@@ -91,6 +92,67 @@ namespace triqs::mesh {
 
   };
 
+  /**
+   *  Imaginary-frequency Discrete Lehmann representation mesh
+   *
+   *  Mesh for the imaginary-frequency axis
+   *
+   *  The frequency points are computed using the cppdlr library
+   */
+  class dlr_imfreq : public dlr_mesh<matsubara_freq_domain, tag::dlr_repr_imfreq> {
+    using B = dlr_mesh<matsubara_freq_domain, tag::dlr_repr_imfreq>;
+    
+    public:
+
+    using domain_t       = matsubara_freq_domain;
+    using index_t        = long;
+    using linear_index_t = long;
+    using domain_pt_t    = typename domain_t::point_t;
+
+    ///
+    dlr_imfreq() = default;
+
+    ///
+    dlr_imfreq(dlr_imfreq const &x) = default;
+    
+    template<typename M> dlr_imfreq(M const &m) : B(m.domain(), m.lambda(), m.eps(), m.dlr_freq(), m.dlr(), m.dlr_if()) {}
+
+    /**
+     * Construct a Mesh of Discrete Lehmann imaginary frequencies
+     * on a Matsubara frequency domain
+     *
+     * @param dom Matsubara frequency domain
+     * @param lambda Lambda energy over beta parameter
+     * @param eps Representation accuracy
+     */
+    dlr_imfreq(matsubara_freq_domain d, double lambda, double eps) : B(d, lambda, eps) {}
+
+    /**
+     * Construct a Mesh of imaginary freqiencies
+     *
+     * @param beta Inverse temperature
+     * @param S Statistic (Fermion or Boson)
+     * @param lambda Lambda energy over beta parameter
+     * @param eps Representation accuracy
+     */
+    dlr_imfreq(double beta, statistic_enum S, double lambda, double eps) : dlr_imfreq({beta, S}, lambda, eps) {}
+
+    // -------------------- print -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, dlr_imfreq const &m) {
+      return sout << "DLR Imaginary Frequency Mesh of size " << m.size() << ", Domain: " << m.domain();
+    }
+
+    // -------------------- hdf5 -------------------
+
+    static std::string hdf5_format() { return "MeshDLRImFreq"; }
+
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr_imfreq const &m) { h5_write_impl(fg, subgroup_name, m, "MeshDLRImFreq"); }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_imfreq &m) { h5_read_impl(fg, subgroup_name, m, "MeshDLRImFreq"); }
+
+  };
+  
   /**
    *  Discrete Lehmann representation mesh with coefficients
    *

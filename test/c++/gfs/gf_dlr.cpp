@@ -38,6 +38,42 @@ TEST(Gf, dlr_imtime) {
   }
 }
 
+TEST(Gf, dlr_imfreq_fermi) {
+
+  double beta   = 2.0;
+  double lambda = 1000.0;
+  double eps = 1e-10;
+  auto mesh = gf_mesh<triqs::mesh::dlr_imfreq>{beta, Fermion, lambda, eps};
+
+  std::cout << mesh << "\n";
+  std::cout << "Rank " << mesh.size() << "\n";
+  
+  EXPECT_EQ(mesh.lambda(), lambda);
+  EXPECT_EQ(mesh.eps(), eps);
+  
+  for (const auto &iw : mesh ) {
+    std::cout << iw.linear_index() << ", " << iw << "\n";
+  }
+}
+
+TEST(Gf, dlr_imfreq_bose) {
+
+  double beta   = 2.0;
+  double lambda = 1000.0;
+  double eps = 1e-10;
+  auto mesh = gf_mesh<triqs::mesh::dlr_imfreq>{beta, Boson, lambda, eps};
+
+  std::cout << mesh << "\n";
+  std::cout << "Rank " << mesh.size() << "\n";
+  
+  EXPECT_EQ(mesh.lambda(), lambda);
+  EXPECT_EQ(mesh.eps(), eps);
+  
+  for (const auto &iw : mesh ) {
+    std::cout << iw.linear_index() << ", " << iw << "\n";
+  }
+}
+
 TEST(Gf, dlr_coeffs) {
 
   // dlr_coeffs -> dlr_refreq
