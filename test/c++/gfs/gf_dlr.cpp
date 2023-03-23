@@ -297,6 +297,26 @@ TEST(Gf, dlr_imtime_interpolation) {
   }
 }
 
+TEST(Gf, dlr_imfreq_interpolation) {
+
+  double beta   = 2.0;
+  double lambda = 10.0;
+  double eps = 1e-10;
+  double omega = 1.337;
+
+  triqs::clef::placeholder<0> iw_;
+
+  auto G_iw = gf<triqs::mesh::dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
+  G_iw(iw_) << 1. / (iw_ + omega);
+
+  auto G_dlr = dlr_coeffs_from_dlr_imfreq(G_iw);
+
+  auto G_iw_ref = G_iw;
+  G_iw_ref(iw_) << G_dlr(iw_); // Interpolate DLR in imaginary frequency
+
+  EXPECT_GF_NEAR(G_iw, G_iw_ref);
+}
+
 TEST(Gf, dlr_coeffs_conversion) {
 
   double beta   = 2.0;
@@ -420,11 +440,6 @@ TEST(Gf, dlr_dyson) {
 
   auto G_iw_ref = G_iw;
   G_iw_ref(iw_) << 1. / (iw_ + 1 - 1/(iw_ + 1));
-
-  for (auto const &iw : G_iw.mesh()) {
-    std::cout << G_iw[iw] << ", " << G_iw_ref[iw] << "\n";
-  }
-
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 
   /*
