@@ -442,28 +442,6 @@ TEST(Gf, dlr_dyson) {
   G_iw_ref(iw_) << 1. / (iw_ + 1 - 1/(iw_ + 1));
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 
-  /*
-  // Solve Dyson equation in Matsubara frequency using equidistant meshes
-  
-  auto tmesh = mesh::imtime{beta, Fermion, 10000};
-  gf<imtime, scalar_valued> G0_tau_lin{tmesh};
-  G0_tau_lin(tau_) << G0_dlr(tau_);
-  auto G0_w = make_gf_from_fourier(G0_tau_lin);
-
-  gf<imtime, scalar_valued> Sigma_tau_lin{tmesh};
-  Sigma_tau_lin(tau_) << Sigma_dlr(tau_);
-  auto Sigma_w = make_gf_from_fourier(Sigma_tau_lin);
-  
-  gf<imfreq, scalar_valued> G_w{G0_w.mesh()};
-  triqs::clef::placeholder<0> w_;
-  G_w(w_) << G0_w(w_) / ( 1 - G0_w(w_) * Sigma_w(w_) );
-  auto G_tau_lin = make_gf_from_fourier(G_w, tmesh);
-
-  gf<imtime, scalar_valued> G_tau_lin_ref{tmesh};
-  G_tau_lin_ref(tau_) << G_dlr(tau_);
-
-  EXPECT_GF_NEAR(G_tau_lin, G_tau_lin_ref);
-  */
 }
 
 MAKE_MAIN;
