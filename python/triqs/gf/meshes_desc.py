@@ -43,13 +43,13 @@ module.add_enum(c_name = "triqs::mesh::imfreq::option",
 ##   Mesh generic
 ########################
 
-def make_mesh(py_type, c_tag, index_type='long', doc=""):
+def make_mesh(py_type, c_tag, index_type='long', doc="", serializable="tuple"):
 
     m = class_( py_type = py_type,
             c_type = "%s"%c_tag,
             c_type_absolute = "triqs::mesh::%s"%c_tag,
             hdf5 = True,
-            serializable= "tuple",
+            serializable= serializable,
             is_printable= True,
             comparisons = "== !=",
             doc = doc
@@ -104,6 +104,33 @@ m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dc
 module.add_class(m)
 
 ########################
+##   MeshDLRImFreq
+########################
+
+m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq", serializable="h5",
+        doc="""Mesh of DLR Matsubara frequencies
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        S : str
+            Statistic, 'Fermion' or 'Boson'
+        n_iw : int [default=1025]
+            Number of positive Matsubara frequencies
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, double lambda, double eps)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.domain().beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
+               doc = "Statistic")
+
+module.add_class(m)
+
+########################
 ##   MeshImTime
 ########################
 
@@ -124,6 +151,66 @@ m = make_mesh(py_type = "MeshImTime", c_tag = "imtime",
         """)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_tau)")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.domain().beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
+               doc = "Statistic")
+
+module.add_class(m)
+
+########################
+##   MeshDLRImTime
+########################
+
+m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime", serializable="h5",
+        doc =  """Mesh of DLR imaginary times
+
+        Mesh-points are evenly distributed in the interval [0,beta]
+        including points at both edges.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        S : str
+            Statistic, 'Fermion' or 'Boson'
+        n_tau : int
+            Number of mesh-points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, double lambda, double eps)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.domain().beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
+               doc = "Statistic")
+
+module.add_class(m)
+
+########################
+##   MeshDLRCoeffs
+########################
+
+m = make_mesh(py_type = "MeshDLRCoeffs", c_tag = "dlr_coeffs", serializable="h5",
+        doc =  """Mesh of DLR imaginary times
+
+        Mesh-points are evenly distributed in the interval [0,beta]
+        including points at both edges.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        S : str
+            Statistic, 'Fermion' or 'Boson'
+        n_tau : int
+            Number of mesh-points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum S, double lambda, double eps)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
