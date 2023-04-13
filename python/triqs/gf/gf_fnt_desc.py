@@ -81,6 +81,9 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)"
 m.add_function("matrix<dcomplex> density(gf_view<triqs::gfs::legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<triqs::gfs::legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
+m.add_function("matrix<dcomplex> density(gf_view<triqs::mesh::dlr_coeffs, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<triqs::mesh::dlr_coeffs, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+
 # ---------------------- miscellaneous --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 

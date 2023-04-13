@@ -64,9 +64,7 @@ class test_dlr_mesh(unittest.TestCase):
         e = 1.42
         beta, eps, lamb = 1.337, 1e-9, 100.
 
-        tmesh = MeshDLRImTime(beta, 'Fermion', lamb, eps)
         wmesh = MeshDLRImFreq(beta, 'Fermion', lamb, eps)
-        cmesh = MeshDLRCoeffs(beta, 'Fermion', lamb, eps)
 
         g_w = Gf(mesh=wmesh, target_shape=[])
 
@@ -88,14 +86,28 @@ class test_dlr_mesh(unittest.TestCase):
 
         for w in g_w_new.mesh:
             np.testing.assert_almost_equal(g_w[w], g_w_new[w])
-
+            
     
     def test_dlr_gfs_density(self):
-        pass
+
+        e = 1.42
+        beta, eps, lamb = 1.337, 1e-9, 100.
+
+        wmesh = MeshDLRImFreq(beta, 'Fermion', lamb, eps)
+        g_w = Gf(mesh=wmesh, target_shape=[])
+
+        for w in wmesh: g_w[w] = 1/(w + e)
+
+        g_c = dlr_coeffs_from_dlr_imfreq(g_w)
+
+        ref = np.exp(-e * beta) / (1 + np.exp(-e * beta))
+        np.testing.assert_almost_equal(density(g_c), ref)
+
 
     def test_dlr_gfs_imtime_interp(self):
         pass
 
+    
     def test_dlr_gfs_imfreq_interp(self):
 
         beta, eps, lamb = 1.337, 1e-12, 10.
