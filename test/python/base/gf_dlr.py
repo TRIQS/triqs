@@ -67,11 +67,13 @@ class test_dlr_mesh(unittest.TestCase):
         wmesh = MeshDLRImFreq(beta, 'Fermion', lamb, eps)
 
         g_w = Gf(mesh=wmesh, target_shape=[])
-
-        #g_w << inverse(iOmega_n - 1.0) # Broken
+        g_w << inverse(iOmega_n + e)
         
+        g_w_2 = Gf(mesh=wmesh, target_shape=[])
         for w in wmesh:
-            g_w[w] = 1/(w + e)
+            g_w_2[w] = 1/(w + e)
+
+        np.testing.assert_array_almost_equal(g_w.data, g_w_2.data)
 
         g_c = dlr_coeffs_from_dlr_imfreq(g_w)
 
@@ -104,11 +106,28 @@ class test_dlr_mesh(unittest.TestCase):
         np.testing.assert_almost_equal(density(g_c), ref)
 
 
-    def test_dlr_gfs_imtime_interp(self):
-        pass
+    def test_dlr_gfs_imfreq_interp(self):
+
+        beta, eps, lamb = 1.337, 1e-12, 10.
+        m = MeshDLRCoeffs(beta, 'Fermion', lamb, eps)
+
+        rf = np.array([ p.value for p in m ])
+        
+        g = Gf(mesh=m, target_shape=[])
+        g.data[:] = np.random.randn(len(m))
+
+        N = 10
+        for n in np.arange(-N, N):
+            iw = 1.j * 2 * np.pi / beta * (2*n + 1)
+            ref = - np.sum(g.data / ( iw + rf/beta ) )
+            #print(g(iw), ref)
+            # This breaks because we currently can not have
+            # two call proxies in the python layer
+            # see the call operators in python/triqs/gf/wrapped_aux_desc.py
+            np.testing.assert_almost_equal(g(iw), ref)
 
     
-    def test_dlr_gfs_imfreq_interp(self):
+    def test_dlr_gfs_imtime_interp(self):
 
         beta, eps, lamb = 1.337, 1e-12, 10.
         m = MeshDLRCoeffs(beta, 'Fermion', lamb, eps)
