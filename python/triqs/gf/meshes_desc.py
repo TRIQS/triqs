@@ -127,6 +127,22 @@ m.add_property(name = "beta",
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
                doc = "Statistic")
+m.add_property(name = "size",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "__len__",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda()",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
 
 module.add_class(m)
 
@@ -188,6 +204,22 @@ m.add_property(name = "beta",
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
                doc = "Statistic")
+m.add_property(name = "size",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "__len__",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda()",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
 
 module.add_class(m)
 
@@ -218,6 +250,22 @@ m.add_property(name = "beta",
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
                doc = "Statistic")
+m.add_property(name = "size",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "__len__",
+               getter = cfunction(calling_pattern="long result = self_c.size()",
+               signature = "long()",
+               doc = "DLR rank"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda()",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
 
 module.add_class(m)
 
