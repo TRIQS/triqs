@@ -29,6 +29,9 @@ namespace triqs::gfs {
   using mesh::imfreq;
   using mesh::imtime;
   using mesh::legendre;
+  using mesh::dlr_imfreq;
+  using mesh::dlr_imtime;
+  using mesh::dlr_coeffs;
   using mesh::prod;
   using mesh::refreq;
   using mesh::retime;

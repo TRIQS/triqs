@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "../transform/fourier.hpp" // Fixme: dlr_* meshes in triqs::gfs namespace
+
 namespace triqs {
   namespace gfs {
 
@@ -26,19 +28,19 @@ namespace triqs {
 
     // dlr_imtime <-> dlr_coeffs
 
-    gf<mesh::dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<mesh::dlr_imtime> g_tau);
-    gf<mesh::dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<mesh::dlr_imtime, scalar_valued> g_tau);
+    gf<dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime> g_tau);
+    gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime, scalar_valued> g_tau);
 
-    gf<mesh::dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs> g_dlr);
-    gf<mesh::dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs, scalar_valued> g_dlr);
+    gf<dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr);
+    gf<dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr);
 
     // dlr_imfreq <-> dlr_coeffs
 
-    gf<mesh::dlr_coeffs> dlr_coeffs_from_dlr_imfreq(gf_const_view<mesh::dlr_imfreq> g_iw);
-    gf<mesh::dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imfreq(gf_const_view<mesh::dlr_imfreq, scalar_valued> g_iw);
+    gf<dlr_coeffs> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq> g_iw);
+    gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq, scalar_valued> g_iw);
 
-    gf<mesh::dlr_imfreq> dlr_imfreq_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs> g_dlr);
-    gf<mesh::dlr_imfreq, scalar_valued> dlr_imfreq_from_dlr_coeffs(gf_const_view<mesh::dlr_coeffs, scalar_valued> g_dlr);
+    gf<dlr_imfreq> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr);
+    gf<dlr_imfreq, scalar_valued> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr);
     
   } // namespace gfs
 } // namespace triqs

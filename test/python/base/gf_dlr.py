@@ -33,11 +33,7 @@ from triqs.gf.gf_fnt import dlr_imtime_from_dlr_coeffs
 
 class test_dlr_mesh(unittest.TestCase):
 
-    
-    def setUp(self):
-        pass
-
-    
+        
     def test_dlr_meshes(self):
 
         beta, eps, lamb = 1.337, 1e-9, 100.
