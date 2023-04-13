@@ -28,7 +28,17 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int']
 
-    for M in ['imtime', 'refreq', 'retime']:
+    # Can not have two CallProxyDLRCoeffs classes
+    # (one taking double and one taking dcomplex)
+    # Gives: """IndexError: The class CallProxyDLRCoeffs_0 already exists"""
+    #
+    #for M in ['triqs::mesh::dlr_coeffs']:
+    #    yield M, ["dcomplex"], 0, 'scalar_valued', ['dcomplex'] # R =2
+    #    yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['dcomplex'] # R =2
+    #    for R in [3,4]:
+    #        yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['dcomplex']
+            
+    for M in ['imtime', 'refreq', 'retime', 'triqs::mesh::dlr_coeffs']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =1
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
         for R in [3,4]:
@@ -59,6 +69,7 @@ def all_calls():
 C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
+                   'triqs::mesh::dlr_coeffs' : 'DLRCoeffs',
                    'retime' : 'ReTime',
                    'brzone' : 'BrZone',
                    'cyclat' : 'CycLat',

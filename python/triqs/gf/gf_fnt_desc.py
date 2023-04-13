@@ -177,6 +177,24 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                     calling_pattern = "g_out = fourier(g_in)",
                     doc = """Fills self with the Fourier transform of g_in""")
 
+# ---------------------- DLR mesh conversions --------------------
+
+# dlr_imtime <-> dlr_coeffs
+
+m.add_function("gf<triqs::mesh::dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<triqs::mesh::dlr_imtime> g_tau)")
+m.add_function("gf<triqs::mesh::dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<triqs::mesh::dlr_imtime, scalar_valued> g_tau)")
+
+m.add_function("gf<triqs::mesh::dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<triqs::mesh::dlr_coeffs> g_dlr)")
+m.add_function("gf<triqs::mesh::dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<triqs::mesh::dlr_coeffs, scalar_valued> g_dlr)")
+
+# dlr_imfreq <-> dlr_coeffs
+
+m.add_function("gf<triqs::mesh::dlr_coeffs> dlr_coeffs_from_dlr_imfreq(gf_const_view<triqs::mesh::dlr_imfreq> g_iw)")
+m.add_function("gf<triqs::mesh::dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imfreq(gf_const_view<triqs::mesh::dlr_imfreq, scalar_valued> g_iw)")
+
+m.add_function("gf<triqs::mesh::dlr_imfreq> dlr_imfreq_from_dlr_coeffs(gf_const_view<triqs::mesh::dlr_coeffs> g_dlr)")
+m.add_function("gf<triqs::mesh::dlr_imfreq, scalar_valued> dlr_imfreq_from_dlr_coeffs(gf_const_view<triqs::mesh::dlr_coeffs, scalar_valued> g_dlr)")
+
 
 ########################
 ##   Code generation
