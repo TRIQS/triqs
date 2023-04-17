@@ -28,6 +28,24 @@ techniques.
 
 TRIQS is free software distributed under the GPL license.
 
+TRIQS School 2023
+-----------------
+
+We are excited to announce the TRIQS Summer School 2023.
+The event will take place from August 28th to September 2nd near Paris, France.
+
+The four day program will cover the topics
+     
+* Refresher in Many-Body Theory
+* Dynamical mean-field theory for model and ab-initio systems
+* Monte-Carlo Methods and Continuous-time Quantum Monte-Carlo
+* Two-particle response functions within RPA and TPSC
+
+as theoretical lectures (12h total) and as hands-on tutorials (16h total) using the TRIQS software platform.
+The Summer School is targeted at students at the doctoral or master level.
+Applications can be submitted through the `event website <https://indico.flatironinstitute.org/event/3575/>`_.
+
+
 TRIQS applications
 -----------------------
 
