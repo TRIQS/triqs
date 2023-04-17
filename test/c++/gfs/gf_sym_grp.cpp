@@ -1,0 +1,180 @@
+// Copyright (c) 2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+// Copyright (c) 2018 Centre national de la recherche scientifique (CNRS)
+// Copyright (c) 2018 Simons Foundation
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You may obtain a copy of the License at
+//     https://www.gnu.org/licenses/gpl-3.0.txt
+//
+// Authors: Olivier Parcollet
+
+#include <triqs/test_tools/gfs.hpp>
+#include <triqs/gfs/gf_sym_grp.hpp>
+#include <triqs/gfs.hpp>
+
+TEST(GfSymGrp, ScalarNoProduct) {
+  // some dummy gf
+  mesh::imfreq m{1, Fermion, 10};
+  auto G           = gf<imfreq, scalar_valued>{m};
+  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
+  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
+  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s = [](mesh_idx_t const &x) { return sym_t{-x - 1, {}}; };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 10);
+}
+
+TEST(GfSymGrp, ScalarProduct) {
+  // some dummy gf
+  mesh::imfreq m{1, Fermion, 10};
+  auto G           = gf<prod<imfreq, imfreq>, scalar_valued>{m * m};
+  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
+  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
+  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s1 = [](mesh_idx_t const &x) {
+    auto [n_w1, n_w2] = x;
+    return sym_t{std::tuple{-n_w1 - 1, n_w2}, {}};
+  };
+
+  auto s2 = [](mesh_idx_t const &x) {
+    auto [n_w1, n_w2] = x;
+    return sym_t{std::tuple{n_w1, -n_w2 - 1}, {}};
+  };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s1, s2};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 100);
+}
+
+TEST(GfSymGrp, TensorNoProduct) {
+  // some dummy gf
+  mesh::imfreq m{1, Fermion, 10};
+  auto G             = gf<imfreq, matrix_valued>{m, {3, 3}};
+  using mesh_idx_t   = decltype(G)::mesh_t::idx_t;
+  using target_idx_t = std::array<long, 2>;
+  using sym_t        = std::tuple<mesh_idx_t, target_idx_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_idx_t const &, target_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s1 = [](mesh_idx_t const &x, target_idx_t const &y) { return sym_t{-x - 1, y, {}}; };
+
+  auto s2 = [](mesh_idx_t const &x, target_idx_t const &y) {
+    auto [y1, y2] = y;
+    return sym_t{x, std::array{y2, y1}, {}};
+  };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s1, s2};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 60);
+}
+
+TEST(GfSymGrp, TensorProduct) {
+  // some dummy gf
+  mesh::imfreq m{1, Fermion, 10};
+  auto G             = gf<prod<imfreq, imfreq>, matrix_valued>{m * m, {3, 3}};
+  using mesh_idx_t   = decltype(G)::mesh_t::idx_t;
+  using target_idx_t = std::array<long, 2>;
+  using sym_t        = std::tuple<mesh_idx_t, target_idx_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_idx_t const &, target_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s1 = [](mesh_idx_t const &x, target_idx_t const &y) {
+    auto [n_w1, n_w2] = x;
+    return sym_t{std::tuple{-n_w1 - 1, n_w2}, y, {}};
+  };
+
+  auto s2 = [](mesh_idx_t const &x, target_idx_t const &y) {
+    auto [n_w1, n_w2] = x;
+    return sym_t{std::tuple{n_w1, -n_w2 - 1}, y, {}};
+  };
+
+  auto s3 = [](mesh_idx_t const &x, target_idx_t const &y) {
+    auto [y1, y2] = y;
+    return sym_t{x, std::array{y2, y1}, {}};
+  };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s1, s2, s3};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 600);
+}
+
+TEST(GfSymGrp, MomentumNoFrequency) {
+  // some dummy gf
+  auto BZ          = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
+  auto G           = gf<brzone, scalar_valued>{{BZ, 4}};
+  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
+  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
+  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s1 = [m = G.mesh()](mesh_idx_t const &x) { return sym_t{m.idx_modulo(-x), {}}; };
+  auto s2 = [m = G.mesh()](mesh_idx_t const &x) { return sym_t{std::array{x[1], x[0], x[2]}, {}}; };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s1, s2};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 7);
+}
+
+TEST(GfSymGrp, MomentumFrequency) {
+  // some dummy gf
+  mesh::imfreq m{1, Fermion, 20};
+  auto BZ          = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
+  auto G           = gf<prod<brzone, brzone, imfreq, imfreq>, scalar_valued>{{{BZ, 8}, {BZ, 8}, m, m}};
+  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
+  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
+  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+
+  // some dummy symmetries
+  auto s1 = [](mesh_idx_t const &x) {
+    auto [k1, k2, n_w1, n_w2] = x;
+    return sym_t{std::tuple{k1, k2, -n_w1 - 1, n_w2}, {}};
+  };
+
+  auto s2 = [](mesh_idx_t const &x) {
+    auto [k1, k2, n_w1, n_w2] = x;
+    return sym_t{std::tuple{k1, k2, n_w1, -n_w2 - 1}, {}};
+  };
+
+  auto s3 = [m = std::get<0>(G.mesh())](mesh_idx_t const &x) {
+    auto [k1, k2, n_w1, n_w2] = x;
+    return sym_t{std::tuple{m.idx_modulo(-k1), m.idx_modulo(-k2), n_w1, n_w2}, {}};
+  };
+
+  auto s4 = [m = std::get<0>(G.mesh())](mesh_idx_t const &x) {
+    auto [k1, k2, n_w1, n_w2] = x;
+    return sym_t{std::tuple{std::array{k1[1], k1[0], k1[2]}, std::array{k2[1], k2[0], k2[2]}, n_w1, n_w2}, {}};
+  };
+
+  // build the symmetry group and test number of classes
+  std::vector<sym_func_t> sym_list = {s1, s2, s3, s4};
+  auto grp                         = triqs::gfs::sym_grp{sym_list, G};
+
+  EXPECT_EQ(grp.num_classes(), 7600);
+}
+
+MAKE_MAIN;
