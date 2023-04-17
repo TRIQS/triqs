@@ -105,12 +105,12 @@ Ask your cluster administator to install the singularity software. The TRIQS set
 
 which will generate an image file `triqs_latest.sif`. You can then execute commands inside this image file, e.g.::
 
-        singularity exec triqs_latest.sif python -c "from triqs import *"
+        singularity exec triqs_latest.sif python3 -c "from triqs.gf import *"
 
 In order to run your code in parallel you will need to use Open MPI version 4.0.3 to match the version of the singularity image.
 You can then run any command in parallel, e.g.::
 
-        mpirun -np 2 singularity exec triqs_latest.sif python -c "from triqs.utility import mpi; print mpi.rank"
+        mpirun -np 2 singularity exec triqs_latest.sif python3 -c "from triqs.utility import mpi; print(mpi.rank)"
 
 For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
 
