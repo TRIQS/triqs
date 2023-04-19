@@ -118,5 +118,4 @@ external_dependency(nda
 external_dependency(cppdlr
   GIT_REPO https://github.com/flatironinstitute/cppdlr
   GIT_TAG main
-  GIT_TAG sym_grp_pr
 )
