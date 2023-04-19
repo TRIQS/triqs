@@ -20,6 +20,10 @@
 
 import numpy
 
+# dict for plotting functions for specific C++ wrapped types
+# expect entries of type : plot_function
+# see example in stat.__init__.py for histograms
+plot_function_table = {}
 
 def clip_array(x_array, x_min, x_max):
     """
@@ -52,8 +56,12 @@ def plot_protocol_apply(ob, opt_dict, xlims):
     or emulates it (e.g. for numpy arrays).
     """
 
+    # the object can have a native plot function defined in the class
     if hasattr(ob, '_plot_'):
         return ob._plot_(opt_dict)
+    # or registered in the plot_function_table variable
+    elif type(ob) in plot_function_table:
+        return plot_function_table[type(ob)](ob, opt_dict)
     elif callable(ob):
         n_points = opt_dict.pop('n_points', 100)
         rx = opt_dict.pop('x_window', None)

@@ -24,4 +24,9 @@ DOC
 """
 from .histograms import Histogram, cdf, pdf
 
+# register the plot function in the plotting table
+from .histogram import plot
+from triqs.plot.protocol import plot_function_table
+plot_function_table[Histogram] = plot
+
 __all__ = ['Histogram', 'cdf', 'pdf']
