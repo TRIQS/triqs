@@ -33,6 +33,14 @@ class MatsubaraFreq:
     def __complex__(self):
         return 1j * (2*self.n + self.is_fermion) * math.pi / self.beta
 
+    @property
+    def imag(self):
+        return complex(self).imag
+
+    @property
+    def real(self):
+        return 0.0
+
     def __abs__(self):
         return abs(self.__complex__())
 
