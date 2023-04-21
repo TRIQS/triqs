@@ -1,4 +1,6 @@
 #pragma once
+#include <triqs/gfs.hpp>
+#include <nda/nda.hpp>
 #include <nda/sym_grp.hpp>
 
 namespace triqs {
@@ -63,7 +65,7 @@ namespace triqs {
       // data aliases
       using data_t           = typename G::data_t;
       using value_t          = typename G::scalar_t;
-      using data_idx_t       = std::array<long, static_cast<std::size_t>(get_rank<data_t>)>;
+      using data_idx_t       = std::array<long, static_cast<std::size_t>(nda::get_rank<data_t>)>;
       using data_sym_func_t  = std::function<std::tuple<data_idx_t, nda::operation>(data_idx_t const &)>;
       using data_init_func_t = std::function<value_t(data_idx_t const &)>;
 
@@ -77,7 +79,6 @@ namespace triqs {
       using target_idx_t                = std::array<long, static_cast<std::size_t>(target_rank)>;
 
       // members
-      std::vector<F> sym_list;                            // list of symmetries defining the symmetry group
       nda::sym_grp<data_sym_func_t, data_t> data_sym_grp; // symmetry group instance for the data array
 
       // convert from gf to nda symmetry
@@ -176,11 +177,11 @@ namespace triqs {
       };
 
       public:
-      [[nodiscard]] std::vector<F> const &get_sym_list() const { return sym_list; }
       [[nodiscard]] nda::sym_grp<data_sym_func_t, data_t> const &get_data_sym_grp() const { return data_sym_grp; }
       long num_classes() const { return data_sym_grp.num_classes(); }
 
-      sym_grp(G const &g, std::vector<F> const &sym_list_) : sym_list(sym_list_), data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list)} {};
+      sym_grp() = default;
+      sym_grp(G const &g, std::vector<F> const &sym_list) : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list)} {};
 
       // initializer method
       template <typename H>
