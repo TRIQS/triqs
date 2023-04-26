@@ -18,17 +18,21 @@
 #
 # Authors: Michel Ferrero, Igor Krivenko, Michael, Priyanka Seth, Nils Wentzell
 
+"""Functions to construct Coulomb tensors"""
+
 from math import sqrt
 from scipy.special import factorial as fact
 from itertools import product
 import numpy as np
 
-# The interaction matrix in desired basis
-# U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k angular_matrix_element(l, k, m1, m2, m3, m4)
-# H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
-def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical', T=None):
+
+def U_matrix_slater(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical', T=None):
     r"""
-    Calculate the full four-index U matrix being given either radial_integrals or U_int and J_hund.
+    Calculate the full four-index U matrix
+
+    .. math:: U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k \alpha(l, k, m1, m2, m3, m4)
+
+    being given either radial_integrals or U_int and J_hund.
     The convetion for the U matrix is that used to construct the Hamiltonians, namely:
 
     .. math:: H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
@@ -37,7 +41,7 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
     ----------
     l : integer
         Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
-    radial_integrals : list, optional
+        radial_integrals : list, optional
                        Slater integrals [F0,F2,F4,..].
                        Must be provided if U_int and J_hund are not given.
                        Preferentially used to compute the U_matrix if provided alongside U_int and J_hund.
@@ -84,7 +88,7 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
 
     # Full interaction matrix
     # Basis of spherical harmonics Y_{-2}, Y_{-1}, Y_{0}, Y_{1}, Y_{2}
-    # U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k angular_matrix_element(l, k, m1, m2, m3, m4)
+    # U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k \alpha(l, k, m1, m2, m3, m4)
     U_matrix = np.zeros((2*l+1,2*l+1,2*l+1,2*l+1),dtype=float)
 
     m_range = list(range(-l,l+1))
@@ -101,7 +105,7 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
 
     return U_matrix
 
-# Convert full 4-index U matrix to 2-index density-density form
+
 def reduce_4index_to_2index(U_4index):
     r"""
     Reduces the four-index matrix to two-index matrices for parallel and anti-parallel spins.
@@ -131,43 +135,88 @@ def reduce_4index_to_2index(U_4index):
 
     return U, Uprime
 
-# Construct the 2-index matrices for the density-density form
-def U_matrix_kanamori(n_orb, U_int, J_hund):
+def U_matrix_kanamori(n_orb, U_int, J_hund, Up_int=None, full_Uijkl=False, Jc_hund=None):
     r"""
-    Calculate the Kanamori U and Uprime matrices.
+    Calculate the Kanamori two-index interaction matrix for parallel spins:
+
+    .. math:: U_{m m'}^{\sigma \sigma} \equiv U_{m m' m m'} - J_{m m'}
+
+    with:
+
+    .. math:: J_{m m'} \equiv U_{m m' m' m} ,
+
+    and the two-index interaction matrix for anti-parallel spins:
+
+    .. math:: U_{m m'}^{\sigma \bar{\sigma}} \equiv U_{m m' m m'}
+
+    If full_Uijkl=True is specified instead the full four index 
+    Uijkl tensor is returned. 
 
     Parameters
     ----------
     n_orb : integer
             Number of orbitals in basis.
-    U_int : scalar
+    U_int : float
             Value of the screened Hubbard interaction.
-    J_hund : scalar
+    J_hund : float
              Value of the Hund's coupling.
+    Up_int : float, optional
+            Value of the screened U prime parameter
+            defaults to U_int-2*J_hund if not given.
+            (fully rotationally invariant form)
+    full_Uijkl : bool, optional
+            retunr instead the full four-index Uijkl tensor
+            default is False
+    Jc_hund : foat, optional
+            only used if full_Uijkl=True, defaults to J_hund
 
     Returns
     -------
     U : float numpy array
-        The two-index interaction matrix for parallel spins.
+        The two-index interaction matrix for parallel spins or
+        the four-index Uijkl tensor if full_Uijkl=True
     Uprime : float numpy array
-             The two-index interaction matrix for anti-parallel spins.
+        The two-index interaction matrix for anti-parallel spins.
 
     """
 
-    U  = np.zeros((n_orb,n_orb),dtype=float)      # matrix for same spin
-    Uprime = np.zeros((n_orb,n_orb),dtype=float)  # matrix for opposite spin
+    # Jc_hund can only be used if the full tensor is returned
+    if Jc_hund is not None and not full_Uijkl:
+        raise ValueError('Jc_hund can only be specified if the full four index tensor is returned')
 
-    m_range = list(range(n_orb))
-    for m,mp in product(m_range,m_range):
-        if m == mp:
-            Uprime[m,mp] = U_int
-        else:
-            U[m,mp]  = U_int - 3.0*J_hund
-            Uprime[m,mp] = U_int - 2.0*J_hund
+    if not Up_int:
+        Up_int = U_int-2*J_hund
+    if not Jc_hund:
+        Jc_hund = Jc_hund
 
-    return U, Uprime
+    m_range = range(n_orb)
 
-# Get t2g or eg components
+    if not full_Uijkl:
+        U = np.zeros((n_orb, n_orb), dtype=float)      # matrix for same spin
+        Uprime = np.zeros((n_orb, n_orb), dtype=float)  # matrix for opposite spin
+
+        for m, mp in product(m_range, m_range):
+            if m == mp:
+                Uprime[m, mp] = U_int
+            else:
+                U[m, mp] = Up_int - 1.0*J_hund
+                Uprime[m, mp] = Up_int
+
+        return U, Uprime
+    else:
+        U_kan = np.zeros((n_orb, n_orb, n_orb, n_orb))
+
+        for i, j, k, l in product(m_range, m_range, m_range, m_range):
+            if i == j == k == l:  # Uiiii
+                U_kan[i, j, k, l] = U_int
+            elif i == k and j == l:  # Uijij
+                U_kan[i, j, k, l] = Up_int
+            elif i == l and j == k:  # Uijji
+                U_kan[i, j, k, l] = J_hund
+            elif i == j and k == l:  # Uiijj
+                U_kan[i, j, k, l] = Jc_hund
+        return U_kan
+
 def t2g_submatrix(U, convention='triqs'):
     r"""
     Extract the t2g submatrix of the full d-manifold two- or four-index U matrix.
@@ -238,7 +287,6 @@ def eg_submatrix(U, convention='triqs'):
         raise ValueError("Unknown convention: "+str(convention))
 
 
-# Transform the interaction matrix into another basis
 def transform_U_matrix(U_matrix, T):
     r"""
     Transform a four-index interaction matrix into another basis.
@@ -263,8 +311,6 @@ def transform_U_matrix(U_matrix, T):
     """
     return np.einsum("ij,kl,jlmo,mn,op",np.conj(T),np.conj(T),U_matrix,np.transpose(T),np.transpose(T))
 
-# Rotation matrices: complex harmonics to cubic harmonics
-# Complex harmonics basis: ..., Y_{-2}, Y_{-1}, Y_{0}, Y_{1}, Y_{2}, ...
 def spherical_to_cubic(l, convention='triqs'):
     r"""
     Get the spherical harmonics to cubic harmonics transformation matrix.
@@ -341,7 +387,6 @@ def spherical_to_cubic(l, convention='triqs'):
 
     return np.matrix(T)
 
-# Names of cubic harmonics
 def cubic_names(l):
     r"""
     Get the names of the cubic harmonics.
@@ -372,7 +417,6 @@ def cubic_names(l):
         return ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)")
     else: raise ValueError("cubic_names: implemented only for l=0,1,2,3")
 
-# Convert U,J -> radial integrals F_k
 def U_J_to_radial_integrals(l, U_int, J_hund):
     r"""
     Determine the radial integrals F_k from U_int and J_hund.
@@ -410,7 +454,6 @@ def U_J_to_radial_integrals(l, U_int, J_hund):
 
     return F
 
-# Convert radial integrals F_k -> U,J
 def radial_integrals_to_U_J(l, F):
     r"""
     Determine U_int and J_hund from the radial integrals.
@@ -443,7 +486,6 @@ def radial_integrals_to_U_J(l, F):
 
     return U_int,J_hund
 
-# Angular matrix elements of particle-particle interaction
 # (2l+1)^2 ((l 0) (k 0) (l 0))^2 \sum_{q=-k}^{k} (-1)^{m1+m2+q} ((l -m1) (k q) (l m3)) ((l -m2) (k -q) (l m4))
 def angular_matrix_element(l, k, m1, m2, m3, m4):
     r"""
@@ -486,8 +528,6 @@ def angular_matrix_element(l, k, m1, m2, m3, m4):
     ang_mat_ele *= (2*l+1)**2 * (three_j_symbol((l,0),(k,0),(l,0))**2)
     return ang_mat_ele
 
-# Wigner 3-j symbols
-# ((j1 m1) (j2 m2) (j3 m3))
 def three_j_symbol(jm1, jm2, jm3):
     r"""
     Calculate the three-j symbol
@@ -539,8 +579,6 @@ def three_j_symbol(jm1, jm2, jm3):
     three_j_sym *= t_sum
     return three_j_sym
 
-# Clebsch-Gordan coefficients
-# < j1 m1 j2 m2 | j3 m3 > = (-1)^{j1-j2+m3} \sqrt{2j3+1} ((j1 m1) (j2 m2) (j3 -m3))
 def clebsch_gordan(jm1, jm2, jm3):
     r"""
     Calculate the Clebsh-Gordan coefficient
@@ -570,11 +608,6 @@ def clebsch_gordan(jm1, jm2, jm3):
     norm = sqrt(2*jm3[0]+1)*(-1 if jm1[0]-jm2[0]+jm3[1] % 2 else 1)
     return norm*three_j_symbol(jm1,jm2,(jm3[0],-jm3[1]))
 
-# Create subarray containing columns in idxlist
-# e.g. idxlist = [(0),(2,3),(0,1,2,3)] gives
-#  column 0 for 1st dim,
-#  columns 2 and 3 for 2nd dim,
-#  columns 0,1,2 and 3 for 3rd dim.
 def subarray(a,idxlist,n=None) :
     r"""
     Extract a subarray from a matrix-like object.

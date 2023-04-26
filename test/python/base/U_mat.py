@@ -23,7 +23,7 @@ from triqs.operators.util import *
 from triqs.utility.comparison_tests import *
 import numpy
 
-U_sph = U_matrix(l=2, U_int=2.0, J_hund=0.5)
+U_sph = U_matrix_slater(l=2, U_int=2.0, J_hund=0.5)
 U_cubic = transform_U_matrix(U_sph,spherical_to_cubic(l=2))
 U,Up = reduce_4index_to_2index(U_cubic)
 
