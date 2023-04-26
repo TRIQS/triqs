@@ -27,7 +27,7 @@ from .extractors import *
 
 __all__ = ['h_int_slater','h_int_kanamori','h_int_density','diagonal_part',
            'get_mkind','set_operator_structure', 'U_J_to_radial_integrals',
-           'U_matrix', 'U_matrix_kanamori', 'angular_matrix_element', 'clebsch_gordan',
+           'U_matrix_slater', 'U_matrix_kanamori', 'angular_matrix_element', 'clebsch_gordan',
            'cubic_names', 'eg_submatrix', 'radial_integrals_to_U_J',
            'reduce_4index_to_2index', 'spherical_to_cubic', 't2g_submatrix',
            'three_j_symbol', 'transform_U_matrix',
