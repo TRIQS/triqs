@@ -181,7 +181,7 @@ namespace triqs {
       long num_classes() const { return data_sym_grp.num_classes(); }
 
       sym_grp() = default;
-      sym_grp(G const &g, std::vector<F> const &sym_list) : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list)} {};
+      sym_grp(G const &g, std::vector<F> const &sym_list, long const max_length = 0) : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list), max_length} {};
 
       // initializer method
       template <typename H>
