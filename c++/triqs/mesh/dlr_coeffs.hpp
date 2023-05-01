@@ -233,6 +233,6 @@ namespace triqs::mesh {
   }
 
   // check concept
-  static_assert(Mesh<dlr_coeffs>);
+  static_assert(MeshWithValues<dlr_coeffs>);
 
 } // namespace triqs::mesh
