@@ -108,6 +108,7 @@ external_dependency(nda
 ) 
 # -- cppdlr --
 external_dependency(cppdlr
-  GIT_REPO git@github.com:jasonkaye/cppdlr.git
+  GIT_REPO git@github.com:flatironinstitute/cppdlr.git
+  #GIT_REPO git@github.com:HugoStrand/cppdlr_mirror.git 
   GIT_TAG dev_triqs
 )

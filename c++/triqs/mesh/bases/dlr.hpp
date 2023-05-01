@@ -21,11 +21,7 @@
 #pragma once
 #include "../details/mesh_tools.hpp"
 
-#include <cppdlr/utils.hpp>
-#include <cppdlr/dlr_basis.hpp>
-#include <cppdlr/dlr_kernels.hpp>
-#include <cppdlr/dlr_imtime.hpp>
-#include <cppdlr/dlr_imfreq.hpp>
+#include <cppdlr/cppdlr.hpp>
 
 
 template<class T> struct dependent_false : std::false_type {};
@@ -53,9 +49,9 @@ namespace triqs::mesh {
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps) :
       _dom(std::move(dom)), _lambda(lambda), _eps(eps),
-      _dlr_freq(cppdlr::dlr_freq(lambda, eps)),
+      _dlr_freq(cppdlr::build_dlr_rf(lambda, eps)),
       _dlr_it(lambda, _dlr_freq),
-      _dlr_if(lambda, _dlr_freq, dom.statistic == Fermion ? -1 : +1) {}
+      _dlr_if(lambda, _dlr_freq, dom.statistic == Fermion ? cppdlr::Fermion : cppdlr::Boson) {}
 
     explicit dlr_mesh(domain_t dom, double lambda, double eps,
 		      nda::vector<double> dlr_freq,

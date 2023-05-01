@@ -210,7 +210,7 @@ namespace triqs::mesh {
     nda::vector<double> get_interpolation_data(double tau) const {
       auto res = nda::zeros<double>(size());
       for (auto l : range(size()))
-	res[l] = cppdlr::kfun(tau / domain().beta, index_to_point(l));
+	res[l] = cppdlr::k_it(tau / domain().beta, index_to_point(l));
       return res;
     }
 
