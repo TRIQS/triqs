@@ -107,6 +107,42 @@ m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dc
 module.add_class(m)
 
 ########################
+##   MeshDLRImFreq
+########################
+
+m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
+        doc="""Mesh of DLR Matsubara frequencies
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            Statistic, 'Fermion' or 'Boson'
+        n_iw : int [default=1025]
+            Number of positive Matsubara frequencies
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               signature = "statistic_enum()"),
+               doc = "Statistic")
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+
+module.add_class(m)
+
+########################
 ##   MeshImTime
 ########################
 
@@ -139,8 +175,87 @@ m.add_property(name = "statistic",
 module.add_class(m)
 
 ########################
+##   MeshDLRImTime
+########################
+
+m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
+        doc =  """Mesh of DLR imaginary times
+
+        Mesh-points are evenly distributed in the interval [0,beta]
+        including points at both edges.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            Statistic, 'Fermion' or 'Boson'
+        n_tau : int
+            Number of mesh-points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               signature = "statistic_enum()"),
+               doc = "Statistic")
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+
+module.add_class(m)
+
+########################
+##   MeshDLRCoeffs
+########################
+
+m = make_mesh(py_type = "MeshDLRCoeffs", c_tag = "dlr_coeffs",
+        doc =  """Mesh of DLR imaginary times
+
+        Mesh-points are evenly distributed in the interval [0,beta]
+        including points at both edges.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            Statistic, 'Fermion' or 'Boson'
+        n_tau : int
+            Number of mesh-points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               signature = "statistic_enum()"),
+               doc = "Statistic")
+m.add_property(name = "lamb",
+               getter = cfunction(calling_pattern="double result = self_c.lambda",
+               signature = "double()",
+               doc = "DLR lambda parameter"))
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps",
+               signature = "double()",
+               doc = "DLR epsilon accuracy"))
+
+module.add_class(m)
+
+########################
 ##   MeshLegendre
 ########################
+
 
 # the mesh
 m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre", with_values = False,
@@ -340,6 +455,8 @@ module.add_class(m)
 # ---------------------- make_adjoint_mesh --------------------
 module.add_function("imfreq triqs::mesh::make_adjoint_mesh(imtime m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
 module.add_function("imtime triqs::mesh::make_adjoint_mesh(imfreq m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
+module.add_function("dlr_imfreq triqs::mesh::make_adjoint_mesh(dlr_imtime m)", doc = "Create the adjoint dlr iw mesh")
+module.add_function("dlr_imtime triqs::mesh::make_adjoint_mesh(dlr_imfreq m)", doc = "Create the adjoint dlr imtime mesh")
 module.add_function("refreq triqs::mesh::make_adjoint_mesh(retime m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
 module.add_function("retime triqs::mesh::make_adjoint_mesh(refreq m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
 module.add_function("brzone triqs::mesh::make_adjoint_mesh(cyclat m)", doc = "Create the adjoint k-mesh")

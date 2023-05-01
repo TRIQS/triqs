@@ -20,6 +20,8 @@
 
 #include "./imtime.hpp"
 #include "./imfreq.hpp"
+#include "./dlr_imtime.hpp"
+#include "./dlr_imfreq.hpp"
 #include "./retime.hpp"
 #include "./refreq.hpp"
 #include "./cyclat.hpp"
@@ -35,6 +37,9 @@ namespace triqs::mesh {
     if (n_tau == -1) n_tau = 6 * (m.last_idx() + 1) + 1;
     return {matsubara_time_domain{m.domain()}, n_tau};
   }
+
+  inline dlr_imfreq make_adjoint_mesh(dlr_imtime const &m) { return {m}; }
+  inline dlr_imtime make_adjoint_mesh(dlr_imfreq const &m) { return {m}; }
 
   inline refreq make_adjoint_mesh(retime const &m, bool shift_half_bin = false) {
     int L       = m.size();

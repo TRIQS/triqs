@@ -52,7 +52,7 @@ namespace triqs {
       }
       // special case for imtime
 
-      template <typename Tag> mesh::imtime combine_mesh(mesh::imtime const &l, mesh::imtime const &r) {
+      template <typename Tag, any_of<mesh::imtime, mesh::dlr_imtime> M> M combine_mesh(M const &l, M const &r) {
 
         // FIXME C++17 constexpr
         if (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) {
@@ -63,7 +63,10 @@ namespace triqs {
           // compute the stat of the product, divide.
           int s               = (int(l.statistic) + int(r.statistic)) % 2;
           statistic_enum stat = (s == 0 ? Boson : Fermion);
-          return mesh::imtime{l.beta, stat, l.size()};
+          if constexpr (std::is_same_v<M, mesh::imtime>)
+            return M{l.beta, stat, l.size()};
+          else // dlr_imtime
+            return M{l.beta, stat, l.lambda, l.eps};
         } else {
           if (!(l == r))
             TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;

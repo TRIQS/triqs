@@ -77,6 +77,9 @@ target_link_libraries(triqs PUBLIC nda::nda_c)
 # FMT
 target_link_libraries(triqs PUBLIC fmt::fmt-header-only)
 
+# cppdlr (discrete Lehmann representation library)
+target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
+
 # ---------------------------------
 # Boost
 # ---------------------------------

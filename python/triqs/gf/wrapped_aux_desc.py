@@ -29,6 +29,12 @@ def all_calls():
         for R in [3,4]:
             yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int', 'matsubara_freq']
 
+    for M in ['dlr_coeffs']:
+        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['double', 'matsubara_freq'] # R =0
+        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['double', 'matsubara_freq'] # R =2
+        for R in [3,4]:
+            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double', 'matsubara_freq']
+
     for M in ['imtime', 'refreq', 'retime']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =0
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
@@ -60,6 +66,7 @@ def all_calls():
 C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
+                   'dlr_coeffs' : 'DLRCoeffs',
                    'retime' : 'ReTime',
                    'brzone' : 'BrZone',
                    'cyclat' : 'CycLat',

@@ -38,6 +38,9 @@ namespace triqs {
     nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
+    nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs> g);
+    dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g);
+
     //-------------------------------------------------------
     // For Real Frequency functions
     // ------------------------------------------------------

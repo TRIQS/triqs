@@ -63,13 +63,6 @@
 // hdf5
 #include "./gfs/h5.hpp"
 
-// functions
-#include "./gfs/functions/functions2.hpp"
-#include "./gfs/functions/imfreq.hpp"
-#include "./gfs/functions/imtime.hpp"
-#include "./gfs/functions/legendre.hpp"
-#include "./gfs/functions/density.hpp"
-
 #include "./mesh/concepts.hpp"
 
 //----------------------------------------------------------------
@@ -79,6 +72,9 @@ namespace triqs::gfs {
 
   using mesh::brzone;
   using mesh::cyclat;
+  using mesh::dlr_coeffs;
+  using mesh::dlr_imfreq;
+  using mesh::dlr_imtime;
   using mesh::imfreq;
   using mesh::imtime;
   using mesh::legendre;
@@ -95,6 +91,14 @@ namespace triqs::gfs {
   template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
 
 } // namespace triqs::gfs
+
+// functions
+#include "./gfs/functions/functions2.hpp"
+#include "./gfs/functions/imfreq.hpp"
+#include "./gfs/functions/imtime.hpp"
+#include "./gfs/functions/legendre.hpp"
+#include "./gfs/functions/density.hpp"
+#include "./gfs/functions/dlr.hpp"
 
 // fourier
 #include "./gfs/transform/fourier.hpp"

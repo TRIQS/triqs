@@ -81,6 +81,9 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)"
 m.add_function("matrix<dcomplex> density(gf_view<triqs::gfs::legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<triqs::gfs::legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
+m.add_function("matrix<dcomplex> density(gf_view<dlr_coeffs, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<dlr_coeffs, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+
 # ---------------------- miscellaneous --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
@@ -176,6 +179,25 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     calling_pattern = "g_out = fourier(g_in)",
                     doc = """Fills self with the Fourier transform of g_in""")
+
+# ---------------------- DLR mesh conversions --------------------
+
+# dlr_imtime <-> dlr_coeffs
+
+m.add_function("gf<dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime> g_tau)")
+m.add_function("gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime, scalar_valued> g_tau)")
+
+m.add_function("gf<dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr)")
+m.add_function("gf<dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr)")
+
+# dlr_imfreq <-> dlr_coeffs
+
+m.add_function("gf<dlr_coeffs> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq> g_iw)")
+m.add_function("gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq, scalar_valued> g_iw)")
+
+m.add_function("gf<dlr_imfreq> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr)")
+m.add_function("gf<dlr_imfreq, scalar_valued> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr)")
+
 
 ########################
 ##   Code generation
