@@ -117,7 +117,6 @@ namespace triqs::gfs {
     /// Type of the data array
     using data_t = nda::basic_array<scalar_t, data_rank, Layout, 'A', nda::heap<>>;
 
-    // FIXME : std::array with NDA
     using target_shape_t = std::array<long, Target::rank>;
 
     struct target_and_shape_t {
@@ -162,7 +161,6 @@ namespace triqs::gfs {
      */
     auto const &data_shape() const { return _data.shape(); }
 
-    // FIXME : No doc : internal only ? for make_gf
     target_and_shape_t target() const { return target_and_shape_t{stdutil::front_mpop<arity>(_data.shape())}; } // drop arity dims
 
     /**
@@ -216,7 +214,6 @@ namespace triqs::gfs {
     }
 
     private:
-    // FIXME : simplify
     template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
       if constexpr (mesh::is_product<mesh_t>)
         return stdutil::join(m.size_of_components(), shap);
@@ -242,7 +239,7 @@ namespace triqs::gfs {
      *  @param ind Indices
      * 
      */
-    gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
+    gf(mesh_t m, target_shape_t shape = {}, indices_t const &ind = indices_t{})
        : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), ind) {
       if (this->_indices.empty()) this->_indices = indices_t(shape);
     }
@@ -275,11 +272,6 @@ namespace triqs::gfs {
      *  NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
      */
     template <typename Tag> gf(mpi::lazy<Tag, gf_const_view<Mesh, Target>> l) : gf() { operator=(l); }
-
-    /// ---------------  swap --------------------
-
-    // FIXME : REMOVE THIS SWAP ?
-    friend void swap(gf &a, gf &b) noexcept { a.swap_impl(b); }
 
     /// ---------------  Operator = --------------------
 

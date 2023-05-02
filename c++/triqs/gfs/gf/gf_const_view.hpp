@@ -79,7 +79,6 @@ namespace triqs::gfs {
     /// Type of the data array
     using data_t = nda::basic_array_view<const scalar_t, data_rank, Layout>;
 
-    // FIXME : std::array with NDA
     using target_shape_t = std::array<long, Target::rank>;
 
     struct target_and_shape_t {
@@ -124,7 +123,6 @@ namespace triqs::gfs {
      */
     auto const &data_shape() const { return _data.shape(); }
 
-    // FIXME : No doc : internal only ? for make_gf
     target_and_shape_t target() const { return target_and_shape_t{stdutil::front_mpop<arity>(_data.shape())}; } // drop arity dims
 
     /**

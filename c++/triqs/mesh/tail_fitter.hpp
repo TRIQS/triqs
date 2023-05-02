@@ -45,8 +45,6 @@ namespace triqs::mesh {
 
   // Computes sum A_n / om^n
   // Return array<dcomplex, R -1 > if R>1 else dcomplex
-  // FIXME : use dynamic R array when available.
-  // FIXME : array of dimension 0
   template <int R> auto tail_eval(nda::array_const_view<dcomplex, R> A, dcomplex om) {
 
     // same algo for both cases below
@@ -190,7 +188,6 @@ namespace triqs::mesh {
      * @param normalize Finish the normalization of the tail coefficient (normally true)
      * @param known_moments  Array of the known_moments
      * */
-    // FIXME : nda : use dynamic Rank here.
     template <int N, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
     std::pair<nda::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
                                                       array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {

@@ -446,7 +446,6 @@ namespace triqs {
         sign = -sign;
         // we do not need to change the det, or the matrix, just the permutation
       }
-      //FIXME : we could implement try_swap_row, try_swap_col
 
       /** Simply swap two lines and cols.
          NB very quick, we just change the permutation table internally
@@ -1063,7 +1062,7 @@ namespace triqs {
         auto D    = w1.ksi;        // get back
         auto a    = -(1 + Yn) / D; // D in the notes
         auto b    = -(1 + Xn) / D;
-        auto Z    = nda::blas::dot(w1.MB(RN), w1.C(RN)); // FIXME : store this ?
+        auto Z    = nda::blas::dot(w1.MB(RN), w1.C(RN));
         Z         = Z / D;
         Mnn       = Mnn / D;
         w1.MB(RN) = mat_inv(w1.jreal, RN); // Mnj

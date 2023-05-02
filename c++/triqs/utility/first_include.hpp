@@ -46,8 +46,6 @@ namespace boost {
 // missing complex * int and in * complex
 #include <h5/std_addons/complex.hpp>
 
-
-// FIXME : INCLUDE
 #define CPP2PY_IGNORE  __attribute__((annotate("ignore_in_python")))
 #define CPP2PY_ARG_AS_DICT __attribute__((annotate("use_parameter_class")))
 

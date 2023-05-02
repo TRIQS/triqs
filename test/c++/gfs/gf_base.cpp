@@ -17,6 +17,7 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+#undef NDEBUG
 #include <triqs/test_tools/gfs.hpp>
 
 TEST(Gf, Base) {
@@ -64,12 +65,10 @@ TEST(Gf, Base) {
   // operations on gf
   G3 = G + Gc;
 
-  // FIXME : PUT BACK WHEN TRIQS LIB IS COMPILED 
   // test for density
-/*  EXPECT_ARRAY_NEAR(density(G3), matrix<double>{{1.8177540779781256, 0.0}, {0.0, 1.8177540779781256}});*/
+  EXPECT_ARRAY_NEAR(density(G3), matrix<double>{{1.8177540779781256, 0.0}, {0.0, 1.8177540779781256}});
 
-  // FIXME : SAME 
-  /*rw_h5(G, "G");*/
+  rw_h5(G, "G");
 
   {
     auto G0w     = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
@@ -151,7 +150,6 @@ TEST(Gf, PhNoInfinity_tau) {
   auto g = gf<imtime, matrix_valued>{{beta, Fermion, 10000}, {2, 2}};
 
   using std::exp;
-  //triqs::clef::placeholder<0> tau_; // would not compile
   triqs::clef::placeholder<0> tau_;
   g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 }
@@ -203,10 +201,8 @@ TEST(Gf, MeshCheck) {
   auto g1 = gf<imfreq>{iw_mesh, {1, 1}};
   auto g2 = gf<imfreq>{iw_mesh_big, {1, 1}};
 
-  // FIXME : Fails because the mesh_hash is not fully implemented.
-  // TODO implement the mesh_hash
-  //EXPECT_THROW(g1[*g2.mesh().begin()], triqs::runtime_error);
-  //EXPECT_THROW(g2[*g1.mesh().begin()], triqs::runtime_error);
+  EXPECT_DEATH(g1[*g2.mesh().begin()], "Precondition mesh_hash_ == mp.mesh_hash violated");
+  EXPECT_DEATH(g2[*g1.mesh().begin()], "Precondition mesh_hash_ == mp.mesh_hash violated");
 }
 
 TEST(Gf, EvalSlice) {

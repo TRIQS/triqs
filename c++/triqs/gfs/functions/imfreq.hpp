@@ -18,6 +18,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+
 namespace triqs::gfs {
 
   using nda::conj; // not found on gcc 5
@@ -89,9 +90,8 @@ namespace triqs::gfs {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
             if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
-          } else if constexpr (target_t::rank == 2) { // matrix_valued FIXME transpose(g[-w])
-            for (auto [i, j] : g.target_indices())
-              if (abs(conj(g[-w](j, i)) - g[w](i, j)) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued
+            if (max_element(abs(dagger(g[-w]) - g[w])) > tolerance) return false;
           } else { // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices())
               if (abs(conj(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
@@ -182,8 +182,8 @@ namespace triqs::gfs {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
-          else if constexpr (target_t::rank == 2) // matrix_valued FIXME transpose(g[-w])
-            for (auto [i, j] : g.target_indices()) g_sym[w](i, j) = 0.5 * (g[w](i, j) + conj(g[-w](j, i)));
+          else if constexpr (target_t::rank == 2) // matrix_valued
+            g_sym[w] = 0.5 * (g[w] + dagger(g[-w]));
           else // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices()) g_sym[w](i, j, k, l) = 0.5 * (g[w](i, j, k, l) + conj(g[-w](k, l, i, j)));
         }
@@ -259,7 +259,6 @@ namespace triqs::gfs {
     replace_by_tail(g, tail, n_min);
   }
 
-  // FIXME For backward compatibility only
   // Fit_tail on a window
   template <template <typename, typename, typename ...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,

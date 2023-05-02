@@ -23,9 +23,6 @@
 using namespace triqs::gfs;
 using namespace triqs::clef;
 
-// Index placeholders
-// FIXME:  Make a proper test
-
 placeholder<0> a;
 placeholder<1> b;
 placeholder<2> c;

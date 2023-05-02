@@ -26,7 +26,6 @@ TEST(Gf, NoTailWithTail) {
   triqs::clef::placeholder<0> om_;
   G(om_) << 1 / (om_ + 2.3);
 
-  // FIXME : test the tail in scalar
   auto Gt = make_gf_from_fourier(G);
 }
 MAKE_MAIN;

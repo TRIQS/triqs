@@ -68,9 +68,6 @@ namespace triqs::gfs {
   template<typename T>
   inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
 
-  // FIXME : backward compat. remove this
-  // template <typename G, int n> inline constexpr bool is_block_gf_v<G&, n> = is_block_gf_v<G, n>;
-
   template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
 
   // Given a gf G, the corresponding block
@@ -233,7 +230,6 @@ namespace triqs::gfs {
 
     /// ---------------  Operator = --------------------
 
-    block_gf &operator=(block_gf &rhs) = default; // FIXME ? template ?
     block_gf &operator=(block_gf const &rhs) = default;
     block_gf &operator=(block_gf &&rhs) = default;
 

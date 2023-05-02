@@ -54,8 +54,7 @@ namespace triqs {
 
       template <typename Tag, any_of<mesh::imtime, mesh::dlr_imtime> M> M combine_mesh(M const &l, M const &r) {
 
-        // FIXME C++17 constexpr
-        if (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) {
+        if constexpr (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) {
           bool eq = (std::abs(l.beta - r.beta) < 1.e-15) and (l.size() == r.size());
           if (!eq)
             TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;

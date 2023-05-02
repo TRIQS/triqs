@@ -80,7 +80,6 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
     static constexpr auto mesh_filter = std::array<int, sizeof...(Arg)>{std::is_same_v<range::all_t, std::decay_t<Arg>>...};
     static constexpr auto n_all       = std::accumulate(begin(mesh_filter), end(mesh_filter), 0);
 
-    //FIXME remove the call and retest. Cf nda ... It is a bit ugly
     decltype(auto) new_data = [&self,
                                &arg...]<size_t... Is>(std::index_sequence<Is...>) -> decltype(auto) { // the trailing ->decltype(auto) is crucial
       return data_t::template call<(target_t::is_matrix and n_all == 0 ? 'M' : 'A'), false>(

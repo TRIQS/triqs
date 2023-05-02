@@ -44,7 +44,6 @@ auto _ = all_t{};
 
 // ------------------------------------------------------------
 
-// FIXME : Does not test much ...
 TEST(Gf, GkOm) {
 
   double beta = 1;
@@ -60,9 +59,6 @@ TEST(Gf, GkOm) {
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
 
   G(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
-
-  // broken with wp -> w
-  //G[k_, w_] <<  G(k_, w_) ;//1 / (w_ - eps_k - 1 / (w_ + 2));
 
   G[k_, w_] << G[k_, w_] + 1 / (w_ - eps_k - 1 / (w_ + 2));
 

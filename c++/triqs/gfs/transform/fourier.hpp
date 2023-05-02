@@ -96,8 +96,6 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  // FIXME DOC
-  // split : No N for 1 mesh ...
   template <int N = 0, typename M1, typename M2, typename T, typename... OptArgs>
   auto make_gf_from_fourier(gf_const_view<M1, T> gin, M2 const &mesh, OptArgs const &... opt_args) {
     static_assert(N >= 0 && N < n_variables<M1>, "Mesh index exceeds Gf Mesh Rank");
@@ -157,7 +155,6 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  // FIXME : a generic implementation
   template <int N> struct _fou_wk {};
   template <int N, typename G> auto operator&(G &&gin, _fou_wk<N> const &) {
     return make_gf_from_fourier<N>(gin, make_adjoint_mesh(std::get<N>(gin.mesh())));
@@ -260,8 +257,6 @@ namespace triqs::gfs {
   template <int N = 0, typename G, typename... Args> _fourier_lazy<N, typename G::const_view_type, Args...> fourier(G const &g, Args &&... args) {
     return {g(), {std::forward<Args>(args)...}};
   }
-
-  // FIXME: add gx = fourier(gy) for gx a gf (not a view), adding a triqs_gf_assign_delegation and using make_gf_from_fourier
 
   // realize the call for gx = fourier(gy);
   template <int N, typename M1, typename T1, typename M2, typename T2, typename... Args>

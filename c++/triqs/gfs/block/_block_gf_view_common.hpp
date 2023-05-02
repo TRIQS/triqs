@@ -21,7 +21,11 @@ std::vector<int> block_sizes() const {
 }
 
 int size1() const requires(Arity == 2) { return _glist.size(); }
-int size2() const requires(Arity == 2) { return _glist[0].size(); } // FIXME PROTECT
+int size2() const
+  requires(Arity == 2)
+{
+  return _glist.at(0).size();
+}
 int size() const {
   if constexpr (Arity == 1) {
     return _glist.size();

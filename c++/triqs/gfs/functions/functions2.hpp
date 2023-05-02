@@ -22,23 +22,10 @@
 
 namespace triqs::gfs {
 
-  // FIXME : refactor this ?
-  // fIXME : THe layout has to be deducted and C layout -> C Stride 
-  /// make_const_view
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf<M, T, L, E> const &g) { return {g}; }
-
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_view<M, T, L, E> g) { return {g}; }
-
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_const_view<M, T, L, E> g) {
-    //return g;
-  //}
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf<M, T> const &g) { return {g}; }
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_view<M, T> g) { return {g}; }
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_const_view<M, T> g) {
-    return g;
+  template <typename Gf>
+    requires(is_gf_v<Gf>)
+  auto make_const_view(Gf const &g) {
+    return gf_const_view{g};
   }
 
   using nda::array_const_view;
@@ -217,17 +204,13 @@ namespace triqs::gfs {
     nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
   }
 
-  // FIXME : 2 overloads :  or PASS BY VALUE
   template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {
     invert_in_place(g());
     return std::move(g);
   }
 
-  // FIXME  : unncessary copies
-
-  template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf<M, matrix_valued>(g)); }
-
-  template <typename M> gf<M, matrix_valued> inverse(gf_const_view<M, matrix_valued> g) { return inverse(gf<M, matrix_valued>(g)); }
+  template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf{g}); }
+  template <typename M> gf<M, matrix_valued> inverse(gf_const_view<M, matrix_valued> g) { return inverse(gf{g}); }
 
   /*------------------------------------------------------------------------------------------------------
   *                     is_gf_real : true iif the gf is real
@@ -291,8 +274,6 @@ namespace triqs::gfs {
   *                      Multiply by matrices left or right
   *-----------------------------------------------------------------------------------------------------*/
 
-  // FIXME : speed issue ? direct gemm
-  //
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       matrix_view<T> v = a(i, nda::range::all, nda::range::all);

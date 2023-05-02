@@ -256,10 +256,9 @@ namespace cpp2py {
   //    block2_gf_view
   // -----------------------------------
 
-  // FIXME : REGROUP with A = 1
   template <typename M, typename T> struct py_converter<triqs::gfs::block2_gf_view<M, T>> {
 
-    // using gf_type = triqs::gfs::gf<T...>;
+    using gf_type      = triqs::gfs::gf<M, T>;
     using gf_view_type = triqs::gfs::gf_view<M, T>;
     using c_type       = triqs::gfs::block2_gf_view<M, T>;
 

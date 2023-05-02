@@ -217,7 +217,7 @@ TEST(Binned, Gf) {
 
   auto a_b = [](auto &&a, auto &&b) { return a / b; };
   //
-  auto [x1, d1, xj1, xn1]  = jackknife_mpi(world, a_b, b, Z); // FIXME: Please Check
+  auto [x1, d1, xj1, xn1]  = jackknife_mpi(world, a_b, b, Z);
   auto [g1, gd1, gj1, gn1] = jackknife_mpi(world, a_b, g, Z);
 
   EXPECT_COMPLEX_NEAR(x1, g1[0](0, 0), 1.e-15);

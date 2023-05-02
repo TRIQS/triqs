@@ -146,15 +146,6 @@ bool test_mc(bool recover_from_exception) {
 
   bool stopped_by_exception = false;
 
-  // FIXME : I can not test the non recovering case, with MPI_Abort
-#if 0
-  IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
-  IntMC.collect_results(world);
-
-  // NOT WORKING
-  //EXPECT_DEATH(IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600)), "NOde exception");
-
-#else
   try {
     // Run and collect results
     IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
@@ -163,7 +154,6 @@ bool test_mc(bool recover_from_exception) {
     std::cerr << "TEST : Exception occurred. Node " << world.rank() << " is stopping cleanly" << std::endl;
     stopped_by_exception = true;
   }
-#endif
 
   return stopped_by_exception;
 }

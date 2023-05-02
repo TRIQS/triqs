@@ -31,7 +31,6 @@ namespace triqs {
         std::string operator()(std::string const &s) const { return "s" + s; }
       };
 
-      // FIXME : Simplify this ??
       // decode the string
       std::variant<long, std::string> string_to_variant(std::string const &s) {
         switch (s[0]) {

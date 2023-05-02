@@ -23,7 +23,6 @@
 
 namespace triqs::gfs {
 
-  /// FIXME CLEAN THIS
   using dcomplex = std::complex<double>;
 
   using nda::array;
