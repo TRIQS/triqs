@@ -110,16 +110,16 @@ namespace triqs::mesh {
       uint64_t mesh_hash = 0;
       double val         = {};
       [[nodiscard]] double value() const { return val; }
-      bool operator==(mesh_point_t const &) const = default;
+      operator double() const { return val; }
     };
 
     // -------------------- Accessors -------------------
 
-    [[nodiscard]] auto &dlr_freq() const { return *_dlr_freq; }
+    [[nodiscard]] auto const &dlr_freq() const { return *_dlr_freq; }
 
-    [[nodiscard]] auto &dlr_it() const { return *_dlr_it; }
+    [[nodiscard]] auto const &dlr_it() const { return *_dlr_it; }
 
-    [[nodiscard]] auto &dlr_if() const { return *_dlr_if; }
+    [[nodiscard]] auto const &dlr_if() const { return *_dlr_if; }
 
     [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
 
