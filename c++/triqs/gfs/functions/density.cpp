@@ -52,7 +52,7 @@ namespace triqs::gfs {
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Density implementation requires at least a proper 3rd high-frequency moment\n");
-      return density(g, tail); //(range(1, 4), range::all, range::all));
+      return density(g, tail);
     } else
       mom_123.rebind(known_moments(range(1, 4), range::all, range::all));
 
@@ -134,20 +134,20 @@ namespace triqs::gfs {
   /// Zero temperature density from integration on the real frequency axis
   nda::matrix<dcomplex> density(gf_const_view<refreq> g) {
 
-    int N       = g.mesh().size(); // no mesh points
+    auto N      = g.mesh().size();
     double wmin = g.mesh().w_min();
     double dw   = g.mesh().delta();
 
-    assert(wmin < 0.);
+    EXPECTS(wmin < 0.);
 
-    int N0     = std::floor(-wmin / dw) + 1; // frequency index at or above w=0
+    auto N0    = int(std::floor(-wmin / dw)) + 1; // frequency index at or above w=0
     double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
 
     nda::matrix<dcomplex> res(g.target_shape());
 
     // Trapetzoidal integration, with partial right interval
     res = 0.5 * g[0];
-    for (int widx : range(1, N0)) res += g[widx];
+    for (auto widx : range(1, N0)) res += g[widx];
     if (abs(dw0) > 1e-9) {
       double a = dw0 / dw;
       res += 0.5 * ((a * a - 1.) * g[N0 - 1] + a * (2. - a) * g[N0]);
@@ -156,9 +156,7 @@ namespace triqs::gfs {
 
     // Filter out divergent real parts of g that are inf
     // e.g. flat dos at dos edge (but keep complex matrix structure)
-    // FIXME : Use diagonal iteration when implemented.
-    for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
-
+    diagonal(res) = imag(diagonal(res));
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
     
     // writing back into res is problematic due to lazy expressionsreturn
@@ -169,18 +167,15 @@ namespace triqs::gfs {
   /// Finite temperature density from integration on the real frequency axis
   nda::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
 
-    assert(beta > 0.);
+    auto [N, M] = g.target_shape();
+    EXPECTS(beta > 0 and N == M);
 
-    nda::matrix<dcomplex> res(g.target_shape());
-    res() = 0;
-
+    auto res = nda::matrix<dcomplex>::zeros(N, N);
     for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
 
     // -- Required to filter out divergent real parts of g that are inf
     // -- eg flat dos at dos edge
-    // FIXME : Use diagonal iteration when implemented.
-    for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
-
+    diagonal(res) = imag(diagonal(res));
     res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
 
     // writing back into res is problematic due to lazy expressionsreturn
