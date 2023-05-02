@@ -112,7 +112,7 @@ namespace triqs {
        * @param k_mesh The brillouin-zone mesh
        * @return Green function on the k_mesh initialized with the fourier transform
        */
-      inline auto fourier(mesh::brzone const &k_mesh) {
+      inline auto fourier(mesh::brzone const &k_mesh) const {
         auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
         for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
         auto kvecs_rec = make_regular(kvecs * k_mesh.bz().reciprocal_matrix_inv());
@@ -129,7 +129,7 @@ namespace triqs {
        * @param n_l The number of grid-points for each dimension
        * @return Green function on the k_mesh initialized with the fourier transform
        */
-      inline auto fourier(int n_l) {
+      inline auto fourier(int n_l) const {
         auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
         return fourier(k_mesh);
       }
@@ -161,7 +161,7 @@ namespace triqs {
        * @param k_mesh The brillouin-zone mesh
        * @return Green function on the k_mesh initialized with the dispersion values
        */
-      inline auto dispersion(mesh::brzone const &k_mesh) {
+      inline auto dispersion(mesh::brzone const &k_mesh) const {
         auto h_k = fourier(k_mesh);
         auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_orbitals()});
         for (auto const &k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
@@ -176,7 +176,7 @@ namespace triqs {
        * @param n_l The number of grid-points for each dimension
        * @return Green function on the k_mesh initialized with the dispersion values
        */
-      inline auto dispersion(int n_l) {
+      inline auto dispersion(int n_l) const {
         auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
         return dispersion(k_mesh);
       }
