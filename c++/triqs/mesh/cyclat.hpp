@@ -182,10 +182,7 @@ namespace triqs::mesh {
     template <typename V>
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
     [[nodiscard]] idx_t closest_idx(V const &v) const {
-      PRINT(v);
-      PRINT(units_inv_);
       auto idbl = transpose(units_inv_) * nda::basic_array_view{v};
-      PRINT(idbl);
       return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
     }
 
