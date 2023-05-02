@@ -289,7 +289,7 @@ namespace triqs::mesh {
       long dim;
     };
 
-    friend auto evaluate(brzone1d const &m, auto f, double vi) {
+    friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
       long i   = std::floor(vi);
       double w = vi - i;
       return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
@@ -298,10 +298,11 @@ namespace triqs::mesh {
     // Use the cartesian product evaluation to evaluate on domain pts
     template <typename V>
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    friend auto evaluate(brzone const &m, auto f, V const &v) {
+    friend auto evaluate(brzone const &m, auto const &f, V const &v) {
       auto v_idx = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
-      auto g     = [&f](auto &x, auto &y, auto &z) { return f(typename brzone::idx_t{x, y, z}); };
-      return evaluate(std::tuple{brzone1d{m.dims()[0]}, brzone1d{m.dims()[1]}, brzone1d{m.dims()[2]}}, g, v_idx[0], v_idx[1], v_idx[2]);
+      auto g            = [&f](long x, long y, long z) { return f(typename brzone::idx_t{x, y, z}); };
+      auto [d0, d1, d2] = m.dims();
+      return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_idx[0], v_idx[1], v_idx[2]);
     }
   };
 
