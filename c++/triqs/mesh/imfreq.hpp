@@ -158,10 +158,7 @@ namespace triqs::mesh {
     [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_idx() <= idx and idx <= last_idx(); }
 
     /// Index to linear index
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return idx - first_idx();
-    }
+    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_idx(); }
 
     [[nodiscard]] datidx_t to_datidx(matsubara_freq const &iw) const noexcept {
       EXPECTS(beta == iw.beta and statistic == iw.statistic);
@@ -179,10 +176,7 @@ namespace triqs::mesh {
     }
 
     /// Index from a linear index
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
-      EXPECTS(0 <= datidx and datidx < size());
-      return datidx + first_idx();
-    }
+    [[nodiscard]] idx_t to_idx(datidx_t datidx) const { return datidx + first_idx(); }
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(is_idx_valid(cmp.value.n));
