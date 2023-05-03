@@ -111,7 +111,6 @@ namespace triqs::mesh {
 
     /// The datidx is the tuple of the datidx of the components
     datidx_t to_datidx(idx_t const &index) const {
-      EXPECTS(is_idx_valid(index));
       auto l = [](auto const &m, auto const &idx) { return m.to_datidx(idx); };
       return triqs::tuple::map_on_zip(l, *this, index);
     }
