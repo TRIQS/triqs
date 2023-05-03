@@ -33,9 +33,9 @@ class test_gf_init(unittest.TestCase):
 
         h=HDFArchive('gf_init.ref.h5','r')
 
-        g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
-        g['eg1','eg1'] << SemiCircular(half_bandwidth = 1)
-        g['eg2','eg2'] << SemiCircular(half_bandwidth = 2)
+        g = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
+        g[0,0] << SemiCircular(half_bandwidth = 1)
+        g[1,1] << SemiCircular(half_bandwidth = 2)
 
         assert_gfs_are_close(g, h['g1'])
 
@@ -44,30 +44,30 @@ class test_gf_init(unittest.TestCase):
         assert_gfs_are_close(g, h['g2'])
 
         some_mesh = numpy.arange(-5,5,0.1)
-        g = GfReFreq(indices = ['eg1','eg2'], window = (-5, 4.9), n_points = 100, name = "egBlock")
+        g = GfReFreq(window = (-5, 4.9), n_points = 100, target_shape = (2,2), name = "egBlock")
 
-        g['eg1','eg1'] << iOmega_n - 1.0
-        g['eg2','eg2'] << iOmega_n + 1.0
+        g[0,0] << iOmega_n - 1.0
+        g[1,1] << iOmega_n + 1.0
 
         assert_gfs_are_close(g, h['g3'])
 
 
     def test_gf_init_fromgf(self):
 
-        g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
-        g1['eg1','eg1'] << SemiCircular(half_bandwidth = 1)
-        g1['eg2','eg2'] << SemiCircular(half_bandwidth = 2)
+        g1 = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
+        g1[0,0] << SemiCircular(half_bandwidth = 1)
+        g1[1,1] << SemiCircular(half_bandwidth = 2)
 
-        g2 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
+        g2 = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
         g2[:] = g1
         assert_gfs_are_close(g1, g2)
 
-        g3 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
+        g3 = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
         g3 << g1
         assert_gfs_are_close(g1, g3)
 
         # If meshes are incompatible we should see an AssertionError
-        g4 = GfImFreq(indices = ['eg1','eg2'], beta = 100, n_points = 100, name = "egBlock")
+        g4 = GfImFreq(beta = 100, n_points = 100, target_shape = (2,2), name = "egBlock")
         with self.assertRaises(AssertionError):
             g4 << g1
 

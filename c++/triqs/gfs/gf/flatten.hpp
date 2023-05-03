@@ -53,17 +53,17 @@ namespace triqs::gfs {
     using gf_t    = gf<std::decay_t<decltype(m)>, tensor_valued<1>>;
     if constexpr (Target::is_real) // FIXME Remove hard-copy once real fourier is implemented
       return gf_t{
-         m, array<dcomplex, 2>(flatten_2d<N>(make_array_const_view(g.data()))), {}}; // FIXME : all the make_array_const_view : fix flatten_2d
+         m, array<dcomplex, 2>(flatten_2d<N>(make_array_const_view(g.data())))}; // FIXME : all the make_array_const_view : fix flatten_2d
     else
-      return gf_t{m, flatten_2d<N>(make_array_const_view(g.data())), {}};
+      return gf_t{m, flatten_2d<N>(make_array_const_view(g.data()))};
   }
 
   template <int N, typename Mesh, typename Target> gf<Mesh, tensor_valued<1>> flatten_gf_2d(gf_const_view<Mesh, Target> g) {
     static_assert(N == 0, "Internal error");
     if constexpr (Target::is_real) // FIXME Remove hard-copy once real fourier is implemented
-      return {g.mesh(), array<dcomplex, 2>(flatten_2d<0>(make_array_const_view(g.data()))), {}};
+      return {g.mesh(), array<dcomplex, 2>(flatten_2d<0>(make_array_const_view(g.data())))};
     else
-      return {g.mesh(), flatten_2d<0>(make_array_const_view(g.data())), {}};
+      return {g.mesh(), flatten_2d<0>(make_array_const_view(g.data()))};
   }
 
 } // namespace triqs::gfs

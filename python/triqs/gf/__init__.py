@@ -44,7 +44,7 @@ from .meshes import MeshImFreq, MeshImTime, MeshReFreq, MeshReTime, MeshBrZone, 
 MeshBrillouinZone = MeshBrZone
 MeshCyclicLattice = MeshCycLat
 
-from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity, GfIndices
+from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity 
 
 from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau
 
@@ -53,7 +53,7 @@ import warnings
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions',
             'MeshPoint','MeshValueGenerator',
-            'Idx', 'Gf', 'MeshProduct', 'GfIndices',
+            'Idx', 'Gf', 'MeshProduct',
             'GfImFreq', 'MeshImFreq',
             'GfImTime', 'MeshImTime',
             'GfReFreq', 'MeshReFreq',

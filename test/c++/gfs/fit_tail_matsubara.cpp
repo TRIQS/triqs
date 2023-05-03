@@ -36,7 +36,7 @@ TEST(FitTailMatsubara, Basic) { // NOLINT
   iw_mesh.get_tail_fitter(tail_fraction);
 
   auto gw   = gf<imfreq>{iw_mesh, {1, 1}};
-  auto gw_s = gf<imfreq, scalar_valued>{iw_mesh, {}};
+  auto gw_s = gf<imfreq, scalar_valued>{iw_mesh};
 
   // Initialize the Green functions
   array<dcomplex, 1> c{0, 1, 3, 5};

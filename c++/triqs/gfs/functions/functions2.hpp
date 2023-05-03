@@ -168,8 +168,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
-    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); },
-                           [&args...](auto &&i) { return slice(i, args...); });
+    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -177,8 +176,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
-    auto r =
-       g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); }, [&args...](auto &&i) { return slice(i, args...); });
+    auto r = g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
     return r;
   }
 
@@ -238,7 +236,7 @@ namespace triqs::gfs {
    */
   template <typename G> typename G::regular_type::real_t real(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>)
-      return {g.mesh(), real(g.data()), g.indices()};
+      return {g.mesh(), real(g.data())};
     else
       return map_block_gf([](auto &&g_bl) { return real(g_bl); }, g);
   }
@@ -251,7 +249,7 @@ namespace triqs::gfs {
    */
   template <typename G> typename G::regular_type::real_t imag(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>)
-      return {g.mesh(), imag(g.data()), g.indices()};
+      return {g.mesh(), imag(g.data())};
     else
       return map_block_gf([](auto &&g_bl) { return imag(g_bl); }, g);
   }
@@ -260,15 +258,18 @@ namespace triqs::gfs {
   *                      Transpose. Create a NEW gf
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) {
-    return {g.mesh(), transposed_view(g.data(), 0, 2, 1), g.indices().transpose()};
-  }
+  template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) { return {g.mesh(), transposed_view(g.data(), 0, 2, 1)}; }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G> typename G::regular_type conj(G const &g) requires(is_gf_v<G>) { return {g.mesh(), conj(g.data()), g.indices()}; }
+  template <typename G>
+  typename G::regular_type conj(G const &g)
+    requires(is_gf_v<G>)
+  {
+    return {g.mesh(), conj(g.data())};
+  }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Multiply by matrices left or right

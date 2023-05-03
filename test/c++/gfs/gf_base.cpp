@@ -163,7 +163,7 @@ TEST(Gf, ZeroM) {
 TEST(Gf, ZeroS) {
 
   double beta = 1;
-  auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
+  auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}};
   EXPECT_COMPLEX_NEAR(zeros<dcomplex>(g.target_shape()), 0);
 }
 

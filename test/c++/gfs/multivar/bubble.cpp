@@ -142,7 +142,7 @@ TEST(Gf, BubbleSimplif) {
 TEST(Gf, BubbleSimplifScalar) {
   // simplified, without frequency dependence
   auto gk         = gf<brzone, scalar_valued>{{bz, n_k}};
-  auto gr         = gf<cyclat, scalar_valued>{{n_k, n_k}, {}};
+  auto gr         = gf<cyclat, scalar_valued>{{n_k, n_k}};
   auto ggr        = gr;
   auto ggq        = gk;
   auto ggq_from_r = gk;

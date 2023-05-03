@@ -19,31 +19,6 @@ m.add_using("namespace triqs::gfs")
 m.add_preamble("""
 """)
 
-########################
-##   Indices
-########################
-
-# Wrapping indices
-c = class_( py_type = "GfIndices",
-        c_type = "gf_indices",
-        c_type_absolute = "triqs::gfs::gf_indices",
-        hdf5 = True,
-        serializable= "tuple",
-       )
-
-c.add_constructor("(std::vector<std::vector<std::string>> indices)", doc = "Constructs indices, from a list(list(string)))")
-c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"), doc = "Get a copy of the list of list of strings")
-c.add_method("gf_indices transpose()", doc = "Transposing")
-c.add_method("int convert_index(std::string s, int i)", doc = "index -> position conversion")
-c.add_method_copy()
-c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
-
-c.add_len(calling_pattern = "int result = self_c.rank()", doc = "")
-c.add_iterator(c_cast_type = "std::vector<std::string>")
-
-m.add_class (c)
-
-
 # ---------------------- Tail functionality --------------------
 # fit_tail
 for mesh in ["imfreq", "refreq"]:

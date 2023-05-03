@@ -94,9 +94,9 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
       using mesh_t  = decltype(new_mesh);
       using self_t = std::remove_reference_t<Self>;
       if constexpr (self_t::is_const or std::is_const_v<self_t>)
-        return gf_const_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data, self.indices()};
+        return gf_const_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data};
       else
-        return gf_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data, self.indices()};
+        return gf_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data};
     }
   }
 }
@@ -159,7 +159,6 @@ public:
 template <class Archive> void serialize(Archive &ar, const unsigned int version) {
   ar &_data;
   ar &_mesh;
-  ar &_indices;
 }
 
 //----------------------------- print  -----------------------------

@@ -90,7 +90,7 @@ TEST(Gf, Block) {
   B1[b_](iw_) << B11[b_](iw_) * B1[b_](iw_) * B11[b_](iw_);
 
   // Reinterpretation (compile checks)
-  auto G1_scalar = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
+  auto G1_scalar = gf<imfreq, scalar_valued>{{beta, Fermion}};
   auto B1_scalar = make_block_gf(3, G1_scalar);
   auto B1_interp = reinterpret_scalar_valued_gf_as_matrix_valued(B1_scalar);
 

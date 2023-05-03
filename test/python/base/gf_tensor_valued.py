@@ -25,10 +25,10 @@ m=MeshImFreq(beta=1, S='Fermion', n_iw=10)
 G=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2']])
 
 #another constructor
-G2=GfImFreq(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])
+G2=GfImFreq(beta=1.,statistic="Fermion",n_points=100, target_shape=(1,2,2))
 
 assert G.data.shape==(20,1,2,2),"not ok"
-assert G['a','b1','c2'].data.shape==(20,), "not ok"
+assert G[0,0,0].data.shape==(20,), "not ok"
 
 #H5 r/w
 A=HDFArchive("Tv3.h5",'w')
@@ -42,7 +42,7 @@ assert G3.data.shape==G.data.shape,"not ok:%s vs %s"%(G3.data.shape, G.data.shap
 
 #mpi bcast
 import triqs.utility.mpi as mpi
-G4=GfImFreq(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])
+G4=GfImFreq(beta=1.,statistic="Fermion",n_points=100, target_shape=(1,2,2))
 if mpi.is_master_node():
    G4.data[:,:,:,:] = 5
    assert G4.data[0,0,0,0]==5, "not ok :%s"%(G4.data[0,0,0,0])
@@ -55,12 +55,12 @@ if not mpi.is_master_node():
 
 ##Tv4
 print("#############################")
-G5=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2'], ['c']])
+G5=GfImFreq(mesh=m, target_shape=(1,2,2,1))
 print(G5.data.shape)
 
 assert G5.data.shape==(20,1,2,2,1),"not ok"
-assert G5['a','b1','c2', 'c'].data.shape==(20,), "not ok"
+assert G5[0,0,0,0].data.shape==(20,), "not ok"
 
 #ImTime, 
 print("#############################")
-G6=GfImTime(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])
+G6=GfImTime(beta=1.,statistic="Fermion",n_points=100, target_shape=(1,2,2))

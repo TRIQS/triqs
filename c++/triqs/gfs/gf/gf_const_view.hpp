@@ -64,7 +64,6 @@ namespace triqs::gfs {
     // NO DOC
     using mesh_idx_t = typename mesh_t::idx_t;
 
-    using indices_t   = gf_indices;
     using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh>;
 
     /// Real or Complex
@@ -139,23 +138,16 @@ namespace triqs::gfs {
      */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 
-    /// Indices of the Green function (for Python only)
-    indices_t const &indices() const { return _indices; }
-
     private:
     mesh_t _mesh;
     data_t _data;
-    indices_t _indices;
 
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-    template <typename G> gf_const_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
+    template <typename G> gf_const_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()) {}
 
-    template <typename M, typename D>
-    gf_const_view(impl_tag, M &&m, D &&dat, indices_t ind) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
-      if (!(_indices.empty() or _indices.has_shape(target_shape()))) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
-    }
+    template <typename M, typename D> gf_const_view(impl_tag, M &&m, D &&dat) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)) {}
 
     public:
     /// Copy
@@ -169,7 +161,6 @@ namespace triqs::gfs {
       using std::swap;
       swap(this->_mesh, b._mesh);
       swap(this->_data, b._data);
-      swap(this->_indices, b._indices);
     }
 
     public:
@@ -196,17 +187,7 @@ namespace triqs::gfs {
        * @tparam ArrayType Type of the data array 
        * @param dat Data array
        */
-    template <typename ArrayType> gf_const_view(mesh_t m, ArrayType const &dat) : gf_const_view(impl_tag{}, std::move(m), dat, {}) {}
-
-    /**
-       * Builds a const view on top of a mesh, a data array
-       * 
-       * @tparam ArrayType Type of the data array 
-       * @param dat Data array
-       * @param ind Indices
-       */
-    template <typename ArrayType>
-    gf_const_view(mesh_t m, ArrayType const &dat, indices_t const &ind) : gf_const_view(impl_tag{}, std::move(m), dat, ind) {}
+    gf_const_view(mesh_t m, data_t dat) : gf_const_view(impl_tag{}, std::move(m), dat) {}
 
     // ---------------  swap --------------------
 
@@ -222,7 +203,6 @@ namespace triqs::gfs {
     void rebind(gf_const_view<Mesh, Target> const &g) noexcept {
       this->_mesh = g._mesh;
       this->_data.rebind(g._data);
-      this->_indices = g._indices;
     }
 
     /**
@@ -240,26 +220,18 @@ namespace triqs::gfs {
     public:
     // ------------- apply_on_data -----------------------------
 
-    template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
-      auto d2    = fd(_data);
-      using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_const_view<Mesh, t2>;
-      return gv_t{_mesh, d2, fi(_indices)};
-    }
-
     template <typename Fdata> auto apply_on_data(Fdata &&fd) {
-      return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
-    }
-
-    template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
       using gv_t = gf_const_view<Mesh, t2>;
-      return gv_t{_mesh, d2, fi(_indices)};
+      return gv_t{_mesh, d2};
     }
 
     template <typename Fdata> auto apply_on_data(Fdata &&fd) const {
-      return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
+      auto d2    = fd(_data);
+      using t2   = target_from_array<decltype(d2), arity>;
+      using gv_t = gf_const_view<Mesh, t2>;
+      return gv_t{_mesh, d2};
     }
 
     // Common code for gf, gf_view, gf_const_view

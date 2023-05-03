@@ -34,7 +34,7 @@ TEST(FitTailReal, Basic) { // NOLINT
   w_mesh.get_tail_fitter(tail_fraction);
 
   auto gw   = gf<refreq>{w_mesh, {1, 1}};
-  auto gw_s = gf<refreq, scalar_valued>{w_mesh, {}};
+  auto gw_s = gf<refreq, scalar_valued>{w_mesh};
 
   // Initialize the Green functions
   array<dcomplex, 1> c{0, 1, 3, 5};

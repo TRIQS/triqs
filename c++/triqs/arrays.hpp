@@ -59,18 +59,14 @@ namespace triqs::arrays {
 
   using nda::blas::dot;
 
-  template <typename... T> //[[deprecated]]
-  std::array<long, sizeof...(T)> make_shape(T... x) {
-    return {long(x)...};
-  }
+  template <typename... T> std::array<long, sizeof...(T)> make_shape(T... x) { return {long(x)...}; }
 
 } // namespace triqs::arrays
 
 namespace nda {
 
   // Rotate the index n to 0, preserving the relative order of the other indices
-  template <int N, typename A> //[[deprecated]]
-  auto rotate_index_view(A &&a) {
+  template <int N, typename A> auto rotate_index_view(A &&a) {
     return permuted_indices_view<encode(nda::permutations::cycle<get_rank<A>>(-1, N + 1))>(std::forward<A>(a));
   }
 

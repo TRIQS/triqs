@@ -78,7 +78,6 @@ namespace cpp2py {
     using c_type    = triqs::gfs::gf_view<M, T>;
     using mesh_t    = typename c_type::mesh_t;
     using data_t    = typename c_type::data_t;
-    using indices_t = typename c_type::indices_t;
 
     static PyObject *c2py(c_type g) {
 
@@ -88,13 +87,10 @@ namespace cpp2py {
       if (m.is_null()) return NULL;
       pyref d = convert_to_python(g.data());
       if (d.is_null()) return NULL;
-      pyref i = convert_to_python(g.indices());
-      if (i.is_null()) return NULL;
 
       pyref kw = PyDict_New();
       PyDict_SetItemString(kw, "mesh", m);
       PyDict_SetItemString(kw, "data", d);
-      PyDict_SetItemString(kw, "indices", i);
 
       pyref empty_tuple = PyTuple_New(0);
       return PyObject_Call(cls, empty_tuple, kw);
@@ -132,12 +128,6 @@ namespace cpp2py {
         return false;
       }
 
-      pyref i = x.attr("_indices");
-      if (!py_converter<indices_t>::is_convertible(i, raise_exception)) {
-        if (raise_exception) _set_err(i, "indices", triqs::utility::typeid_name<indices_t>());
-        return false;
-      }
-
       return true;
     }
 
@@ -147,8 +137,7 @@ namespace cpp2py {
       pyref x = borrowed(ob);
       pyref m = x.attr("_mesh");
       pyref d = x.attr("_data");
-      pyref i = x.attr("_indices");
-      return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d), convert_from_python<indices_t>(i)};
+      return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d)};
     }
   };
 

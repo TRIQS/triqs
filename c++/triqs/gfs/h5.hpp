@@ -81,13 +81,11 @@ namespace triqs::gfs {
       //else
       h5_write(gr, "data", g.data());
       h5_write(gr, "mesh", g._mesh);
-      h5_write(gr, "indices", g._indices);
     }
 
     template <typename G> static void read(h5::group gr, G &g) {
       h5_read(gr, "data", g._data);
       h5_read(gr, "mesh", g._mesh);
-      h5_read(gr, "indices", g._indices);
       gf_h5_after_read<V, T>::invoke(gr, g);
     }
   };

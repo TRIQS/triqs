@@ -17,7 +17,6 @@
 
 #pragma once
 #include "./defs.hpp"
-#include "./gf_indices.hpp"
 
 namespace triqs::gfs {
 
@@ -102,7 +101,6 @@ namespace triqs::gfs {
     // NO DOC
     using mesh_idx_t = typename mesh_t::idx_t;
 
-    using indices_t   = gf_indices;
     using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh>;
 
     /// Real or Complex
@@ -177,23 +175,16 @@ namespace triqs::gfs {
      */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 
-    /// Indices of the Green function (for Python only)
-    indices_t const &indices() const { return _indices; }
-
     private:
     mesh_t _mesh;
     data_t _data;
-    indices_t _indices;
 
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-    template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
+    template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()) {}
 
-    template <typename M, typename D>
-    gf(impl_tag, M &&m, D &&dat, indices_t ind) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
-      if (!(_indices.empty() or _indices.has_shape(target_shape()))) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
-    }
+    template <typename M, typename D> gf(impl_tag, M &&m, D &&dat) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)) {}
 
     public:
     /// Empty Green function (with empty array).
@@ -210,7 +201,6 @@ namespace triqs::gfs {
       using std::swap;
       swap(this->_mesh, b._mesh);
       swap(this->_data, b._data);
-      swap(this->_indices, b._indices);
     }
 
     private:
@@ -222,27 +212,21 @@ namespace triqs::gfs {
     }
 
     public:
-
     /**
      *  @param m Mesh
      *  @param dat data arrray
-     *  @param ind Indices
      *
      *  @note  Using the "pass by value" and move
      *  @example triqs/gfs/gf_constructors_0.cpp
      */
-    gf(mesh_t m, data_t dat, indices_t ind) : gf(impl_tag{}, std::move(m), std::move(dat), std::move(ind)) {}
+    gf(mesh_t m, data_t dat) : gf(impl_tag{}, std::move(m), std::move(dat)) {}
 
     /**
      *  @param m Mesh
      *  @param shape Target shape
-     *  @param ind Indices
      * 
      */
-    gf(mesh_t m, target_shape_t shape = {}, indices_t const &ind = indices_t{})
-       : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), ind) {
-      if (this->_indices.empty()) this->_indices = indices_t(shape);
-    }
+    gf(mesh_t m, target_shape_t shape = {}) : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape))) {}
 
     /**
      *  Makes a deep copy of the data
@@ -302,10 +286,6 @@ namespace triqs::gfs {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
       for (auto const &w : _mesh) (*this)[w] = rhs[w];
-      _indices = rhs.indices();
-      if (_indices.empty()) _indices = indices_t(target_shape());
-      //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
-      // to be implemented : there is none in the gf_expr in particular....
       return *this;
     }
 
@@ -314,26 +294,18 @@ namespace triqs::gfs {
     public:
     // ------------- apply_on_data -----------------------------
 
-    template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
+    template <typename Fdata> auto apply_on_data(Fdata &&fd) {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
       using gv_t = gf_view<Mesh, t2>;
-      return gv_t{_mesh, d2, fi(_indices)};
-    }
-
-    template <typename Fdata> auto apply_on_data(Fdata &&fd) {
-      return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
-    }
-
-    template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
-      auto d2    = fd(_data);
-      using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_const_view<Mesh, t2>;
-      return gv_t{_mesh, d2, fi(_indices)};
+      return gv_t{_mesh, d2};
     }
 
     template <typename Fdata> auto apply_on_data(Fdata &&fd) const {
-      return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
+      auto d2    = fd(_data);
+      using t2   = target_from_array<decltype(d2), arity>;
+      using gv_t = gf_const_view<Mesh, t2>;
+      return gv_t{_mesh, d2};
     }
 
     //-------------  MPI operation
@@ -345,7 +317,6 @@ namespace triqs::gfs {
     void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh    = l.rhs.mesh();
       _data    = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
-      _indices = l.rhs.indices();
     }
 
     /**
@@ -355,7 +326,6 @@ namespace triqs::gfs {
     void operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
       _mesh    = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data    = mpi::scatter(l.rhs.data(), l.c, l.root, true);
-      _indices = mpi::scatter(l.rhs.indices(), l.c, l.root);
     }
 
     /**
@@ -365,7 +335,6 @@ namespace triqs::gfs {
     void operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
       _mesh    = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data    = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
-      _indices = mpi::gather(l.rhs.indices(), l.c, l.root);
     }
 
     // Common code for gf, gf_view, gf_const_view

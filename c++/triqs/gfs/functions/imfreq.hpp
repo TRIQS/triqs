@@ -44,7 +44,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data), g.indices()};
+    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data)};
   }
 
   /// Make a const view of the positive frequency part of the function
@@ -55,7 +55,7 @@ namespace triqs::gfs {
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
     int is_boson = (g.mesh().statistic == Boson);
-    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis()), g.indices()};
+    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis())};
   }
 
   /**
@@ -245,7 +245,7 @@ namespace triqs::gfs {
     int idx_max          = old_mesh.to_datidx(iw_mesh.last_idx());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
-    return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view, g.indices()};
+    return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};
   }
 
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {

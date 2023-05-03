@@ -29,7 +29,6 @@ from triqs.plot.protocol import clip_array
 from . import meshes
 from . import plot 
 from . import gf_fnt, wrapped_aux
-from .gf_fnt import GfIndices
 from .mesh_point import MeshPoint
 from operator import mul
 
@@ -98,8 +97,7 @@ class Gf(metaclass=AddMethod):
     Notes
     -----
 
-    One of ``target_shape`` or ``data`` must be set, and the other must be `None`. If passing ``data``
-    and ``indices`` the ``data.shape`` needs to be compatible with the shape of ``indices``.
+    One of ``target_shape`` or ``data`` must be set, and the other must be `None`.
 
     """
     
@@ -110,7 +108,7 @@ class Gf(metaclass=AddMethod):
         
         #print "Gf construct args", kw
 
-        def delegate(self, mesh, data=None, target_shape=None, indices = None, name = '', is_real = False):
+        def delegate(self, mesh, data=None, target_shape=None, name = '', is_real = False, indices=None):
             """
             target_shape and data  : must provide exactly one of them
             """
@@ -130,23 +128,19 @@ class Gf(metaclass=AddMethod):
             assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join([m.__name__ for m in all_meshes])
             self._mesh = mesh
 
-            # indices
-            # if indices is not a list of list, but a list, then the target_rank is assumed to be 2 !
-            # backward compatibility only, it is not very logical (what about vector_valued gf ???)
-            assert isinstance(indices, (type(None), list, GfIndices)), "Type of indices incorrect : should be None, Gfindices, list of str, or list of list of str"
-            if isinstance(indices, list):
-                if not isinstance(indices[0], list): indices = [indices, indices]
-                # indices : transform indices into string
-                indices = [ [str(x) for x in v] for v in indices]
-                indices = GfIndices(indices)
-            self._indices = indices # now indices are None or Gfindices 
+            # indices backward compat layer
+            if indices is not None:
+                warnings.warn("The use of string indices is no longer supported, converting to target_shape instead.", DeprecationWarning)
+                assert target_shape is None, "target_shape must be None if indices is not None"
+                if isinstance(indices[0], (list, range)):
+                    target_shape = [len(li) for li in indices]
+                else:
+                    target_shape = [len(indices), len(indices)]
 
             # data
             if data is None:
-                # if no data, we get the target_shape. If necessary, we find it from of the list of indices
-                if target_shape is None : 
-                    assert indices, "Without data, target_shape, I need the indices to compute the shape !"
-                    target_shape = [ len(x) for x in indices.data]
+                # if no data, we need target_shape
+                assert target_shape is not None, "target_shape must be provided if data is None"
                 # we now allocate the data
                 l = mesh.size_of_components() if isinstance(mesh, MeshProduct) else [len(mesh)]
                 data = np.zeros(list(l) + list(target_shape), dtype = np.float64 if is_real else np.complex128)
@@ -165,17 +159,6 @@ class Gf(metaclass=AddMethod):
             assert target_shape is None or tuple(target_shape) == self._data.shape[self._rank:] # Debug only
             self._target_shape = self._data.shape[self._rank:]
 
-            # If no indices was given, build the default ones
-            if self._indices is None: 
-                self._indices = GfIndices([list(str(i) for i in range(n)) for n in self._target_shape])
-
-            # Check that indices  have the right size
-            if self._indices is not None: 
-                d,i =  self._data.shape[self._rank:], tuple(len(x) for x in self._indices.data)
-                assert (d == i), "Indices are of incorrect size. Data size is %s while indices size is %s"%(d,i)
-            # Now indices are set, and are always a GfIndices object, with the
-            # correct size
-           
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any INTERNAL exceptions.
             # Set up the C proxy for call operator for speed. The name has to
@@ -239,6 +222,17 @@ class Gf(metaclass=AddMethod):
         return self._target_shape
 
     @property
+    def target_indices(self):
+        """(int, ...) : A generator for the target space integer tuples"""
+        return itertools.product(*[range(i) for i in self._target_shape])
+
+    @property
+    def indices(self):
+        warnings.warn("Gf.indices is deprecated, use Gf.target_shape", DeprecationWarning)
+        """(int, ...) : Deprecated. Use target_indices instead."""
+        return [range(d) for d in self.target_shape]
+
+    @property
     def mesh(self):
         """gf_mesh : The mesh of the Greens function."""
         return self._mesh
@@ -253,11 +247,6 @@ class Gf(metaclass=AddMethod):
         """
         return self._data
 
-    @property
-    def indices(self):
-        """GfIndices : The index object of the target space."""
-        return self._indices
-
     def copy(self) : 
         """Deep copy of the Greens function.
 
@@ -268,7 +257,6 @@ class Gf(metaclass=AddMethod):
         """
         return Gf (mesh = self._mesh.copy(), 
                    data = self._data.copy(), 
-                   indices = self._indices.copy(), 
                    name = self.name)
 
     def copy_from(self, another):
@@ -276,7 +264,6 @@ class Gf(metaclass=AddMethod):
         self._mesh.copy_from(another.mesh)
         assert self._data.shape == another._data.shape, "Shapes are incompatible: " + str(self._data.shape) + " vs " + str(another._data.shape)
         self._data[:] = another._data[:]
-        self._indices = another._indices.copy()
         self.__check_invariants()
 
     def __repr__(self):
@@ -330,30 +317,22 @@ class Gf(metaclass=AddMethod):
         else : 
             assert self.target_rank == len(key), "wrong number of arguments. Expected %s, got %s"%(self.target_rank, len(key))
 
-            # Assume empty indices (scalar_valued)
-            ind = GfIndices([])
-
-            # String access: transform the key into a list integers
-            if all(isinstance(x, str) for x in key):
-                warnings.warn("The use of string indices is deprecated", DeprecationWarning)
-                assert self._indices, "Got string indices, but I have no indices to convert them !"
-                key_tpl = tuple(self._indices.convert_index(s,i) for i,s in enumerate(key)) # convert returns a slice of len 1
-
-            # Slicing with ranges -> Adjust indices
-            elif all(isinstance(x, slice) for x in key): 
+            # Slicing with ranges
+            if all(isinstance(x, slice) for x in key): 
                 key_tpl = tuple(key)
-                ind = GfIndices([ v[k]  for k,v in zip(key_tpl, self._indices.data)])
 
             # Integer access
             elif all(isinstance(x, int) for x in key):
                 key_tpl = tuple(key)
 
             # Invalid Access
+            elif any(isinstance(x, str) for x in key):
+                raise RuntimeError("String indices are no longer supported. Please use integer indices for the target.")
             else:
                 raise NotImplementedError("Partial slice of the target space not implemented")
 
             dat = self._data[ self._rank*(slice(0,None),) + key_tpl ]
-            r = Gf(mesh = self._mesh, data = dat, indices = ind)
+            r = Gf(mesh = self._mesh, data = dat)
 
             r.__check_invariants()
             return r
@@ -644,7 +623,7 @@ class Gf(metaclass=AddMethod):
         assert self.target_rank == 2, "Transpose only implemented for matrix valued Greens functions"
 
         d = np.transpose(self.data.copy(), (0, 2, 1))
-        return Gf(mesh = self.mesh, data= d, indices = self.indices.transpose())
+        return Gf(mesh = self.mesh, data= d)
 
     def conjugate(self):
         """Conjugate of the Greens function.
@@ -654,7 +633,7 @@ class Gf(metaclass=AddMethod):
         G : Gf (copy)
             Conjugate of the Greens function.
         """
-        return Gf(mesh = self.mesh, data= np.conj(self.data), indices = self.indices)
+        return Gf(mesh = self.mesh, data= np.conj(self.data))
 
     def zero(self):
         """Set all values to zero."""
@@ -728,7 +707,6 @@ class Gf(metaclass=AddMethod):
 
     def __reduce_to_dict__(self):
         d = {'mesh' : self._mesh, 'data' : self._data}
-        if self.indices : d['indices'] = self.indices 
         return d
 
     _hdf5_format_ = 'Gf'
@@ -736,8 +714,11 @@ class Gf(metaclass=AddMethod):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         # Backward compatibility layer
-        # Drop singularity from the element and ignore it
+        # Drop singularity from the grp and ignore it
         d.pop('singularity', None)
+        # Backward compatibility layer
+        # Drop indices from the grp and ignore it
+        d.pop('indices', None)
         #
         r = cls(name = name, **d)
         # Backward compatibility layer
@@ -798,7 +779,11 @@ def bckwd(hdf_scheme):
         if m.endswith(suffix) :
             m, t = m[:-len(suffix)], suffix
             break
-    return { 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+    return { 'mesh': 'Mesh'+m }
 
-register_backward_compatibility_method("Gf", "Gf", bckwd)
+register_backward_compatibility_method("GfImFreq", "Gf", bckwd)
+register_backward_compatibility_method("GfImTime", "Gf", bckwd)
+register_backward_compatibility_method("GfLegendre", "Gf", bckwd)
+register_backward_compatibility_method("GfReFreq", "Gf", bckwd)
+register_backward_compatibility_method("GfReTime", "Gf", bckwd)
 

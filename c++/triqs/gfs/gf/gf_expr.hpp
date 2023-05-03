@@ -96,17 +96,6 @@ namespace triqs {
         template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const { return l.data_shape(); }
       };
 
-      // Combine the two indices of LHS and RHS : need to specialize where there is a scalar
-      // FIXME C++17 : simplifyt with if constexpr
-      struct combine_indices {
-        template <typename L, typename R> auto operator()(L &&l, R &&r) const {
-          // make some check ?
-          return std::forward<L>(l).indices();
-        }
-        template <typename S, typename R> decltype(auto) operator()(scalar_wrap<S> const &, R &&r) const { return std::forward<R>(r).indices(); }
-        template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const { return std::forward<L>(l).indices(); }
-      };
-
       template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename remove_rvalue_ref<T>::type>;
 
       template <typename A, typename B> struct _or_ {
@@ -148,7 +137,6 @@ namespace triqs {
         return *_mesh;
       }
       auto data_shape() const { return gfs_expr_tools::combine_shape()(l, r); }
-      decltype(auto) indices() const { return gfs_expr_tools::combine_indices()(l, r); }
 
       template <typename... Keys> decltype(auto) operator[](Keys &&...keys) const {
         return utility::operation<Tag>()(l.operator[](std::forward<Keys>(keys)...), r.operator[](std::forward<Keys>(keys)...)); // Clang Fix
@@ -173,7 +161,6 @@ namespace triqs {
 
       decltype(auto) mesh() const { return l.mesh(); }
       auto data_shape() const { return l.data_shape(); }
-      decltype(auto) indices() const { return l.indices(); }
 
       template <typename... Keys> auto operator[](Keys &&...keys) const { return -l.operator[](std::forward<Keys>(keys)...); } // Clang Fix
       template <typename... Args> auto operator()(Args &&...args) const { return -l(std::forward<Args>(args)...); }
