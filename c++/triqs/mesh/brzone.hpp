@@ -146,17 +146,17 @@ namespace triqs::mesh {
 
       mesh_point_t operator+(mesh_point_t const &other) const {
         auto new_idx = m_ptr->idx_modulo(idx + other.idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
       }
 
       mesh_point_t operator-(mesh_point_t const &other) const {
         auto new_idx = m_ptr->idx_modulo(idx - other.idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
       }
 
       mesh_point_t operator-() const {
         auto new_idx = m_ptr->idx_modulo(-idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx)};
+        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
       }
     };
 
