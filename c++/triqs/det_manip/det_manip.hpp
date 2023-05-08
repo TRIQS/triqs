@@ -786,8 +786,8 @@ namespace triqs {
         N--;
         RN = range(N);
 
-	std::remove(row_num.begin(), row_num.end(), N);
-	std::remove(col_num.begin(), col_num.end(), N);
+	auto it1 [[maybe_unused]] = std::remove(row_num.begin(), row_num.end(), N);
+	auto it2 [[maybe_unused]] = std::remove(col_num.begin(), col_num.end(), N);
 
         row_num.pop_back();
         col_num.pop_back();
@@ -890,8 +890,9 @@ namespace triqs {
 
         // Clean up removed elements from row_num and col_num
         auto gtN = [&](auto i) { return i >= N; };
-        std::remove_if(row_num.begin(), row_num.end(), gtN);
-        std::remove_if(col_num.begin(), col_num.end(), gtN);
+
+        auto it1 [[maybe_unused]] = std::remove_if(row_num.begin(), row_num.end(), gtN);
+        auto it2 [[maybe_unused]] = std::remove_if(col_num.begin(), col_num.end(), gtN);
 
         row_num.resize(N);
         col_num.resize(N);
