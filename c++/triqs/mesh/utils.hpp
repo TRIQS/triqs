@@ -43,7 +43,7 @@ namespace triqs::mesh {
 
   //-------------------------------------------------------------------------
 
-  template <typename... T> uint64_t hash(T &&...ts) { return (std::hash<std::decay_t<T>>()(ts) ^ ...); }
+  template <typename... T> uint64_t hash(T &&...ts) { return (std::hash<std::decay_t<T>>()(ts) + ...); }
 
   //------------------------------------------------------------------------
 
