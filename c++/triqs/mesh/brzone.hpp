@@ -21,7 +21,7 @@
 #pragma once
 #include "utils.hpp"
 #include <triqs/lattice/brillouin_zone.hpp>
-#include "./k_pt_alg.hpp"
+#include "./k_expr.hpp"
 
 namespace triqs::mesh {
 
@@ -137,7 +137,7 @@ namespace triqs::mesh {
           return *(val = m_ptr->to_value(idx));
       }
 
-      auto const &get_idx() const { return idx; } // for lazy expr of mesh_point
+      auto const &index() const { return idx; } // for lazy expr of mesh_point
 
       [[nodiscard]] operator value_t() const { return value(); }
 
@@ -156,7 +156,6 @@ namespace triqs::mesh {
       return true;
     }
 
-    // FIXME Do we really want to terminate on the EXPECTS ? or rather throw (e.g. in Python terminate is irrecoverable)
     [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       return idx[0] * stride0 + idx[1] * stride1 + idx[2];
@@ -171,12 +170,12 @@ namespace triqs::mesh {
 
     template <char OP, typename L> [[nodiscard]] datidx_t to_datidx(k_expr_unary<OP, L> const &ex) const {
       EXPECTS(mesh_hash_ == ex.mesh_hash);
-      return this->to_datidx(this->idx_modulo(ex.get_idx()));
+      return this->to_datidx(this->idx_modulo(ex.index()));
     }
 
     template <char OP, typename L, typename R> [[nodiscard]] datidx_t to_datidx(k_expr<OP, L, R> const &ex) const {
       EXPECTS(mesh_hash_ == ex.mesh_hash);
-      return this->to_datidx(this->idx_modulo(ex.get_idx()));
+      return this->to_datidx(this->idx_modulo(ex.index()));
     }
 
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
@@ -196,10 +195,14 @@ namespace triqs::mesh {
     }
 
     template <typename V>
-      requires(is_bz_k_expr<V>)
+      requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
     [[nodiscard]] idx_t closest_idx(V const &v) const {
-      auto idbl = transpose(units_inv_) * nda::basic_array{v.value()};
-      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+      if constexpr (is_k_expr<V>)
+        return closest_idx(v.value());
+      else {
+        auto idbl = transpose(units_inv_) * nda::basic_array_view{v.value()};
+        return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+      }
     }
 
     template <typename V>
@@ -299,28 +302,32 @@ namespace triqs::mesh {
     }
 
     // Use the cartesian product evaluation to evaluate on domain pts
-    template <typename V> friend auto evaluate(brzone const &m, auto const &f, V const &v) {
-      // NB : this is a static_assert, not a requires.
-      // If m is brzone, there is no other possible overload of evaluate, so we capture every V and check.
-      // If V does not satisfy the condition, we will have a clear error message here,
-      // rather than a long list of other evaluate with other meshes which are irrelevant anyway.
-      static_assert(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_bz_k_expr<V>, "Incorrect type in evaluate on a brzone");
-      auto _get_val = [](auto &&vv) {
-        if constexpr (is_bz_k_expr<V>)
-          return nda::basic_array{vv.value()};
-        else
-          return nda::basic_array_view{vv};
-      };
-      auto v_idx        = make_regular(transpose(m.units_inv_) * _get_val(v));
-      auto g            = [&f](long x, long y, long z) { return f(typename brzone::idx_t{x, y, z}); };
-      auto [d0, d1, d2] = m.dims();
-      return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_idx[0], v_idx[1], v_idx[2]);
+    template <typename V>
+    friend auto evaluate(brzone const &m, auto const &f, V const &v)
+      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)
+    {
+      if constexpr (is_k_expr<V>)
+        return evaluate(m, f, v.value());
+      else {
+        auto v_idx        = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
+        auto g            = [&f](long x, long y, long z) { return f(typename brzone::idx_t{x, y, z}); };
+        auto [d0, d1, d2] = m.dims();
+        return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_idx[0], v_idx[1], v_idx[2]);
+      }
     }
   };
 
   static_assert(MeshWithValues<brzone>);
 
-  // Mark the mesh point to include it in the expression grammar
-  template <> inline constexpr bool is_bz_k_expr<brzone::mesh_point_t> = true;
+  // -------------------------------------------------------------------------------------------
+  //                                 Lazy Mesh Point Algebra
+  // -------------------------------------------------------------------------------------------
+
+  template <typename T>
+  concept BzMeshPoint = is_k_expr<std::decay_t<T>> or std::is_same_v<std::decay_t<T>, brzone::mesh_point_t>;
+  template <BzMeshPoint A> k_expr_unary<'-', A> operator-(A &&a) { return {std::forward<A>(a)}; }
+  template <BzMeshPoint L, BzMeshPoint R> k_expr<'+', L, R> operator+(L &&l, R &&r) { return {std::forward<L>(l), std::forward<R>(r)}; }
+  template <BzMeshPoint L, BzMeshPoint R> k_expr<'-', L, R> operator-(L &&l, R &&r) { return {std::forward<L>(l), std::forward<R>(r)}; }
+  template <std::integral Int, BzMeshPoint R> k_expr<'*', Int, R> operator*(Int l, R &&r) { return {l, std::forward<R>(r)}; }
 
 } // namespace triqs::mesh
