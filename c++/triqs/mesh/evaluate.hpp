@@ -92,7 +92,7 @@ namespace triqs::mesh {
   // FIXME : Return auto or decltype(auto) ? If latter, add it to the lambda too...
   //
   template <typename... M, typename X1, typename... X>
-  FORCEINLINE auto evaluate(std::tuple<M...> const &mesh_tuple, auto const &f, X1 const &x1, X const &...x) {
+  FORCEINLINE decltype(auto) evaluate(std::tuple<M...> const &mesh_tuple, auto const &f, X1 const &x1, X const &...x) {
     auto const &m1 = std::get<0>(mesh_tuple);
     if constexpr (sizeof...(M) > 1)
       return evaluate(
@@ -106,7 +106,7 @@ namespace triqs::mesh {
   }
 
   // Cartesian product mesh
-  template <Mesh... M, typename... X> FORCEINLINE auto evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
+  template <Mesh... M, typename... X> FORCEINLINE decltype(auto) evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
     return evaluate(m.components(), f, x...);
   }
 

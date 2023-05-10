@@ -234,7 +234,8 @@ namespace triqs::mesh {
 
     // -------------- Evaluation --------------------------
 
-    friend auto evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, m.idx_modulo(v.idx)); }
+    friend decltype(auto) evaluate(cyclat const &m, auto const &f, idx_t const &idx) { return f(m.idx_modulo(idx)); }
+    friend decltype(auto) evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, v.idx); }
   };
 
   static_assert(MeshWithValues<cyclat>);

@@ -262,7 +262,7 @@ namespace triqs::mesh {
 
     // -------------------------- evaluation --------------------------
 
-    friend auto evaluate(imfreq const &m, auto const &f, matsubara_freq const &iw) {
+    friend decltype(auto) evaluate(imfreq const &m, auto const &f, matsubara_freq const &iw) {
       EXPECTS(m.beta == iw.beta and m.statistic == iw.statistic);
       return f(iw.n);
     }

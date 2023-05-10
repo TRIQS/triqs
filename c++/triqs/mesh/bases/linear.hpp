@@ -192,7 +192,7 @@ namespace triqs::mesh {
 
     // ------------------------- Evaluate -----------------------------
 
-    friend auto evaluate(linear const &m, auto const &f, double x) {
+    friend decltype(auto) evaluate(linear const &m, auto const &f, double x) {
       EXPECTS(m.is_value_valid(x) and m.size() > 1);
       x        = std::max(x, m.xmin);
       double a = (x - m.xmin) * m.delta_inv();

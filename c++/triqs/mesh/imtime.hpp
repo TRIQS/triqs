@@ -106,7 +106,7 @@ namespace triqs::mesh {
     }
   };
 
-  inline auto evaluate(imtime const &m, auto const &f, double x) { return evaluate(static_cast<linear<imtime, double>>(m), f, x); }
+  inline decltype(auto) evaluate(imtime const &m, auto const &f, double x) { return evaluate(static_cast<linear<imtime, double>>(m), f, x); }
 
   // check concept
   static_assert(MeshWithValues<imtime>);

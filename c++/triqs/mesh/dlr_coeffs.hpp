@@ -214,7 +214,7 @@ namespace triqs::mesh {
 
   // -------------------- evaluation -------------------
 
-  inline auto evaluate(dlr_coeffs const &m, auto const &f, double tau) {
+  inline decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
 
     auto res = make_regular(f(0) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[0]));
@@ -223,7 +223,7 @@ namespace triqs::mesh {
     return res;
   }
 
-  inline auto evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
+  inline decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
 
     auto res = make_regular(-f(0) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[0]) * m.beta);

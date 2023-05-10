@@ -63,7 +63,7 @@ namespace triqs::mesh {
     }
   };
 
-  inline auto evaluate(retime const &m, auto const &f, double x) { return evaluate(static_cast<linear<retime, double>>(m), f, x); }
+  inline decltype(auto) evaluate(retime const &m, auto const &f, double x) { return evaluate(static_cast<linear<retime, double>>(m), f, x); }
 
   static_assert(Mesh<retime>);
 
