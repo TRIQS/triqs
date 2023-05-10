@@ -99,7 +99,7 @@ namespace triqs::mesh {
 
   struct matsubara_time_domain; // Forward Declaration
 
-  struct matsubara_freq_domain {
+  struct [[deprecated("matsubara_freq_domain is deprecated")]] matsubara_freq_domain {
     using value_t = matsubara_freq;
 
     double beta              = 0.0;
@@ -140,7 +140,7 @@ namespace triqs::mesh {
     }
   };
 
-  struct matsubara_time_domain {
+  struct [[deprecated("matsubara_time_domain is deprecated")]] matsubara_time_domain {
     using value_t = double;
 
     double beta              = 0.0;

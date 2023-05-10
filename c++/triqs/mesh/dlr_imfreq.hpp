@@ -89,7 +89,8 @@ namespace triqs::mesh {
      * @param lambda Lambda energy over beta parameter
      * @param eps Representation accuracy
      */
-    dlr_imfreq(matsubara_freq_domain d, double lambda, double eps) : dlr_imfreq(d.beta, d.statistic, lambda, eps) {}
+    [[deprecated("matsubara_freq_domain is deprecated")]] dlr_imfreq(matsubara_freq_domain d, double lambda, double eps)
+       : dlr_imfreq(d.beta, d.statistic, lambda, eps) {}
 
     friend class dlr_imtime;
     friend class dlr_coeffs;

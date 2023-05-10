@@ -44,7 +44,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data)};
+    return {mesh::imfreq{g.mesh().beta, g.mesh().statistic, L}, std::move(new_data)};
   }
 
   /// Make a const view of the positive frequency part of the function

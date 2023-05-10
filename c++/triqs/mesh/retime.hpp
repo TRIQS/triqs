@@ -19,7 +19,6 @@
 
 #pragma once
 #include "bases/linear.hpp"
-#include "domains/real_complex.hpp"
 
 namespace triqs::mesh {
 

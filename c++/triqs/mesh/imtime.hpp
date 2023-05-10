@@ -59,7 +59,7 @@ namespace triqs::mesh {
      * @param dom Matsubara time domain
      * @param n_tau Number of mesh-points
      */
-    imtime(matsubara_time_domain d, long n_tau) : imtime(d.beta, d.statistic, n_tau) {}
+    [[deprecated("matsubara_time_domain is deprecated")]] imtime(matsubara_time_domain d, long n_tau) : imtime(d.beta, d.statistic, n_tau) {}
 
     // -------------------- Comparison -------------------
 
@@ -69,7 +69,7 @@ namespace triqs::mesh {
     // -------------------- Accessors -------------------
 
     /// The associated domain
-    [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta, statistic}; }
+    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta, statistic}; }
 
     // -------------------- HDF5 -------------------
 

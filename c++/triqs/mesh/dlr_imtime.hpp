@@ -89,7 +89,8 @@ namespace triqs::mesh {
      * @param lambda Lambda energy over beta parameter
      * @param eps Representation accuracy
      */
-    dlr_imtime(matsubara_time_domain d, double lambda, double eps) : dlr_imtime(d.beta, d.statistic, lambda, eps) {}
+    [[deprecated("matsubara_time_domain is deprecated")]] dlr_imtime(matsubara_time_domain d, double lambda, double eps)
+       : dlr_imtime(d.beta, d.statistic, lambda, eps) {}
 
     friend class dlr_imfreq;
     friend class dlr_coeffs;

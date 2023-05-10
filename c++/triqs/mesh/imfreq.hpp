@@ -91,13 +91,15 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(matsubara_freq_domain dom, long n_iw = 1025, option opt = option::all_frequencies) : imfreq(dom.beta, dom.statistic, n_iw, opt) {}
+    [[deprecated("matsubara_freq_domain is deprecated")]] imfreq(matsubara_freq_domain dom, long n_iw = 1025, option opt = option::all_frequencies)
+       : imfreq(dom.beta, dom.statistic, n_iw, opt) {}
 
     /**
      * @param dom
      * @param omega_max
      */
-    imfreq(matsubara_freq_domain dom, energy_t omega_max, option opt = option::all_frequencies) : imfreq(dom.beta, dom.statistic, omega_max, opt) {}
+    [[deprecated("matsubara_freq_domain is deprecated")]] imfreq(matsubara_freq_domain dom, energy_t omega_max, option opt = option::all_frequencies)
+       : imfreq(dom.beta, dom.statistic, omega_max, opt) {}
 
     // -------------------- Comparisons -------------------
 
@@ -139,7 +141,7 @@ namespace triqs::mesh {
     [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The associated domain
-    [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta, statistic}; }
+    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta, statistic}; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _last_idx - _first_idx + 1; }
