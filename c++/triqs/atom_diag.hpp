@@ -23,15 +23,14 @@
 
 #pragma once
 
-#include <triqs/stat/accumulator.hpp>
-#include <triqs/stat/histograms.hpp>
-#include <triqs/stat/jackknife.hpp>
-#include <triqs/stat/make_real.hpp>
-#include <triqs/stat/mean_error.hpp>
+#include "./atom_diag/atom_diag.hpp"
+#include "./atom_diag/functions.hpp"
+#include "./atom_diag/gf.hpp"
 
 #ifdef C2PY_INCLUDED 
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram>  = true;
+template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>> = true;
+template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<false>> = true;
 #endif
 
 

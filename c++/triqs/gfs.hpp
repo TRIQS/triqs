@@ -90,3 +90,8 @@ namespace triqs::gfs {
 
 } // namespace triqs::gfs
 
+
+#ifdef C2PY_INCLUDED
+#include "./cpp2py_converters/gf.hpp"
+#endif
+
