@@ -92,7 +92,6 @@ namespace triqs::gfs {
 
 } // namespace triqs::gfs
 
-// functions
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
 #include "./gfs/functions/imtime.hpp"
@@ -103,3 +102,8 @@ namespace triqs::gfs {
 // fourier
 #include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
+
+#ifdef C2PY_INCLUDED
+#include "./cpp2py_converters/gf.hpp"
+#endif
+

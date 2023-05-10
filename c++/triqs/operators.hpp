@@ -20,18 +20,14 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #pragma once
 
-#include <triqs/stat/accumulator.hpp>
-#include <triqs/stat/histograms.hpp>
-#include <triqs/stat/jackknife.hpp>
-#include <triqs/stat/make_real.hpp>
-#include <triqs/stat/mean_error.hpp>
+#include <triqs/operators/many_body_operator.hpp>
 
 #ifdef C2PY_INCLUDED 
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram>  = true;
+#include "./cpp2py_converters/operators_real_complex.hpp"
+template <> static constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator>  = true;
 #endif
 
 
