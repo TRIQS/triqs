@@ -32,7 +32,7 @@ namespace triqs::mesh {
     public:
     using idx_t    = std::array<long, 3>;
     using datidx_t = long;
-    using value_t  = bravais_lattice::value_t;
+    using value_t  = bravais_lattice::point_t;
 
     // -------------------- Data -------------------
     private:
@@ -111,43 +111,20 @@ namespace triqs::mesh {
 
     // -------------------- mesh_point -------------------
 
-    struct mesh_point_t {
-      using mesh_t            = cyclat;
-      std::array<long, 3> idx = {0, 0, 0};
-      cyclat const *m_ptr;
+    struct mesh_point_t : public value_t {
+      using mesh_t                       = cyclat;
+      std::array<long, 3> const &idx     = value_t::idx;
       long datidx                        = 0;
       uint64_t mesh_hash                 = 0;
       mutable std::optional<value_t> val = {};
 
-      [[nodiscard]] value_t const &value() const {
-        if (val)
-          return *val;
-        else
-          return *(val = m_ptr->to_value(idx));
-      }
-
-      [[nodiscard]] operator value_t() const { return value(); }
-
-      // The mesh point behaves like a vector
-      double operator()(int d) const { return value()[d]; }
-      double operator[](int d) const { return value()[d]; }
+      [[nodiscard]] value_t const &value() const { return *this; }
 
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
 
-      mesh_point_t operator+(mesh_point_t const &other) const {
-        auto new_idx = m_ptr->idx_modulo(idx + other.idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
-      }
-
-      mesh_point_t operator-(mesh_point_t const &other) const {
-        auto new_idx = m_ptr->idx_modulo(idx - other.idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
-      }
-
-      mesh_point_t operator-() const {
-        auto new_idx = m_ptr->idx_modulo(-idx);
-        return {new_idx, m_ptr, m_ptr->to_datidx(new_idx), mesh_hash};
-      }
+      mesh_point_t() = default;
+      mesh_point_t(bravais_lattice const &bl, idx_t idx, long datidx_, uint64_t mesh_hash_)
+         : value_t(&bl, idx), datidx(datidx_), mesh_hash(mesh_hash_) {}
     };
 
     // -------------------- index checks and conversions -------------------
@@ -179,24 +156,13 @@ namespace triqs::mesh {
       return {i0, i1, i2};
     }
 
-    template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t closest_idx(V const &v) const {
-      auto idbl = transpose(units_inv_) * nda::basic_array_view{v};
-      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
-    }
-
-    template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<V> const &cmp) const {
-      return closest_idx(cmp.value);
-    }
+    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.idx; }
 
     /// Make a mesh point from a linear index
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {idx, this, datidx, mesh_hash_};
+      return {bl_, idx, datidx, mesh_hash_};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
@@ -204,13 +170,13 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {idx, this, datidx, mesh_hash_};
+      return {bl_, idx, datidx, mesh_hash_};
     }
 
     /// Convert an index to a lattice value
     [[nodiscard]] value_t to_value(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
-      return transpose(units_)(range::all, range(bl_.ndim())) * nda::basic_array_view{idx}(range(bl_.ndim()));
+      return {&bl_, idx};
     }
 
     // -------------------- print -------------------
@@ -266,29 +232,9 @@ namespace triqs::mesh {
       m = cyclat(bl, dims);
     }
 
-    // -------------- Evalulation --------------------------
+    // -------------- Evaluation --------------------------
 
-    private: // FIXME Remove
-    // Evaluation helpers
-    struct cyclat1d {
-      long dim;
-    };
-
-    friend auto evaluate(cyclat1d const &m, auto const &f, double vi) {
-      long i   = std::floor(vi);
-      double w = vi - i;
-      return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
-    }
-
-    // Use the cartesian product evaluation to evaluate on domain pts
-    template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    friend auto evaluate(cyclat const &m, auto const &f, V const &v) {
-      auto v_idx = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
-      auto g            = [&f](long x, long y, long z) { return f(typename cyclat::idx_t{x, y, z}); };
-      auto [d0, d1, d2] = m.dims();
-      return evaluate(std::tuple{cyclat1d{d0}, cyclat1d{d1}, cyclat1d{d2}}, g, v_idx[0], v_idx[1], v_idx[2]);
-    }
+    friend auto evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, m.idx_modulo(v.idx)); }
   };
 
   static_assert(MeshWithValues<cyclat>);

@@ -33,7 +33,7 @@ namespace triqs::gfs {
     template <typename G, typename... XS> requires(is_gf_v<G>)
     auto operator()(G const &g, XS &&... xs) const {
       auto l = [&g](auto &&...ys) -> decltype(auto) { return g.operator[](ys...); };
-      using r_t = decltype(make_regular(evaluate(g.mesh(), l, std::forward<XS>(xs)...)));
+      using r_t = std::decay_t<decltype(make_regular(evaluate(g.mesh(), l, std::forward<XS>(xs)...)))>;
       if constexpr (nda::Array<r_t> or nda::is_scalar_v<r_t>) {
         // Return zero if any mesh evaluates to zero
         if (detail::eval_to_zero(g.mesh(), xs...)) {
