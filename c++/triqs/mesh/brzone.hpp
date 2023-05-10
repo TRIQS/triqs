@@ -21,6 +21,7 @@
 #pragma once
 #include "utils.hpp"
 #include <triqs/lattice/brillouin_zone.hpp>
+#include <nda/linalg.hpp>
 #include "./k_expr.hpp"
 
 namespace triqs::mesh {
@@ -189,9 +190,39 @@ namespace triqs::mesh {
 
     template <typename V>
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t closest_idx(V const &v) const {
-      auto idbl = transpose(units_inv_) * nda::basic_array_view{v};
-      return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+    [[nodiscard]] idx_t closest_idx(V const &k) const {
+
+      // calculate k in the brzone basis
+      auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
+      auto k_units = transpose(units_inv_) * ks;
+      auto n       = nda::floor(k_units);
+
+      // calculate position relative to neighbors in mesh
+      auto w = k_units - n;
+
+      // prepare result container and distance measure
+      auto dst = std::numeric_limits<double>::infinity();
+
+      // check flatness along mesh dimensions
+      long r1 = std::min(dims()[0], 2l);
+      long r2 = std::min(dims()[1], 2l);
+      long r3 = std::min(dims()[2], 2l);
+
+      // find nearest neighbor by comparing distances
+      nda::stack_vector<long, 3> res;
+      for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
+        auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
+        auto dstp = nda::norm(transpose(units()) * (w - iv));
+
+        // update result when distance is smaller than current
+        if (dstp < dst) {
+          dst = dstp;
+          res = n + iv;
+        }
+      }
+
+      // fold back to brzone mesh (nearest neighbor could be out of bounds)
+      return idx_modulo({res[0], res[1], res[2]});
     }
 
     template <typename V>
