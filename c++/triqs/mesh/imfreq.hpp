@@ -31,15 +31,14 @@ namespace triqs::mesh {
   };
 
   /**
-   *  Matsubara frequencies 
+   *  A mesh representing Matsubara frequencies 
    *   - fermionic $\omega_n = \frac{(2n+1)\pi}{\beta}$ 
    *   - bosonic $\omega_n = \frac{2n\pi}{\beta}$
    *
-   *  The mesh is a finite segment of 
+   * The mesh has a finite range of frequencies.
+   * It spans by default both positive and negative frequencies (which is necessary for complex functions $G(\tau)$), 
+   * but can be restricted to positive frequencies
    *
-   * The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions $G(\tau)$).
-   *
-   * @figure matsubara_freq_mesh.png: Pictorial representation of ``imfreq({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <imfreq_constructor>` for more details.
    */
   struct imfreq : public tail_fitter_handle {
 
@@ -67,12 +66,13 @@ namespace triqs::mesh {
     imfreq() = default;
 
     /**
-     * Construct a Mesh of Matsubara frequencies on a Matsubara domain
-     *
+     * Constructor
+     *  With n
      * @param beta Inverse temperature
      * @param statistic Statistic (Fermion or Boson)
      * @param n_iw The number of positive Matsubara frequencies
-     * @param option Wether to use all frequencies, or only the positive ones
+     * @param opt Whether to use all frequencies, or only the positive ones
+     *
      */
     imfreq(double beta, statistic_enum statistic, long n_iw = 1025, option opt = option::all_frequencies)
        : beta(beta), statistic(statistic), _n_iw(n_iw), _opt(opt), mesh_hash_(hash(beta, statistic, n_iw, opt)) {
@@ -80,6 +80,12 @@ namespace triqs::mesh {
     }
 
     /**
+     * @brief Construct a new imfreq object
+     * 
+     * @param beta Inverse temperature
+     * @param statistic Statistic (Fermion or Boson)
+     * @param omega_max Energy window. The number of points is computed to match this energy window. 
+     * @param opt Whether to use all frequencies, or only the positive ones
      */
     imfreq(double beta, statistic_enum statistic, energy_t omega_max, option opt = option::all_frequencies)
        : imfreq(beta, statistic, long(((omega_max.value * beta / M_PI) - 1) / 2), opt) {}
@@ -91,7 +97,7 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    [[deprecated("matsubara_freq_domain is deprecated")]] imfreq(matsubara_freq_domain dom, long n_iw = 1025, option opt = option::all_frequencies)
+    [[deprecated("matsubara_freq_domain is deprecated.")]] imfreq(matsubara_freq_domain dom, long n_iw = 1025, option opt = option::all_frequencies)
        : imfreq(dom.beta, dom.statistic, n_iw, opt) {}
 
     /**
@@ -113,7 +119,7 @@ namespace triqs::mesh {
 
     imfreq get_positive_freq() const { return {beta, statistic, _n_iw, option::positive_frequencies_only}; }
 
-    // -------------------- tail -------------------
+    // -------------------- Convertion to matsubara_freq -------------------
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     matsubara_freq idx_to_freq(idx_t idx) const { return {idx, beta, statistic}; }
@@ -126,19 +132,19 @@ namespace triqs::mesh {
     /// Type of the mesh point
     struct mesh_point_t : public matsubara_freq {
       using mesh_t       = imfreq;
-      const long idx     = n;
+      long idx           = n;
       long datidx        = 0;
       uint64_t mesh_hash = 0;
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
       mesh_point_t() = default;
-      mesh_point_t(double beta, statistic_enum statistic, idx_t idx, long datidx_, uint64_t mesh_hash_)
+      mesh_point_t(double beta, statistic_enum statistic, idx_t idx, long datidx_, uint64_t mesh_hash_) //NOLINT
          : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(mesh_hash_) {}
     };
 
     // -------------------- Accessors -------------------
 
-    [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The associated domain
     [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta, statistic}; }
@@ -157,9 +163,11 @@ namespace triqs::mesh {
 
     // -------------------- index checks and conversions -------------------
 
+    /// Checks that the idx is in [first_idx(), last_idx()]
     [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_idx() <= idx and idx <= last_idx(); }
 
-    /// Index to linear index
+    // -------------------- to_datidx -------------------
+
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_idx(); }
 
     [[nodiscard]] datidx_t to_datidx(matsubara_freq const &iw) const noexcept {
@@ -177,7 +185,8 @@ namespace triqs::mesh {
       return to_datidx(to_idx(cmp));
     }
 
-    /// Index from a linear index
+    // -------------------- to_idx -------------------
+
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const { return datidx + first_idx(); }
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const {
@@ -185,11 +194,14 @@ namespace triqs::mesh {
       return cmp.value.n;
     }
 
+    // -------------------- operator [] -------------------
+
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
       return {beta, statistic, idx, datidx, mesh_hash_};
     }
+
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
 
     [[nodiscard]] mesh_point_t operator()(long idx) const {
@@ -198,6 +210,7 @@ namespace triqs::mesh {
       return {beta, statistic, idx, datidx, mesh_hash_};
     }
 
+    // -------------------- to_value ------------------
     /// From an index to a matsubara_freq
     [[nodiscard]] matsubara_freq to_value(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
@@ -254,7 +267,7 @@ namespace triqs::mesh {
       long n_iw = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
 
       if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
-      double beta    = h5::read<double>(gr, "beta");
+      auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
 
       m = imfreq{beta, statistic, n_iw, opt};
@@ -267,6 +280,7 @@ namespace triqs::mesh {
       return f(iw.n);
     }
 
+    //OPFIXME rename ?
     bool eval_to_zero(imfreq::idx_t idx) const { return !is_idx_valid(idx); }
     bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
     bool eval_to_zero(imfreq::mesh_point_t mp) const { return eval_to_zero(mp.value()); }

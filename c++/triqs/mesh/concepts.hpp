@@ -26,12 +26,16 @@
 #include <h5/h5.hpp>
 
 namespace triqs {
+  /**
+   * @brief True iif T is same_as any U 
+   */
   template <typename T, typename... U>
   concept any_of = (std::same_as<T, U> || ...);
 }
 
 namespace triqs::mesh {
 
+  /// The type is hashable with std::hash
   template <typename T>
   concept Hashable = requires(T a) {
     { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
@@ -44,7 +48,7 @@ namespace triqs::mesh {
     // The parent mesh type
     typename MP::mesh_t;
 
-    // The associated index, e.g. Matsubara Index
+    // The associated index, e.g. Matsubara Index or a long
     { mp.idx } -> std::same_as<typename MP::mesh_t::idx_t const &>;
 
     // The index into the data array
@@ -56,33 +60,37 @@ namespace triqs::mesh {
 
   // ----------- Mesh ------------------------
 
-  /// A mesh is a range of mesh points that can optionally values, e.g. in [0,beta].
+  /// A mesh is a range of mesh points that can optionally have values, e.g. in [0,beta].
   /// Each mesh point holds an index (e.g. Matsubara index) and a data index for 
-  /// Green function data access
+  /// corresponding to the Green function data array in memory
   template <typename M>
   concept Mesh = std::regular<M> and h5::Storable<M> and requires(M const &m) {
+    
+    // Mesh has a mesh point
     typename M::mesh_point_t;
     requires MeshPoint<typename M::mesh_point_t>;
 
-    // mesh is a range of mesh points
-    // Do NOT check on old compiler ....
+    // Mesh is a range of mesh point
 #if not(defined(_LIBCPP_VERSION) and (__clang_major__ < 16))
+    // Do NOT check on old compiler ....
     requires std::ranges::forward_range<M>;
     requires std::ranges::sized_range<M>;
 #endif
-
     { *std::begin(m) } -> std::same_as<typename M::mesh_point_t>;
 
-    // The type of the associated index, e.g. Matsubara Index
+    // The type of the index, e.g. Matsubara Index
     typename M::idx_t;
 
-    // The type of the index into the data array
+    // The type of the index indexing the data array
     typename M::datidx_t;
-  } and requires(M const &m, typename M::idx_t idx, typename M::datidx_t datidx, typename M::mesh_point_t mp) {
-    // Checks
+  }
+  // we now check some operations combining indices, mesh, mesh_points 
+  and requires(M const &m, typename M::idx_t idx, typename M::datidx_t datidx, typename M::mesh_point_t mp) {
+    // Validity of the index
     { m.is_idx_valid(idx) } -> std::same_as<bool>;
 
     // Conversion
+    // NB the data idx-> idx could be slow (unflatten) but is necessary in some cases.
     { m.to_datidx(idx) } -> std::same_as<typename M::datidx_t>;         // idx -> data idx
     { m.to_datidx(mp) } -> std::same_as<typename M::datidx_t>;          // mesh point -> data idx
     { m.to_idx(datidx) } -> std::same_as<typename M::idx_t>;            // data idx -> idx
@@ -94,10 +102,14 @@ namespace triqs::mesh {
 
   template <typename T> struct closest_mesh_point_t; // Forward declaration
 
+  // Some meshes have points that can take value in a domain, 
+  // e.g. a k mesh in a Brillouin zone, k can be a R3 vector.
   template <typename M>
   concept MeshWithValues = Mesh<M> and requires(M const &m) {
     // The value type of the domain
     typename M::value_t;
+
+    // OPFIXME .to_value(idx) in the concept ? 
 
     // Mesh Points can return their value and are castable
     { (*std::begin(m)).value() } -> any_of<typename M::value_t, typename M::value_t const &>;

@@ -21,7 +21,6 @@
 #pragma once
 #include <ranges>
 #include <stdexcept>
-
 #include "../utils.hpp"
 
 namespace triqs::mesh {
@@ -70,13 +69,15 @@ namespace triqs::mesh {
       value_t value() const { return val; }
       operator value_t() const { return val; }
 
+      // OPFIXME : Commented the first requires (as in the godbolt)
+      // otherwise, the mp + mp is not covered.
       // https://godbolt.org/z/xoYP3vTW4
+
+      // OPFIXME : this is the requires of the first
+      //requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
+
 #define IMPL_OP(OP)                                                                                                                                  \
-  friend auto operator OP(mesh_point_t const &mp, auto const &y)                                                                                     \
-    requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
-  {                                                                                                                                                  \
-    return mp.val OP y;                                                                                                                              \
-  }                                                                                                                                                  \
+  friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.val OP y; }                                                             \
   friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
     requires(not std::is_same_v<decltype(x), mesh_point_t const &>)                                                                                  \
   {                                                                                                                                                  \
@@ -94,6 +95,8 @@ namespace triqs::mesh {
     [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < L; }
     [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
 
+    // -------------------- to_datidx ------------------
+
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return idx;
@@ -109,6 +112,8 @@ namespace triqs::mesh {
       return to_datidx(to_idx(cmp));
     }
 
+    // ------------------ to_idx -------------------
+
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const noexcept {
       EXPECTS(is_idx_valid(datidx));
       return datidx;
@@ -119,9 +124,13 @@ namespace triqs::mesh {
       return idx_t((cmp.value - xmin) * del_inv + 0.5);
     }
 
+    // ------------------ operator[] -------------------
+
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+
+    // ------------------ operator()-------------------
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
@@ -139,7 +148,7 @@ namespace triqs::mesh {
     // -------------------- Accessors -------------------
 
     // Hash
-    [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Size (linear) of the mesh of the window
     [[nodiscard]] auto size() const noexcept { return L; }
@@ -197,7 +206,7 @@ namespace triqs::mesh {
       x        = std::max(x, m.xmin);
       double a = (x - m.xmin) * m.delta_inv();
       long i   = std::min(static_cast<long>(a), m.size() - 2);
-      double w = std::min(a - i, 1.0);
+      double w = std::min(a - i, 1.0); //NOLINT
       return (1 - w) * f(i) + w * f(i + 1);
     }
   };

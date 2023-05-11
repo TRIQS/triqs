@@ -18,6 +18,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <nda/nda.hpp>
 #include <itertools/itertools.hpp>
 #include <triqs/arrays.hpp>
 #include <nda/lapack/gelss_worker.hpp>
@@ -190,7 +191,7 @@ namespace triqs::mesh {
      * */
     template <int N, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
     std::pair<nda::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
-                                                      array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
+                                                   array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
 
       if (enforce_hermiticity and not inner_matrix_dim.has_value())
         TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
@@ -249,8 +250,7 @@ namespace triqs::mesh {
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -=  _vander(range::all, range(n_fixed_moments)) * km_mat;
-      
+        g_mat -= _vander(range::all, range(n_fixed_moments)) * km_mat;
       }
       // Call least square solver
       auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, inner_matrix_dim); // coef + error
@@ -291,8 +291,8 @@ namespace triqs::mesh {
 
     template <int N, typename M, int R, int R2 = R>
     std::pair<nda::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
-                                                                array_const_view<dcomplex, R2> known_moments,
-                                                                std::optional<long> inner_matrix_dim = {}) {
+                                                             array_const_view<dcomplex, R2> known_moments,
+                                                             std::optional<long> inner_matrix_dim = {}) {
       return fit<N, true, M, R, R2>(m, g_data, normalize, known_moments, inner_matrix_dim);
     }
   };

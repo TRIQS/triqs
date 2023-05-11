@@ -21,9 +21,7 @@
 #pragma once
 #include "utils.hpp"
 #include "domains/matsubara.hpp"
-
 #include <cppdlr/cppdlr.hpp>
-
 #include <memory>
 
 namespace triqs::mesh {

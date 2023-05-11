@@ -22,57 +22,75 @@
  ******************************************************************************/
 #pragma once
 #include <array>
+#include "./concepts.hpp"
+#include "../utility/macros.hpp"
 
-namespace triqs::mesh {
+// We write the evaluation on the cartesian product of meshes generically.
+// i.e. on a tuple of meshes (m1, m...)
+// We currify the function, and call evaluation for each step of the curry.
+//
+// We introduce a function
+//           evaluate(m, f, x)
+// that evaluates any function f on a mesh at point x of a mesh m
+//
+// We denote a lambda here as  x -> f(x) for a light notation.
+// If f in any function with N arguments
+//
+//    evaluate( (m1, m...),  (y1, y...) -> f(y1, y...),    (x1, x...))
+// =  evaluate( (m...),     (y...) -> evaluate(m1, y1-> f(y1, y...), x1),      (x...))
 
-  // We introduce a function
-  // evaluate(m, f, x)
-  // that evaluate any function f on a mesh at point x
-  // m : a mesh
-  // f : a lambda  m-> anything
-  // The goal is to write the evaluation on the cartesian product of meshes generically.
-  // i.e. on a tuple of meshes (m1, m...)
-  // We currify the function, and call evaluation for each step of the curry
-  // We denote a lambda here as  x -> f(x) for a light notation.
-  // Then if f in any function with N arguments
-  //
-  //  evaluate( (m1, m...),  (y1, y...) -> f(y1, y...),    (x1, x...))
-  // =  evaluate( (m...),  (y...) -> evaluate(m1, y1-> f(y1, y...), x1),  (x...))
-
-  // in other words, I consider the function as yn -> ... -> y2 -> y1 -> f(y1, y2, yn)
-  // an apply evaluate at each step.
-  //
-  // Example :
-  // e.g.  3 meshes  m1, m2, m3
-  // evaluate(m1, f, x1) = sum w1(x1) f(z1(x1)) // write z1 simply later
-  // evaluate(m2, f, x2) = sum w2 f(z2)         // from now on, I omit x deps of z, and "sum" for simplicity
-  // evaluate(m3, f, x3) = sum w3 f(z3)
-  // then (I also add the explicit capture to be closer to C++ implementation below)
-  //
-  // evaluate( (m1,m2), g, (x1, x2)) =  evaluate( (m2), y2 -> evaluate(m1, [y2](y1) -> g[y1, y2], x1) ,  (x2) )
-  //                                    // now apply the evaluate
-  //                                 =  evaluate( (m2), y2 -> w1 g[z1, y2],  (x2) )
-  //                                 =  w2 w1 g[z1, z2]
-  //
-  // evaluate( (m1,m2,m3), g, (x1, x2, x3)) = evaluate( (m2, m3), (y2, y3)                  -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1)     , (x2, x3) )
-  //                                        = evaluate( (m3), (y3) -> evaluate(m2, [y3](y2) -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1), x2), (x3) )
-  //
-  //                                        = w3                  evaluate(m2, [z3](y2) -> evaluate(m1, [y2, z3](y1) -> g(y1, y2, z3), x1), x2 )
-  //                                        = w3 w2                                        evaluate(m1, [z2, z3](y1) -> g(y1, z2, z3), x1)
-  //                                        = w3 w2 w1                                                                  g(z1, z2, z3))
-  //
-
+// In other words, we currify the function as :
+//                  yn -> ... -> y2 -> y1 -> f(y1, y2, yn)
+// an apply evaluate at each step.
+//
+// Example :
+// e.g.  3 meshes  m1, m2, m3
+// evaluate(m1, f, x1) = sum w1(x1) f(z1(x1)) // write z1 simply later
+// evaluate(m2, f, x2) =  w2 f(z2)            // from now on, I omit x deps of z, and "sum" for simplicity
+// evaluate(m3, f, x3) =  w3 f(z3)
+// then (I also add the explicit capture to be closer to C++ implementation below)
+//
+// evaluate( (m1,m2), (y1, y2) -> g(y1, y2)  , (x1, x2))
+//                                 = evaluate( (m2), y2 -> evaluate(m1, [y2](y1) -> g[y1, y2), x1) ,  (x2) )
+//                                 = evaluate( (m2), y2 -> w1 g(z1, y2),  (x2) )
+//                                 = w2 w1 g(z1, z2)
+//
+// evaluate( (m1,m2,m3), g, (x1, x2, x3)) = evaluate( (m2, m3), (y2, y3)                  -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1)     , (x2, x3) )
+//                                        = evaluate( (m3), (y3) -> evaluate(m2, [y3](y2) -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1), x2), (x3) )
+//
+//                                        = w3                  evaluate(m2, [z3](y2) -> evaluate(m1, [y2, z3](y1) -> g(y1, y2, z3), x1), x2 )
+//                                        = w3 w2                                        evaluate(m1, [z2, z3](y1) -> g(y1, z2, z3), x1)
+//                                        = w3 w2 w1                                                                  g(z1, z2, z3))
+//
+namespace triqs::mesh { // NOLINT
   namespace detail {
 
+    // Take a tuple and return a new tuple without the first element
     template <typename Tu> auto pop_front_tuple(Tu const &tu) {
-      return [&]<size_t... Is>(std::index_sequence<Is...>) { return std::tie(std::get<Is + 1>(tu)...); }
-      (std::make_index_sequence<std::tuple_size_v<Tu> - 1>{});
+      static constexpr auto S = std::tuple_size_v<Tu>;
+      static_assert(S >= 1);
+      return [&]<size_t... Is>(std::index_sequence<Is...>) { return std::tie(std::get<Is + 1>(tu)...); }(std::make_index_sequence<S - 1>{});
     }
   } // namespace detail
 
+  // OPFIXME evaluate is an internal function. Should we rename it evaluate_mesh to avoid any future collision.
+  // it is a common name !
+  // OPFIXME : auto const & f or f ? If f is a lambda, copy is fine. It f is mutable, const & will break it !
+
+  // evaluate on a mesh index just pass through
   template <Mesh M> FORCEINLINE decltype(auto) evaluate(M const &m, auto const &f, typename M::idx_t const &idx) { return f(idx); }
 
+  // evaluate on a closest_mesh_point : pass through, like an index.
+  template <typename T> FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) {
+    return f(cmp);
+  }
+
+  // all_t : pass through, like a (range of) index
+  FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, all_t) { return f(all_t{}); }
+
+  // evaluate on a mesh point. Use its value if its available, else pass through
   template <Mesh M> FORCEINLINE decltype(auto) evaluate(M const &m, auto const &f, typename M::mesh_point_t const &mp) {
+    // OPFIXME Should we rather say constexpr (requires{mp.value();}) ?? Clearer ?
     if constexpr (MeshWithValues<M>) {
       return evaluate(m, f, mp.value());
     } else {
@@ -80,11 +98,8 @@ namespace triqs::mesh {
     }
   }
 
-  template <typename T> FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }
-
-  FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, all_t) { return f(all_t{}); }
-
   // Implementation for tuple.
+  // NB the X points are passed as a pack, not a tuple.
   // We use the recursive formula above, except with size of the tuple is 1, where we simply call other evaluate overloads.
   // NB : do not forward here. Arguments are always taken by const & and it makes the
   // overloads clearer.
@@ -98,14 +113,16 @@ namespace triqs::mesh {
       return evaluate(
          detail::pop_front_tuple(mesh_tuple), [ f, &x1, &m1 ](auto const &...y) __attribute__((always_inline)) {
            return evaluate(
-              m1, [f, &y...](auto const &y1) { return f(y1, y...); }, x1);
+              m1, [ f, &y... ](auto const &y1) __attribute__((always_inline)) { return f(y1, y...); }, x1);
          },
          x...);
     else
       return evaluate(m1, f, x1);
   }
 
-  // Cartesian product mesh
+  // OPFIXME : Discuss : we should benchmark this evaluate, e.g. copy of f.
+
+  // Cartesian product mesh is done as a tuple
   template <Mesh... M, typename... X> FORCEINLINE decltype(auto) evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
     return evaluate(m.components(), f, x...);
   }
