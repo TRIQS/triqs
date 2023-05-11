@@ -124,7 +124,7 @@ namespace triqs::mesh {
 
       mesh_point_t() = default;
       mesh_point_t(bravais_lattice const &bl, idx_t idx, long datidx_, uint64_t mesh_hash_)
-         : value_t(&bl, idx), datidx(datidx_), mesh_hash(mesh_hash_) {}
+         : value_t{&bl, idx}, datidx(datidx_), mesh_hash(mesh_hash_) {}
     };
 
     // -------------------- index checks and conversions -------------------
