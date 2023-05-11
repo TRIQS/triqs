@@ -46,9 +46,9 @@ namespace triqs::mesh {
 
     private:
     uint64_t mesh_hash_ = 0;
-    std::shared_ptr<nda::vector<double>> _dlr_freq{};
-    std::shared_ptr<cppdlr::imtime_ops> _dlr_it{};
-    std::shared_ptr<cppdlr::imfreq_ops> _dlr_if{};
+    std::shared_ptr<nda::vector<double> const> _dlr_freq{};
+    std::shared_ptr<cppdlr::imtime_ops const> _dlr_it{};
+    std::shared_ptr<cppdlr::imfreq_ops const> _dlr_if{};
 
     // -------------------- Constructors -------------------
     public:
@@ -77,9 +77,9 @@ namespace triqs::mesh {
          lambda(lambda),
          eps(eps),
          mesh_hash_(hash(beta, lambda, eps, sum(dlr_it.get_itnodes()))),
-         _dlr_freq{std::make_shared<nda::vector<double>>(std::move(dlr_freq))},
-         _dlr_it{std::make_shared<cppdlr::imtime_ops>(std::move(dlr_it))},
-         _dlr_if{std::make_shared<cppdlr::imfreq_ops>(std::move(dlr_if))} {}
+         _dlr_freq{std::make_shared<nda::vector<double> const>(std::move(dlr_freq))},
+         _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
+         _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
 
     public:
     /**
