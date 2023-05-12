@@ -81,6 +81,9 @@ namespace triqs::mesh {
          _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
          _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
 
+    friend class dlr_imtime;
+    friend class dlr_coeffs;
+
     public:
     /**
      * Construct a DLR Mesh in imaginary times
@@ -92,11 +95,8 @@ namespace triqs::mesh {
     [[deprecated("matsubara_freq_domain is deprecated")]] dlr_imfreq(matsubara_freq_domain d, double lambda, double eps)
        : dlr_imfreq(d.beta, d.statistic, lambda, eps) {}
 
-    friend class dlr_imtime;
-    friend class dlr_coeffs;
-
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    dlr_imfreq(M const &m)
+    explicit dlr_imfreq(M const &m)
        : beta(m.beta), statistic(m.statistic), lambda(m.lambda), eps(m.eps), _dlr_freq(m._dlr_freq), _dlr_it(m._dlr_it), _dlr_if(m._dlr_if) {
       if constexpr (std::is_same_v<M, dlr_imfreq>)
         mesh_hash_ = m.mesh_hash_;
@@ -132,7 +132,7 @@ namespace triqs::mesh {
 
     [[nodiscard]] auto const &dlr_if() const { return *_dlr_if; }
 
-    [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _dlr_freq->size(); }
@@ -156,12 +156,16 @@ namespace triqs::mesh {
       return datidx;
     }
 
+    // -------------------- operator [] () -------------------
+
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       auto datidx = to_datidx(idx);
       return {beta, statistic, _dlr_if->get_ifnodes()[datidx], datidx, mesh_hash_};
     }
+
+    // -------------------- to_value ------------------
 
     [[nodiscard]] matsubara_freq to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
@@ -222,6 +226,9 @@ namespace triqs::mesh {
       m              = dlr_imfreq(beta, statistic, lambda, eps, _dlr_freq, _dlr_it, _dlr_if);
     }
   };
+
+  // Trap error for better error messages (do not present a long list of options, if the first parameter is dlr_imtime)
+  double evaluate(dlr_imfreq const &m, ...) = delete; // No evaluation for dlr_imfreq. Use dlr_coeffs instead.
 
   // check concept
   static_assert(MeshWithValues<dlr_imfreq>);

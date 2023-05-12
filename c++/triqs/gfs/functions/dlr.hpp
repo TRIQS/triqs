@@ -16,6 +16,8 @@
 // Authors: Hugo U.R. Strand
 
 #pragma once
+//#include "triqs/mesh.hpp"
+#include "triqs/gfs.hpp"
 
 namespace triqs::gfs {
 
@@ -24,6 +26,20 @@ namespace triqs::gfs {
   // ------------------------------------------------------
 
   // dlr_imtime <-> dlr_coeffs
+  // OPFIXME : naming ?? too long. Why twice dlr_ ?
+  // Why not a cross construction ???
+  // Why scalar_valued only ???
+  // Move into transform/
+
+  //  gf<dlr_coeffs> {g_it};
+  // cf gf.hpp line 247 : we have a TOO general gf cross constructor !
+  // closed by making the dlr_xxx mesh cross construction EXPLICIT
+
+  // No need to separate the scalar_valued case Cf cpp l68, generic code ok.
+
+  // NAMING
+  // to_dlr_coeffs(g)  or to_dlr_imtime(g)   (like std::to_string)...
+  // to_ or make_gf_ ...
 
   gf<dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime> g_tau);
   gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime, scalar_valued> g_tau);

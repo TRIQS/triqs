@@ -21,15 +21,23 @@
 #pragma once
 #include "utils.hpp"
 #include "domains/matsubara.hpp"
-
 #include <cppdlr/cppdlr.hpp>
-
 #include <memory>
 
 namespace triqs::mesh {
 
   struct dlr_imfreq;
   struct dlr_coeffs;
+
+  // OPFIXME : the default constructed is not usable e.g. size() crashes ....
+  // in particular one can not iterate ...
+
+  // Why 3 classes? Why not dlr<Time | Coeffs| Freq> template on an enum ?
+  // with user aliases dlr_imtime = dlr<Time> ...
+
+  // OPFIXME public field : Invariant Violation possible.
+  // Change beta, the _dlr not change, ....
+  // Make private, and get_beta(), get_lambda(), get_stat(), get_eps()
 
   struct dlr_imtime {
 
@@ -41,14 +49,23 @@ namespace triqs::mesh {
 
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    double lambda            = 1e+10;
+    double lambda            = 1e+10; //OPFIXME : should be call it Lambda as in the paper, it is NOT a lambda ...
     double eps               = 1e-10;
 
     private:
     uint64_t mesh_hash_ = 0;
     std::shared_ptr<nda::vector<double> const> _dlr_freq{};
     std::shared_ptr<cppdlr::imtime_ops const> _dlr_it{};
-    std::shared_ptr<cppdlr::imfreq_ops const> _dlr_if{};
+    std::shared_ptr<cppdlr::imfreq_ops const> _dlr_if{}; //OPFIXME : why do I need this ?
+
+    // OPFIXME : why do we store them in HDF5 ? Instead of reconstructinog ?? For every function ??
+    // Cf constructor, they are all reconstructed from Lambda, eps. ...
+    // The == op only tests beta, stat, lambda, eps !
+
+    // Why is the hash depending on the _dlr as they are constructed from lambda, eps, etc...??
+
+    // OPFIXME : if they all go together, why not ONE shared_ptr to a struct containing the 3 objects ?
+    // It would simplify copy, etc....
 
     // -------------------- Constructors -------------------
     public:
@@ -66,7 +83,7 @@ namespace triqs::mesh {
        : dlr_imtime(beta, statistic, lambda, eps, cppdlr::build_dlr_rf(lambda, eps)) {}
 
     private:
-    dlr_imtime(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> dlr_freq)
+    dlr_imtime(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> const &dlr_freq)
        : dlr_imtime(beta, statistic, lambda, eps, dlr_freq, cppdlr::imtime_ops(lambda, dlr_freq),
                     cppdlr::imfreq_ops(lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic))) {}
 
@@ -81,6 +98,9 @@ namespace triqs::mesh {
          _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
          _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
 
+    friend class dlr_imfreq;
+    friend class dlr_coeffs;
+
     public:
     /**
      * Construct a DLR Mesh in imaginary times
@@ -92,12 +112,13 @@ namespace triqs::mesh {
     [[deprecated("matsubara_time_domain is deprecated")]] dlr_imtime(matsubara_time_domain d, double lambda, double eps)
        : dlr_imtime(d.beta, d.statistic, lambda, eps) {}
 
-    friend class dlr_imfreq;
-    friend class dlr_coeffs;
+    // OPFIXME : why has NEW class a deprecated constructor ??
 
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    dlr_imtime(M const &m)
+    explicit dlr_imtime(M const &m)
        : beta(m.beta), statistic(m.statistic), lambda(m.lambda), eps(m.eps), _dlr_freq(m._dlr_freq), _dlr_it(m._dlr_it), _dlr_if(m._dlr_if) {
+      //OPFIXME : why is it necessary to distingucih ?
+      // ensure exact same hash for a copy ?
       if constexpr (std::is_same_v<M, dlr_imtime>)
         mesh_hash_ = m.mesh_hash_;
       else
@@ -150,10 +171,16 @@ namespace triqs::mesh {
       return mp.datidx;
     }
 
+    // there is no to_datidx for a closest mesh point, as it does not make sense here.
+    [[nodiscard]] datidx_t
+    to_datidx(closest_mesh_point_t<double> const &cmp) const = delete; // closest_mesh_point makes no sense for a dlr_imtime mesh
+
     [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
       EXPECTS(is_idx_valid(datidx));
       return datidx;
     }
+
+    // -------------------- operator [] () -------------------
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
@@ -162,10 +189,12 @@ namespace triqs::mesh {
       return {idx, idx, mesh_hash_, to_value(idx)};
     }
 
+    // -------------------- to_value ------------------
+
     [[nodiscard]] double to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       auto res = _dlr_it->get_itnodes()[idx] * beta;
-      if (res < 0) res = beta + res;
+      if (res < 0) res = beta + res; // OPFIXME how can it become <0 ??
       return res;
     }
 
@@ -223,6 +252,9 @@ namespace triqs::mesh {
       m              = dlr_imtime(beta, statistic, lambda, eps, _dlr_freq, _dlr_it, _dlr_if);
     }
   };
+
+  // Trap error for better error messages (do not present a long list of options, if the first parameter is dlr_imtime)
+  double evaluate(dlr_imtime const &m, ...) = delete; // No evaluation for dlr_imtime. Use dlr_coeffs instead.
 
   // check concept
   static_assert(MeshWithValues<dlr_imtime>);

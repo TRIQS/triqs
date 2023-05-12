@@ -79,12 +79,12 @@ namespace triqs::mesh {
          _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
          _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
 
-    public:
     friend class dlr_imtime;
     friend class dlr_imfreq;
 
+    public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    dlr_coeffs(M const &m)
+    explicit dlr_coeffs(M const &m)
        : beta(m.beta), statistic(m.statistic), lambda(m.lambda), eps(m.eps), _dlr_freq(m._dlr_freq), _dlr_it(m._dlr_it), _dlr_if(m._dlr_if) {
       if constexpr (std::is_same_v<M, dlr_coeffs>)
         mesh_hash_ = m.mesh_hash_;
@@ -119,7 +119,7 @@ namespace triqs::mesh {
 
     [[nodiscard]] auto const &dlr_if() const { return *_dlr_if; }
 
-    [[nodiscard]] size_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _dlr_freq->size(); }
@@ -143,12 +143,16 @@ namespace triqs::mesh {
       return datidx;
     }
 
+    // -------------------- operator [] () -------------------
+
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
       return {idx, idx, mesh_hash_, to_value(idx)};
     }
+
+    // -------------------- to_value ------------------
 
     [[nodiscard]] double to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
@@ -212,9 +216,17 @@ namespace triqs::mesh {
 
   // -------------------- evaluation -------------------
 
+  // OPFIXME : why decltype(auto) ??? --> auto
   inline decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
 
+    // OPFIXME :
+    // What is k_it ????
+    // Ugly, it is a common pattern ....
+    // Why not a sum in itertools ?
+    // sum(range) --> which takes care of the regular ?
+    // sum(transform(range(m.size()), [](long i) { return .... }));
+    // the sum takes care of the make regular ?
     auto res = make_regular(f(0) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[0]));
     for (auto l : range(1, m.size())) res += f(l) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[l]);
 
