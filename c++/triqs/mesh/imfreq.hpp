@@ -66,8 +66,8 @@ namespace triqs::mesh {
     imfreq() = default;
 
     /**
-     * Constructor
-     *  With n
+     * @brief Construct a new imfreq object
+     *  
      * @param beta Inverse temperature
      * @param statistic Statistic (Fermion or Boson)
      * @param n_iw The number of positive Matsubara frequencies
@@ -194,7 +194,7 @@ namespace triqs::mesh {
       return cmp.value.n;
     }
 
-    // -------------------- operator [] -------------------
+    // -------------------- operator [] () -------------------
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);

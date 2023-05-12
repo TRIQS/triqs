@@ -24,6 +24,7 @@
 #include <array>
 #include "./concepts.hpp"
 #include "../utility/macros.hpp"
+#include "./prod.hpp"
 
 // We write the evaluation on the cartesian product of meshes generically.
 // i.e. on a tuple of meshes (m1, m...)
