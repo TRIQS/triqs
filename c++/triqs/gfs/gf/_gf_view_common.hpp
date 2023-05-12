@@ -68,6 +68,12 @@ decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck
   return std::apply([this](auto &... x) -> decltype(auto) { return this->operator[](x...); }, tu);
 }
 
+private:
+
+   // two local helper functions for the _subscript_impl below
+   static all_t call_to_datidx(auto const &m, all_t const &x) { return {}; }
+   static auto call_to_datidx(auto const &m, auto const &x) { return m.to_datidx(x); }
+
 // ------------------------------------------
 // General implementation for any set of arguments.
 // https://godbolt.org/z/sbqYv3oeE
@@ -83,7 +89,7 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
     decltype(auto) new_data = [&self,
                                &arg...]<size_t... Is>(std::index_sequence<Is...>) -> decltype(auto) { // the trailing ->decltype(auto) is crucial
       return data_t::template call<(target_t::is_matrix and n_all == 0 ? 'M' : 'A'), false>(
-         std::forward<Self>(self)._data, detail::to_datidx(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
+         std::forward<Self>(self)._data, this_t::call_to_datidx(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
     }(std::make_index_sequence<arity>{}); //keep arity here. we could authorize to pass additional integers for direct access here ??
 
     if constexpr (n_all == 0)
@@ -100,6 +106,8 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
     }
   }
 }
+
+public:
 
 // ------------------------------------------
 

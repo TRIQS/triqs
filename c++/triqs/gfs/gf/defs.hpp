@@ -91,10 +91,7 @@ namespace triqs::gfs {
       return r;  
     }
 
-    all_t to_datidx(Mesh auto const &m, all_t const &x) { return {}; }
-    auto to_datidx(Mesh auto const &m, auto const &x) { return m.to_datidx(x); }
-
-    template <Mesh M, typename... XS>
+   template <Mesh M, typename... XS>
     bool eval_to_zero(M const & m, XS const &... xs) {
       if constexpr (sizeof...(XS) > 1) {
         return [&]<std::size_t...Is>(std::index_sequence<Is...>) {

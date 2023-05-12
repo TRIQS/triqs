@@ -204,7 +204,7 @@ namespace triqs::gfs {
     }
 
     private:
-    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
+    static auto make_data_shape(mesh_t const &m, target_shape_t const &shap) {
       if constexpr (mesh::is_product<mesh_t>)
         return stdutil::join(m.size_of_components(), shap);
       else
@@ -226,7 +226,7 @@ namespace triqs::gfs {
      *  @param shape Target shape
      * 
      */
-    gf(mesh_t m, target_shape_t shape = {}) : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape))) {}
+    gf(mesh_t m, target_shape_t shape = {}) : gf(impl_tag{}, std::move(m), data_t(make_data_shape(m, shape))) {}
 
     /**
      *  Makes a deep copy of the data
@@ -244,7 +244,7 @@ namespace triqs::gfs {
      *  @tparam G A type modeling :ref:`concept_GreenFunction`.
      *  @param g 
      */
-    template <typename G> explicit gf(G const &g) requires(GreenFunction<G>::value) : gf() { *this = g; } // explicit is very important here.	
+    template <typename G> explicit gf(G const &g) requires(GreenFunction<G>::value and std::is_same_v<mesh_t, typename G::mesh_t>) : gf() { *this = g; } // explicit is very important here.	
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
 
     /** 
