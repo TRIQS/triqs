@@ -92,7 +92,8 @@ namespace triqs::mesh {
     // Conversion
     // NB the data idx-> idx could be slow (unflatten) but is necessary in some cases.
     { m.to_datidx(idx) } -> std::same_as<typename M::datidx_t>;         // idx -> data idx
-    { m.to_datidx(mp) } -> std::same_as<typename M::datidx_t>;          // mesh point -> data idx
+    // REDONDANT. REMOVED
+    // { m.to_datidx(mp) } -> std::same_as<typename M::datidx_t>;          // mesh point -> data idx
     { m.to_idx(datidx) } -> std::same_as<typename M::idx_t>;            // data idx -> idx
     { m.operator[](datidx) } -> std::same_as<typename M::mesh_point_t>; // data idx -> mesh point
     { m.operator()(idx) } -> std::same_as<typename M::mesh_point_t>;    // idx -> mesh point

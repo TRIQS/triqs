@@ -175,11 +175,6 @@ namespace triqs::mesh {
       return to_datidx(iw.n);
     }
 
-    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const noexcept {
-      EXPECTS(mesh_hash_ == mp.mesh_hash);
-      return mp.datidx;
-    }
-
     [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(beta == cmp.value.beta and statistic == cmp.value.statistic);
       return to_datidx(to_idx(cmp));

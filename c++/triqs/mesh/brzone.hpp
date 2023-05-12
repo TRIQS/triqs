@@ -162,11 +162,6 @@ namespace triqs::mesh {
       return idx[0] * stride0 + idx[1] * stride1 + idx[2];
     }
 
-    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const {
-      EXPECTS(mesh_hash_ == mp.mesh_hash);
-      return mp.datidx;
-    }
-
     template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(closest_idx(cmp.value)); }
 
     template <char OP, typename L> [[nodiscard]] datidx_t to_datidx(k_expr_unary<OP, L> const &ex) const {

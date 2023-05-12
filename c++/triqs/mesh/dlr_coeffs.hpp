@@ -133,11 +133,6 @@ namespace triqs::mesh {
       return idx;
     }
 
-    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const noexcept {
-      EXPECTS(mesh_hash_ == mp.mesh_hash);
-      return mp.datidx;
-    }
-
     [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
       EXPECTS(is_idx_valid(datidx));
       return datidx;

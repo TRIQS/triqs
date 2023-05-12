@@ -72,7 +72,15 @@ private:
 
    // two local helper functions for the _subscript_impl below
    static all_t call_to_datidx(auto const &m, all_t const &x) { return {}; }
-   static auto call_to_datidx(auto const &m, auto const &x) { return m.to_datidx(x); }
+
+   template<typename M, typename X>
+   static auto call_to_datidx(M const &m, X const &x) {
+     if constexpr (std::is_same_v<X, typename M::mesh_point_t>) {
+      EXPECTS(m.mesh_hash() == x.mesh_hash);
+      return x.datidx;
+     }
+     else return m.to_datidx(x);
+   }
 
 // ------------------------------------------
 // General implementation for any set of arguments.

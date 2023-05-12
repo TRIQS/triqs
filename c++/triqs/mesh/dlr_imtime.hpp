@@ -166,11 +166,6 @@ namespace triqs::mesh {
       return idx;
     }
 
-    [[nodiscard]] datidx_t to_datidx(mesh_point_t const &mp) const noexcept {
-      EXPECTS(mesh_hash_ == mp.mesh_hash);
-      return mp.datidx;
-    }
-
     // there is no to_datidx for a closest mesh point, as it does not make sense here.
     [[nodiscard]] datidx_t
     to_datidx(closest_mesh_point_t<double> const &cmp) const = delete; // closest_mesh_point makes no sense for a dlr_imtime mesh

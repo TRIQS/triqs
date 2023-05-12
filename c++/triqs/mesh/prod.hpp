@@ -115,12 +115,6 @@ namespace triqs::mesh {
       return triqs::tuple::map_on_zip(l, *this, index);
     }
 
-    /// The datidx is the tuple of the datidx of the components
-    datidx_t to_datidx(mesh_point_t const &mesh_point) const {
-      auto l = [](auto const &m, auto const &mp) { return mp.datidx; };
-      return triqs::tuple::map_on_zip(l, *this, mesh_point);
-    }
-
     /// The index is the tuple of the index of the components
     idx_t to_idx(datidx_t const &datidx) const {
       auto l = [](auto const &m, auto const &didx) { return m.to_idx(didx); };

@@ -201,8 +201,8 @@ TEST(Gf, MeshCheck) {
   auto g1 = gf<imfreq>{iw_mesh, {1, 1}};
   auto g2 = gf<imfreq>{iw_mesh_big, {1, 1}};
 
-  EXPECT_DEATH(g1[*g2.mesh().begin()], "Precondition mesh_hash_ == mp.mesh_hash violated");
-  EXPECT_DEATH(g2[*g1.mesh().begin()], "Precondition mesh_hash_ == mp.mesh_hash violated");
+  EXPECT_DEATH(g1[*g2.mesh().begin()], "x.mesh_hash violated"); // full error does not work, because of a () ?
+  EXPECT_DEATH(g2[*g1.mesh().begin()], "x.mesh_hash violated");
 }
 
 TEST(Gf, EvalSlice) {
