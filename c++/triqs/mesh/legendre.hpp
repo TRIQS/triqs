@@ -20,7 +20,6 @@
 #pragma once
 
 #include "utils.hpp"
-
 #include <triqs/utility/legendre.hpp>
 
 namespace triqs::mesh {
@@ -88,10 +87,10 @@ namespace triqs::mesh {
     // -------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] size_t size() const { return max_n_; }
+    [[nodiscard]] long size() const { return max_n_; }
 
     // -------------------------- Range & Iteration --------------------------
 
@@ -147,6 +146,7 @@ namespace triqs::mesh {
     utility::legendre_generator L{};
     L.reset(2 * tau / m.beta - 1);
 
+    // OPFIXME : again the sum (transform ) pattern ...
     auto res = make_regular(f(0) * L.next() / m.beta);
     for (auto l : range(1, m.size())) { res += make_regular(f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta); }
 

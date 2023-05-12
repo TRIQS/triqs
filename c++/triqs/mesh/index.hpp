@@ -22,6 +22,7 @@
 #include "./utils.hpp"
 namespace triqs::mesh {
 
+  // OPFIXME : is the name not too COMMON ? ambiguity in the future ??
   struct index {
 
     using idx_t    = long;
@@ -79,10 +80,10 @@ namespace triqs::mesh {
     // -------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] size_t size() const { return L_; }
+    [[nodiscard]] long size() const { return L_; }
 
     // -------------------------- Range & Iteration --------------------------
 
