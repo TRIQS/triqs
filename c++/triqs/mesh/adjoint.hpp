@@ -38,8 +38,8 @@ namespace triqs::mesh {
     return {m.beta, m.statistic, n_tau};
   }
 
-  inline dlr_imfreq make_adjoint_mesh(dlr_imtime const &m) { return {m}; }
-  inline dlr_imtime make_adjoint_mesh(dlr_imfreq const &m) { return {m}; }
+  inline dlr_imfreq make_adjoint_mesh(dlr_imtime const &m) { return dlr_imfreq{m}; }
+  inline dlr_imtime make_adjoint_mesh(dlr_imfreq const &m) { return dlr_imtime{m}; }
 
   inline refreq make_adjoint_mesh(retime const &m, bool shift_half_bin = false) {
     int L       = m.size();
@@ -56,4 +56,4 @@ namespace triqs::mesh {
 
   inline brzone make_adjoint_mesh(cyclat const &m) { return {brillouin_zone{m.lattice()}, m.dims()}; }
   inline cyclat make_adjoint_mesh(brzone const &m) { return {m.bz().lattice(), m.dims()}; }
-}
+} // namespace triqs::mesh
