@@ -190,6 +190,11 @@ namespace triqs {
       {
         data_sym_grp.init(g.data(), to_data_init_func(g, h), parallel);
       }
+
+      // symmetrization method 
+      std::pair<double, long> symmetrize(G &g) const {
+        return data_sym_grp.symmetrize(g.data());
+      }
     };
   } // namespace gfs
 } // namespace triqs
