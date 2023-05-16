@@ -50,7 +50,7 @@ TEST(GfSymGrp, ScalarNoProduct) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
@@ -91,7 +91,7 @@ TEST(GfSymGrp, ScalarProduct) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
@@ -130,7 +130,7 @@ TEST(GfSymGrp, TensorNoProduct) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
@@ -177,7 +177,7 @@ TEST(GfSymGrp, TensorProduct) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
@@ -211,7 +211,7 @@ TEST(GfSymGrp, MomentumNoFrequency) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
@@ -262,7 +262,7 @@ TEST(GfSymGrp, MomentumFrequencyOmp) {
   EXPECT_GF_NEAR(G, Gp);
 
   // test symmetrization 
-  auto const &[max_diff, max_idx] = grp.symmetrize(G);
+  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 

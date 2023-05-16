@@ -181,7 +181,8 @@ namespace triqs {
       long num_classes() const { return data_sym_grp.num_classes(); }
 
       sym_grp() = default;
-      sym_grp(G const &g, std::vector<F> const &sym_list, long const max_length = 0) : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list), max_length} {};
+      sym_grp(G const &g, std::vector<F> const &sym_list, long const max_length = 0)
+         : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list), max_length} {};
 
       // initializer method
       template <typename H>
@@ -191,9 +192,35 @@ namespace triqs {
         data_sym_grp.init(g.data(), to_data_init_func(g, h), parallel);
       }
 
-      // symmetrization method 
-      std::pair<double, long> symmetrize(G &g) const {
-        return data_sym_grp.symmetrize(g.data());
+      // symmetrization method
+      std::tuple<double, mesh_idx_t, target_idx_t> symmetrize(G &g) const {
+        auto const &[max_diff, max_idx] = data_sym_grp.symmetrize(g.data());
+        auto const m                    = g.mesh();
+
+        // scalar valued gfs
+        if constexpr (target_rank == 0) {
+
+          if constexpr (mesh_rank == 1) {
+            return std::tuple{max_diff, m.to_idx(max_idx[0]), target_idx_t{}};
+
+          } else {
+            return std::tuple{max_diff, m.to_idx(make_tuple_from_array(max_idx)), target_idx_t{}};
+          }
+
+          // tensor valued gfs
+        } else {
+
+          // convert data index to target index
+          target_idx_t target_idx;
+          for (auto i : range(target_rank)) target_idx[i] = max_idx[i + mesh_rank];
+
+          if constexpr (mesh_rank == 1) {
+            return std::tuple{max_diff, m.to_idx(max_idx[0]), target_idx};
+
+          } else {
+            return std::tuple{max_diff, m.to_idx(make_tuple_from_array(max_idx, std::make_index_sequence<mesh_rank>{})), target_idx};
+          }
+        }
       }
     };
   } // namespace gfs
