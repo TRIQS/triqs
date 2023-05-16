@@ -78,7 +78,7 @@ namespace triqs::mesh {
 
       // OPFIXME : this was the requires of the first
       //requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
-
+      // OPFIXME : 2 requires + 1 overload for mp + mp using lazy if not too hard !?
 #define IMPL_OP(OP)                                                                                                                                  \
   friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.val OP y; }                                                             \
   friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
@@ -128,15 +128,15 @@ namespace triqs::mesh {
     // ------------------ operator[] -------------------
     // OPFIXME : noexcept ?
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
+    [[nodiscard]] mesh_point_t operator[](long datidx) const noexcept { return (*this)(datidx); }
 
     // OPFIXME or simple (*this)(this->to_idx(cmp))
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_datidx(cmp)]; }
 
     // ------------------ operator()-------------------
 
     // OPFIXME : noexcept ?
-    [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
+    [[nodiscard]] mesh_point_t operator()(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return {idx, idx, mesh_hash_, to_value(idx)};
     }

@@ -38,32 +38,37 @@ namespace triqs::mesh {
      */
     retime(double t_min = 0.0, double t_max = 0.0, long n_t = 2) : linear(t_min, t_max, n_t) {}
 
-    /// OPFIXME : like refreq, why do we need this in the aPI ?
+    // for python backward doc.
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
 
     // -------------------- Accessors -------------------
 
     /// Smallest time in the mesh
-    [[nodiscard]] double t_min() const { return xmin; }
+    [[nodiscard]] double t_min() const noexcept { return xmin; }
 
     /// Largest time in the mesh
-    [[nodiscard]] double t_max() const { return xmax; }
+    [[nodiscard]] double t_max() const noexcept { return xmax; }
 
     // -------------------- HDF5 -------------------
 
+    ///
     [[nodiscard]] static std::string hdf5_format() { return "MeshReTime"; }
 
+    ///
     friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
 
+    ///
     friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
 
     // -------------------- Print -------------------
 
+    ///
     friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
       return sout << fmt::format("Real Time Mesh with t_min = {}, t_max = {}, n_t = {}", m.xmin, m.xmax, m.L);
     }
   };
 
+  // OPFIXME
   inline decltype(auto) evaluate(retime const &m, auto const &f, double x) { return evaluate(static_cast<linear<retime, double>>(m), f, x); }
 
   static_assert(Mesh<retime>);

@@ -94,6 +94,7 @@ namespace triqs::mesh {
 
     // -------------------- Comparisons -------------------
 
+    // OPFIXME ?? compare the hash !!!
     bool operator==(dlr_coeffs const &M) const {
       return ((beta == M.beta) && (this->size() == M.size()) && (std::abs(lambda - M.lambda) < 1.e-15) && (std::abs(eps - M.eps) < 1.e-15));
     }
@@ -228,7 +229,7 @@ namespace triqs::mesh {
     return res;
   }
 
-  inline decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
+  decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
 
     auto res = make_regular(-f(0) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[0]) * m.beta);

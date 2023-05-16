@@ -54,7 +54,7 @@ namespace triqs::mesh {
 
   //------------------------------------------------------------------------
 
-  template <Mesh M>  static constexpr bool is_product = false;
+  template <Mesh M> static constexpr bool is_product  = false;
   template <Mesh Ms> static constexpr int n_variables = 1;
 
   /// A place holder for : or *all*
@@ -82,17 +82,5 @@ namespace triqs::mesh {
     else
       return std::tuple{closest_mesh_point_t<std::decay_t<T>>{std::forward<T>(x)}...};
   }
-
- /* // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.*/
-  /*struct one_t {};*/
-  /*template <typename T> auto operator*(one_t, T &&x) { return std::forward<T>(x); }*/
-  /*template <typename T> auto operator*(T &&x, one_t) { return std::forward<T>(x); }*/
-  /*inline one_t operator*(one_t, one_t) { return {}; } // avoid ambiguity*/
-
-  //template <typename M> // do NOT constrain here .. 
-  //auto make_mesh_range_from_subscript(M const * m, long l) {
-    //return itertools::transform(itertools::range(l), [m](long i){ return (*m)[i];});
-	//// return std::ranges::views::iota(0l, l) | std::ranges::views::transform([&m](long i){ return m[i];});
-  //}
 
 } // namespace triqs::mesh

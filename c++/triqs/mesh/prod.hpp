@@ -35,10 +35,9 @@ namespace triqs::mesh {
     using datidx_t = typename mesh_t::datidx_t;
     using tuple_t  = std::tuple<typename Ms::mesh_point_t...>;
 
-    idx_t idx       = std::apply([](auto &...x) { return std::make_tuple(x.idx...); }, *this);
-    datidx_t datidx = std::apply([](auto &...x) { return std::make_tuple(x.datidx...); }, *this);
-    //OPFIXME Use + instead of ^ ??
-    uint64_t mesh_hash = std::apply([](auto &...x) { return (x.mesh_hash ^ ...); }, *this);
+    idx_t idx          = std::apply([](auto &...x) { return std::make_tuple(x.idx...); }, *this);
+    datidx_t datidx    = std::apply([](auto &...x) { return std::make_tuple(x.datidx...); }, *this);
+    uint64_t mesh_hash = std::apply([](auto &...x) { return (x.mesh_hash + ...); }, *this);
 
     tuple_t const &as_tuple() const { return *this; }
   };
