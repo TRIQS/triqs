@@ -19,7 +19,9 @@
 
 #pragma once
 
+#include "../../utility/factory.hpp"
 #include "../../arrays.hpp"
+#include "../../mesh.hpp"
 
 namespace triqs::gfs {
 

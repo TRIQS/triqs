@@ -17,6 +17,7 @@
 
 #pragma once
 #include "./defs.hpp"
+#include "./targets.hpp"
 
 namespace triqs::gfs {
 
