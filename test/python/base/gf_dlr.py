@@ -25,11 +25,7 @@ from triqs.gf.meshes import MeshDLRImTime
 from triqs.gf.meshes import MeshDLRImFreq
 from triqs.gf.meshes import MeshDLRCoeffs
 
-from triqs.gf.gf_fnt import dlr_coeffs_from_dlr_imfreq
-from triqs.gf.gf_fnt import dlr_coeffs_from_dlr_imtime
-
-from triqs.gf.gf_fnt import dlr_imfreq_from_dlr_coeffs
-from triqs.gf.gf_fnt import dlr_imtime_from_dlr_coeffs
+from triqs.gf.gf_fnt import make_gf_dlr_coeffs, make_gf_dlr_imfreq, make_gf_dlr_imtime
 
 class test_dlr_mesh(unittest.TestCase):
 
@@ -70,16 +66,16 @@ class test_dlr_mesh(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(g_w.data, g_w_2.data)
 
-        g_c = dlr_coeffs_from_dlr_imfreq(g_w)
+        g_c = make_gf_dlr_coeffs(g_w)
 
-        g_t = dlr_imtime_from_dlr_coeffs(g_c)
+        g_t = make_gf_dlr_imtime(g_c)
 
         for t in g_t.mesh:
             ref = -np.exp(-e * t.value) / ( 1 + np.exp(-e * beta) )
             #print(ref, g_t[t].real)
             np.testing.assert_almost_equal(g_t[t], ref)
 
-        g_w_new = dlr_imfreq_from_dlr_coeffs(g_c)
+        g_w_new = make_gf_dlr_imfreq(g_c)
 
         for w in g_w_new.mesh:
             np.testing.assert_almost_equal(g_w[w], g_w_new[w])
@@ -95,7 +91,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         for w in wmesh: g_w[w] = 1/(w + e)
 
-        g_c = dlr_coeffs_from_dlr_imfreq(g_w)
+        g_c = make_gf_dlr_coeffs(g_w)
 
         ref = np.exp(-e * beta) / (1 + np.exp(-e * beta))
         np.testing.assert_almost_equal(density(g_c), ref)

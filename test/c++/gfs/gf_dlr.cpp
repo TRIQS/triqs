@@ -36,7 +36,7 @@ TEST(Gf, DLR_CrossConstruction) {
   auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
   G_iw[iw_] << 1. / (iw_ + omega);
 
-  auto G_dlr = dlr_coeffs_from_dlr_imfreq(G_iw);
+  auto G_dlr = make_gf_dlr_coeffs(G_iw);
 
   // OPFIXME : 
   //auto g_dlr2 = gf<dlr_coeffs, scalar_valued> {G_iw};
@@ -318,7 +318,7 @@ TEST(Gf, DLR_imfreq_interpolation) {
   auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
   G_iw[iw_] << 1. / (iw_ + omega);
 
-  auto G_dlr = dlr_coeffs_from_dlr_imfreq(G_iw);
+  auto G_dlr = make_gf_dlr_coeffs(G_iw);
 
   auto G_iw_ref = G_iw;
   for (auto iw : G_iw.mesh()) PRINT(iw);
@@ -345,18 +345,18 @@ TEST(Gf, DLR_coeffs_conversion) {
 
   // Transform from dlr_imtime to dlr_coeffs
 
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+  auto G_dlr = make_gf_dlr_coeffs(G_tau);
   for (auto const &tau : G_tau.mesh()) EXPECT_CLOSE(G_tau[tau], G_dlr(tau));
 
   // Transform from dlr_coeffs to dlr_imtime
 
-  auto G_tau_ref = dlr_imtime_from_dlr_coeffs(G_dlr);
+  auto G_tau_ref = make_gf_dlr_imtime(G_dlr);
   EXPECT_GF_NEAR(G_tau, G_tau_ref);
 
   // Transform from dlr_coeffs to dlr_imfreq and back
 
-  auto G_iw      = dlr_imfreq_from_dlr_coeffs(G_dlr);
-  auto G_dlr_ref = dlr_coeffs_from_dlr_imfreq(G_iw);
+  auto G_iw      = make_gf_dlr_imfreq(G_dlr);
+  auto G_dlr_ref = make_gf_dlr_coeffs(G_iw);
   for (auto const &tau : G_tau.mesh()) EXPECT_CLOSE(G_tau[tau], G_dlr_ref(tau));
 
   auto G_iw_ref = G_iw;
@@ -382,7 +382,7 @@ TEST(Gf, DLR_density) {
 
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+  auto G_dlr = make_gf_dlr_coeffs(G_tau);
   auto n     = triqs::gfs::density(G_dlr);
   EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(beta * omega)), 1.e-9);
 }
@@ -401,7 +401,7 @@ TEST(Gf, DLR_tau_rev) {
 
   auto G_tau_rev = G_tau; // copy
 
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+  auto G_dlr = make_gf_dlr_coeffs(G_tau);
   G_tau_rev[tau_] << G_dlr(beta - tau_);
 
   // Interpolation in imaginary time using dlr grid (efficient by design)
@@ -423,8 +423,8 @@ TEST(Gf, DLR_h5) {
 
   auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
   G_tau[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
-  auto G_iw  = dlr_imtime_from_dlr_coeffs(G_dlr);
+  auto G_dlr = make_gf_dlr_coeffs(G_tau);
+  auto G_iw  = make_gf_dlr_imtime(G_dlr);
 
   rw_h5(G_tau, "g_dlr_imtime");
   rw_h5(G_dlr, "g_dlr_coeffs");
@@ -448,9 +448,9 @@ TEST(Gf, DLR_dyson) {
      -0.5 * nda::clef::exp(-e1 * tau_) / (1 + nda::clef::exp(-beta * e1)) //
         - 0.5 * nda::clef::exp(-e2 * tau_) / (1 + nda::clef::exp(-beta * e2));
 
-  auto G_dlr = dlr_coeffs_from_dlr_imtime(G_tau);
+  auto G_dlr = make_gf_dlr_coeffs(G_tau);
 
-  auto G_iw = dlr_imfreq_from_dlr_coeffs(G_dlr);
+  auto G_iw = make_gf_dlr_imfreq(G_dlr);
 
   auto G_iw_ref = G_iw;
   G_iw_ref[iw_] << 1. / (iw_ + 1 - 1 / (iw_ + 1));

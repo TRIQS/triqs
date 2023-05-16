@@ -16,43 +16,48 @@
 // Authors: Hugo U.R. Strand
 
 #pragma once
-//#include "triqs/mesh.hpp"
-#include "triqs/gfs.hpp"
-
+#include "triqs/gfs/gf/gf.hpp"
+#include "../../mesh/dlr_imtime.hpp"
+#include "../../mesh/dlr_imfreq.hpp"
+#include "../..//mesh/dlr_coeffs.hpp"
 namespace triqs::gfs {
 
+  using mesh::dlr_coeffs;
+  using mesh::dlr_imfreq;
+  using mesh::dlr_imtime;
+
   //-------------------------------------------------------
-  // For DLR Green's functions
+  // Transformation of DLR Green's functions
   // ------------------------------------------------------
 
-  // dlr_imtime <-> dlr_coeffs
-  // OPFIXME : naming ?? too long. Why twice dlr_ ?
-  // Why not a cross construction ???
-  // Why scalar_valued only ???
-  // Move into transform/
+  auto make_gf_dlr_coeffs(GfMemory<dlr_imtime> auto const &g) {
+    using target_t = decltype(auto{g})::target_t;
+    gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
+    result.data() = result.mesh().dlr_it().vals2coefs(g.data());
+    return result;
+  }
 
-  //  gf<dlr_coeffs> {g_it};
-  // cf gf.hpp line 247 : we have a TOO general gf cross constructor !
-  // closed by making the dlr_xxx mesh cross construction EXPLICIT
+  auto make_gf_dlr_coeffs(GfMemory<dlr_imfreq> auto const &g) {
+    using target_t = decltype(auto{g})::target_t;
+    gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
+    auto beta_inv = 1. / result.mesh().beta;
+    result.data() = -beta_inv * result.mesh().dlr_if().vals2coefs(g.data());
+    return result;
+  }
 
-  // No need to separate the scalar_valued case Cf cpp l68, generic code ok.
+  auto make_gf_dlr_imtime(GfMemory<dlr_coeffs> auto const &g) {
+    using target_t = decltype(auto{g})::target_t;
+    gf<dlr_imtime, target_t> result{dlr_imtime{g.mesh()}, g.target_shape()};
+    result.data() = g.mesh().dlr_it().coefs2vals(g.data());
+    return result;
+  }
 
-  // NAMING
-  // to_dlr_coeffs(g)  or to_dlr_imtime(g)   (like std::to_string)...
-  // to_ or make_gf_ ...
-
-  gf<dlr_coeffs> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime> g_tau);
-  gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imtime(gf_const_view<dlr_imtime, scalar_valued> g_tau);
-
-  gf<dlr_imtime> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr);
-  gf<dlr_imtime, scalar_valued> dlr_imtime_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr);
-
-  // dlr_imfreq <-> dlr_coeffs
-
-  gf<dlr_coeffs> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq> g_iw);
-  gf<dlr_coeffs, scalar_valued> dlr_coeffs_from_dlr_imfreq(gf_const_view<dlr_imfreq, scalar_valued> g_iw);
-
-  gf<dlr_imfreq> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs> g_dlr);
-  gf<dlr_imfreq, scalar_valued> dlr_imfreq_from_dlr_coeffs(gf_const_view<dlr_coeffs, scalar_valued> g_dlr);
+  auto make_gf_dlr_imfreq(GfMemory<dlr_coeffs> auto const &g) {
+    using target_t = decltype(auto{g})::target_t;
+    gf<dlr_imfreq, target_t> result{dlr_imfreq{g.mesh()}, g.target_shape()};
+    auto beta     = result.mesh().beta;
+    result.data() = -beta * g.mesh().dlr_if().coefs2vals(g.data());
+    return result;
+  }
 
 } // namespace triqs::gfs

@@ -45,11 +45,20 @@ namespace triqs::gfs {
   //template <typename G> using mesh_t_of = std::decay_t<decltype(std::declval<G>().mesh())>;
 
   // is_gf<G> Check if G fullfills the Green function concecpt
+  // FIXME : deprecated for concept
   template <typename G, typename M = void> inline constexpr bool is_gf_v = false;
   template <typename G>
   inline constexpr bool is_gf_v<G, void> =
      is_instantiation_of_v<gf, G> or is_instantiation_of_v<gf_view, G> or is_instantiation_of_v<gf_const_view, G>;
   template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
+
+  template <typename G, typename M>
+  concept GfMemory = mesh::Mesh<M> and requires(G g) {
+    { g.data() } -> nda::MemoryArray;
+    { auto(g.mesh()) } -> std::same_as<M>;
+  };
+
+  template <typename G> using get_target_t = typename std::decay_t<G>::target_t;
 
   /// ---------------------------  tags for some implementation details  ---------------------------------
 
