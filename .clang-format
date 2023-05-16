@@ -29,12 +29,14 @@ ContinuationIndentWidth: 3
 Cpp11BracedListStyle: true
 DerivePointerBinding : false
 IndentCaseLabels: true
+IndentRequiresClause: true
 IndentWidth: 2
 Language: Cpp
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation : All
 PointerAlignment: Right
 ReflowComments: false
+RequiresClausePosition: OwnLine
 SortIncludes: false
 SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
