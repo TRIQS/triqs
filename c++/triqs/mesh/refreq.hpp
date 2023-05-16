@@ -37,13 +37,16 @@ namespace triqs::mesh {
      */
     refreq(double w_min = 0.0, double w_max = 0.0, long n_w = 2) : linear(w_min, w_max, n_w) {}
 
+    // OPFIXME : do we really need this ?? Used in python wrap only ?
     refreq(std::pair<double, double> window, int n_w) : refreq(std::get<0>(window), std::get<1>(window), n_w) {}
 
     // -------------------- Accessors -------------------
 
+    // OPFIXME : why this ???
     /// Is the mesh only for positive omega
     static constexpr bool positive_only() { return false; }
 
+    /// OPFIXME : why are first_idx, last_idx not in linear ??
     /// First index of the mesh
     static constexpr long first_idx() { return 0; }
 

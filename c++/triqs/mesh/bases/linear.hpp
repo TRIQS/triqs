@@ -25,6 +25,9 @@
 
 namespace triqs::mesh {
 
+  /// Implements linear spaced meshes as MeshWithValues by CTRP on Mesh
+  /// Value is value_t of MeshWithValues concept.
+  // OPFIXME : rename it linear_impl ? It is NOT a user facing class ...
   template <typename Mesh, typename Value> class linear {
     static_assert(std::totally_ordered<Value>);
 
@@ -36,12 +39,11 @@ namespace triqs::mesh {
     // --  data
     protected:
     long L;
-    value_t xmin, xmax, del;
+    value_t xmin, xmax, del; // OPFIXME : del ? rename to clearer name delta_x ?
     double del_inv;
     size_t mesh_hash_ = 0;
 
     // -------------------- Constructors -------------------
-    public:
     linear(value_t a = 0, value_t b = 1, long n_pts = 2)
        : L(n_pts),
          xmin(a),
@@ -52,6 +54,7 @@ namespace triqs::mesh {
       EXPECTS(a <= b);
     }
 
+    public:
     // -------------------- Comparison -------------------
 
     /// Mesh comparison
@@ -69,11 +72,11 @@ namespace triqs::mesh {
       value_t value() const { return val; }
       operator value_t() const { return val; }
 
-      // OPFIXME : Commented the first requires (as in the godbolt)
+      // OPFIXME : Remove the first requires (as in the godbolt)
       // otherwise, the mp + mp is not covered.
       // https://godbolt.org/z/xoYP3vTW4
 
-      // OPFIXME : this is the requires of the first
+      // OPFIXME : this was the requires of the first
       //requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
 
 #define IMPL_OP(OP)                                                                                                                                  \
@@ -93,8 +96,11 @@ namespace triqs::mesh {
     // -------------------- idx checks and conversions -------------------
 
     [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < L; }
+
+    private:
     [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
 
+    public:
     // -------------------- to_datidx ------------------
 
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
@@ -120,13 +126,16 @@ namespace triqs::mesh {
     }
 
     // ------------------ operator[] -------------------
+    // OPFIXME : noexcept ?
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
+    // OPFIXME or simple (*this)(this->to_idx(cmp))
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
 
     // ------------------ operator()-------------------
 
+    // OPFIXME : noexcept ?
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
       return {idx, idx, mesh_hash_, to_value(idx)};
@@ -146,7 +155,7 @@ namespace triqs::mesh {
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Size (linear) of the mesh of the window
-    [[nodiscard]] auto size() const noexcept { return L; }
+    [[nodiscard]] long size() const noexcept { return L; }
 
     /// Step of the mesh
     [[nodiscard]] value_t delta() const noexcept { return del; }
@@ -168,10 +177,14 @@ namespace triqs::mesh {
     [[nodiscard]] auto cend() const { return r_().cend(); }
 
     // -------------------- print  -------------------
-
-    friend std::ostream &operator<<(std::ostream &sout, linear const &m) { return sout << "linear mesh of size " << m.l; }
+    // OPFIXME : do we ever need this ?
+    //friend std::ostream &operator<<(std::ostream &sout, linear const &m) { return sout << "linear mesh of size " << m.l; }
 
     //  -------------------------- HDF5  --------------------------
+
+    // OPFIXME : I would put them as METHOD of linear mesh since it is a implementation mesh.
+    // protected. pure impl. not seen by doc tools, etc...
+    // why have h5_write_impl overloaded with X classes ? error messages can be complex.
 
     /// Write into HDF5
     friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear const &m, const char *format) {
@@ -196,6 +209,9 @@ namespace triqs::mesh {
 
     // ------------------------- Evaluate -----------------------------
 
+    // OPFIXME : why decltype(auto) ??? -> auto ...
+    // OPFIXME : we can also make it a method, as linear is not user facing ...
+    // e.g. save some static_cast in derived classes
     friend decltype(auto) evaluate(linear const &m, auto const &f, double x) {
       EXPECTS(m.is_value_valid(x) and m.size() > 1);
       x        = std::max(x, m.xmin);

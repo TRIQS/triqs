@@ -92,7 +92,7 @@ namespace triqs::mesh {
       if (not h5::try_read(gr, "n_tau", n_tau)) h5::read(gr, "size", n_tau); // Backward Compat
 
       if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
-      double beta    = h5::read<double>(gr, "beta");
+      auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
 
       m = imtime(beta, statistic, n_tau);
@@ -106,6 +106,7 @@ namespace triqs::mesh {
     }
   };
 
+  // OPFIXME : why decltype(auto) ??
   inline decltype(auto) evaluate(imtime const &m, auto const &f, double x) { return evaluate(static_cast<linear<imtime, double>>(m), f, x); }
 
   // check concept

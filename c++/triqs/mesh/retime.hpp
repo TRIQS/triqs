@@ -38,15 +38,16 @@ namespace triqs::mesh {
      */
     retime(double t_min = 0.0, double t_max = 0.0, long n_t = 2) : linear(t_min, t_max, n_t) {}
 
+    /// OPFIXME : like refreq, why do we need this in the aPI ?
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}
 
     // -------------------- Accessors -------------------
 
     /// Smallest time in the mesh
-    double t_min() const { return xmin; }
+    [[nodiscard]] double t_min() const { return xmin; }
 
     /// Largest time in the mesh
-    double t_max() const { return xmax; }
+    [[nodiscard]] double t_max() const { return xmax; }
 
     // -------------------- HDF5 -------------------
 
