@@ -355,6 +355,12 @@ namespace triqs::gfs {
    *   Deduction guides
    *-----------------------------------------------------------------------*/
 
+  // Deduce gf type from a Mesh and a Data array
+  template <Mesh M, MemoryArray DataArray> gf(M, DataArray) -> gf<M, target_from_array<DataArray, n_variables<M>>>;
+
+  // Deduce gf type from a Mesh and a Data array
+  template <Mesh M, std::integral I, size_t R> gf(M, std::array<I, R>) -> gf<M, typename _target_from_type_rank<dcomplex, R>::type>;
+
   // Forward declare gf_expr
   template <typename Tag, typename L, typename R> struct gf_expr;
 

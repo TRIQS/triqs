@@ -17,6 +17,8 @@
 
 #pragma once
 #include "triqs/gfs/gf/gf.hpp"
+#include "../../mesh/imtime.hpp"
+#include "../../mesh/imfreq.hpp"
 #include "../../mesh/dlr_imtime.hpp"
 #include "../../mesh/dlr_imfreq.hpp"
 #include "../..//mesh/dlr_coeffs.hpp"
@@ -32,7 +34,8 @@ namespace triqs::gfs {
 
   auto make_gf_dlr_coeffs(GfMemory<dlr_imtime> auto const &g) {
     using target_t = decltype(auto{g})::target_t;
-    gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
+    //gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
+    auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     result.data() = result.mesh().dlr_it().vals2coefs(g.data());
     return result;
   }
@@ -59,5 +62,7 @@ namespace triqs::gfs {
     result.data() = -beta * g.mesh().dlr_if().coefs2vals(g.data());
     return result;
   }
+
+  auto make_gf_imtime(GfMemory<dlr_coeffs> auto const &g) {}
 
 } // namespace triqs::gfs
