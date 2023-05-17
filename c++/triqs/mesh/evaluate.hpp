@@ -74,24 +74,17 @@ namespace triqs::mesh { // NOLINT
     }
   } // namespace detail
 
-  // OPFIXME evaluate is an internal function. Should we rename it evaluate_mesh to avoid any future collision.
-  // it is a common name !
-  // OPFIXME : auto const & f or f ? If f is a lambda, copy is fine. It f is mutable, const & will break it !
-
   // evaluate on a mesh index just pass through
-  template <Mesh M> FORCEINLINE decltype(auto) evaluate(M const &m, auto const &f, typename M::idx_t const &idx) { return f(idx); }
+  template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::idx_t const &idx) { return f(idx); }
 
   // evaluate on a closest_mesh_point : pass through, like an index.
-  template <typename T> FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) {
-    return f(cmp);
-  }
+  template <typename T> FORCEINLINE auto evaluate(Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }
 
   // all_t : pass through, like a (range of) index
-  FORCEINLINE decltype(auto) evaluate(Mesh auto const &m, auto const &f, all_t) { return f(all_t{}); }
+  FORCEINLINE auto evaluate(Mesh auto const &m, auto const &f, all_t) { return f(all_t{}); }
 
   // evaluate on a mesh point. Use its value if its available, else pass through
-  template <Mesh M> FORCEINLINE decltype(auto) evaluate(M const &m, auto const &f, typename M::mesh_point_t const &mp) {
-    // OPFIXME Should we rather say constexpr (requires{mp.value();}) ?? Clearer ?
+  template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::mesh_point_t const &mp) {
     if constexpr (MeshWithValues<M>) {
       return evaluate(m, f, mp.value());
     } else {
@@ -105,10 +98,9 @@ namespace triqs::mesh { // NOLINT
   // NB : do not forward here. Arguments are always taken by const & and it makes the
   // overloads clearer.
   // Do not restrict M here, as this function can be used (in brzone) with simpler objects which do not have the full Mesh concept.
-  // FIXME : Return auto or decltype(auto) ? If latter, add it to the lambda too...
   //
   template <typename... M, typename X1, typename... X>
-  FORCEINLINE decltype(auto) evaluate(std::tuple<M...> const &mesh_tuple, auto const &f, X1 const &x1, X const &...x) {
+  FORCEINLINE auto evaluate(std::tuple<M...> const &mesh_tuple, auto const &f, X1 const &x1, X const &...x) {
     auto const &m1 = std::get<0>(mesh_tuple);
     if constexpr (sizeof...(M) > 1)
       return evaluate(
@@ -121,10 +113,8 @@ namespace triqs::mesh { // NOLINT
       return evaluate(m1, f, x1);
   }
 
-  // OPFIXME : Discuss : we should benchmark this evaluate, e.g. copy of f.
-
   // Cartesian product mesh is done as a tuple
-  template <Mesh... M, typename... X> FORCEINLINE decltype(auto) evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
+  template <Mesh... M, typename... X> FORCEINLINE auto evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
     return evaluate(m.components(), f, x...);
   }
 

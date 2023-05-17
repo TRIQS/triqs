@@ -315,7 +315,7 @@ namespace triqs::mesh {
 
     // -------------- Evaluation --------------------------
 
-    friend decltype(auto) evaluate(brzone const &m, auto const &f, idx_t const &idx) { return f(m.idx_modulo(idx)); }
+    friend auto evaluate(brzone const &m, auto const &f, idx_t const &idx) { return f(m.idx_modulo(idx)); }
 
     private:
     // Evaluation helpers
@@ -323,7 +323,7 @@ namespace triqs::mesh {
       long dim;
     };
 
-    friend decltype(auto) evaluate(brzone1d const &m, auto const &f, double vi) {
+    friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
       long i   = std::floor(vi);
       double w = vi - i;
       return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
@@ -331,7 +331,7 @@ namespace triqs::mesh {
 
     // Use the cartesian product evaluation to evaluate on domain pts
     template <typename V>
-    friend decltype(auto) evaluate(brzone const &m, auto const &f, V const &v)
+    friend auto evaluate(brzone const &m, auto const &f, V const &v)
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)
     {
       if constexpr (is_k_expr<V>)

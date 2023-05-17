@@ -140,7 +140,7 @@ namespace triqs::mesh {
     }
   };
 
-  inline decltype(auto) evaluate(legendre const &m, auto const &f, double tau) {
+  inline auto evaluate(legendre const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
 
     utility::legendre_generator L{};
