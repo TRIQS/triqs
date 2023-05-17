@@ -92,8 +92,6 @@ namespace triqs::mesh {
     // Conversion
     // NB the data idx-> idx could be slow (unflatten) but is necessary in some cases.
     { m.to_datidx(idx) } -> std::same_as<typename M::datidx_t>;         // idx -> data idx
-    // OPFIXME REDONDANT. REMOVED
-    // { m.to_datidx(mp) } -> std::same_as<typename M::datidx_t>;          // mesh point -> data idx
     { m.to_idx(datidx) } -> std::same_as<typename M::idx_t>;            // data idx -> idx
     { m.operator[](datidx) } -> std::same_as<typename M::mesh_point_t>; // data idx -> mesh point
     { m.operator()(idx) } -> std::same_as<typename M::mesh_point_t>;    // idx -> mesh point
@@ -106,12 +104,12 @@ namespace triqs::mesh {
   // Some meshes have points that can take value in a domain, 
   // e.g. a k mesh in a Brillouin zone, k can be a R3 vector.
   template <typename M>
-  concept MeshWithValues = Mesh<M> and requires(M const &m) {
+  concept MeshWithValues = Mesh<M> and requires(M const &m, typename M::idx_t idx) {
     // The value type of the domain
     typename M::value_t;
 
-    // OPFIXME .to_value(idx) in the concept ? 
-
+    {m.to_value(idx)}  -> std::same_as<typename M::value_t>; // idx -> value
+     
     // Mesh Points can return their value and are castable
     { (*std::begin(m)).value() } -> any_of<typename M::value_t, typename M::value_t const &>;
     { static_cast<typename M::value_t>(*std::begin(m)) };

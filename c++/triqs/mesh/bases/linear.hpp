@@ -23,11 +23,11 @@
 #include <stdexcept>
 #include "../utils.hpp"
 
-namespace triqs::mesh {
+namespace triqs::mesh::details {
 
-  /// Implements linear spaced meshes as MeshWithValues by CTRP on Mesh
-  /// Value is value_t of MeshWithValues concept.
-  // OPFIXME : rename it linear_impl ? It is NOT a user facing class ...
+  // Implements linear spaced meshes as MeshWithValues by CTRP on Mesh
+  // Value is value_t of MeshWithValues concept.
+  // Implementation only. Not user
   template <typename Mesh, typename Value> class linear {
     static_assert(std::totally_ordered<Value>);
 
@@ -39,17 +39,18 @@ namespace triqs::mesh {
     // --  data
     protected:
     long L;
-    value_t xmin, xmax, del; // OPFIXME : del ? rename to clearer name delta_x ?
-    double del_inv;
+    value_t xmin, xmax, delta_x;
+    double delta_x_inv;
     size_t mesh_hash_ = 0;
 
     // -------------------- Constructors -------------------
+
     linear(value_t a = 0, value_t b = 1, long n_pts = 2)
        : L(n_pts),
          xmin(a),
          xmax(b),
-         del(L == 1 ? 0. : (b - a) / (L - 1)),
-         del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del},
+         delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
+         delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
          mesh_hash_(hash(L, xmin, xmax)) {
       EXPECTS(a <= b);
     }
@@ -80,11 +81,11 @@ namespace triqs::mesh {
       //requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
       // OPFIXME : 2 requires + 1 overload for mp + mp using lazy if not too hard !?
 #define IMPL_OP(OP)                                                                                                                                  \
-  friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.val OP y; }                                                             \
+  friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.value() OP y; }                                                         \
   friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
     requires(not std::is_same_v<decltype(x), mesh_point_t const &>)                                                                                  \
   {                                                                                                                                                  \
-    return x OP mp.val;                                                                                                                              \
+    return x OP mp.value();                                                                                                                          \
   }
       IMPL_OP(+);
       IMPL_OP(-);
@@ -122,20 +123,17 @@ namespace triqs::mesh {
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
-      return idx_t((cmp.value - xmin) * del_inv + 0.5);
+      return idx_t((cmp.value - xmin) * delta_x_inv + 0.5);
     }
 
     // ------------------ operator[] -------------------
-    // OPFIXME : noexcept ?
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const noexcept { return (*this)(datidx); }
 
-    // OPFIXME or simple (*this)(this->to_idx(cmp))
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_datidx(cmp)]; }
 
     // ------------------ operator()-------------------
 
-    // OPFIXME : noexcept ?
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return {idx, idx, mesh_hash_, to_value(idx)};
@@ -158,10 +156,16 @@ namespace triqs::mesh {
     [[nodiscard]] long size() const noexcept { return L; }
 
     /// Step of the mesh
-    [[nodiscard]] value_t delta() const noexcept { return del; }
+    [[nodiscard]] value_t delta() const noexcept { return delta_x; }
 
     /// Inverse of the step of the mesh
-    [[nodiscard]] value_t delta_inv() const noexcept { return del_inv; }
+    [[nodiscard]] value_t delta_inv() const noexcept { return delta_x_inv; }
+
+    /// First index of the mesh
+    static constexpr long first_idx() { return 0; }
+
+    /// Last index of the mesh
+    [[nodiscard]] long last_idx() const { return L - 1; }
 
     // -------------------------- Range & Iteration --------------------------
 
@@ -176,50 +180,40 @@ namespace triqs::mesh {
     [[nodiscard]] auto end() const { return r_().end(); }
     [[nodiscard]] auto cend() const { return r_().cend(); }
 
-    // -------------------- print  -------------------
-    // OPFIXME : do we ever need this ?
-    //friend std::ostream &operator<<(std::ostream &sout, linear const &m) { return sout << "linear mesh of size " << m.l; }
-
+    protected:
     //  -------------------------- HDF5  --------------------------
 
-    // OPFIXME : I would put them as METHOD of linear mesh since it is a implementation mesh.
-    // protected. pure impl. not seen by doc tools, etc...
-    // why have h5_write_impl overloaded with X classes ? error messages can be complex.
-
-    /// Write into HDF5
-    friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear const &m, const char *format) {
+    void h5_write_impl(h5::group fg, std::string const &subgroup_name, const char *format) const {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format_as_string(gr, format);
-
-      h5::write(gr, "min", m.xmin);
-      h5::write(gr, "max", m.xmax);
-      h5::write(gr, "size", m.size());
+      h5::write(gr, "min", this->xmin);
+      h5::write(gr, "max", this->xmax);
+      h5::write(gr, "size", this->size());
     }
 
     /// Read from HDF5
-    friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear &m, const char *format_expected) {
+    void h5_read_impl(h5::group fg, std::string const &subgroup_name, const char *format_expected) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format_as_string(gr, format_expected, true);
 
       auto a = h5::read<value_t>(gr, "min");
       auto b = h5::read<value_t>(gr, "max");
       auto L = h5::read<long>(gr, "size");
-      m      = linear(a, b, L);
+      *this  = linear(a, b, L);
     }
 
+    public:
+    // it is fine in public, it is equivalent to the function via UFCS
     // ------------------------- Evaluate -----------------------------
 
-    // OPFIXME : why decltype(auto) ??? -> auto ...
-    // OPFIXME : we can also make it a method, as linear is not user facing ...
-    // e.g. save some static_cast in derived classes
-    friend decltype(auto) evaluate(linear const &m, auto const &f, double x) {
-      EXPECTS(m.is_value_valid(x) and m.size() > 1);
-      x        = std::max(x, m.xmin);
-      double a = (x - m.xmin) * m.delta_inv();
-      long i   = std::min(static_cast<long>(a), m.size() - 2);
+    auto evaluate(auto const &f, double x) const {
+      EXPECTS(this->is_value_valid(x) and this->size() > 1);
+      x        = std::max(x, this->xmin);
+      double a = (x - this->xmin) * this->delta_inv();
+      long i   = std::min(static_cast<long>(a), this->size() - 2);
       double w = std::min(a - i, 1.0); //NOLINT
       return (1 - w) * f(i) + w * f(i + 1);
     }
   };
 
-} // namespace triqs::mesh
+} // namespace triqs::mesh::details

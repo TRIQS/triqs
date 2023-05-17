@@ -34,7 +34,7 @@ namespace triqs::mesh {
    *
    *  @figure ../../../triqs/mesh/matsubara_imtime.png: Pictorial representation of ``imtime{beta, Fermion/Boson, 4}``.
    */
-  struct imtime : public linear<imtime, double> {
+  struct imtime : public details::linear<imtime, double> {
 
     // -------------------- Data -------------------
 
@@ -106,8 +106,8 @@ namespace triqs::mesh {
     }
   };
 
-  // OPFIXME : why decltype(auto) ??
-  inline decltype(auto) evaluate(imtime const &m, auto const &f, double x) { return evaluate(static_cast<linear<imtime, double>>(m), f, x); }
+  ///
+  auto evaluate(imtime const &m, auto const &f, double x) { return m.evaluate(f, x); }
 
   // check concept
   static_assert(MeshWithValues<imtime>);

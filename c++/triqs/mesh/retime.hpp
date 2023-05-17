@@ -22,7 +22,7 @@
 
 namespace triqs::mesh {
 
-  struct retime : linear<retime, double> {
+  struct retime : details::linear<retime, double> {
 
     // -------------------- Constructors -------------------
 
@@ -55,10 +55,10 @@ namespace triqs::mesh {
     [[nodiscard]] static std::string hdf5_format() { return "MeshReTime"; }
 
     ///
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { m.h5_write_impl(fg, subgroup_name, "MeshReTime"); }
 
     ///
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { m.h5_read_impl(fg, subgroup_name, "MeshReTime"); }
 
     // -------------------- Print -------------------
 
@@ -68,8 +68,8 @@ namespace triqs::mesh {
     }
   };
 
-  // OPFIXME
-  inline decltype(auto) evaluate(retime const &m, auto const &f, double x) { return evaluate(static_cast<linear<retime, double>>(m), f, x); }
+  ///
+  auto evaluate(retime const &m, auto const &f, double x) { return m.evaluate(f, x); }
 
   static_assert(Mesh<retime>);
 
