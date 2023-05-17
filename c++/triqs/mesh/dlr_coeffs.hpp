@@ -21,13 +21,21 @@
 #pragma once
 #include "utils.hpp"
 #include "domains/matsubara.hpp"
+
 #include <cppdlr/cppdlr.hpp>
+
 #include <memory>
 
 namespace triqs::mesh {
 
   struct dlr_imtime;
   struct dlr_imfreq;
+
+  struct dlr_ops {
+    nda::vector<double> freq;
+    cppdlr::imtime_ops imt;
+    cppdlr::imfreq_ops imf;
+  };
 
   struct dlr_coeffs {
 
@@ -39,14 +47,12 @@ namespace triqs::mesh {
 
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    double lambda            = 1e+10;
+    double Lambda            = 1e+10;
     double eps               = 1e-10;
 
     private:
     uint64_t mesh_hash_ = 0;
-    std::shared_ptr<nda::vector<double> const> _dlr_freq{};
-    std::shared_ptr<cppdlr::imtime_ops const> _dlr_it{};
-    std::shared_ptr<cppdlr::imfreq_ops const> _dlr_if{};
+    std::shared_ptr<const dlr_ops> _dlr;
 
     // -------------------- Constructors -------------------
     public:
@@ -57,48 +63,41 @@ namespace triqs::mesh {
      *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
-     * @param lambda Lambda energy over beta parameter
+     * @param Lambda Lambda energy over beta parameter
      * @param eps Representation accuracy
      */
-    dlr_coeffs(double beta, statistic_enum statistic, double lambda, double eps)
-       : dlr_coeffs(beta, statistic, lambda, eps, cppdlr::build_dlr_rf(lambda, eps)) {}
+    dlr_coeffs(double beta, statistic_enum statistic, double Lambda, double eps)
+       : dlr_coeffs(beta, statistic, Lambda, eps, cppdlr::build_dlr_rf(Lambda, eps)) {}
 
     private:
-    dlr_coeffs(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> dlr_freq)
-       : dlr_coeffs(beta, statistic, lambda, eps, dlr_freq, cppdlr::imtime_ops(lambda, dlr_freq),
-                    cppdlr::imfreq_ops(lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic))) {}
+    dlr_coeffs(double beta, statistic_enum statistic, double Lambda, double eps, nda::vector<double> const &dlr_freq)
+       : dlr_coeffs(beta, statistic, Lambda, eps,
+                    dlr_ops{dlr_freq, {Lambda, dlr_freq}, {Lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
 
-    dlr_coeffs(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> dlr_freq, cppdlr::imtime_ops dlr_it,
-               cppdlr::imfreq_ops dlr_if)
+    dlr_coeffs(double beta, statistic_enum statistic, double Lambda, double eps, dlr_ops dlr)
        : beta(beta),
          statistic(statistic),
-         lambda(lambda),
+         Lambda(Lambda),
          eps(eps),
-         mesh_hash_(hash(beta, statistic, lambda, eps, sum(dlr_freq))),
-         _dlr_freq{std::make_shared<nda::vector<double> const>(std::move(dlr_freq))},
-         _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
-         _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
+         mesh_hash_(hash(beta, statistic, Lambda, eps, sum(dlr.freq))),
+         _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
     friend class dlr_imtime;
     friend class dlr_imfreq;
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    explicit dlr_coeffs(M const &m)
-       : beta(m.beta), statistic(m.statistic), lambda(m.lambda), eps(m.eps), _dlr_freq(m._dlr_freq), _dlr_it(m._dlr_it), _dlr_if(m._dlr_if) {
+    explicit dlr_coeffs(M const &m) : beta(m.beta), statistic(m.statistic), Lambda(m.Lambda), eps(m.eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_coeffs>)
         mesh_hash_ = m.mesh_hash_;
       else
-        mesh_hash_ = hash(beta, statistic, lambda, eps, sum(*_dlr_freq));
+        mesh_hash_ = hash(beta, statistic, Lambda, eps, sum(_dlr->freq));
     }
 
     // -------------------- Comparisons -------------------
 
-    // OPFIXME ?? compare the hash !!!
-    bool operator==(dlr_coeffs const &M) const {
-      return ((beta == M.beta) && (this->size() == M.size()) && (std::abs(lambda - M.lambda) < 1.e-15) && (std::abs(eps - M.eps) < 1.e-15));
-    }
-    bool operator!=(dlr_coeffs const &M) const { return !(operator==(M)); }
+    bool operator==(dlr_coeffs const &m) const { return mesh_hash_ == m.mesh_hash_; }
+    bool operator!=(dlr_coeffs const &m) const { return !(operator==(m)); }
 
     // -------------------- mesh_point -------------------
 
@@ -114,16 +113,16 @@ namespace triqs::mesh {
 
     // -------------------- Accessors -------------------
 
-    [[nodiscard]] auto const &dlr_freq() const { return *_dlr_freq; }
+    [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
 
-    [[nodiscard]] auto const &dlr_it() const { return *_dlr_it; }
+    [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
 
-    [[nodiscard]] auto const &dlr_if() const { return *_dlr_if; }
+    [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return _dlr_freq->size(); }
+    [[nodiscard]] long size() const noexcept { return _dlr->freq.size(); }
 
     // -------------------- idx checks and conversions -------------------
 
@@ -152,7 +151,7 @@ namespace triqs::mesh {
 
     [[nodiscard]] double to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
-      return (*_dlr_freq)[idx];
+      return (_dlr->freq)[idx];
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -172,8 +171,8 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_coeffs const &m) {
       auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, lambda = {}, eps = {}", m.beta, m.size(), stat_cstr,
-                                 m.lambda, m.eps);
+      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, Lambda = {}, eps = {}", m.beta, m.size(), stat_cstr,
+                                 m.Lambda, m.eps);
     }
 
     // -------------------- HDF5 -------------------
@@ -187,7 +186,7 @@ namespace triqs::mesh {
 
       h5::write(gr, "beta", m.beta);
       h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "lambda", m.lambda);
+      h5::write(gr, "Lambda", m.Lambda);
       h5::write(gr, "eps", m.eps);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
@@ -201,40 +200,28 @@ namespace triqs::mesh {
 
       auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto lambda    = h5::read<double>(gr, "lambda");
+      auto Lambda    = h5::read<double>(gr, "Lambda");
       auto eps       = h5::read<double>(gr, "eps");
       auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
       auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
       auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_coeffs(beta, statistic, lambda, eps, _dlr_freq, _dlr_it, _dlr_if);
+      m              = dlr_coeffs(beta, statistic, Lambda, eps, {_dlr_freq, _dlr_it, _dlr_if});
     }
   };
 
   // -------------------- evaluation -------------------
 
-  // OPFIXME : why decltype(auto) ??? --> auto
-  inline decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, double tau) {
+  auto evaluate(dlr_coeffs const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
-
-    // OPFIXME :
-    // What is k_it ????
-    // Ugly, it is a common pattern ....
-    // Why not a sum in itertools ?
-    // sum(range) --> which takes care of the regular ?
-    // sum(transform(range(m.size()), [](long i) { return .... }));
-    // the sum takes care of the make regular ?
     auto res = make_regular(f(0) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[0]));
     for (auto l : range(1, m.size())) res += f(l) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[l]);
-
     return res;
   }
 
-  decltype(auto) evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
+  auto evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
-
     auto res = make_regular(-f(0) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[0]) * m.beta);
     for (auto l : range(1, m.size())) { res += -f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta; }
-
     return res;
   }
 

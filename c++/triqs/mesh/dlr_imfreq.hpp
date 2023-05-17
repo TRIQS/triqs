@@ -20,11 +20,13 @@
  ******************************************************************************/
 #pragma once
 #include "utils.hpp"
+#include "dlr_coeffs.hpp"
 #include "domains/matsubara.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 
 #include <memory>
+
 
 namespace triqs::mesh {
 
@@ -41,75 +43,58 @@ namespace triqs::mesh {
 
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    double lambda            = 1e+10;
+    double Lambda            = 1e+10;
     double eps               = 1e-10;
 
     private:
     uint64_t mesh_hash_ = 0;
-    std::shared_ptr<nda::vector<double> const> _dlr_freq{};
-    std::shared_ptr<cppdlr::imtime_ops const> _dlr_it{};
-    std::shared_ptr<cppdlr::imfreq_ops const> _dlr_if{};
+    std::shared_ptr<const dlr_ops> _dlr;
 
     // -------------------- Constructors -------------------
     public:
     dlr_imfreq() = default;
 
     /**
-     * Construct a DLR Mesh in Matsubara frequencies
+     * Construct a DLR mesh in Matsubara frequencies
      *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
-     * @param lambda Lambda energy over beta parameter
+     * @param Lambda Lambda energy over beta parameter
      * @param eps Representation accuracy
      */
-    dlr_imfreq(double beta, statistic_enum statistic, double lambda, double eps)
-       : dlr_imfreq(beta, statistic, lambda, eps, cppdlr::build_dlr_rf(lambda, eps)) {}
+    dlr_imfreq(double beta, statistic_enum statistic, double Lambda, double eps)
+       : dlr_imfreq(beta, statistic, Lambda, eps, cppdlr::build_dlr_rf(Lambda, eps)) {}
 
     private:
-    dlr_imfreq(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> dlr_freq)
-       : dlr_imfreq(beta, statistic, lambda, eps, dlr_freq, cppdlr::imtime_ops(lambda, dlr_freq),
-                    cppdlr::imfreq_ops(lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic))) {}
+    dlr_imfreq(double beta, statistic_enum statistic, double Lambda, double eps, nda::vector<double> const &dlr_freq)
+       : dlr_imfreq(beta, statistic, Lambda, eps,
+                    dlr_ops{dlr_freq, {Lambda, dlr_freq}, {Lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
 
-    dlr_imfreq(double beta, statistic_enum statistic, double lambda, double eps, nda::vector<double> dlr_freq, cppdlr::imtime_ops dlr_it,
-               cppdlr::imfreq_ops dlr_if)
+    dlr_imfreq(double beta, statistic_enum statistic, double Lambda, double eps, dlr_ops dlr)
        : beta(beta),
          statistic(statistic),
-         lambda(lambda),
+         Lambda(Lambda),
          eps(eps),
-         mesh_hash_(hash(beta, statistic, lambda, eps, sum(dlr_if.get_ifnodes()))),
-         _dlr_freq{std::make_shared<nda::vector<double> const>(std::move(dlr_freq))},
-         _dlr_it{std::make_shared<cppdlr::imtime_ops const>(std::move(dlr_it))},
-         _dlr_if{std::make_shared<cppdlr::imfreq_ops const>(std::move(dlr_if))} {}
+         mesh_hash_(hash(beta, statistic, Lambda, eps, sum(dlr.imf.get_ifnodes()))),
+         _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
     friend class dlr_imtime;
     friend class dlr_coeffs;
 
     public:
-    /**
-     * Construct a DLR Mesh in imaginary times
-     *
-     * @param dom Matsubara time domain
-     * @param lambda Lambda energy over beta parameter
-     * @param eps Representation accuracy
-     */
-    [[deprecated("matsubara_freq_domain is deprecated")]] dlr_imfreq(matsubara_freq_domain d, double lambda, double eps)
-       : dlr_imfreq(d.beta, d.statistic, lambda, eps) {}
-
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
     explicit dlr_imfreq(M const &m)
-       : beta(m.beta), statistic(m.statistic), lambda(m.lambda), eps(m.eps), _dlr_freq(m._dlr_freq), _dlr_it(m._dlr_it), _dlr_if(m._dlr_if) {
+       : beta(m.beta), statistic(m.statistic), Lambda(m.Lambda), eps(m.eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imfreq>)
         mesh_hash_ = m.mesh_hash_;
       else
-        mesh_hash_ = hash(beta, statistic, lambda, eps, sum(_dlr_if->get_ifnodes()));
+        mesh_hash_ = hash(beta, statistic, Lambda, eps, sum(_dlr->imf.get_ifnodes()));
     }
 
     // -------------------- Comparisons -------------------
 
-    bool operator==(dlr_imfreq const &M) const {
-      return ((beta == M.beta) && (this->size() == M.size()) && (std::abs(lambda - M.lambda) < 1.e-15) && (std::abs(eps - M.eps) < 1.e-15));
-    }
-    bool operator!=(dlr_imfreq const &M) const { return !(operator==(M)); }
+    bool operator==(dlr_imfreq const &m) const { return mesh_hash_ == m.mesh_hash_; }
+    bool operator!=(dlr_imfreq const &m) const { return !(operator==(m)); }
 
     // -------------------- mesh_point -------------------
 
@@ -126,16 +111,16 @@ namespace triqs::mesh {
 
     // -------------------- Accessors -------------------
 
-    [[nodiscard]] auto const &dlr_freq() const { return *_dlr_freq; }
+    [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
 
-    [[nodiscard]] auto const &dlr_it() const { return *_dlr_it; }
+    [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
 
-    [[nodiscard]] auto const &dlr_if() const { return *_dlr_if; }
+    [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return _dlr_freq->size(); }
+    [[nodiscard]] long size() const noexcept { return _dlr->freq.size(); }
 
     // -------------------- idx checks and conversions -------------------
 
@@ -156,15 +141,15 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
-      auto datidx = to_datidx(idx);
-      return {beta, statistic, _dlr_if->get_ifnodes()[datidx], datidx, mesh_hash_};
+      EXPECTS(is_idx_valid(idx));
+      return {beta, statistic, _dlr->imf.get_ifnodes()[idx], idx, mesh_hash_};
     }
 
     // -------------------- to_value ------------------
 
     [[nodiscard]] matsubara_freq to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
-      return {_dlr_if->get_ifnodes()[idx], beta, statistic};
+      return {_dlr->imf.get_ifnodes()[idx], beta, statistic};
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -184,8 +169,8 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_imfreq const &m) {
       auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, lambda = {}, eps = {}", m.beta, m.size(), stat_cstr,
-                                 m.lambda, m.eps);
+      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, Lambda = {}, eps = {}", m.beta, m.size(), stat_cstr,
+                                 m.Lambda, m.eps);
     }
 
     // -------------------- HDF5 -------------------
@@ -199,7 +184,7 @@ namespace triqs::mesh {
 
       h5::write(gr, "beta", m.beta);
       h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "lambda", m.lambda);
+      h5::write(gr, "Lambda", m.Lambda);
       h5::write(gr, "eps", m.eps);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
@@ -213,17 +198,16 @@ namespace triqs::mesh {
 
       auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto lambda    = h5::read<double>(gr, "lambda");
+      auto Lambda    = h5::read<double>(gr, "Lambda");
       auto eps       = h5::read<double>(gr, "eps");
       auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
       auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
       auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_imfreq(beta, statistic, lambda, eps, _dlr_freq, _dlr_it, _dlr_if);
+      m              = dlr_imfreq(beta, statistic, Lambda, eps, {_dlr_freq, _dlr_it, _dlr_if});
     }
   };
 
-  // Trap error for better error messages (do not present a long list of options, if the first parameter is dlr_imtime)
-  double evaluate(dlr_imfreq const &m, ...) = delete; // No evaluation for dlr_imfreq. Use dlr_coeffs instead.
+  double evaluate(dlr_imfreq const &m, ...) = delete;
 
   // check concept
   static_assert(MeshWithValues<dlr_imfreq>);

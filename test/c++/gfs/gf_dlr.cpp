@@ -27,13 +27,13 @@ using triqs::mesh::dlr_imfreq;
 TEST(Gf, DLR_CrossConstruction) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
   triqs::clef::placeholder<0> iw_;
 
-  auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_iw[iw_] << 1. / (iw_ + omega);
 
   auto G_dlr = make_gf_dlr_coeffs(G_iw);
@@ -62,14 +62,14 @@ TEST(Gf, DLR_CrossConstruction) {
 TEST(Gf, DLR_imtime) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
-  auto mesh     = dlr_imtime{beta, Fermion, lambda, eps};
+  auto mesh     = dlr_imtime{beta, Fermion, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
 
-  EXPECT_EQ(mesh.lambda, lambda);
+  EXPECT_EQ(mesh.Lambda, Lambda);
   EXPECT_EQ(mesh.eps, eps);
 
   for (const auto &tau : mesh) {
@@ -82,14 +82,14 @@ TEST(Gf, DLR_imtime) {
 TEST(Gf, DLR_imfreq_fermi) {
 
   double beta   = 2.0;
-  double lambda = 1000.0;
+  double Lambda = 1000.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_imfreq>{beta, Fermion, lambda, eps};
+  auto mesh     = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
 
-  EXPECT_EQ(mesh.lambda, lambda);
+  EXPECT_EQ(mesh.Lambda, Lambda);
   EXPECT_EQ(mesh.eps, eps);
 
   for (const auto &iw : mesh) { std::cout << iw.datidx << ", " << iw << "\n"; }
@@ -98,14 +98,14 @@ TEST(Gf, DLR_imfreq_fermi) {
 TEST(Gf, DLR_imfreq_bose) {
 
   double beta   = 2.0;
-  double lambda = 1000.0;
+  double Lambda = 1000.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_imfreq>{beta, Boson, lambda, eps};
+  auto mesh     = gf_mesh<dlr_imfreq>{beta, Boson, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
 
-  EXPECT_EQ(mesh.lambda, lambda);
+  EXPECT_EQ(mesh.Lambda, Lambda);
   EXPECT_EQ(mesh.eps, eps);
 
   for (const auto &iw : mesh) { std::cout << iw.datidx << ", " << iw << "\n"; }
@@ -116,14 +116,14 @@ TEST(Gf, DLR_coeffs) {
   // dlr_coeffs -> dlr_refreq
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_coeffs>{beta, Fermion, lambda, eps};
+  auto mesh     = gf_mesh<dlr_coeffs>{beta, Fermion, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
 
-  EXPECT_CLOSE(mesh.lambda, lambda);
+  EXPECT_CLOSE(mesh.Lambda, Lambda);
   EXPECT_CLOSE(mesh.eps, eps);
 
   //for (const auto &dlr_rf : mesh ) {
@@ -134,12 +134,12 @@ TEST(Gf, DLR_coeffs) {
 TEST(Gf, DLR_coeffs_imtime) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
 
-  auto cmesh = gf_mesh<dlr_coeffs>{beta, Fermion, lambda, eps};
-  auto tmesh = gf_mesh<dlr_imtime>{beta, Fermion, lambda, eps};
-  auto wmesh = gf_mesh<dlr_imfreq>{beta, Fermion, lambda, eps};
+  auto cmesh = gf_mesh<dlr_coeffs>{beta, Fermion, Lambda, eps};
+  auto tmesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
+  auto wmesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
 
   std::cout << cmesh << "\n";
   std::cout << tmesh << "\n";
@@ -157,11 +157,11 @@ TEST(Gf, DLR_coeffs_imtime) {
 TEST(Gf, DLR_imtime_grid) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, lambda, eps};
+  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
 
   for (const auto &tau : mesh) { G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
@@ -204,11 +204,11 @@ TEST(Gf, DLR_imtime_grid) {
 TEST(Gf, DLR_imfreq_grid) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, lambda, eps};
+  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imfreq, scalar_valued>{mesh};
 
   for (const auto &iw : mesh) { G1[iw] = 1. / (iw - omega); }
@@ -246,15 +246,15 @@ TEST(Gf, DLR_imfreq_grid) {
 
 TEST(Gf, DLR_imtime_grid_clef) {
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto G = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
   triqs::clef::placeholder<0> tau_;
   G[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
-  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, lambda, eps};
+  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
 
   for (const auto &tau : mesh) { G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
@@ -264,15 +264,15 @@ TEST(Gf, DLR_imtime_grid_clef) {
 
 TEST(Gf, DLR_imfreq_grid_clef) {
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto G = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, Lambda, eps}};
   triqs::clef::placeholder<0> iw_;
   G[iw_] << 1. / (iw_ - omega);
 
-  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, lambda, eps};
+  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imfreq, scalar_valued>{mesh};
 
   for (const auto &iw : mesh) { G1[iw] = 1. / (iw - omega); }
@@ -283,12 +283,12 @@ TEST(Gf, DLR_imfreq_grid_clef) {
 TEST(Gf, DLR_imtime_interpolation) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
 
   long dlr_idx = 6; // Pick one DLR frequency
 
-  auto G_dlr            = gf<dlr_coeffs, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_dlr            = gf<dlr_coeffs, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_dlr()               = 0.0;
   G_dlr.data()[dlr_idx] = 1.0;
 
@@ -309,13 +309,13 @@ TEST(Gf, DLR_imtime_interpolation) {
 TEST(Gf, DLR_imfreq_interpolation) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
   triqs::clef::placeholder<0> iw_;
 
-  auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_iw[iw_] << 1. / (iw_ + omega);
 
   auto G_dlr = make_gf_dlr_coeffs(G_iw);
@@ -334,13 +334,13 @@ TEST(Gf, DLR_imfreq_interpolation) {
 TEST(Gf, DLR_coeffs_conversion) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
   triqs::clef::placeholder<0> tau_;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_tau[tau_] << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
   // Transform from dlr_imtime to dlr_coeffs
@@ -368,10 +368,10 @@ TEST(Gf, DLR_coeffs_conversion) {
 TEST(Gf, DLR_density) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
 
   double omega = 1.337;
   triqs::clef::placeholder<0> tau_;
@@ -390,10 +390,10 @@ TEST(Gf, DLR_density) {
 TEST(Gf, DLR_tau_rev) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
 
   double omega = 1.337;
   triqs::clef::placeholder<0> tau_;
@@ -415,13 +415,13 @@ TEST(Gf, DLR_tau_rev) {
 TEST(Gf, DLR_h5) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
   triqs::clef::placeholder<0> tau_;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_tau[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
   auto G_dlr = make_gf_dlr_coeffs(G_tau);
   auto G_iw  = make_gf_dlr_imtime(G_dlr);
@@ -434,7 +434,7 @@ TEST(Gf, DLR_h5) {
 TEST(Gf, DLR_dyson) {
 
   double beta   = 2.0;
-  double lambda = 10.0;
+  double Lambda = 10.0;
   double eps    = 1e-10;
 
   double e1 = 0.0;
@@ -443,7 +443,7 @@ TEST(Gf, DLR_dyson) {
   triqs::clef::placeholder<0> tau_;
   triqs::clef::placeholder<1> iw_;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, lambda, eps}};
+  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, Lambda, eps}};
   G_tau[tau_] <<                                                          //
      -0.5 * nda::clef::exp(-e1 * tau_) / (1 + nda::clef::exp(-beta * e1)) //
         - 0.5 * nda::clef::exp(-e2 * tau_) / (1 + nda::clef::exp(-beta * e2));

@@ -32,18 +32,18 @@ class test_dlr_mesh(unittest.TestCase):
         
     def test_dlr_meshes(self):
 
-        beta, eps, lamb = 1.337, 1e-9, 100.
+        beta, eps, Lambda = 1.337, 1e-9, 100.
 
         MeshTypes = [MeshDLRImTime, MeshDLRImFreq, MeshDLRCoeffs]
         
         for MeshType in MeshTypes:
             
-            m = MeshType(beta, 'Fermion', lamb, eps)
+            m = MeshType(beta, 'Fermion', Lambda, eps)
 
             assert( m.beta == beta )
             assert( m.statistic == 'Fermion' )
             assert( m.eps == eps )
-            assert( m.lamb == lamb )
+            assert( m.Lambda == Lambda )
 
             mps = np.array([ p.value for p in m ])
         
@@ -53,9 +53,9 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_conversion(self):
 
         e = 1.42
-        beta, eps, lamb = 1.337, 1e-9, 100.
+        beta, eps, Lambda = 1.337, 1e-9, 100.
 
-        wmesh = MeshDLRImFreq(beta, 'Fermion', lamb , eps)
+        wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda , eps)
 
         g_w = Gf(mesh=wmesh, target_shape=[])
         g_w << inverse(iOmega_n + e)
@@ -84,9 +84,9 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_density(self):
 
         e = 1.42
-        beta, eps, lamb = 1.337, 1e-9, 100.
+        beta, eps, Lambda = 1.337, 1e-9, 100.
 
-        wmesh = MeshDLRImFreq(beta, 'Fermion', lamb, eps)
+        wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda, eps)
         g_w = Gf(mesh=wmesh, target_shape=[])
 
         for w in wmesh: g_w[w] = 1/(w + e)
@@ -99,8 +99,8 @@ class test_dlr_mesh(unittest.TestCase):
 
     def test_dlr_gfs_imfreq_interp(self):
 
-        beta, eps, lamb = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', lamb, eps)
+        beta, eps, Lambda = 1.337, 1e-12, 10.
+        m = MeshDLRCoeffs(beta, 'Fermion', Lambda, eps)
 
         rf = np.array([ p.value for p in m ])
         
@@ -117,8 +117,8 @@ class test_dlr_mesh(unittest.TestCase):
     
     def test_dlr_gfs_imtime_interp(self):
 
-        beta, eps, lamb = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', lamb, eps)
+        beta, eps, Lambda = 1.337, 1e-12, 10.
+        m = MeshDLRCoeffs(beta, 'Fermion', Lambda, eps)
 
         rf = np.array([ p.value for p in m ])
         

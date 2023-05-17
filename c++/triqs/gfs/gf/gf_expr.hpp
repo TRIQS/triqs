@@ -65,7 +65,7 @@ namespace triqs {
           if constexpr (std::is_same_v<M, mesh::imtime>)
             return M{l.beta, stat, l.size()};
           else // dlr_imtime
-            return M{l.beta, stat, l.lambda, l.eps};
+            return M{l.beta, stat, l.Lambda, l.eps};
         } else {
           if (!(l == r))
             TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the mesh of the 2 operands should be equal" << l << " vs " << r;

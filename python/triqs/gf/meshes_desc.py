@@ -122,7 +122,7 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
         n_iw : int [default=1025]
             Number of positive Matsubara frequencies
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta",
                signature = "double()",
@@ -131,10 +131,10 @@ m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
                signature = "statistic_enum()"),
                doc = "Statistic")
-m.add_property(name = "lamb",
-               getter = cfunction(calling_pattern="double result = self_c.lambda",
+m.add_property(name = "Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda",
                signature = "double()",
-               doc = "DLR lambda parameter"))
+               doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps",
                signature = "double()",
@@ -193,7 +193,7 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
         n_tau : int
             Number of mesh-points
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta",
                signature = "double()",
@@ -202,10 +202,10 @@ m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
                signature = "statistic_enum()"),
                doc = "Statistic")
-m.add_property(name = "lamb",
-               getter = cfunction(calling_pattern="double result = self_c.lambda",
+m.add_property(name = "Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda",
                signature = "double()",
-               doc = "DLR lambda parameter"))
+               doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps",
                signature = "double()",
@@ -232,7 +232,7 @@ m = make_mesh(py_type = "MeshDLRCoeffs", c_tag = "dlr_coeffs",
         n_tau : int
             Number of mesh-points
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double lambda, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta",
                signature = "double()",
@@ -241,10 +241,10 @@ m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
                signature = "statistic_enum()"),
                doc = "Statistic")
-m.add_property(name = "lamb",
-               getter = cfunction(calling_pattern="double result = self_c.lambda",
+m.add_property(name = "Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda",
                signature = "double()",
-               doc = "DLR lambda parameter"))
+               doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps",
                signature = "double()",
