@@ -27,7 +27,6 @@
 
 #include <memory>
 
-
 namespace triqs::mesh {
 
   struct dlr_imtime;
@@ -83,8 +82,7 @@ namespace triqs::mesh {
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    explicit dlr_imfreq(M const &m)
-       : beta(m.beta), statistic(m.statistic), Lambda(m.Lambda), eps(m.eps), _dlr(m._dlr) {
+    explicit dlr_imfreq(M const &m) : beta(m.beta), statistic(m.statistic), Lambda(m.Lambda), eps(m.eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imfreq>)
         mesh_hash_ = m.mesh_hash_;
       else
@@ -118,6 +116,10 @@ namespace triqs::mesh {
     [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+
+    [[nodiscard]] std::pair<matsubara_freq, matsubara_freq> min_max_frequencies() const noexcept {
+      return {(*this)(0).value(), (*this)(size() - 1).value()};
+    }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _dlr->freq.size(); }

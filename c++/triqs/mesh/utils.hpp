@@ -83,4 +83,19 @@ namespace triqs::mesh {
       return std::tuple{closest_mesh_point_t<std::decay_t<T>>{std::forward<T>(x)}...};
   }
 
+  namespace details {
+
+    // FIXME use ranges::views, but clang > 15 only
+    auto sum_to_regular(auto const &R, auto f) {
+      using std::begin;
+      using std::end;
+      auto it  = begin(R);
+      auto e   = end(R);
+      auto res = make_regular(f(*it));
+      for (++it; it != e; ++it) res += f(*it);
+      return res;
+    }
+
+  } // namespace details
+
 } // namespace triqs::mesh

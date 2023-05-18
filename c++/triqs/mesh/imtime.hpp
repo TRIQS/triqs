@@ -77,7 +77,7 @@ namespace triqs::mesh {
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, imtime const &m) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m);
+      write_hdf5_format(gr, m); //NOLINT
 
       h5::write(gr, "beta", m.beta);
       h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
@@ -88,7 +88,7 @@ namespace triqs::mesh {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
 
-      long n_tau;
+      long n_tau;                                                            // NOLINT
       if (not h5::try_read(gr, "n_tau", n_tau)) h5::read(gr, "size", n_tau); // Backward Compat
 
       if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat

@@ -21,7 +21,7 @@
 #pragma once
 #include "utils.hpp"
 #include "dlr_coeffs.hpp"
-#include "domains/matsubara.hpp"
+//#include "domains/matsubara.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 
@@ -193,7 +193,7 @@ namespace triqs::mesh {
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr_imtime const &m) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m);
+      write_hdf5_format(gr, m); //NOLINT
 
       h5::write(gr, "beta", m.beta);
       h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));

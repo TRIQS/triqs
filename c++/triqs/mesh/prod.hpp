@@ -21,6 +21,10 @@
 #pragma once
 #include "utils.hpp"
 
+namespace triqs::lattice { // to silence some warning of clangd and make gf independent of lattice. cf l 64. backward compat check.
+  struct brillouin_zone;
+}
+
 namespace triqs::mesh {
 
   template <Mesh... Ms>

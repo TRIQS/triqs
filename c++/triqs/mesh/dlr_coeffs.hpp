@@ -213,16 +213,19 @@ namespace triqs::mesh {
 
   auto evaluate(dlr_coeffs const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
-    auto res = make_regular(f(0) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[0]));
-    for (auto l : range(1, m.size())) res += f(l) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[l]);
-    return res;
+    return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[l]); });
+    //  auto res = make_regular(f(0) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[0]));
+    //for (auto l : range(1, m.size())) res += f(l) * cppdlr::k_it(tau / m.beta, m.dlr_freq()[l]);
+    //    return res;
   }
 
   auto evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
-    auto res = make_regular(-f(0) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[0]) * m.beta);
-    for (auto l : range(1, m.size())) { res += -f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta; }
-    return res;
+    return details::sum_to_regular(range(m.size()),
+                                   [&](auto &&l) { return -f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta; });
+    //auto res = make_regular(-f(0) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[0]) * m.beta);
+    //for (auto l : range(1, m.size())) { res += -f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta; }
+    //return res;
   }
 
   // check concept
