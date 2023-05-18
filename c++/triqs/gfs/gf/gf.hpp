@@ -198,7 +198,7 @@ namespace triqs::gfs {
 
     public:
     /// Empty Green function (with empty array).
-    gf() {}
+    gf() = default; // {}
 
     ///
     gf(gf const &x) = default;
@@ -270,7 +270,7 @@ namespace triqs::gfs {
     /// ---------------  Operator = --------------------
 
     ///
-    gf &operator=(gf &rhs) = default;
+    // gf &operator=(gf &rhs) = default; // Due to the operator == RHS, need to explicitly do the & case ... FIXME
 
     ///
     gf &operator=(gf const &rhs) = default;
@@ -292,7 +292,10 @@ namespace triqs::gfs {
      * @param rhs
      * @example    triqs/gfs/gf_assign_0.cpp
      */
-    template <typename RHS> gf &operator=(RHS &&rhs) requires(GreenFunction<RHS>::value) {
+    template <typename RHS>
+    gf &operator=(RHS &&rhs)
+      requires(GreenFunction<RHS>::value and not std::is_same_v<std::decay_t<RHS>, gf>) // OPFIXME : use a concept but exclude
+    {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
       for (auto const &w : _mesh) (*this)[w] = rhs[w];
