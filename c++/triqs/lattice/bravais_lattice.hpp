@@ -76,6 +76,7 @@ namespace triqs::lattice {
           return bl_ptr->lattice_to_real_coordinates(idx);
       }
 
+      // Do we need the () ? deprecated ?
       double operator()(int d) const { return r_t(*this)[d]; }
       double operator[](int d) const { return r_t(*this)[d]; }
 
