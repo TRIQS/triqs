@@ -20,11 +20,9 @@
  ******************************************************************************/
 #pragma once
 #include "utils.hpp"
+#include <cppdlr/cppdlr.hpp>
 #include "dlr_coeffs.hpp"
 #include "domains/matsubara.hpp"
-
-#include <cppdlr/cppdlr.hpp>
-
 #include <memory>
 
 namespace triqs::mesh {

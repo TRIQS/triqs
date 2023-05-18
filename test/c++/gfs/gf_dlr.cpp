@@ -81,7 +81,7 @@ TEST(Gf, DLR_imfreq_fermi) {
   double beta   = 2.0;
   double Lambda = 1000.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
+  auto mesh     = dlr_imfreq{beta, Fermion, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
@@ -97,7 +97,7 @@ TEST(Gf, DLR_imfreq_bose) {
   double beta   = 2.0;
   double Lambda = 1000.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_imfreq>{beta, Boson, Lambda, eps};
+  auto mesh     = dlr_imfreq{beta, Boson, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
@@ -115,7 +115,7 @@ TEST(Gf, DLR_coeffs) {
   double beta   = 2.0;
   double Lambda = 10.0;
   double eps    = 1e-10;
-  auto mesh     = gf_mesh<dlr_coeffs>{beta, Fermion, Lambda, eps};
+  auto mesh     = dlr_coeffs{beta, Fermion, Lambda, eps};
 
   std::cout << mesh << "\n";
   std::cout << "Rank " << mesh.size() << "\n";
@@ -134,9 +134,9 @@ TEST(Gf, DLR_coeffs_imtime) {
   double Lambda = 10.0;
   double eps    = 1e-10;
 
-  auto cmesh = gf_mesh<dlr_coeffs>{beta, Fermion, Lambda, eps};
-  auto tmesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
-  auto wmesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
+  auto cmesh = dlr_coeffs{beta, Fermion, Lambda, eps};
+  auto tmesh = dlr_imtime{beta, Fermion, Lambda, eps};
+  auto wmesh = dlr_imfreq{beta, Fermion, Lambda, eps};
 
   std::cout << cmesh << "\n";
   std::cout << tmesh << "\n";
@@ -158,7 +158,7 @@ TEST(Gf, DLR_imtime_grid) {
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
+  auto mesh = dlr_imtime{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
 
   for (const auto &tau : mesh) { G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
@@ -205,7 +205,7 @@ TEST(Gf, DLR_imfreq_grid) {
   double eps    = 1e-10;
   double omega  = 1.337;
 
-  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
+  auto mesh = dlr_imfreq{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imfreq, scalar_valued>{mesh};
 
   for (const auto &iw : mesh) { G1[iw] = 1. / (iw - omega); }
@@ -251,7 +251,7 @@ TEST(Gf, DLR_imtime_grid_clef) {
   triqs::clef::placeholder<0> tau_;
   G[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
-  auto mesh = gf_mesh<dlr_imtime>{beta, Fermion, Lambda, eps};
+  auto mesh = dlr_imtime{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
 
   for (const auto &tau : mesh) { G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
@@ -269,7 +269,7 @@ TEST(Gf, DLR_imfreq_grid_clef) {
   triqs::clef::placeholder<0> iw_;
   G[iw_] << 1. / (iw_ - omega);
 
-  auto mesh = gf_mesh<dlr_imfreq>{beta, Fermion, Lambda, eps};
+  auto mesh = dlr_imfreq{beta, Fermion, Lambda, eps};
   auto G1   = gf<dlr_imfreq, scalar_valued>{mesh};
 
   for (const auto &iw : mesh) { G1[iw] = 1. / (iw - omega); }
@@ -313,19 +313,21 @@ TEST(Gf, DLR_imfreq_interpolation) {
   triqs::clef::placeholder<0> iw_;
 
   auto G_iw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, Lambda, eps}};
-  G_iw[iw_] << 1. / (iw_ + omega);
+  G_iw[iw_] << 1. / (iw_ - omega);
 
   auto G_dlr = make_gf_dlr_coeffs(G_iw);
 
   auto G_iw_ref = G_iw;
-  for (auto iw : G_iw.mesh()) PRINT(iw);
-  PRINT("");
-  for (auto iw : G_iw.mesh()) PRINT(G_iw[iw]);
-  PRINT("");
-  for (auto iw : G_iw.mesh()) PRINT(G_dlr(iw));
+  //for (auto iw : G_iw.mesh()) PRINT(iw);
+  //PRINT("");
+  //for (auto iw : G_iw.mesh()) PRINT(G_iw[iw]);
+  //PRINT("");
+  //for (auto iw : G_iw.mesh()) PRINT(G_dlr(iw));
   G_iw_ref[iw_] << G_dlr(iw_); // Interpolate DLR in imaginary frequency
 
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
+
+  for (auto const &iw : G_iw.mesh()) { EXPECT_CLOSE(G_iw[iw], G_iw_ref[iw]); }
 }
 
 TEST(Gf, DLR_coeffs_conversion) {
@@ -358,7 +360,7 @@ TEST(Gf, DLR_coeffs_conversion) {
 
   auto G_iw_ref = G_iw;
   triqs::clef::placeholder<0> iw_;
-  G_iw_ref[iw_] << 1. / (iw_ + omega); // OPFIXME CONVENTION IS INCORRECT....
+  G_iw_ref[iw_] << 1. / (iw_ - omega); // OPFIXME CONVENTION IS INCORRECT....
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 }
 
@@ -450,7 +452,9 @@ TEST(Gf, DLR_dyson) {
   auto G_iw = make_gf_dlr_imfreq(G_dlr);
 
   auto G_iw_ref = G_iw;
-  G_iw_ref[iw_] << 1. / (iw_ + 1 - 1 / (iw_ + 1));
+  //G_iw_ref[iw_] << 1. / (iw_ + 1 - 1 / (iw_ + 1));
+  G_iw_ref(iw_) << 0.5 / (iw_ - e1) + 0.5 / (iw_ - e2);
+
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 }
 

@@ -32,10 +32,10 @@ TEST(Gf, G_dlr_mat) {
 
   auto g3_check = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, Lambda, eps}, {1, 1}};
 
-  for (auto const &w : g3_check.mesh()) g3_check[w] = 1 / (w + e0); // FIXME should be w - e0
+  for (auto const &w : g3_check.mesh()) g3_check[w] = 1 / (w - e0); // FIXME should be w - e0
 
-  //PRINT(g3.data());
-  //PRINT(g3_check.data());
+  PRINT(g3.data());
+  PRINT(g3_check.data());
 
   EXPECT_GF_NEAR(g3, g3_check);
 }
@@ -64,7 +64,7 @@ TEST(Gf, Gk_dlr_mat) {
 
   auto g3_check = gf<prod<brzone, dlr_imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, Lambda, eps}}, {1, 1}};
 
-  for (auto const &[k, w] : g3_check.mesh()) g3_check[k, w] = 1 / (w + eps_k(k));
+  for (auto const &[k, w] : g3_check.mesh()) g3_check[k, w] = 1 / (w - eps_k(k));
 
   EXPECT_GF_NEAR(g3, g3_check);
 }
@@ -94,7 +94,7 @@ TEST(Gf, G_dlr_k_mat) {
 
   auto g3_check = gf<prod<dlr_imfreq, brzone>, matrix_valued>{{{beta, Fermion, Lambda, eps}, {bz, n_bz}}, {1, 1}};
 
-  for (auto const &[w, k] : g3_check.mesh()) g3_check[w, k] = 1 / (w + eps_k(k));
+  for (auto const &[w, k] : g3_check.mesh()) g3_check[w, k] = 1 / (w - eps_k(k));
 
   EXPECT_GF_NEAR(g3, g3_check);
 }

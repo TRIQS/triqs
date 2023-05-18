@@ -58,11 +58,11 @@ class test_dlr_mesh(unittest.TestCase):
         wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda , eps)
 
         g_w = Gf(mesh=wmesh, target_shape=[])
-        g_w << inverse(iOmega_n + e)
+        g_w << inverse(iOmega_n - e)
         
         g_w_2 = Gf(mesh=wmesh, target_shape=[])
         for w in wmesh:
-            g_w_2[w] = 1/(w + e)
+            g_w_2[w] = 1/(w - e)
 
         np.testing.assert_array_almost_equal(g_w.data, g_w_2.data)
 
@@ -89,11 +89,11 @@ class test_dlr_mesh(unittest.TestCase):
         wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda, eps)
         g_w = Gf(mesh=wmesh, target_shape=[])
 
-        for w in wmesh: g_w[w] = 1/(w + e)
+        for w in wmesh: g_w[w] = 1/(w - e)
 
         g_c = make_gf_dlr_coeffs(g_w)
 
-        ref = np.exp(-e * beta) / (1 + np.exp(-e * beta))
+        ref = -np.exp(-e * beta) / (1 + np.exp(-e * beta))
         np.testing.assert_almost_equal(density(g_c), ref)
 
 
@@ -110,7 +110,7 @@ class test_dlr_mesh(unittest.TestCase):
         n_iw = 10
         iw_mesh = MeshImFreq(beta, 'Fermion', n_iw)
         for iw in iw_mesh:
-            ref = - np.sum(g.data / ( complex(iw) + rf/beta ) )
+            ref =  np.sum(g.data / ( complex(iw) - rf/beta ) )
             print(g(iw), ref)
             np.testing.assert_almost_equal(g(iw), ref)
 

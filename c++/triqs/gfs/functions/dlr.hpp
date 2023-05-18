@@ -41,7 +41,7 @@ namespace triqs::gfs {
   auto make_gf_dlr_coeffs(MemoryGf<dlr_imfreq> auto const &g) {
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     auto beta_inv = 1. / result.mesh().beta;
-    result.data() = -beta_inv * result.mesh().dlr_if().vals2coefs(g.data());
+    result.data() = beta_inv * result.mesh().dlr_if().vals2coefs(g.data());
     return result;
   }
 
@@ -54,7 +54,7 @@ namespace triqs::gfs {
   auto make_gf_dlr_imfreq(MemoryGf<dlr_coeffs> auto const &g) {
     auto result   = gf{dlr_imfreq{g.mesh()}, g.target_shape()};
     auto beta     = result.mesh().beta;
-    result.data() = -beta * g.mesh().dlr_if().coefs2vals(g.data());
+    result.data() = beta * g.mesh().dlr_if().coefs2vals(g.data());
     return result;
   }
 
