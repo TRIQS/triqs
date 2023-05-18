@@ -175,8 +175,8 @@ namespace triqs {
 // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2)                                                                                                     \
   template <typename A1, typename A2>                                                                                                                \
-  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value, gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>>>      \
-  operator OP(A1 &&a1, A2 &&a2) {                                                                                                                    \
+    requires(TRAIT1<A1>::value and TRAIT2<A2>::value)                                                                                                \
+  gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>> operator OP(A1 &&a1, A2 &&a2) {                                \
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
   }
 
@@ -191,7 +191,9 @@ namespace triqs {
 #undef DEFINE_OPERATOR
 
     // the unary is special
-    template <typename A1> std::enable_if_t<GreenFunction<A1>::value, gf_unary_m_expr<gfs_expr_tools::node_t<A1>>> operator-(A1 &&a1) {
+    template <typename A1>
+      requires(GreenFunction<A1>::value)
+    gf_unary_m_expr<gfs_expr_tools::node_t<A1>> operator-(A1 &&a1) {
       return {std::forward<A1>(a1)};
     }
 

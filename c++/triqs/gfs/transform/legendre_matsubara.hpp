@@ -33,7 +33,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G1, imfreq>> legendre_matsubara_direct(G1 &&gw, G2 const &gl) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G1, imfreq>)
+  void legendre_matsubara_direct(G1 &&gw, G2 const &gl) {
 
     static_assert(is_gf_v<G2, legendre>, "Second argument to legendre_matsubara_direct needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -49,7 +51,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G1, imtime>> legendre_matsubara_direct(G1 &&gt, G2 const &gl) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G1, imtime>)
+  void legendre_matsubara_direct(G1 &&gt, G2 const &gl) {
 
     static_assert(is_gf_v<G2, legendre>, "Second argument to legendre_matsubara_direct needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -66,7 +70,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G2, imfreq>> legendre_matsubara_inverse(G1 &&gl, G2 const &gw) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G2, imfreq>)
+  void legendre_matsubara_inverse(G1 &&gl, G2 const &gw) {
 
     static_assert(is_gf_v<G1, legendre>, "First argument to legendre_matsubara_inverse needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -87,7 +93,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G2, imtime>> legendre_matsubara_inverse(G1 &&gl, G2 const &gt) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G2, imtime>)
+  void legendre_matsubara_inverse(G1 &&gl, G2 const &gt) {
 
     static_assert(is_gf_v<G1, legendre>, "First argument to legendre_matsubara_inverse needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
