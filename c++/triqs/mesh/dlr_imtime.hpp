@@ -32,15 +32,7 @@ namespace triqs::mesh {
   struct dlr_imfreq;
   struct dlr_coeffs;
 
-  // OPFIXME : the default constructed is not usable e.g. size() crashes ....
-  // in particular one can not iterate ...
-
-  // Why 3 classes? Why not dlr<Time | Coeffs| Freq> template on an enum ?
-  // with user aliases dlr_imtime = dlr<Time> ...
-
-  // OPFIXME public field : Invariant Violation possible.
-  // Change beta, the _dlr not change, ....
-  // Make private, and get_beta(), get_Lambda(), get_stat(), get_eps()
+  // FIXME Pull out hdf5?
 
   struct dlr_imtime {
 
@@ -161,7 +153,7 @@ namespace triqs::mesh {
     [[nodiscard]] double to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       auto res = _dlr->imt.get_itnodes()[idx] * beta;
-      if (res < 0) res = beta + res; // OPFIXME how can it become <0 ??
+      if (res < 0) res = beta + res;
       return res;
     }
 

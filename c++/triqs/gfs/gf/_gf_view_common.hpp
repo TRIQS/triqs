@@ -69,12 +69,12 @@ decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck
 }
 
 private:
-// two local helper functions for the _subscript_impl below
-static all_t call_to_datidx(auto const &m, all_t const &x) { return {}; }
-
-template <typename M, typename X> static auto call_to_datidx(M const &m, X const &x) {
-  if constexpr (mesh::MeshPoint<X>) {
-    static_assert(std::is_same_v<X, typename M::mesh_point_t>, "Incompatible mesh_point type passed to a gf via [] operator.");
+// local helper functions for the _subscript_impl below
+template <Mesh MT, typename X> static auto call_to_datidx(MT const &m, X const &x) {
+  if constexpr (std::is_same_v<X, all_t>)
+    return all_t{};
+  else if constexpr (std::is_same_v<X, typename MT::mesh_point_t>) {
+    static_assert(std::is_same_v<X, typename MT::mesh_point_t>, "Incompatible mesh_point type passed to a gf via [] operator.");
     EXPECTS_WITH_MESSAGE(m.mesh_hash() == x.mesh_hash,
                          "Passing to a gf a mesh point of incompatible mesh (but correct type), e.g. different beta, or other parameter.");
     return x.datidx;
@@ -147,13 +147,13 @@ decltype(auto) operator[](Arg &&...arg) && noexcept(has_no_boundcheck)
 /// HDF5 name
 [[nodiscard]] static std::string hdf5_format() { return "Gf"; }
 
-friend struct gf_h5_rw<Mesh, Target>;
+friend struct gf_h5_rw<M, Target>;
 
 /// Write into HDF5
 friend void h5_write(h5::group fg, std::string const &subgroup_name, this_t const &g) {
   auto gr = fg.create_group(subgroup_name);
   write_hdf5_format(gr, g);
-  gf_h5_rw<Mesh, Target>::write(gr, g);
+  gf_h5_rw<M, Target>::write(gr, g);
 }
 
 /// Read from HDF5
@@ -163,18 +163,7 @@ friend void h5_read(h5::group fg, std::string const &subgroup_name, this_t &g) {
   if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                         << " while I found " << tag_file;
-  gf_h5_rw<Mesh, Target>::read(gr, g);
-}
-
-//-----------------------------  BOOST Serialization -----------------------------
-private:
-friend class boost::serialization::access;
-
-public:
-/// The serialization as required by Boost
-template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-  ar &_data;
-  ar &_mesh;
+  gf_h5_rw<M, Target>::read(gr, g);
 }
 
 //----------------------------- print  -----------------------------

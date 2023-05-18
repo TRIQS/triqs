@@ -149,13 +149,14 @@ namespace triqs::mesh {
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
     };
 
-    // -------------------- index checks and conversions -------------------
+    // -------------------- checks -------------------
 
     [[nodiscard]] bool is_idx_valid(idx_t const &idx) const noexcept {
       for (auto i : range(3))
         if (idx[i] < 0 or idx[i] >= dims_[i]) return false;
       return true;
     }
+
     // -------------------- to_datidx -------------------
 
     [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
@@ -174,6 +175,7 @@ namespace triqs::mesh {
       EXPECTS(mesh_hash_ == ex.mesh_hash);
       return this->to_datidx(this->idx_modulo(ex.index()));
     }
+
     // -------------------- to_idx -------------------
 
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
@@ -188,54 +190,42 @@ namespace triqs::mesh {
     //-------------
 
     template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
+      requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
     [[nodiscard]] idx_t closest_idx(V const &k) const {
 
-      // calculate k in the brzone basis
-      auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
-      auto k_units = transpose(units_inv_) * ks;
-      auto n       = nda::floor(k_units);
-
-      // calculate position relative to neighbors in mesh
-      auto w = k_units - n;
-
-      // prepare result container and distance measure
-      auto dst = std::numeric_limits<double>::infinity();
-
-      // check flatness along mesh dimensions
-      long r1 = std::min(dims()[0], 2l);
-      long r2 = std::min(dims()[1], 2l);
-      long r3 = std::min(dims()[2], 2l);
-
-      // find nearest neighbor by comparing distances
-      nda::stack_vector<long, 3> res;
-      for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
-        auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
-        auto dstp = nda::norm(transpose(units()) * (w - iv));
-
-        // update result when distance is smaller than current
-        if (dstp < dst) {
-          dst = dstp;
-          res = n + iv;
-        }
-      }
-
-      // fold back to brzone mesh (nearest neighbor could be out of bounds)
-      return idx_modulo({res[0], res[1], res[2]});
-    }
-
-    //-------------
-
-    // OPFIXME ??? requires is not orthogonal to previous one ??
-
-    template <typename V>
-      requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t closest_idx(V const &v) const {
-      if constexpr (is_k_expr<V>)
-        return closest_idx(v.value());
+      if constexpr (is_k_expr<V>) return closest_idx(k.value());
       else {
-        auto idbl = transpose(units_inv_) * nda::basic_array_view{v.value()};
-        return {std::lround(idbl[0]), std::lround(idbl[1]), std::lround(idbl[2])};
+        // calculate k in the brzone basis
+        auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
+        auto k_units = transpose(units_inv_) * ks;
+        auto n       = nda::floor(k_units);
+
+        // calculate position relative to neighbors in mesh
+        auto w = k_units - n;
+
+        // prepare result container and distance measure
+        auto dst = std::numeric_limits<double>::infinity();
+
+        // check flatness along mesh dimensions
+        long r1 = std::min(dims()[0], 2l);
+        long r2 = std::min(dims()[1], 2l);
+        long r3 = std::min(dims()[2], 2l);
+
+        // find nearest neighbor by comparing distances
+        nda::stack_vector<long, 3> res;
+        for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
+          auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
+          auto dstp = nda::norm(transpose(units()) * (w - iv));
+
+          // update result when distance is smaller than current
+          if (dstp < dst) {
+            dst = dstp;
+            res = n + iv;
+          }
+        }
+
+        // fold back to brzone mesh (nearest neighbor could be out of bounds)
+        return idx_modulo({res[0], res[1], res[2]});
       }
     }
 
@@ -244,7 +234,7 @@ namespace triqs::mesh {
       return closest_idx(cmp.value);
     }
 
-    // -------------------- operator[] -------------------
+    // -------------------- operator [] () -------------------
 
     /// Make a mesh point from a linear index
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
@@ -340,8 +330,6 @@ namespace triqs::mesh {
       return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
     }
 
-    // OPFIXME : do we really want to keep this as friend, inside the function
-    // Use the cartesian product evaluation to evaluate on domain pts
     template <typename V>
     friend auto evaluate(brzone const &m, auto const &f, V const &v)
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)

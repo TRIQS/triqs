@@ -47,6 +47,7 @@ namespace triqs::mesh {
     using value_t  = matsubara_freq;
 
     // -------------------- Data -------------------
+
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
 
@@ -161,7 +162,7 @@ namespace triqs::mesh {
     /// Is the mesh only for positive omega_n (G(tau) real))
     bool positive_only() const { return _opt == option::positive_frequencies_only; }
 
-    // -------------------- index checks and conversions -------------------
+    // -------------------- checks -------------------
 
     /// Checks that the idx is in [first_idx(), last_idx()]
     [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_idx() <= idx and idx <= last_idx(); }

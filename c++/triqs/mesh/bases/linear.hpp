@@ -88,16 +88,15 @@ namespace triqs::mesh::details {
 #undef IMPL_OP
     };
 
-    // -------------------- idx checks and conversions -------------------
+    // -------------------- checks -------------------
 
     [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < L; }
 
     private:
     [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
 
-    public:
     // -------------------- to_datidx ------------------
-
+    public:
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return idx;
@@ -120,18 +119,18 @@ namespace triqs::mesh::details {
       return idx_t((cmp.value - xmin) * delta_x_inv + 0.5);
     }
 
-    // ------------------ operator[] -------------------
+    // ------------------ operator [] () -------------------
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const noexcept { return (*this)(datidx); }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_datidx(cmp)]; }
 
-    // ------------------ operator()-------------------
-
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return {idx, idx, mesh_hash_, to_value(idx)};
     }
+
+    // -------------------- to_value ------------------
 
     [[nodiscard]] value_t to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));

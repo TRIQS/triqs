@@ -84,7 +84,7 @@ namespace triqs::mesh {
     bool operator==(prod const &m) const { return as_tuple() == m.as_tuple(); }
     bool operator!=(prod const &m) const = default;
 
-    // -------------------- -------------------
+    // -------------------- size -------------------
 
     /// size of the mesh is the product of size
     [[nodiscard]] long size() const {
@@ -99,6 +99,8 @@ namespace triqs::mesh {
       return res;
     }
 
+    // -------------------- checks -------------------
+
     /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
     template <typename... Args> bool is_idx_valid(Args const &...args) const {
       return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_idx_valid(arg)); }, as_tuple(), std::tie(args...), true);
@@ -107,11 +109,15 @@ namespace triqs::mesh {
       return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_idx_valid(arg)); }, as_tuple(), index, true);
     }
 
+    // -------------------- to_datidx ------------------
+
     /// The datidx is the tuple of the datidx of the components
     datidx_t to_datidx(idx_t const &index) const {
       auto l = [](auto const &m, auto const &idx) { return m.to_datidx(idx); };
       return triqs::tuple::map_on_zip(l, *this, index);
     }
+
+    // ------------------ to_idx -------------------
 
     /// The index is the tuple of the index of the components
     idx_t to_idx(datidx_t const &datidx) const {

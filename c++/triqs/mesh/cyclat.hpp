@@ -122,7 +122,7 @@ namespace triqs::mesh {
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
     };
 
-    // -------------------- index checks and conversions -------------------
+    // -------------------- checks -------------------
 
     [[nodiscard]] bool is_idx_valid(idx_t const &idx) const noexcept {
       for (auto i : range(3))
@@ -152,7 +152,7 @@ namespace triqs::mesh {
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.idx; }
 
-    // -------------------- operator[] -------------------
+    // -------------------- operator [] () -------------------
 
     /// Make a mesh point from a linear index
     [[nodiscard]] mesh_point_t operator[](long datidx) const {

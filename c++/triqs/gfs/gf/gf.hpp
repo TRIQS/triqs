@@ -26,10 +26,9 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------*/
   using nda::C_layout;
 
-  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_layout, typename EvalPolicy = default_evaluator> class gf;
-  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
-  class gf_view;
-  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_layout, typename EvalPolicy = default_evaluator> class gf;
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator> class gf_view;
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
   class gf_const_view;
 
   /*----------------------------------------------------------
@@ -71,41 +70,41 @@ namespace triqs::gfs {
   /**
    * The Green function container. 
    *
-   * @tparam Mesh      The domain of definition
+   * @tparam M        The domain of definition
    * @tparam Target   The target domain
    *
    * @include triqs/gfs.hpp
    */
-  template <typename Mesh, typename Target, typename Layout, typename EvalPolicy> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <Mesh M, typename Target, typename Layout, typename EvalPolicy> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>,
+    static_assert(not std::is_same_v<M, triqs::lattice::brillouin_zone>,
                   "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
-    using this_t = gf<Mesh, Target, Layout, EvalPolicy>; // used in common code
+    using this_t = gf<M, Target, Layout, EvalPolicy>; // used in common code
 
     public:
     static constexpr bool is_view  = false;
     static constexpr bool is_const = false;
 
-    using mutable_view_type = gf_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using mutable_view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using const_view_type = gf_const_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
 
     /// Associated (non const) view type
-    using view_type = gf_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
 
     /// Associated regular type (gf<....>)
-    using regular_type = gf<Mesh, Target, Layout, EvalPolicy>;
+    using regular_type = gf<M, Target, Layout, EvalPolicy>;
 
     /// The associated real type
-    using real_t = gf<Mesh, typename Target::real_t, Layout, EvalPolicy>;
+    using real_t = gf<M, typename Target::real_t, Layout, EvalPolicy>;
 
     /// Template type
     using target_t = Target;
 
     /// Mesh type
-    using mesh_t = Mesh;
+    using mesh_t = M;
 
     /// Type of the mesh point
     using mesh_point_t = typename mesh_t::mesh_point_t;
@@ -113,13 +112,13 @@ namespace triqs::gfs {
     // NO DOC
     using mesh_idx_t = typename mesh_t::idx_t;
 
-    using evaluator_t = typename EvalPolicy::template evaluator_t<Mesh>;
+    using evaluator_t = typename EvalPolicy::template evaluator_t<M>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
 
     /// Arity of the function (number of variables)
-    static constexpr int arity = n_variables<Mesh>;
+    static constexpr int arity = n_variables<M>;
 
     /// Rank of the Target
     static constexpr int target_rank = Target::rank;
@@ -203,11 +202,6 @@ namespace triqs::gfs {
 
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
-    private:
-    template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()) {}
-
-    template <typename M, typename D> gf(impl_tag, M &&m, D &&dat) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)) {}
-
     public:
     /// Empty Green function (with empty array).
     gf() = default; // {}
@@ -241,24 +235,24 @@ namespace triqs::gfs {
      *  @note  Using the "pass by value" and move
      *  @example triqs/gfs/gf_constructors_0.cpp
      */
-    gf(mesh_t m, data_t dat) : gf(impl_tag{}, std::move(m), std::move(dat)) {}
+    gf(mesh_t m, data_t dat) : _mesh(std::move(m)), _data(std::move(dat)) {}
 
     /**
      *  @param m Mesh
      *  @param shape Target shape
      * 
      */
-    gf(mesh_t m, target_shape_t shape = {}) : gf(impl_tag{}, std::move(m), data_t(make_data_shape(m, shape))) {}
+    gf(mesh_t m, target_shape_t shape = {}) : _mesh(std::move(m)), _data(make_data_shape(m, shape)) {}
 
     /**
      *  Makes a deep copy of the data
      */
-    explicit gf(gf_view<Mesh, Target> const &g) : gf(impl_tag2{}, g) {}
+    explicit gf(gf_view<M, Target> const &g) : _mesh(g.mesh()), _data(g.data()) {}
 
     /**
      *  Makes a deep copy of the data
      */
-    explicit gf(gf_const_view<Mesh, Target> const &g) : gf(impl_tag2{}, g) {}
+    explicit gf(gf_const_view<M, Target> const &g) : _mesh(g.mesh()), _data(g.data()) {}
 
     /** 
      *  From any object modeling the :ref:`concept_GreenFunction`.
@@ -282,7 +276,7 @@ namespace triqs::gfs {
      *  
      *  NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
      */
-    template <typename Tag> gf(mpi::lazy<Tag, gf_const_view<Mesh, Target>> l) : gf() { operator=(l); }
+    template <typename Tag> gf(mpi::lazy<Tag, gf_const_view<M, Target>> l) : gf() { operator=(l); }
 
     /// ---------------  Operator = --------------------
 
@@ -324,15 +318,15 @@ namespace triqs::gfs {
     template <typename Fdata> auto apply_on_data(Fdata &&fd) {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_view<Mesh, t2>;
-      return gv_t{_mesh, d2};
+      using gv_t = gf_view<M, t2>;
+      return gv_t{mesh(), d2};
     }
 
     template <typename Fdata> auto apply_on_data(Fdata &&fd) const {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_const_view<Mesh, t2>;
-      return gv_t{_mesh, d2};
+      using gv_t = gf_const_view<M, t2>;
+      return gv_t{mesh(), d2};
     }
 
     //-------------  MPI operation
@@ -341,9 +335,9 @@ namespace triqs::gfs {
      * Performs MPI reduce
      * @param l The lazy object returned by mpi::reduce
      */
-    gf &operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
+    gf &operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<M, Target>> l) {
       _mesh = l.rhs.mesh();
-      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
+      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
       return *this;
     }
 
@@ -351,7 +345,7 @@ namespace triqs::gfs {
      * Performs MPI scatter
      * @param l The lazy object returned by mpi::scatter
      */
-    gf &operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
+    gf &operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<M, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
       return *this;
@@ -361,7 +355,7 @@ namespace triqs::gfs {
      * Performs MPI gather
      * @param l The lazy object returned by mpi::gather
      */
-    gf &operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
+    gf &operator=(mpi::lazy<mpi::tag::gather, gf_const_view<M, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
       return *this;

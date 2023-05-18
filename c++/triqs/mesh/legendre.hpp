@@ -70,15 +70,21 @@ namespace triqs::mesh {
 
     [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < max_n_; }
 
+    // -------------------- to_datidx ------------------
+
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
       return idx;
     }
 
+    // ------------------ to_idx -------------------
+
     [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
       EXPECTS(is_idx_valid(datidx));
       return datidx;
     }
+
+    // ------------------ operator [] () -------------------
 
     [[nodiscard]] mesh_point_t operator[](long datidx) const { return {to_idx(datidx), datidx, mesh_hash_}; }
 
