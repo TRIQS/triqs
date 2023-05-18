@@ -46,6 +46,9 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
     public:
+    // OPFIXME : no default constructor ??
+    //
+
     /**
      * Construct a periodic Mesh on a BravaisLattice
      *
@@ -93,7 +96,7 @@ namespace triqs::mesh {
     [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] size_t size() const { return size_; }
+    [[nodiscard]] long size() const { return size_; }
 
     /// The extent of each dimension
     [[nodiscard]] std::array<long, 3> dims() const { return dims_; }
@@ -112,8 +115,8 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t : public value_t {
-      using mesh_t                       = cyclat;
-      std::array<long, 3> const &idx     = value_t::idx;
+      using mesh_t = cyclat;
+      //std::array<long, 3> const &idx     = value_t::idx; // OPFIXME ???
       long datidx                        = 0;
       uint64_t mesh_hash                 = 0;
       mutable std::optional<value_t> val = {};
@@ -122,9 +125,10 @@ namespace triqs::mesh {
 
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
 
-      mesh_point_t() = default;
-      mesh_point_t(bravais_lattice const &bl, idx_t idx, long datidx_, uint64_t mesh_hash_)
-         : value_t{&bl, idx}, datidx(datidx_), mesh_hash(mesh_hash_) {}
+      // OPFIXME : do we need this ??
+      //mesh_point_t() = default;
+      //mesh_point_t(bravais_lattice const &bl, idx_t idx, long datidx_, uint64_t mesh_hash_)
+      //   : value_t{&bl, idx}, datidx(datidx_), mesh_hash(mesh_hash_) {}
     };
 
     // -------------------- index checks and conversions -------------------
@@ -135,12 +139,16 @@ namespace triqs::mesh {
       return true;
     }
 
+    // -------------------- to_datidx -------------------
+
     [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       return idx[0] * stride0 + idx[1] * stride1 + idx[2];
     }
 
     template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(to_idx(cmp)); }
+
+    // -------------------- to_idx -------------------
 
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
       EXPECTS(0 <= datidx and datidx < size());
@@ -153,11 +161,13 @@ namespace triqs::mesh {
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.idx; }
 
+    // -------------------- operator[] -------------------
+
     /// Make a mesh point from a linear index
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {bl_, idx, datidx, mesh_hash_};
+      return {{&bl_, idx}, datidx, mesh_hash_};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
@@ -165,8 +175,10 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {bl_, idx, datidx, mesh_hash_};
+      return {{&bl_, idx}, datidx, mesh_hash_};
     }
+
+    // -------------------- to_value -------------------
 
     /// Convert an index to a lattice value
     [[nodiscard]] value_t to_value(idx_t const &idx) const {
@@ -209,7 +221,7 @@ namespace triqs::mesh {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
 
-      std::array<long, 3> dims;
+      std::array<long, 3> dims; //NOLINT
       if (gr.has_key("dims")) {
         h5::read(gr, "dims", dims);
       } else { // Backward Compat periodization_matrix

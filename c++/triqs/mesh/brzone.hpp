@@ -96,6 +96,8 @@ namespace triqs::mesh {
 
     // ------------------- Comparison -------------------
 
+    // OPFIXME : why not compare the hash ??
+
     bool operator==(brzone const &M) const { return dims_ == M.dims() and bz_ == M.bz(); }
     bool operator!=(brzone const &M) const { return !(operator==(M)); }
 
@@ -105,7 +107,7 @@ namespace triqs::mesh {
     [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] size_t size() const { return size_; }
+    [[nodiscard]] long size() const { return size_; }
 
     /// The extent of each dimension
     [[nodiscard]] std::array<long, 3> dims() const { return dims_; }
@@ -143,6 +145,7 @@ namespace triqs::mesh {
       [[nodiscard]] operator value_t() const { return value(); }
 
       // The mesh point behaves like a vector
+      //OPFIXME : do we need the () too ??? obsolete
       double operator()(int d) const { return value()[d]; }
       double operator[](int d) const { return value()[d]; }
 
@@ -156,6 +159,7 @@ namespace triqs::mesh {
         if (idx[i] < 0 or idx[i] >= dims_[i]) return false;
       return true;
     }
+    // -------------------- to_datidx -------------------
 
     [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
@@ -173,6 +177,7 @@ namespace triqs::mesh {
       EXPECTS(mesh_hash_ == ex.mesh_hash);
       return this->to_datidx(this->idx_modulo(ex.index()));
     }
+    // -------------------- to_idx -------------------
 
     [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
       EXPECTS(0 <= datidx and datidx < size());
@@ -182,6 +187,8 @@ namespace triqs::mesh {
       long i2 = i0 % stride1;
       return {i0, i1, i2};
     }
+
+    //-------------
 
     template <typename V>
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
@@ -220,6 +227,10 @@ namespace triqs::mesh {
       return idx_modulo({res[0], res[1], res[2]});
     }
 
+    //-------------
+
+    // OPFIXME ??? requires is not orthogonal to previous one ??
+
     template <typename V>
       requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
     [[nodiscard]] idx_t closest_idx(V const &v) const {
@@ -231,11 +242,12 @@ namespace triqs::mesh {
       }
     }
 
-    template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<V> const &cmp) const {
+    template <typename V> [[nodiscard]] idx_t to_idx(closest_mesh_point_t<V> const &cmp) const {
+      static_assert(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>);
       return closest_idx(cmp.value);
     }
+
+    // -------------------- operator[] -------------------
 
     /// Make a mesh point from a linear index
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
@@ -251,6 +263,8 @@ namespace triqs::mesh {
       auto datidx = to_datidx(idx);
       return {idx, this, datidx, mesh_hash_};
     }
+
+    // -------------------- to_value -------------------
 
     /// Convert an index to the domain value
     [[nodiscard]] virtual value_t to_value(idx_t const &idx) const {
@@ -293,7 +307,7 @@ namespace triqs::mesh {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
 
-      std::array<long, 3> dims;
+      std::array<long, 3> dims; // NOLINT
       if (gr.has_key("dims")) {
         h5::read(gr, "dims", dims);
       } else { // Backward Compat periodization_matrix
@@ -325,10 +339,11 @@ namespace triqs::mesh {
 
     friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
       long i   = std::floor(vi);
-      double w = vi - i;
+      double w = vi - double(i);
       return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
     }
 
+    // OPFIXME : do we really want to keep this as friend, inside the function
     // Use the cartesian product evaluation to evaluate on domain pts
     template <typename V>
     friend auto evaluate(brzone const &m, auto const &f, V const &v)
