@@ -53,7 +53,7 @@ namespace triqs::gfs {
   template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
 
   template <typename G, typename M>
-  concept GfMemory = mesh::Mesh<M> and requires(G g) {
+  concept MemoryGf = mesh::Mesh<M> and requires(G g) {
     { g.data() } -> nda::MemoryArray;
     { auto(g.mesh()) } -> std::same_as<M>;
   };
@@ -218,7 +218,7 @@ namespace triqs::gfs {
       if constexpr (mesh::is_product<mesh_t>)
         return stdutil::join(m.size_of_components(), shap);
       else
-        return stdutil::front_append(shap, m.size()); 
+        return stdutil::front_append(shap, m.size());
     }
 
     public:
