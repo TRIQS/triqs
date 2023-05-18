@@ -18,9 +18,9 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <h5/serialization.hpp>
 
-using triqs::mesh::dlr_imtime;
 using triqs::mesh::dlr_coeffs;
 using triqs::mesh::dlr_imfreq;
+using triqs::mesh::dlr_imtime;
 
 // OPFIXME : remove the gf_mesh <X > ---> X
 
@@ -38,9 +38,9 @@ TEST(Gf, DLR_CrossConstruction) {
 
   auto G_dlr = make_gf_dlr_coeffs(G_iw);
 
-  // OPFIXME : 
+  // OPFIXME :
   //auto g_dlr2 = gf<dlr_coeffs, scalar_valued> {G_iw};
-  
+
   //g_dlr2 = G_iw;
 
   auto G_iw_ref = G_iw;
@@ -54,10 +54,7 @@ TEST(Gf, DLR_CrossConstruction) {
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 }
 
-
 // --------------
-
-
 
 TEST(Gf, DLR_imtime) {
 
@@ -361,7 +358,7 @@ TEST(Gf, DLR_coeffs_conversion) {
 
   auto G_iw_ref = G_iw;
   triqs::clef::placeholder<0> iw_;
-  G_iw_ref[iw_] << 1. / (iw_ + omega);
+  G_iw_ref[iw_] << 1. / (iw_ + omega); // OPFIXME CONVENTION IS INCORRECT....
   EXPECT_GF_NEAR(G_iw, G_iw_ref);
 }
 

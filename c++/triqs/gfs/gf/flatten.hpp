@@ -16,7 +16,7 @@
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
 // Authors: Michel Ferrero, Nils Wentzell
-
+#pragma once
 #include "gf.hpp"
 namespace triqs::gfs {
   /**
@@ -50,7 +50,7 @@ namespace triqs::gfs {
 
   // -------------------------------------------------------
   /// Inverse of flatten_2d
-  template <int N, typename T, int R> array<T, 2> unflatten_2d(array_view<T, R> out, array_const_view<T, 2> flat_array) {
+  template <int N, typename T, int R> void unflatten_2d(array_view<T, R> out, array_const_view<T, 2> flat_array) {
     auto a           = nda::rotate_index_view<N>(out);
     long nrows       = a.extent(0);      // # rows of the result, i.e. n-th dim, which is now at 0.
     long ncols       = a.size() / nrows; // # columns of the result. Everything but n-th dim.

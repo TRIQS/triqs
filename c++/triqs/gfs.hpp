@@ -103,7 +103,8 @@ namespace triqs::gfs {
 #include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
 
+#include "./gfs/transform/partial_transform.hpp"
+
 #ifdef C2PY_INCLUDED
 #include "./cpp2py_converters/gf.hpp"
 #endif
-
