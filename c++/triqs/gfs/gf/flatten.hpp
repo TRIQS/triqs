@@ -17,7 +17,6 @@
 //
 // Authors: Michel Ferrero, Nils Wentzell
 
-#include "./gf_view.hpp"
 #include "gf.hpp"
 namespace triqs::gfs {
   /**

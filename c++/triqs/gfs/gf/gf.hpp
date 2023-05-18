@@ -324,27 +324,30 @@ namespace triqs::gfs {
      * Performs MPI reduce
      * @param l The lazy object returned by mpi::reduce
      */
-    void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
-      _mesh    = l.rhs.mesh();
-      _data    = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
+    gf &operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
+      _mesh = l.rhs.mesh();
+      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
+      return *this;
     }
 
     /**
      * Performs MPI scatter
      * @param l The lazy object returned by mpi::scatter
      */
-    void operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
-      _mesh    = mpi::scatter(l.rhs.mesh(), l.c, l.root);
-      _data    = mpi::scatter(l.rhs.data(), l.c, l.root, true);
+    gf &operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
+      _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
+      _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
+      return *this;
     }
 
     /**
      * Performs MPI gather
      * @param l The lazy object returned by mpi::gather
      */
-    void operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
-      _mesh    = mpi::gather(l.rhs.mesh(), l.c, l.root);
-      _data    = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
+    gf &operator=(mpi::lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
+      _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
+      _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
+      return *this;
     }
 
     // Common code for gf, gf_view, gf_const_view
