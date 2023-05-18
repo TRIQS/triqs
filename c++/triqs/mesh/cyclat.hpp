@@ -46,9 +46,6 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
     public:
-    // OPFIXME : no default constructor ??
-    //
-
     /**
      * Construct a periodic Mesh on a BravaisLattice
      *
@@ -87,7 +84,7 @@ namespace triqs::mesh {
 
     // ------------------- Comparison -------------------
 
-    bool operator==(cyclat const &M) const { return dims_ == M.dims() and bl_ == M.lattice(); }
+    bool operator==(cyclat const &M) const { return mesh_hash() == M.mesh_hash(); }
     bool operator!=(cyclat const &M) const { return !(operator==(M)); }
 
     // ------------------- Accessors -------------------
@@ -115,8 +112,7 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t : public value_t {
-      using mesh_t = cyclat;
-      //std::array<long, 3> const &idx     = value_t::idx; // OPFIXME ???
+      using mesh_t                       = cyclat;
       long datidx                        = 0;
       uint64_t mesh_hash                 = 0;
       mutable std::optional<value_t> val = {};
@@ -124,11 +120,6 @@ namespace triqs::mesh {
       [[nodiscard]] value_t const &value() const { return *this; }
 
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
-
-      // OPFIXME : do we need this ??
-      //mesh_point_t() = default;
-      //mesh_point_t(bravais_lattice const &bl, idx_t idx, long datidx_, uint64_t mesh_hash_)
-      //   : value_t{&bl, idx}, datidx(datidx_), mesh_hash(mesh_hash_) {}
     };
 
     // -------------------- index checks and conversions -------------------
@@ -211,7 +202,7 @@ namespace triqs::mesh {
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, cyclat const &m) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m);
+      write_hdf5_format(gr, m); // NOLINT
 
       h5::write(gr, "dims", m.dims_);
       h5::write(gr, "bravais_lattice", m.bl_);

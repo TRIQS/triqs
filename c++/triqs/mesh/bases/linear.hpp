@@ -73,13 +73,7 @@ namespace triqs::mesh::details {
       value_t value() const { return val; }
       operator value_t() const { return val; }
 
-      // OPFIXME : Remove the first requires (as in the godbolt)
-      // otherwise, the mp + mp is not covered.
       // https://godbolt.org/z/xoYP3vTW4
-
-      // OPFIXME : this was the requires of the first
-      //requires(not std::is_same_v<decltype(y), mesh_point_t const &>)                                                                                  \
-      // OPFIXME : 2 requires + 1 overload for mp + mp using lazy if not too hard !?
 #define IMPL_OP(OP)                                                                                                                                  \
   friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.value() OP y; }                                                         \
   friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \

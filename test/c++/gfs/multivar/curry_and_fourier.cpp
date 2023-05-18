@@ -43,7 +43,7 @@ TEST(GfM, CurryFourier) {
   placeholder<0> k_;
   placeholder<1> w_;
 
-  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k = -2 * (cos(k_[0]) + cos(k_[1]));
   gkw(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
 
   auto const &mk = std::get<0>(gkt.mesh());

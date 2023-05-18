@@ -54,7 +54,7 @@ namespace triqs::lattice {
     matrix_t const &units() const { return units_; }
 
     // Number of orbitals in the unit cell
-    int n_orbitals() const { return atom_orb_name.size(); }
+    long n_orbitals() const { return long(atom_orb_name.size()); }
 
     /// Return the vector of orbital positions
     std::vector<r_t> const &orbital_positions() { return atom_orb_pos; }
@@ -76,8 +76,7 @@ namespace triqs::lattice {
           return bl_ptr->lattice_to_real_coordinates(idx);
       }
 
-      // Do we need the () ? deprecated ?
-      double operator()(int d) const { return r_t(*this)[d]; }
+      [[deprecated("() is deprecated for a cyclat::mesh_point_t. Use [] instead")]] double operator()(int d) const { return r_t(*this)[d]; }
       double operator[](int d) const { return r_t(*this)[d]; }
 
       point_t operator+(point_t const &y) const {

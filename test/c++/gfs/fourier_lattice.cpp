@@ -42,7 +42,7 @@ template <int TARGET_RANK> void test_fourier() {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
 
   auto Gr = gf<cyclat, target_t>{{bl, N_k}, shape};
-  Gr(r_) << exp(-r_(0));
+  Gr(r_) << exp(-r_[0]);
 
   auto Gk1 = gf<brzone, target_t>{{bz, N_k}, shape};
   Gk1()    = fourier(Gr);

@@ -87,10 +87,8 @@ namespace triqs::mesh {
 
     // FIXME use ranges::views, but clang > 15 only
     auto sum_to_regular(auto const &R, auto f) {
-      using std::begin;
-      using std::end;
-      auto it  = begin(R);
-      auto e   = end(R);
+      auto it  = std::begin(R);
+      auto e   = std::end(R);
       auto res = make_regular(f(*it));
       for (++it; it != e; ++it) res += f(*it);
       return res;

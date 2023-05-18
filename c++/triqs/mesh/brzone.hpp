@@ -96,9 +96,7 @@ namespace triqs::mesh {
 
     // ------------------- Comparison -------------------
 
-    // OPFIXME : why not compare the hash ??
-
-    bool operator==(brzone const &M) const { return dims_ == M.dims() and bz_ == M.bz(); }
+    bool operator==(brzone const &M) const { return mesh_hash() == M.mesh_hash(); }
     bool operator!=(brzone const &M) const { return !(operator==(M)); }
 
     // ------------------- Accessors -------------------
@@ -145,8 +143,7 @@ namespace triqs::mesh {
       [[nodiscard]] operator value_t() const { return value(); }
 
       // The mesh point behaves like a vector
-      //OPFIXME : do we need the () too ??? obsolete
-      double operator()(int d) const { return value()[d]; }
+      [[deprecated("() is deprecated for a brzone::mesh_point_t. Use [] instead")]] double operator()(int d) const { return value()[d]; }
       double operator[](int d) const { return value()[d]; }
 
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
@@ -267,7 +264,7 @@ namespace triqs::mesh {
     // -------------------- to_value -------------------
 
     /// Convert an index to the domain value
-    [[nodiscard]] virtual value_t to_value(idx_t const &idx) const {
+    [[nodiscard]] value_t to_value(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       return transpose(units_)(range::all, range(bz_.lattice().ndim())) * nda::basic_array_view{idx}(range(bz_.lattice().ndim()));
     }

@@ -142,15 +142,9 @@ namespace triqs::mesh {
 
   inline auto evaluate(legendre const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
-
     utility::legendre_generator L{};
     L.reset(2 * tau / m.beta - 1);
-
-    // OPFIXME : again the sum (transform ) pattern ...
-    auto res = make_regular(f(0) * L.next() / m.beta);
-    for (auto l : range(1, m.size())) { res += make_regular(f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta); }
-
-    return res;
+    return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta; });
   }
 
   // check concept

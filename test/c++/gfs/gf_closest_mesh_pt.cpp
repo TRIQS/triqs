@@ -57,7 +57,7 @@ TEST(ClosestMeshPoint, BrZone) {
 
   // initialize gk with nearest-neighbor tb dispersion
   triqs::clef::placeholder<1> k_;
-  gk(k_) << -2.0 * (cos(k_(0)) + cos(0.5 * k_(0) + 0.5 * std::sqrt(3.0) * k_(1)) + cos(0.5 * k_(0) - 0.5 * std::sqrt(3.0) * k_(1)));
+  gk(k_) << -2.0 * (cos(k_[0]) + cos(0.5 * k_[0] + 0.5 * std::sqrt(3.0) * k_[1]) + cos(0.5 * k_[0] - 0.5 * std::sqrt(3.0) * k_[1]));
 
   // check if closest_mesh_pt(k) is k
   for (auto k : gk.mesh()) { EXPECT_CLOSE(gk[closest_mesh_pt(nda::vector<double>{k})], gk[k]); }

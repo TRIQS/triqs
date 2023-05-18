@@ -33,16 +33,12 @@ namespace triqs::gfs {
   // ------------------------------------------------------
 
   auto make_gf_dlr_coeffs(GfMemory<dlr_imtime> auto const &g) {
-    //using target_t = decltype(auto{g})::target_t;
-    //gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     result.data() = result.mesh().dlr_it().vals2coefs(g.data());
     return result;
   }
 
   auto make_gf_dlr_coeffs(GfMemory<dlr_imfreq> auto const &g) {
-    //using target_t = decltype(auto{g})::target_t;
-    //gf<dlr_coeffs, target_t> result{dlr_coeffs{g.mesh()}, g.target_shape()};
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     auto beta_inv = 1. / result.mesh().beta;
     result.data() = -beta_inv * result.mesh().dlr_if().vals2coefs(g.data());
@@ -50,16 +46,12 @@ namespace triqs::gfs {
   }
 
   auto make_gf_dlr_imtime(GfMemory<dlr_coeffs> auto const &g) {
-    //using target_t = decltype(auto{g})::target_t;
-    //gf<dlr_imtime, target_t> result{dlr_imtime{g.mesh()}, g.target_shape()};
     auto result   = gf{dlr_imtime{g.mesh()}, g.target_shape()};
     result.data() = g.mesh().dlr_it().coefs2vals(g.data());
     return result;
   }
 
   auto make_gf_dlr_imfreq(GfMemory<dlr_coeffs> auto const &g) {
-    //using target_t = decltype(auto{g})::target_t;
-    //gf<dlr_imfreq, target_t> result{dlr_imfreq{g.mesh()}, g.target_shape()};
     auto result   = gf{dlr_imfreq{g.mesh()}, g.target_shape()};
     auto beta     = result.mesh().beta;
     result.data() = -beta * g.mesh().dlr_if().coefs2vals(g.data());
@@ -78,7 +70,7 @@ namespace triqs::gfs {
     return result;
   }
 
-  // FIXME : Lambda ? eps ? or pass a dlr_imfreq mesh ?
+  // OPFIXME decide strategy
   auto make_gf_dlr_imfreq(GfMemory<mesh::imfreq> auto const &g, double Lambda, double eps) {
     auto result = gf{dlr_imfreq{g.mesh().beta, g.mesh().statistic, Lambda, eps}, g.target_shape()};
     // Check that the g mesh is big enough ...

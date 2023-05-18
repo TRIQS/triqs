@@ -19,7 +19,7 @@ TEST(Gfk, base) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto gk = gf<brzone, scalar_valued>{{bz, N}};
 
-  gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  gk(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
 
   auto m  = gk.mesh();
   auto m2 = brzone{bz, 3 * N};
@@ -55,7 +55,7 @@ TEST(Gfk, loopkq) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<brzone, scalar_valued>{{bz, N}};
 
-  g(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  g(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
 
   auto m  = g.mesh();
   auto m2 = brzone{bz, 3 * N};

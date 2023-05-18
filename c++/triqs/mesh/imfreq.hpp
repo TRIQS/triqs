@@ -275,7 +275,6 @@ namespace triqs::mesh {
       return f(iw.n);
     }
 
-    //OPFIXME rename ?
     bool eval_to_zero(imfreq::idx_t idx) const { return !is_idx_valid(idx); }
     bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
     bool eval_to_zero(imfreq::mesh_point_t mp) const { return eval_to_zero(mp.value()); }

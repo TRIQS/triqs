@@ -96,7 +96,7 @@ TEST(Gf, Bubble) {
   double beta = 5, mu = 0.5;
   placeholder<0> k_;
   placeholder<4> inu_;
-  auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k_ = -2 * (cos(k_[0]) + cos(k_[1]));
   auto G_k_w  = gf_bz_imfreq_mat{{{bz, nk}, {beta, Fermion, nw}}, {1, 1}};
   G_k_w(k_, inu_) << 1.0 / (inu_ + mu - eps_k_);
 

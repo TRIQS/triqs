@@ -22,7 +22,6 @@
 #include "./utils.hpp"
 namespace triqs::mesh {
 
-  // OPFIXME : is the name not too COMMON ? ambiguity in the future ??
   struct index {
 
     using idx_t    = long;

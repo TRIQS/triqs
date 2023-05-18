@@ -34,7 +34,7 @@ TEST(Gf, r_k) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto gk = gf<brzone>{{bz, N}, {S, S}};
 
-  gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  gk(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
 
   auto gr = gf<cyclat>{{N, N}, {S, S}};
 

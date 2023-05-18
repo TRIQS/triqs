@@ -39,7 +39,7 @@ TEST(Gf, x_t) {
   placeholder<0> k_;
   placeholder<1> t_;
 
-  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k = -2 * (cos(k_[0]) + cos(k_[1]));
   gkt(k_, t_) << exp(-1i * eps_k * t_);
 
   auto gxt = gf<prod<cyclat, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
@@ -62,7 +62,7 @@ TEST(Gf, x_tau) {
   placeholder<0> k_;
   placeholder<1> tau_;
 
-  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k = -2 * (cos(k_[0]) + cos(k_[1]));
   gkt(k_, tau_) << exp(-eps_k * tau_);
 
   auto gxt = gf<prod<cyclat, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
