@@ -27,8 +27,10 @@ namespace triqs::gfs {
   using nda::C_layout;
 
   template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_layout, typename EvalPolicy = default_evaluator> class gf;
-  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator> class gf_view;
-  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator> class gf_const_view;
+  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
+  class gf_view;
+  template <typename Mesh, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
+  class gf_const_view;
 
   /*----------------------------------------------------------
    *   Traits
@@ -77,7 +79,7 @@ namespace triqs::gfs {
   template <typename Mesh, typename Target, typename Layout, typename EvalPolicy> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
     static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>,
-		"Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
+                  "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
     using this_t = gf<Mesh, Target, Layout, EvalPolicy>; // used in common code
 
@@ -264,7 +266,12 @@ namespace triqs::gfs {
      *  @tparam G A type modeling :ref:`concept_GreenFunction`.
      *  @param g 
      */
-    template <typename G> explicit gf(G const &g) requires(GreenFunction<G>::value and std::is_same_v<mesh_t, typename G::mesh_t>) : gf() { *this = g; } // explicit is very important here.	
+    template <typename G>
+    explicit gf(G const &g)
+      requires(GreenFunction<G>::value and std::is_same_v<mesh_t, typename G::mesh_t>)
+       : gf() {
+      *this = g;
+    } // explicit is very important here.
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
 
     /** 
