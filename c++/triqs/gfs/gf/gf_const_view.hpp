@@ -72,6 +72,9 @@ namespace triqs::gfs {
     /// Arity of the function (number of variables)
     static constexpr int arity = n_variables<Mesh>;
 
+    /// Rank of the Target
+    static constexpr int target_rank = Target::rank;
+
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
 
@@ -84,6 +87,12 @@ namespace triqs::gfs {
       target_shape_t _shape;
       using target_t = Target;
       target_shape_t const &shape() const { return _shape; }
+      Target::value_t make_value() const {
+        if constexpr (target_t::rank == 0)
+          return 0;
+        else
+          return shape();
+      }
     };
 
     // ------------- Accessors -----------------------------

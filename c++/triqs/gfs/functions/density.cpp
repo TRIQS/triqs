@@ -208,17 +208,4 @@ namespace triqs::gfs {
 
   dcomplex density(gf_const_view<legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
-  //-------------------------------------------------------
-  // For DLR functions
-  // ------------------------------------------------------
-
-  nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs> gl) {
-    nda::matrix<dcomplex> res(gl.target_shape());
-    res = -gl(gl.mesh().beta);
-    // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
-    return transpose(res);
-  }
-
-  dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
-
 } // namespace triqs::gfs

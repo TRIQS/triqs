@@ -69,18 +69,18 @@ decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck
 }
 
 private:
+// two local helper functions for the _subscript_impl below
+static all_t call_to_datidx(auto const &m, all_t const &x) { return {}; }
 
-   // two local helper functions for the _subscript_impl below
-   static all_t call_to_datidx(auto const &m, all_t const &x) { return {}; }
-
-   template<typename M, typename X>
-   static auto call_to_datidx(M const &m, X const &x) {
-     if constexpr (std::is_same_v<X, typename M::mesh_point_t>) {
-      EXPECTS(m.mesh_hash() == x.mesh_hash);
-      return x.datidx;
-     }
-     else return m.to_datidx(x);
-   }
+template <typename M, typename X> static auto call_to_datidx(M const &m, X const &x) {
+  if constexpr (mesh::MeshPoint<X>) {
+    static_assert(std::is_same_v<X, typename M::mesh_point_t>, "Incompatible mesh_point type passed to a gf via [] operator.");
+    EXPECTS_WITH_MESSAGE(m.mesh_hash() == x.mesh_hash,
+                         "Passing to a gf a mesh point of incompatible mesh (but correct type), e.g. different beta, or other parameter.");
+    return x.datidx;
+  } else
+    return m.to_datidx(x);
+}
 
 // ------------------------------------------
 // General implementation for any set of arguments.

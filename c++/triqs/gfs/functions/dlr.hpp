@@ -71,6 +71,7 @@ namespace triqs::gfs {
   }
 
   // OPFIXME decide strategy
+  // OPFIXME Discussion on going with Jason.
   auto make_gf_dlr_imfreq(MemoryGf<mesh::imfreq> auto const &g, double Lambda, double eps) {
     auto result = gf{dlr_imfreq{g.mesh().beta, g.mesh().statistic, Lambda, eps}, g.target_shape()};
     // Check that the g mesh is big enough ...

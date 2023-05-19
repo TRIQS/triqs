@@ -73,7 +73,7 @@ class test_dlr_mesh(unittest.TestCase):
         for t in g_t.mesh:
             ref = -np.exp(-e * t.value) / ( 1 + np.exp(-e * beta) )
             #print(ref, g_t[t].real)
-            #print(ref, g_c[t].real) # FIXME : SHOULD NOT WORK
+            #print(ref, t, g_c[t].real) # FIXME : SHOULD NOT WORK
             #print(ref, t.value,  g_c(t.value))
             #np.testing.assert_almost_equal(g_t[t], ref)
             np.testing.assert_almost_equal(g_c(t), ref)

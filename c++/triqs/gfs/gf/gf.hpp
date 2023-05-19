@@ -119,6 +119,9 @@ namespace triqs::gfs {
     /// Arity of the function (number of variables)
     static constexpr int arity = n_variables<Mesh>;
 
+    /// Rank of the Target
+    static constexpr int target_rank = Target::rank;
+
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
 
@@ -127,10 +130,17 @@ namespace triqs::gfs {
 
     using target_shape_t = std::array<long, Target::rank>;
 
+    // PULL OUT
     struct target_and_shape_t {
       target_shape_t _shape;
       using target_t = Target;
       target_shape_t const &shape() const { return _shape; }
+      Target::value_t make_value() const {
+        if constexpr (target_t::rank == 0)
+          return 0;
+        else
+          return shape();
+      }
     };
 
     // ------------- Accessors -----------------------------
@@ -363,6 +373,9 @@ namespace triqs::gfs {
 
   // Deduce gf type from a Mesh and a Data array
   template <Mesh M, std::integral I, size_t R> gf(M, std::array<I, R>) -> gf<M, typename _target_from_type_rank<dcomplex, R>::type>;
+
+  // Deduce gf type from a Mesh. Will be scalar_valued
+  template <Mesh M> gf(M) -> gf<M, scalar_valued>;
 
   // Forward declare gf_expr
   template <typename Tag, typename L, typename R> struct gf_expr;

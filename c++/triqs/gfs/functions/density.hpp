@@ -19,7 +19,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #pragma once
-
+#include "../gf/gf_view.hpp"
 namespace triqs {
   namespace gfs {
 
@@ -38,8 +38,39 @@ namespace triqs {
     nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
-    nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs> g);
-    dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g);
+    //-------------------------------------------------------
+    // DLR
+    // ------------------------------------------------------
+
+    /**
+     * @brief Computes the density $$- G(\tau = \beta) $$
+     * 
+     * @param g The Green function 
+     * @return auto A tensor/matrix or a scalar, depending on the target
+     */
+    auto density(MemoryGf<mesh::dlr_coeffs> auto const &g) {
+      auto res = g.target().make_value();
+      res      = -g(g.mesh().beta);
+      // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
+      if constexpr (requires { transpose(res); })
+        return transpose(res);
+      else
+        return res;
+    }
+
+    auto density(MemoryGf<mesh::dlr_imtime> auto const &g) {
+      // FIXME : workaround for static_assert(false). Fix on clang >= 17
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imtime, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      return 0;
+    }
+    auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) {
+      // FIXME : workaround for static_assert(false). Fix on clang >= 17
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      return 0;
+    }
+
+    //nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs, matrix_valued> g);
+    //dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g);
 
     //-------------------------------------------------------
     // For Real Frequency functions
