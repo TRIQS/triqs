@@ -388,9 +388,32 @@ TEST(Gf, DLR_density) {
 
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
-  auto G_dlr = make_gf_dlr_coeffs(gt);
-  auto n     = triqs::gfs::density(G_dlr);
+  auto gc = make_gf_dlr_coeffs(gt);
+  auto n  = triqs::gfs::density(gc);
   EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(beta * omega)), 1.e-9);
+}
+// ----------------------------------------------------------------
+// Same with matrix
+TEST(Gf, DLR_density_matrix) {
+
+  double beta   = 2.0;
+  double Lambda = 10.0;
+  double eps    = 1e-10;
+
+  auto gt = gf<dlr_imtime, matrix_valued>{{beta, Fermion, Lambda, eps}, {2, 2}};
+
+  double omega = 1.337;
+  gt[tau_] << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+
+  // SHOULD NOT COMPILE. DELETED FUNCTION
+  // auto d = triqs::gfs::density(gt);
+
+  // Density from dlr is efficient (by design)
+  // only requires interpolation at \tau=\beta ( n = -G(\beta) )
+  auto gc = make_gf_dlr_coeffs(gt);
+  auto n  = triqs::gfs::density(gc);
+  auto d  = 1 / (1 + std::exp(beta * omega));
+  EXPECT_ARRAY_NEAR(n, (nda::matrix<double>{{d, 0}, {0, d}}), 1.e-9);
 }
 
 // ----------------------------------------------------------------

@@ -52,9 +52,10 @@ namespace triqs {
       auto res = g.target().make_value();
       res      = -g(g.mesh().beta);
       // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
-      if constexpr (requires { transpose(res); })
-        return transpose(res);
-      else
+      if constexpr (requires { transpose(res); }) {
+        res = transpose(res);
+        return res;
+      } else
         return res;
     }
 
@@ -68,9 +69,6 @@ namespace triqs {
       static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
       return 0;
     }
-
-    //nda::matrix<dcomplex> density(gf_const_view<mesh::dlr_coeffs, matrix_valued> g);
-    //dcomplex density(gf_const_view<mesh::dlr_coeffs, scalar_valued> g);
 
     //-------------------------------------------------------
     // For Real Frequency functions

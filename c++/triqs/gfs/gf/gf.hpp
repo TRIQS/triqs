@@ -139,7 +139,7 @@ namespace triqs::gfs {
         if constexpr (target_t::rank == 0)
           return 0;
         else
-          return shape();
+          return typename Target::value_t{shape()};
       }
     };
 
