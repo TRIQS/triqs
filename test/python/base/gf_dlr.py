@@ -73,7 +73,10 @@ class test_dlr_mesh(unittest.TestCase):
         for t in g_t.mesh:
             ref = -np.exp(-e * t.value) / ( 1 + np.exp(-e * beta) )
             #print(ref, g_t[t].real)
-            np.testing.assert_almost_equal(g_t[t], ref)
+            #print(ref, g_c[t].real) # FIXME : SHOULD NOT WORK
+            #print(ref, t.value,  g_c(t.value))
+            #np.testing.assert_almost_equal(g_t[t], ref)
+            np.testing.assert_almost_equal(g_c(t), ref)
 
         g_w_new = make_gf_dlr_imfreq(g_c)
 
@@ -93,7 +96,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         g_c = make_gf_dlr_coeffs(g_w)
 
-        ref = -np.exp(-e * beta) / (1 + np.exp(-e * beta))
+        ref = np.exp(-e * beta) / (1 + np.exp(-e * beta))
         np.testing.assert_almost_equal(density(g_c), ref)
 
 
@@ -110,8 +113,8 @@ class test_dlr_mesh(unittest.TestCase):
         n_iw = 10
         iw_mesh = MeshImFreq(beta, 'Fermion', n_iw)
         for iw in iw_mesh:
-            ref =  np.sum(g.data / ( complex(iw) - rf/beta ) )
-            print(g(iw), ref)
+            ref = - np.sum(g.data / ( complex(iw) - rf/beta ) ) # - due to sign  convention
+            #print(g(iw), ref)
             np.testing.assert_almost_equal(g(iw), ref)
 
     

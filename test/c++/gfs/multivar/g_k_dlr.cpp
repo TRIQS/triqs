@@ -15,29 +15,64 @@ double onefermion(double tau, double eps, double beta) { return -exp(-eps * tau)
 TEST(Gf, G_dlr_mat) {
 
   double beta   = 5;
-  int n_bz      = 10;
   double Lambda = 100.0;
   double eps    = 1e-10;
   double e0     = 1.2;
+  double tol    = 1.e-9;
 
+  // imtime
   auto g1 = gf<dlr_imtime, matrix_valued>{{beta, Fermion, Lambda, eps}, {1, 1}};
-
   for (auto const &tau : g1.mesh()) g1[tau] = onefermion(tau, e0, beta);
 
+  // coefs
   auto g2 = make_gf_dlr_coeffs(g1);
 
-  for (auto const &tau : g1.mesh()) { EXPECT_COMPLEX_NEAR(g2(tau)(0, 0), g1[tau](0, 0)); }
+  // reverse transfo ok
+  auto g1b = make_gf_dlr_imtime(g2);
+  EXPECT_GF_NEAR(g1, g1b);
+  EXPECT_EQ(g1.mesh().mesh_hash(), g1b.mesh().mesh_hash());
 
+  // imfreq
   auto g3 = make_gf_dlr_imfreq(g2);
 
+  // reverse transfo ok
+  auto g2b = make_gf_dlr_coeffs(g3);
+  EXPECT_GF_NEAR(g2, g2b);
+  EXPECT_EQ(g2.mesh().mesh_hash(), g2b.mesh().mesh_hash());
+
+  // check value
   auto g3_check = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, Lambda, eps}, {1, 1}};
-
-  for (auto const &w : g3_check.mesh()) g3_check[w] = 1 / (w - e0); // FIXME should be w - e0
-
-  PRINT(g3.data());
-  PRINT(g3_check.data());
+  for (auto const &w : g3_check.mesh()) g3_check[w] = 1 / (w - e0);
 
   EXPECT_GF_NEAR(g3, g3_check);
+  EXPECT_EQ(g3.mesh().mesh_hash(), g3_check.mesh().mesh_hash());
+
+  // eval g2 on tau is fine
+  for (auto const &tau : g1.mesh()) { EXPECT_COMPLEX_NEAR(g2(tau)(0, 0), g1[tau](0, 0), tol); }
+  // eval g2 on w is fine
+  for (auto const &w : g3.mesh()) { EXPECT_COMPLEX_NEAR(g2(w)(0, 0), g3[w](0, 0), tol); }
+}
+// ------------------------------------------------------------
+
+TEST(Gf, G_dlr_mat2) {
+
+  double beta   = 1.337;
+  double Lambda = 100.0;
+  double eps    = 1e-11;
+  double e0     = 1.42;
+  double tol    = 1.e-9;
+
+  auto gw = gf<dlr_imfreq, scalar_valued>{dlr_imfreq{beta, Fermion, Lambda, eps}};
+  for (auto const &w : gw.mesh()) gw[w] = 1 / (w - e0);
+
+  auto gc = make_gf_dlr_coeffs(gw);
+  auto gt = make_gf_dlr_imtime(gc);
+
+  //PRINT(gc.data());
+  for (auto const &tau : gt.mesh()) {
+    //PRINT(gc(tau));
+    EXPECT_COMPLEX_NEAR(gc(tau), onefermion(tau, e0, beta), tol);
+  }
 }
 
 // ------------------------------------------------------------
