@@ -30,11 +30,11 @@ namespace triqs::mesh {
     // -------------------- Data -------------------
     private:
     long L_;
-    uint64_t mesh_hash_ = 0;
+    uint64_t _mesh_hash = 0;
 
     // -------------------- Constructors -------------------
     public:
-    index(long L = 0) : L_(L), mesh_hash_(L) {}
+    index(long L = 0) : L_(L), _mesh_hash(L) {}
 
     // -------------------- Comparison -------------------
 
@@ -73,19 +73,19 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {idx, datidx, mesh_hash_};
+      return {idx, datidx, _mesh_hash};
     }
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {idx, datidx, mesh_hash_};
+      return {idx, datidx, _mesh_hash};
     }
 
     // -------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const { return L_; }

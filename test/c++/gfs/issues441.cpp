@@ -36,7 +36,7 @@ void disconnected_PP_G2(gf_view<imfreq, matrix_valued> g, gf_view<prod<imfreq, i
       g2[Omega, n, Omega - n](a, b, c, d) << g(n)(b, a) * g(Omega - n)(d, c);
     }
   }
-  g2 *= g.mesh().beta;
+  g2 *= g.mesh().beta();
 }
 
 MAKE_MAIN

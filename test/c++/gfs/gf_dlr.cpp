@@ -104,12 +104,12 @@ TEST(Gf, DLR_basic) {
   auto m_w_f    = dlr_imfreq{beta, Fermion, Lambda, eps};
   auto m_w_b    = dlr_imfreq{beta, Boson, Lambda, eps};
 
-  EXPECT_EQ(m_tau.Lambda, Lambda);
-  EXPECT_EQ(m_w_f.Lambda, Lambda);
-  EXPECT_EQ(m_w_b.Lambda, Lambda);
-  EXPECT_EQ(m_tau.eps, eps);
-  EXPECT_EQ(m_w_f.eps, eps);
-  EXPECT_EQ(m_w_b.eps, eps);
+  EXPECT_EQ(m_tau.Lambda(), Lambda);
+  EXPECT_EQ(m_w_f.Lambda(), Lambda);
+  EXPECT_EQ(m_w_b.Lambda(), Lambda);
+  EXPECT_EQ(m_tau.eps(), eps);
+  EXPECT_EQ(m_w_f.eps(), eps);
+  EXPECT_EQ(m_w_b.eps(), eps);
 
   for (const auto &tau : m_tau) {
     EXPECT_TRUE(tau <= beta);
@@ -203,7 +203,7 @@ TEST(Gf, DLR_imtime_grid) {
   auto GG = G1 * G2; // Multiplication
   for (const auto &tau : mesh) { EXPECT_CLOSE(GG[tau], G1[tau] * G1[tau]); }
 
-  EXPECT_TRUE(GG.mesh().statistic == Boson);
+  EXPECT_TRUE(GG.mesh().statistic() == Boson);
 }
 
 // ----------------------------------------------------------------

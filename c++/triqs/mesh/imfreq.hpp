@@ -48,18 +48,17 @@ namespace triqs::mesh {
 
     // -------------------- Data -------------------
 
-    double beta              = 0.0;
-    statistic_enum statistic = Fermion;
-
     /// Option for the constructor. Restrict to positive frequency or not
     enum class option { all_frequencies, positive_frequencies_only };
 
     private:
-    long _n_iw          = 1;
-    option _opt         = option::all_frequencies;
-    long _last_idx      = _n_iw - 1;
-    long _first_idx     = -(_last_idx + ((statistic == Fermion) ? 1 : 0));
-    uint64_t mesh_hash_ = 0;
+    double _beta              = 0.0;
+    statistic_enum _statistic = Fermion;
+    long _n_iw                = 1;
+    option _opt               = option::all_frequencies;
+    long _last_idx            = _n_iw - 1;
+    long _first_idx           = -(_last_idx + ((_statistic == Fermion) ? 1 : 0));
+    uint64_t _mesh_hash       = 0;
 
     // -------------------- Constructors -------------------
     public:
@@ -76,7 +75,7 @@ namespace triqs::mesh {
      *
      */
     imfreq(double beta, statistic_enum statistic, long n_iw = 1025, option opt = option::all_frequencies)
-       : beta(beta), statistic(statistic), _n_iw(n_iw), _opt(opt), mesh_hash_(hash(beta, statistic, n_iw, opt)) {
+       : _beta(beta), _statistic(statistic), _n_iw(n_iw), _opt(opt), _mesh_hash(hash(beta, statistic, n_iw, opt)) {
       if (opt == option::positive_frequencies_only) _first_idx = 0;
     }
 
@@ -111,19 +110,19 @@ namespace triqs::mesh {
     // -------------------- Comparisons -------------------
 
     ///
-    bool operator==(imfreq const &m) const { return (std::tie(beta, statistic, _n_iw, _opt) == std::tie(m.beta, m.statistic, m._n_iw, m._opt)); }
+    bool operator==(imfreq const &m) const { return (std::tie(_beta, _statistic, _n_iw, _opt) == std::tie(m._beta, m._statistic, m._n_iw, m._opt)); }
 
     ///
     bool operator!=(imfreq const &m) const { return !(operator==(m)); }
 
     // -------------------- Get the grid for positive freq only -------------------
 
-    imfreq get_positive_freq() const { return {beta, statistic, _n_iw, option::positive_frequencies_only}; }
+    imfreq get_positive_freq() const { return {_beta, _statistic, _n_iw, option::positive_frequencies_only}; }
 
     // -------------------- Convertion to matsubara_freq -------------------
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
-    matsubara_freq idx_to_freq(idx_t idx) const { return {idx, beta, statistic}; }
+    matsubara_freq idx_to_freq(idx_t idx) const { return {idx, _beta, _statistic}; }
 
     /// Maximum freq of the mesh
     dcomplex w_max() const { return idx_to_freq(_last_idx); }
@@ -139,28 +138,35 @@ namespace triqs::mesh {
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
       mesh_point_t() = default;
-      mesh_point_t(double beta, statistic_enum statistic, idx_t idx, long datidx_, uint64_t mesh_hash_) //NOLINT
-         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(mesh_hash_) {}
+      mesh_point_t(double beta, statistic_enum statistic, idx_t idx, long datidx_, uint64_t _mesh_hash) //NOLINT
+         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(_mesh_hash) {}
     };
 
     // -------------------- Accessors -------------------
 
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    /// The inverse temperature
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// The particle statistic: Fermion or Boson
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
     /// The associated domain
-    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta, statistic}; }
+    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _last_idx - _first_idx + 1; }
 
     /// first Matsubara idx
-    long first_idx() const { return _first_idx; }
+    [[nodiscard]] long first_idx() const { return _first_idx; }
 
     /// last Matsubara idx
-    long last_idx() const { return _last_idx; }
+    [[nodiscard]] long last_idx() const { return _last_idx; }
 
     /// Is the mesh only for positive omega_n (G(tau) real))
-    bool positive_only() const { return _opt == option::positive_frequencies_only; }
+    [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
 
     // -------------------- checks -------------------
 
@@ -172,12 +178,12 @@ namespace triqs::mesh {
     [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_idx(); }
 
     [[nodiscard]] datidx_t to_datidx(matsubara_freq const &iw) const noexcept {
-      EXPECTS(beta == iw.beta and statistic == iw.statistic);
+      EXPECTS(_beta == iw.beta and _statistic == iw.statistic);
       return to_datidx(iw.n);
     }
 
     [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<value_t> const &cmp) const {
-      EXPECTS(beta == cmp.value.beta and statistic == cmp.value.statistic);
+      EXPECTS(_beta == cmp.value.beta and _statistic == cmp.value.statistic);
       return to_datidx(to_idx(cmp));
     }
 
@@ -195,7 +201,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {beta, statistic, idx, datidx, mesh_hash_};
+      return {_beta, _statistic, idx, datidx, _mesh_hash};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
@@ -203,14 +209,14 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(long idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {beta, statistic, idx, datidx, mesh_hash_};
+      return {_beta, _statistic, idx, datidx, _mesh_hash};
     }
 
     // -------------------- to_value ------------------
     /// From an index to a matsubara_freq
     [[nodiscard]] matsubara_freq to_value(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
-      return {idx, beta, statistic};
+      return {idx, _beta, _statistic};
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -229,8 +235,8 @@ namespace triqs::mesh {
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
-      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary Freq Mesh with beta = {}, statistic = {}, n_iw = {}, positive_only = {}", m.beta, stat_cstr, m.size(),
+      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary Freq Mesh with beta = {}, statistic = {}, n_iw = {}, positive_only = {}", m._beta, stat_cstr, m.size(),
                                  m.positive_only());
     }
 
@@ -243,8 +249,8 @@ namespace triqs::mesh {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m); //NOLINT
 
-      h5::write(gr, "beta", m.beta);
-      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "beta", m._beta);
+      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
       h5::write(gr, "size", m.size());
       h5::write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
     }
@@ -272,7 +278,7 @@ namespace triqs::mesh {
     // -------------------------- evaluation --------------------------
 
     friend auto evaluate(imfreq const &m, auto const &f, matsubara_freq const &iw) {
-      EXPECTS(m.beta == iw.beta and m.statistic == iw.statistic);
+      EXPECTS(m.beta() == iw.beta and m.statistic() == iw.statistic);
       return f(iw.n);
     }
 

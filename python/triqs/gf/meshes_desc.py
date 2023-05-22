@@ -96,13 +96,13 @@ m.add_method("""int first_idx()""")
 m.add_method("""bool positive_only()""")
 m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {})""")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic", signature = "statistic_enum()"),
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
                doc = "Statistic")
-m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dcomplex{0, (2*n + self_c.statistic)*M_PI/self_c.beta}", doc = "")
+m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dcomplex{0, (2*n + self_c.statistic())*M_PI/self_c.beta()}", doc = "")
 
 module.add_class(m)
 
@@ -124,19 +124,19 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()",
                signature = "statistic_enum()"),
                doc = "Statistic")
 m.add_property(name = "Lambda",
-               getter = cfunction(calling_pattern="double result = self_c.Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda()",
                signature = "double()",
                doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
-               getter = cfunction(calling_pattern="double result = self_c.eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
                doc = "DLR epsilon accuracy"))
 
@@ -165,11 +165,11 @@ m.add_constructor(signature = "(double beta, statistic_enum S, int n_tau)")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_constructor(signature = "(double beta, statistic_enum statistic, int n_tau)")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic", signature = "statistic_enum()"),
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
                doc = "Statistic")
 
 module.add_class(m)
@@ -195,19 +195,19 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()",
                signature = "statistic_enum()"),
                doc = "Statistic")
 m.add_property(name = "Lambda",
-               getter = cfunction(calling_pattern="double result = self_c.Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda()",
                signature = "double()",
                doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
-               getter = cfunction(calling_pattern="double result = self_c.eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
                doc = "DLR epsilon accuracy"))
 
@@ -234,19 +234,19 @@ m = make_mesh(py_type = "MeshDLRCoeffs", c_tag = "dlr_coeffs",
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double Lambda, double eps)")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()",
                signature = "statistic_enum()"),
                doc = "Statistic")
 m.add_property(name = "Lambda",
-               getter = cfunction(calling_pattern="double result = self_c.Lambda",
+               getter = cfunction(calling_pattern="double result = self_c.Lambda()",
                signature = "double()",
                doc = "DLR Lambda parameter"))
 m.add_property(name = "eps",
-               getter = cfunction(calling_pattern="double result = self_c.eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
                doc = "DLR epsilon accuracy"))
 
@@ -274,11 +274,11 @@ m.add_constructor(signature = "(double beta, statistic_enum S, int max_n)")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_constructor(signature = "(double beta, statistic_enum statistic, int max_n)")
 m.add_property(name = "beta",
-               getter = cfunction(calling_pattern="double result = self_c.beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
 m.add_property(name = "statistic",
-               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic", signature = "statistic_enum()"),
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
                doc = "Statistic")
 
 module.add_class(m)

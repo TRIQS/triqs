@@ -31,11 +31,11 @@ namespace triqs::mesh {
 
   inline imfreq make_adjoint_mesh(imtime const &m, long n_iw = -1) {
     if (n_iw == -1) n_iw = (m.size() - 1) / 6;
-    return {m.beta, m.statistic, n_iw};
+    return {m.beta(), m.statistic(), n_iw};
   }
   inline imtime make_adjoint_mesh(imfreq const &m, long n_tau = -1) {
     if (n_tau == -1) n_tau = 6 * (m.last_idx() + 1) + 1;
-    return {m.beta, m.statistic, n_tau};
+    return {m.beta(), m.statistic(), n_tau};
   }
 
   inline dlr_imfreq make_adjoint_mesh(dlr_imtime const &m) { return dlr_imfreq{m}; }

@@ -33,7 +33,7 @@ namespace triqs::gfs {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
     auto sh         = dat.shape();
-    int is_boson    = (g.mesh().statistic == Boson);
+    int is_boson    = (g.mesh().statistic() == Boson);
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
@@ -44,7 +44,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().beta, g.mesh().statistic, L}, std::move(new_data)};
+    return {mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), L}, std::move(new_data)};
   }
 
   /// Make a const view of the positive frequency part of the function
@@ -54,7 +54,7 @@ namespace triqs::gfs {
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
-    int is_boson = (g.mesh().statistic == Boson);
+    int is_boson = (g.mesh().statistic() == Boson);
     return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis())};
   }
 
@@ -238,7 +238,7 @@ namespace triqs::gfs {
   // ------------------------------------------------------------------------------------------------------
 
   template <template <typename, typename, typename ...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
-    auto iw_mesh = mesh::imfreq{g.mesh().beta, Fermion, n_max};
+    auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
     int idx_min          = old_mesh.to_datidx(iw_mesh.first_idx());

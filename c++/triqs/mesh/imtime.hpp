@@ -38,11 +38,13 @@ namespace triqs::mesh {
 
     // -------------------- Data -------------------
 
-    double beta;
-    statistic_enum statistic;
+    private:
+    double _beta;
+    statistic_enum _statistic;
 
     // -------------------- Constructors -------------------
 
+    public:
     /**
      * Construct a Mesh of imaginary times on the interval [0,beta]
      * including points at both edges.
@@ -51,7 +53,7 @@ namespace triqs::mesh {
      * @param statistic Statistic (Fermion or Boson)
      * @param n_tau Number of mesh-points
      */
-    imtime(double beta = 0.0, statistic_enum statistic = Fermion, long n_tau = 2) : linear(0, beta, n_tau), beta(beta), statistic(statistic) {}
+    imtime(double beta = 0.0, statistic_enum statistic = Fermion, long n_tau = 2) : linear(0, beta, n_tau), _beta(beta), _statistic(statistic) {}
 
     /**
      * Construct a Mesh of imaginary times on a Matsubara time domain
@@ -68,8 +70,14 @@ namespace triqs::mesh {
 
     // -------------------- Accessors -------------------
 
+    /// The inverse temperature
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// The particle statistic: Fermion or Boson
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
     /// The associated domain
-    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta, statistic}; }
+    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {_beta, _statistic}; }
 
     // -------------------- HDF5 -------------------
 
@@ -79,8 +87,8 @@ namespace triqs::mesh {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m); //NOLINT
 
-      h5::write(gr, "beta", m.beta);
-      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "beta", m._beta);
+      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
       h5::write(gr, "n_tau", m.size());
     }
 
@@ -101,8 +109,8 @@ namespace triqs::mesh {
     // -------------------- Print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, imtime const &m) {
-      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary Time Mesh with beta = {}, statistic = {}, n_tau = {}", m.beta, stat_cstr, m.size());
+      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary Time Mesh with beta = {}, statistic = {}, n_tau = {}", m._beta, stat_cstr, m.size());
     }
   };
 

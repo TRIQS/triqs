@@ -55,7 +55,7 @@ namespace triqs::gfs {
 
       if (g.mesh().is_idx_valid(f.n)) return g[f.n];
       if (g.mesh().positive_only()) {
-        int sh = (g.mesh().statistic == Fermion ? 1 : 0);
+        int sh = (g.mesh().statistic() == Fermion ? 1 : 0);
         if (g.mesh().is_idx_valid(-f.n - sh)) return conj(g[-f.n - sh]);
         TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
       }
@@ -73,7 +73,7 @@ namespace triqs::gfs {
     }
 
     // int -> replace by matsubara_freq
-    template <typename G> decltype(auto) operator()(G const &g, int n) const { return g(matsubara_freq(n, g.mesh().beta, g.mesh().statistic)); }
+    template <typename G> decltype(auto) operator()(G const &g, int n) const { return g(matsubara_freq(n, g.mesh().beta(), g.mesh().statistic())); }
   };
 
 } // namespace triqs::gfs

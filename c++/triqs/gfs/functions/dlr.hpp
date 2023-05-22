@@ -40,7 +40,7 @@ namespace triqs::gfs {
 
   auto make_gf_dlr_coeffs(MemoryGf<dlr_imfreq> auto const &g) {
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
-    auto beta_inv = 1. / result.mesh().beta;
+    auto beta_inv = 1. / result.mesh().beta();
     result.data() = beta_inv * result.mesh().dlr_if().vals2coefs(g.data());
     return result;
   }
@@ -53,19 +53,19 @@ namespace triqs::gfs {
 
   auto make_gf_dlr_imfreq(MemoryGf<dlr_coeffs> auto const &g) {
     auto result   = gf{dlr_imfreq{g.mesh()}, g.target_shape()};
-    auto beta     = result.mesh().beta;
+    auto beta     = result.mesh().beta();
     result.data() = beta * g.mesh().dlr_if().coefs2vals(g.data());
     return result;
   }
 
   auto make_gf_imtime(MemoryGf<dlr_coeffs> auto const &g, long n_tau) {
-    auto result = gf{mesh::imtime{g.mesh().beta, g.mesh().statistic, n_tau}, g.target_shape()};
+    auto result = gf{mesh::imtime{g.mesh().beta(), g.mesh().statistic(), n_tau}, g.target_shape()};
     for (auto const &tau : result.mesh()) result[tau] = g(tau.value());
     return result;
   }
 
   auto make_gf_imfreq(MemoryGf<dlr_coeffs> auto const &g, long n_iw = 1025) {
-    auto result = gf{mesh::imfreq{g.mesh().beta, g.mesh().statistic, n_iw}, g.target_shape()};
+    auto result = gf{mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), n_iw}, g.target_shape()};
     for (auto const &w : result.mesh()) result[w] = g(w.value());
     return result;
   }
@@ -73,7 +73,7 @@ namespace triqs::gfs {
   // OPFIXME decide strategy
   // OPFIXME Discussion on going with Jason.
   auto make_gf_dlr_imfreq(MemoryGf<mesh::imfreq> auto const &g, double Lambda, double eps) {
-    auto result = gf{dlr_imfreq{g.mesh().beta, g.mesh().statistic, Lambda, eps}, g.target_shape()};
+    auto result = gf{dlr_imfreq{g.mesh().beta(), g.mesh().statistic(), Lambda, eps}, g.target_shape()};
     // Check that the g mesh is big enough ...
     //auto [wmin, wmax] = result.mesh().min_max_frequencies();
     //auto n_max        = g.mesh().w_max().n;

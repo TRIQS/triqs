@@ -20,15 +20,14 @@
  ******************************************************************************/
 #pragma once
 #include "utils.hpp"
-#include <cppdlr/cppdlr.hpp>
 #include "dlr_coeffs.hpp"
 #include "domains/matsubara.hpp"
+
+#include <cppdlr/cppdlr.hpp>
+
 #include <memory>
 
 namespace triqs::mesh {
-
-  struct dlr_imtime;
-  struct dlr_coeffs;
 
   struct dlr_imfreq {
 
@@ -38,13 +37,12 @@ namespace triqs::mesh {
 
     // -------------------- Data -------------------
 
-    double beta              = 0.0;
-    statistic_enum statistic = Fermion;
-    double Lambda            = 1e+10;
-    double eps               = 1e-10;
-
     private:
-    uint64_t mesh_hash_ = 0;
+    double _beta              = 0.0;
+    statistic_enum _statistic = Fermion;
+    double _Lambda            = 1e+10;
+    double _eps               = 1e-10;
+    uint64_t _mesh_hash       = 0;
     std::shared_ptr<const dlr_ops> _dlr;
 
     // -------------------- Constructors -------------------
@@ -68,11 +66,11 @@ namespace triqs::mesh {
                     dlr_ops{dlr_freq, {Lambda, dlr_freq}, {Lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
 
     dlr_imfreq(double beta, statistic_enum statistic, double Lambda, double eps, dlr_ops dlr)
-       : beta(beta),
-         statistic(statistic),
-         Lambda(Lambda),
-         eps(eps),
-         mesh_hash_(hash(beta, statistic, Lambda, eps, sum(dlr.imf.get_ifnodes()))),
+       : _beta(beta),
+         _statistic(statistic),
+         _Lambda(Lambda),
+         _eps(eps),
+         _mesh_hash(hash(beta, statistic, Lambda, eps, sum(dlr.imf.get_ifnodes()))),
          _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
     friend class dlr_imtime;
@@ -80,16 +78,16 @@ namespace triqs::mesh {
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    explicit dlr_imfreq(M const &m) : beta(m.beta), statistic(m.statistic), Lambda(m.Lambda), eps(m.eps), _dlr(m._dlr) {
+    explicit dlr_imfreq(M const &m) : _beta(m._beta), _statistic(m._statistic), _Lambda(m._Lambda), _eps(m._eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imfreq>)
-        mesh_hash_ = m.mesh_hash_;
+        _mesh_hash = m._mesh_hash;
       else
-        mesh_hash_ = hash(beta, statistic, Lambda, eps, sum(_dlr->imf.get_ifnodes()));
+        _mesh_hash = hash(_beta, _statistic, _Lambda, _eps, sum(_dlr->imf.get_ifnodes()));
     }
 
     // -------------------- Comparisons -------------------
 
-    bool operator==(dlr_imfreq const &m) const { return mesh_hash_ == m.mesh_hash_; }
+    bool operator==(dlr_imfreq const &m) const { return _mesh_hash == m._mesh_hash; }
     bool operator!=(dlr_imfreq const &m) const { return !(operator==(m)); }
 
     // -------------------- mesh_point -------------------
@@ -101,19 +99,35 @@ namespace triqs::mesh {
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
       mesh_point_t() = default;
-      mesh_point_t(double beta, statistic_enum statistic, long idx, long datidx_, uint64_t mesh_hash_)
-         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(mesh_hash_) {}
+      mesh_point_t(double beta, statistic_enum statistic, long idx, long datidx_, uint64_t _mesh_hash)
+         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(_mesh_hash) {}
     };
 
     // -------------------- Accessors -------------------
 
+    /// The inverse temperature
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// The particle statistic: Fermion or Boson
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
+    /// DLR energy cutoff Lambda = beta*w_max
+    [[nodiscard]] double Lambda() const noexcept { return _Lambda; }
+
+    /// Representation accuracy
+    [[nodiscard]] double eps() const noexcept { return _eps; }
+
+    /// The vector of DLR frequencies
     [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
 
+    /// The imaginary time DLR operations object
     [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
 
+    /// The Matsubara frequency DLR operations object
     [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
     [[nodiscard]] std::pair<matsubara_freq, matsubara_freq> min_max_frequencies() const noexcept {
       return {(*this)(0).value(), (*this)(size() - 1).value()};
@@ -142,14 +156,14 @@ namespace triqs::mesh {
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
       EXPECTS(is_idx_valid(idx));
-      return {beta, statistic, _dlr->imf.get_ifnodes()[idx], idx, mesh_hash_};
+      return {_beta, _statistic, _dlr->imf.get_ifnodes()[idx], idx, _mesh_hash};
     }
 
     // -------------------- to_value ------------------
 
     [[nodiscard]] matsubara_freq to_value(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
-      return {_dlr->imf.get_ifnodes()[idx], beta, statistic};
+      return {_dlr->imf.get_ifnodes()[idx], _beta, _statistic};
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -168,9 +182,9 @@ namespace triqs::mesh {
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_imfreq const &m) {
-      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, Lambda = {}, eps = {}", m.beta, m.size(), stat_cstr,
-                                 m.Lambda, m.eps);
+      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, Lambda = {}, eps = {}", m._beta, m.size(), stat_cstr,
+                                 m._Lambda, m._eps);
     }
 
     // -------------------- HDF5 -------------------
@@ -182,10 +196,10 @@ namespace triqs::mesh {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m);
 
-      h5::write(gr, "beta", m.beta);
-      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "Lambda", m.Lambda);
-      h5::write(gr, "eps", m.eps);
+      h5::write(gr, "beta", m._beta);
+      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "Lambda", m._Lambda);
+      h5::write(gr, "eps", m._eps);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
       h5::write(gr, "dlr_if", m.dlr_if());

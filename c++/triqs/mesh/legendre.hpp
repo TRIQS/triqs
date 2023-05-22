@@ -31,12 +31,11 @@ namespace triqs::mesh {
 
     // -------------------- Data -------------------
 
-    double beta              = 0.0;
-    statistic_enum statistic = Fermion;
-
     private:
-    long max_n_         = 1;
-    uint64_t mesh_hash_ = 0;
+    double _beta              = 0.0;
+    statistic_enum _statistic = Fermion;
+    long _max_n               = 1;
+    uint64_t _mesh_hash       = 0;
 
     // -------------------- Constructors -------------------
     public:
@@ -50,7 +49,7 @@ namespace triqs::mesh {
      *  @param max_n Largest degree
      */
     legendre(double beta, statistic_enum statistic, long max_n)
-       : beta(beta), statistic(statistic), max_n_(max_n), mesh_hash_(hash(beta, statistic, max_n)) {}
+       : _beta(beta), _statistic(statistic), _max_n(max_n), _mesh_hash(hash(beta, statistic, max_n)) {}
 
     // -------------------- Comparison -------------------
 
@@ -68,7 +67,7 @@ namespace triqs::mesh {
 
     // -------------------- idx checks and conversions -------------------
 
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < max_n_; }
+    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < _max_n; }
 
     // -------------------- to_datidx ------------------
 
@@ -86,17 +85,23 @@ namespace triqs::mesh {
 
     // ------------------ operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const { return {to_idx(datidx), datidx, mesh_hash_}; }
+    [[nodiscard]] mesh_point_t operator[](long datidx) const { return {to_idx(datidx), datidx, _mesh_hash}; }
 
-    [[nodiscard]] mesh_point_t operator()(long idx) const { return {idx, to_datidx(idx), mesh_hash_}; }
+    [[nodiscard]] mesh_point_t operator()(long idx) const { return {idx, to_datidx(idx), _mesh_hash}; }
 
     // -------------------- Accessors -------------------
 
+    /// The inverse temperature
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// The particle statistic: Fermion or Boson
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
     /// The Hash for the mesh configuration
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const { return max_n_; }
+    [[nodiscard]] long size() const { return _max_n; }
 
     // -------------------------- Range & Iteration --------------------------
 
@@ -114,8 +119,8 @@ namespace triqs::mesh {
     // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, legendre const &m) {
-      auto stat_cstr = (m.statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Legendre mesh with beta = {}, statistic = {}, max_n = {}", m.beta, stat_cstr, m.size());
+      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Legendre mesh with beta = {}, statistic = {}, max_n = {}", m._beta, stat_cstr, m.size());
     }
 
     // -------------------- HDF5 -------------------
@@ -126,9 +131,9 @@ namespace triqs::mesh {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m);
 
-      h5::write(gr, "beta", m.beta);
-      h5::write(gr, "statistic", (m.statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "max_n", m.max_n_);
+      h5::write(gr, "beta", m._beta);
+      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "max_n", m._max_n);
     }
 
     friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) {
@@ -149,8 +154,8 @@ namespace triqs::mesh {
   inline auto evaluate(legendre const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
     utility::legendre_generator L{};
-    L.reset(2 * tau / m.beta - 1);
-    return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta; });
+    L.reset(2 * tau / m.beta() - 1);
+    return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * std::sqrt(2 * l + 1) * L.next() / m.beta(); });
   }
 
   // check concept

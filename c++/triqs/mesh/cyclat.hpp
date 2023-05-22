@@ -42,7 +42,7 @@ namespace triqs::mesh {
     long stride1 = 1, stride0 = 1;
     nda::matrix<double> units_     = nda::eye<double>(3);
     nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t mesh_hash_            = 0;
+    uint64_t _mesh_hash            = 0;
 
     // -------------------- Constructors -------------------
     public:
@@ -60,7 +60,7 @@ namespace triqs::mesh {
          stride0(dims_[1] * dims_[2]),
          units_(bl.units()),
          units_inv_(inverse(units_)),
-         mesh_hash_(hash(sum(bl.units()), dims[0], dims[1], dims[2])) {}
+         _mesh_hash(hash(sum(bl.units()), dims[0], dims[1], dims[2])) {}
 
     cyclat(bravais_lattice const &bl, nda::matrix<long> const &pm) : cyclat(bl, {pm(0, 0), pm(1, 1), pm(2, 2)}) {
       // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
@@ -90,7 +90,7 @@ namespace triqs::mesh {
     // ------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] size_t mesh_hash() const { return _mesh_hash; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const { return size_; }
@@ -158,7 +158,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {{&bl_, idx}, datidx, mesh_hash_};
+      return {{&bl_, idx}, datidx, _mesh_hash};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
@@ -166,7 +166,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {{&bl_, idx}, datidx, mesh_hash_};
+      return {{&bl_, idx}, datidx, _mesh_hash};
     }
 
     // -------------------- to_value -------------------

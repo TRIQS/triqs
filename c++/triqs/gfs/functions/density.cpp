@@ -59,9 +59,9 @@ namespace triqs::gfs {
     auto sh = g.target_shape();
     int N1 = sh[0], N2 = sh[1];
     nda::matrix<dcomplex> res(sh);
-    auto beta = g.mesh().beta;
+    auto beta = g.mesh().beta();
 
-    auto S = g.mesh().statistic;
+    auto S = g.mesh().statistic();
     double b1, b2, b3; // pole location for tail model
     double xi;         // +1, -1 for boson/fermion
 
@@ -200,7 +200,7 @@ namespace triqs::gfs {
 
     // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145
     for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.idx + 1) * gl[l];
-    res /= gl.mesh().beta;
+    res /= gl.mesh().beta();
 
     // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
     return transpose(res);

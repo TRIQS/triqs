@@ -36,7 +36,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<2> k_;
 
   auto [k_mesh, w_mesh] = G_k_w.mesh();
-  double beta           = w_mesh.beta;
+  double beta           = w_mesh.beta();
   int nw                = w_mesh.last_idx() + 1;
   int nnu               = 2;
   int ntau              = nw * 4;
@@ -77,7 +77,7 @@ gf_bz_imfreq_mat compute_gg(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<3> iw_;
   placeholder<4> inu_;
   auto const &[k_mesh, w_mesh] = G_k_w.mesh();
-  double beta                  = w_mesh.beta;
+  double beta                  = w_mesh.beta();
   int nnu                      = 2;
 
   auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};

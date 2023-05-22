@@ -180,7 +180,7 @@ namespace triqs {
     /// G(\tau) from Lehmann representation
     template <bool Complex>
     block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh) {
-      double beta = mesh.beta;
+      double beta = mesh.beta();
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;
@@ -270,7 +270,7 @@ namespace triqs {
     /// G_\ell from Lehmann representation
     template <bool Complex>
     block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh) {
-      double beta = mesh.beta;
+      double beta = mesh.beta();
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;

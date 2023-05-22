@@ -83,7 +83,7 @@ namespace triqs::gfs {
     // Calculate the 2nd
     matrix_t g_vec_left  = V_inv * d_vec_left;
     matrix_t g_vec_right = V_inv * d_vec_right;
-    double sign          = (gt.mesh().statistic == Fermion) ? -1 : 1;
+    double sign          = (gt.mesh().statistic() == Fermion) ? -1 : 1;
     auto tail            = make_zero_tail(gt, 4);
     tail(1, _)           = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
     tail(2, _)           = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
@@ -121,7 +121,7 @@ namespace triqs::gfs {
       tail(range(0, n_known_moments), range::all) = known_moments(range(0, n_known_moments), range::all);
     }
 
-    double beta = gt.mesh().beta;
+    double beta = gt.mesh().beta();
     auto L      = gt.mesh().size() - 1;
     if (L < 2 * (iw_mesh.last_idx() + 1))
       TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  "
@@ -136,7 +136,7 @@ namespace triqs::gfs {
     array<dcomplex, 2> _gout(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
     array<dcomplex, 2> _gin(L + 1, n_others);
 
-    bool is_fermion = (iw_mesh.statistic == Fermion);
+    bool is_fermion = (iw_mesh.statistic() == Fermion);
     double fact     = beta / L;
     dcomplex iomega = M_PI * 1i / beta;
 
@@ -211,7 +211,7 @@ namespace triqs::gfs {
     } else
       tail.rebind(known_moments); // known_moments is fine
 
-    double beta = tau_mesh.beta;
+    double beta = tau_mesh.beta();
     long L      = tau_mesh.size() - 1;
     if (L < 2 * (gw.mesh().last_idx() + 1))
       TRIQS_RUNTIME_ERROR << "Inverse Fourier: The time mesh mush be at least twice as long as the freq mesh :\n gt.mesh().size() =  "
@@ -222,7 +222,7 @@ namespace triqs::gfs {
     array<dcomplex, 2> _gin(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
     array<dcomplex, 2> _gout(L + 1, n_others);
 
-    bool is_fermion = (gw.mesh().statistic == Fermion);
+    bool is_fermion = (gw.mesh().statistic() == Fermion);
     double fact     = 1.0 / beta;
     dcomplex iomega = M_PI * 1i / beta;
 

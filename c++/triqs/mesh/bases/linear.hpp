@@ -41,7 +41,7 @@ namespace triqs::mesh::details {
     long L;
     value_t xmin, xmax, delta_x;
     double delta_x_inv;
-    size_t mesh_hash_ = 0;
+    size_t _mesh_hash = 0;
 
     // -------------------- Constructors -------------------
 
@@ -51,7 +51,7 @@ namespace triqs::mesh::details {
          xmax(b),
          delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
          delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
-         mesh_hash_(hash(L, xmin, xmax)) {
+         _mesh_hash(hash(L, xmin, xmax)) {
       EXPECTS(a <= b);
     }
 
@@ -127,7 +127,7 @@ namespace triqs::mesh::details {
 
     [[nodiscard]] mesh_point_t operator()(idx_t idx) const noexcept {
       EXPECTS(is_idx_valid(idx));
-      return {idx, idx, mesh_hash_, to_value(idx)};
+      return {idx, idx, _mesh_hash, to_value(idx)};
     }
 
     // -------------------- to_value ------------------
@@ -142,10 +142,10 @@ namespace triqs::mesh::details {
 
     // -------------------- Accessors -------------------
 
-    // Hash
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
-    /// Size (linear) of the mesh of the window
+    /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return L; }
 
     /// Step of the mesh

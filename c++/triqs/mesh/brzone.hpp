@@ -44,7 +44,7 @@ namespace triqs::mesh {
     long stride1 = 1, stride0 = 1;
     nda::matrix<double> units_     = nda::eye<double>(3);
     nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t mesh_hash_            = 0;
+    uint64_t _mesh_hash            = 0;
 
     // -------------------- Constructors -------------------
     public:
@@ -70,7 +70,7 @@ namespace triqs::mesh {
          stride0(dims_[1] * dims_[2]),
          units_(inverse(1.0 * nda::diag(dims)) * bz.units()),
          units_inv_(inverse(units_)),
-         mesh_hash_(hash(sum(bz.units()), dims[0], dims[1], dims[2])) {}
+         _mesh_hash(hash(sum(bz.units()), dims[0], dims[1], dims[2])) {}
 
     ///
     brzone(brillouin_zone const &bz, nda::matrix<long> const &pm) : brzone(bz, {pm(0, 0), pm(1, 1), pm(2, 2)}) {
@@ -102,7 +102,7 @@ namespace triqs::mesh {
     // ------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] size_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] size_t mesh_hash() const { return _mesh_hash; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const { return size_; }
@@ -167,12 +167,12 @@ namespace triqs::mesh {
     template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(closest_idx(cmp.value)); }
 
     template <char OP, typename L> [[nodiscard]] datidx_t to_datidx(k_expr_unary<OP, L> const &ex) const {
-      EXPECTS(mesh_hash_ == ex.mesh_hash);
+      EXPECTS(_mesh_hash == ex.mesh_hash);
       return this->to_datidx(this->idx_modulo(ex.index()));
     }
 
     template <char OP, typename L, typename R> [[nodiscard]] datidx_t to_datidx(k_expr<OP, L, R> const &ex) const {
-      EXPECTS(mesh_hash_ == ex.mesh_hash);
+      EXPECTS(_mesh_hash == ex.mesh_hash);
       return this->to_datidx(this->idx_modulo(ex.index()));
     }
 
@@ -240,7 +240,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long datidx) const {
       auto idx = to_idx(datidx);
       EXPECTS(is_idx_valid(idx));
-      return {idx, this, datidx, mesh_hash_};
+      return {idx, this, datidx, _mesh_hash};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
@@ -248,7 +248,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
       EXPECTS(is_idx_valid(idx));
       auto datidx = to_datidx(idx);
-      return {idx, this, datidx, mesh_hash_};
+      return {idx, this, datidx, _mesh_hash};
     }
 
     // -------------------- to_value -------------------
