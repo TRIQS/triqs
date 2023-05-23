@@ -242,7 +242,7 @@ namespace triqs::gfs {
      *  @param shape Target shape
      * 
      */
-    gf(mesh_t m, target_shape_t shape = {}) : _mesh(std::move(m)), _data(make_data_shape(m, shape)) {}
+    gf(mesh_t m, target_shape_t shape = {}) : _mesh(std::move(m)), _data(make_data_shape(_mesh, shape)) {}
 
     /**
      *  Makes a deep copy of the data
