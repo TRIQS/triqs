@@ -51,10 +51,15 @@ def make_mesh(py_type, c_tag, doc="", with_values=True):
             doc = doc
            )
 
-    m.add_method(f"{c_tag}::data_index_t to_data_index({c_tag}::index_t index)", doc = "index -> data index")
-    m.add_method(f"{c_tag}::index_t to_index({c_tag}::data_index_t data_index)", doc = "data index -> index")
+    m.add_method(f"{c_tag}::data_index_t to_data_index({c_tag}::index_t index)", doc = "Function to convert an index to a data index")
+    m.add_method(f"{c_tag}::index_t to_index({c_tag}::data_index_t data_index)", doc = "Function to convert a data index to an index")
     m.add_getitem(signature = f"{c_tag}::mesh_point_t operator[]({c_tag}::data_index_t data_index)", doc = "Get a mesh-point given the data index")
+    m.add_call(signature = f"{c_tag}::mesh_point_t operator()({c_tag}::index_t index)", calling_pattern = " auto result = self_c(index)", doc = "Get a mesh-point given the index")
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
+    m.add_property(name = "mesh_hash",
+               getter = cfunction(calling_pattern="uint64_t result = self_c.mesh_hash()",
+               signature = "uint64_t()",
+               doc = "The hash encoding the mesh configuration"))
 
     m.add_iterator()
 
@@ -102,7 +107,6 @@ m.add_property(name = "beta",
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
                doc = "Statistic")
-m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dcomplex{0, (2*n + self_c.statistic())*M_PI/self_c.beta()}", doc = "")
 
 module.add_class(m)
 

@@ -172,6 +172,9 @@ namespace cpp2py {
       pyref data_index = convert_to_python(p.data_index());
       if (data_index.is_null()) return NULL;
 
+      pyref mesh_hash = convert_to_python(p.mesh_hash());
+      if (mesh_hash.is_null()) return NULL;
+
       if constexpr (requires { p.value(); }) {
       pyref val = convert_to_python(p.value());
       if (val.is_null()) return NULL;
@@ -179,12 +182,12 @@ namespace cpp2py {
       if constexpr (requires { p.weight(); }) {
         pyref weight = convert_to_python(p.weight());
         if (weight.is_null()) return NULL;
-        return PyObject_Call(cls, pyref::make_tuple(index, data_index, val, weight), NULL);
+        return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val, weight), NULL);
       }
-      return PyObject_Call(cls, pyref::make_tuple(index, data_index, val), NULL);
+      return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val), NULL);
       }
 
-      return PyObject_Call(cls, pyref::make_tuple(index, data_index), NULL);
+      return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash), NULL);
     }
   };
 

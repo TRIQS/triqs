@@ -27,10 +27,11 @@ class MeshValueGenerator:
 
 class MeshPoint :
 
-    def __init__(self, idx, data_index, value = None, weight = None):
+    def __init__(self, idx, data_index, mesh_hash, value = None, weight = None):
         """ None : a mesh point just to use in the G[...] """
         self.idx = idx
         self.data_index = data_index
+        self.mesh_hash = mesh_hash
         self.value = value
         self.weight = weight
 

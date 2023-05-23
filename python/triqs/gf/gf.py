@@ -273,6 +273,17 @@ class Gf(metaclass=AddMethod):
         return self.__repr__()
 
     #--------------  Bracket operator []  -------------------------
+
+    # Helper: Convert Idx or MeshPoint into data_index, else forward argument
+    @staticmethod
+    def _to_data_index(x, m):
+        if isinstance(x, MeshPoint):
+            assert x.mesh_hash == m.mesh_hash, "Green function Mesh and MeshPoint have incompatible hash"
+            return x.data_index
+        elif isinstance(x, Idx):
+            return m.to_data_index(x.idx)
+        else:
+            return x
     
     _full_slice = slice(None, None, None) 
 
@@ -284,14 +295,14 @@ class Gf(metaclass=AddMethod):
 
         # Only one argument. Must be a mesh point, idx or slicing rank1 target space
         if not isinstance(key, tuple):
-            if isinstance(key, (MeshPoint, Idx)):
-                return self.data[key.data_index if isinstance(key, MeshPoint) else self._mesh.to_data_index(key.idx)]
+            if isinstance(key, (Idx, MeshPoint)):
+                return self.data[self._to_data_index(key, self._mesh)]
             else: key = (key,)
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         if all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            return self.data[tuple(x.data_index if isinstance(x, MeshPoint) else m.to_data_index(x.idx) for x,m in zip(key,self._mesh._mlist))]
+            return self.data[tuple(self._to_data_index(x,m) for x,m in zip(key,self._mesh._mlist))]
 
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
         elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
@@ -302,7 +313,7 @@ class Gf(metaclass=AddMethod):
             for x in key:
                 if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented")
             # slice the data
-            k = tuple(x.data_index if isinstance(x, MeshPoint) else m.to_data_index(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
+            k = tuple(self._to_data_index(x,m) for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
             dat = self._data[k]
             # list of the remaining lists
             mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), zip(key, mlist))]
@@ -341,12 +352,12 @@ class Gf(metaclass=AddMethod):
 
         # Only one argument and not a slice. Must be a mesh point, Idx
         if isinstance(key, (MeshPoint, Idx)):
-            self.data[key.data_index if isinstance(key, MeshPoint) else self._mesh.to_data_index(key.idx)] = val
+            self.data[self._to_data_index(key, self._mesh)] = val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            self.data[tuple(x.data_index if isinstance(x, MeshPoint) else m.to_data_index(x.idx) for x,m in zip(key,self._mesh._mlist))] = val
+            self.data[tuple(self._to_data_index(x,m) for x,m in zip(key,self._mesh._mlist))] = val
 
         else:
             self[key] << val
