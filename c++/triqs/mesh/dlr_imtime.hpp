@@ -30,19 +30,19 @@ namespace triqs::mesh {
 
   struct dlr_imtime {
 
-    using idx_t    = long;
-    using datidx_t = long;
-    using value_t  = double;
+    using index_t      = long;
+    using data_index_t = long;
+    using value_t      = double;
 
     // -------------------- Data -------------------
 
     private:
-    double _beta              = 0.0;
-    statistic_enum _statistic = Fermion;
-    double _Lambda            = 1e+10;
-    double _eps               = 1e-10;
-    uint64_t _mesh_hash       = 0;
-    std::shared_ptr<const dlr_ops> _dlr;
+    double _beta                        = 0.0;
+    statistic_enum _statistic           = Fermion;
+    double _Lambda                      = 1e+10;
+    double _eps                         = 1e-10;
+    uint64_t _mesh_hash                 = 0;
+    std::shared_ptr<const dlr_ops> _dlr = {};
 
     // -------------------- Constructors -------------------
     public:
@@ -92,13 +92,32 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t {
-      using mesh_t       = dlr_imtime;
-      long idx           = 0;
-      long datidx        = 0;
-      uint64_t mesh_hash = 0;
-      double val         = {};
-      [[nodiscard]] double value() const { return val; }
-      operator double() const { return val; }
+      using mesh_t = dlr_coeffs;
+
+      private:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+      double _value       = {};
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(long index, long data_index, uint64_t mesh_hash, double value)
+         : _index(index), _data_index(data_index), _mesh_hash(mesh_hash), _value(value) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return _index; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
+      [[nodiscard]] double value() const { return _value; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      operator double() const { return _value; }
     };
 
     // -------------------- Accessors -------------------
@@ -128,43 +147,40 @@ namespace triqs::mesh {
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept {
-      if(_dlr) return _dlr->freq.size();
-      else return 0;
+    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->freq.size() : 0); }
+
+    // -------------------- index checks and conversions -------------------
+
+    [[nodiscard]] bool is_index_valid(long index) const noexcept { return 0 <= index and index < size(); }
+
+    [[nodiscard]] long to_data_index(long index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return index;
     }
 
-    // -------------------- idx checks and conversions -------------------
+    // there is no to_data_index for a closest mesh point, as it does not make sense here.
+    [[nodiscard]] long
+    to_data_index(closest_mesh_point_t<double> const &cmp) const = delete; // closest_mesh_point makes no sense for a dlr_imtime mesh
 
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < size(); }
-
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return idx;
-    }
-
-    // there is no to_datidx for a closest mesh point, as it does not make sense here.
-    [[nodiscard]] datidx_t
-    to_datidx(closest_mesh_point_t<double> const &cmp) const = delete; // closest_mesh_point makes no sense for a dlr_imtime mesh
-
-    [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
-      EXPECTS(is_idx_valid(datidx));
-      return datidx;
+    [[nodiscard]] long to_index(long data_index) const noexcept {
+      EXPECTS(is_index_valid(data_index));
+      return data_index;
     }
 
     // -------------------- operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
+    [[nodiscard]] mesh_point_t operator[](long data_index) const { return (*this)(data_index); }
 
-    [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return {idx, idx, _mesh_hash, to_value(idx)};
+    [[nodiscard]] mesh_point_t operator()(long index) const {
+      EXPECTS(is_index_valid(index));
+      return {index, index, _mesh_hash, to_value(index)};
     }
 
     // -------------------- to_value ------------------
 
-    [[nodiscard]] double to_value(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      auto res = _dlr->imt.get_itnodes()[idx] * _beta;
+    [[nodiscard]] double to_value(long index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      auto res = _dlr->imt.get_itnodes()[index] * _beta;
       if (res < 0) res = _beta + res;
       return res;
     }

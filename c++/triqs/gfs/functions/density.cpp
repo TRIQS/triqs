@@ -199,7 +199,7 @@ namespace triqs::gfs {
     res() = 0.0;
 
     // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145
-    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.idx + 1) * gl[l];
+    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
     res /= gl.mesh().beta();
 
     // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>

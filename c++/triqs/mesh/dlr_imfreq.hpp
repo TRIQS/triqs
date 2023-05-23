@@ -31,9 +31,9 @@ namespace triqs::mesh {
 
   struct dlr_imfreq {
 
-    using idx_t    = long;
-    using datidx_t = long;
-    using value_t  = matsubara_freq;
+    using index_t      = long;
+    using data_index_t = long;
+    using value_t      = matsubara_freq;
 
     // -------------------- Data -------------------
 
@@ -43,7 +43,7 @@ namespace triqs::mesh {
     double _Lambda            = 1e+10;
     double _eps               = 1e-10;
     uint64_t _mesh_hash       = 0;
-    std::shared_ptr<const dlr_ops> _dlr;
+    std::shared_ptr<const dlr_ops> _dlr = {};
 
     // -------------------- Constructors -------------------
     public:
@@ -93,14 +93,28 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t : public matsubara_freq {
-      using mesh_t       = dlr_imfreq;
-      long datidx        = 0;
-      uint64_t mesh_hash = 0;
+      using mesh_t = dlr_imfreq;
+
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(double beta, statistic_enum statistic, long index, long data_index, uint64_t mesh_hash)
+         : matsubara_freq(index, beta, statistic), _data_index(data_index), _mesh_hash(mesh_hash) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return n; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
-      mesh_point_t() = default;
-      mesh_point_t(double beta, statistic_enum statistic, long idx, long datidx_, uint64_t _mesh_hash)
-         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(_mesh_hash) {}
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
     };
 
     // -------------------- Accessors -------------------
@@ -134,39 +148,36 @@ namespace triqs::mesh {
     }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept {
-      if(_dlr) return _dlr->freq.size();
-      else return 0;
+    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->freq.size() : 0); }
+
+    // -------------------- index checks and conversions -------------------
+
+    [[nodiscard]] bool is_index_valid(long idx) const noexcept { return 0 <= idx and idx < size(); }
+
+    [[nodiscard]] long to_data_index(long index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return index;
     }
 
-    // -------------------- idx checks and conversions -------------------
-
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < size(); }
-
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return idx;
-    }
-
-    [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
-      EXPECTS(is_idx_valid(datidx));
-      return datidx;
+    [[nodiscard]] long to_index(long data_index) const noexcept {
+      EXPECTS(is_index_valid(data_index));
+      return data_index;
     }
 
     // -------------------- operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const { return (*this)(datidx); }
+    [[nodiscard]] mesh_point_t operator[](long data_index) const { return (*this)(data_index); }
 
-    [[nodiscard]] mesh_point_t operator()(idx_t idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return {_beta, _statistic, _dlr->imf.get_ifnodes()[idx], idx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator()(long index) const {
+      EXPECTS(is_index_valid(index));
+      return {_beta, _statistic, _dlr->imf.get_ifnodes()[index], index, _mesh_hash};
     }
 
     // -------------------- to_value ------------------
 
-    [[nodiscard]] matsubara_freq to_value(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return {_dlr->imf.get_ifnodes()[idx], _beta, _statistic};
+    [[nodiscard]] matsubara_freq to_value(long index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return {_dlr->imf.get_ifnodes()[index], _beta, _statistic};
     }
 
     // -------------------------- Range & Iteration --------------------------

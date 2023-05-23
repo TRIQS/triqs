@@ -51,9 +51,9 @@ def make_mesh(py_type, c_tag, doc="", with_values=True):
             doc = doc
            )
 
-    m.add_method(f"{c_tag}::datidx_t to_datidx({c_tag}::idx_t idx)", doc = "index -> data index")
-    m.add_method(f"{c_tag}::idx_t to_idx({c_tag}::datidx_t datidx)", doc = "data index -> index")
-    m.add_getitem(signature = f"{c_tag}::mesh_point_t operator[]({c_tag}::datidx_t datidx)", doc = "Get a mesh-point given the data index")
+    m.add_method(f"{c_tag}::data_index_t to_data_index({c_tag}::index_t index)", doc = "index -> data index")
+    m.add_method(f"{c_tag}::index_t to_index({c_tag}::data_index_t data_index)", doc = "data index -> index")
+    m.add_getitem(signature = f"{c_tag}::mesh_point_t operator[]({c_tag}::data_index_t data_index)", doc = "Get a mesh-point given the data index")
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
 
     m.add_iterator()
@@ -65,7 +65,7 @@ def make_mesh(py_type, c_tag, doc="", with_values=True):
                         pyref args = PyTuple_Pack(1, self);
                         auto result = PyObject_CallObject(cls, args);
                      """, doc = "A numpy array of all the values of the mesh points")
-        m.add_method(f"{c_tag}::value_t to_value({c_tag}::idx_t idx)", doc = "index -> value")
+        m.add_method(f"{c_tag}::value_t to_value({c_tag}::index_t index)", doc = "index -> value")
 
     m.add_method_copy()
     m.add_method_copy_from()
@@ -409,7 +409,7 @@ m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone",
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, matrix_view<long> N)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, int n_k)")
 
-m.add_method("std::array<long,3> closest_idx(vector_const_view<double> v)", doc = "Mesh Index closest to the vector")
+m.add_method("std::array<long,3> closest_index(vector_const_view<double> v)", doc = "Mesh Index closest to the vector")
 
 m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Linear dimensions")
 m.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing mesh basis vectors as rows")

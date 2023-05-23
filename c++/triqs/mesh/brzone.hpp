@@ -32,9 +32,9 @@ namespace triqs::mesh {
   class brzone {
 
     public:
-    using idx_t    = std::array<long, 3>;
-    using datidx_t = long;
-    using value_t  = brillouin_zone::value_t;
+    using index_t      = std::array<long, 3>;
+    using data_index_t = long;
+    using value_t      = brillouin_zone::value_t;
 
     // -------------------- Data -------------------
     private:
@@ -117,28 +117,43 @@ namespace triqs::mesh {
 
     // ----------------------------------------
 
-    idx_t idx_modulo(idx_t const &r) const {
+    index_t index_modulo(index_t const &r) const {
       return {positive_modulo(r[0], dims_[0]), positive_modulo(r[1], dims_[1]), positive_modulo(r[2], dims_[2])};
     }
 
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t {
-      using mesh_t            = brzone;
-      std::array<long, 3> idx = {0, 0, 0};
-      brzone const *m_ptr;
-      long datidx                        = 0;
-      uint64_t mesh_hash                 = 0;
-      mutable std::optional<value_t> val = {};
+      using mesh_t = brzone;
 
+      private:
+      std::array<long, 3> _index            = {0, 0, 0};
+      brzone const *_m_ptr                  = nullptr;
+      long _data_index                      = 0;
+      uint64_t _mesh_hash                   = 0;
+      mutable std::optional<value_t> _value = {};
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(std::array<long, 3> const &index, brzone const *m_ptr, long data_index)
+         : _index(index), _m_ptr(m_ptr), _data_index(data_index), _mesh_hash(m_ptr->mesh_hash()) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] mesh_t::index_t index() const { return _index; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
       [[nodiscard]] value_t const &value() const {
-        if (val)
-          return *val;
+        if (_value)
+          return *_value;
         else
-          return *(val = m_ptr->to_value(idx));
+          return *(_value = _m_ptr->to_value(_index));
       }
 
-      auto const &index() const { return idx; } // for lazy expr of mesh_point
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
       [[nodiscard]] operator value_t() const { return value(); }
 
@@ -151,37 +166,39 @@ namespace triqs::mesh {
 
     // -------------------- checks -------------------
 
-    [[nodiscard]] bool is_idx_valid(idx_t const &idx) const noexcept {
+    [[nodiscard]] bool is_index_valid(index_t const &index) const noexcept {
       for (auto i : range(3))
-        if (idx[i] < 0 or idx[i] >= dims_[i]) return false;
+        if (index[i] < 0 or index[i] >= dims_[i]) return false;
       return true;
     }
 
-    // -------------------- to_datidx -------------------
+    // -------------------- to_data_index -------------------
 
-    [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return idx[0] * stride0 + idx[1] * stride1 + idx[2];
+    [[nodiscard]] data_index_t to_data_index(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return index[0] * stride0 + index[1] * stride1 + index[2];
     }
 
-    template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(closest_idx(cmp.value)); }
-
-    template <char OP, typename L> [[nodiscard]] datidx_t to_datidx(k_expr_unary<OP, L> const &ex) const {
-      EXPECTS(_mesh_hash == ex.mesh_hash);
-      return this->to_datidx(this->idx_modulo(ex.index()));
+    template <typename V> [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<V> const &cmp) const {
+      return to_data_index(closest_index(cmp.value));
     }
 
-    template <char OP, typename L, typename R> [[nodiscard]] datidx_t to_datidx(k_expr<OP, L, R> const &ex) const {
-      EXPECTS(_mesh_hash == ex.mesh_hash);
-      return this->to_datidx(this->idx_modulo(ex.index()));
+    template <char OP, typename L> [[nodiscard]] data_index_t to_data_index(k_expr_unary<OP, L> const &ex) const {
+      EXPECTS(_mesh_hash == ex.mesh_hash());
+      return this->to_data_index(this->index_modulo(ex.index()));
     }
 
-    // -------------------- to_idx -------------------
+    template <char OP, typename L, typename R> [[nodiscard]] data_index_t to_data_index(k_expr<OP, L, R> const &ex) const {
+      EXPECTS(_mesh_hash == ex.mesh_hash());
+      return this->to_data_index(this->index_modulo(ex.index()));
+    }
 
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
-      EXPECTS(0 <= datidx and datidx < size());
-      long i0 = datidx / stride0;
-      long r0 = datidx % stride0;
+    // -------------------- to_index -------------------
+
+    [[nodiscard]] index_t to_index(data_index_t data_index) const {
+      EXPECTS(0 <= data_index and data_index < size());
+      long i0 = data_index / stride0;
+      long r0 = data_index % stride0;
       long i1 = r0 / stride1;
       long i2 = i0 % stride1;
       return {i0, i1, i2};
@@ -191,9 +208,10 @@ namespace triqs::mesh {
 
     template <typename V>
       requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] idx_t closest_idx(V const &k) const {
+    [[nodiscard]] index_t closest_index(V const &k) const {
 
-      if constexpr (is_k_expr<V>) return closest_idx(k.value());
+      if constexpr (is_k_expr<V>)
+        return closest_index(k.value());
       else {
         // calculate k in the brzone basis
         auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
@@ -225,38 +243,38 @@ namespace triqs::mesh {
         }
 
         // fold back to brzone mesh (nearest neighbor could be out of bounds)
-        return idx_modulo({res[0], res[1], res[2]});
+        return index_modulo({res[0], res[1], res[2]});
       }
     }
 
-    template <typename V> [[nodiscard]] idx_t to_idx(closest_mesh_point_t<V> const &cmp) const {
+    template <typename V> [[nodiscard]] index_t to_index(closest_mesh_point_t<V> const &cmp) const {
       static_assert(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>);
-      return closest_idx(cmp.value);
+      return closest_index(cmp.value);
     }
 
     // -------------------- operator [] () -------------------
 
     /// Make a mesh point from a linear index
-    [[nodiscard]] mesh_point_t operator[](long datidx) const {
-      auto idx = to_idx(datidx);
-      EXPECTS(is_idx_valid(idx));
-      return {idx, this, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator[](long data_index) const {
+      auto index = to_index(data_index);
+      EXPECTS(is_index_valid(index));
+      return {index, this, data_index};
     }
 
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
 
-    [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      auto datidx = to_datidx(idx);
-      return {idx, this, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator()(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      auto data_index = to_data_index(index);
+      return {index, this, data_index};
     }
 
     // -------------------- to_value -------------------
 
     /// Convert an index to the domain value
-    [[nodiscard]] value_t to_value(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return transpose(units_)(range::all, range(bz_.lattice().ndim())) * nda::basic_array_view{idx}(range(bz_.lattice().ndim()));
+    [[nodiscard]] value_t to_value(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return transpose(units_)(range::all, range(bz_.lattice().ndim())) * nda::basic_array_view{index}(range(bz_.lattice().ndim()));
     }
 
     // -------------------- print -------------------
@@ -316,7 +334,7 @@ namespace triqs::mesh {
 
     // -------------- Evaluation --------------------------
 
-    friend auto evaluate(brzone const &m, auto const &f, idx_t const &idx) { return f(m.idx_modulo(idx)); }
+    friend auto evaluate(brzone const &m, auto const &f, index_t const &index) { return f(m.index_modulo(index)); }
 
     private:
     // Evaluation helpers
@@ -337,10 +355,10 @@ namespace triqs::mesh {
       if constexpr (is_k_expr<V>)
         return evaluate(m, f, v.value());
       else {
-        auto v_idx        = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
-        auto g            = [&f](long x, long y, long z) { return f(typename brzone::idx_t{x, y, z}); };
+        auto v_index      = make_regular(transpose(m.units_inv_) * nda::basic_array_view{v});
+        auto g            = [&f](long x, long y, long z) { return f(typename brzone::index_t{x, y, z}); };
         auto [d0, d1, d2] = m.dims();
-        return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_idx[0], v_idx[1], v_idx[2]);
+        return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_index[0], v_index[1], v_index[2]);
       }
     }
   };

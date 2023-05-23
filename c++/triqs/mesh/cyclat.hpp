@@ -30,9 +30,9 @@ namespace triqs::mesh {
   class cyclat {
 
     public:
-    using idx_t    = std::array<long, 3>;
-    using datidx_t = long;
-    using value_t  = bravais_lattice::point_t;
+    using index_t      = std::array<long, 3>;
+    using data_index_t = long;
+    using value_t      = bravais_lattice::point_t;
 
     // -------------------- Data -------------------
     private:
@@ -105,76 +105,89 @@ namespace triqs::mesh {
 
     // ----------------------------------------
 
-    idx_t idx_modulo(idx_t const &r) const {
+    index_t index_modulo(index_t const &r) const {
       return {positive_modulo(r[0], dims_[0]), positive_modulo(r[1], dims_[1]), positive_modulo(r[2], dims_[2])};
     }
 
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t : public value_t {
-      using mesh_t                       = cyclat;
-      long datidx                        = 0;
-      uint64_t mesh_hash                 = 0;
-      mutable std::optional<value_t> val = {};
+      using mesh_t = cyclat;
 
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index, long data_index, uint64_t mesh_hash)
+         : value_t(bl_ptr, index), _data_index(data_index), _mesh_hash(mesh_hash) {}
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
       [[nodiscard]] value_t const &value() const { return *this; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
       friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
     };
 
     // -------------------- checks -------------------
 
-    [[nodiscard]] bool is_idx_valid(idx_t const &idx) const noexcept {
+    [[nodiscard]] bool is_index_valid(index_t const &index) const noexcept {
       for (auto i : range(3))
-        if (idx[i] < 0 or idx[i] >= dims_[i]) return false;
+        if (index[i] < 0 or index[i] >= dims_[i]) return false;
       return true;
     }
 
-    // -------------------- to_datidx -------------------
+    // -------------------- to_data_index -------------------
 
-    [[nodiscard]] datidx_t to_datidx(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return idx[0] * stride0 + idx[1] * stride1 + idx[2];
+    [[nodiscard]] data_index_t to_data_index(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return index[0] * stride0 + index[1] * stride1 + index[2];
     }
 
-    template <typename V> [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<V> const &cmp) const { return to_datidx(to_idx(cmp)); }
+    template <typename V> [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<V> const &cmp) const { return to_data_index(to_index(cmp)); }
 
-    // -------------------- to_idx -------------------
+    // -------------------- to_index -------------------
 
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const {
-      EXPECTS(0 <= datidx and datidx < size());
-      long i0 = datidx / stride0;
-      long r0 = datidx % stride0;
+    [[nodiscard]] index_t to_index(data_index_t data_index) const {
+      EXPECTS(0 <= data_index and data_index < size());
+      long i0 = data_index / stride0;
+      long r0 = data_index % stride0;
       long i1 = r0 / stride1;
       long i2 = i0 % stride1;
       return {i0, i1, i2};
     }
 
-    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.idx; }
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.index(); }
 
     // -------------------- operator [] () -------------------
 
     /// Make a mesh point from a linear index
-    [[nodiscard]] mesh_point_t operator[](long datidx) const {
-      auto idx = to_idx(datidx);
-      EXPECTS(is_idx_valid(idx));
-      return {{&bl_, idx}, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator[](long data_index) const {
+      auto index = to_index(data_index);
+      EXPECTS(is_index_valid(index));
+      return {&bl_, index, data_index, _mesh_hash};
     }
 
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
 
-    [[nodiscard]] mesh_point_t operator()(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      auto datidx = to_datidx(idx);
-      return {{&bl_, idx}, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator()(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      auto data_index = to_data_index(index);
+      return {&bl_, index, data_index, _mesh_hash};
     }
 
     // -------------------- to_value -------------------
 
     /// Convert an index to a lattice value
-    [[nodiscard]] value_t to_value(idx_t const &idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return {&bl_, idx};
+    [[nodiscard]] value_t to_value(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return {&bl_, index};
     }
 
     // -------------------- print -------------------
@@ -232,8 +245,8 @@ namespace triqs::mesh {
 
     // -------------- Evaluation --------------------------
 
-    friend auto evaluate(cyclat const &m, auto const &f, idx_t const &idx) { return f(m.idx_modulo(idx)); }
-    friend auto evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, v.idx); }
+    friend auto evaluate(cyclat const &m, auto const &f, index_t const &index) { return f(m.index_modulo(index)); }
+    friend auto evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, v.index()); }
   };
 
   static_assert(MeshWithValues<cyclat>);

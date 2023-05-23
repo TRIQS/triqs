@@ -45,7 +45,7 @@ namespace triqs::mesh {
     long n                   = 0; // Matsubara Index
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    long idx                 = n;
+    long index               = n;
 
     matsubara_freq() = default;
     matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}

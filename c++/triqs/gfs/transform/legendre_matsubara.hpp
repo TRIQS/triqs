@@ -45,7 +45,7 @@ namespace triqs::gfs {
 
     // Use the transformation matrix
     for (auto om : gw.mesh()) {
-      for (auto l : gl.mesh()) { gw[om] += triqs::utility::legendre_T(om.idx, l.idx) * gl[l]; }
+      for (auto l : gl.mesh()) { gw[om] += triqs::utility::legendre_T(om.index(), l.index()) * gl[l]; }
     }
   }
 
@@ -64,7 +64,7 @@ namespace triqs::gfs {
 
     for (auto t : gt.mesh()) {
       L.reset(2 * t / gt.mesh().beta() - 1);
-      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.idx + 1) / gt.mesh().beta() * gl[l] * L.next(); }
+      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.index() + 1) / gt.mesh().beta() * gl[l] * L.next(); }
     }
   }
 
@@ -108,12 +108,12 @@ namespace triqs::gfs {
 
     // Do the integral over imaginary time
     for (auto t : gt.mesh()) {
-      if (t.idx == 0 || t.idx == N)
+      if (t.index() == 0 || t.index() == N)
         coef = 0.5;
       else
         coef = 1.0;
       L.reset(2 * t / gt.mesh().beta() - 1);
-      for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.idx + 1) * L.next() * gt[t]; }
+      for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.index() + 1) * L.next() * gt[t]; }
     }
     gl.data() *= gt.mesh().delta();
   }

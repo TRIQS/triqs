@@ -241,8 +241,8 @@ namespace triqs::gfs {
     auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
-    int idx_min          = old_mesh.to_datidx(iw_mesh.first_index());
-    int idx_max          = old_mesh.to_datidx(iw_mesh.last_index());
+    int idx_min          = old_mesh.to_data_index(iw_mesh.first_index());
+    int idx_max          = old_mesh.to_data_index(iw_mesh.last_index());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
     return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};

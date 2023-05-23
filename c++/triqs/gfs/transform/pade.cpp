@@ -49,7 +49,7 @@ namespace triqs {
           nda::vector<dcomplex> u_in(n_points); // values at these points
 
           for (int i = 0; i < n_points; ++i) {
-	    z_in(i) = gw.mesh()[gw.mesh().to_datidx(i)];
+            z_in(i) = gw.mesh()[gw.mesh().to_data_index(i)];
             u_in(i) = gw[i](n1, n2); 
 	  }
 

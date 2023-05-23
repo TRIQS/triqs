@@ -31,7 +31,7 @@ namespace triqs {
    */
   template <typename T, typename... U>
   concept any_of = (std::same_as<T, U> || ...);
-}
+} // namespace triqs
 
 namespace triqs::mesh {
 
@@ -49,19 +49,19 @@ namespace triqs::mesh {
     typename MP::mesh_t;
 
     // The associated index, e.g. Matsubara Index or a long
-    { mp.idx } -> std::same_as<typename MP::mesh_t::idx_t const &>;
+    { mp.index() } -> any_of<typename MP::mesh_t::index_t, typename MP::mesh_t::index_t const &>;
 
     // The index into the data array
-    { mp.datidx } -> std::same_as<typename MP::mesh_t::datidx_t const &>;
+    { mp.data_index() } -> any_of<typename MP::mesh_t::data_index_t, typename MP::mesh_t::data_index_t const &>;
 
     // Hash for easy checking of MeshPoint and Mesh compatibility
-    { mp.mesh_hash };
+    { mp.mesh_hash() } -> std::same_as<uint64_t>;
   };
 
   // ----------- Mesh ------------------------
 
   /// A mesh is a range of mesh points that can optionally have values, e.g. in [0,beta].
-  /// Each mesh point holds an index (e.g. Matsubara index) and a data index for 
+  /// Each mesh point holds an index (e.g. Matsubara index) and a data index for
   /// corresponding to the Green function data array in memory
   template <typename M>
   concept Mesh = std::regular<M> and h5::Storable<M> and requires(M const &m) {
@@ -79,37 +79,37 @@ namespace triqs::mesh {
     { *std::begin(m) } -> std::same_as<typename M::mesh_point_t>;
 
     // The type of the index, e.g. Matsubara Index
-    typename M::idx_t;
+    typename M::index_t;
 
     // The type of the index indexing the data array
-    typename M::datidx_t;
+    typename M::data_index_t;
   }
   // we now check some operations combining indices, mesh, mesh_points 
-  and requires(M const &m, typename M::idx_t idx, typename M::datidx_t datidx, typename M::mesh_point_t mp) {
+  and requires(M const &m, typename M::index_t index, typename M::data_index_t data_index, typename M::mesh_point_t mp) {
     // Validity of the index
-    { m.is_idx_valid(idx) } -> std::same_as<bool>;
+    { m.is_index_valid(index) } -> std::same_as<bool>;
 
     // Conversion
-    // NB the data idx-> idx could be slow (unflatten) but is necessary in some cases.
-    { m.to_datidx(idx) } -> std::same_as<typename M::datidx_t>;         // idx -> data idx
-    { m.to_idx(datidx) } -> std::same_as<typename M::idx_t>;            // data idx -> idx
-    { m.operator[](datidx) } -> std::same_as<typename M::mesh_point_t>; // data idx -> mesh point
-    { m.operator()(idx) } -> std::same_as<typename M::mesh_point_t>;    // idx -> mesh point
+    // NB the data index-> index could be slow (unflatten) but is necessary in some cases.
+    { m.to_data_index(index) } -> std::same_as<typename M::data_index_t>;         // index -> data idx
+    { m.to_index(data_index) } -> std::same_as<typename M::index_t>;            // data idx -> idx
+    { m.operator[](data_index) } -> std::same_as<typename M::mesh_point_t>; // data index -> mesh point
+    { m.operator()(index) } -> std::same_as<typename M::mesh_point_t>;    // index -> mesh point
   };
 
   // ------------- MeshWithValues -----------------
 
   template <typename T> struct closest_mesh_point_t; // Forward declaration
 
-  // Some meshes have points that can take value in a domain, 
+  // Some meshes have points that can take value in a domain,
   // e.g. a k mesh in a Brillouin zone, k can be a R3 vector.
   template <typename M>
-  concept MeshWithValues = Mesh<M> and requires(M const &m, typename M::idx_t idx) {
+  concept MeshWithValues = Mesh<M> and requires(M const &m, typename M::index_t index) {
     // The value type of the domain
     typename M::value_t;
 
-    {m.to_value(idx)}  -> std::same_as<typename M::value_t>; // idx -> value
-     
+    { m.to_value(index) } -> std::same_as<typename M::value_t>; // index -> value
+
     // Mesh Points can return their value and are castable
     { (*std::begin(m)).value() } -> any_of<typename M::value_t, typename M::value_t const &>;
     { static_cast<typename M::value_t>(*std::begin(m)) };

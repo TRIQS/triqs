@@ -363,7 +363,7 @@ TEST(Gf, DLR_mesh_point_mismatch) {
 
   auto gw  = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, Lambda, eps}};
   auto gw2 = gf<dlr_imfreq, scalar_valued>{{beta2, Fermion, Lambda, eps}};
-  for (auto const &iw : gw.mesh()) EXPECT_DEATH(gw2[iw], "Precondition m.mesh_hash");
+  for (auto const &iw : gw.mesh()) EXPECT_DEBUG_DEATH(gw2[iw], "Precondition m.mesh_hash");
 
   // THIS PART SHOULD NOT COMPILE AND GIVE A GOOD ERROR MESSAGE
   // auto gwold = gf<imfreq, scalar_valued>{{beta2, Fermion}};

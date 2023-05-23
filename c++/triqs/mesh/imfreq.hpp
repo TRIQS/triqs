@@ -42,8 +42,8 @@ namespace triqs::mesh {
    */
   struct imfreq : public tail_fitter_handle {
 
-    using idx_t    = long;
-    using datidx_t = long;
+    using index_t      = long;
+    using data_index_t = long;
     using value_t  = matsubara_freq;
 
     // -------------------- Data -------------------
@@ -56,8 +56,8 @@ namespace triqs::mesh {
     statistic_enum _statistic = Fermion;
     long _n_iw                = 1;
     option _opt               = option::all_frequencies;
-    long _last_index            = _n_iw - 1;
-    long _first_index           = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
+    long _last_index          = _n_iw - 1;
+    long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
     uint64_t _mesh_hash       = 0;
 
     // -------------------- Constructors -------------------
@@ -122,24 +122,37 @@ namespace triqs::mesh {
     // -------------------- Convertion to matsubara_freq -------------------
 
     /// From an index of a point in the mesh, returns the corresponding point in the domain
-    matsubara_freq idx_to_freq(idx_t idx) const { return {idx, _beta, _statistic}; }
+    matsubara_freq index_to_freq(index_t index) const { return {index, _beta, _statistic}; }
 
     /// Maximum freq of the mesh
-    dcomplex w_max() const { return idx_to_freq(_last_index); }
+    dcomplex w_max() const { return index_to_freq(_last_index); }
 
     // -------------------- mesh_point -------------------
 
     /// Type of the mesh point
     struct mesh_point_t : public matsubara_freq {
-      using mesh_t       = imfreq;
-      long idx           = n;
-      long datidx        = 0;
-      uint64_t mesh_hash = 0;
+      using mesh_t = imfreq;
+
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(double beta, statistic_enum statistic, index_t index, long data_index, uint64_t mesh_hash) //NOLINT
+         : matsubara_freq(index, beta, statistic), _data_index(data_index), _mesh_hash(mesh_hash) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return n; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
-      mesh_point_t() = default;
-      mesh_point_t(double beta, statistic_enum statistic, idx_t idx, long datidx_, uint64_t _mesh_hash) //NOLINT
-         : matsubara_freq(idx, beta, statistic), datidx(datidx_), mesh_hash(_mesh_hash) {}
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
     };
 
     // -------------------- Accessors -------------------
@@ -159,10 +172,10 @@ namespace triqs::mesh {
     /// The total number of points in the mesh
     [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
 
-    /// first Matsubara idx
+    /// first Matsubara index
     [[nodiscard]] long first_index() const { return _first_index; }
 
-    /// last Matsubara idx
+    /// last Matsubara index
     [[nodiscard]] long last_index() const { return _last_index; }
 
     /// Is the mesh only for positive omega_n (G(tau) real))
@@ -170,53 +183,53 @@ namespace triqs::mesh {
 
     // -------------------- checks -------------------
 
-    /// Checks that the idx is in [first_index(), last_index()]
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_index() <= idx and idx <= last_index(); }
+    /// Checks that the index is in [first_index(), last_index()]
+    [[nodiscard]] bool is_index_valid(index_t index) const { return first_index() <= index and index <= last_index(); }
 
-    // -------------------- to_datidx -------------------
+    // -------------------- to_data_index -------------------
 
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_index(); }
+    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept { return index - first_index(); }
 
-    [[nodiscard]] datidx_t to_datidx(matsubara_freq const &iw) const noexcept {
+    [[nodiscard]] data_index_t to_data_index(matsubara_freq const &iw) const noexcept {
       EXPECTS(_beta == iw.beta and _statistic == iw.statistic);
-      return to_datidx(iw.n);
+      return to_data_index(iw.n);
     }
 
-    [[nodiscard]] datidx_t to_datidx(closest_mesh_point_t<value_t> const &cmp) const {
+    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(_beta == cmp.value.beta and _statistic == cmp.value.statistic);
-      return to_datidx(to_idx(cmp));
+      return to_data_index(to_index(cmp));
     }
 
-    // -------------------- to_idx -------------------
+    // -------------------- to_index -------------------
 
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const { return datidx + first_index(); }
+    [[nodiscard]] index_t to_index(data_index_t data_index) const { return data_index + first_index(); }
 
-    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const {
-      EXPECTS(is_idx_valid(cmp.value.n));
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const {
+      EXPECTS(is_index_valid(cmp.value.n));
       return cmp.value.n;
     }
 
     // -------------------- operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const {
-      auto idx = to_idx(datidx);
-      EXPECTS(is_idx_valid(idx));
-      return {_beta, _statistic, idx, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator[](long data_index) const {
+      auto index = to_index(data_index);
+      EXPECTS(is_index_valid(index));
+      return {_beta, _statistic, index, data_index, _mesh_hash};
     }
 
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_datidx(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
 
-    [[nodiscard]] mesh_point_t operator()(long idx) const {
-      EXPECTS(is_idx_valid(idx));
-      auto datidx = to_datidx(idx);
-      return {_beta, _statistic, idx, datidx, _mesh_hash};
+    [[nodiscard]] mesh_point_t operator()(long index) const {
+      EXPECTS(is_index_valid(index));
+      auto data_index = to_data_index(index);
+      return {_beta, _statistic, index, data_index, _mesh_hash};
     }
 
     // -------------------- to_value ------------------
     /// From an index to a matsubara_freq
-    [[nodiscard]] matsubara_freq to_value(idx_t idx) const {
-      EXPECTS(is_idx_valid(idx));
-      return {idx, _beta, _statistic};
+    [[nodiscard]] matsubara_freq to_value(index_t index) const {
+      EXPECTS(is_index_valid(index));
+      return {index, _beta, _statistic};
     }
 
     // -------------------------- Range & Iteration --------------------------
@@ -282,7 +295,7 @@ namespace triqs::mesh {
       return f(iw.n);
     }
 
-    bool eval_to_zero(imfreq::idx_t idx) const { return !is_idx_valid(idx); }
+    bool eval_to_zero(imfreq::index_t index) const { return !is_index_valid(index); }
     bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
     bool eval_to_zero(imfreq::mesh_point_t mp) const { return eval_to_zero(mp.value()); }
   };

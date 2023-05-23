@@ -223,9 +223,9 @@ namespace triqs::mesh {
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       for (auto [i, n] : enumerate(_fit_idx_lst)) {
         if constexpr (R == 1)
-          g_mat(i, 0) = g_data_swap_idx(m.to_datidx(n));
+          g_mat(i, 0) = g_data_swap_idx(m.to_data_index(n));
         else
-          for (auto [j, x] : enumerate(g_data_swap_idx(m.to_datidx(n), ellipsis()))) { g_mat(i, j) = x; }
+          for (auto [j, x] : enumerate(g_data_swap_idx(m.to_data_index(n), ellipsis()))) { g_mat(i, j) = x; }
       }
 
       // If an array with known_moments was passed, flatten the array into a matrix

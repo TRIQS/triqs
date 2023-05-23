@@ -32,9 +32,9 @@ namespace triqs::mesh::details {
     static_assert(std::totally_ordered<Value>);
 
     public:
-    using value_t  = Value;
-    using idx_t    = long;
-    using datidx_t = long;
+    using value_t      = Value;
+    using index_t      = long;
+    using data_index_t = long;
 
     // --  data
     protected:
@@ -65,13 +65,32 @@ namespace triqs::mesh::details {
     // --------------------  Mesh Point -------------------
 
     struct mesh_point_t {
-      using mesh_t       = Mesh;
-      long idx           = 0;
-      long datidx        = 0;
-      uint64_t mesh_hash = 0;
-      value_t val        = {};
-      value_t value() const { return val; }
-      operator value_t() const { return val; }
+      using mesh_t = Mesh;
+
+      public:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+      value_t _value      = {};
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(long index, long data_index, uint64_t mesh_hash, double value)
+         : _index(index), _data_index(data_index), _mesh_hash(mesh_hash), _value(value) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return _index; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
+      [[nodiscard]] value_t value() const { return _value; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      operator value_t() const { return _value; }
 
       // https://godbolt.org/z/xoYP3vTW4
 #define IMPL_OP(OP)                                                                                                                                  \
@@ -90,52 +109,52 @@ namespace triqs::mesh::details {
 
     // -------------------- checks -------------------
 
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < L; }
+    [[nodiscard]] bool is_index_valid(index_t index) const noexcept { return 0 <= index and index < L; }
 
     private:
     [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
 
-    // -------------------- to_datidx ------------------
+    // -------------------- to_data_index ------------------
     public:
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return idx;
+    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return index;
     }
 
-    [[nodiscard]] idx_t to_datidx(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+    [[nodiscard]] index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
-      return to_datidx(to_idx(cmp));
+      return to_data_index(to_index(cmp));
     }
 
-    // ------------------ to_idx -------------------
+    // ------------------ to_index -------------------
 
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const noexcept {
-      EXPECTS(is_idx_valid(datidx));
-      return datidx;
+    [[nodiscard]] index_t to_index(data_index_t data_index) const noexcept {
+      EXPECTS(is_index_valid(data_index));
+      return data_index;
     }
 
-    [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
-      return idx_t((cmp.value - xmin) * delta_x_inv + 0.5);
+      return index_t((cmp.value - xmin) * delta_x_inv + 0.5);
     }
 
     // ------------------ operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const noexcept { return (*this)(datidx); }
+    [[nodiscard]] mesh_point_t operator[](long data_index) const noexcept { return (*this)(data_index); }
 
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_datidx(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_data_index(cmp)]; }
 
-    [[nodiscard]] mesh_point_t operator()(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return {idx, idx, _mesh_hash, to_value(idx)};
+    [[nodiscard]] mesh_point_t operator()(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return {index, index, _mesh_hash, to_value(index)};
     }
 
     // -------------------- to_value ------------------
 
-    [[nodiscard]] value_t to_value(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
+    [[nodiscard]] value_t to_value(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
       if (L == 1) return xmin;
-      double wr  = double(idx) / (L - 1);
+      double wr  = double(index) / (L - 1);
       double res = xmin * (1 - wr) + xmax * wr;
       return res;
     }

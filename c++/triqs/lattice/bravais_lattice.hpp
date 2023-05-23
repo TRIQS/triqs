@@ -65,29 +65,37 @@ namespace triqs::lattice {
     // -------------------- Point ---------------------
 
     struct point_t {
-      bravais_lattice const *bl_ptr  = nullptr;
-      std::array<long, 3> idx        = {0, 0, 0};
-      mutable std::optional<r_t> val = {};
+      private:
+      std::array<long, 3> _index       = {0, 0, 0};
+      bravais_lattice const *_bl_ptr   = nullptr;
+      mutable std::optional<r_t> _rval = {};
+
+      public:
+      point_t() = default;
+      point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index) : _index(index), _bl_ptr(bl_ptr) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] std::array<long, 3> index() const { return _index; }
 
       explicit operator r_t() const {
-        if (val)
-          return *val;
+        if (_rval)
+          return *_rval;
         else
-          return bl_ptr->lattice_to_real_coordinates(idx);
+          return *(_rval = _bl_ptr->lattice_to_real_coordinates(_index));
       }
 
       [[deprecated("() is deprecated for a cyclat::mesh_point_t. Use [] instead")]] double operator()(int d) const { return r_t(*this)[d]; }
       double operator[](int d) const { return r_t(*this)[d]; }
 
       point_t operator+(point_t const &y) const {
-        EXPECTS(*bl_ptr == *(y.bl_ptr));
-        return {bl_ptr, idx + y.idx};
+        EXPECTS(*_bl_ptr == *(y._bl_ptr));
+        return {_bl_ptr, _index + y._index};
       }
       point_t operator-(point_t const &y) const {
-        EXPECTS(*bl_ptr == *(y.bl_ptr));
-        return {bl_ptr, idx - y.idx};
+        EXPECTS(*_bl_ptr == *(y._bl_ptr));
+        return {_bl_ptr, _index - y._index};
       }
-      point_t operator-() const { return {bl_ptr, -idx}; }
+      point_t operator-() const { return {_bl_ptr, -_index}; }
 
       friend std::ostream &operator<<(std::ostream &out, point_t const &x) { return out << (r_t)x; }
     };

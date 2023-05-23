@@ -166,11 +166,11 @@ namespace cpp2py {
       static pyref cls = pyref::get_class("triqs.gf", "MeshPoint", /* raise_exception */ true);
       if (cls.is_null()) return NULL;
 
-      pyref idx = convert_to_python(p.idx);
-      if (idx.is_null()) return NULL;
+      pyref index = convert_to_python(p.index());
+      if (index.is_null()) return NULL;
 
-      pyref datidx = convert_to_python(p.datidx);
-      if (datidx.is_null()) return NULL;
+      pyref data_index = convert_to_python(p.data_index());
+      if (data_index.is_null()) return NULL;
 
       if constexpr (requires { p.value(); }) {
       pyref val = convert_to_python(p.value());
@@ -179,12 +179,12 @@ namespace cpp2py {
       if constexpr (requires { p.weight(); }) {
         pyref weight = convert_to_python(p.weight());
         if (weight.is_null()) return NULL;
-        return PyObject_Call(cls, pyref::make_tuple(idx, datidx, val, weight), NULL);
+        return PyObject_Call(cls, pyref::make_tuple(index, data_index, val, weight), NULL);
       }
-      return PyObject_Call(cls, pyref::make_tuple(idx, datidx, val), NULL);
+      return PyObject_Call(cls, pyref::make_tuple(index, data_index, val), NULL);
       }
 
-      return PyObject_Call(cls, pyref::make_tuple(idx, datidx), NULL);
+      return PyObject_Call(cls, pyref::make_tuple(index, data_index), NULL);
     }
   };
 

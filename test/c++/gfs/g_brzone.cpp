@@ -25,7 +25,7 @@ TEST(Gfk, base) {
   auto m2 = brzone{bz, 3 * N};
 
   EXPECT_FALSE(m.mesh_hash() == m2.mesh_hash());
-  ASSERT_DEBUG_DEATH(gk[m2[1]], "mesh_hash violated");
+  EXPECT_DEBUG_DEATH(gk[m2[1]], "mesh_hash.* violated");
 
   EXPECT_EQ(m[0].index(), (std::array<long, 3>{0, 0, 0}));
   EXPECT_EQ(m[1].index(), (std::array<long, 3>{0, 1, 0}));
@@ -62,22 +62,22 @@ TEST(Gfk, loopkq) {
 
   for (auto [k, q] : m *m) {
     { // MP +
-      auto kq_idx = m.idx_modulo(k.idx + q.idx);
+      auto kq_idx = m.index_modulo(k.index() + q.index());
       EXPECT_COMPLEX_NEAR(g[kq_idx], g[k + q], tol);
     }
 
     { // MP -
-      auto kq_idx = m.idx_modulo(k.idx - q.idx);
+      auto kq_idx = m.index_modulo(k.index() - q.index());
       EXPECT_COMPLEX_NEAR(g[kq_idx], g[k - q], tol);
     }
 
     { // value +
-      auto kq_idx = m.idx_modulo(k.idx + q.idx);
+      auto kq_idx = m.index_modulo(k.index() + q.index());
       EXPECT_COMPLEX_NEAR(g[kq_idx], g(k + q), tol);
     }
 
     { // value -
-      auto kq_idx = m.idx_modulo(k.idx - q.idx);
+      auto kq_idx = m.index_modulo(k.index() - q.index());
       EXPECT_COMPLEX_NEAR(g[kq_idx], g(k - q), tol);
     }
   }

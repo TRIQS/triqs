@@ -26,7 +26,7 @@ TEST(GfLegendre, Mesh) {
   std::cout << mesh_l << "\n";
   std::cout << "Rank " << mesh_l.size() << "\n";
 
-  for (const auto &l : mesh_l) { std::cout << l.idx << "\n"; }
+  for (const auto &l : mesh_l) { std::cout << l.index() << "\n"; }
 
   auto const n_tau = 5;
   auto tmesh       = mesh::imtime(beta, Fermion, n_tau);

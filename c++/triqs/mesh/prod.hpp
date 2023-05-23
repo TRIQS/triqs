@@ -35,13 +35,27 @@ namespace triqs::mesh {
 
   template <Mesh... Ms> struct prod_mesh_point : public std::tuple<typename Ms::mesh_point_t...> {
     using mesh_t   = prod<Ms...>;
-    using idx_t    = typename mesh_t::idx_t;
-    using datidx_t = typename mesh_t::datidx_t;
+    using index_t      = typename mesh_t::index_t;
+    using data_index_t = typename mesh_t::data_index_t;
     using tuple_t  = std::tuple<typename Ms::mesh_point_t...>;
 
-    idx_t idx          = std::apply([](auto &...x) { return std::make_tuple(x.idx...); }, *this);
-    datidx_t datidx    = std::apply([](auto &...x) { return std::make_tuple(x.datidx...); }, *this);
-    uint64_t mesh_hash = std::apply([](auto &...x) { return (x.mesh_hash + ...); }, *this);
+    private:
+    index_t _index           = std::apply([](auto &...x) { return std::make_tuple(x.index()...); }, *this);
+    data_index_t _data_index = std::apply([](auto &...x) { return std::make_tuple(x.data_index()...); }, *this);
+    uint64_t _mesh_hash      = std::apply([](auto &...x) { return (x.mesh_hash() + ...); }, *this);
+
+    public:
+    prod_mesh_point() = default;
+    prod_mesh_point(tuple_t mpt) : tuple_t(std::move(mpt)) {}
+
+    /// The index of the mesh point
+    [[nodiscard]] index_t index() const { return _index; }
+
+    /// The data index of the mesh point
+    [[nodiscard]] data_index_t data_index() const { return _data_index; }
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
     tuple_t const &as_tuple() const { return *this; }
   };
@@ -65,8 +79,8 @@ namespace triqs::mesh {
                   "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
     public:
-    using idx_t        = std::tuple<typename Ms::idx_t...>;
-    using datidx_t     = std::tuple<typename Ms::datidx_t...>;
+    using index_t      = std::tuple<typename Ms::index_t...>;
+    using data_index_t = std::tuple<typename Ms::data_index_t...>;
     using mesh_point_t = prod_mesh_point<Ms...>;
     using m_tuple_t    = std::tuple<Ms...>;
 
@@ -102,27 +116,27 @@ namespace triqs::mesh {
     // -------------------- checks -------------------
 
     /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
-    template <typename... Args> bool is_idx_valid(Args const &...args) const {
-      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_idx_valid(arg)); }, as_tuple(), std::tie(args...), true);
+    template <typename... Args> bool is_index_valid(Args const &...args) const {
+      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_index_valid(arg)); }, as_tuple(), std::tie(args...), true);
     }
-    template <typename... Args> bool is_idx_valid(idx_t const &index) const {
-      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_idx_valid(arg)); }, as_tuple(), index, true);
+    template <typename... Args> bool is_index_valid(index_t const &index) const {
+      return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_index_valid(arg)); }, as_tuple(), index, true);
     }
 
-    // -------------------- to_datidx ------------------
+    // -------------------- to_data_index ------------------
 
-    /// The datidx is the tuple of the datidx of the components
-    datidx_t to_datidx(idx_t const &index) const {
-      auto l = [](auto const &m, auto const &idx) { return m.to_datidx(idx); };
+    /// The data_index is the tuple of the data_index of the components
+    data_index_t to_data_index(index_t const &index) const {
+      auto l = [](auto const &m, auto const &index) { return m.to_data_index(index); };
       return triqs::tuple::map_on_zip(l, *this, index);
     }
 
-    // ------------------ to_idx -------------------
+    // ------------------ to_index -------------------
 
     /// The index is the tuple of the index of the components
-    idx_t to_idx(datidx_t const &datidx) const {
-      auto l = [](auto const &m, auto const &didx) { return m.to_idx(didx); };
-      return triqs::tuple::map_on_zip(l, *this, datidx);
+    index_t to_index(data_index_t const &data_index) const {
+      auto l = [](auto const &m, auto const &didx) { return m.to_index(didx); };
+      return triqs::tuple::map_on_zip(l, *this, data_index);
     }
 
     // -------------------- Accessors (other) -------------------
@@ -135,14 +149,14 @@ namespace triqs::mesh {
 
     // -------------------- mesh_point -------------------
 
-    mesh_point_t operator[](datidx_t const &datidx) const {
-      auto l = [](auto const &m, auto const &didx) { return m[didx]; };
-      return triqs::tuple::map_on_zip(l, *this, datidx);
+    mesh_point_t operator[](data_index_t const &data_index) const {
+      auto l = [](auto const &m, auto const &dindex) { return m[dindex]; };
+      return triqs::tuple::map_on_zip(l, *this, data_index);
     }
 
-    mesh_point_t operator()(idx_t const &idx) const {
+    mesh_point_t operator()(index_t const &index) const {
       auto l = [](auto const &m, auto const &i) { return m(i); };
-      return triqs::tuple::map_on_zip(l, *this, idx);
+      return triqs::tuple::map_on_zip(l, *this, index);
     }
 
     // -------------------------- Range & Iteration --------------------------

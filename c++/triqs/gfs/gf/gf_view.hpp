@@ -61,7 +61,7 @@ namespace triqs::gfs {
     using mesh_point_t = typename mesh_t::mesh_point_t;
 
     // NO DOC
-    using mesh_idx_t = typename mesh_t::idx_t;
+    using mesh_index_t = typename mesh_t::index_t;
 
     using evaluator_t = typename EvalPolicy::template evaluator_t<M>;
 

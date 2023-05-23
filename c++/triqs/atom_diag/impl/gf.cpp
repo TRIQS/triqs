@@ -259,8 +259,8 @@ namespace triqs {
         double x = beta * pole / 2;
         double w = -beta / (2 * std::cosh(x));
         for (auto l : g.mesh()) {
-          g[l] += residue * w * std::sqrt(2 * l.idx + 1) * (l.idx % 2 == 0 ? 1 : std::copysign(1, -x))
-             * triqs::utility::mod_cyl_bessel_i(l.idx, std::abs(x));
+          g[l] += residue * w * std::sqrt(2 * l.index() + 1) * (l.index() % 2 == 0 ? 1 : std::copysign(1, -x))
+             * triqs::utility::mod_cyl_bessel_i(l.index(), std::abs(x));
         }
       };
     }

@@ -75,7 +75,7 @@ namespace triqs::mesh { // NOLINT
   } // namespace detail
 
   // evaluate on a mesh index just pass through
-  template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::idx_t const &idx) { return f(idx); }
+  template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::index_t const &index) { return f(index); }
 
   // evaluate on a closest_mesh_point : pass through, like an index.
   template <typename T> FORCEINLINE auto evaluate(Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }

@@ -61,15 +61,15 @@ TEST(Gfs, brillouin_zone) {
   Gk2[k_] << -2 * (cos(k_[0]) + cos(k_[1]));
   EXPECT_GF_NEAR(Gk, Gk2, 1e-14);
 
-  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(k_t{0, 0, 0})), (idx_t{0, 0, 0}));
+  ASSERT_EQ(Gk.mesh().to_index(closest_mesh_pt(k_t{0, 0, 0})), (idx_t{0, 0, 0}));
   EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0}), -4);
   EXPECT_COMPLEX_NEAR(Gk(k_t{M_PI, M_PI, M_PI}), 4);
   EXPECT_COMPLEX_NEAR(Gk(k_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
 
   // Evaluate on the mesh itself.
   for (auto const &k : Gk.mesh()) {
-    EXPECT_NEAR(k[0], k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k[1], k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[0], k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[1], k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k[0]) + cos(k[1]));
     EXPECT_COMPLEX_NEAR(Gk(k_t{k[0], k[1], 0}), res, 1.e-14);
   }
@@ -106,14 +106,14 @@ TEST(Gfs, brillouin_zoneMatrix) {
   Gk2[k_] << -2 * (cos(k_[0]) + cos(k_[1]));
   EXPECT_GF_NEAR(Gk, Gk2, 1e-14);
 
-  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
+  ASSERT_EQ(Gk.mesh().to_index(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
   EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0})(0, 0), -4);
   EXPECT_COMPLEX_NEAR(Gk(k_t{0, 0, 0})(1, 1), -4);
 
   // Evaluate on the mesh itself.
   for (auto const &k : Gk.mesh()) {
-    EXPECT_NEAR(k[0], k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k[1], k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[0], k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[1], k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k[0]) + cos(k[1]));
     EXPECT_COMPLEX_NEAR(Gk(k_t{k[0], k[1], 0})(0, 0), res, 1.e-14);
   }
@@ -150,7 +150,7 @@ TEST(Gfs, brillouin_zone_triangular) {
   };
   for (auto const &k : Gk.mesh()) Gk[k] = disp(k);
 
-  ASSERT_EQ(Gk.mesh().to_idx(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
+  ASSERT_EQ(Gk.mesh().to_index(closest_mesh_pt(nda::vector<double>{0, 0, 0})), (idx_t{0, 0, 0}));
 
   auto K       = bz.reciprocal_matrix();
   auto Kx_half = k_t{0.5 * K(0, 0), 0.5 * K(0, 1), 0.5 * K(0, 2)};

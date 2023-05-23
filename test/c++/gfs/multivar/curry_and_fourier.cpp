@@ -51,7 +51,7 @@ TEST(GfM, CurryFourier) {
   for (auto const &k : mk) gkt[k, _] = fourier(gkw[k, _]);
 
   // works also, but uses the evaluator which return to the same point
-  for (auto k : mk) { EXPECT_EQ(k.datidx, mk.to_datidx(mk.to_idx(closest_mesh_pt(k.value())))); }
+  for (auto k : mk) { EXPECT_EQ(k.data_index(), mk.to_data_index(mk.to_index(closest_mesh_pt(k.value())))); }
 
   /// Testing the result
   auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};

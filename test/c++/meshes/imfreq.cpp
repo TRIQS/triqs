@@ -78,7 +78,7 @@ TEST(Mesh, prod) {
     long c = 0;
     for (auto x : prod{m1, m1}) {
       auto [t1, t2] = x;
-      EXPECT_EQ(x.datidx, std::make_tuple(c / m1.size(), c % m1.size()));
+      EXPECT_EQ(x.data_index(), std::make_tuple(c / m1.size(), c % m1.size()));
       c++;
       res2.push_back({double(t1), double(t2)});
     }

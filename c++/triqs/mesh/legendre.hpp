@@ -26,8 +26,8 @@ namespace triqs::mesh {
 
   struct legendre {
 
-    using idx_t    = long;
-    using datidx_t = long;
+    using index_t      = long;
+    using data_index_t = long;
 
     // -------------------- Data -------------------
 
@@ -59,35 +59,50 @@ namespace triqs::mesh {
     // --------------------  Mesh Point -------------------
 
     struct mesh_point_t {
-      using mesh_t       = legendre;
-      long idx           = 0;
-      long datidx        = 0;
-      uint64_t mesh_hash = 0;
+      using mesh_t = legendre;
+
+      private:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(long index, long data_index, uint64_t mesh_hash) : _index(index), _data_index(data_index), _mesh_hash(mesh_hash) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return _index; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
     };
 
-    // -------------------- idx checks and conversions -------------------
+    // -------------------- index checks and conversions -------------------
 
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const noexcept { return 0 <= idx and idx < _max_n; }
+    [[nodiscard]] bool is_index_valid(index_t idx) const noexcept { return 0 <= idx and idx < _max_n; }
 
-    // -------------------- to_datidx ------------------
+    // -------------------- to_data_index ------------------
 
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept {
-      EXPECTS(is_idx_valid(idx));
-      return idx;
+    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return index;
     }
 
-    // ------------------ to_idx -------------------
+    // ------------------ to_index -------------------
 
-    [[nodiscard]] idx_t to_idx(long datidx) const noexcept {
-      EXPECTS(is_idx_valid(datidx));
-      return datidx;
+    [[nodiscard]] index_t to_index(long data_index) const noexcept {
+      EXPECTS(is_index_valid(data_index));
+      return data_index;
     }
 
     // ------------------ operator [] () -------------------
 
-    [[nodiscard]] mesh_point_t operator[](long datidx) const { return {to_idx(datidx), datidx, _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator[](long data_index) const { return {to_index(data_index), data_index, _mesh_hash}; }
 
-    [[nodiscard]] mesh_point_t operator()(long idx) const { return {idx, to_datidx(idx), _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator()(long index) const { return {index, to_data_index(index), _mesh_hash}; }
 
     // -------------------- Accessors -------------------
 

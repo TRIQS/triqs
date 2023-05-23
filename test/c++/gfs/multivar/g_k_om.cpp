@@ -92,8 +92,8 @@ TEST(Gkom, Eval) {
 
   // reevaluate on the mesh itself.
   for (auto [k, w] : g.mesh()) {
-    EXPECT_NEAR(k[0], k.idx[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k[1], k.idx[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[0], k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[1], k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     dcomplex res = 1 / (w + 3 + 2 * (cos(k[0]) + cos(k[1])));
     EXPECT_COMPLEX_NEAR(g(K_t{k[0], k[1], 0}, w), res, 1.e-14);
   }

@@ -40,7 +40,7 @@ namespace triqs {
       t() = 0.0;
 
       for (int p = 0; p < order; p++)
-        for (auto l : gl.mesh()) t(p, _) += (triqs::utility::legendre_t(l.idx, p) / std::pow(gl.mesh().beta(), p)) * gl[l];
+        for (auto l : gl.mesh()) t(p, _) += (triqs::utility::legendre_t(l.index(), p) / std::pow(gl.mesh().beta(), p)) * gl[l];
 
       return t;
     }
@@ -57,10 +57,10 @@ namespace triqs {
 
       nda::array<dcomplex, 2> corr(disc.shape());
       corr() = 0;
-      for (auto const &l : gl.mesh()) corr += t(l.idx) * gl[l];
+      for (auto const &l : gl.mesh()) corr += t(l.index()) * gl[l];
 
       auto _ = nda::range::all;
-      for (auto const &l : gl.mesh()) gl.data()(l.idx, _, _) += (disc - corr) * t(l.idx) / norm;
+      for (auto const &l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
     }
 
   } // namespace gfs

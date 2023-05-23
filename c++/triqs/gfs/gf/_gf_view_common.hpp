@@ -70,16 +70,16 @@ decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck
 
 private:
 // local helper functions for the _subscript_impl below
-template <Mesh MT, typename X> static auto call_to_datidx(MT const &m, X const &x) {
+template <Mesh MT, typename X> static auto call_to_data_index(MT const &m, X const &x) {
   if constexpr (std::is_same_v<X, all_t>)
     return all_t{};
   else if constexpr (std::is_same_v<X, typename MT::mesh_point_t>) {
     static_assert(std::is_same_v<X, typename MT::mesh_point_t>, "Incompatible mesh_point type passed to a gf via [] operator.");
-    EXPECTS_WITH_MESSAGE(m.mesh_hash() == x.mesh_hash,
+    EXPECTS_WITH_MESSAGE(m.mesh_hash() == x.mesh_hash(),
                          "Passing to a gf a mesh point of incompatible mesh (but correct type), e.g. different beta, or other parameter.");
-    return x.datidx;
+    return x.data_index();
   } else
-    return m.to_datidx(x);
+    return m.to_data_index(x);
 }
 
 // ------------------------------------------
@@ -97,7 +97,7 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
     decltype(auto) new_data = [&self,
                                &arg...]<size_t... Is>(std::index_sequence<Is...>) -> decltype(auto) { // the trailing ->decltype(auto) is crucial
       return data_t::template call<(target_t::is_matrix and n_all == 0 ? 'M' : 'A'), false>(
-         std::forward<Self>(self)._data, this_t::call_to_datidx(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
+         std::forward<Self>(self)._data, this_t::call_to_data_index(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
     }(std::make_index_sequence<arity>{}); //keep arity here. we could authorize to pass additional integers for direct access here ??
 
     if constexpr (n_all == 0)

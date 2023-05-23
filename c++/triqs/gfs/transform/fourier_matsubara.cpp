@@ -156,7 +156,7 @@ namespace triqs::gfs {
       a3 = (m3 - m2) / 2;
 
       for (auto const &t : gt.mesh())
-        _gin(t.idx, _) = fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+  _gin(t.index(), _) = fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
     } else {
       b1 = -0.5;
@@ -167,7 +167,7 @@ namespace triqs::gfs {
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
 
       for (auto const &t : gt.mesh())
-        _gin(t.idx, _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+  _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
     int dims[] = {int(L)};
@@ -258,9 +258,9 @@ namespace triqs::gfs {
 
     if (is_fermion)
       for (auto const &t : tau_mesh)
-        gt[t] = _gout(t.idx, _) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
+        gt[t] = _gout(t.index(), _) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
     else
-      for (auto const &t : tau_mesh) gt[t] = _gout(t.idx, _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
+      for (auto const &t : tau_mesh) gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
 
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);

@@ -53,10 +53,10 @@ namespace triqs::gfs {
     template <typename G>
     auto operator()(G const &g, matsubara_freq const &f) const -> typename G::target_t::value_t {
 
-      if (g.mesh().is_idx_valid(f.n)) return g[f.n];
+      if (g.mesh().is_index_valid(f.n)) return g[f.n];
       if (g.mesh().positive_only()) {
         int sh = (g.mesh().statistic() == Fermion ? 1 : 0);
-        if (g.mesh().is_idx_valid(-f.n - sh)) return conj(g[-f.n - sh]);
+        if (g.mesh().is_index_valid(-f.n - sh)) return conj(g[-f.n - sh]);
         TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
       }
 
