@@ -134,7 +134,10 @@ namespace triqs::mesh {
     }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return _dlr->freq.size(); }
+    [[nodiscard]] long size() const noexcept {
+      if(_dlr) return _dlr->freq.size();
+      else return 0;
+    }
 
     // -------------------- idx checks and conversions -------------------
 
