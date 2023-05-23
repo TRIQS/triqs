@@ -37,9 +37,9 @@ namespace triqs::mesh {
     // -------------------- Data -------------------
 
     private:
-    double _beta                        = 0.0;
+    double _beta                        = 1.0;
     statistic_enum _statistic           = Fermion;
-    double _Lambda                      = 1e+10;
+    double _Lambda                      = 0.0;
     double _eps                         = 1e-10;
     uint64_t _mesh_hash                 = 0;
     std::shared_ptr<const dlr_ops> _dlr = {};

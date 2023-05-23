@@ -52,9 +52,9 @@ namespace triqs::mesh {
     enum class option { all_frequencies, positive_frequencies_only };
 
     private:
-    double _beta              = 0.0;
+    double _beta              = 1.0;
     statistic_enum _statistic = Fermion;
-    long _n_iw                = 1;
+    long _n_iw                = 0;
     option _opt               = option::all_frequencies;
     long _last_index          = _n_iw - 1;
     long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));

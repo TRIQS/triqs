@@ -36,7 +36,7 @@ namespace triqs::mesh {
      *  @param t_max Largest time
      *  @param n_t Number of time-points
      */
-    retime(double t_min = 0.0, double t_max = 0.0, long n_t = 2) : linear(t_min, t_max, n_t) {}
+    retime(double t_min = 0.0, double t_max = 0.0, long n_t = 0) : linear(t_min, t_max, n_t) {}
 
     // for python backward doc.
     retime(std::pair<double, double> window, int n_t) : retime(std::get<0>(window), std::get<1>(window), n_t) {}

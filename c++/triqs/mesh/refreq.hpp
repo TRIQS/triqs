@@ -35,7 +35,7 @@ namespace triqs::mesh {
      *  @param w_max Largest frequency
      *  @param n_w Number of frequencies
      */
-    refreq(double w_min = 0.0, double w_max = 0.0, long n_w = 2) : linear(w_min, w_max, n_w) {}
+    refreq(double w_min = 0.0, double w_max = 0.0, long n_w = 0) : linear(w_min, w_max, n_w) {}
 
     // FIXME : do we really need this ? Used in python wrap only ?
     refreq(std::pair<double, double> window, int n_w) : refreq(std::get<0>(window), std::get<1>(window), n_w) {}

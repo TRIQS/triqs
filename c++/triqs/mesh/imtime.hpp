@@ -53,7 +53,7 @@ namespace triqs::mesh {
      * @param statistic Statistic (Fermion or Boson)
      * @param n_tau Number of mesh-points
      */
-    imtime(double beta = 0.0, statistic_enum statistic = Fermion, long n_tau = 2) : linear(0, beta, n_tau), _beta(beta), _statistic(statistic) {}
+    imtime(double beta = 1.0, statistic_enum statistic = Fermion, long n_tau = 0) : linear(0, beta, n_tau), _beta(beta), _statistic(statistic) {}
 
     /**
      * Construct a Mesh of imaginary times on a Matsubara time domain

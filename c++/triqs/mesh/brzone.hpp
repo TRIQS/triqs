@@ -39,8 +39,8 @@ namespace triqs::mesh {
     // -------------------- Data -------------------
     private:
     brillouin_zone bz_        = {};
-    std::array<long, 3> dims_ = {1, 1, 1};
-    long size_                = 1;
+    std::array<long, 3> dims_ = {0, 0, 0};
+    long size_                = 0;
     long stride1 = 1, stride0 = 1;
     nda::matrix<double> units_     = nda::eye<double>(3);
     nda::matrix<double> units_inv_ = nda::eye<double>(3);

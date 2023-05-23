@@ -32,9 +32,9 @@ namespace triqs::mesh {
     // -------------------- Data -------------------
 
     private:
-    double _beta              = 0.0;
+    double _beta              = 1.0;
     statistic_enum _statistic = Fermion;
-    long _max_n               = 1;
+    long _max_n               = 0;
     uint64_t _mesh_hash       = 0;
 
     // -------------------- Constructors -------------------
