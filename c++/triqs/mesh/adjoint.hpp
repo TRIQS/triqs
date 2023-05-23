@@ -34,7 +34,7 @@ namespace triqs::mesh {
     return {m.beta(), m.statistic(), n_iw};
   }
   inline imtime make_adjoint_mesh(imfreq const &m, long n_tau = -1) {
-    if (n_tau == -1) n_tau = 6 * (m.last_idx() + 1) + 1;
+    if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
     return {m.beta(), m.statistic(), n_tau};
   }
 

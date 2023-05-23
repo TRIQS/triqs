@@ -314,7 +314,7 @@ def make_delta(V, eps, mesh, block_names=None):
     delta_res = Gf(mesh=mesh, target_shape=[V.shape[0], V.shape[0]])
 
     if isinstance(mesh, MeshImFreq):
-        mesh_values = np.linspace(mesh(mesh.first_idx()), mesh(mesh.last_idx()), len(mesh))
+        mesh_values = np.linspace(mesh(mesh.first_index()), mesh(mesh.last_index()), len(mesh))
         one_fermion = 1/(mesh_values[:, None] - eps[None, :])
     elif isinstance(mesh, MeshImTime):
         mesh_values = np.linspace(0, mesh.beta, len(mesh))

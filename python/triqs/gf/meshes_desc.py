@@ -91,8 +91,8 @@ m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq",
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_iw=1025)")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_constructor(signature = "(double beta, statistic_enum statistic, int n_iw)")
-m.add_method("""int last_idx()""")
-m.add_method("""int first_idx()""")
+m.add_method("""int last_index()""")
+m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
 m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {})""")
 m.add_property(name = "beta",

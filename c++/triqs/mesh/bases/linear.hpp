@@ -155,10 +155,10 @@ namespace triqs::mesh::details {
     [[nodiscard]] value_t delta_inv() const noexcept { return delta_x_inv; }
 
     /// First index of the mesh
-    static constexpr long first_idx() { return 0; }
+    static constexpr long first_index() { return 0; }
 
     /// Last index of the mesh
-    [[nodiscard]] long last_idx() const { return L - 1; }
+    [[nodiscard]] long last_index() const { return L - 1; }
 
     // -------------------------- Range & Iteration --------------------------
 

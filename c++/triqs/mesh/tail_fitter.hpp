@@ -114,8 +114,8 @@ namespace triqs::mesh {
       idx_vec.reserve(2 * n_tail);
 
       double step = double(n_pts_in_fit_range) / n_tail;
-      double idx1 = m.first_idx();
-      double idx2 = m.last_idx() - n_pts_in_fit_range;
+      double idx1 = m.first_index();
+      double idx2 = m.last_index() - n_pts_in_fit_range;
 
       for (int n : range(n_tail)) {
         idx_vec.push_back(long(idx1));

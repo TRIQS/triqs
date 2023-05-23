@@ -84,8 +84,6 @@ repl_dict = {
         # --- triqs 3.2 ---
         "range\(\)": "range::all",
         "range{}": "range::all",
-        "last_index\(\)": "last_idx()",
-        "first_index\(\)": "first_idx()",
         "\.linear_index\(\)": ".datidx",
         "\.linear_index": ".datidx",
         "is_product_v": "is_product",

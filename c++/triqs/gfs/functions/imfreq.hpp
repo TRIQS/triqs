@@ -241,8 +241,8 @@ namespace triqs::gfs {
     auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
-    int idx_min          = old_mesh.to_datidx(iw_mesh.first_idx());
-    int idx_max          = old_mesh.to_datidx(iw_mesh.last_idx());
+    int idx_min          = old_mesh.to_datidx(iw_mesh.first_index());
+    int idx_max          = old_mesh.to_datidx(iw_mesh.last_index());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
     return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};
@@ -255,7 +255,7 @@ namespace triqs::gfs {
 
   template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
     int n_pts_in_fit_range = int(std::round(g.mesh().get_tail_fitter().get_tail_fraction() * g.mesh().size() / 2));
-    int n_min              = g.mesh().last_idx() - n_pts_in_fit_range;
+    int n_min              = g.mesh().last_index() - n_pts_in_fit_range;
     replace_by_tail(g, tail, n_min);
   }
 
@@ -263,7 +263,7 @@ namespace triqs::gfs {
   template <template <typename, typename, typename ...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
-    if (n_max == -1) n_max = g.mesh().last_idx();
+    if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
     double tail_fraction = double(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
@@ -274,7 +274,7 @@ namespace triqs::gfs {
   template <template <typename, typename ...> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {
-    if (n_max == -1) n_max = g.mesh().last_idx();
+    if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
     double tail_fraction = double(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);

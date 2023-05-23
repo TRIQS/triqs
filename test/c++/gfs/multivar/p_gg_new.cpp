@@ -37,7 +37,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
 
   auto [k_mesh, w_mesh] = G_k_w.mesh();
   double beta           = w_mesh.beta();
-  int nw                = w_mesh.last_idx() + 1;
+  int nw                = w_mesh.last_index() + 1;
   int nnu               = 2;
   int ntau              = nw * 4;
   int nk                = k_mesh.dims()[0];

@@ -123,11 +123,11 @@ namespace triqs::gfs {
 
     double beta = gt.mesh().beta();
     auto L      = gt.mesh().size() - 1;
-    if (L < 2 * (iw_mesh.last_idx() + 1))
+    if (L < 2 * (iw_mesh.last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  "
-                          << gt.mesh().size() << " gw.mesh().last_idx()" << iw_mesh.last_idx();
+                          << gt.mesh().size() << " gw.mesh().last_index()" << iw_mesh.last_index();
 
-    if (L < 6 * (iw_mesh.last_idx() + 1))
+    if (L < 6 * (iw_mesh.last_index() + 1))
       std::cerr << "[Direct Fourier] WARNING: The imaginary time mesh is less than six times as long as the number of positive frequencies.\n"
                 << "This can lead to substantial numerical inaccuracies at the boundary of the frequency mesh.\n";
 
@@ -213,9 +213,9 @@ namespace triqs::gfs {
 
     double beta = tau_mesh.beta();
     long L      = tau_mesh.size() - 1;
-    if (L < 2 * (gw.mesh().last_idx() + 1))
+    if (L < 2 * (gw.mesh().last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Inverse Fourier: The time mesh mush be at least twice as long as the freq mesh :\n gt.mesh().size() =  "
-                          << tau_mesh.size() << " gw.mesh().last_idx()" << gw.mesh().last_idx() << "\n";
+                          << tau_mesh.size() << " gw.mesh().last_index()" << gw.mesh().last_index() << "\n";
 
     long n_others = second_dim(gw.data());
 

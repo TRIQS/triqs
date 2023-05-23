@@ -56,8 +56,8 @@ namespace triqs::mesh {
     statistic_enum _statistic = Fermion;
     long _n_iw                = 1;
     option _opt               = option::all_frequencies;
-    long _last_idx            = _n_iw - 1;
-    long _first_idx           = -(_last_idx + ((_statistic == Fermion) ? 1 : 0));
+    long _last_index            = _n_iw - 1;
+    long _first_index           = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
     uint64_t _mesh_hash       = 0;
 
     // -------------------- Constructors -------------------
@@ -76,7 +76,7 @@ namespace triqs::mesh {
      */
     imfreq(double beta, statistic_enum statistic, long n_iw = 1025, option opt = option::all_frequencies)
        : _beta(beta), _statistic(statistic), _n_iw(n_iw), _opt(opt), _mesh_hash(hash(beta, statistic, n_iw, opt)) {
-      if (opt == option::positive_frequencies_only) _first_idx = 0;
+      if (opt == option::positive_frequencies_only) _first_index = 0;
     }
 
     /**
@@ -125,7 +125,7 @@ namespace triqs::mesh {
     matsubara_freq idx_to_freq(idx_t idx) const { return {idx, _beta, _statistic}; }
 
     /// Maximum freq of the mesh
-    dcomplex w_max() const { return idx_to_freq(_last_idx); }
+    dcomplex w_max() const { return idx_to_freq(_last_index); }
 
     // -------------------- mesh_point -------------------
 
@@ -157,25 +157,25 @@ namespace triqs::mesh {
     [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return _last_idx - _first_idx + 1; }
+    [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
 
     /// first Matsubara idx
-    [[nodiscard]] long first_idx() const { return _first_idx; }
+    [[nodiscard]] long first_index() const { return _first_index; }
 
     /// last Matsubara idx
-    [[nodiscard]] long last_idx() const { return _last_idx; }
+    [[nodiscard]] long last_index() const { return _last_index; }
 
     /// Is the mesh only for positive omega_n (G(tau) real))
     [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
 
     // -------------------- checks -------------------
 
-    /// Checks that the idx is in [first_idx(), last_idx()]
-    [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_idx() <= idx and idx <= last_idx(); }
+    /// Checks that the idx is in [first_index(), last_index()]
+    [[nodiscard]] bool is_idx_valid(idx_t idx) const { return first_index() <= idx and idx <= last_index(); }
 
     // -------------------- to_datidx -------------------
 
-    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_idx(); }
+    [[nodiscard]] datidx_t to_datidx(idx_t idx) const noexcept { return idx - first_index(); }
 
     [[nodiscard]] datidx_t to_datidx(matsubara_freq const &iw) const noexcept {
       EXPECTS(_beta == iw.beta and _statistic == iw.statistic);
@@ -189,7 +189,7 @@ namespace triqs::mesh {
 
     // -------------------- to_idx -------------------
 
-    [[nodiscard]] idx_t to_idx(datidx_t datidx) const { return datidx + first_idx(); }
+    [[nodiscard]] idx_t to_idx(datidx_t datidx) const { return datidx + first_index(); }
 
     [[nodiscard]] idx_t to_idx(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(is_idx_valid(cmp.value.n));
