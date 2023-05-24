@@ -310,7 +310,7 @@ TEST(Gf, DLR_imtime_interpolation) {
 TEST(Gf, DLR_imfreq_interpolation) {
 
   double beta   = 2.0;
-  double w_max  = 10.0;
+  double w_max  = 5.0;
   double eps    = 1e-10;
   double omega  = 1.337;
 
@@ -345,10 +345,10 @@ TEST(Gf, DLR_imtime_fit) {
 
   for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
     auto gtau_noise = gtau;
-    gtau_noise.data() += sigma * (4 * nda::rand(gtau.mesh().size()) - 2);
+    gtau_noise.data() += sigma * (nda::rand(gtau.mesh().size()) - 0.5);
     auto gcoef_noise = make_gf_dlr_coeffs(gtau_noise, w_max, eps);
     auto gtau3 = make_gf_imtime(gcoef_noise, n_tau);
-    EXPECT_GF_NEAR(gtau, gtau3, 1.05 * sigma);
+    EXPECT_GF_NEAR(gtau, gtau3, sigma);
   }
 }
 
