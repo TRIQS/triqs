@@ -33,14 +33,15 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G1, imfreq>> legendre_matsubara_direct(G1 &&gw, G2 const &gl) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G1, imfreq>)
+  void legendre_matsubara_direct(G1 &&gw, G2 const &gl) {
 
     static_assert(is_gf_v<G2, legendre>, "Second argument to legendre_matsubara_direct needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
                   "Arguments to legendre_matsubara_direct require same target_t");
 
     gw() = 0.0;
-    itertools::range R;
 
     // Use the transformation matrix
     for (auto om : gw.mesh()) {
@@ -50,7 +51,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G1, imtime>> legendre_matsubara_direct(G1 &&gt, G2 const &gl) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G1, imtime>)
+  void legendre_matsubara_direct(G1 &&gt, G2 const &gl) {
 
     static_assert(is_gf_v<G2, legendre>, "Second argument to legendre_matsubara_direct needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -60,14 +63,16 @@ namespace triqs::gfs {
     utility::legendre_generator L;
 
     for (auto t : gt.mesh()) {
-      L.reset(2 * t / gt.domain().beta - 1);
-      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.index() + 1) / gt.domain().beta * gl[l] * L.next(); }
+      L.reset(2 * t / gt.mesh().beta() - 1);
+      for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.index() + 1) / gt.mesh().beta() * gl[l] * L.next(); }
     }
   }
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G2, imfreq>> legendre_matsubara_inverse(G1 &&gl, G2 const &gw) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G2, imfreq>)
+  void legendre_matsubara_inverse(G1 &&gl, G2 const &gw) {
 
     static_assert(is_gf_v<G1, legendre>, "First argument to legendre_matsubara_inverse needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -78,8 +83,8 @@ namespace triqs::gfs {
     // Construct a temporary imaginary-time Green's function gt
     // I set Nt time bins. This is ugly, one day we must code the direct
     // transformation without going through imaginary time
-    int Nt  = 50000;
-    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.domain(), Nt}, stdutil::front_pop(gw.data().shape())};
+    long Nt  = 50000;
+    auto gt  = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.mesh().beta(), gw.mesh().statistic(), Nt}, stdutil::front_pop(gw.data().shape())};
 
     // We first transform to imaginary time because it's been coded with the knowledge of the tails
     gt() = fourier(gw);
@@ -88,7 +93,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename G1, typename G2> std::enable_if_t<is_gf_v<G2, imtime>> legendre_matsubara_inverse(G1 &&gl, G2 const &gt) {
+  template <typename G1, typename G2>
+    requires(is_gf_v<G2, imtime>)
+  void legendre_matsubara_inverse(G1 &&gl, G2 const &gt) {
 
     static_assert(is_gf_v<G1, legendre>, "First argument to legendre_matsubara_inverse needs to be a Legendre Green function");
     static_assert(std::is_same_v<typename std::decay_t<G1>::target_t, typename std::decay_t<G2>::target_t>,
@@ -105,7 +112,7 @@ namespace triqs::gfs {
         coef = 0.5;
       else
         coef = 1.0;
-      L.reset(2 * t / gt.domain().beta - 1);
+      L.reset(2 * t / gt.mesh().beta() - 1);
       for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.index() + 1) * L.next() * gt[t]; }
     }
     gl.data() *= gt.mesh().delta();

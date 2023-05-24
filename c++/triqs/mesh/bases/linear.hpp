@@ -19,188 +19,213 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../details/mesh_tools.hpp"
-namespace triqs::mesh {
+#include <ranges>
+#include <stdexcept>
+#include "../utils.hpp"
 
-  /**
-   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
-   * @param x : the point
-   * @param i_max : maximum index
-   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
-   * @param delta_x
-   *
-   * 
-   * Throws if x is not in the window
-   * */
-  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, double delta_x_inv, long imax) noexcept {
-    EXPECTS(x_min <= x and x <= x_min + imax * delta_x);
-    x = std::max(x, x_min);
-    double a = (x - x_min) * delta_x_inv;
-    long i   = std::min(static_cast<long>(a), imax - 1);
-    double w = std::min(a - i, 1.0);
-    return {std::make_pair(i, 1 - w), std::make_pair(i + 1, w)};
-  }
-  //-----------------------------------------------------------------------
+namespace triqs::mesh::details {
 
-  // NB linear_index and index are the same in this mesh
-  template <typename Domain> struct linear_mesh : triqs::mesh::tag::mesh {
+  // Implements linear spaced meshes as MeshWithValues by CTRP on Mesh
+  // Value is value_t of MeshWithValues concept.
+  // Implementation only. Not user
+  template <typename Mesh, typename Value> class linear {
+    static_assert(std::totally_ordered<Value>);
 
-    using domain_t       = Domain;
-    using index_t        = long;
-    using linear_index_t = long;
-    using domain_pt_t    = typename domain_t::point_t;
+    public:
+    using value_t      = Value;
+    using index_t      = long;
+    using data_index_t = long;
 
-    static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value, "Internal error : cannot use Linear Mesh in this case");
+    // --  data
+    protected:
+    long L;
+    value_t xmin, xmax, delta_x;
+    double delta_x_inv;
+    size_t _mesh_hash = 0;
 
     // -------------------- Constructors -------------------
 
-    explicit linear_mesh(domain_t dom, double a, double b, long n_pts) : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del(L == 1 ? 0. : (b - a) / (L - 1)), del_inv{del == 0.0 ? std::numeric_limits<double>::infinity() : 1. / del} {
-      EXPECTS(a<=b);
+    linear(value_t a = 0, value_t b = 1, long n_pts = 2)
+       : L(n_pts),
+         xmin(a),
+         xmax(b),
+         delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
+         delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
+         _mesh_hash(hash(L, xmin, xmax)) {
+      EXPECTS(a <= b);
     }
 
-    linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
+    public:
+    // -------------------- Comparison -------------------
 
     /// Mesh comparison
-    bool operator==(linear_mesh const &M) const {
-      return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
+    bool operator==(linear const &) const = default;
+    bool operator!=(linear const &) const = default;
+
+    // --------------------  Mesh Point -------------------
+
+    struct mesh_point_t {
+      using mesh_t = Mesh;
+
+      public:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+      value_t _value      = {};
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(long index, long data_index, uint64_t mesh_hash, double value)
+         : _index(index), _data_index(data_index), _mesh_hash(mesh_hash), _value(value) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return _index; }
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
+      [[nodiscard]] value_t value() const { return _value; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      operator value_t() const { return _value; }
+
+      // https://godbolt.org/z/xoYP3vTW4
+#define IMPL_OP(OP)                                                                                                                                  \
+  friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.value() OP y; }                                                         \
+  friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
+    requires(not std::is_same_v<decltype(x), mesh_point_t const &>)                                                                                  \
+  {                                                                                                                                                  \
+    return x OP mp.value();                                                                                                                          \
+  }
+      IMPL_OP(+);
+      IMPL_OP(-);
+      IMPL_OP(*);
+      IMPL_OP(/);
+#undef IMPL_OP
+    };
+
+    // -------------------- checks -------------------
+
+    [[nodiscard]] bool is_index_valid(index_t index) const noexcept { return 0 <= index and index < L; }
+
+    private:
+    [[nodiscard]] bool is_value_valid(value_t val) const noexcept { return xmin <= val and val <= xmax; }
+
+    // -------------------- to_data_index ------------------
+    public:
+    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return index;
     }
-    bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
 
-    // -------------------- Accessors (other) -------------------
+    [[nodiscard]] index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+      EXPECTS(is_value_valid(cmp.value));
+      return to_data_index(to_index(cmp));
+    }
 
-    /// Step of the mesh
-    double delta() const { return del; }
+    // ------------------ to_index -------------------
 
-    /// Inverse of the step of the mesh
-    double delta_inv() const { return del_inv; }
+    [[nodiscard]] index_t to_index(data_index_t data_index) const noexcept {
+      EXPECTS(is_index_valid(data_index));
+      return data_index;
+    }
 
-    /// Min of the mesh
-    double x_min() const { return xmin; }
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+      EXPECTS(is_value_valid(cmp.value));
+      return index_t((cmp.value - xmin) * delta_x_inv + 0.5);
+    }
 
-    /// Max of the mesh
-    double x_max() const { return xmax; }
+    // ------------------ operator [] () -------------------
 
-    // -------------------- Accessors (from concept) -------------------
+    [[nodiscard]] mesh_point_t operator[](long data_index) const noexcept { return (*this)(data_index); }
 
-    /// The corresponding domain
-    domain_t const &domain() const { return _dom; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_data_index(cmp)]; }
 
-    /// Size (linear) of the mesh of the window
-    long size() const { return L; }
+    [[nodiscard]] mesh_point_t operator()(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
+      return {index, index, _mesh_hash, to_value(index)};
+    }
 
-    /// Is the point in mesh ?
-    static constexpr bool is_within_boundary(all_t) { return true; }
-    bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
-    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < L)); }
+    // -------------------- to_value ------------------
 
-    /// From an index of a point in the mesh, returns the corresponding point in the domain
-    domain_pt_t index_to_point(index_t idx) const {
-      EXPECTS(is_within_boundary(idx));
+    [[nodiscard]] value_t to_value(index_t index) const noexcept {
+      EXPECTS(is_index_valid(index));
       if (L == 1) return xmin;
-      double wr = double(idx) / (L - 1);
+      double wr  = double(index) / (L - 1);
       double res = xmin * (1 - wr) + xmax * wr;
-      ASSERT(is_within_boundary(res));
       return res;
     }
 
-    /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-    long index_to_linear(index_t idx) const {
-      EXPECTS(is_within_boundary(idx));
-      return idx;
+    // -------------------- Accessors -------------------
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+    /// The total number of points in the mesh
+    [[nodiscard]] long size() const noexcept { return L; }
+
+    /// Step of the mesh
+    [[nodiscard]] value_t delta() const noexcept { return delta_x; }
+
+    /// Inverse of the step of the mesh
+    [[nodiscard]] value_t delta_inv() const noexcept { return delta_x_inv; }
+
+    /// First index of the mesh
+    static constexpr long first_index() { return 0; }
+
+    /// Last index of the mesh
+    [[nodiscard]] long last_index() const { return L - 1; }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
     }
 
-    // -------------------- mesh_point -------------------
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
 
-    /// Type of the mesh point
-    using mesh_point_t = mesh_point<linear_mesh>;
+    protected:
+    //  -------------------------- HDF5  --------------------------
 
-    /// Accessing a point of the mesh
-    mesh_point_t operator[](index_t i) const { return {*this, i}; }
-
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<linear_mesh>;
-    const_iterator begin() const { return const_iterator(this); }
-    const_iterator end() const { return const_iterator(this, true); }
-    const_iterator cbegin() const { return const_iterator(this); }
-    const_iterator cend() const { return const_iterator(this, true); }
-
-    // -------------- Evaluation of a function on the grid --------------------------
-
-    std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
-      return interpolate_on_segment(x, x_min(), delta(), delta_inv(), long(size()) - 1);
-    }
-
-    // -------------- HDF5  --------------------------
-    /// Write into HDF5
-    friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m, const char *_type) {
+    void h5_write_impl(h5::group fg, std::string const &subgroup_name, const char *format) const {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format_as_string(gr, _type);
-      h5_write(gr, "domain", m.domain());
-      h5_write(gr, "min", m.xmin);
-      h5_write(gr, "max", m.xmax);
-      h5_write(gr, "size", long(m.size()));
+      write_hdf5_format_as_string(gr, format);
+      h5::write(gr, "min", this->xmin);
+      h5::write(gr, "max", this->xmax);
+      h5::write(gr, "size", this->size());
     }
 
     /// Read from HDF5
-    friend void h5_read_impl(h5::group fg, std::string const &subgroup_name, linear_mesh &m, const char *tag_expected) {
+    void h5_read_impl(h5::group fg, std::string const &subgroup_name, const char *format_expected) {
       h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format_as_string(gr, tag_expected, true);
-      typename linear_mesh::domain_t dom;
-      double a, b;
-      long L;
-      h5_read(gr, "domain", dom);
-      h5_read(gr, "min", a);
-      h5_read(gr, "max", b);
-      h5_read(gr, "size", L);
-      m = linear_mesh(std::move(dom), a, b, L);
+      assert_hdf5_format_as_string(gr, format_expected, true);
+
+      auto a = h5::read<value_t>(gr, "min");
+      auto b = h5::read<value_t>(gr, "max");
+      auto L = h5::read<long>(gr, "size");
+      *this  = linear(a, b, L);
     }
-
-    // -------------------- boost serialization -------------------
-
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &_dom;
-      ar &xmin;
-      ar &xmax;
-      ar &del;
-      ar &del_inv;
-      ar &L;
-    }
-
-    // -------------------- print  -------------------
-
-    friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
-
-    // ------------------------------------------------
-    private:
-    domain_t _dom;
-    long L;
-    double xmin, xmax, del, del_inv;
-  };
-
-  // ---------------------------------------------------------------------------
-  //                     The mesh point
-  // ---------------------------------------------------------------------------
-
-  template <typename Domain>
-  struct mesh_point<linear_mesh<Domain>> : public utility::arithmetic_ops_by_cast<mesh_point<linear_mesh<Domain>>, typename Domain::point_t> {
-    using mesh_t  = linear_mesh<Domain>;
-    using index_t = typename mesh_t::index_t;
-    mesh_t const *m;
-    index_t _index;
 
     public:
-    mesh_point() : m(nullptr) {}
-    mesh_point(mesh_t const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
-    mesh_point(mesh_t const &mesh) : mesh_point(mesh, 0) {}
-    void advance() { ++_index; }
-    using cast_t = typename Domain::point_t;
-    operator cast_t() const { return m->index_to_point(_index); }
-    long linear_index() const { return _index; }
-    long index() const { return _index; }
-    bool at_end() const { return (_index == m->size()); }
-    void reset() { _index = 0; }
-    mesh_t const &mesh() const { return *m; }
+    // it is fine in public, it is equivalent to the function via UFCS
+    // ------------------------- Evaluate -----------------------------
+
+    auto evaluate(auto const &f, double x) const {
+      EXPECTS(this->is_value_valid(x) and this->size() > 1);
+      x        = std::max(x, this->xmin);
+      double a = (x - this->xmin) * this->delta_inv();
+      long i   = std::min(static_cast<long>(a), this->size() - 2);
+      double w = std::min(a - i, 1.0); //NOLINT
+      return (1 - w) * f(i) + w * f(i + 1);
+    }
   };
 
-} // namespace triqs::mesh
+} // namespace triqs::mesh::details

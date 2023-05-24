@@ -52,9 +52,9 @@ BENCHMARK(GfFillLoop)->RangeMultiplier(2)->Range(1 << 6, 1 << 8); //->Complexity
 static void GfFillClef(benchmark::State &state) {
   long n_iw = state.range(0);
 
-  triqs::clef::placeholder<0> iW;
-  triqs::clef::placeholder<1> iw1;
-  triqs::clef::placeholder<2> iw2;
+  nda::clef::placeholder<0> iW;
+  nda::clef::placeholder<1> iw1;
+  nda::clef::placeholder<2> iw2;
 
   auto iw_mesh_large = mesh::imfreq{1.0, Fermion, 2 * n_iw};
   auto M             = gf<prod<imfreq, imfreq>, scalar_valued>{{iw_mesh_large, iw_mesh_large}};
@@ -63,8 +63,7 @@ static void GfFillClef(benchmark::State &state) {
   auto iW_mesh = mesh::imfreq{1.0, Boson, n_iw};
   auto M4      = gf<prod<imfreq, imfreq, imfreq>, scalar_valued>{{iW_mesh, iw_mesh, iw_mesh}};
 
-  //for (auto _ : state) M4[iW, iw1_, iw2_] << M4[iW, iw1_, iw2_] + M[iw1_, iW + iw1_] * M[iW + iw2_, iw2_]; FIXME Does not work!
-  for (auto _ : state) M4(iW, iw1, iw2) << M4(iW, iw1, iw2) + M(iw1, iW + iw1) * M(iW + iw2, iw2);
+  for (auto _ : state) M4[iW, iw1, iw2] << M4[iW, iw1, iw2] + M[iw1, iW + iw1] * M[iW + iw2, iw2];
 
   state.SetBytesProcessed(int64_t(state.iterations()) * 8 * n_iw * n_iw * n_iw * sizeof(scalar_t));
 }

@@ -17,6 +17,7 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+#undef NDEBUG
 #include <triqs/test_tools/gfs.hpp>
 
 TEST(Gf, Base) {
@@ -34,15 +35,15 @@ TEST(Gf, Base) {
 
   EXPECT_ARRAY_ZERO(G(0));
 
-  Gv.on_mesh(0) = 20;
+  Gv[0] = 20;
 
   EXPECT_ARRAY_NEAR(Gv(0), G(0));
   EXPECT_ARRAY_NEAR(G(0), matrix<double>{{20, 0}, {0, 20}});
 
-  Gv.on_mesh(0) = 0;
+  Gv[0] = 0;
 
   auto Gv2       = slice_target(G(), range(0, 1), range(0, 1));
-  Gv2.on_mesh(0) = 10;
+  Gv2[0] = 10;
   EXPECT_ARRAY_NEAR(G(0), matrix<double>{{10, 0}, {0, 0}});
 
   EXPECT_ARRAY_NEAR(eval(G(om_), om_ = 0), G(0));
@@ -78,7 +79,6 @@ TEST(Gf, Base) {
     for (auto const &nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
   }
 
-  //
   {
     auto G0w     = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1, 1}};
     auto D0w     = gf<imfreq, matrix_valued>{{beta, Boson, 100}, {1, 1}};
@@ -109,6 +109,7 @@ TEST(Gf, EvaluatorMatrix) {
 
   triqs::clef::placeholder<0> iw_;
   g(iw_) << 1 / (iw_ + 2.3);
+  std::cout  << g[0] <<std::endl;
 
   auto f     = matsubara_freq{120, beta, Fermion};
   auto exact = matrix<dcomplex>{{1 / (f + 2.3), 0i}, {0i, 1 / (f + 2.3)}};
@@ -121,6 +122,7 @@ TEST(Gf, EvaluatorScalar) {
 
   double beta = 1;
   auto g      = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
+  static_assert(std::is_reference_v<decltype(g[*g.mesh().begin()])>);
 
   triqs::clef::placeholder<0> om_;
   g(om_) << 1 / (om_ + 2.3);
@@ -148,7 +150,6 @@ TEST(Gf, PhNoInfinity_tau) {
   auto g = gf<imtime, matrix_valued>{{beta, Fermion, 10000}, {2, 2}};
 
   using std::exp;
-  //triqs::clef::placeholder<0> tau_; // would not compile
   triqs::clef::placeholder<0> tau_;
   g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 }
@@ -162,7 +163,7 @@ TEST(Gf, ZeroM) {
 TEST(Gf, ZeroS) {
 
   double beta = 1;
-  auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
+  auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}};
   EXPECT_COMPLEX_NEAR(zeros<dcomplex>(g.target_shape()), 0);
 }
 
@@ -181,6 +182,8 @@ TEST(Gf, TargetSpaceLoop) {
   triqs::clef::placeholder<0> iw_;
   triqs::clef::placeholder<1> i_;
   triqs::clef::placeholder<2> j_;
+
+  static_assert(!mesh::is_product<decltype(auto{g1.mesh()})>);
   g1[iw_](i_, j_) << 1. / (iw_ + i_ + j_ * 0.1);
 
   for (auto iw : g2.mesh())
@@ -198,15 +201,17 @@ TEST(Gf, MeshCheck) {
   auto g1 = gf<imfreq>{iw_mesh, {1, 1}};
   auto g2 = gf<imfreq>{iw_mesh_big, {1, 1}};
 
-  EXPECT_THROW(g1[*g2.mesh().begin()], triqs::runtime_error);
-  EXPECT_THROW(g2[*g1.mesh().begin()], triqs::runtime_error);
+  EXPECT_DEATH(g1[*g2.mesh().begin()], "mesh_hash.* violated");
+  EXPECT_DEATH(g2[*g1.mesh().begin()], "mesh_hash.* violated");
 }
 
 TEST(Gf, EvalSlice) {
   auto t_mesh = gf_mesh<refreq>({-10., 10., 100});
   gf<refreq, matrix_valued> g(t_mesh, {2, 2});
 
-  auto g_eval_slice = array<dcomplex, 1>{g(5.0)(range(), 0)};
+  auto g5 = g(5.0);
+  g5(range::all, 0);
+  auto g_eval_slice = array<dcomplex, 1>{g(5.0)(range::all, 0)};
   EXPECT_EQ(g_eval_slice, (array<dcomplex, 1>{0.0, 0.0}));
 }
 
@@ -221,8 +226,8 @@ TEST(Gf, TransposeComparison) {
 
   Ginv[w](i, j) << w - (i + j) + 0.001i;
 
-  EXPECT_EQ(Ginv[{0}], transpose(Ginv[{0}]));
-  EXPECT_EQ(Ginv[{10}], transpose(Ginv[{10}]));
+  EXPECT_EQ(Ginv[0], transpose(Ginv[0]));
+  EXPECT_EQ(Ginv[10], transpose(Ginv[10]));
 }
 
 MAKE_MAIN;

@@ -43,7 +43,6 @@ namespace triqs::gfs {
     /// The associated real type
     using real_t = block_gf_view<Mesh, typename Target::real_t, Arity, IsConst>;
 
-    // FIXME : Const as template
     using g_t           = std::conditional_t<IsConst, gf_const_view<Mesh, Target>, gf_view<Mesh, Target>>;
     using data_t        = std::conditional_t<Arity == 1, std::vector<g_t>, std::vector<std::vector<g_t>>>;
     using block_names_t = std::conditional_t<Arity == 1, std::vector<std::string>, std::vector<std::vector<std::string>>>;

@@ -165,7 +165,7 @@ namespace triqs::stat {
     /// Get HDF5 format name
     /// @return HDF5 format name
     /// @brief Get HDF5 format name
-    static std::string hdf5_format() { return "Histogram"; }
+    [[nodiscard]] static std::string hdf5_format() { return "Histogram"; }
 
     /// Write histogram to HDF5
     /// @param g Enclosing HDF5 group

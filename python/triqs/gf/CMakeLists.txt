@@ -10,6 +10,7 @@ SET(PYTHON_SOURCES
   mesh_product.py
   tools.py
   mesh_point.py
+  matsubara_freq.py
 )
 
 add_cpp2py_module(meshes)

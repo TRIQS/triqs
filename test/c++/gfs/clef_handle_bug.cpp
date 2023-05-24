@@ -39,5 +39,17 @@ int main() {
   // Before commit 68b1d85e the following line was creating a copy
   // of the underlying storage which was immediately freed in the slicing process
   // This lead to Heap use after free (ASAN)
-  Gp1(iw_, inu_) << Gp(iw_, inu_)(0, 0);
+
+  std::get<0>(iw_inu_mesh);
+  std::begin(iw_inu_mesh);
+  std::get<0>(*std::begin(iw_inu_mesh));
+  for(auto const &mp: iw_inu_mesh) {
+    std::get<0>(mp);
+    std::get<1>(mp);
+    auto mp2 = mp;
+    std::get<0>(mp2); 
+    //std::apply([](auto const &x, auto const &y) { return x; }, mp);
+    std::apply([](auto const &x, auto const &y) { return x; }, mp2);
+  }
+  //Gp1(iw_, inu_) << Gp(iw_, inu_)(0, 0);
 }

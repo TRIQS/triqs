@@ -55,8 +55,8 @@ TEST(Gf, PartialEval) {
 
   static_assert(std::is_same<std::remove_reference_t<decltype(G_w_wn_sl0_a.mesh())>, const mesh::imfreq>::value, "oops");
 
-  EXPECT_CLOSE(G_w_wn.on_mesh(8, 3), G_w_wn_sl0_a[3]);
-  EXPECT_CLOSE(G_w_wn.on_mesh(8, 3), G_w_wn_sl0_b[8]);
+  EXPECT_CLOSE((G_w_wn[8, 3]), G_w_wn_sl0_a[3]);
+  EXPECT_CLOSE((G_w_wn[8, 3]), G_w_wn_sl0_b[8]);
 
   rw_h5(G_t_tau, "G_t_tau");
   rw_h5(G_w_wn, "G_w_wn");

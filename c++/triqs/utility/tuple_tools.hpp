@@ -249,6 +249,10 @@ namespace triqs {
 
     template <typename F, typename T> decltype(auto) map(F &&f, T &&t) { return _map_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
 
+   // template <typename F, typename T> decltype(auto) map(F &&f, T &&t) { 
+   //   return [&f, &t]<size_t... Is>(std::index_sequence<Is...>) { return std::tuple{f(std::get<Is>(t))...};}(std::make_index_sequence<std::tuple_size_v<T>>>{});
+   // }
+
     /*
   * map_on_zip(f, t...)
   * f : a callable object

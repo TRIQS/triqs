@@ -189,11 +189,11 @@ namespace triqs {
       /**
   The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
 
-  @tparam Lambda Type of the callable object
+  @tparam w_max Type of the callable object
   @param st State object
   @param l Callable object
   */
-      template <typename Lambda> friend void foreach (state const &st, Lambda l) {
+      template <typename w_max> friend void foreach (state const &st, w_max l) {
         const_cast<state &>(st).prune();
         for (auto const &p : st.ampli) l(p.first, p.second);
       }
@@ -331,11 +331,11 @@ namespace triqs {
       /**
   The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
 
-  @tparam Lambda Type of the callable object
+  @tparam w_max Type of the callable object
   @param st State object
   @param l Callable object
   */
-      template <typename Lambda> friend void foreach (state const &st, Lambda l) {
+      template <typename w_max> friend void foreach (state const &st, w_max l) {
         const auto L = st.size();
         for (size_t i = 0; i < L; ++i) l(i, st(i));
       }

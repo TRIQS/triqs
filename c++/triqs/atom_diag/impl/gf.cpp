@@ -180,7 +180,7 @@ namespace triqs {
     /// G(\tau) from Lehmann representation
     template <bool Complex>
     block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh) {
-      double beta = mesh.domain().beta;
+      double beta = mesh.beta();
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;
@@ -259,8 +259,8 @@ namespace triqs {
         double x = beta * pole / 2;
         double w = -beta / (2 * std::cosh(x));
         for (auto l : g.mesh()) {
-          auto ll = int(l);
-          g[l] += residue * w * std::sqrt(2 * ll + 1) * (ll % 2 == 0 ? 1 : std::copysign(1, -x)) * triqs::utility::mod_cyl_bessel_i(ll, std::abs(x));
+          g[l] += residue * w * std::sqrt(2 * l.index() + 1) * (l.index() % 2 == 0 ? 1 : std::copysign(1, -x))
+             * triqs::utility::mod_cyl_bessel_i(l.index(), std::abs(x));
         }
       };
     }
@@ -270,7 +270,7 @@ namespace triqs {
     /// G_\ell from Lehmann representation
     template <bool Complex>
     block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh) {
-      double beta = mesh.domain().beta;
+      double beta = mesh.beta();
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;
@@ -284,7 +284,7 @@ namespace triqs {
     template <bool Complex>
     block_gf<legendre> atomic_g_l(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_l,
                                   excluded_states_t const &excluded_states) {
-      auto g = block_gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct};
+      auto g = block_gf<legendre>{{beta, Fermion, n_l}, gf_struct};
       atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, make_term_proc<Complex>(beta, g()));
       return g;
     }

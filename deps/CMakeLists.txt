@@ -79,6 +79,12 @@ if(Build_Benchs)
   )
 endif()
 
+# -- fmt --
+external_dependency(fmt
+  GIT_REPO https://github.com/fmtlib/fmt
+  GIT_TAG master
+)
+
 # -- itertools --
 external_dependency(itertools
   GIT_REPO https://github.com/TRIQS/itertools
@@ -97,12 +103,18 @@ external_dependency(mpi
 external_dependency(h5
   GIT_REPO https://github.com/TRIQS/h5
   VERSION 1.1
-  GIT_TAG unstable
+  GIT_TAG DEV_GFV2
 )
 
 # -- nda --
 external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.1
-  GIT_TAG unstable
+  GIT_TAG DEV_CUDA_LINALG_MIGUEL
+) 
+
+# -- cppdlr --
+external_dependency(cppdlr
+  GIT_REPO https://github.com/flatironinstitute/cppdlr
+  GIT_TAG main
 )

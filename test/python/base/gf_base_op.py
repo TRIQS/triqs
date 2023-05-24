@@ -66,7 +66,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert abs(dens - 4.000001283004012) < self.precision, "oops dens =  %s"%dens
 
         # FT:
-        f = lambda g,L : Gf(indices = g.indices, mesh = MeshImTime(beta=self.beta, S="Fermion", n_tau = L))
+        f = lambda g,L : Gf(mesh = MeshImTime(beta=self.beta, S="Fermion", n_tau = L), target_shape = g.target_shape)
         gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
         for (i,gtt) in gt : gtt.set_from_fourier(G[i])
 

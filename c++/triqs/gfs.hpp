@@ -38,11 +38,10 @@
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
-#include "./gfs/gf/slice_or_access.hpp"
-#include "./gfs/gf/evaluate.hpp"
+//#include "./gfs/gf/evaluate.hpp"
 
 // multivar
-#include "./mesh/prod.hpp"
+//#include "./mesh/prod.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"
@@ -64,24 +63,27 @@
 // hdf5
 #include "./gfs/h5.hpp"
 
-// functions
-#include "./gfs/functions/functions2.hpp"
-#include "./gfs/functions/imfreq.hpp"
-#include "./gfs/functions/imtime.hpp"
-#include "./gfs/functions/legendre.hpp"
-#include "./gfs/functions/density.hpp"
-
-// fourier
-#include "./gfs/transform/fourier.hpp"
-#include "./gfs/transform/legendre_matsubara.hpp"
-
+#include "./mesh/concepts.hpp"
 
 //----------------------------------------------------------------
 // Backward compatibility :  aliases, etc..
 //----------------------------------------------------------------
 namespace triqs::gfs {
 
-  template <typename M, typename Requires = std::enable_if_t<mesh::models_mesh_concept_v<M>>>
+  using mesh::brzone;
+  using mesh::cyclat;
+  using mesh::dlr_coeffs;
+  using mesh::dlr_imfreq;
+  using mesh::dlr_imtime;
+  using mesh::imfreq;
+  using mesh::imtime;
+  using mesh::legendre;
+  using mesh::prod;
+  using mesh::refreq;
+  using mesh::retime;
+  using mesh::make_adjoint_mesh;
+
+  template <triqs::mesh::Mesh M>
   using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
 
   // Get shape of the data or of the target
@@ -90,8 +92,19 @@ namespace triqs::gfs {
 
 } // namespace triqs::gfs
 
+#include "./gfs/functions/functions2.hpp"
+#include "./gfs/functions/imfreq.hpp"
+#include "./gfs/functions/imtime.hpp"
+#include "./gfs/functions/legendre.hpp"
+#include "./gfs/functions/density.hpp"
+#include "./gfs/functions/dlr.hpp"
+
+// fourier
+#include "./gfs/transform/fourier.hpp"
+#include "./gfs/transform/legendre_matsubara.hpp"
+
+#include "./gfs/transform/partial_transform.hpp"
 
 #ifdef C2PY_INCLUDED
 #include "./cpp2py_converters/gf.hpp"
 #endif
-

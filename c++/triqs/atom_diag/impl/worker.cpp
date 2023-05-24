@@ -310,7 +310,7 @@ namespace triqs {
           i_state.amplitudes()() = 0;
           i_state(i)             = 1;
           auto f_state           = hamiltonian(i_state);
-          h_matrix(range(), i)   = f_state.amplitudes();
+          h_matrix(range::all, i)   = f_state.amplitudes();
         }
 
         auto eig                   = linalg::eigenelements(h_matrix);

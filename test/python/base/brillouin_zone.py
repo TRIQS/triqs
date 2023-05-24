@@ -36,11 +36,10 @@ class test_brillouin_zone(unittest.TestCase):
             bz     = BrillouinZone(bl)
             k_mesh = MeshBrZone(bz, per_mat)
 
-            p1, p2, p3 = per_mat
             k1, k2, k3 = bz.units
-            assert array_equal(k_mesh.closest_index(k1), p1)
-            assert array_equal(k_mesh.closest_index(k2), p2)
-            assert array_equal(k_mesh.closest_index(k3), p3)
+            assert array_equal(k_mesh.closest_index(k1), [0,0,0])
+            assert array_equal(k_mesh.closest_index(k2), [0,0,0])
+            assert array_equal(k_mesh.closest_index(k3), [0,0,0])
             assert norm(dot(bl.units, bz.units.T) - eye(3)*2*pi) < 1e-14
 
         # ---- square lattice : 16 x 16 x 1

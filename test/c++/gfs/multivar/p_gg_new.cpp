@@ -26,7 +26,7 @@ using gf_bz_imfreq_mat = gf<prod<brzone, imfreq>, matrix_valued>;
 auto _                 = all_t{};
 
 static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::complex<double>, 2,
-      nda::C_layout, 'M', nda::heap> &>> == 'M', "oops");
+      nda::C_layout, 'M', nda::heap<>> &>> == 'M', "oops");
 
 // --------------------------------------------------------------------------------
 
@@ -35,13 +35,12 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<1> tau_;
   placeholder<2> k_;
 
-  auto w_mesh = std::get<1>(G_k_w.mesh());
-  auto k_mesh = std::get<0>(G_k_w.mesh());
-  double beta = w_mesh.domain().beta;
-  int nw      = w_mesh.last_index() + 1;
-  int nnu     = 2;
-  int ntau    = nw * 4;
-  int nk      = k_mesh.dims()[0];
+  auto [k_mesh, w_mesh] = G_k_w.mesh();
+  double beta           = w_mesh.beta();
+  int nw                = w_mesh.last_index() + 1;
+  int nnu               = 2;
+  int ntau              = nw * 4;
+  int nk                = k_mesh.dims()[0];
 
   auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 
@@ -77,10 +76,9 @@ gf_bz_imfreq_mat compute_gg(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<1> q_;
   placeholder<3> iw_;
   placeholder<4> inu_;
-  auto const &w_mesh = std::get<1>(G_k_w.mesh());
-  auto const &k_mesh = std::get<0>(G_k_w.mesh());
-  double beta        = w_mesh.domain().beta;
-  int nnu            = 2;
+  auto const &[k_mesh, w_mesh] = G_k_w.mesh();
+  double beta                  = w_mesh.beta();
+  int nnu                      = 2;
 
   auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 
@@ -98,7 +96,7 @@ TEST(Gf, Bubble) {
   double beta = 5, mu = 0.5;
   placeholder<0> k_;
   placeholder<4> inu_;
-  auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k_ = -2 * (cos(k_[0]) + cos(k_[1]));
   auto G_k_w  = gf_bz_imfreq_mat{{{bz, nk}, {beta, Fermion, nw}}, {1, 1}};
   G_k_w(k_, inu_) << 1.0 / (inu_ + mu - eps_k_);
 

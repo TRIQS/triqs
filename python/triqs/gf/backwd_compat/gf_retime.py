@@ -28,7 +28,7 @@ class GfReTime(Gf) :
     mesh: MeshReTime, optional
           The mesh of the Green function
           If not present, it will be constructed from 
-          the parameters beta, indices, [n_points], [statistic]
+          the parameters beta, [n_points], [statistic]
 
     data: numpy.array, optional
           The data of the Gf.
@@ -44,11 +44,6 @@ class GfReTime(Gf) :
              If true, and target_shape is set, the data will be real.
              No effect with the parameter data.
 
-    indices: GfIndices or list of str or list of list of str, Optional
-             Optional string indices for the target space, to allow e.g g['eg', 'eg']
-             list of list of str: the list of indices for each dimension.
-             list of str: all indices are assumed to be the same for all dimensions.
-   
     name: str
           The name of the Green function. For plotting.
 
@@ -59,7 +54,7 @@ class GfReTime(Gf) :
         """
         warnings.warn("Please use Gf(mesh=MeshReTime(..), ..) instead of GfReTime", DeprecationWarning)
 
-        def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 10000, window = None):
+        def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 10000, window = None, indices=None):
             if mesh is None:
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshReTime(window[0], window[1], n_points)
@@ -69,6 +64,6 @@ class GfReTime(Gf) :
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
-                      indices = indices, 
-                      name = name) 
+                      name = name,
+                      indices = indices) 
         delegate(self, **kw)

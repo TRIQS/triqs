@@ -85,7 +85,7 @@ namespace triqs {
       for (int sp : range(sub_hilbert_spaces.size())) {
         if (sub_hilbert_spaces[sp].has_state(fock_state_t(0))) {
           vacuum_subspace_index               = sp;
-          vacuum(index_range_of_subspace(sp)) = dagger(eigensystems[sp].unitary_matrix)(range(), 0);
+          vacuum(index_range_of_subspace(sp)) = dagger(eigensystems[sp].unitary_matrix)(range::all, 0);
           break;
         }
       }
@@ -193,28 +193,28 @@ namespace triqs {
       auto gr        = fg.create_group(name);
       write_hdf5_format(gr, ad);
 
-      h5_write(gr, "h_atomic", ad.h_atomic);
       h5_write_attribute(gr, "fops", ad.fops);
-      h5_write(gr, "full_hs", ad.full_hs);
-      h5_write(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);
-      h5_write(gr, "eigensystems", ad.eigensystems);
-      h5_write(gr, "creation_connection", ad.creation_connection);
-      h5_write(gr, "annihilation_connection", ad.annihilation_connection);
+      h5::write(gr, "h_atomic", ad.h_atomic);
+      h5::write(gr, "full_hs", ad.full_hs);
+      h5::write(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);
+      h5::write(gr, "eigensystems", ad.eigensystems);
+      h5::write(gr, "creation_connection", ad.creation_connection);
+      h5::write(gr, "annihilation_connection", ad.annihilation_connection);
 
       auto write_sparse = [&](std::string na, std::vector<std::vector<matrix_t>> const &Mvv) {
         auto gr2 = gr.create_group(na);
         for (int i = 0; i < Mvv.size(); ++i)
           for (int j = 0; j < Mvv[i].size(); ++j)
-            if (!Mvv[i][j].is_empty()) h5_write(gr2, std::to_string(i) + ' ' + std::to_string(j), Mvv[i][j]);
+            if (!Mvv[i][j].is_empty()) h5::write(gr2, std::to_string(i) + ' ' + std::to_string(j), Mvv[i][j]);
       };
 
       write_sparse("c_matrices", ad.c_matrices);
       write_sparse("cdag_matrices", ad.cdag_matrices);
 
-      h5_write(gr, "gs_energy", ad.gs_energy);
-      h5_write(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
-      h5_write(gr, "vacuum", ad.vacuum);
-      h5_write(gr, "quantum_numbers", ad.quantum_numbers);
+      h5::write(gr, "gs_energy", ad.gs_energy);
+      h5::write(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
+      h5::write(gr, "vacuum", ad.vacuum);
+      h5::write(gr, "quantum_numbers", ad.quantum_numbers);
     }
 
     // -----------------------------------------------------------------
@@ -222,13 +222,13 @@ namespace triqs {
       using matrix_t = typename atom_diag<Complex>::matrix_t;
       auto gr        = fg.open_group(name);
 
-      h5_try_read(gr, "h_atomic", ad.h_atomic);
       h5_read_attribute(gr, "fops", ad.fops);
-      h5_read(gr, "full_hs", ad.full_hs);
-      h5_read(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);
-      h5_read(gr, "eigensystems", ad.eigensystems);
-      h5_read(gr, "creation_connection", ad.creation_connection);
-      h5_read(gr, "annihilation_connection", ad.annihilation_connection);
+      h5::try_read(gr, "h_atomic", ad.h_atomic);
+      h5::read(gr, "full_hs", ad.full_hs);
+      h5::read(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);
+      h5::read(gr, "eigensystems", ad.eigensystems);
+      h5::read(gr, "creation_connection", ad.creation_connection);
+      h5::read(gr, "annihilation_connection", ad.annihilation_connection);
 
       auto read_sparse = [&](std::string na, std::vector<std::vector<matrix_t>> &Mvv) {
         Mvv.resize(ad.creation_connection.extent(0), std::vector<matrix_t>(ad.creation_connection.extent(1)));
@@ -239,17 +239,17 @@ namespace triqs {
           std::getline(ss, item1, ' ');
           std::getline(ss, item2, ' ');
           int i = std::stoi(item1), j = std::stoi(item2);
-          h5_read(gr2, s, Mvv[i][j]);
+          h5::read(gr2, s, Mvv[i][j]);
         }
       };
 
       read_sparse("c_matrices", ad.c_matrices);
       read_sparse("cdag_matrices", ad.cdag_matrices);
 
-      h5_read(gr, "gs_energy", ad.gs_energy);
-      h5_read(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
-      h5_read(gr, "vacuum", ad.vacuum);
-      h5_try_read(gr, "quantum_numbers", ad.quantum_numbers);
+      h5::read(gr, "gs_energy", ad.gs_energy);
+      h5::read(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
+      h5::read(gr, "vacuum", ad.vacuum);
+      h5::try_read(gr, "quantum_numbers", ad.quantum_numbers);
       ad.fill_first_eigenstate_of_subspace();
     }
 

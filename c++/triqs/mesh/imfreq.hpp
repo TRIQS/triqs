@@ -18,9 +18,9 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, tayral
 
 #pragma once
-#include "./details/mesh_tools.hpp"
+#include "./utils.hpp"
 #include "./domains/matsubara.hpp"
-#include "./details/tail_fitter.hpp"
+#include "./tail_fitter.hpp"
 
 namespace triqs::mesh {
 
@@ -30,42 +30,65 @@ namespace triqs::mesh {
     explicit operator double() const { return value; }
   };
 
-  class imfreq;
-  template <> struct mesh_point<imfreq>; //forward
-
   /**
-   *  Matsubara frequencies 
+   *  A mesh representing Matsubara frequencies 
    *   - fermionic $\omega_n = \frac{(2n+1)\pi}{\beta}$ 
    *   - bosonic $\omega_n = \frac{2n\pi}{\beta}$
    *
-   *  The mesh is a finite segment of 
+   * The mesh has a finite range of frequencies.
+   * It spans by default both positive and negative frequencies (which is necessary for complex functions $G(\tau)$), 
+   * but can be restricted to positive frequencies
    *
-   * The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions $G(\tau)$).
-   *
-   * @figure matsubara_freq_mesh.png: Pictorial representation of ``imfreq({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <imfreq_constructor>` for more details.
    */
-  class imfreq : tag::mesh, public tail_fitter_handle {
+  struct imfreq : public tail_fitter_handle {
 
-    public:
-    ///type of the domain: matsubara_domain<true>
-    using domain_t = matsubara_domain<true>;
+    using index_t      = long;
+    using data_index_t = long;
+    using value_t  = matsubara_freq;
 
-    ///type of the Matsubara index $n$ (as in $i\omega_n$)
-    using index_t = _long;
-
-    ///type of the linear index
-    using linear_index_t = long;
-
-    ///type of the domain point
-    using domain_pt_t = typename domain_t::point_t;
+    // -------------------- Data -------------------
 
     /// Option for the constructor. Restrict to positive frequency or not
     enum class option { all_frequencies, positive_frequencies_only };
 
-    // -------------------- Constructors -------------------
+    private:
+    double _beta              = 1.0;
+    statistic_enum _statistic = Fermion;
+    long _n_iw                = 0;
+    option _opt               = option::all_frequencies;
+    long _last_index          = _n_iw - 1;
+    long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
+    uint64_t _mesh_hash       = 0;
 
+    // -------------------- Constructors -------------------
+    public:
     ///
-    imfreq() : imfreq(domain_t{}, 0) {}
+    imfreq() = default;
+
+    /**
+     * @brief Construct a new imfreq object
+     *  
+     * @param beta Inverse temperature
+     * @param statistic Statistic (Fermion or Boson)
+     * @param n_iw The number of positive Matsubara frequencies
+     * @param opt Whether to use all frequencies, or only the positive ones
+     *
+     */
+    imfreq(double beta, statistic_enum statistic, long n_iw = 1025, option opt = option::all_frequencies)
+       : _beta(beta), _statistic(statistic), _n_iw(n_iw), _opt(opt), _mesh_hash(hash(beta, statistic, n_iw, opt)) {
+      if (opt == option::positive_frequencies_only) _first_index = 0;
+    }
+
+    /**
+     * @brief Construct a new imfreq object
+     * 
+     * @param beta Inverse temperature
+     * @param statistic Statistic (Fermion or Boson)
+     * @param omega_max Energy window. The number of points is computed to match this energy window. 
+     * @param opt Whether to use all frequencies, or only the positive ones
+     */
+    imfreq(double beta, statistic_enum statistic, energy_t omega_max, option opt = option::all_frequencies)
+       : imfreq(beta, statistic, long(((omega_max.value * beta / M_PI) - 1) / 2), opt) {}
 
     /**
      * Construct a Mesh of Matsubara frequencies on a Matsubara domain
@@ -74,215 +97,209 @@ namespace triqs::mesh {
      * @param n_iw Number of positive Matsubara frequencies
      * @param option Wether to use all frequencies, or only the positive ones
      */
-    imfreq(domain_t dom, long n_iw = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_iw(n_iw), _opt(opt) {
-      _last_index = n_iw - 1; // total number of points
-      if (opt == option::positive_frequencies_only) {
-        _first_index = 0;
-        _last_index  = n_iw - 1;
-      } else {
-        bool is_fermion = (_dom.statistic == Fermion);
-        _last_index     = n_iw - 1;
-        _first_index    = -(_last_index + (is_fermion ? 1 : 0));
-      }
-    }
-
-    /**
-     * Construct a Mesh of Matsubara frequencies on a Matsubara domain
-     *
-     * @param dom The Matsubara domain
-     * @param n_iw The number of positive Matsubara frequencies
-     * @param option Wether to use all frequencies, or only the positive ones
-     *
-     * @param beta Inverse temperature
-     * @param S Statistic (Fermion or Boson)
-     * @param n_iw defined as n_iw = n_max + 1 (n_max: last matsubara index)
-     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
-     */
-    imfreq(double beta, statistic_enum S, long n_iw = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_iw, opt) {}
+    [[deprecated("matsubara_freq_domain is deprecated.")]] imfreq(matsubara_freq_domain dom, long n_iw = 1025, option opt = option::all_frequencies)
+       : imfreq(dom.beta, dom.statistic, n_iw, opt) {}
 
     /**
      * @param dom
      * @param omega_max
      */
-    imfreq(domain_t dom, energy_t omega_max, option opt = option::all_frequencies)
-       : imfreq(std::move(dom), ((omega_max.value * dom.beta / M_PI) - 1) / 2, opt) {}
-
-    /**
-     */
-    imfreq(double beta, statistic_enum S, energy_t omega_max, option opt = option::all_frequencies) : imfreq({beta, S}, omega_max, opt) {}
+    [[deprecated("matsubara_freq_domain is deprecated")]] imfreq(matsubara_freq_domain dom, energy_t omega_max, option opt = option::all_frequencies)
+       : imfreq(dom.beta, dom.statistic, omega_max, opt) {}
 
     // -------------------- Comparisons -------------------
 
     ///
-    bool operator==(imfreq const &M) const { return (std::tie(_dom, _n_iw, _opt) == std::tie(M._dom, M._n_iw, M._opt)); }
+    bool operator==(imfreq const &m) const { return (std::tie(_beta, _statistic, _n_iw, _opt) == std::tie(m._beta, m._statistic, m._n_iw, m._opt)); }
 
     ///
-    bool operator!=(imfreq const &M) const { return !(operator==(M)); }
-
-    // -------------------- Accessors (from concept) -------------------
-
-    /// The corresponding domain
-    domain_t const &domain() const { return _dom; }
-
-    /// Size (linear) of the mesh
-    long size() const { return _last_index - _first_index + 1; }
-
-    /// Is the point in mesh ?
-    static constexpr bool is_within_boundary(all_t) { return true; }
-    bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
-    bool is_within_boundary(index_t idx) const { return is_within_boundary(idx.value); }
-    bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
-
-    /// From an index of a point in the mesh, returns the corresponding point in the domain
-    domain_pt_t index_to_point(index_t idx) const {
-      EXPECTS(is_within_boundary(idx));
-      return 1i * M_PI * (2 * idx.value + (_dom.statistic == Fermion)) / _dom.beta;
-    }
-
-    /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-    long index_to_linear(index_t idx) const {
-      EXPECTS(is_within_boundary(idx));
-      return idx.value - first_index();
-    }
-
-    /// Reverse of index_to_linear
-    index_t linear_to_index(long lidx) const { return {lidx + first_index()}; }
-
-    // -------------------- Accessors (other) -------------------
-
-    /// first Matsubara index
-    int first_index() const { return _first_index; }
-
-    /// last Matsubara index
-    int last_index() const { return _last_index; }
-
-    /// Is the mesh only for positive omega_n (G(tau) real))
-    bool positive_only() const { return _opt == option::positive_frequencies_only; }
+    bool operator!=(imfreq const &m) const { return !(operator==(m)); }
 
     // -------------------- Get the grid for positive freq only -------------------
 
-    imfreq get_positive_freq() const { return {domain(), _n_iw, option::positive_frequencies_only}; }
+    imfreq get_positive_freq() const { return {_beta, _statistic, _n_iw, option::positive_frequencies_only}; }
 
-    // -------------------- tail -------------------
+    // -------------------- Convertion to matsubara_freq -------------------
 
-    /// maximum freq of the mesh
-    dcomplex omega_max() const { return index_to_point(_last_index); }
+    /// From an index of a point in the mesh, returns the corresponding point in the domain
+    matsubara_freq index_to_freq(index_t index) const { return {index, _beta, _statistic}; }
 
-    ///
-    dcomplex index_to_point(int n) const { return 1i * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
+    /// Maximum freq of the mesh
+    dcomplex w_max() const { return index_to_freq(_last_index); }
 
     // -------------------- mesh_point -------------------
 
     /// Type of the mesh point
-    using mesh_point_t = mesh_point<imfreq>;
+    struct mesh_point_t : public matsubara_freq {
+      using mesh_t = imfreq;
 
-    /**
-     * Accessing a point of the mesh from its index
-     * @param i Matsubara index
-     */
-    inline mesh_point_t operator[](index_t i) const; //impl below
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
 
-    /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<imfreq>;
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(double beta, statistic_enum statistic, index_t index, long data_index, uint64_t mesh_hash) //NOLINT
+         : matsubara_freq(index, beta, statistic), _data_index(data_index), _mesh_hash(mesh_hash) {}
 
-    ///
-    inline const_iterator begin() const; // impl below
+      /// The index of the mesh point
+      [[nodiscard]] long index() const { return n; }
 
-    ///
-    inline const_iterator end() const;
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
 
-    ///
-    inline const_iterator cbegin() const;
+      /// The value of the mesh point
+      [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
-    ///
-    inline const_iterator cend() const;
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+    };
 
-    // -------------- Evaluation of a function on the grid --------------------------
+    // -------------------- Accessors -------------------
 
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(long n) const { return {std::make_pair(index_to_linear(index_t(n)), one_t{})}; }
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(matsubara_freq n) const { return get_interpolation_data(n.n); }
+    /// The inverse temperature
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// The particle statistic: Fermion or Boson
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+    /// The associated domain
+    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
+
+    /// The total number of points in the mesh
+    [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
+
+    /// first Matsubara index
+    [[nodiscard]] long first_index() const { return _first_index; }
+
+    /// last Matsubara index
+    [[nodiscard]] long last_index() const { return _last_index; }
+
+    /// Is the mesh only for positive omega_n (G(tau) real))
+    [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
+
+    // -------------------- checks -------------------
+
+    /// Checks that the index is in [first_index(), last_index()]
+    [[nodiscard]] bool is_index_valid(index_t index) const { return first_index() <= index and index <= last_index(); }
+
+    // -------------------- to_data_index -------------------
+
+    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept { return index - first_index(); }
+
+    [[nodiscard]] data_index_t to_data_index(matsubara_freq const &iw) const noexcept {
+      EXPECTS(_beta == iw.beta and _statistic == iw.statistic);
+      return to_data_index(iw.n);
+    }
+
+    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const {
+      EXPECTS(_beta == cmp.value.beta and _statistic == cmp.value.statistic);
+      return to_data_index(to_index(cmp));
+    }
+
+    // -------------------- to_index -------------------
+
+    [[nodiscard]] index_t to_index(data_index_t data_index) const { return data_index + first_index(); }
+
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const {
+      EXPECTS(is_index_valid(cmp.value.n));
+      return cmp.value.n;
+    }
+
+    // -------------------- operator [] () -------------------
+
+    [[nodiscard]] mesh_point_t operator[](long data_index) const {
+      auto index = to_index(data_index);
+      EXPECTS(is_index_valid(index));
+      return {_beta, _statistic, index, data_index, _mesh_hash};
+    }
+
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
+
+    [[nodiscard]] mesh_point_t operator()(long index) const {
+      EXPECTS(is_index_valid(index));
+      auto data_index = to_data_index(index);
+      return {_beta, _statistic, index, data_index, _mesh_hash};
+    }
+
+    // -------------------- to_value ------------------
+    /// From an index to a matsubara_freq
+    [[nodiscard]] matsubara_freq to_value(index_t index) const {
+      EXPECTS(is_index_valid(index));
+      return {index, _beta, _statistic};
+    }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
+    }
+
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
+
+    // -------------------- print  -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
-      return sout << "Matsubara Freq Mesh of size " << m.size() << ", Domain: " << m.domain() << ", positive_only : " << m.positive_only();
+      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary Freq Mesh with beta = {}, statistic = {}, n_iw = {}, positive_only = {}", m._beta, stat_cstr, m.size(),
+                                 m.positive_only());
     }
+
     // -------------------- HDF5 -------------------
 
-    static std::string hdf5_format() { return "MeshImFreq"; }
+    [[nodiscard]] static std::string hdf5_format() { return "MeshImFreq"; }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string subgroup_name, imfreq const &m) {
       h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m);
-      h5_write(gr, "domain", m.domain());
-      h5_write(gr, "size", long(m.size()));
-      h5_write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
+      write_hdf5_format(gr, m); //NOLINT
+
+      h5::write(gr, "beta", m._beta);
+      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "size", m.size());
+      h5::write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
     }
 
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string subgroup_name, imfreq &m) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
-      typename imfreq::domain_t dom;
-      long L;
-      h5_read(gr, "domain", dom);
-      h5_read(gr, "size", L);
+
       int pos_freq = 0;
       if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
       if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
-      int n_iw  = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
-      auto opt  = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
-      m         = imfreq{std::move(dom), n_iw, opt};
+      auto opt = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
+
+      long L    = h5_read<long>(gr, "size");
+      long n_iw = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
+
+      if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
+      auto beta      = h5::read<double>(gr, "beta");
+      auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+
+      m = imfreq{beta, statistic, n_iw, opt};
     }
 
-    // -------------------- boost serialization -------------------
+    // -------------------------- evaluation --------------------------
 
-    // not implemented: the _opt need to be serialized.
-    friend class boost::serialization::access;
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &_dom;
-      ar &_n_iw;
-      ar &_opt;
-      ar &_first_index;
-      ar &_last_index;
+    friend auto evaluate(imfreq const &m, auto const &f, matsubara_freq const &iw) {
+      EXPECTS(m.beta() == iw.beta and m.statistic() == iw.statistic);
+      return f(iw.n);
     }
 
-    // ------------------------------------------------
-    private:
-    domain_t _dom;
-    int _n_iw;
-    option _opt;
-    long _first_index, _last_index;
+    bool eval_to_zero(imfreq::index_t index) const { return !is_index_valid(index); }
+    bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
+    bool eval_to_zero(imfreq::mesh_point_t mp) const { return eval_to_zero(mp.value()); }
   };
 
-  // ---------------------------------------------------------------------------
-  //                     The mesh point
-  //  NB : the mesh point is also in this case a matsubara_freq.
-  // ---------------------------------------------------------------------------
-
-  template <> struct mesh_point<imfreq> : matsubara_freq {
-    using index_t = typename imfreq::index_t;
-    mesh_point()  = default;
-    mesh_point(imfreq const &m, index_t const &index_)
-       : matsubara_freq(index_, m.domain().beta, m.domain().statistic), first_index(m.first_index()), last_index(m.last_index()), _mesh(&m) {}
-    mesh_point(imfreq const &m) : mesh_point(m, m.first_index()) {}
-    void advance() { ++n; }
-    long linear_index() const { return n - first_index; }
-    long index() const { return n; }
-    bool at_end() const { return (n == last_index + 1); } // at_end means " one after the last one", as in STL
-    void reset() { n = first_index; }
-    imfreq const &mesh() const { return *_mesh; }
-
-    private:
-    long first_index, last_index;
-    imfreq const *_mesh;
-  };
-
-  // ------------------- implementations -----------------------------
-  inline mesh_point<imfreq> imfreq::operator[](index_t i) const { return {*this, i}; }
-
-  inline imfreq::const_iterator imfreq::begin() const { return const_iterator(this); }
-  inline imfreq::const_iterator imfreq::end() const { return const_iterator(this, true); }
-  inline imfreq::const_iterator imfreq::cbegin() const { return const_iterator(this); }
-  inline imfreq::const_iterator imfreq::cend() const { return const_iterator(this, true); }
+  static_assert(MeshWithValues<imfreq>);
 
 } // namespace triqs::mesh

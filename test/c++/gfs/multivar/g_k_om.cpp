@@ -44,7 +44,6 @@ auto _ = all_t{};
 
 // ------------------------------------------------------------
 
-// FIXME : Does not test much ...
 TEST(Gf, GkOm) {
 
   double beta = 1;
@@ -57,12 +56,9 @@ TEST(Gf, GkOm) {
   auto Sigma = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1, 1}};
   Sigma()    = 0;
 
-  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  auto eps_k = -2 * (cos(k_[0]) + cos(k_[1]));
 
   G(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
-
-  // broken with wp -> w
-  //G[k_, w_] <<  G(k_, w_) ;//1 / (w_ - eps_k - 1 / (w_ + 2));
 
   G[k_, w_] << G[k_, w_] + 1 / (w_ - eps_k - 1 / (w_ + 2));
 
@@ -89,15 +85,17 @@ TEST(Gkom, Eval) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<prod<brzone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
-  //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
-  for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
+  static_assert(std::tuple_size_v<prod<brzone, imfreq>> == 2);
+  static_assert(std::tuple_size_v<prod<brzone, imfreq>::mesh_point_t> == 2);
+  //Gk(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
+  for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k[0]) + cos(k[1])));
 
   // reevaluate on the mesh itself.
   for (auto [k, w] : g.mesh()) {
-    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
-    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
-    dcomplex res = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
-    EXPECT_COMPLEX_NEAR(g(K_t{k(0), k(1), 0}, w), res, 1.e-14);
+    EXPECT_NEAR(k[0], k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k[1], k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    dcomplex res = 1 / (w + 3 + 2 * (cos(k[0]) + cos(k[1])));
+    EXPECT_COMPLEX_NEAR(g(K_t{k[0], k[1], 0}, w), res, 1.e-14);
   }
 
   //// evaluate on a larger grid
@@ -124,8 +122,8 @@ TEST(Gkom, EvalSlice) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto g  = gf<prod<brzone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
-  //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
-  for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
+  //Gk(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
+  for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k[0]) + cos(k[1])));
 
   auto pi_pi = K_t{M_PI, M_PI, 0};
 

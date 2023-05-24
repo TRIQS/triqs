@@ -78,7 +78,7 @@ TEST(Gf, BlockOfVertexScalar) {
 
   for (int u : indices1)
     for (int v : indices2) ITERATE_I1I2I3 {
-        EXPECT_CLOSE((B(u, v)[{i1, i2, i3}]), check(u, v, i1, i2, i3));
+        EXPECT_CLOSE((B(u, v)[i1, i2, i3]), check(u, v, i1, i2, i3));
 
         // Testing map in a very simple case
         std::vector<std::vector<dcomplex>> rr = map([i1, i2, i3](auto const &g) { return g(i1, i2, i3); }, B);
@@ -92,7 +92,7 @@ TEST(Gf, BlockOfVertexScalar) {
   // Testing iterator and const_iterator
   ITERATE_I1I2I3 {
     for (auto &x : B) {
-      x[{i1, i2, i3}] = 1.0 / ((iw_n(i1) - 3.0) * iw_n(i2) * (iw_n(i3) + 3.0));
+      x[i1, i2, i3] = 1.0 / ((iw_n(i1) - 3.0) * iw_n(i2) * (iw_n(i3) + 3.0));
       //x(i1,i2,i3) = 1.0/((iw_n(i1) - 3.0)*iw_n(i2)*(iw_n(i3) + 3.0));
     }
   }
@@ -111,7 +111,7 @@ TEST(Gf, BlockOfVertexTensor) {
 
   // now with indices
   auto vertex                = gf_vertex_tensor_t{{m, m, m}, {2, 2, 2}};
-  vertex[{0, 1, 0}](0, 0, 0) = 10;
+  vertex[0, 1, 0](0, 0, 0) = 10;
 
   // Now make the block of vertices:
   auto B = make_block2_gf(indices1.size(), indices2.size(), vertex);
@@ -123,7 +123,7 @@ TEST(Gf, BlockOfVertexTensor) {
   //EXPECT_EQ(n_blocks(B), indices1.size() * indices2.size());
 
   for (int u : indices1)
-    for (int v : indices2) EXPECT_CLOSE((B(u, v)[{0, 1, 0}](0, 0, 0)), 10);
+    for (int v : indices2) EXPECT_CLOSE((B(u, v)[0, 1, 0](0, 0, 0)), 10);
 
   // HDF5
   rw_h5(B, "vertexBlockT", "B");

@@ -21,6 +21,10 @@
 #include <cpp2py/converters/std_array.hpp>
 #include <nda_py/cpp2py_converters.hpp>
 
+#ifdef TRIQS_INCLUDED_MESH
+#include "./cpp2py_converters/mesh.hpp"
+#endif
+
 #ifdef TRIQS_INCLUDED_GF
 #include "./cpp2py_converters/gf.hpp"
 #endif

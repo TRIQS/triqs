@@ -22,23 +22,15 @@
 #include <string>
 #include <vector>
 
-namespace triqs {
-  namespace lattice {
+namespace triqs::lattice {
 
-    using r_t      = nda::vector<double>;
-    using k_t      = nda::vector<double>;
-    using dcomplex = std::complex<double>;
-    using nda::array;
-    using nda::matrix;
+  using r_t      = nda::vector<double>;
+  using matrix_t = nda::matrix<double>;
 
-    // --------------------------------------------------------
+  class bravais_lattice {
 
-    class bravais_lattice {
-
-      public:
-      using point_t = std::vector<int>; // domain concept. PUT on STACK
-
-      /**
+    public:
+    /**
        * Construct a Bravais Lattice with given unit vectors and atomic positions
        *
        * @param units Matrix with unit vectors of the Bravais Lattice as rows.
@@ -47,72 +39,107 @@ namespace triqs {
        * @param atom_orb_name Vector of atomic orbitals names.
        *  Defaults to vector of empty strings.
        */
-      bravais_lattice(matrix<double> const &units, std::vector<r_t> atom_orb_pos = std::vector<r_t>{{0, 0, 0}},
-                      std::vector<std::string> atom_orb_name = {});
+    bravais_lattice(matrix_t const &units, std::vector<r_t> atom_orb_pos = std::vector<r_t>{{0, 0, 0}}, std::vector<std::string> atom_orb_name = {});
 
-      // Default construction, 3d cubic lattice
-      bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
+    // Default construction, 3d cubic lattice
+    bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
 
-      /// Number of dimensions
-      int ndim() const { return ndim_; }
+    /// Check if a k_t is part of the domain
+    [[nodiscard]] bool contains(r_t const &) const { return true; }
 
-      /// Matrix containing lattice basis vectors as rows
-      nda::matrix_const_view<double> units() const { return units_; }
+    /// Number of dimensions
+    int ndim() const { return ndim_; }
 
-      // Number of orbitals in the unit cell
-      int n_orbitals() const { return atom_orb_name.size(); }
+    /// Matrix containing lattice basis vectors as rows
+    matrix_t const &units() const { return units_; }
 
-      /// Return the vector of orbital positions
-      std::vector<r_t> const & orbital_positions() { return atom_orb_pos; }
+    // Number of orbitals in the unit cell
+    long n_orbitals() const { return long(atom_orb_name.size()); }
 
-      /// Return the vector of orbital names
-      std::vector<std::string> const & orbital_names() { return atom_orb_name; }
+    /// Return the vector of orbital positions
+    std::vector<r_t> const &orbital_positions() { return atom_orb_pos; }
 
-      /// Transform into real coordinates.
-      template <typename R> r_t lattice_to_real_coordinates(R const &x) const {
-        auto res = r_t::zeros({3});
-        for (int i = 0; i < ndim_; i++) res += x(i) * units_(i, range{});
-        return res;
-      }
+    /// Return the vector of orbital names
+    std::vector<std::string> const &orbital_names() { return atom_orb_name; }
 
-      // ------------------- Comparison -------------------
+    // -------------------- Point ---------------------
 
-      bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && ndim_ == bl.ndim() && n_orbitals() == bl.n_orbitals(); }
-
-      bool operator!=(bravais_lattice const &bl) const { return !(operator==(bl)); }
-
-      // -------------------- print -------------------
-
-      friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
-        return sout << "Bravais Lattice with dimension " << bl.ndim() << ", units " << bl.units() << ", n_orbitals " << bl.n_orbitals();
-      }
-
-      // -------------------- hdf5 -------------------
-
-      static std::string hdf5_format() { return "bravais_lattice"; }
-
-      /// Write into HDF5
-      friend void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl);
-
-      /// Read from HDF5
-      friend void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl);
-
-      // ---------------------------------------
-
-      //  BOOST Serialization
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &ndim_;
-        ar &units_;
-        ar &atom_orb_pos;
-        ar &atom_orb_name;
-      }
-
+    struct point_t {
       private:
-      matrix<double> units_;
-      std::vector<r_t> atom_orb_pos;          // atom_orb_pos[i] = position of ith atoms/orbitals in the unit cell
-      std::vector<std::string> atom_orb_name; // names of these atoms/orbitals.
-      int ndim_;
+      std::array<long, 3> _index       = {0, 0, 0};
+      bravais_lattice const *_bl_ptr   = nullptr;
+      mutable std::optional<r_t> _rval = {};
+
+      public:
+      point_t() = default;
+      point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index) : _index(index), _bl_ptr(bl_ptr) {}
+
+      /// The index of the mesh point
+      [[nodiscard]] std::array<long, 3> index() const { return _index; }
+
+      explicit operator r_t() const {
+        if (_rval)
+          return *_rval;
+        else
+          return *(_rval = _bl_ptr->lattice_to_real_coordinates(_index));
+      }
+
+      [[deprecated("() is deprecated for a cyclat::mesh_point_t. Use [] instead")]] double operator()(int d) const { return r_t(*this)[d]; }
+      double operator[](int d) const { return r_t(*this)[d]; }
+
+      point_t operator+(point_t const &y) const {
+        EXPECTS(*_bl_ptr == *(y._bl_ptr));
+        return {_bl_ptr, _index + y._index};
+      }
+      point_t operator-(point_t const &y) const {
+        EXPECTS(*_bl_ptr == *(y._bl_ptr));
+        return {_bl_ptr, _index - y._index};
+      }
+      point_t operator-() const { return {_bl_ptr, -_index}; }
+
+      friend std::ostream &operator<<(std::ostream &out, point_t const &x) { return out << (r_t)x; }
     };
-  } // namespace lattice
-} // namespace triqs
+
+    /// Transform from lattice to real coordinates.
+    template <typename R> r_t lattice_to_real_coordinates(R const &x) const {
+      return transpose(units_)(range::all, range(ndim())) * nda::basic_array_view{x}(range(ndim()));
+    }
+
+    /// Transform from lattice to real coordinates.
+    template <typename R> r_t real_to_lattice_coordinates(R const &x) const {
+      return transpose(units_inv_)(range::all, range(ndim())) * nda::basic_array_view{x}(range(ndim()));
+    }
+
+    // ------------------- Comparison -------------------
+
+    bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && ndim_ == bl.ndim() && n_orbitals() == bl.n_orbitals(); }
+
+    bool operator!=(bravais_lattice const &bl) const { return !(operator==(bl)); }
+
+    // -------------------- print -------------------
+
+    friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
+      return sout << "Bravais Lattice with dimension " << bl.ndim() << ", units " << bl.units() << ", n_orbitals " << bl.n_orbitals();
+    }
+
+    // -------------------- hdf5 -------------------
+
+    [[nodiscard]] static std::string hdf5_format() { return "bravais_lattice"; }
+
+    /// Write into HDF5
+    friend void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl);
+
+    /// Read from HDF5
+    friend void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl);
+
+    // ---------------------------------------
+
+    private:
+    matrix_t units_     = matrix_t::zeros(3, 3);
+    matrix_t units_inv_ = matrix_t::zeros(3, 3);
+    std::vector<r_t> atom_orb_pos;          // atom_orb_pos[i] = position of ith atoms/orbitals in the unit cell
+    std::vector<std::string> atom_orb_name; // names of these atoms/orbitals.
+    int ndim_;
+  };
+
+} // namespace triqs::lattice

@@ -48,7 +48,7 @@ placeholder<4> inu_;
 auto _ = all_t{};
 
 auto bz     = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
-auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
+auto eps_k_ = -2 * (cos(k_[0]) + cos(k_[1]));
 
 // ------------------------------------------------------------
 
@@ -142,7 +142,7 @@ TEST(Gf, BubbleSimplif) {
 TEST(Gf, BubbleSimplifScalar) {
   // simplified, without frequency dependence
   auto gk         = gf<brzone, scalar_valued>{{bz, n_k}};
-  auto gr         = gf<cyclat, scalar_valued>{{n_k, n_k}, {}};
+  auto gr         = gf<cyclat, scalar_valued>{{n_k, n_k}};
   auto ggr        = gr;
   auto ggq        = gk;
   auto ggq_from_r = gk;

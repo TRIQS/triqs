@@ -68,9 +68,6 @@ namespace triqs::gfs {
   template<typename T>
   inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
 
-  // FIXME : backward compat. remove this
-  // template <typename G, int n> inline constexpr bool is_block_gf_v<G&, n> = is_block_gf_v<G, n>;
-
   template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
 
   // Given a gf G, the corresponding block
@@ -88,13 +85,13 @@ namespace triqs::gfs {
 
   // ------------- Helper Types -----------------------------
 
-  template <typename Lambda, typename T> struct lazy_transform_t {
-    Lambda lambda;
+  template <typename w_max, typename T> struct lazy_transform_t {
+    w_max lambda;
     T value;
   };
 
-  template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda &&l, T &&x) {
-    return {std::forward<Lambda>(l), std::forward<T>(x)};
+  template <typename w_max, typename T> lazy_transform_t<w_max, T> make_lazy_transform(w_max &&l, T &&x) {
+    return {std::forward<w_max>(l), std::forward<T>(x)};
   }
 
   /// ---------------------------  details  ---------------------------------
@@ -201,12 +198,10 @@ namespace triqs::gfs {
 
       for (auto const &[bl_name, bl_size] : gf_struct) {
         _block_names.push_back(bl_name);
-        std::vector<std::string> idx_str_lst;
-        for (int idx = 0; idx < bl_size; idx++) idx_str_lst.push_back(std::to_string(idx));
         if constexpr (Target::rank == 0)
           _glist.emplace_back(m, make_shape());
         else
-          _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
+          _glist.emplace_back(m, make_shape(bl_size, bl_size));
       }
     }
 
@@ -233,7 +228,6 @@ namespace triqs::gfs {
 
     /// ---------------  Operator = --------------------
 
-    block_gf &operator=(block_gf &rhs) = default; // FIXME ? template ?
     block_gf &operator=(block_gf const &rhs) = default;
     block_gf &operator=(block_gf &&rhs) = default;
 

@@ -430,7 +430,7 @@ namespace triqs {
 
       // Given a lambda f : x,y,M, it calls f(x_i,y_j,M_ji) for all i,j
       // Order of iteration is NOT fixed, it is optimised (for memory traversal)
-      template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &f) {
+      template <typename w_maxType> friend void foreach (det_manip const &d, w_maxType const &f) {
         nda::for_each(std::array{d.N, d.N}, [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
       }
 
@@ -446,7 +446,6 @@ namespace triqs {
         sign = -sign;
         // we do not need to change the det, or the matrix, just the permutation
       }
-      //FIXME : we could implement try_swap_row, try_swap_col
 
       /** Simply swap two lines and cols.
          NB very quick, we just change the permutation table internally
@@ -787,8 +786,8 @@ namespace triqs {
         N--;
         RN = range(N);
 
-        std::remove(row_num.begin(), row_num.end(), N);
-        std::remove(col_num.begin(), col_num.end(), N);
+	auto it1 [[maybe_unused]] = std::remove(row_num.begin(), row_num.end(), N);
+	auto it2 [[maybe_unused]] = std::remove(col_num.begin(), col_num.end(), N);
 
         row_num.pop_back();
         col_num.pop_back();
@@ -891,8 +890,9 @@ namespace triqs {
 
         // Clean up removed elements from row_num and col_num
         auto gtN = [&](auto i) { return i >= N; };
-        std::remove_if(row_num.begin(), row_num.end(), gtN);
-        std::remove_if(col_num.begin(), col_num.end(), gtN);
+
+        auto it1 [[maybe_unused]] = std::remove_if(row_num.begin(), row_num.end(), gtN);
+        auto it2 [[maybe_unused]] = std::remove_if(col_num.begin(), col_num.end(), gtN);
 
         row_num.resize(N);
         col_num.resize(N);
@@ -1063,7 +1063,7 @@ namespace triqs {
         auto D    = w1.ksi;        // get back
         auto a    = -(1 + Yn) / D; // D in the notes
         auto b    = -(1 + Xn) / D;
-        auto Z    = nda::blas::dot(w1.MB(RN), w1.C(RN)); // FIXME : store this ?
+        auto Z    = nda::blas::dot(w1.MB(RN), w1.C(RN));
         Z         = Z / D;
         Mnn       = Mnn / D;
         w1.MB(RN) = mat_inv(w1.jreal, RN); // Mnj

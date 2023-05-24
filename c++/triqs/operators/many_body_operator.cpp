@@ -124,7 +124,7 @@ namespace triqs {
       if (status < 0) TRIQS_RUNTIME_ERROR << "Error writing the many_body_operator " << op << " in the group" << g.name();
 
       // Store fundamental_operator_set as an attribute of the dataset
-      h5_write_attribute(ds, "fundamental_operator_set", fops);
+      h5::write_attribute(ds, "fundamental_operator_set", fops);
       write_hdf5_format(ds, op);
     }
 
@@ -157,7 +157,7 @@ namespace triqs {
       if (status < 0) TRIQS_RUNTIME_ERROR << "Error reading the many_body_operator " << op << " from the group" << g.name();
 
       // --- Read correspondance_table as an attribute
-      h5_read_attribute(ds, "fundamental_operator_set", fops);
+      h5::read_attribute(ds, "fundamental_operator_set", fops);
 
       // ---- Now we must reverse the operations of write
 

@@ -22,7 +22,7 @@
 
 #include <mpi/mpi.hpp>
 #include "./macros.hpp"
-#include "./stack_trace.hpp"
+//#include "./stack_trace.hpp"
 #include <exception>
 #include <string>
 #include <sstream>
@@ -44,7 +44,7 @@ namespace triqs {
     mutable std::string _what;
 
     public:
-    exception() throw() : std::exception() { _trace = utility::stack_trace(); }
+    exception() throw() : std::exception() {} // _trace = utility::stack_trace(); }
     exception(exception const &e) throw() : acc(e.acc.str()), _trace(e._trace), _what(e._what) {}
     virtual ~exception() throw() {}
     template <typename T> exception &operator<<(T const &x) {

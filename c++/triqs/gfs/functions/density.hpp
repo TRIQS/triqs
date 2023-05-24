@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2014-2018 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2018-2019 Simons Foundation
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #pragma once
-
+#include "../gf/gf_view.hpp"
 namespace triqs {
   namespace gfs {
 
@@ -38,6 +39,38 @@ namespace triqs {
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
     //-------------------------------------------------------
+    // DLR
+    // ------------------------------------------------------
+
+    /**
+     * @brief Computes the density $$- G(\tau = \beta) $$
+     * 
+     * @param g The Green function 
+     * @return auto A tensor/matrix or a scalar, depending on the target
+     */
+    auto density(MemoryGf<mesh::dlr_coeffs> auto const &g) {
+      auto res = g.target().make_value();
+      res      = -g(g.mesh().beta());
+      // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
+      if constexpr (requires { transpose(res); }) {
+        res = transpose(res);
+        return res;
+      } else
+        return res;
+    }
+
+    auto density(MemoryGf<mesh::dlr_imtime> auto const &g) {
+      // FIXME : workaround for static_assert(false). Fix on clang >= 17
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imtime, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      return 0;
+    }
+    auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) {
+      // FIXME : workaround for static_assert(false). Fix on clang >= 17
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      return 0;
+    }
+
+    //-------------------------------------------------------
     // For Real Frequency functions
     // ------------------------------------------------------
 
@@ -51,7 +84,10 @@ namespace triqs {
     // General Version for Block Gf
     // ------------------------------------------------------
 
-    template <typename BGf, int R> auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) requires(is_block_gf_v<BGf>) {
+    template <typename BGf, int R>
+    auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments)
+      requires(is_block_gf_v<BGf>)
+    {
 
       using mesh_t = typename BGf::mesh_t;
       static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::refreq>,
@@ -66,7 +102,7 @@ namespace triqs {
       return dens_vec;
     }
 
-  } 
+  } // namespace gfs
 } // namespace triqs
 
 namespace nda::clef {

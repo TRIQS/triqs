@@ -19,6 +19,9 @@
 
 #pragma once
 
+// for python code generator, we need to know what has to been included.
+#define TRIQS_INCLUDED_MESH
+
 #include <vector>
 #include <utility>
 
@@ -26,30 +29,40 @@
 #include "utility/tuple_tools.hpp"
 #include "utility/macros.hpp"
 #include "utility/view_tools.hpp"
-#include "utility/expression_template_tools.hpp"
+
+#include <mpi/vector.hpp>
+
 #include "arrays.hpp"
 #include "std_addons/complex.hpp"
 
-#include <mpi/vector.hpp>
+#include "./mesh/utils.hpp"
 
 #include "./mesh/imtime.hpp"
 #include "./mesh/imfreq.hpp"
 #include "./mesh/retime.hpp"
 #include "./mesh/refreq.hpp"
+
+#include "./mesh/index.hpp"
 #include "./mesh/legendre.hpp"
+
+#include "./mesh/dlr_imtime.hpp"
+#include "./mesh/dlr_imfreq.hpp"
+#include "./mesh/dlr_coeffs.hpp"
+
 #include "./mesh/brzone.hpp"
 #include "./mesh/cyclat.hpp"
+
 #include "./mesh/prod.hpp"
 
-#include "./mesh/details/debug.hpp"
-#include "./mesh/details/closest_mesh_pt.hpp"
+#include "./mesh/adjoint.hpp"
+
+#include "./mesh/evaluate.hpp"
 
 namespace triqs::mesh {
 
   // -- Backward compat aliases --
+  using cyclic_lattice                         = cyclat;
+  template <Mesh... M> using cartesian_product = prod<M...>;
+  template <Mesh M> using mesh_point           = typename M::mesh_point_t;
 
-  using cyclic_lattice = cyclat;
-
-  template<typename ...T> using cartesian_product = prod<T...>;
-}
-
+} // namespace triqs::mesh

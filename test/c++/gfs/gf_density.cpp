@@ -80,7 +80,7 @@ TEST(Gf, DensityFermionReFreq) {
   auto G      = gf<refreq>{{-wmax, wmax, N}, {2, 2}};
 
   //G(iw_) << inverse(w_ - h + eta); // FIXME
-  for (auto &w : G.mesh()) G[w] = inverse(w - h + 1e-8i);
+  for (auto const &w : G.mesh()) G[w] = inverse(w - h + 1e-8i);
 
   auto n = triqs::gfs::density(G);
   EXPECT_ARRAY_EQ(n, dagger(n));

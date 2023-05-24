@@ -22,23 +22,10 @@
 
 namespace triqs::gfs {
 
-  // FIXME : refactor this ?
-  // fIXME : THe layout has to be deducted and C layout -> C Stride 
-  /// make_const_view
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf<M, T, L, E> const &g) { return {g}; }
-
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_view<M, T, L, E> g) { return {g}; }
-
-  //template <typename M, typename T, typename L, typename E> gf_const_view<M, T, L, E> make_const_view(gf_const_view<M, T, L, E> g) {
-    //return g;
-  //}
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf<M, T> const &g) { return {g}; }
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_view<M, T> g) { return {g}; }
-
-  template <typename M, typename T> gf_const_view<M, T> make_const_view(gf_const_view<M, T> g) {
-    return g;
+  template <typename Gf>
+    requires(is_gf_v<Gf>)
+  auto make_const_view(Gf const &g) {
+    return gf_const_view{g};
   }
 
   using nda::array_const_view;
@@ -62,7 +49,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G, typename A = typename G::const_view_type::data_t>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) requires(is_gf_v<G>) {
-    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true,
                                                  make_array_const_view(known_moments));
@@ -117,7 +104,7 @@ namespace triqs::gfs {
       inner_matrix_dim = g.target_shape()[0];
     } else
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
-    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
@@ -181,8 +168,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
-    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); },
-                           [&args...](auto &&i) { return slice(i, args...); });
+    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -190,8 +176,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
-    auto r =
-       g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); }, [&args...](auto &&i) { return slice(i, args...); });
+    auto r = g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
     return r;
   }
 
@@ -214,20 +199,16 @@ namespace triqs::gfs {
   template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
     auto &a           = g.data();
     auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
-    nda::for_each(mesh_lengths, [&a, _ = nda::range()](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+    nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
   }
 
-  // FIXME : 2 overloads :  or PASS BY VALUE
   template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {
     invert_in_place(g());
     return std::move(g);
   }
 
-  // FIXME  : unncessary copies
-
-  template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf<M, matrix_valued>(g)); }
-
-  template <typename M> gf<M, matrix_valued> inverse(gf_const_view<M, matrix_valued> g) { return inverse(gf<M, matrix_valued>(g)); }
+  template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf{g}); }
+  template <typename M> gf<M, matrix_valued> inverse(gf_const_view<M, matrix_valued> g) { return inverse(gf{g}); }
 
   /*------------------------------------------------------------------------------------------------------
   *                     is_gf_real : true iif the gf is real
@@ -255,7 +236,7 @@ namespace triqs::gfs {
    */
   template <typename G> typename G::regular_type::real_t real(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>)
-      return {g.mesh(), real(g.data()), g.indices()};
+      return {g.mesh(), real(g.data())};
     else
       return map_block_gf([](auto &&g_bl) { return real(g_bl); }, g);
   }
@@ -268,7 +249,7 @@ namespace triqs::gfs {
    */
   template <typename G> typename G::regular_type::real_t imag(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>)
-      return {g.mesh(), imag(g.data()), g.indices()};
+      return {g.mesh(), imag(g.data())};
     else
       return map_block_gf([](auto &&g_bl) { return imag(g_bl); }, g);
   }
@@ -277,32 +258,33 @@ namespace triqs::gfs {
   *                      Transpose. Create a NEW gf
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) {
-    return {g.mesh(), transposed_view(g.data(), 0, 2, 1), g.indices().transpose()};
-  }
+  template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) { return {g.mesh(), transposed_view(g.data(), 0, 2, 1)}; }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G> typename G::regular_type conj(G const &g) requires(is_gf_v<G>) { return {g.mesh(), conj(g.data()), g.indices()}; }
+  template <typename G>
+  typename G::regular_type conj(G const &g)
+    requires(is_gf_v<G>)
+  {
+    return {g.mesh(), conj(g.data())};
+  }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Multiply by matrices left or right
   *-----------------------------------------------------------------------------------------------------*/
 
-  // FIXME : speed issue ? direct gemm
-  //
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, nda::range(), nda::range());
+      matrix_view<T> v = a(i, nda::range::all, nda::range::all);
       v                = v * r;
     }
   }
 
   template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, nda::range(), nda::range());
+      matrix_view<T> v = a(i, nda::range::all, nda::range::all);
       v                = l * v;
     }
   }
@@ -324,7 +306,7 @@ namespace triqs::gfs {
 
   template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A &a, M const &l, B const &b, M const &r) {
     auto tmp = matrix<typename M::value_type>(second_dim(b), second_dim(r));
-    auto _   = nda::range{};
+    auto _   = nda::range::all;
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       auto rhs_v = make_matrix_view(b(i, _, _));
       auto lhs_v = make_matrix_view(a(i, _, _));

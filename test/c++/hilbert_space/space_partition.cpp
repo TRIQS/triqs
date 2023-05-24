@@ -191,10 +191,10 @@ TEST(space_partition, MatrixElements) {
   // Space partition
   space_partition<state_t, imp_op_t> SP(st, Hop);
 
-  using index_t = typename space_partition<state_t, imp_op_t>::index_t;
+  using idx_t = typename space_partition<state_t, imp_op_t>::idx_t;
   struct melem_t {
-    index_t from;
-    index_t to;
+    idx_t from;
+    idx_t to;
     double val;
     bool operator<(melem_t const &me) const { return ((from != me.from) ? from < me.from : to < me.to); }
     bool operator==(melem_t const &me) const { return from == me.from && to == me.to && is_zero(val - me.val, 1e-10); }
@@ -206,12 +206,12 @@ TEST(space_partition, MatrixElements) {
   for (auto x : melem_map) { v_melem[SP.lookup_basis_state(x.first.first)].insert({x.first.first, x.first.second, x.second}); }
   melem_set_t melem(v_melem.cbegin(), v_melem.cend());
 
-  index_t u0 = 1 << fops[{"up", 0}];
-  index_t u1 = 1 << fops[{"up", 1}];
-  index_t u2 = 1 << fops[{"up", 2}];
-  index_t d0 = 1 << fops[{"dn", 0}];
-  index_t d1 = 1 << fops[{"dn", 1}];
-  index_t d2 = 1 << fops[{"dn", 2}];
+  idx_t u0 = 1 << fops[{"up", 0}];
+  idx_t u1 = 1 << fops[{"up", 1}];
+  idx_t u2 = 1 << fops[{"up", 2}];
+  idx_t d0 = 1 << fops[{"dn", 0}];
+  idx_t d1 = 1 << fops[{"dn", 1}];
+  idx_t d2 = 1 << fops[{"dn", 2}];
 
   // Expected matrix elements
   melem_set_t ref_melem{

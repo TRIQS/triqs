@@ -25,7 +25,7 @@
 using namespace triqs::gfs;
 using namespace triqs;
 using namespace triqs::arrays;
-using namespace triqs::lattice;
+using namespace triqs::mesh;
 
 //
 template <typename X, typename Y>::testing::AssertionResult test_gfs_are_close(X const &x, Y const &y, double precision = 1.e-6) {

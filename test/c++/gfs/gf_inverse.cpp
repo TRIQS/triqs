@@ -49,10 +49,10 @@ TEST(CtHyb, gf_inverse2) {
   triqs::clef::placeholder<0> om_;
   triqs::clef::placeholder<1> k_;
 
-  G_iw(om_, k_) << om_ - 2 * t * (cos(k_(0)) + cos(k_(1)));
+  G_iw(om_, k_) << om_ - 2 * t * (cos(k_[0]) + cos(k_[1]));
 
   auto G_iw_inv = G_iw;
-  G_iw_inv(om_, k_) << 1. / (om_ - 2 * t * (cos(k_(0)) + cos(k_(1))));
+  G_iw_inv(om_, k_) << 1. / (om_ - 2 * t * (cos(k_[0]) + cos(k_[1])));
 
   G_iw = inverse(G_iw);
 
@@ -74,10 +74,10 @@ TEST(CtHyb, gf_inverse3) {
   triqs::clef::placeholder<2> t_;
   triqs::clef::placeholder<1> k_;
 
-  G_iw(om_, t_, k_) << om_ - 7 * t_ - 2 * t * (cos(k_(0)) + cos(k_(1)));
+  G_iw(om_, t_, k_) << om_ - 7 * t_ - 2 * t * (cos(k_[0]) + cos(k_[1]));
 
   auto G_iw_inv = G_iw;
-  G_iw_inv(om_, t_, k_) << 1. / (om_ - 7 * t_ - 2 * t * (cos(k_(0)) + cos(k_(1))));
+  G_iw_inv(om_, t_, k_) << 1. / (om_ - 7 * t_ - 2 * t * (cos(k_[0]) + cos(k_[1])));
 
   G_iw = inverse(G_iw);
 

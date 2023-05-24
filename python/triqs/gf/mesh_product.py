@@ -95,10 +95,10 @@ class MeshProduct:
         assert self.rank == another.rank, "copy_from requires the same rank for meshes"
         return self.__class__(*[x.copy_from(y) for x,y in zip(self._mlist, another._mlist)])
 
-    def index_to_linear(self, idx) :
+    def to_data_index(self, idx) :
         """
         """
-        return (x.index_to_linear(i) for x,i in zip(self._mlist, idx))
+        return (x.to_data_index(i) for x,i in zip(self._mlist, idx))
 
     def __repr__(self):
         """ """

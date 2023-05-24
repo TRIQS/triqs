@@ -94,7 +94,7 @@ class BlockGf:
                 BlockNameList.append(bl)
                 assert isinstance(bl_size, (int, np.integer)), "gf_struct should be a list of pairs of bl_name (str) and bl_size (int)"
                 if bl_size > 0 and kwargs['target_rank'] > 0:
-                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[bl_size]*kwargs['target_rank'], name='G_%s'%bl, indices=[list(range(bl_size))]*kwargs['target_rank']))
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[bl_size]*kwargs['target_rank'], name='G_%s'%bl))
                 else:
                     GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[], name='G_%s'%bl))
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):

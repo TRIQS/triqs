@@ -31,19 +31,19 @@ TEST(GfMul, Statistic) {
 
   {
     gf<imtime> p = gf<imtime>{f * f};
-    EXPECT_TRUE(p.mesh().domain().statistic == Boson);
+    EXPECT_TRUE(p.mesh().statistic() == Boson);
   }
   {
     gf<imtime> p = gf<imtime>{f * b};
-    EXPECT_TRUE(p.mesh().domain().statistic == Fermion);
+    EXPECT_TRUE(p.mesh().statistic() == Fermion);
   }
   {
     gf<imtime> p = gf<imtime>{b * f};
-    EXPECT_TRUE(p.mesh().domain().statistic == Fermion);
+    EXPECT_TRUE(p.mesh().statistic() == Fermion);
   }
   {
     gf<imtime> p = gf<imtime>{b * b};
-    EXPECT_TRUE(p.mesh().domain().statistic == Boson);
+    EXPECT_TRUE(p.mesh().statistic() == Boson);
   }
 }
 
@@ -60,23 +60,23 @@ TEST(GfMul, Statistic2Imtime) {
 
   {
     g_t p = g_t{ff * ff};
-    EXPECT_TRUE(std::get<0>(p.mesh()).domain().statistic == Boson);
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
+    EXPECT_TRUE(std::get<0>(p.mesh()).statistic() == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Boson);
   }
   {
     g_t p = g_t{ff * fb};
-    EXPECT_TRUE(std::get<0>(p.mesh()).domain().statistic == Boson);
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
+    EXPECT_TRUE(std::get<0>(p.mesh()).statistic() == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Fermion);
   }
   {
     g_t p = g_t{fb * ff};
-    EXPECT_TRUE(std::get<0>(p.mesh()).domain().statistic == Boson);
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
+    EXPECT_TRUE(std::get<0>(p.mesh()).statistic() == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Fermion);
   }
   {
     g_t p = g_t{fb * fb};
-    EXPECT_TRUE(std::get<0>(p.mesh()).domain().statistic == Boson);
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
+    EXPECT_TRUE(std::get<0>(p.mesh()).statistic() == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Boson);
   }
 }
 
@@ -98,27 +98,27 @@ TEST(GfMul, Statistic_k_tau) {
 
   {
     g_t p = g_t{f + f};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Fermion);
   }
   {
     g_t p = g_t{b + b};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Boson);
   }
   {
     g_t p = g_t{f * f};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Boson);
   }
   {
     g_t p = g_t{f * b};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Fermion);
   }
   {
     g_t p = g_t{b * f};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Fermion);
   }
   {
     g_t p = g_t{b * b};
-    EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
+    EXPECT_TRUE(std::get<1>(p.mesh()).statistic() == Boson);
   }
 }
 

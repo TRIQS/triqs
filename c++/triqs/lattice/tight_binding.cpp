@@ -26,7 +26,7 @@ namespace triqs {
 
     using namespace arrays;
 
-    tight_binding::tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)
+    tight_binding::tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec)
        : bl_(std::move(bl)), displ_vec_(std::move(displ_vec)), overlap_mat_vec_(std::move(overlap_mat_vec)) {
 
       // checking inputs
@@ -74,8 +74,8 @@ namespace triqs {
       else
         for (; grid; ++grid) {
           // cerr<<" index = "<<grid.index()<<endl;
-          array_view<double, 1> eval_sl   = eval(range(), grid.index());
-          array_view<dcomplex, 2> evec_sl = evec(range(), range(), grid.index());
+          array_view<double, 1> eval_sl   = eval(range::all, grid.index());
+          array_view<dcomplex, 2> evec_sl = evec(range::all, range::all, grid.index());
           std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TB.fourier((*grid)(range(0, ndim))));
           // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
         }
@@ -138,11 +138,11 @@ namespace triqs {
 
       // loop over the triangles
       for (int tri = 0; tri < ntri; tri++) {
-        a = triangles(pt, range());
+        a = triangles(pt, range::all);
         pt++;
-        b = triangles(pt, range());
+        b = triangles(pt, range::all);
         pt++;
-        c = triangles(pt, range());
+        c = triangles(pt, range::all);
         pt++;
         g = ((a + b + c) / 3.0 - a) / double(ndiv);
 
@@ -197,7 +197,7 @@ namespace triqs {
     //------------------------------------------------------
     array<dcomplex, 3> hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack) {
       array<dcomplex, 3> res(TB.n_orbitals(), TB.n_orbitals(), k_stack.shape(1));
-      for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TB.fourier(k_stack(range(), i));
+      for (int i = 0; i < k_stack.shape(1); ++i) res(range::all, range::all, i) = TB.fourier(k_stack(range::all, i));
       return res;
     }
 
@@ -207,7 +207,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       array<double, 2> eval(norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), i) = linalg::eigenvalues(TB.fourier(k(range(0, ndim)))()); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, i) = linalg::eigenvalues(TB.fourier(k(range(0, ndim)))()); }
       return eval;
     }
 
@@ -217,7 +217,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       array<dcomplex, 3> eval(norb, norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range(), range(), i) = TB.fourier(k(range(0, ndim)))(); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, range::all, i) = TB.fourier(k(range(0, ndim)))(); }
       return eval;
     }
 
@@ -228,7 +228,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       grid_generator grid(ndim, n_pts);
       array<double, 2> eval(norb, grid.size());
-      for (; grid; ++grid) { eval(range(), grid.index()) = linalg::eigenvalues(TB.fourier((*grid)(range(0, ndim)))()); }
+      for (; grid; ++grid) { eval(range::all, grid.index()) = linalg::eigenvalues(TB.fourier((*grid)(range(0, ndim)))()); }
       return eval;
     }
 

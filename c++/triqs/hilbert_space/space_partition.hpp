@@ -43,7 +43,7 @@ namespace triqs {
 
       public:
       /// Index of a basis Fock state/subspace
-      using index_t = uint32_t;
+      using idx_t = uint32_t;
       /// Accessor to `StateType` template parameter
       using state_t = StateType;
       /// Accessor to `OperatorType` template parameter
@@ -51,9 +51,9 @@ namespace triqs {
       /// Amplitude type of the state
       using amplitude_t = typename state_t::value_type;
       /// Connections between subspaces represented as a set of (from-index,to-index) pair
-      using block_mapping_t = std::set<std::pair<index_t, index_t>>;
+      using block_mapping_t = std::set<std::pair<idx_t, idx_t>>;
       /// Non-zero matrix elements of an operator represented as a mapping (from-state,to-state) -> value
-      using matrix_element_map_t = std::map<std::pair<index_t, index_t>, typename state_t::value_type>;
+      using matrix_element_map_t = std::map<std::pair<idx_t, idx_t>, typename state_t::value_type>;
 
       /// Perform Phase I of the automatic partition algorithm
       /**
@@ -69,11 +69,11 @@ namespace triqs {
         auto size = tmp_state.size();
 
         // Iteration over all initial basis states
-        for (index_t i = 0; i < size; ++i) {
+        for (idx_t i = 0; i < size; ++i) {
           tmp_state(i)        = amplitude_t(1);
           state_t final_state = H(tmp_state);
 
-          auto mapping = [&](index_t f, amplitude_t amplitude) {
+          auto mapping = [&](idx_t f, amplitude_t amplitude) {
             using triqs::utility::is_zero;
             if (is_zero(amplitude)) return;
             auto i_subspace = subspaces.find_set(i);
@@ -115,20 +115,20 @@ namespace triqs {
                                                                             bool store_matrix_elements = true) {
 
         matrix_element_map_t Cd_elements, C_elements;
-        std::multimap<index_t, index_t> Cd_connections, C_connections;
+        std::multimap<idx_t, idx_t> Cd_connections, C_connections;
 
         auto size = tmp_state.size();
 
         // Fill connection multimaps
-        for (index_t i = 0; i < size; ++i) {
+        for (idx_t i = 0; i < size; ++i) {
           tmp_state(i)    = amplitude_t(1);
           auto i_subspace = subspaces.find_set(i);
 
-          auto fill_conn = [this, i, i_subspace, store_matrix_elements](operator_t const &op, std::multimap<index_t, index_t> &conn,
+          auto fill_conn = [this, i, i_subspace, store_matrix_elements](operator_t const &op, std::multimap<idx_t, idx_t> &conn,
                                                                         matrix_element_map_t &elem) {
             state_t final_state = op(tmp_state);
             // Iterate over non-zero final amplitudes
-            foreach (final_state, [&](index_t f, amplitude_t amplitude) {
+            foreach (final_state, [&](idx_t f, amplitude_t amplitude) {
               using triqs::utility::is_zero;
               if (is_zero(amplitude)) return;
               auto f_subspace = subspaces.find_set(f);
@@ -149,7 +149,7 @@ namespace triqs {
 
           // Take one C^+ - connection
           // C^+|lower_subspace> = |upper_subspace>
-          index_t lower_subspace, upper_subspace;
+          idx_t lower_subspace, upper_subspace;
           std::tie(lower_subspace, upper_subspace) = *std::begin(Cd_connections);
 
           // - Reveals all subspaces reachable from lower_subspace by application of
@@ -157,12 +157,11 @@ namespace triqs {
           // - Removes all visited connections from Cd_connections/C_connections.
           // - Merges lower_subspace with all subspaces generated from lower_subspace by application of (C C^+)^(2*n).
           // - Merges upper_subspace with all subspaces generated from upper_subspace by application of (C^+ C)^(2*n).
-          std::function<void(index_t, bool)> zigzag_traversal = [this, lower_subspace, upper_subspace, &Cd_connections, &C_connections,
-                                                                 &zigzag_traversal](
-                                                                   index_t i_subspace, // find all connections starting from i_subspace
-                                                                   bool upwards        // if true, C^+ connection, otherwise C connection
-                                                                ) {
-            std::multimap<index_t, index_t>::iterator it;
+          std::function<void(idx_t, bool)> zigzag_traversal = [this, lower_subspace, upper_subspace, &Cd_connections, &C_connections,
+                                                               &zigzag_traversal](idx_t i_subspace, // find all connections starting from i_subspace
+                                                                                  bool upwards      // if true, C^+ connection, otherwise C connection
+                                                              ) {
+            std::multimap<idx_t, idx_t>::iterator it;
             while ((it = (upwards ? Cd_connections : C_connections).find(i_subspace)) != (upwards ? Cd_connections : C_connections).end()) {
 
               auto f_subspace = it->second;
@@ -191,19 +190,19 @@ namespace triqs {
       /**
    @return Number of invariant subspaces
   */
-      index_t n_subspaces() const { return representative_to_index.size(); }
+      idx_t n_subspaces() const { return representative_to_index.size(); }
 
       /// Apply a callable object to all basis Fock states in a given space partition
       /**
   The callable must take two arguments, 1) index of the basis Fock state in the considered full Hilbert space,
   and 2) index of the subspace this basis state belongs to.
 
-  @tparam Lambda Type of the callable object
+  @tparam w_max Type of the callable object
   @param SP Subject space partition
   @param L Callable object
   */
-      template <typename Lambda> friend void foreach (space_partition &SP, Lambda L) {
-        for (index_t n = 0; n < SP.tmp_state.size(); ++n) L(n, SP.lookup_basis_state(n));
+      template <typename w_max> friend void foreach (space_partition &SP, w_max L) {
+        for (idx_t n = 0; n < SP.tmp_state.size(); ++n) L(n, SP.lookup_basis_state(n));
       };
 
       /// Find what invariant subspace a given Fock state belongs to
@@ -211,7 +210,7 @@ namespace triqs {
    @param basis_state Index of a basis Fock state
    @return Index of the found invariant subspace
   */
-      index_t lookup_basis_state(index_t basis_state) { return representative_to_index[subspaces.find_set(basis_state)]; }
+      idx_t lookup_basis_state(idx_t basis_state) { return representative_to_index[subspaces.find_set(basis_state)]; }
 
       /// Access to matrix elements of the Hamiltonian
       /**
@@ -230,7 +229,7 @@ namespace triqs {
         block_mapping_t mapping;
 
         // Iteration over all initial basis states
-        for (index_t i = 0; i < tmp_state.size(); ++i) {
+        for (idx_t i = 0; i < tmp_state.size(); ++i) {
           state_t initial_state = tmp_state;
           initial_state(i)      = amplitude_t(1);
           auto i_subspace       = subspaces.find_set(i);
@@ -238,7 +237,7 @@ namespace triqs {
           state_t final_state = op(initial_state);
 
           // Iterate over non-zero final amplitudes
-          foreach (final_state, [&](index_t f, amplitude_t amplitude) {
+          foreach (final_state, [&](idx_t f, amplitude_t amplitude) {
             using triqs::utility::is_zero;
             if (is_zero(amplitude)) return;
             auto f_subspace = subspaces.find_set(f);
@@ -259,7 +258,7 @@ namespace triqs {
 
         // Update representative_to_index
         representative_to_index.clear();
-        for (index_t n = 0; n < tmp_state.size(); ++n) {
+        for (idx_t n = 0; n < tmp_state.size(); ++n) {
           representative_to_index.insert(std::make_pair(subspaces.find_set(n), representative_to_index.size()));
         }
       }
@@ -271,7 +270,7 @@ namespace triqs {
       // Matrix elements of the Hamiltonian
       matrix_element_map_t matrix_elements;
       // Map representative basis state to subspace index
-      std::map<index_t, index_t> representative_to_index;
+      std::map<idx_t, idx_t> representative_to_index;
     };
   } // namespace hilbert_space
 } // namespace triqs

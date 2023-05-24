@@ -18,7 +18,7 @@ static void GfInterpTau(benchmark::State &state) {
   //G()    = 0.0;
 
   for (auto _ : state) {
-    for (auto &tau : tau_mesh) benchmark::DoNotOptimize(G(double(tau)));
+    for (auto tau : tau_mesh) benchmark::DoNotOptimize(G(double(tau)));
   }
 }
 BENCHMARK(GfInterpTau)->RangeMultiplier(2)->Range(1024, 8192);
@@ -35,7 +35,7 @@ static void ClosestMeshpointTau(benchmark::State &state) {
   //G()    = 0.0;
 
   for (auto _ : state) {
-    for (auto &tau : tau_mesh) benchmark::DoNotOptimize(G[closest_mesh_pt(double(tau))]);
+    for (auto tau : tau_mesh) benchmark::DoNotOptimize(G[closest_mesh_pt(tau.value())]);
   }
 }
 BENCHMARK(ClosestMeshpointTau)->RangeMultiplier(2)->Range(1024, 8192);

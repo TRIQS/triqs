@@ -48,7 +48,7 @@ TEST(Gf, AutoAssignMatrixGf2) {
   placeholder<1> u_;
   placeholder<2> v_;
 
-  auto g0 = gf<imfreq, scalar_valued>({beta, Fermion, 10}, {});
+  auto g0 = gf<imfreq, scalar_valued>({beta, Fermion, 10});
   a(u_, v_) << g0;
   a(u_, v_)[om_] << 1 / (om_ - 3) * sig(u_, v_);
 

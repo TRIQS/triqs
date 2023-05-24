@@ -18,6 +18,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+
 namespace triqs::gfs {
 
   using nda::conj; // not found on gcc 5
@@ -32,7 +33,7 @@ namespace triqs::gfs {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
     auto sh         = dat.shape();
-    int is_boson    = (g.mesh().domain().statistic == Boson);
+    int is_boson    = (g.mesh().statistic() == Boson);
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
@@ -43,7 +44,7 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data), g.indices()};
+    return {mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), L}, std::move(new_data)};
   }
 
   /// Make a const view of the positive frequency part of the function
@@ -53,8 +54,8 @@ namespace triqs::gfs {
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
-    int is_boson = (g.mesh().domain().statistic == Boson);
-    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis()), g.indices()};
+    int is_boson = (g.mesh().statistic() == Boson);
+    return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), nda::ellipsis())};
   }
 
   /**
@@ -89,9 +90,8 @@ namespace triqs::gfs {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
             if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
-          } else if constexpr (target_t::rank == 2) { // matrix_valued FIXME transpose(g[-w])
-            for (auto [i, j] : g.target_indices())
-              if (abs(conj(g[-w](j, i)) - g[w](i, j)) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued
+            if (max_element(abs(dagger(g[-w]) - g[w])) > tolerance) return false;
           } else { // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices())
               if (abs(conj(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
@@ -182,8 +182,8 @@ namespace triqs::gfs {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
-          else if constexpr (target_t::rank == 2) // matrix_valued FIXME transpose(g[-w])
-            for (auto [i, j] : g.target_indices()) g_sym[w](i, j) = 0.5 * (g[w](i, j) + conj(g[-w](j, i)));
+          else if constexpr (target_t::rank == 2) // matrix_valued
+            g_sym[w] = 0.5 * (g[w] + dagger(g[-w]));
           else // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices()) g_sym[w](i, j, k, l) = 0.5 * (g[w](i, j, k, l) + conj(g[-w](k, l, i, j)));
         }
@@ -238,19 +238,19 @@ namespace triqs::gfs {
   // ------------------------------------------------------------------------------------------------------
 
   template <template <typename, typename, typename ...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
-    auto iw_mesh = mesh::imfreq{g.mesh().domain().beta, Fermion, n_max};
+    auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
-    int idx_min          = old_mesh.index_to_linear(iw_mesh.first_index());
-    int idx_max          = old_mesh.index_to_linear(iw_mesh.last_index());
+    int idx_min          = old_mesh.to_data_index(iw_mesh.first_index());
+    int idx_max          = old_mesh.to_data_index(iw_mesh.last_index());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
-    return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view, g.indices()};
+    return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};
   }
 
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
     for (auto const &iw : g.mesh())
-      if (iw.index() >= n_min or iw.index() < -n_min) g[iw] = tail_eval(tail, iw);
+      if (iw.n >= n_min or iw.n < -n_min) g[iw] = tail_eval(tail, iw);
   }
 
   template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
@@ -259,7 +259,6 @@ namespace triqs::gfs {
     replace_by_tail(g, tail, n_min);
   }
 
-  // FIXME For backward compatibility only
   // Fit_tail on a window
   template <template <typename, typename, typename ...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,

@@ -19,31 +19,6 @@ m.add_using("namespace triqs::gfs")
 m.add_preamble("""
 """)
 
-########################
-##   Indices
-########################
-
-# Wrapping indices
-c = class_( py_type = "GfIndices",
-        c_type = "gf_indices",
-        c_type_absolute = "triqs::gfs::gf_indices",
-        hdf5 = True,
-        serializable= "tuple",
-       )
-
-c.add_constructor("(std::vector<std::vector<std::string>> indices)", doc = "Constructs indices, from a list(list(string)))")
-c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"), doc = "Get a copy of the list of list of strings")
-c.add_method("gf_indices transpose()", doc = "Transposing")
-c.add_method("int convert_index(std::string s, int i)", doc = "index -> position conversion")
-c.add_method_copy()
-c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
-
-c.add_len(calling_pattern = "int result = self_c.rank()", doc = "")
-c.add_iterator(c_cast_type = "std::vector<std::string>")
-
-m.add_class (c)
-
-
 # ---------------------- Tail functionality --------------------
 # fit_tail
 for mesh in ["imfreq", "refreq"]:
@@ -81,6 +56,9 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)"
 m.add_function("matrix<dcomplex> density(gf_view<triqs::gfs::legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<triqs::gfs::legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
+m.add_function("matrix<dcomplex> density(gf_view<dlr_coeffs, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<dlr_coeffs, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+
 # ---------------------- miscellaneous --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
@@ -109,7 +87,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                 doc = """""")
 
 # rebinning_tau
-m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, int new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
+m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, size_t new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
 
 # GfLegendre specific functions
 m.add_function("void enforce_discontinuity(gf_view<triqs::gfs::legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
@@ -176,7 +154,6 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     calling_pattern = "g_out = fourier(g_in)",
                     doc = """Fills self with the Fourier transform of g_in""")
-
 
 ########################
 ##   Code generation

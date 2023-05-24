@@ -116,7 +116,7 @@ struct A {
   }
 
   ///
-  static std::string hdf5_format() { return "Ac"; }
+  [[nodiscard]] static std::string hdf5_format() { return "Ac"; }
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, A const &a) {

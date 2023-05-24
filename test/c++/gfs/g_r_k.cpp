@@ -34,7 +34,7 @@ TEST(Gf, r_k) {
   auto bz = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
   auto gk = gf<brzone>{{bz, N}, {S, S}};
 
-  gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  gk(k_) << -2 * (cos(k_[0]) + cos(k_[1]));
 
   auto gr = gf<cyclat>{{N, N}, {S, S}};
 
@@ -50,10 +50,10 @@ TEST(Gf, r_k) {
 
   // check gr
   auto gr_test           = gf<cyclat>{{N, N}, {S, S}};
-  gr_test[{1, 0, 0}]     = -1;
-  gr_test[{N - 1, 0, 0}] = -1;
-  gr_test[{0, 1, 0}]     = -1;
-  gr_test[{0, N - 1, 0}] = -1;
+  gr_test[std::array<long, 3>{1, 0, 0}]     = -1;
+  gr_test[std::array<long, 3>{N - 1, 0, 0}] = -1;
+  gr_test[std::array<long, 3>{0, 1, 0}]     = -1;
+  gr_test[std::array<long, 3>{0, N - 1, 0}] = -1;
 
   EXPECT_ARRAY_NEAR(gr.data(), gr_test.data());
 

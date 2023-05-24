@@ -45,7 +45,6 @@ assert g.data.shape==(200,199)
 
 ## test h5
 with HDFArchive("g_multivar.h5",'w') as A:
-  A["IND"] = g.indices
   A["g"] = g
   A["mprod"] = mprod
   

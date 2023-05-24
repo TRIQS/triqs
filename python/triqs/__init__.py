@@ -41,6 +41,9 @@ class Cpp2pyInfo:
         'triqs::operators::many_body_operator*' : 'operators_real_complex',
         'triqs::hilbert_space::fundamental_operator_set' : 'fundamental_operator_set',
         'triqs::utility::real_or_complex' : 'real_or_complex',
+        '*::mesh_point_t' : 'mesh',
+        'triqs::mesh::statistic_enum' : 'mesh',
+        'triqs::mesh::matsubara_freq' : 'mesh',
         }
 
     table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in list(_table_converters.items()))

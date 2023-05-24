@@ -69,7 +69,7 @@ template <int TARGET_RANK> void test_fourier() {
   }
 
   // Fourier Transform 3rd mesh and back
-  auto tau_mesh = mesh::imtime{beta, Fermion, 2 * N_iw + 1};
+  auto tau_mesh = mesh::imtime{beta, Fermion, static_cast<long>(2 * N_iw + 1)};
   {
     auto g_k_iW_tau = make_gf_from_fourier<2>(g, tau_mesh);
     auto gb         = make_gf_from_fourier<2>(g_k_iW_tau, iw_mesh);

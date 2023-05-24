@@ -7,8 +7,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 # ---------------------------------
 
 # all .cpp files to get the dependencies
+#DEBUG
 file(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
-list(REMOVE_ITEM ALLSOURCES arrays/python/numpy_extractor.cpp)
 
 # ---------------------------------
 #  Define and configure the triqs target 
@@ -22,16 +22,16 @@ target_include_directories(triqs PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 # C++ Standard
-target_compile_features(triqs PUBLIC cxx_std_20)
+target_compile_features(triqs PUBLIC cxx_std_23)
 
 # Disable warnings about comma expression in array subscript
-target_compile_options(triqs PUBLIC
-  $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
-  $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-comma-subscript>
-  $<$<CXX_COMPILER_ID:Clang>:-Wno-unknown-warning-option>
-  $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-comma-subscript>
-  $<$<CXX_COMPILER_ID:AppleClang>:-Wno-unknown-warning-option>
-)
+#target_compile_options(triqs PUBLIC
+  ## $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
+  ##  $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-comma-subscript>
+  #$<$<CXX_COMPILER_ID:Clang>:-Wno-unknown-warning-option>
+  ## $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-comma-subscript>
+  #$<$<CXX_COMPILER_ID:AppleClang>:-Wno-unknown-warning-option>
+#)
 
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
@@ -73,6 +73,12 @@ target_link_libraries(triqs PRIVATE h5::hdf5)
 
 # NDA (this provides blas/lapack linkeage)
 target_link_libraries(triqs PUBLIC nda::nda_c)
+
+# FMT
+target_link_libraries(triqs PUBLIC fmt::fmt-header-only)
+
+# cppdlr (discrete Lehmann representation library)
+target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 
 # ---------------------------------
 # Boost

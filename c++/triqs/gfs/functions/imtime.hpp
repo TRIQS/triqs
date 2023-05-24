@@ -26,6 +26,6 @@ namespace triqs {
     // rebinning
     // ------------------------------------------------------
 
-    gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, int new_n_tau);
+    gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, size_t new_n_tau);
   } // namespace gfs
 } // namespace triqs

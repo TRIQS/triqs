@@ -19,83 +19,236 @@
  *
  ******************************************************************************/
 #pragma once
+#include "utils.hpp"
 #include <triqs/lattice/bravais_lattice.hpp>
-#include "./bases/cluster_mesh.hpp"
 
 namespace triqs::mesh {
 
   using lattice::bravais_lattice;
-  using nda::eye;
 
-  ///
-  class cyclat : public cluster_mesh {
+  /// Cyclic Lattice on a Bravais Lattice
+  class cyclat {
+
+    public:
+    using index_t      = std::array<long, 3>;
+    using data_index_t = long;
+    using value_t      = bravais_lattice::point_t;
+
+    // -------------------- Data -------------------
     private:
-    bravais_lattice bl;
+    bravais_lattice bl_       = {};
+    std::array<long, 3> dims_ = {0, 0, 0};
+    long size_                = 0;
+    long stride1 = 1, stride0 = 1;
+    nda::matrix<double> units_     = nda::eye<double>(3);
+    nda::matrix<double> units_inv_ = nda::eye<double>(3);
+    uint64_t _mesh_hash            = 0;
 
+    // -------------------- Constructors -------------------
     public:
     /**
      * Construct a periodic Mesh on a BravaisLattice
      *
-     * @param bl Object representing the underlying Bravais Lattice (domain)
-     * @param N Periodization matrix (diagonal), shape=3x3
+     * @param bl Object representing the underlying Bravais Lattice
+     * @param dims The extents for each of the three dimensions
      */
-    cyclat(bravais_lattice const &bl, matrix_const_view<long> N) : bl(bl), cluster_mesh{bl.units(), N} {}
+    cyclat(bravais_lattice const &bl, std::array<long, 3> const &dims)
+       : bl_(bl),
+         dims_(dims),
+         size_(nda::stdutil::product(dims)),
+         stride1(dims_[2]),
+         stride0(dims_[1] * dims_[2]),
+         units_(bl.units()),
+         units_inv_(inverse(units_)),
+         _mesh_hash(hash(sum(bl.units()), dims[0], dims[1], dims[2])) {}
+
+    cyclat(bravais_lattice const &bl, nda::matrix<long> const &pm) : cyclat(bl, {pm(0, 0), pm(1, 1), pm(2, 2)}) {
+      // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
+      // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
+      //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
+      // nda::is_diagonal(mat, precision) --> add to lib
+      EXPECTS((pm.shape() == std::array{3l, 3l}));
+      if (not is_matrix_diagonal(pm)) throw std::runtime_error{"Non-diagonal periodization matrices are currently not supported."};
+    }
 
     /**
      *  Construct a Mesh with on a BravaisLattice with periodicity L in each spacial direction
      *
-     *  @param bl Object representing the underlying Bravais Lattice (domain)
+     *  @param bl Object representing the underlying Bravais Lattice
      *  @param L Number of mesh-points in each spacial direction
      */
-    cyclat(bravais_lattice const &bl, int L)
-       : bl(bl), cluster_mesh{bl.units(), matrix<long>{{{L, 0, 0}, {0, bl.ndim() >= 2 ? L : 1, 0}, {0, 0, bl.ndim() >= 3 ? L : 1}}}} {}
+    cyclat(bravais_lattice const &bl, long L) : cyclat{bl, std::array{L, (bl.ndim() >= 2 ? L : 1l), (bl.ndim() >= 3 ? L : 1)}} {}
 
     ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
-    cyclat(int L1 = 1, int L2 = 1, int L3 = 1)
-       : bl{eye<double>(3)}, cluster_mesh{eye<double>(3), matrix<long>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
-
-    using domain_t = bravais_lattice;
-    domain_t const &domain() const { return bl; }
-
-    // -------------- Evaluation of a function on the grid --------------------------
-
-    std::array<std::pair<linear_index_t, one_t>, 1> get_interpolation_data(index_t const &x) const {
-      return {std::pair<linear_index_t, one_t>{index_to_linear(index_modulo(x)), {}}};
-    }
+    cyclat(long L1 = 1, long L2 = 1, long L3 = 1) : cyclat{bravais_lattice{nda::eye<double>(3)}, std::array{L1, L2, L3}} {}
 
     // ------------------- Comparison -------------------
 
-    bool operator==(cyclat const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
-
+    bool operator==(cyclat const &M) const { return mesh_hash() == M.mesh_hash(); }
     bool operator!=(cyclat const &M) const { return !(operator==(M)); }
+
+    // ------------------- Accessors -------------------
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] size_t mesh_hash() const { return _mesh_hash; }
+
+    /// The total number of points in the mesh
+    [[nodiscard]] long size() const { return size_; }
+
+    /// The extent of each dimension
+    [[nodiscard]] std::array<long, 3> dims() const { return dims_; }
+
+    /// Matrix containing the mesh basis vectors as rows
+    [[nodiscard]] nda::matrix_const_view<double> units() const { return units_; }
+
+    bravais_lattice const &lattice() const noexcept { return bl_; }
+
+    // ----------------------------------------
+
+    index_t index_modulo(index_t const &r) const {
+      return {positive_modulo(r[0], dims_[0]), positive_modulo(r[1], dims_[1]), positive_modulo(r[2], dims_[2])};
+    }
+
+    // -------------------- mesh_point -------------------
+
+    struct mesh_point_t : public value_t {
+      using mesh_t = cyclat;
+
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+
+      public:
+      mesh_point_t() = default;
+      mesh_point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index, long data_index, uint64_t mesh_hash)
+         : value_t(bl_ptr, index), _data_index(data_index), _mesh_hash(mesh_hash) {}
+
+      /// The data index of the mesh point
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// The value of the mesh point
+      [[nodiscard]] value_t const &value() const { return *this; }
+
+      /// The Hash for the mesh configuration
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      friend std::ostream &operator<<(std::ostream &out, mesh_point_t const &x) { return out << x.value(); }
+    };
+
+    // -------------------- checks -------------------
+
+    [[nodiscard]] bool is_index_valid(index_t const &index) const noexcept {
+      for (auto i : range(3))
+        if (index[i] < 0 or index[i] >= dims_[i]) return false;
+      return true;
+    }
+
+    // -------------------- to_data_index -------------------
+
+    [[nodiscard]] data_index_t to_data_index(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return index[0] * stride0 + index[1] * stride1 + index[2];
+    }
+
+    template <typename V> [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<V> const &cmp) const { return to_data_index(to_index(cmp)); }
+
+    // -------------------- to_index -------------------
+
+    [[nodiscard]] index_t to_index(data_index_t data_index) const {
+      EXPECTS(0 <= data_index and data_index < size());
+      long i0 = data_index / stride0;
+      long r0 = data_index % stride0;
+      long i1 = r0 / stride1;
+      long i2 = i0 % stride1;
+      return {i0, i1, i2};
+    }
+
+    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.index(); }
+
+    // -------------------- operator [] () -------------------
+
+    /// Make a mesh point from a linear index
+    [[nodiscard]] mesh_point_t operator[](long data_index) const {
+      auto index = to_index(data_index);
+      EXPECTS(is_index_valid(index));
+      return {&bl_, index, data_index, _mesh_hash};
+    }
+
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
+
+    [[nodiscard]] mesh_point_t operator()(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      auto data_index = to_data_index(index);
+      return {&bl_, index, data_index, _mesh_hash};
+    }
+
+    // -------------------- to_value -------------------
+
+    /// Convert an index to a lattice value
+    [[nodiscard]] value_t to_value(index_t const &index) const {
+      EXPECTS(is_index_valid(index));
+      return {&bl_, index};
+    }
 
     // -------------------- print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
-      return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units()
-                  << "\n -- periodization_matrix = " << m.periodization_matrix() << "\n -- Domain: " << m.domain();
+      return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- lattice: " << m.lattice();
     }
+
+    // -------------------------- Range & Iteration --------------------------
+
+    private:
+    [[nodiscard]] auto r_() const {
+      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
+    }
+
+    public:
+    [[nodiscard]] auto begin() const { return r_().begin(); }
+    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
+    [[nodiscard]] auto end() const { return r_().end(); }
+    [[nodiscard]] auto cend() const { return r_().cend(); }
 
     // -------------- HDF5  --------------------------
 
-    static std::string hdf5_format() { return "MeshCyclicLattice"; }
+    [[nodiscard]] static std::string hdf5_format() { return "MeshCyclicLattice"; }
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, cyclat const &m) {
-      h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
-      h5::group gr = fg.open_group(subgroup_name);
-      h5_write(gr, "bravais_lattice", m.bl);
+      h5::group gr = fg.create_group(subgroup_name);
+      write_hdf5_format(gr, m); // NOLINT
+
+      h5::write(gr, "dims", m.dims_);
+      h5::write(gr, "bravais_lattice", m.bl_);
     }
 
     friend void h5_read(h5::group fg, std::string const &subgroup_name, cyclat &m) {
-      h5_read_impl(fg, subgroup_name, m, "MeshCyclicLattice");
       h5::group gr = fg.open_group(subgroup_name);
-      try { // Care for Backward Compatibility
-        h5_read(gr, "bl", m.bl);
-        return;
-      } catch (std::runtime_error const &re) {}
-      try {
-        h5_read(gr, "bravais_lattice", m.bl);
-      } catch (std::runtime_error const &re) {}
+      assert_hdf5_format(gr, m, true);
+
+      std::array<long, 3> dims; //NOLINT
+      if (gr.has_key("dims")) {
+        h5::read(gr, "dims", dims);
+      } else { // Backward Compat periodization_matrix
+        auto pm = h5::read<matrix<long>>(gr, "periodization_matrix");
+        dims    = {pm(0, 0), pm(1, 1), pm(2, 2)};
+      }
+
+      bravais_lattice bl{};
+      if (gr.has_key("bravais_lattice")) {
+        h5::read(gr, "bravais_lattice", bl);
+      } else {
+        h5::read(gr, "bl", bl);
+      }
+
+      m = cyclat(bl, dims);
     }
+
+    // -------------- Evaluation --------------------------
+
+    friend auto evaluate(cyclat const &m, auto const &f, index_t const &index) { return f(m.index_modulo(index)); }
+    friend auto evaluate(cyclat const &m, auto const &f, value_t const &v) { return evaluate(m, f, v.index()); }
   };
+
+  static_assert(MeshWithValues<cyclat>);
+
 } // namespace triqs::mesh

@@ -24,7 +24,7 @@ bl = class_(py_type = "BravaisLattice",
         is_printable = True,
         hdf5 = True,
         comparisons = "== !=",
-        serializable= "tuple",
+        serializable= "h5",
         doc = """
         Bravais Lattice with given unit vectors and atomic positions
 
@@ -67,7 +67,7 @@ c = class_(
         is_printable = True,
         hdf5 = True,
         comparisons = "== !=",
-        serializable= "tuple",
+        serializable= "h5",
         doc = """
         Brillouin Zone for a given Bravais Lattice
 
@@ -83,6 +83,8 @@ c.add_constructor("""(triqs::lattice::bravais_lattice bl_)""",
 
 c.add_property(getter = cfunction("matrix_const_view<double> units()"),
                doc = "Matrix containing reciprocal basis vectors as rows")
+
+c.add_property(getter = cfunction("int ndim()"), doc = "Number of dimensions")
 
 c.add_property(getter = cfunction("triqs::lattice::bravais_lattice lattice()"),
                doc = """Access to the underlying bravais lattice """)

@@ -44,10 +44,10 @@ TEST(Gf, Real) {
   rw_h5(Git, "Git");
   rw_h5(Giw, "Giw");
 
-  for (auto &t : Gt.mesh()) Gt[t] = 1.0 * t;
-  for (auto &w : Gw.mesh()) Gw[w] = 1.0 * w;
-  for (auto &it : Git.mesh()) Git[it] = 1.0 * it;
-  for (auto &iw : Giw.mesh()) Giw[iw] = 1.0 * iw;
+  for (auto const &t : Gt.mesh()) Gt[t] = 1.0 * t;
+  for (auto const &w : Gw.mesh()) Gw[w] = 1.0 * w;
+  for (auto const &it : Git.mesh()) Git[it] = 1.0 * it;
+  for (auto const &iw : Giw.mesh()) Giw[iw] = 1.0 * iw;
 
   triqs::clef::placeholder<0> t_;
   triqs::clef::placeholder<1> w_;
@@ -63,10 +63,5 @@ TEST(Gf, Real) {
   EXPECT_CLOSE(Gw2(w0), w0);
   EXPECT_CLOSE(Git(it0)(0, 0), it0);
   EXPECT_CLOSE(Git2(it0), it0);
-
-  //verification of windowing for imaginary times outside from [0,beta]
-  EXPECT_CLOSE(Gw2.on_mesh(N / 3), Gw2[N / 3]);
-  EXPECT_CLOSE(Gt2.on_mesh(N / 3), Gt2[N / 3]);
-  EXPECT_CLOSE(Git2.on_mesh(N / 3), Git2[N / 3]);
 }
 MAKE_MAIN;
