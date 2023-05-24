@@ -85,16 +85,4 @@ namespace triqs::gfs {
     return result;
   }
 
-  // OPFIXME decide strategy
-  // OPFIXME Discussion on going with Jason.
-  auto make_gf_dlr_imfreq(MemoryGf<mesh::imfreq> auto const &g, double Lambda, double eps) {
-    auto result = gf{dlr_imfreq{g.mesh().beta(), g.mesh().statistic(), Lambda, eps}, g.target_shape()};
-    // Check that the g mesh is big enough ...
-    //auto [wmin, wmax] = result.mesh().min_max_frequencies();
-    //auto n_max        = g.mesh().w_max().n;
-    //if ((std::abs(wmin.n) > n_max) or (wmax.n > n_max)) throw std::runtime_error("make_gf_dlr_imfreq: the requested grid is too large");
-    for (auto const &w : result.mesh()) result[w] = g(w.value());
-    return result;
-  }
-
 } // namespace triqs::gfs
