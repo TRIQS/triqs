@@ -119,13 +119,13 @@ public:
 
 // ------------------------------------------
 
-#if __cpp_explicit_this_parameter < 202110L
 template <typename... Arg>
 decltype(auto) operator[](Arg &&...arg) const & noexcept(has_no_boundcheck)
   requires(sizeof...(Arg) == arity)
 {
   return _subscript_impl(*this, std::forward<Arg>(arg)...);
 }
+
 template <typename... Arg>
 decltype(auto) operator[](Arg &&...arg) & noexcept(has_no_boundcheck)
   requires(sizeof...(Arg) == arity)
@@ -140,7 +140,12 @@ decltype(auto) operator[](Arg &&...arg) && noexcept(has_no_boundcheck)
   return _subscript_impl(std::move(*this), std::forward<Arg>(arg)...);
 }
 
-#endif
+// Allow expressions like g_k[{0,0,0}]
+decltype(auto) operator[](typename mesh_t::index_t const &index) noexcept(has_no_boundcheck)
+  requires(arity == 1)
+{
+  return this_t::operator[]<typename mesh_t::index_t const &>(index);
+}
 
 //----------------------------- HDF5 -----------------------------
 
