@@ -85,13 +85,13 @@ namespace triqs::gfs {
 
   // ------------- Helper Types -----------------------------
 
-  template <typename Lambda, typename T> struct lazy_transform_t {
-    Lambda lambda;
+  template <typename w_max, typename T> struct lazy_transform_t {
+    w_max lambda;
     T value;
   };
 
-  template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda &&l, T &&x) {
-    return {std::forward<Lambda>(l), std::forward<T>(x)};
+  template <typename w_max, typename T> lazy_transform_t<w_max, T> make_lazy_transform(w_max &&l, T &&x) {
+    return {std::forward<w_max>(l), std::forward<T>(x)};
   }
 
   /// ---------------------------  details  ---------------------------------

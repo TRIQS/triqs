@@ -39,7 +39,7 @@ namespace triqs::mesh {
     private:
     double _beta                        = 1.0;
     statistic_enum _statistic           = Fermion;
-    double _Lambda                      = 0.0;
+    double _w_max                       = 0.0;
     double _eps                         = 1e-10;
     uint64_t _mesh_hash                 = 0;
     std::shared_ptr<const dlr_ops> _dlr = {};
@@ -53,23 +53,23 @@ namespace triqs::mesh {
      *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
-     * @param Lambda DLR energy cutoff Lambda = beta*w_max
+     * @param w_max DLR energy cutoff, same as Lambda / beta
      * @param eps Representation accuracy
      */
-    dlr_imtime(double beta, statistic_enum statistic, double Lambda, double eps)
-       : dlr_imtime(beta, statistic, Lambda, eps, cppdlr::build_dlr_rf(Lambda, eps)) {}
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps)
+       : dlr_imtime(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps)) {}
 
     private:
-    dlr_imtime(double beta, statistic_enum statistic, double Lambda, double eps, nda::vector<double> const &dlr_freq)
-       : dlr_imtime(beta, statistic, Lambda, eps,
-                    dlr_ops{dlr_freq, {Lambda, dlr_freq}, {Lambda, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
+       : dlr_imtime(beta, statistic, w_max, eps,
+                    dlr_ops{dlr_freq, {w_max * beta, dlr_freq}, {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
 
-    dlr_imtime(double beta, statistic_enum statistic, double Lambda, double eps, dlr_ops dlr)
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
        : _beta(beta),
          _statistic(statistic),
-         _Lambda(Lambda),
+         _w_max(w_max),
          _eps(eps),
-         _mesh_hash(hash(beta, Lambda, eps, sum(dlr.imt.get_itnodes()))),
+         _mesh_hash(hash(beta, w_max, eps, sum(dlr.imt.get_itnodes()))),
          _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
     friend class dlr_imfreq;
@@ -77,11 +77,11 @@ namespace triqs::mesh {
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    explicit dlr_imtime(M const &m) : _beta(m._beta), _statistic(m._statistic), _Lambda(m._Lambda), _eps(m._eps), _dlr(m._dlr) {
+    explicit dlr_imtime(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imtime>)
         _mesh_hash = m._mesh_hash;
       else
-        _mesh_hash = hash(_beta, _Lambda, _eps, sum(_dlr->imt.get_itnodes()));
+        _mesh_hash = hash(_beta, _w_max, _eps, sum(_dlr->imt.get_itnodes()));
     }
 
     // -------------------- Comparisons -------------------
@@ -128,8 +128,8 @@ namespace triqs::mesh {
     /// The particle statistic: Fermion or Boson
     [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
 
-    /// DLR energy cutoff Lambda = beta*w_max
-    [[nodiscard]] double Lambda() const noexcept { return _Lambda; }
+    /// DLR energy cutoff w_max = beta*w_max
+    [[nodiscard]] double w_max() const noexcept { return _w_max; }
 
     /// Representation accuracy
     [[nodiscard]] double eps() const noexcept { return _eps; }
@@ -202,8 +202,8 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_imtime const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imtime mesh of size {} with beta = {}, statistic = {}, Lambda = {}, eps = {}", m._beta, m.size(), stat_cstr,
-                                 m._Lambda, m._eps);
+      return sout << fmt::format("DLR imtime mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m._beta, m.size(), stat_cstr,
+                                 m._w_max, m._eps);
     }
 
     // -------------------- HDF5 -------------------
@@ -217,7 +217,7 @@ namespace triqs::mesh {
 
       h5::write(gr, "beta", m._beta);
       h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "Lambda", m._Lambda);
+      h5::write(gr, "w_max", m._w_max);
       h5::write(gr, "eps", m._eps);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
@@ -231,12 +231,12 @@ namespace triqs::mesh {
 
       auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto Lambda    = h5::read<double>(gr, "Lambda");
+      auto w_max     = h5::read<double>(gr, "w_max");
       auto eps       = h5::read<double>(gr, "eps");
       auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
       auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
       auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_imtime(beta, statistic, Lambda, eps, {_dlr_freq, _dlr_it, _dlr_if});
+      m              = dlr_imtime(beta, statistic, w_max, eps, {_dlr_freq, _dlr_it, _dlr_if});
     }
   };
 

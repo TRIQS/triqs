@@ -197,11 +197,11 @@ namespace triqs {
   The callable must take two arguments, 1) index of the basis Fock state in the considered full Hilbert space,
   and 2) index of the subspace this basis state belongs to.
 
-  @tparam Lambda Type of the callable object
+  @tparam w_max Type of the callable object
   @param SP Subject space partition
   @param L Callable object
   */
-      template <typename Lambda> friend void foreach (space_partition &SP, Lambda L) {
+      template <typename w_max> friend void foreach (space_partition &SP, w_max L) {
         for (idx_t n = 0; n < SP.tmp_state.size(); ++n) L(n, SP.lookup_basis_state(n));
       };
 

@@ -118,7 +118,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     m.add_function(f"gf<dlr_imfreq, {Target}> make_gf_dlr_imfreq(gf_const_view<dlr_coeffs, {Target}> g_dlr)")
 
     # imtime <-> dlr_coeffs
-    m.add_function(f"gf<dlr_coeffs, {Target}> make_gf_dlr_coeffs(gf_const_view<imtime, {Target}> g_tau, double Lambda, double eps)")
+    m.add_function(f"gf<dlr_coeffs, {Target}> make_gf_dlr_coeffs(gf_const_view<imtime, {Target}> g_tau, double w_max, double eps)")
     m.add_function(f"gf<imtime, {Target}> make_gf_imtime(gf_const_view<dlr_coeffs, {Target}> g_dlr, long n_tau)")
 
     # imfreq <- dlr_coeffs

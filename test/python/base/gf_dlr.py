@@ -36,18 +36,18 @@ class test_dlr_mesh(unittest.TestCase):
         
     def test_dlr_meshes(self):
 
-        beta, eps, Lambda = 1.337, 1e-9, 100.
+        beta, eps, w_max = 1.337, 1e-9, 100.
 
         MeshTypes = [MeshDLRImTime, MeshDLRImFreq, MeshDLRCoeffs]
         
         for MeshType in MeshTypes:
             
-            m = MeshType(beta, 'Fermion', Lambda, eps)
+            m = MeshType(beta, 'Fermion', w_max, eps)
 
             assert( m.beta == beta )
             assert( m.statistic == 'Fermion' )
             assert( m.eps == eps )
-            assert( m.Lambda == Lambda )
+            assert( m.w_max == w_max )
 
             mps = np.array([ p.value for p in m ])
         
@@ -57,9 +57,9 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_conversion(self):
 
         e = 1.42
-        beta, eps, Lambda = 1.337, 1e-9, 100.
+        beta, eps, w_max = 1.337, 1e-9, 100.
 
-        wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda , eps)
+        wmesh = MeshDLRImFreq(beta, 'Fermion', w_max , eps)
 
         g_w = Gf(mesh=wmesh, target_shape=[])
         g_w << inverse(iOmega_n - e)
@@ -91,9 +91,9 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_density(self):
 
         e = 1.42
-        beta, eps, Lambda = 1.337, 1e-9, 100.
+        beta, eps, w_max = 1.337, 1e-9, 100.
 
-        wmesh = MeshDLRImFreq(beta, 'Fermion', Lambda, eps)
+        wmesh = MeshDLRImFreq(beta, 'Fermion', w_max, eps)
         g_w = Gf(mesh=wmesh, target_shape=[])
 
         for w in wmesh: g_w[w] = 1/(w - e)
@@ -106,8 +106,8 @@ class test_dlr_mesh(unittest.TestCase):
 
     def test_dlr_gfs_imfreq_interp(self):
 
-        beta, eps, Lambda = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', Lambda, eps)
+        beta, eps, w_max = 1.337, 1e-12, 10.
+        m = MeshDLRCoeffs(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
         
@@ -124,8 +124,8 @@ class test_dlr_mesh(unittest.TestCase):
     
     def test_dlr_gfs_imtime_interp(self):
 
-        beta, eps, Lambda = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', Lambda, eps)
+        beta, eps, w_max = 1.337, 1e-12, 10.
+        m = MeshDLRCoeffs(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
         
@@ -140,7 +140,7 @@ class test_dlr_mesh(unittest.TestCase):
 
     def test_dlr_gfs_imtime_fit(self):
 
-        beta, eps, Lambda = 1.337, 1e-10, 10.
+        beta, eps, w_max = 1.337, 1e-10, 10.
         n_tau = 1001
         omega = 1.337
 
@@ -148,7 +148,7 @@ class test_dlr_mesh(unittest.TestCase):
         for tau in gtau.mesh:
             gtau[tau] = onefermion(tau, omega, eps)
 
-        gc = make_gf_dlr_coeffs(gtau, Lambda, eps)
+        gc = make_gf_dlr_coeffs(gtau, w_max, eps)
         gt = make_gf_dlr_imtime(gc)
 
         gt2 = gt.copy()
