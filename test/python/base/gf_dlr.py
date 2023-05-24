@@ -25,7 +25,11 @@ from triqs.gf.meshes import MeshDLRImTime
 from triqs.gf.meshes import MeshDLRImFreq
 from triqs.gf.meshes import MeshDLRCoeffs
 
-from triqs.gf.gf_fnt import make_gf_dlr_coeffs, make_gf_dlr_imfreq, make_gf_dlr_imtime
+from triqs.utility.comparison_tests import *
+
+def onefermion(tau, eps, beta):
+    from math import exp
+    return -exp(-eps * tau) / (1 + exp(-beta * eps));
 
 class test_dlr_mesh(unittest.TestCase):
 
@@ -133,7 +137,25 @@ class test_dlr_mesh(unittest.TestCase):
             #print(g(tau), ref)
             np.testing.assert_almost_equal(g(tau), ref)
 
-        
+
+    def test_dlr_gfs_imtime_fit(self):
+
+        beta, eps, Lambda = 1.337, 1e-10, 10.
+        n_tau = 1001
+        omega = 1.337
+
+        gtau = Gf(mesh=MeshImTime(beta, 'Fermion', n_tau), target_shape=[])
+        for tau in gtau.mesh:
+            gtau[tau] = onefermion(tau, omega, eps)
+
+        gc = make_gf_dlr_coeffs(gtau, Lambda, eps)
+        gt = make_gf_dlr_imtime(gc)
+
+        gt2 = gt.copy()
+        for tau in gt2.mesh:
+            gt2[tau] = onefermion(tau, omega, eps)
+
+        assert_gfs_are_close(gt, gt2)
 
 if __name__ == '__main__':
     unittest.main()        

@@ -106,6 +106,25 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                     signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     doc ="""Create Green function from the Fourier transform of g_in""")
 
+# ---------------------- DLR mesh conversions --------------------
+for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+
+    # dlr_imtime <-> dlr_coeffs
+    m.add_function(f"gf<dlr_coeffs, {Target}> make_gf_dlr_coeffs(gf_const_view<dlr_imtime, {Target}> g_tau)")
+    m.add_function(f"gf<dlr_imtime, {Target}> make_gf_dlr_imtime(gf_const_view<dlr_coeffs, {Target}> g_dlr)")
+
+    # dlr_imfreq <-> dlr_coeffs
+    m.add_function(f"gf<dlr_coeffs, {Target}> make_gf_dlr_coeffs(gf_const_view<dlr_imfreq, {Target}> g_iw)")
+    m.add_function(f"gf<dlr_imfreq, {Target}> make_gf_dlr_imfreq(gf_const_view<dlr_coeffs, {Target}> g_dlr)")
+
+    # imtime <-> dlr_coeffs
+    m.add_function(f"gf<dlr_coeffs, {Target}> make_gf_dlr_coeffs(gf_const_view<imtime, {Target}> g_tau, double Lambda, double eps)")
+    m.add_function(f"gf<imtime, {Target}> make_gf_imtime(gf_const_view<dlr_coeffs, {Target}> g_dlr, long n_tau)")
+
+    # imfreq <- dlr_coeffs
+    m.add_function(f"gf<imfreq, {Target}> make_gf_imfreq(gf_const_view<dlr_coeffs, {Target}> g_dlr, long n_iw)")
+
+
 ########################
 ##   Code generation
 ########################

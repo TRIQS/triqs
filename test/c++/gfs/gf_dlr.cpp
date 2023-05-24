@@ -328,6 +328,32 @@ TEST(Gf, DLR_imfreq_interpolation) {
 
 // ----------------------------------------------------------------
 
+TEST(Gf, DLR_imtime_fit) {
+
+  double beta   = 2.0;
+  double Lambda = 10.0;
+  double eps    = 1e-10;
+  double omega  = 1.337;
+  int n_tau     = 1001;
+
+  auto gtau = gf<imtime, scalar_valued>{{beta, Fermion, n_tau}};
+  for (auto tau : gtau.mesh()) gtau[tau] = onefermion(tau, omega, eps);
+
+  auto gcoef = make_gf_dlr_coeffs(gtau, Lambda, eps);
+  auto gtau2 = make_gf_imtime(gcoef, n_tau);
+  EXPECT_GF_NEAR(gtau, gtau2);
+
+  for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
+    auto gtau_noise = gtau;
+    gtau_noise.data() += sigma * (4 * nda::rand(gtau.mesh().size()) - 2);
+    auto gcoef_noise = make_gf_dlr_coeffs(gtau_noise, Lambda, eps);
+    auto gtau3 = make_gf_imtime(gcoef_noise, n_tau);
+    EXPECT_GF_NEAR(gtau, gtau3, 1.05 * sigma);
+  }
+}
+
+// ----------------------------------------------------------------
+
 // Test some interpolation. Not really necessary
 TEST(Gf, DLR_ph_sym_interpolation) {
 

@@ -32,12 +32,14 @@ namespace triqs::gfs {
   // Transformation of DLR Green's functions
   // ------------------------------------------------------
 
+  /// Transform a DLR imaginary time Green's function to it's DLR coefficient representation
   auto make_gf_dlr_coeffs(MemoryGf<dlr_imtime> auto const &g) {
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     result.data() = result.mesh().dlr_it().vals2coefs(g.data());
     return result;
   }
 
+  /// Transform a DLR Matsubara Green's function to it's DLR coefficient representation
   auto make_gf_dlr_coeffs(MemoryGf<dlr_imfreq> auto const &g) {
     auto result   = gf{dlr_coeffs{g.mesh()}, g.target_shape()};
     auto beta_inv = 1. / result.mesh().beta();
@@ -45,12 +47,23 @@ namespace triqs::gfs {
     return result;
   }
 
+  /// Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
+  auto make_gf_dlr_coeffs(MemoryGf<mesh::imtime> auto const &g, double Lambda, double eps) {
+    auto tvals       = nda::array_adapter(std::array{g.mesh().size()}, [&](auto i){ return g.mesh()[i].value() / g.mesh().beta(); });
+    auto mesh_coeffs = dlr_coeffs{g.mesh().beta(), g.mesh().statistic(), Lambda, eps};
+    auto result      = gf{mesh_coeffs, g.target_shape()};
+    result.data()    = result.mesh().dlr_it().fitvals2coefs(make_regular(tvals), g.data());
+    return result;
+  }
+
+  /// Transform a DLR coefficient Green's function to it's DLR imaginary time representation
   auto make_gf_dlr_imtime(MemoryGf<dlr_coeffs> auto const &g) {
     auto result   = gf{dlr_imtime{g.mesh()}, g.target_shape()};
     result.data() = g.mesh().dlr_it().coefs2vals(g.data());
     return result;
   }
 
+  /// Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation
   auto make_gf_dlr_imfreq(MemoryGf<dlr_coeffs> auto const &g) {
     auto result   = gf{dlr_imfreq{g.mesh()}, g.target_shape()};
     auto beta     = result.mesh().beta();
@@ -58,13 +71,15 @@ namespace triqs::gfs {
     return result;
   }
 
+  /// Transform a DLR coefficient Green's function to a imaginary time Green's function
   auto make_gf_imtime(MemoryGf<dlr_coeffs> auto const &g, long n_tau) {
     auto result = gf{mesh::imtime{g.mesh().beta(), g.mesh().statistic(), n_tau}, g.target_shape()};
     for (auto const &tau : result.mesh()) result[tau] = g(tau.value());
     return result;
   }
 
-  auto make_gf_imfreq(MemoryGf<dlr_coeffs> auto const &g, long n_iw = 1025) {
+  /// Transform a DLR coefficient Green's  to a Matsubara frequency Green's function
+  auto make_gf_imfreq(MemoryGf<dlr_coeffs> auto const &g, long n_iw) {
     auto result = gf{mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), n_iw}, g.target_shape()};
     for (auto const &w : result.mesh()) result[w] = g(w.value());
     return result;

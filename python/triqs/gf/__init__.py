@@ -46,7 +46,7 @@ MeshCyclicLattice = MeshCycLat
 
 from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity 
 
-from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau
+from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau, make_gf_dlr_coeffs, make_gf_dlr_imtime, make_gf_dlr_imfreq, make_gf_imtime, make_gf_imfreq
 
 import warnings
 
@@ -65,7 +65,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',
-            'delta','dyson',
+            'delta', 'dyson',
             'map_block',
             'make_real_in_tau', 'is_gf_real_in_tau',
             'make_hermitian', 'is_gf_hermitian',
@@ -74,7 +74,9 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'replace_by_tail', 'replace_by_tail_in_fit_window',
             'set_from_fourier', 'make_gf_from_fourier',
             'set_from_legendre', 'set_from_imfreq', 'set_from_imtime',
-            'rebinning_tau','enforce_discontinuity',
+            'make_gf_dlr_coeffs', 'make_gf_dlr_imtime', 'make_gf_dlr_imfreq',
+            'make_gf_imtime', 'make_gf_imfreq',
+            'rebinning_tau', 'enforce_discontinuity',
             'density',
             'make_adjoint_mesh',
             'make_zero_tail',
