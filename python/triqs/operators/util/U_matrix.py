@@ -32,8 +32,14 @@ def U_matrix_slater(l, radial_integrals=None, U_int=None, J_hund=None, basis='sp
 
     .. math:: U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k \alpha(l, k, m1, m2, m3, m4)
 
-    being given either radial_integrals or U_int and J_hund.
-    The convetion for the U matrix is that used to construct the Hamiltonians, namely:
+    where :math:`F_k` [:math:`F_0, F_2, F_4, ...`] are radial Slater integrals
+    and :math:`\alpha(l, k, m1, m2, m3, m4)` denote angular Racah_Wigner numbers for
+    a spherical symmetric interaction tensor. The user can either specify directly the
+    radial integral :math:`F_k`, or U_int / J_hund are given using the function
+    :func:`U_J_to_radial_integrals` to convert back to radial integrals.
+
+    The convetion for the U matrix is given by the definition of the following
+    Hamiltonian:
 
     .. math:: H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 
@@ -149,8 +155,15 @@ def U_matrix_kanamori(n_orb, U_int, J_hund, Up_int=None, full_Uijkl=False, Jc_hu
 
     .. math:: U_{m m'}^{\sigma \bar{\sigma}} \equiv U_{m m' m m'}
 
-    If full_Uijkl=True is specified instead the full four index 
-    Uijkl tensor is returned. 
+    If full_Uijkl=True is specified the full four index
+    Uijkl tensor is returned instead:
+
+        .. math:: U_{m m m m} = U, \\
+                  U_{m m' m m'} = U', \\
+                  U_{m m' m' m} = J, \\
+                  U_{m m m' m'} = J_C,
+
+    with :math:`m \neq m'`.
 
     Parameters
     ----------
@@ -184,10 +197,10 @@ def U_matrix_kanamori(n_orb, U_int, J_hund, Up_int=None, full_Uijkl=False, Jc_hu
     if Jc_hund is not None and not full_Uijkl:
         raise ValueError('Jc_hund can only be specified if the full four index tensor is returned')
 
-    if not Up_int:
+    if Up_int is None:
         Up_int = U_int-2*J_hund
-    if not Jc_hund:
-        Jc_hund = Jc_hund
+    if Jc_hund is None:
+        Jc_hund = J_hund
 
     m_range = range(n_orb)
 
@@ -199,7 +212,7 @@ def U_matrix_kanamori(n_orb, U_int, J_hund, Up_int=None, full_Uijkl=False, Jc_hu
             if m == mp:
                 Uprime[m, mp] = U_int
             else:
-                U[m, mp] = Up_int - 1.0*J_hund
+                U[m, mp] = Up_int - J_hund
                 Uprime[m, mp] = Up_int
 
         return U, Uprime
@@ -365,7 +378,7 @@ def spherical_to_cubic(l, convention='triqs'):
             T[0,2] = 1.0;           T[1,1] = 1.0/sqrt(2);
             T[1,3] =-1.0/sqrt(2);   T[2,1] = 1j/sqrt(2);
             T[2,3] = 1j/sqrt(2);    T[3,0] = 1.0/sqrt(2);
-            T[3,4] = 1.0/sqrt(2);   T[4,0] = 1j/sqrt(2);    
+            T[3,4] = 1.0/sqrt(2);   T[4,0] = 1j/sqrt(2);
             T[4,4] = -1j/sqrt(2);
         elif convention == 'triqs' or convention == 'vasp':
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
