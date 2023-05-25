@@ -93,7 +93,7 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     else:
         raise ValueError("The 'mode' flag is meaningless. Expected 'R', 'I', or 'S' and I got %s." % mode)
 
-    res[0].update(opt_dict) # Add all other unused parameters to the dict
+    for r in res: r.update(opt_dict) # Add all other unused parameters to the dictionaries
     return res
 
 #------------------
