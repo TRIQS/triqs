@@ -72,16 +72,16 @@ namespace triqs::gfs {
 
   using mesh::brzone;
   using mesh::cyclat;
-  using mesh::dlr_coeffs;
+  using mesh::dlr;
   using mesh::dlr_imfreq;
   using mesh::dlr_imtime;
   using mesh::imfreq;
   using mesh::imtime;
   using mesh::legendre;
+  using mesh::make_adjoint_mesh;
   using mesh::prod;
   using mesh::refreq;
   using mesh::retime;
-  using mesh::make_adjoint_mesh;
 
   template <triqs::mesh::Mesh M>
   using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;

@@ -20,7 +20,7 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <h5/serialization.hpp>
 
-using triqs::mesh::dlr_coeffs;
+using triqs::mesh::dlr;
 using triqs::mesh::dlr_imfreq;
 using triqs::mesh::dlr_imtime;
 
@@ -47,7 +47,7 @@ TEST(Gf, G_dlr_mat) {
   for (auto const &tau : g1.mesh()) g1[tau] = onefermion(tau, e0, beta);
 
   // coefs
-  auto g2 = make_gf_dlr_coeffs(g1);
+  auto g2 = make_gf_dlr(g1);
 
   // reverse transfo ok
   auto g1b = make_gf_dlr_imtime(g2);
@@ -58,7 +58,7 @@ TEST(Gf, G_dlr_mat) {
   auto g3 = make_gf_dlr_imfreq(g2);
 
   // reverse transfo ok
-  auto g2b = make_gf_dlr_coeffs(g3);
+  auto g2b = make_gf_dlr(g3);
   EXPECT_GF_NEAR(g2, g2b);
   EXPECT_EQ(g2.mesh().mesh_hash(), g2b.mesh().mesh_hash());
 
@@ -87,7 +87,7 @@ TEST(Gf, G_dlr_mat2) {
   auto gw = gf<dlr_imfreq, scalar_valued>{dlr_imfreq{beta, Fermion, w_max, eps}};
   for (auto const &w : gw.mesh()) gw[w] = 1 / (w - e0);
 
-  auto gc = make_gf_dlr_coeffs(gw);
+  auto gc = make_gf_dlr(gw);
   auto gt = make_gf_dlr_imtime(gc);
 
   for (auto const &tau : gt.mesh()) { EXPECT_COMPLEX_NEAR(gc(tau), onefermion(tau, e0, beta), tol); }
@@ -125,12 +125,12 @@ TEST(Gf, DLR_cross_construction) {
   double w_max  = 5.0;
   double eps    = 1e-10;
 
-  auto mc = dlr_coeffs{beta, Fermion, w_max, eps};
+  auto mc = dlr{beta, Fermion, w_max, eps};
   auto mt = dlr_imtime{beta, Fermion, w_max, eps};
   auto mw = dlr_imfreq{beta, Fermion, w_max, eps};
 
-  auto mc2 = dlr_coeffs(mt);
-  auto mc3 = dlr_coeffs(mw);
+  auto mc2 = dlr(mt);
+  auto mc3 = dlr(mw);
   auto mt2 = dlr_imtime(mc);
   auto mt3 = dlr_imtime(mw);
   auto mw2 = dlr_imfreq(mc);
@@ -293,7 +293,7 @@ TEST(Gf, DLR_imtime_interpolation) {
 
   long dlr_idx = 6; // Pick one DLR frequency
 
-  auto g            = gf<dlr_coeffs, scalar_valued>{{beta, Fermion, w_max, eps}};
+  auto g            = gf<dlr, scalar_valued>{{beta, Fermion, w_max, eps}};
   g()               = 0.0;
   g.data()[dlr_idx] = 1.0;
 
@@ -317,7 +317,7 @@ TEST(Gf, DLR_imfreq_interpolation) {
   auto gw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, w_max, eps}};
   gw[iw_] << 1. / (iw_ - omega);
 
-  auto gc = make_gf_dlr_coeffs(gw);
+  auto gc = make_gf_dlr(gw);
 
   auto gw2 = gw;
   gw2[iw_] << gc(iw_); // Interpolate DLR in imaginary frequency
@@ -339,14 +339,14 @@ TEST(Gf, DLR_imtime_fit) {
   auto gtau = gf<imtime, scalar_valued>{{beta, Fermion, n_tau}};
   for (auto tau : gtau.mesh()) gtau[tau] = onefermion(tau, omega, eps);
 
-  auto gcoef = make_gf_dlr_coeffs(gtau, w_max, eps);
+  auto gcoef = make_gf_dlr(gtau, w_max, eps);
   auto gtau2 = make_gf_imtime(gcoef, n_tau);
   EXPECT_GF_NEAR(gtau, gtau2);
 
   for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
     auto gtau_noise = gtau;
     gtau_noise.data() += sigma * (nda::rand(gtau.mesh().size()) - 0.5);
-    auto gcoef_noise = make_gf_dlr_coeffs(gtau_noise, w_max, eps);
+    auto gcoef_noise = make_gf_dlr(gtau_noise, w_max, eps);
     auto gtau3 = make_gf_imtime(gcoef_noise, n_tau);
     EXPECT_GF_NEAR(gtau, gtau3, sigma);
   }
@@ -366,7 +366,7 @@ TEST(Gf, DLR_ph_sym_interpolation) {
   double omega = 1.337;
   gt[tau_] << +nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
-  auto gc  = make_gf_dlr_coeffs(gt);
+  auto gc  = make_gf_dlr(gt);
   auto gt2 = gt;
   gt2[tau_] << gc(beta - tau_);
 
@@ -414,7 +414,7 @@ TEST(Gf, DLR_density) {
 
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
-  auto gc = make_gf_dlr_coeffs(gt);
+  auto gc = make_gf_dlr(gt);
   auto n  = triqs::gfs::density(gc);
   EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(beta * omega)), 1.e-9);
 }
@@ -436,7 +436,7 @@ TEST(Gf, DLR_density_matrix) {
 
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
-  auto gc = make_gf_dlr_coeffs(gt);
+  auto gc = make_gf_dlr(gt);
   auto n  = triqs::gfs::density(gc);
   auto d  = 1 / (1 + std::exp(beta * omega));
   EXPECT_ARRAY_NEAR(n, (nda::matrix<double>{{d, 0}, {0, d}}), 1.e-9);
@@ -451,11 +451,11 @@ TEST(Gf, DLR_h5) {
 
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
   gt[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
-  auto gc = make_gf_dlr_coeffs(gt);
+  auto gc = make_gf_dlr(gt);
   auto gw = make_gf_dlr_imtime(gc);
 
   rw_h5(gt, "g_dlr_imtime");
-  rw_h5(gc, "g_dlr_coeffs");
+  rw_h5(gc, "g_dlr");
   rw_h5(gw, "g_dlr_imfreq");
 }
 
@@ -475,7 +475,7 @@ TEST(Gf, DLR_two_poles) {
      -0.5 * nda::clef::exp(-e1 * tau_) / (1 + nda::clef::exp(-beta * e1)) //
         - 0.5 * nda::clef::exp(-e2 * tau_) / (1 + nda::clef::exp(-beta * e2));
 
-  auto G_dlr = make_gf_dlr_coeffs(G_tau);
+  auto G_dlr = make_gf_dlr(G_tau);
   auto G_iw  = make_gf_dlr_imfreq(G_dlr);
 
   auto gw2 = G_iw;

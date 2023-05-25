@@ -35,7 +35,7 @@ namespace triqs::mesh {
     cppdlr::imfreq_ops imf;
   };
 
-  struct dlr_coeffs {
+  struct dlr {
 
     using index_t      = long;
     using data_index_t = long;
@@ -53,7 +53,7 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
     public:
-    dlr_coeffs() = default;
+    dlr() = default;
 
     /**
      * Construct a DLR coefficient mesh
@@ -63,15 +63,15 @@ namespace triqs::mesh {
      * @param w_max DLR energy cutoff, same as Lambda / beta
      * @param eps Representation accuracy
      */
-    dlr_coeffs(double beta, statistic_enum statistic, double w_max, double eps)
-       : dlr_coeffs(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps)) {}
+    dlr(double beta, statistic_enum statistic, double w_max, double eps)
+       : dlr(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps)) {}
 
     private:
-    dlr_coeffs(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
-       : dlr_coeffs(beta, statistic, w_max, eps,
-                    dlr_ops{dlr_freq, {w_max * beta, dlr_freq}, {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
+    dlr(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
+       : dlr(beta, statistic, w_max, eps,
+             dlr_ops{dlr_freq, {w_max * beta, dlr_freq}, {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
 
-    dlr_coeffs(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
+    dlr(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
        : _beta(beta),
          _statistic(statistic),
          _w_max(w_max),
@@ -83,9 +83,9 @@ namespace triqs::mesh {
     friend class dlr_imfreq;
 
     public:
-    template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
-    explicit dlr_coeffs(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _dlr(m._dlr) {
-      if constexpr (std::is_same_v<M, dlr_coeffs>)
+    template <any_of<dlr_imtime, dlr_imfreq, dlr> M>
+    explicit dlr(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _dlr(m._dlr) {
+      if constexpr (std::is_same_v<M, dlr>)
         _mesh_hash = m._mesh_hash;
       else
         _mesh_hash = hash(_beta, _statistic, _w_max, _eps, sum(_dlr->freq));
@@ -93,13 +93,13 @@ namespace triqs::mesh {
 
     // -------------------- Comparisons -------------------
 
-    bool operator==(dlr_coeffs const &m) const { return _mesh_hash == m._mesh_hash; }
-    bool operator!=(dlr_coeffs const &m) const { return !(operator==(m)); }
+    bool operator==(dlr const &m) const { return _mesh_hash == m._mesh_hash; }
+    bool operator!=(dlr const &m) const { return !(operator==(m)); }
 
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t {
-      using mesh_t = dlr_coeffs;
+      using mesh_t = dlr;
 
       private:
       long _index         = 0;
@@ -201,7 +201,7 @@ namespace triqs::mesh {
 
     // -------------------- print  -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, dlr_coeffs const &m) {
+    friend std::ostream &operator<<(std::ostream &sout, dlr const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
       return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m._beta, m.size(), stat_cstr,
                                  m._w_max, m._eps);
@@ -212,7 +212,7 @@ namespace triqs::mesh {
     [[nodiscard]] static std::string hdf5_format() { return "MeshDLRImTime"; }
 
     /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr_coeffs const &m) {
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr const &m) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m); // NOLINT
 
@@ -226,7 +226,7 @@ namespace triqs::mesh {
     }
 
     /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_coeffs &m) {
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr &m) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
 
@@ -237,24 +237,24 @@ namespace triqs::mesh {
       auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
       auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
       auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_coeffs(beta, statistic, w_max, eps, {_dlr_freq, _dlr_it, _dlr_if});
+      m              = dlr(beta, statistic, w_max, eps, {_dlr_freq, _dlr_it, _dlr_if});
     }
   };
 
   // -------------------- evaluation -------------------
 
-  auto evaluate(dlr_coeffs const &m, auto const &f, double tau) {
+  auto evaluate(dlr const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
     return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * cppdlr::k_it(tau / m.beta(), m.dlr_freq()[l]); });
   }
 
-  auto evaluate(dlr_coeffs const &m, auto const &f, matsubara_freq const &iw) {
+  auto evaluate(dlr const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
     return details::sum_to_regular(range(m.size()),
                                    [&](auto &&l) { return f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta(); });
   }
 
   // check concept
-  static_assert(MeshWithValues<dlr_coeffs>);
+  static_assert(MeshWithValues<dlr>);
 
 } // namespace triqs::mesh

@@ -218,10 +218,10 @@ m.add_property(name = "eps",
 module.add_class(m)
 
 ########################
-##   MeshDLRCoeffs
+##   MeshDLR
 ########################
 
-m = make_mesh(py_type = "MeshDLRCoeffs", c_tag = "dlr_coeffs",
+m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
         doc =  """Mesh of DLR imaginary times
 
         Mesh-points are evenly distributed in the interval [0,beta]

@@ -48,7 +48,7 @@ namespace triqs {
      * @param g The Green function 
      * @return auto A tensor/matrix or a scalar, depending on the target
      */
-    auto density(MemoryGf<mesh::dlr_coeffs> auto const &g) {
+    auto density(MemoryGf<mesh::dlr> auto const &g) {
       auto res = g.target().make_value();
       res      = -g(g.mesh().beta());
       // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>
@@ -61,12 +61,12 @@ namespace triqs {
 
     auto density(MemoryGf<mesh::dlr_imtime> auto const &g) {
       // FIXME : workaround for static_assert(false). Fix on clang >= 17
-      static_assert(sizeof(g) == 0, "density(gf<dlr_imtime, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imtime, ...>) is not supported. Use a gf<dlr, ...>.");
       return 0;
     }
     auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) {
       // FIXME : workaround for static_assert(false). Fix on clang >= 17
-      static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr_coeffs, ...>.");
+      static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr, ...>.");
       return 0;
     }
 

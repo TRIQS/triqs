@@ -29,7 +29,7 @@ TEST(Gf, Gk_dlr_mat) {
   auto g1b = partial_transform<1>(make_const_view(g1), [](auto &&gg) { return gg; });
   EXPECT_GF_NEAR(g1, g1b);
 
-  auto g2 = partial_transform<1>(make_const_view(g1), [](auto &&gg) { return make_gf_dlr_coeffs(gg); });
+  auto g2 = partial_transform<1>(make_const_view(g1), [](auto &&gg) { return make_gf_dlr(gg); });
   auto g3 = partial_transform<1>(make_const_view(g2), [](auto &&gg) { return make_gf_dlr_imfreq(gg); });
 
   auto g3_check = gf<prod<brzone, dlr_imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, w_max, eps}}, {1, 1}};
@@ -59,7 +59,7 @@ TEST(Gf, G_dlr_k_mat) {
   auto g1b = partial_transform<0>(make_const_view(g1), [](auto &&gg) { return gg; });
   EXPECT_GF_NEAR(g1, g1b);
 
-  auto g2 = partial_transform<0>(make_const_view(g1), [](auto &&gg) { return make_gf_dlr_coeffs(gg); });
+  auto g2 = partial_transform<0>(make_const_view(g1), [](auto &&gg) { return make_gf_dlr(gg); });
   auto g3 = partial_transform<0>(make_const_view(g2), [](auto &&gg) { return make_gf_dlr_imfreq(gg); });
 
   auto g3_check = gf<prod<dlr_imfreq, brzone>, matrix_valued>{{{beta, Fermion, w_max, eps}, {bz, n_bz}}, {1, 1}};

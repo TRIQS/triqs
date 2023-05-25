@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "utils.hpp"
-#include "dlr_coeffs.hpp"
+#include "dlr.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 
@@ -73,10 +73,10 @@ namespace triqs::mesh {
          _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
     friend class dlr_imfreq;
-    friend class dlr_coeffs;
+    friend class dlr;
 
     public:
-    template <any_of<dlr_imtime, dlr_imfreq, dlr_coeffs> M>
+    template <any_of<dlr_imtime, dlr_imfreq, dlr> M>
     explicit dlr_imtime(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imtime>)
         _mesh_hash = m._mesh_hash;
@@ -92,7 +92,7 @@ namespace triqs::mesh {
     // -------------------- mesh_point -------------------
 
     struct mesh_point_t {
-      using mesh_t = dlr_coeffs;
+      using mesh_t = dlr;
 
       private:
       long _index         = 0;

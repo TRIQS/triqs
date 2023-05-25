@@ -23,7 +23,7 @@ import numpy as np
 from triqs.gf import *
 from triqs.gf.meshes import MeshDLRImTime
 from triqs.gf.meshes import MeshDLRImFreq
-from triqs.gf.meshes import MeshDLRCoeffs
+from triqs.gf.meshes import MeshDLR
 
 from triqs.utility.comparison_tests import *
 
@@ -38,7 +38,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         beta, eps, w_max = 1.337, 1e-9, 100.
 
-        MeshTypes = [MeshDLRImTime, MeshDLRImFreq, MeshDLRCoeffs]
+        MeshTypes = [MeshDLRImTime, MeshDLRImFreq, MeshDLR]
         
         for MeshType in MeshTypes:
             
@@ -70,7 +70,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(g_w.data, g_w_2.data)
 
-        g_c = make_gf_dlr_coeffs(g_w)
+        g_c = make_gf_dlr(g_w)
 
         g_t = make_gf_dlr_imtime(g_c)
 
@@ -98,7 +98,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         for w in wmesh: g_w[w] = 1/(w - e)
 
-        g_c = make_gf_dlr_coeffs(g_w)
+        g_c = make_gf_dlr(g_w)
 
         ref = np.exp(-e * beta) / (1 + np.exp(-e * beta))
         np.testing.assert_almost_equal(density(g_c), ref)
@@ -107,7 +107,7 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_imfreq_interp(self):
 
         beta, eps, w_max = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', w_max, eps)
+        m = MeshDLR(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
         
@@ -125,7 +125,7 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_gfs_imtime_interp(self):
 
         beta, eps, w_max = 1.337, 1e-12, 10.
-        m = MeshDLRCoeffs(beta, 'Fermion', w_max, eps)
+        m = MeshDLR(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
         
@@ -148,7 +148,7 @@ class test_dlr_mesh(unittest.TestCase):
         for tau in gtau.mesh:
             gtau[tau] = onefermion(tau, omega, eps)
 
-        gc = make_gf_dlr_coeffs(gtau, w_max, eps)
+        gc = make_gf_dlr(gtau, w_max, eps)
         gt = make_gf_dlr_imtime(gc)
 
         gt2 = gt.copy()

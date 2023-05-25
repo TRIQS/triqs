@@ -161,7 +161,7 @@ namespace triqs {
    @tparam w_max Type of the callable object
    @param L Callable object
   */
-      template <typename w_max> void update_coeffs(w_max L) {
+      template <typename w_max> void update(w_max L) {
         for (auto &M : all_terms) L(M.coeff);
       }
 

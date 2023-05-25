@@ -43,11 +43,12 @@
 #include "./mesh/refreq.hpp"
 
 #include "./mesh/index.hpp"
+
 #include "./mesh/legendre.hpp"
 
+#include "./mesh/dlr.hpp"
 #include "./mesh/dlr_imtime.hpp"
 #include "./mesh/dlr_imfreq.hpp"
-#include "./mesh/dlr_coeffs.hpp"
 
 #include "./mesh/brzone.hpp"
 #include "./mesh/cyclat.hpp"
