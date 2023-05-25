@@ -87,7 +87,6 @@ repl_dict = {
         "\.linear_index\(\)": ".data_index()",
         "\.linear_index": ".data_index",
         "is_product_v": "is_product",
-        "\[{(.*?)}\]": r"[\1]",
         "for *\( *auto *(?:const)? *& *(.*?) *: *(.*?)mesh(.*?)\)": r"for (auto \1 : \2mesh\3)",
         "h5_try_read": "h5::try_read",
         "x_min\(\)": "t_min()",
