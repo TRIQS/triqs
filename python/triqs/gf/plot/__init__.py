@@ -29,6 +29,8 @@ def dispatcher(g) :
 
         if isinstance(m, MeshImFreq) : return one_var.imfreq
         if isinstance(m, MeshImTime) : return one_var.imtime
+        if isinstance(m, MeshDLRImFreq) : return one_var.dlr_imfreq
+        if isinstance(m, MeshDLRImTime) : return one_var.dlr_imtime
         if isinstance(m, MeshReFreq) : return one_var.refreq
         if isinstance(m, MeshReTime) : return one_var.retime
         if isinstance(m, MeshLegendre) : return one_var.legendre

@@ -25,7 +25,7 @@ from . import plot_base
 
 def imfreq(self, opt_dict):
     r"""
-    Plot protocol for GfImFreq objects.
+    Plot protocol for Gf objects with a MeshImFreq.
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ def imfreq(self, opt_dict):
                       Mode to plot the Green's function in:
                       -- 'R': real part only
                       -- 'I': imaginary part only
-              - x_window: tuple, default None 
+              - x_window: tuple, default None
                           (xmin,xmax)
               - name: str
                      name of the gf for the label and legend
@@ -47,7 +47,74 @@ def imfreq(self, opt_dict):
 
 def imtime(self, opt_dict):
     r"""
-    Plot protocol for GfImTime objects.
+    Plot protocol for Gf objects with a MeshImTime.
+
+    Parameters
+    ----------
+    opt_dict: dictionary
+              Can contain:
+              - mode: string, default None
+                      Mode to plot the Green's function in:
+                      -- 'R': real part only
+                      -- 'I': imaginary part only
+              - x_window: tuple, default None
+                          (xmin,xmax)
+              - name: str
+                     name of the gf for the label and legend
+    """
+    return plot_base.plot_base( self, opt_dict,  r'$\tau$', lambda x : r'%s$(\tau)$'%x, list(self.mesh.values()))
+
+#----------------------------------------------------------------
+
+def dlr_imtime(self, opt_dict):
+    r"""
+    Plot protocol for Gf objects with a MeshDLRImTime.
+
+    Parameters
+    ----------
+    opt_dict: dictionary
+              Can contain:
+              - mode: string, default None
+                      Mode to plot the Green's function in:
+                      -- 'R': real part only
+                      -- 'I': imaginary part only
+              - x_window: tuple, default None
+                          (xmin,xmax)
+              - name: str
+                     name of the gf for the label and legend
+    """
+    return plot_base.plot_base( self, opt_dict,  r'$\tau$', lambda x : r'%s$(\tau)$'%x, list(self.mesh.values()))
+
+#----------------------------------------------------------------
+
+def dlr_imfreq(self, opt_dict):
+    r"""
+    Plot protocol for Gf objects with a MeshDLRImFreq.
+
+    Parameters
+    ----------
+    opt_dict: dictionary
+              Can contain:
+              - mode: string, default None
+                      Mode to plot the Green's function in:
+                      -- 'R': real part only
+                      -- 'I': imaginary part only
+              - x_window: tuple, default None
+                          (xmin,xmax)
+              - name: str
+                     name of the gf for the label and legend
+    """
+    opt_dict['linestyle'] = 'None'
+    if not 'marker' in opt_dict:
+        opt_dict['marker'] = 'x'
+    return plot_base.plot_base( self, opt_dict,  r'$\omega_n$',
+            lambda x : r'%s$(i\omega_n)$'%x, [x.imag for x in list(self.mesh.values())] )
+
+#----------------------------------------------------------------
+
+def dlr_imtime(self, opt_dict):
+    r"""
+    Plot protocol for Gf objects with a MeshImTime.
 
     Parameters
     ----------
@@ -62,6 +129,9 @@ def imtime(self, opt_dict):
               - name: str
                      name of the gf for the label and legend
     """
+    opt_dict['linestyle'] = 'None'
+    if not 'marker' in opt_dict:
+        opt_dict['marker'] = 'x'
     return plot_base.plot_base( self, opt_dict,  r'$\tau$', lambda x : r'%s$(\tau)$'%x, list(self.mesh.values()))
 
 #----------------------------------------------------------------
