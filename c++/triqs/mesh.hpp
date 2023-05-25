@@ -42,7 +42,7 @@
 #include "./mesh/retime.hpp"
 #include "./mesh/refreq.hpp"
 
-#include "./mesh/index.hpp"
+#include "./mesh/discrete.hpp"
 
 #include "./mesh/legendre.hpp"
 

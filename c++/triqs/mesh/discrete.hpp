@@ -22,7 +22,7 @@
 #include "./utils.hpp"
 namespace triqs::mesh {
 
-  struct index {
+  struct discrete {
 
     using index_t      = long;
     using data_index_t = long;
@@ -34,17 +34,17 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
     public:
-    index(long L = 0) : L_(L), _mesh_hash(L) {}
+    discrete(long L = 0) : L_(L), _mesh_hash(L) {}
 
     // -------------------- Comparison -------------------
 
-    bool operator==(index const &) const = default;
-    bool operator!=(index const &) const = default;
+    bool operator==(discrete const &) const = default;
+    bool operator!=(discrete const &) const = default;
 
     // --------------------  Mesh Point -------------------
 
     struct mesh_point_t {
-      using mesh_t = index;
+      using mesh_t = discrete;
 
       private:
       long _index         = 0;
@@ -120,27 +120,27 @@ namespace triqs::mesh {
 
     // -------------------- print  -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, index const &m) { return sout << "index mesh of size " << m.size(); }
+    friend std::ostream &operator<<(std::ostream &sout, discrete const &m) { return sout << "index mesh of size " << m.size(); }
 
     // -------------------- HDF5 -------------------
 
     [[nodiscard]] static std::string hdf5_format() { return "MeshIndex"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, index const &m) {
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, discrete const &m) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m);
       h5_write(gr, "size", m.size());
     }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, index &m) {
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, discrete &m) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
       long L = h5_read<long>(gr, "size");
-      m      = index(L);
+      m      = discrete(L);
     }
   };
 
   // check concept
-  static_assert(Mesh<index>);
+  static_assert(Mesh<discrete>);
 
 } // namespace triqs::mesh
