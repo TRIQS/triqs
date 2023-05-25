@@ -85,6 +85,7 @@ repl_dict = {
         "range\(\)": "range::all",
         "range{}": "range::all",
         "\.linear_index\(\)": ".data_index()",
+        "\.linear_index": ".data_index",
         "is_product_v": "is_product",
         "\[{(.*?)}\]": r"[\1]",
         "for *\( *auto *(?:const)? *& *(.*?) *: *(.*?)mesh(.*?)\)": r"for (auto \1 : \2mesh\3)",
