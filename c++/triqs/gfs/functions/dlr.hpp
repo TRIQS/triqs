@@ -48,9 +48,9 @@ namespace triqs::gfs {
   }
 
   /// Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
-  auto make_gf_dlr_coeffs(MemoryGf<mesh::imtime> auto const &g, double Lambda, double eps) {
+  auto make_gf_dlr_coeffs(MemoryGf<mesh::imtime> auto const &g, double w_max, double eps) {
     auto tvals       = nda::array_adapter(std::array{g.mesh().size()}, [&](auto i){ return g.mesh()[i].value() / g.mesh().beta(); });
-    auto mesh_coeffs = dlr_coeffs{g.mesh().beta(), g.mesh().statistic(), Lambda, eps};
+    auto mesh_coeffs = dlr_coeffs{g.mesh().beta(), g.mesh().statistic(), w_max, eps};
     auto result      = gf{mesh_coeffs, g.target_shape()};
     result.data()    = result.mesh().dlr_it().fitvals2coefs(make_regular(tvals), g.data());
     return result;
