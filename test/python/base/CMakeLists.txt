@@ -61,6 +61,7 @@ add_python_test(gf_tensor_valued)
 add_python_test(histograms)
 add_python_test(histogram_bcast)
 add_python_test(brillouin_zone)
+add_python_test(cyclic_lattice)
 
 # discretize bath
 add_python_test(discretize_bath)
