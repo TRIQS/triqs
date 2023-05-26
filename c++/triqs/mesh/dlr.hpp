@@ -251,7 +251,7 @@ namespace triqs::mesh {
   auto evaluate(dlr const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
     return details::sum_to_regular(range(m.size()),
-                                   [&](auto &&l) { return f(l) * cppdlr::k_if(2 * iw.n + iw.statistic, m.dlr_freq()[l]) * m.beta(); });
+                                   [&](auto &&l) { return f(l) * cppdlr::k_if(iw.n, m.dlr_freq()[l], (cppdlr::statistic_t) iw.statistic) * m.beta(); });
   }
 
   // check concept
