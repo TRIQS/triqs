@@ -120,8 +120,8 @@ namespace triqs::mesh {
 
       public:
       mesh_point_t() = default;
-      mesh_point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index, long data_index, uint64_t mesh_hash)
-         : value_t(bl_ptr, index), _data_index(data_index), _mesh_hash(mesh_hash) {}
+      mesh_point_t(std::array<long, 3> const &index, long data_index, uint64_t mesh_hash, bravais_lattice const *bl_ptr)
+         : value_t(index, bl_ptr), _data_index(data_index), _mesh_hash(mesh_hash) {}
 
       /// The data index of the mesh point
       [[nodiscard]] long data_index() const { return _data_index; }
@@ -171,7 +171,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator[](long data_index) const {
       auto index = to_index(data_index);
       EXPECTS(is_index_valid(index));
-      return {&bl_, index, data_index, _mesh_hash};
+      return {index, data_index, _mesh_hash, &bl_};
     }
 
     [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
@@ -179,7 +179,7 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(index_t const &index) const {
       EXPECTS(is_index_valid(index));
       auto data_index = to_data_index(index);
-      return {&bl_, index, data_index, _mesh_hash};
+      return {index, data_index, _mesh_hash, &bl_};
     }
 
     // -------------------- to_value -------------------
@@ -187,7 +187,7 @@ namespace triqs::mesh {
     /// Convert an index to a lattice value
     [[nodiscard]] value_t to_value(index_t const &index) const {
       EXPECTS(is_index_valid(index));
-      return {&bl_, index};
+      return {index, &bl_};
     }
 
     // -------------------- print -------------------

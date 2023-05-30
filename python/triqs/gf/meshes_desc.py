@@ -400,8 +400,8 @@ m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone",
         ---------------------
         bz : BrillouinZone
             The underlying Brillouin Zone
-        N: Diagonal numpy.ndarray of integers, shape=(3,3)
-            The periodization matrix
+        dims : numpy.ndarray of integers, shape=(3,)
+            The extent of each dimension
 
         Parameters (Option 2)
         ---------------------
@@ -410,12 +410,12 @@ m = make_mesh( py_type = "MeshBrZone", c_tag = "brzone",
         n_k : int
             Number of mesh-points in each reciprocal direction
         """)
-m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, matrix_view<long> N)")
+m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, std::array<long, 3> dims)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone bz, int n_k)")
 
 m.add_method("std::array<long,3> closest_index(vector_const_view<double> v)", doc = "Mesh Index closest to the vector")
 
-m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Linear dimensions")
+m.add_property(getter = cfunction("std::array<long, 3> dims()"), doc = "Linear dimensions")
 m.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing mesh basis vectors as rows")
 m.add_property(getter = cfunction("triqs::lattice::brillouin_zone bz()"), doc = "The brillouin_zone")
 
@@ -430,23 +430,26 @@ m = make_mesh( py_type = "MeshCycLat", c_tag = "cyclat",
 
         Parameters (Option 1)
         ---------------------
-        bl : BravaisLattice
+        lattice : BravaisLattice
             The underlying Bravais Lattice
-        N : diagonal numpy.ndarray of integers, shape=(3,3)
-            The periodization matrix
+        dims : numpy.ndarray of integers, shape=(3,)
+            The extent of each dimension
 
         Parameters (Option 2)
         ---------------------
-        bl : BravaisLattice
+        lattice : BravaisLattice
             The underlying Bravais Lattice
         L : int
             Number of mesh-points in each spacial direction
         """)
-m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<long> periodization_matrix)")
-m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice bl, std::array<long, 3> dims)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice bl, int L)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice lattice, std::array<long, 3> dims)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice lattice, int L)")
 m.add_constructor(signature = "(int L1, int L2, int L3)")
+m.add_constructor(signature = "()")
 
-m.add_property(getter = cfunction("std::array<long,3> dims()"), doc = "Extent of each dimension")
+m.add_property(getter = cfunction("std::array<long, 3> dims()"), doc = "Extent of each dimension")
 m.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Matrix containing mesh basis vectors as rows")
 m.add_property(getter = cfunction("triqs::lattice::bravais_lattice lattice()"), doc = "The bravais_lattice")
 

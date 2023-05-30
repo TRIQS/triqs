@@ -43,7 +43,7 @@ class Cpp2pyInfo:
         'triqs::utility::real_or_complex' : 'real_or_complex',
         '*::mesh_point_t' : 'mesh',
         'triqs::mesh::statistic_enum' : 'mesh',
-        'triqs::mesh::matsubara_freq' : 'mesh',
+        'triqs::lattice' : 'mesh',
         }
 
     table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in list(_table_converters.items()))

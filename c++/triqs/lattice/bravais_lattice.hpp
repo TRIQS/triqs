@@ -72,10 +72,13 @@ namespace triqs::lattice {
 
       public:
       point_t() = default;
-      point_t(bravais_lattice const *bl_ptr, std::array<long, 3> const &index) : _index(index), _bl_ptr(bl_ptr) {}
+      point_t(std::array<long, 3> const &index, bravais_lattice const *bl_ptr) : _index(index), _bl_ptr(bl_ptr) {}
 
       /// The index of the mesh point
       [[nodiscard]] std::array<long, 3> index() const { return _index; }
+
+      /// The underlying bravais lattice
+      [[nodiscard]] bravais_lattice const &lattice() const { return *_bl_ptr; }
 
       explicit operator r_t() const {
         if (_rval)
@@ -89,13 +92,13 @@ namespace triqs::lattice {
 
       point_t operator+(point_t const &y) const {
         EXPECTS(*_bl_ptr == *(y._bl_ptr));
-        return {_bl_ptr, _index + y._index};
+        return {_index + y._index, _bl_ptr};
       }
       point_t operator-(point_t const &y) const {
         EXPECTS(*_bl_ptr == *(y._bl_ptr));
-        return {_bl_ptr, _index - y._index};
+        return {_index - y._index, _bl_ptr};
       }
-      point_t operator-() const { return {_bl_ptr, -_index}; }
+      point_t operator-() const { return {-_index, _bl_ptr}; }
 
       friend std::ostream &operator<<(std::ostream &out, point_t const &x) { return out << (r_t)x; }
     };

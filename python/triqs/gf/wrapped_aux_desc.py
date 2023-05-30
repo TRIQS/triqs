@@ -48,10 +48,10 @@ def all_calls():
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>']
 
     for M in ['cyclat']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>'] # R =0
-        yield M,["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>'] # R =2
+        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =0
+        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =2
         for R in [3,4]:
-            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>']
+            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
 
     for M1 in ['brzone', 'cyclat']:
       k_x = {'brzone' : 'std::array<double, 3>', 'cyclat' : 'std::array<long,3>'}[M1]

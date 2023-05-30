@@ -31,10 +31,10 @@ class test_brillouin_zone(unittest.TestCase):
     def test_mesh_construction(self):
 
         # Helper function
-        def run(units, per_mat):
+        def run(units, dims):
             bl     = BravaisLattice(units)
             bz     = BrillouinZone(bl)
-            k_mesh = MeshBrZone(bz, per_mat)
+            k_mesh = MeshBrZone(bz, dims)
 
             k1, k2, k3 = bz.units
             assert array_equal(k_mesh.closest_index(k1), [0,0,0])
@@ -44,22 +44,20 @@ class test_brillouin_zone(unittest.TestCase):
 
         # ---- square lattice : 16 x 16 x 1
         units = array([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]])
-        per_mat = array([[16, 0, 0],[0, 16, 0],[0, 0, 1]])
-        run(units, per_mat)
+        dims = [16, 16, 1]
+        run(units, dims)
 
         # ---- triangular lattice : 6 x 6 x 1
         units = array([[1.,0.,0.],[0.5,sqrt(3)/2.,0.],[0.,0.,1.]])
-        per_mat = array([[6, 0, 0],[0, 6, 0],[0, 0, 1]])
-        run(units, per_mat)
+        dims = [6, 6, 1]
+        run(units, dims)
 
-        # ---- random ONB and per_mat
+        # ---- random ONB and dims
         random.seed(seed=12345)
         from scipy.stats import ortho_group
         units = ortho_group.rvs(3) # Random orthonormal 3x3 matrix
-        per_mat = diag(random.randint(1, 10, size=(3,)))
-        while linalg.det(per_mat) == 0:
-            per_mat = diag(random.randint(1, 10, size=(3,)))
-        run(units, per_mat)
+        dims = random.randint(1, 10, size=(3,))
+        run(units, dims)
 
     def test_interpolate(self):
 
@@ -72,15 +70,15 @@ class test_brillouin_zone(unittest.TestCase):
         bz=BrillouinZone(bl)
 
         n_k = 40
-        per_mat = array([[n_k, 0, 0],[0, n_k, 0],[0, 0, 1]])
-        k_mesh  = MeshBrZone(bz, per_mat)
+        dims = [n_k, n_k, 1]
+        k_mesh  = MeshBrZone(bz, dims)
 
         U = linalg.inv(bz.units)
         in_rec_basis = lambda k: dot(k.value, U)
 
         n_k_fine = 5 * n_k
-        per_mat = array([[n_k_fine, 0, 0],[0, n_k_fine, 0], [0, 0, 1]])
-        k_fine_mesh  = MeshBrZone(bz, per_mat)
+        dims = [n_k_fine, n_k_fine, 1]
+        k_fine_mesh  = MeshBrZone(bz, dims)
 
         # ----- Interpolate Smooth Function with given derivative -----
 

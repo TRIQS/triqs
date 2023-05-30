@@ -129,10 +129,7 @@ class TBLattice(object):
             The mesh on the Brillouin zone
 
         """
-        if isinstance(n_k, int):
-            return MeshBrZone(self.bz, n_k)
-        else:
-            return MeshBrZone(self.bz, numpy.diag(n_k))
+        return MeshBrZone(self.bz, n_k)
 
     def get_rmesh(self, n_r):
         """Return a mesh on the Bravais lattice with a given periodicity
@@ -148,10 +145,7 @@ class TBLattice(object):
             The cyclic lattice mesh
 
         """
-        if isinstance(n_r, int):
-            return MeshCycLat(self.bl, n_r)
-        else:
-            return MeshCycLat(self.bl, numpy.diag(n_r))
+        return MeshCycLat(self.bl, n_r)
 
     # ---- Expose BravaisLattice API ----
 

@@ -27,9 +27,9 @@ class MeshValueGenerator:
 
 class MeshPoint :
 
-    def __init__(self, idx, data_index, mesh_hash, value = None, weight = None):
+    def __init__(self, index, data_index, mesh_hash, value = None, weight = None):
         """ None : a mesh point just to use in the G[...] """
-        self.idx = idx
+        self.index = index
         self.data_index = data_index
         self.mesh_hash = mesh_hash
         self.value = value
@@ -49,6 +49,9 @@ class MeshPoint :
 
     def __rsub__(self, x):
         return self._get_val(x) - self.value
+
+    def __neg__(self):
+        return - self.value
 
     def __mul__(self, x):
         return self.value * self._get_val(x)
@@ -78,7 +81,7 @@ class MeshPoint :
         return complex(self.value)
 
     def __str__(self):
-        return "mesh_point(idx = %s, data_index = %s, value = %s)"%(self.idx, self.data_index, self.value)
+        return "mesh_point(index = %s, data_index = %s, value = %s)"%(self.index, self.data_index, self.value)
 
     @property
     def real(self):

@@ -31,8 +31,8 @@ cell = [
 bl = BravaisLattice(cell)
 bz = BrillouinZone(bl)
 
-periodization_matrix = 32 * np.eye(3, dtype=int)
-bzmesh = MeshBrZone(bz, periodization_matrix)
+dims = [32, 32, 32]
+bzmesh = MeshBrZone(bz, dims)
 
 bzmesh_ref = copy.deepcopy(bzmesh) # BREAKS
 

@@ -17,8 +17,8 @@
 
 import numpy as np
 
-from triqs.lattice import BrillouinZone, BravaisLattice
-from triqs.gf import MeshBrZone, MeshCycLat
+from triqs.lattice import BrillouinZone, BravaisLattice, LatticePoint
+from triqs.gf import MeshBrZone, MeshCycLat, Gf
 
 import unittest
 
@@ -26,25 +26,31 @@ class test_cyclic_lattice(unittest.TestCase):
 
     def test_mesh_iteration(self):
         
-        units = np.eye(3)
-        per_mat = np.diag([8, 1, 1])
-        
-        bl = BravaisLattice(units)
+        rmesh = MeshCycLat(lattice=BravaisLattice(), dims=[8, 1, 1])
+        for r in rmesh:
+            self.assertTrue(isinstance(r + r, LatticePoint))
+            self.assertTrue(isinstance(r - r, LatticePoint))
+            self.assertTrue(isinstance(-r, LatticePoint))
+            self.assertTrue(isinstance(-r + r, LatticePoint))
 
-        rm = MeshCycLat(bl, per_mat)
-        print(rm)
+            np.testing.assert_array_almost_equal((r + r).index, 2*np.array(r.index))
+            np.testing.assert_array_almost_equal((r - r).index, 0*np.array(r.index))
+            np.testing.assert_array_almost_equal((-r + r).index, 0*np.array(r.index))
 
-        for r in rm:
-            print(r)
+            np.testing.assert_array_almost_equal(r.value, 1.0 * r)
+            np.testing.assert_array_almost_equal(r + 2*r, 3*r.value)
 
-        bz = BrillouinZone(bl)
+    def test_gf_access_eval(self):
+        rmesh = MeshCycLat(lattice=BravaisLattice(), dims=[8, 1, 1])
 
-        km = MeshBrZone(bz, per_mat)
-        print(km)
-        
-        for k in km:
-            print(k)
+        g = Gf(mesh=rmesh, target_shape=[1,1])
 
+        for r in rmesh: g[r] = sum(np.exp(-1j*r.value))
+
+        for r in rmesh:
+            self.assertEqual(g[r], g(r))
+            self.assertEqual(g[r], g(r.index))
+            self.assertEqual(g[r], g(r.value))
 
 if __name__ == '__main__':
     unittest.main()

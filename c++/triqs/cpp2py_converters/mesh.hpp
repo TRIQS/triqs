@@ -46,29 +46,29 @@ namespace cpp2py {
   // -----------------------------------
 
   template <> struct py_converter<triqs::mesh::statistic_enum> {
-   static PyObject * c2py(triqs::mesh::statistic_enum x) {
+    static PyObject *c2py(triqs::mesh::statistic_enum x) {
       if (x == triqs::mesh::Fermion) return PyUnicode_FromString("Fermion");
-     return PyUnicode_FromString("Boson"); // last case separate to avoid no return warning of compiler
-   }
-   static triqs::mesh::statistic_enum py2c(PyObject * ob){
-     std::string s = PyUnicode_AsUTF8(ob);
+      return PyUnicode_FromString("Boson"); // last case separate to avoid no return warning of compiler
+    }
+    static triqs::mesh::statistic_enum py2c(PyObject *ob) {
+      std::string s = PyUnicode_AsUTF8(ob);
       if (s == "Fermion") return triqs::mesh::Fermion;
-     return triqs::mesh::Boson;
-   }
-   static bool is_convertible(PyObject *ob, bool raise_exception) {
-     if (!PyUnicode_Check(ob)) {
-       if (raise_exception) PyErr_SetString(PyExc_ValueError, "Convertion of C++ enum statistic_enum : the object is not a string");
-       return false;
-     }
-     std::string s = PyUnicode_AsUTF8(ob);
+      return triqs::mesh::Boson;
+    }
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      if (!PyUnicode_Check(ob)) {
+        if (raise_exception) PyErr_SetString(PyExc_ValueError, "Convertion of C++ enum statistic_enum : the object is not a string");
+        return false;
+      }
+      std::string s = PyUnicode_AsUTF8(ob);
       if (s == "Fermion") return true;
       if (s == "Boson") return true;
-     if (raise_exception) {
-      auto err = "Convertion of C++ enum statistic_enum : \nThe string \"" + s +"\" is not in [Fermion,Boson]";
-      PyErr_SetString(PyExc_ValueError, err.c_str());
-     }
-     return false;
-   }
+      if (raise_exception) {
+        auto err = "Convertion of C++ enum statistic_enum : \nThe string \"" + s + "\" is not in [Fermion,Boson]";
+        PyErr_SetString(PyExc_ValueError, err.c_str());
+      }
+      return false;
+    }
   };
 
   // -----------------------------------
@@ -112,8 +112,60 @@ namespace cpp2py {
       pyref n         = x.attr("n");
       pyref beta      = x.attr("beta");
       pyref statistic = x.attr("statistic");
-      return c_type{convert_from_python<long>(n), convert_from_python<double>(beta),
-                    convert_from_python<triqs::mesh::statistic_enum>(statistic)};
+      return c_type{convert_from_python<long>(n), convert_from_python<double>(beta), convert_from_python<triqs::mesh::statistic_enum>(statistic)};
+    }
+  };
+
+  // -----------------------------------
+  //   bravais_lattice::point_t
+  // -----------------------------------
+
+  template <> struct py_converter<triqs::lattice::bravais_lattice::point_t> {
+
+    using c_type = triqs::lattice::bravais_lattice::point_t;
+
+    static PyObject *c2py(c_type const &x) {
+      static pyref cls = pyref::get_class("triqs.lattice", "LatticePoint", true);
+      if (cls.is_null()) return NULL;
+
+      pyref kw = PyDict_New();
+
+      pyref index = convert_to_python(x.index());
+      if (index.is_null()) return NULL;
+      pyref lattice = convert_to_python(x.lattice());
+      if (lattice.is_null()) return NULL;
+      PyDict_SetItemString(kw, "index", index);
+      PyDict_SetItemString(kw, "lattice", lattice);
+
+      pyref empty_tuple = PyTuple_New(0);
+      return PyObject_Call(cls, empty_tuple, kw);
+    }
+
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      static pyref cls = pyref::get_class("triqs.lattice", "LatticePoint", true);
+      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
+      return true;
+    }
+
+    // ----------------------------------------------
+
+    using lattice_py_type = struct {
+      PyObject_HEAD;
+      triqs::lattice::bravais_lattice *_c;
+    };
+
+    static c_type py2c(PyObject *ob) {
+
+      pyref x             = borrowed(ob);
+      pyref index         = x.attr("index");
+      pyref lattice       = x.attr("lattice");
+      auto *lattice_c_ptr = reinterpret_cast<lattice_py_type *>(static_cast<PyObject *>(lattice))->_c;
+      if (lattice_c_ptr == NULL) {
+        std::cerr << "Severe internal error : lattice_ptr is null in py2c\n";
+        std::terminate();
+      }
+
+      return c_type{convert_from_python<std::array<long, 3>>(index), lattice_c_ptr};
     }
   };
 
@@ -176,15 +228,15 @@ namespace cpp2py {
       if (mesh_hash.is_null()) return NULL;
 
       if constexpr (requires { p.value(); }) {
-      pyref val = convert_to_python(p.value());
-      if (val.is_null()) return NULL;
+        pyref val = convert_to_python(p.value());
+        if (val.is_null()) return NULL;
 
-      if constexpr (requires { p.weight(); }) {
-        pyref weight = convert_to_python(p.weight());
-        if (weight.is_null()) return NULL;
-        return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val, weight), NULL);
-      }
-      return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val), NULL);
+        if constexpr (requires { p.weight(); }) {
+          pyref weight = convert_to_python(p.weight());
+          if (weight.is_null()) return NULL;
+          return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val, weight), NULL);
+        }
+        return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash, val), NULL);
       }
 
       return PyObject_Call(cls, pyref::make_tuple(index, data_index, mesh_hash), NULL);
