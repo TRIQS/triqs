@@ -3,7 +3,7 @@
 #include <iomanip>
 
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 nda::clef::placeholder<0> iw_;
 
 int main() {

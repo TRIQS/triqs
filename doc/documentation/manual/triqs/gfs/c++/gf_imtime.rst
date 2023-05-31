@@ -72,7 +72,7 @@ Data storage
 
   * `data_t`: 3d array (C ordered) of complex<double>.
 
-  * g.data()(i, range(), range()) is the value of g for the i-th point of the mesh.
+  * g.data()(i, range::all, range::all) is the value of g for the i-th point of the mesh.
 
 
 TO DO: complex OR DOUBLE: FIX and document !!

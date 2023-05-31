@@ -1,8 +1,9 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 using nda::clef::placeholder;
+
 int main() {
   double beta = 1, tmin = 0, tmax = 1.0;
   int n_re_time = 100, n_im_time = 100;
@@ -12,8 +13,8 @@ int main() {
   using g_t_tau_t = gf<prod<retime, imtime>, tensor_valued<3>>;
 
   // a scalar valued function
-  auto m1 = gf_mesh<retime>{tmin, tmax, n_re_time};
-  auto m2 = gf_mesh<imtime>{beta, Fermion, n_im_time};
+  auto m1 = mesh::retime{tmin, tmax, n_re_time};
+  auto m2 = mesh::imtime{beta, Fermion, n_im_time};
   auto g  = g_t_tau_s{{m1, m2}};
 
   // a more compact notation

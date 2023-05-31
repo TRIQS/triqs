@@ -1,7 +1,8 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
+
 int main() {
 
   // Set the parameters
@@ -10,12 +11,12 @@ int main() {
   int n_tau = 6 * n_iw + 1;
 
   // Construct the meshes
-  auto iw_mesh  = gf_mesh<imfreq>{beta, Fermion, n_iw};
+  auto iw_mesh  = mesh::imfreq{beta, Fermion, n_iw};
   auto tau_mesh = make_adjoint_mesh(iw_mesh);
 
   // Construct the Green functions
-  auto gw = gf<imfreq, scalar_valued>{iw_mesh, {}};
-  auto gt = gf<imtime, scalar_valued>{tau_mesh, {}};
+  auto gw = gf<imfreq, scalar_valued>{iw_mesh};
+  auto gt = gf<imtime, scalar_valued>{tau_mesh};
 
   // Initialization
   nda::clef::placeholder<0> om_;

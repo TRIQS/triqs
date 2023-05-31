@@ -2,14 +2,14 @@
 #include <triqs/mesh.hpp>
 
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 
 int main() {
 
   nda::clef::placeholder<0> iw_;
 
   double beta  = 10;
-  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, 100};
+  auto iw_mesh = mesh::imfreq{beta, Fermion, 100};
 
   auto G = gf<imfreq, scalar_valued>{iw_mesh, make_shape()};
   G(iw_) << 1.0 / iw_ + 2.0 / iw_ / iw_ + 3.0 / iw_ / iw_ / iw_;

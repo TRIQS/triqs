@@ -2,7 +2,7 @@
 #include <triqs/mesh.hpp>
 #include <nda/clef.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 using namespace nda::clef;
 
 int main() {

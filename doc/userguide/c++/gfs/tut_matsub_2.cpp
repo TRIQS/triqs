@@ -22,6 +22,6 @@ int main() {
 
   // An equivalent way to initialize
   g2() = 0.0;
-  for (auto const &[w, nu] : g2.mesh()) g2[w, nu] = 1 / (w + nu - 4);
+  for (auto [w, nu] : g2.mesh()) g2[w, nu] = 1 / (w + nu - 4);
   std::cout << g2(0, 0) << std::endl;
 }

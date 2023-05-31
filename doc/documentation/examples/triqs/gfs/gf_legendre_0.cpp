@@ -1,7 +1,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 
 int main(){
    // We want a 2x2 matrix valued function on this mesh...

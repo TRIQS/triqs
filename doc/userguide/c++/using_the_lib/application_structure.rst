@@ -37,10 +37,7 @@ Source structure
 
       **SRC_DIR**/doc/reference/contents.rst
 
-
-          in particular, contains::
-
-          .. automodule:: application_a.module_a1
+          should contain a line '.. automodule:: application_a.module_a1'
 
       **SRC_DIR**/test: :red:`where you put your tests`
 

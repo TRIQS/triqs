@@ -32,7 +32,7 @@ additional functionality for the operator [].
 (1) Use the linear index of the mesh
 -----------------------------------------
 
-Each mesh_t has an associated index_t (e.g. the Matsubara index (long) for gf_mesh<imfreq>)
+Each mesh_t has an associated index_t (e.g. the Matsubara index (long) for mesh::imfreq)
 that can be used to access the data of the Green function.
 Please refer to the respective mesh documentation page for the index_t and meaning.
 
@@ -46,7 +46,7 @@ These mesh points are naturally acquired when looping over a mesh
 
 .. code::
 
-        for( auto const & iw : g_iw.mesh() )
+        for (auto iw : g_iw.mesh())
           g_iw[iw] = 1.0 / iw;
 
 Note however that this will not set a proper singularity of the Green function.

@@ -7,14 +7,14 @@
 .. _gf_mesh_imfreq:
 
 
-gf_mesh<imfreq>
+mesh::imfreq
 =================
 
 **Synopsis**:
 
 .. code-block:: c
 
-      class gf_mesh<imfreq>;
+      class mesh::imfreq;
 
 Matsubara frequency mesh
 
@@ -23,10 +23,10 @@ Matsubara frequency mesh
  The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions :math:`G(\tau)`).
 
 .. figure:: matsubara_freq_mesh.png
-   :alt:  Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
+   :alt:  Pictorial representation of ``mesh::imfreq({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
    :align: center
 
-   Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
+   Pictorial representation of ``mesh::imfreq({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
 
 
 
@@ -57,53 +57,53 @@ Member functions
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
 | Member function                                                | Comment                                                                                  |
 +================================================================+==========================================================================================+
-| :ref:`constructor <gf_mesh<imfreq>_constructor>`               | constructor                                                                              |
+| :ref:`constructor <mesh::imfreq_constructor>`                  | constructor                                                                              |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`domain <gf_mesh<imfreq>_domain>`                         | The corresponding domain                                                                 |
+| :ref:`domain <mesh::imfreq_domain>`                            | The corresponding domain                                                                 |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`size <gf_mesh<imfreq>_size>`                             | Size (linear) of the mesh of the window                                                  |
+| :ref:`size <mesh::imfreq_size>`                                | Size (linear) of the mesh of the window                                                  |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`full_size <gf_mesh<imfreq>_full_size>`                   | Size (linear) of the mesh of the window                                                  |
+| :ref:`full_size <mesh::imfreq_full_size>`                      | Size (linear) of the mesh of the window                                                  |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`index_to_point <gf_mesh<imfreq>_index_to_point>`         | From an index of a point in the mesh, returns the corresponding point in the domain      |
+| :ref:`index_to_point <mesh::imfreq_index_to_point>`            | From an index of a point in the mesh, returns the corresponding point in the domain      |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`index_to_linear <gf_mesh<imfreq>_index_to_linear>`       | Flatten the index in the positive linear index for memory storage (almost trivial here). |
+| :ref:`index_to_linear <mesh::imfreq_index_to_linear>`          | Flatten the index in the positive linear index for memory storage (almost trivial here). |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`linear_to_index <gf_mesh<imfreq>_linear_to_index>`       | Reverse of index_to_linear                                                               |
+| :ref:`linear_to_index <mesh::imfreq_linear_to_index>`          | Reverse of index_to_linear                                                               |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`first_index <gf_mesh<imfreq>_first_index>`               | first Matsubara index                                                                    |
+| :ref:`first_index <mesh::imfreq_first_index>`                  | first Matsubara index                                                                    |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`last_index <gf_mesh<imfreq>_last_index>`                 | last Matsubara index                                                                     |
+| :ref:`last_index <mesh::imfreq_last_index>`                    | last Matsubara index                                                                     |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`first_index_window <gf_mesh<imfreq>_first_index_window>` | first Matsubara index of the window                                                      |
+| :ref:`first_index_window <mesh::imfreq_first_index_window>`    | first Matsubara index of the window                                                      |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`last_index_window <gf_mesh<imfreq>_last_index_window>`   | last Matsubara index of the window                                                       |
+| :ref:`last_index_window <mesh::imfreq_last_index_window>`      | last Matsubara index of the window                                                       |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`positive_only <gf_mesh<imfreq>_positive_only>`           | Is the mesh only for positive omega_n (G(tau) real))                                     |
+| :ref:`positive_only <mesh::imfreq_positive_only>`              | Is the mesh only for positive omega_n (G(tau) real))                                     |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`operator[] <gf_mesh<imfreq>_operator[]>`                 | Accessing a point of the mesh from its index                                             |
+| :ref:`operator[] <mesh::imfreq_operator[]>`                    | Accessing a point of the mesh from its index                                             |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| :ref:`is_within_boundary <gf_mesh<imfreq>_is_within_boundary>` | Is the point in mesh ?                                                                   |
+| :ref:`is_within_boundary <mesh::imfreq_is_within_boundary>`    | Is the point in mesh ?                                                                   |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
 
 .. toctree::
 
    :hidden:
 
-   gf_mesh<imfreq>/constructor
-   gf_mesh<imfreq>/domain
-   gf_mesh<imfreq>/size
-   gf_mesh<imfreq>/full_size
-   gf_mesh<imfreq>/index_to_point
-   gf_mesh<imfreq>/index_to_linear
-   gf_mesh<imfreq>/linear_to_index
-   gf_mesh<imfreq>/first_index
-   gf_mesh<imfreq>/last_index
-   gf_mesh<imfreq>/first_index_window
-   gf_mesh<imfreq>/last_index_window
-   gf_mesh<imfreq>/positive_only
-   gf_mesh<imfreq>/operator[]
-   gf_mesh<imfreq>/is_within_boundary
+   mesh::imfreq/constructor
+   mesh::imfreq/domain
+   mesh::imfreq/size
+   mesh::imfreq/full_size
+   mesh::imfreq/index_to_point
+   mesh::imfreq/index_to_linear
+   mesh::imfreq/linear_to_index
+   mesh::imfreq/first_index
+   mesh::imfreq/last_index
+   mesh::imfreq/first_index_window
+   mesh::imfreq/last_index_window
+   mesh::imfreq/positive_only
+   mesh::imfreq/operator[]
+   mesh::imfreq/is_within_boundary
 
 Non Member functions
 -----------------------
@@ -111,20 +111,20 @@ Non Member functions
 +--------------------------------------------------+----------------------------------------+
 | Non member function                              | Comment                                |
 +==================================================+========================================+
-| :ref:`mpi_scatter <gf_mesh<imfreq>_mpi_scatter>` | Scatter a mesh over the communicator c |
+| :ref:`mpi_scatter <mesh::imfreq_mpi_scatter>`    | Scatter a mesh over the communicator c |
 +--------------------------------------------------+----------------------------------------+
-| :ref:`mpi_gather <gf_mesh<imfreq>_mpi_gather>`   | Opposite of scatter                    |
+| :ref:`mpi_gather <mesh::imfreq_mpi_gather>`      | Opposite of scatter                    |
 +--------------------------------------------------+----------------------------------------+
-| :ref:`h5_write <gf_mesh<imfreq>_h5_write>`       | Write into HDF5                        |
+| :ref:`h5_write <mesh::imfreq_h5_write>`          | Write into HDF5                        |
 +--------------------------------------------------+----------------------------------------+
-| :ref:`h5_read <gf_mesh<imfreq>_h5_read>`         | Read from HDF5                         |
+| :ref:`h5_read <mesh::imfreq_h5_read>`            | Read from HDF5                         |
 +--------------------------------------------------+----------------------------------------+
 
 .. toctree::
 
    :hidden:
 
-   gf_mesh<imfreq>/mpi_scatter
-   gf_mesh<imfreq>/mpi_gather
-   gf_mesh<imfreq>/h5_write
-   gf_mesh<imfreq>/h5_read
+   mesh::imfreq/mpi_scatter
+   mesh::imfreq/mpi_gather
+   mesh::imfreq/h5_write
+   mesh::imfreq/h5_read

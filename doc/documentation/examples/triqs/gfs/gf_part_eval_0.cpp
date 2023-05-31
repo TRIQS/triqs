@@ -1,7 +1,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 using nda::clef::placeholder;
 int main() {
   double beta = 1, tmin = 0, tmax = 1.0;
@@ -17,7 +17,7 @@ int main() {
   auto g_sliced = g[3, _]; // 3 is the index of the point
 
   // or if we loop over the first component of the mesh of g
-  for (auto const &w : std::get<0>(g.mesh())) {
+  for (auto w : std::get<0>(g.mesh())) {
     std::cout << g[w, _] << std::endl; // or do anything with it ...
   }
 }

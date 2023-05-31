@@ -7,14 +7,14 @@
 .. _gf_mesh_imtime:
 
 
-gf_mesh<imtime>
+mesh::imtime
 =================
 
 **Synopsis**:
 
 .. code-block:: c
 
-      class gf_mesh<imtime>;
+      class mesh::imtime;
 
 Imaginary-time mesh
 
@@ -28,10 +28,10 @@ Imaginary-time mesh
  where :math:`N` is the size of the mesh.
 
 .. figure:: matsubara_imtime.png
-   :alt:  Pictorial representation of ``gf_mesh<imtime>{beta, Fermion/Boson, 4}``.
+   :alt:  Pictorial representation of ``mesh::imtime{beta, Fermion/Boson, 4}``.
    :align: center
 
-   Pictorial representation of ``gf_mesh<imtime>{beta, Fermion/Boson, 4}``.
+   Pictorial representation of ``mesh::imtime{beta, Fermion/Boson, 4}``.
 
 
 
@@ -50,17 +50,17 @@ Member functions
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 | Member function                                                        | Comment                                                                |
 +========================================================================+========================================================================+
-| :ref:`constructor <gf_mesh<imtime>_constructor>`                       |                                                                        |
+| :ref:`constructor <mesh::imtime_constructor>`                          |                                                                        |
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
-| :ref:`get_interpolation_data <gf_mesh<imtime>_get_interpolation_data>` | redefine the interpolation to handle the anti-periodicity of fermions. |
+| :ref:`get_interpolation_data <mesh::imtime_get_interpolation_data>`    | redefine the interpolation to handle the anti-periodicity of fermions. |
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
-| :ref:`evaluate <gf_mesh<imtime>_evaluate>`                             | evaluation                                                             |
+| :ref:`evaluate <mesh::imtime_evaluate>`                                | evaluation                                                             |
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 
 .. toctree::
 
    :hidden:
 
-   gf_mesh<imtime>/constructor
-   gf_mesh<imtime>/get_interpolation_data
-   gf_mesh<imtime>/evaluate
+   mesh::imtime/constructor
+   mesh::imtime/get_interpolation_data
+   mesh::imtime/evaluate

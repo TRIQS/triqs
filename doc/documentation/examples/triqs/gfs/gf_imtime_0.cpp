@@ -1,7 +1,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 int main() {
   double beta = 10, a = 1;
   int n_times = 1000;
@@ -12,7 +12,7 @@ int main() {
   auto g1 = gf<imtime, matrix_valued>{{beta, Fermion, n_times}, {1, 1}};
 
   // or a more verbose/explicit form ...
-  auto g2 = gf<imtime>{gf_mesh<imtime>{beta, Fermion, n_times}, make_shape(1, 1)};
+  auto g2 = gf<imtime>{{beta, Fermion, n_times}, make_shape(1, 1)};
 
   nda::clef::placeholder<0> tau_;
   g1(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));

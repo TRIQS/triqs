@@ -3,7 +3,7 @@
 #include <triqs/atom_diag/gf.hpp>
 
 using namespace triqs::gfs;
-using namespace triqs::mesh;
+using namespace triqs;
 using namespace triqs::operators;
 using namespace triqs::atom_diag;
 
@@ -29,10 +29,10 @@ int main(int argc, const char *argv[]) {
   // Direct computation of atomic Green's functions in
   // diferent representations
 
-  int n_tau        = 200;
-  size_t n_iw         = 100;
-  unsigned int n_l = 20;
-  int n_w          = 200;
+  long n_tau = 200;
+  long n_iw  = 100;
+  long n_l   = 20;
+  long n_w   = 200;
 
   // Imaginary time
   auto G_tau = atomic_g_tau(ad, beta, gf_struct, n_tau);
