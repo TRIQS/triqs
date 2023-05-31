@@ -66,7 +66,7 @@ namespace triqs {
       template <typename R> r_t lattice_to_real_coordinates(R const &x) const { return bl_.lattice_to_real_coordinates(x); }
 
       /// Number of orbitals / bands, i.e. size of the matrix t(k)
-      int n_orbitals() const { return bl_.n_orbitals(); }
+      long n_orbitals() const { return bl_.n_orbitals(); }
 
       // calls F(R, t(R)) for all R
       template <typename F> friend void foreach (tight_binding const &tb, F f) {

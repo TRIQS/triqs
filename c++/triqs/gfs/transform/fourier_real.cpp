@@ -71,7 +71,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
-    auto gw = gf_vec_t<mesh::refreq>{w_mesh, {int(n_others)}};
+    auto gw = gf_vec_t<mesh::refreq>{w_mesh, {n_others}};
     for (auto const &w : w_mesh)
       gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.index(), _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
 
@@ -123,7 +123,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
-    auto gt           = gf_vec_t<retime>{t_mesh, {int(n_others)}};
+    auto gt           = gf_vec_t<retime>{t_mesh, {n_others}};
     const double corr = 1.0 / (t_mesh.delta() * L);
     for (auto const &t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
 

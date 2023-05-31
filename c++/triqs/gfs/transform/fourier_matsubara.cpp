@@ -173,7 +173,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
-    auto gw = gf_vec_t<imfreq>{iw_mesh, {int(n_others)}};
+    auto gw = gf_vec_t<imfreq>{iw_mesh, {n_others}};
 
     // Correction term to account for proper Trapezoidal integration
     // FIXME Avoid copy, by doing proper in-place operation
@@ -254,7 +254,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
-    auto gt = gf_vec_t<imtime>{tau_mesh, {int(n_others)}};
+    auto gt = gf_vec_t<imtime>{tau_mesh, {n_others}};
 
     if (is_fermion)
       for (auto const &t : tau_mesh)

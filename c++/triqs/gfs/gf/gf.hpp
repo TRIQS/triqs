@@ -220,11 +220,11 @@ namespace triqs::gfs {
     }
 
     private:
-    static auto make_data_shape(mesh_t const &m, target_shape_t const &shap) {
+    static auto make_data_shape(mesh_t const &m, target_shape_t const &shape) {
       if constexpr (mesh::is_product<mesh_t>)
-        return stdutil::join(m.size_of_components(), shap);
+        return stdutil::join(m.size_of_components(), shape);
       else
-        return stdutil::front_append(shap, m.size());
+        return stdutil::front_append(shape, m.size());
     }
 
     public:
