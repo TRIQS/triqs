@@ -79,6 +79,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
           "OMP_NUM_THREADS=2",
+          "LAPACK_ROOT=${env.BREW}/opt/openblas",
           "PYTHONPATH=$installDir/lib/python3.9/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
         deleteDir()
