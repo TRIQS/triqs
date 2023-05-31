@@ -248,7 +248,7 @@ namespace triqs::mesh {
     }
 
     template <typename V> [[nodiscard]] index_t to_index(closest_mesh_point_t<V> const &cmp) const {
-      static_assert(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>);
+      static_assert(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>);
       return closest_index(cmp.value);
     }
 
