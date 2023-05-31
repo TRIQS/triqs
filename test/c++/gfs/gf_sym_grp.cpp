@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet
+// Authors: Dominik Kiese
 
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs/gf_sym_grp.hpp>
@@ -24,13 +24,13 @@
 TEST(GfSymGrp, ScalarNoProduct) {
   // some dummy gf
   mesh::imfreq m{1, Fermion, 10};
-  auto G           = gf<imfreq, scalar_valued>{m};
-  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
-  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
-  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+  auto G             = gf<imfreq, scalar_valued>{m};
+  using mesh_index_t = decltype(G)::mesh_t::index_t;
+  using sym_t        = std::tuple<mesh_index_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_index_t const &)>;
 
   // some dummy symmetries
-  auto s = [](mesh_idx_t const &x) { return sym_t{-x - 1, {}}; };
+  auto s = [](mesh_index_t const &x) { return sym_t{-x - 1, {}}; };
 
   // build the symmetry group and test number of classes
   std::vector<sym_func_t> sym_list = {s};
@@ -41,7 +41,7 @@ TEST(GfSymGrp, ScalarNoProduct) {
   // init second gf from symmetry group and test if it matches input gf
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
 
-  auto init_func = [&G](mesh_idx_t const &x) { return G[x]; };
+  auto init_func = [&G](mesh_index_t const &x) { return G[x]; };
   grp.init(G, init_func);
 
   auto Gp = gf<imfreq, scalar_valued>{m};
@@ -49,26 +49,26 @@ TEST(GfSymGrp, ScalarNoProduct) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
 TEST(GfSymGrp, ScalarProduct) {
   // some dummy gf
   mesh::imfreq m{1, Fermion, 10};
-  auto G           = gf<prod<imfreq, imfreq>, scalar_valued>{m * m};
-  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
-  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
-  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+  auto G             = gf<prod<imfreq, imfreq>, scalar_valued>{m * m};
+  using mesh_index_t = decltype(G)::mesh_t::index_t;
+  using sym_t        = std::tuple<mesh_index_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_index_t const &)>;
 
   // some dummy symmetries
-  auto s1 = [](mesh_idx_t const &x) {
+  auto s1 = [](mesh_index_t const &x) {
     auto [n_w1, n_w2] = x;
     return sym_t{std::tuple{-n_w1 - 1, n_w2}, {}};
   };
 
-  auto s2 = [](mesh_idx_t const &x) {
+  auto s2 = [](mesh_index_t const &x) {
     auto [n_w1, n_w2] = x;
     return sym_t{std::tuple{n_w1, -n_w2 - 1}, {}};
   };
@@ -82,7 +82,7 @@ TEST(GfSymGrp, ScalarProduct) {
   // init second gf from symmetry group and test if it matches input gf
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
 
-  auto init_func = [&G](mesh_idx_t const &x) { return G[x]; };
+  auto init_func = [&G](mesh_index_t const &x) { return G[x]; };
   grp.init(G, init_func);
 
   auto Gp = gf<prod<imfreq, imfreq>, scalar_valued>{m * m};
@@ -90,24 +90,24 @@ TEST(GfSymGrp, ScalarProduct) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
 TEST(GfSymGrp, TensorNoProduct) {
   // some dummy gf
   mesh::imfreq m{1, Fermion, 10};
-  auto G             = gf<imfreq, matrix_valued>{m, {3, 3}};
-  using mesh_idx_t   = decltype(G)::mesh_t::idx_t;
-  using target_idx_t = std::array<long, 2>;
-  using sym_t        = std::tuple<mesh_idx_t, target_idx_t, nda::operation>;
-  using sym_func_t   = std::function<sym_t(mesh_idx_t const &, target_idx_t const &)>;
+  auto G               = gf<imfreq, matrix_valued>{m, {3, 3}};
+  using mesh_index_t   = decltype(G)::mesh_t::index_t;
+  using target_index_t = std::array<long, 2>;
+  using sym_t          = std::tuple<mesh_index_t, target_index_t, nda::operation>;
+  using sym_func_t     = std::function<sym_t(mesh_index_t const &, target_index_t const &)>;
 
   // some dummy symmetries
-  auto s1 = [](mesh_idx_t const &x, target_idx_t const &y) { return sym_t{-x - 1, y, {}}; };
+  auto s1 = [](mesh_index_t const &x, target_index_t const &y) { return sym_t{-x - 1, y, {}}; };
 
-  auto s2 = [](mesh_idx_t const &x, target_idx_t const &y) {
+  auto s2 = [](mesh_index_t const &x, target_index_t const &y) {
     auto [y1, y2] = y;
     return sym_t{x, std::array{y2, y1}, {}};
   };
@@ -121,7 +121,7 @@ TEST(GfSymGrp, TensorNoProduct) {
   // init second gf from symmetry group and test if it matches input gf
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
 
-  auto init_func = [&G](mesh_idx_t const &x, target_idx_t const &y) { return std::apply(G[x], y); };
+  auto init_func = [&G](mesh_index_t const &x, target_index_t const &y) { return std::apply(G[x], y); };
   grp.init(G, init_func);
 
   auto Gp = gf<imfreq, matrix_valued>{m, {3, 3}};
@@ -129,32 +129,32 @@ TEST(GfSymGrp, TensorNoProduct) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
 TEST(GfSymGrp, TensorProduct) {
   // some dummy gf
   mesh::imfreq m{1, Fermion, 10};
-  auto G             = gf<prod<imfreq, imfreq>, matrix_valued>{m * m, {3, 3}};
-  using mesh_idx_t   = decltype(G)::mesh_t::idx_t;
-  using target_idx_t = std::array<long, 2>;
-  using sym_t        = std::tuple<mesh_idx_t, target_idx_t, nda::operation>;
-  using sym_func_t   = std::function<sym_t(mesh_idx_t const &, target_idx_t const &)>;
+  auto G               = gf<prod<imfreq, imfreq>, matrix_valued>{m * m, {3, 3}};
+  using mesh_index_t   = decltype(G)::mesh_t::index_t;
+  using target_index_t = std::array<long, 2>;
+  using sym_t          = std::tuple<mesh_index_t, target_index_t, nda::operation>;
+  using sym_func_t     = std::function<sym_t(mesh_index_t const &, target_index_t const &)>;
 
   // some dummy symmetries
-  auto s1 = [](mesh_idx_t const &x, target_idx_t const &y) {
+  auto s1 = [](mesh_index_t const &x, target_index_t const &y) {
     auto [n_w1, n_w2] = x;
     return sym_t{std::tuple{-n_w1 - 1, n_w2}, y, {}};
   };
 
-  auto s2 = [](mesh_idx_t const &x, target_idx_t const &y) {
+  auto s2 = [](mesh_index_t const &x, target_index_t const &y) {
     auto [n_w1, n_w2] = x;
     return sym_t{std::tuple{n_w1, -n_w2 - 1}, y, {}};
   };
 
-  auto s3 = [](mesh_idx_t const &x, target_idx_t const &y) {
+  auto s3 = [](mesh_index_t const &x, target_index_t const &y) {
     auto [y1, y2] = y;
     return sym_t{x, std::array{y2, y1}, {}};
   };
@@ -168,7 +168,7 @@ TEST(GfSymGrp, TensorProduct) {
   // init second gf from symmetry group and test if it matches input gf
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
 
-  auto init_func = [&G](mesh_idx_t const &x, target_idx_t const &y) { return std::apply(G[x], y); };
+  auto init_func = [&G](mesh_index_t const &x, target_index_t const &y) { return std::apply(G[x], y); };
   grp.init(G, init_func);
 
   auto Gp = gf<prod<imfreq, imfreq>, matrix_valued>{m * m, {3, 3}};
@@ -176,22 +176,22 @@ TEST(GfSymGrp, TensorProduct) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
 TEST(GfSymGrp, MomentumNoFrequency) {
   // some dummy gf
-  auto BZ          = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
-  auto G           = gf<brzone, scalar_valued>{{BZ, 4}};
-  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
-  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
-  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+  auto BZ            = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
+  auto G             = gf<brzone, scalar_valued>{{BZ, 4}};
+  using mesh_index_t = decltype(G)::mesh_t::index_t;
+  using sym_t        = std::tuple<mesh_index_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_index_t const &)>;
 
   // some dummy symmetries
-  auto s1 = [m = G.mesh()](mesh_idx_t const &x) { return sym_t{m.idx_modulo(-x), {}}; };
-  auto s2 = [m = G.mesh()](mesh_idx_t const &x) { return sym_t{std::array{x[1], x[0], x[2]}, {}}; };
+  auto s1 = [m = G.mesh()](mesh_index_t const &x) { return sym_t{m.index_modulo(-x), {}}; };
+  auto s2 = [m = G.mesh()](mesh_index_t const &x) { return sym_t{std::array{x[1], x[0], x[2]}, {}}; };
 
   // build the symmetry group and test number of classes
   std::vector<sym_func_t> sym_list = {s1, s2};
@@ -202,7 +202,7 @@ TEST(GfSymGrp, MomentumNoFrequency) {
   // init second gf from symmetry group and test if it matches input gf
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
 
-  auto init_func = [&G](mesh_idx_t const &x) { return G[x]; };
+  auto init_func = [&G](mesh_index_t const &x) { return G[x]; };
   grp.init(G, init_func);
 
   auto Gp = gf<brzone, scalar_valued>{{BZ, 4}};
@@ -210,37 +210,37 @@ TEST(GfSymGrp, MomentumNoFrequency) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
 TEST(GfSymGrp, MomentumFrequencyOmp) {
   // some dummy gf
   mesh::imfreq m{1, Fermion, 10};
-  auto BZ          = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
-  auto G           = gf<prod<brzone, brzone, imfreq, imfreq>, scalar_valued>{{{BZ, 4}, {BZ, 4}, m, m}};
-  using mesh_idx_t = decltype(G)::mesh_t::idx_t;
-  using sym_t      = std::tuple<mesh_idx_t, nda::operation>;
-  using sym_func_t = std::function<sym_t(mesh_idx_t const &)>;
+  auto BZ            = brillouin_zone{bravais_lattice{nda::eye<double>(2)}};
+  auto G             = gf<prod<brzone, brzone, imfreq, imfreq>, scalar_valued>{{{BZ, 4}, {BZ, 4}, m, m}};
+  using mesh_index_t = decltype(G)::mesh_t::index_t;
+  using sym_t        = std::tuple<mesh_index_t, nda::operation>;
+  using sym_func_t   = std::function<sym_t(mesh_index_t const &)>;
 
   // some dummy symmetries
-  auto s1 = [](mesh_idx_t const &x) {
+  auto s1 = [](mesh_index_t const &x) {
     auto const &[k1, k2, n_w1, n_w2] = x;
     return sym_t{std::tuple{k1, k2, -n_w1 - 1, n_w2}, {}};
   };
 
-  auto s2 = [](mesh_idx_t const &x) {
+  auto s2 = [](mesh_index_t const &x) {
     auto const &[k1, k2, n_w1, n_w2] = x;
     return sym_t{std::tuple{k1, k2, n_w1, -n_w2 - 1}, {}};
   };
 
-  auto s3 = [&m = std::get<0>(G.mesh())](mesh_idx_t const &x) {
+  auto s3 = [&m = std::get<0>(G.mesh())](mesh_index_t const &x) {
     auto const &[k1, k2, n_w1, n_w2] = x;
-    return sym_t{std::tuple{m.idx_modulo(-k1), m.idx_modulo(-k2), n_w1, n_w2}, {}};
+    return sym_t{std::tuple{m.index_modulo(-k1), m.index_modulo(-k2), n_w1, n_w2}, {}};
   };
 
-  auto s4 = [](mesh_idx_t const &x) {
+  auto s4 = [](mesh_index_t const &x) {
     auto const &[k1, k2, n_w1, n_w2] = x;
     return sym_t{std::tuple{std::array{k1[1], k1[0], k1[2]}, std::array{k2[1], k2[0], k2[2]}, n_w1, n_w2}, {}};
   };
@@ -253,7 +253,7 @@ TEST(GfSymGrp, MomentumFrequencyOmp) {
 
   // init second gf from symmetry group and test if it matches input gf (omp enabled)
   for (auto &x : G.data()) x = std::complex{nda::rand(), nda::rand()};
-  auto init_func = [&G](mesh_idx_t const &x) { return G[x]; };
+  auto init_func = [&G](mesh_index_t const &x) { return G[x]; };
   grp.init(G, init_func, true);
 
   auto Gp = gf<prod<brzone, brzone, imfreq, imfreq>, scalar_valued>{{{BZ, 4}, {BZ, 4}, m, m}};
@@ -261,8 +261,8 @@ TEST(GfSymGrp, MomentumFrequencyOmp) {
 
   EXPECT_GF_NEAR(G, Gp);
 
-  // test symmetrization 
-  auto const &[max_diff, max_mesh_idx, max_target_idx] = grp.symmetrize(G);
+  // test symmetrization
+  auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
 }
 
