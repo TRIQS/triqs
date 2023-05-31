@@ -62,7 +62,7 @@ namespace triqs::mesh {
          units_inv_(inverse(units_)),
          _mesh_hash(hash(sum(bl.units()), dims[0], dims[1], dims[2])) {}
 
-    cyclat(bravais_lattice const &bl, nda::matrix<long> const &pm) : cyclat(bl, {pm(0, 0), pm(1, 1), pm(2, 2)}) {
+    cyclat(bravais_lattice const &bl, nda::matrix<long> const &pm) : cyclat(bl, std::array{pm(0, 0), pm(1, 1), pm(2, 2)}) {
       // The index_modulo operation currently assumes a diagonal periodization matrix by treating each index element separately.
       // It needs to be generalized to use only the periodicity as specified in the periodization matrix, i.e.
       //   $$ (i, j, k) -> (i, j, k) + (n1, n2, n3) * periodization_matrix $$
