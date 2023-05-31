@@ -42,13 +42,15 @@ namespace triqs::mesh {
   *   and work on the index
   **/
   struct matsubara_freq {
-    long n                   = 0; // Matsubara Index
+    long n                   = 0;  /// The matsubara index
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
-    long index               = n;
 
     matsubara_freq() = default;
     matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+
+    /// Matsubara index accessor (consistency with imfreq::mesh_point_t interface)
+    [[nodiscard]] long index() const { return n; }
 
     using cast_t = std::complex<double>;
     operator cast_t() const { return std::complex<double>{0, std::numbers::pi * (2 * n + statistic) / beta}; }
