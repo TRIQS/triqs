@@ -4,5 +4,8 @@ mpi4py --no-binary=mpi4py
 matplotlib
 mako
 # For cthyb and tprf documentation only:
+#sphinx<6
 #nbsphinx
-#sphinx<2.1
+#sphinx-rtd-theme
+#myst-parser
+#linkify-it-py
