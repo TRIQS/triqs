@@ -40,6 +40,8 @@ class test_cyclic_lattice(unittest.TestCase):
             np.testing.assert_array_almost_equal(r.value, 1.0 * r)
             np.testing.assert_array_almost_equal(r + 2*r, 3*r.value)
 
+            self.assertEqual((r + r)[0], r[0] + r[0])
+
     def test_gf_access_eval(self):
         rmesh = MeshCycLat(lattice=BravaisLattice(), dims=[8, 1, 1])
 

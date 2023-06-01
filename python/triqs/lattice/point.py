@@ -26,9 +26,15 @@ class LatticePoint:
     def __init__(self, index, lattice):
         self.index = index
         self.lattice = lattice
+        self._value = None
+
+    @property
+    def value(self):
+        if self._value is None: self._value = self.lattice.lattice_to_real_coordinates(self.index)
+        return self._value
 
     def __array__(self):
-        return self.lattice.lattice_to_real_coordinates(self.index)
+        return self.value
 
     def __add__(self, other):
         if isinstance(other, LatticePoint):
@@ -37,6 +43,9 @@ class LatticePoint:
             return self.__add__(other.value)
         else:
             return self.__array__() + other
+
+    def __getitem__(self, key):
+        return self.value.__getitem__(key)
 
     def __neg__(self):
         return LatticePoint(list(map(neg, self.index)), self.lattice)
