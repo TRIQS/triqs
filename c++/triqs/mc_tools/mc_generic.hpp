@@ -128,7 +128,9 @@ namespace triqs::mc_tools {
 
     int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nWarming up ..." << std::endl;
-      return run(n_warmup_cycles, length_cycle, stop_callback, false, false, c);
+      auto status  = run(n_warmup_cycles, length_cycle, stop_callback, false, c);
+      timer_warmup = timer_run;
+      return status;
     }
 
     /**
@@ -179,7 +181,9 @@ namespace triqs::mc_tools {
     int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
                    mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nAccumulating ..." << std::endl;
-      return run(n_accumulation_cycles, length_cycle, stop_callback, true, true, c);
+      auto status        = run(n_accumulation_cycles, length_cycle, stop_callback, true, c);
+      timer_accumulation = timer_run;
+      return status;
     }
 
     int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
@@ -223,7 +227,6 @@ namespace triqs::mc_tools {
      *                         to and the computation stops when it returns true.
      *                         Typically used to set up the time limit, cf doc.
      * @param do_measure       Whether or not to accumulate for each measurement
-     * @param is_warmup        Whether or not the current run is a warmup.
      * @param c                The mpi communicator [optional]. If not provided use the default-constructed one.
      *
      * @return
@@ -234,13 +237,13 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, bool is_warmup,
+    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure,
             mpi::communicator c = mpi::communicator{}) {
 
       AllMoves.clear_statistics();
 
-      utility::timer timer;
-      timer.start();
+      timer_run = {};
+      timer_run.start();
       if (n_cycles == 0) return 0;
       triqs::signal_handler::start();
       done_percent = 0;
@@ -288,11 +291,11 @@ namespace triqs::mc_tools {
 
         // recompute fraction done
         done_percent = uint64_t(floor(((NC + 1) * 100.0) / n_cycles));
-        if (timer > next_info_time || done_percent == 100) {
+        if (timer_run > next_info_time || done_percent == 100) {
           report(3) << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
-                    << " ETA " << estimate_time_left(n_cycles, NC, timer) << " cycle " << NC << " of " << n_cycles << std::endl;
+                    << " ETA " << estimate_time_left(n_cycles, NC, timer_run) << " cycle " << NC << " of " << n_cycles << std::endl;
           if (do_measure) report(3) << AllMeasures.report();
-          next_info_time = 1.25 * timer + 2.0; // Increase time interval non-linearly
+          next_info_time = 1.25 * timer_run + 2.0; // Increase time interval non-linearly
         }
         finished = NC + 1 >= n_cycles;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
@@ -303,12 +306,7 @@ namespace triqs::mc_tools {
       } // end main NC loop
 
       current_cycle_number += NC;
-      timer.stop();
-      if (!is_warmup) {
-        timer_accumulation = timer;
-      } else {
-        timer_warmup = timer;
-      }
+      timer_run.stop();
 
       int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
       triqs::signal_handler::stop();
@@ -427,7 +425,7 @@ namespace triqs::mc_tools {
     std::vector<measure_aux> AllMeasuresAux;
     utility::report_stream report;
     uint64_t nmeasures, current_cycle_number = 0;
-    utility::timer timer_accumulation, timer_warmup;
+    utility::timer timer_run, timer_accumulation, timer_warmup;
     std::function<void()> after_cycle_duty;
     MCSignType sign        = 1;
     uint64_t done_percent  = 0;
