@@ -340,14 +340,14 @@ TEST(Gf, DLR_imtime_fit) {
   auto gtau = gf<imtime, scalar_valued>{{beta, Fermion, n_tau}};
   for (auto tau : gtau.mesh()) gtau[tau] = onefermion(tau, omega, eps);
 
-  auto gcoef = make_gf_dlr(gtau, w_max, eps);
+  auto gcoef = fit_gf_dlr(gtau, w_max, eps);
   auto gtau2 = make_gf_imtime(gcoef, n_tau);
   EXPECT_GF_NEAR(gtau, gtau2);
 
   for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
     auto gtau_noise = gtau;
     gtau_noise.data() += sigma * (nda::rand(gtau.mesh().size()) - 0.5);
-    auto gcoef_noise = make_gf_dlr(gtau_noise, w_max, eps);
+    auto gcoef_noise = fit_gf_dlr(gtau_noise, w_max, eps);
     auto gtau3 = make_gf_imtime(gcoef_noise, n_tau);
     EXPECT_GF_NEAR(gtau, gtau3, sigma);
   }

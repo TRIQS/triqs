@@ -166,7 +166,7 @@ class test_dlr_mesh(unittest.TestCase):
         for tau in gtau.mesh:
             gtau[tau] = onefermion(tau, omega, eps)
 
-        gc = make_gf_dlr(gtau, w_max, eps)
+        gc = fit_gf_dlr(gtau, w_max, eps)
         gt = make_gf_dlr_imtime(gc)
 
         gt2 = gt.copy()
