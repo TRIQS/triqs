@@ -106,7 +106,7 @@ class TBSuperLattice(TBLattice):
         #Orbital_Names = [ '%s%s'%(n, s) for n in tb_lattice.OrbitalNames for s in range(Ncluster_sites)]
         site_index_list, orbital_index_list = list(range(1, Ncluster_sites+1)), tb_lattice.OrbitalNames
         if len(orbital_index_list)==1:
-            Orbital_Names= [ s for s in site_index_list ]
+            Orbital_Names= [ str(s) for s in site_index_list ]
         elif len(site_index_list)==1 and len(orbital_index_list)>1:
             Orbital_Names= [ o for o in orbital_index_list]
         elif len(site_index_list)>1 and len(orbital_index_list)>1:
