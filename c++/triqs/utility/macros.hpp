@@ -16,6 +16,7 @@
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
+
 #pragma once
 
 #include <triqs/utility/first_include.hpp>
