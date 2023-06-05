@@ -1,6 +1,6 @@
 // Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
-// Copyright (c) 2018-2020 Simons Foundation
+// Copyright (c) 2018-2023 Simons Foundation
 // Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
+// Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #include "../../gfs.hpp"
 #include <triqs/utility/legendre.hpp>

@@ -1,6 +1,7 @@
-// Copyright (c) 2015-2016 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
-// Copyright (c) 2015-2016 Centre national de la recherche scientifique (CNRS)
-// Copyright (c) 2020 Simons Foundation
+// Copyright (c) 2015-2017 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+// Copyright (c) 2015-2017 Centre national de la recherche scientifique (CNRS)
+// Copyright (c) 2019-2022 Simons Foundation
+// Copyright (c) 2017 Hugo Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +16,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell, Hugo Strand
+// Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::clef;

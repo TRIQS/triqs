@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2018 Centre national de la recherche scientifique (CNRS)
-// Copyright (c) 2018 Simons Foundation
+// Copyright (c) 2018-2021 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet
+// Authors: Olivier Parcollet, Nils Wentzell
 
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/det_manip/det_manip.hpp>

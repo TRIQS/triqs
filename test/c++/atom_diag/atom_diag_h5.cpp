@@ -1,5 +1,5 @@
-// Copyright (c) 2017 Igor Krivenko
 // Copyright (c) 2020 Simons Foundation
+// Copyright (c) 2017 Igor Krivenko
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Igor Krivenko, Nils Wentzell
+// Authors: Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
 #include <triqs/test_tools/gfs.hpp>
 

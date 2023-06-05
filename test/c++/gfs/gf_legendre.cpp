@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Simons Foundation
+// Copyright (c) 2022-2023 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

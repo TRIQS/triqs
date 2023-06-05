@@ -1,5 +1,6 @@
 // Copyright (c) 2017 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2017 Centre national de la recherche scientifique (CNRS)
+// Copyright (c) 2021-2023 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet
+// Authors: Olivier Parcollet, Nils Wentzell
 
 #define TRIQS_DEBUG
 #include <triqs/test_tools/gfs.hpp>

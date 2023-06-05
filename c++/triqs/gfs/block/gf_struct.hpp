@@ -13,9 +13,9 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Nils Wentzell
-#pragma once
+// Authors: Michel Ferrero, Nils Wentzell
 
+#pragma once
 #include <h5/h5.hpp>
 
 namespace triqs::gfs {
