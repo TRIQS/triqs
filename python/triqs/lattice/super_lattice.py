@@ -1,6 +1,6 @@
 # Copyright (c) 2013 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2013 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2020 Simons Foundation
+# Copyright (c) 2020-2023 Simons Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
+# Authors: Michel Ferrero, Jonathan Karp, Olivier Parcollet, Nils Wentzell
 
 
 import numpy

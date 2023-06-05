@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Hugo U. R. Strand, Nils Wentzell
+# Authors: Philipp D, Hugo U. R. Strand, Nils Wentzell
 
 
 """ Construct a random histogram, broadcast it and compare

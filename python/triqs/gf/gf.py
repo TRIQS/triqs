@@ -1,6 +1,6 @@
 # Copyright (c) 2017-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2017-2018 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2018-2020 Simons Foundation
+# Copyright (c) 2018-2023 Simons Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Manuel, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
+# Authors: Michel Ferrero, Olivier Gingras, Jonathan Karp, Manuel, Olivier Parcollet, Markus Richter, Hugo U. R. Strand, Nils Wentzell
 
 import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3

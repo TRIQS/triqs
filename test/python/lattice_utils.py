@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Simons Foundation
+# Copyright (c) 2021-2022 Simons Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Nils Wentzell
+# Authors: Alexander Hampel, Nils Wentzell
 
 import unittest
 from triqs.gf import GfImFreq, MeshImFreq, BlockGf
