@@ -26,7 +26,8 @@ def check_for_mpi():
     '''
     Simple function checking if triqs has been called with 
     mpirun or without, by checking for typical MPI environment
-    variables
+    variables. To enforce the MPI init TRIQS_FORCE_MPI_INIT
+    can be set manually as env variable.
 
     Returns: 
     -------
@@ -42,6 +43,9 @@ def check_for_mpi():
     elif os.environ.get('PMI_RANK'):
         is_mpi = True
     elif os.environ.get('CRAY_MPICH_VERSION'):
+        is_mpi = True
+    # to force the MPI init manually
+    elif os.environ.get('TRIQS_FORCE_MPI_INIT'):
         is_mpi = True
     else:
         print('Warning: could not identify MPI environment!')
