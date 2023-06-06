@@ -13,7 +13,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet, Nils Wentzell
+// Authors: Hugo U. R. Strand, Olivier Parcollet, Nils Wentzell
 
 #pragma once
 #include "utils.hpp"
@@ -26,7 +26,9 @@ namespace triqs::mesh {
   template <char OP, typename L> struct k_expr_unary {
     static_assert(OP == '-', "Internal error");
     L l;
-    uint64_t mesh_hash = l.mesh_hash();
+    
+    /// The Hash for the associated mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const { return l.mesh_hash(); };
 
     auto value() const { return -l.value(); }
     auto index() const { return -l.index(); }
