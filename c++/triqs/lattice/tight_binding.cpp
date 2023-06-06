@@ -67,7 +67,7 @@ namespace triqs {
       array<double, 2> eval(norb, grid.size());
       if (norb == 1)
         for (; grid; ++grid) {
-          double ee                = real(TB.fourier((*grid)(range(0, ndim)))(0, 0));
+          double ee                = real(TB.fourier((*grid)(range(ndim)))(0, 0));
           eval(0, grid.index())    = ee;
           evec(0, 0, grid.index()) = 1;
         }
@@ -76,8 +76,8 @@ namespace triqs {
           // cerr<<" index = "<<grid.index()<<endl;
           array_view<double, 1> eval_sl   = eval(range::all, grid.index());
           array_view<dcomplex, 2> evec_sl = evec(range::all, range::all, grid.index());
-          std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TB.fourier((*grid)(range(0, ndim))));
-          // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
+          std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TB.fourier((*grid)(range(ndim))));
+          // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(ndim)) << endl;
         }
 
       // define the epsilon mesh, etc.
@@ -207,7 +207,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       array<double, 2> eval(norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, i) = linalg::eigenvalues(TB.fourier(k(range(0, ndim)))()); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, i) = linalg::eigenvalues(TB.fourier(k(range(ndim)))()); }
       return eval;
     }
 
@@ -217,7 +217,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       array<dcomplex, 3> eval(norb, norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, range::all, i) = TB.fourier(k(range(0, ndim)))(); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, range::all, i) = TB.fourier(k(range(ndim)))(); }
       return eval;
     }
 
@@ -228,7 +228,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       grid_generator grid(ndim, n_pts);
       array<double, 2> eval(norb, grid.size());
-      for (; grid; ++grid) { eval(range::all, grid.index()) = linalg::eigenvalues(TB.fourier((*grid)(range(0, ndim)))()); }
+      for (; grid; ++grid) { eval(range::all, grid.index()) = linalg::eigenvalues(TB.fourier((*grid)(range(ndim)))()); }
       return eval;
     }
 

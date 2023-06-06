@@ -119,7 +119,7 @@ namespace triqs::gfs {
 
       int n_known_moments                         = std::min<size_t>(known_moments.shape()[0], 4);
       tail                                        = make_zero_tail(gt, 4);
-      tail(range(0, n_known_moments), range::all) = known_moments(range(0, n_known_moments), range::all);
+      tail(range(n_known_moments), range::all)    = known_moments(range(n_known_moments), range::all);
     }
 
     double beta = gt.mesh().beta();
