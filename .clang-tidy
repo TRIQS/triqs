@@ -1,2 +1,2 @@
 Checks: '-*,modernize-*,cppcoreguidelines-*,bugprone-*,-modernize-use-trailing-return-type,-cppcoreguidelines-special-member-functions,-cppcoreguidelines-macro-usage,-cppcoreguidelines-no-malloc,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-avoid-magic-numbers, -cppcoreguidelines-non-private-member-variables-in-classes, -bugprone-easily-swappable-parameters'
-HeaderFilterRegex: 'nda|-f77'
+HeaderFilterRegex: 'triqs'
