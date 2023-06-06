@@ -137,15 +137,13 @@ namespace triqs {
       };
 
       struct work_data_typek {
-        long k;
         std::vector<x_type> x;
         std::vector<y_type> y;
         std::vector<long> i, j, ireal, jreal;
         // MB = A^(-1)*B,
         // MC = C*A^(-1)
         matrix_type MB, MC, B, C, ksi;
-        void resize(long N, long k_) {
-          k = k_;
+        void resize(long N, long k) {
           if (k < 2) return;
           x.resize(k);
           y.resize(k);
@@ -159,7 +157,7 @@ namespace triqs {
           C.resize(k, N);
           ksi.resize(k, k);
         }
-        value_type det_ksi() const {
+        value_type det_ksi(long k) const {
           if (k == 2) {
             return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
           } else if (k == 3) {
@@ -649,7 +647,7 @@ namespace triqs {
 
         // treat empty matrix separately
         if (N == 0) {
-          newdet  = wk.det_ksi();
+          newdet  = wk.det_ksi(k);
           newsign = 1;
           return value_type(newdet);
         }
@@ -667,7 +665,7 @@ namespace triqs {
         blas::gemm(1.0, mat_inv(RN, RN), wk.B(RN, Rk), 0.0, wk.MB(RN, Rk));
         //ksi -= wk.C (Rk, RN) * wk.MB(RN, Rk); // OPTIMIZE BELOW
         blas::gemm(-1.0, wk.C(Rk, RN), wk.MB(RN, Rk), 1.0, wk.ksi(Rk, Rk));
-        auto ksi     = wk.det_ksi();
+        auto ksi     = wk.det_ksi(k);
         newdet       = det * ksi;
         long idx_sum = 0;
         for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
@@ -813,7 +811,6 @@ namespace triqs {
        */
       value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
 
-        // first make sure i0<i1 and j0<j1
         std::sort(i.begin(), i.end());
         std::sort(j.begin(), j.end());
 
@@ -842,13 +839,13 @@ namespace triqs {
         for (long l1 = 0; l1 < k; ++l1) {
           for (long l2 = 0; l2 < k; ++l2) { wk.ksi(l1, l2) = mat_inv(wk.jreal[l1], wk.ireal[l2]); }
         }
-        auto ksi     = wk.det_ksi();
-        newdet       = det * ksi;
+        auto det_ksi = wk.det_ksi(k);
+        newdet       = det * det_ksi;
         long idx_sum = 0;
         for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
         newsign = (idx_sum % 2 == 0 ? sign : -sign);
 
-        return ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
+        return det_ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
       }
       value_type try_remove2(long i0, long i1, long j0, long j1) { return try_remove_k({i0, i1}, {j0, j1}); }
       //------------------------------------------------------------------------------------------
@@ -861,8 +858,8 @@ namespace triqs {
 
         std::vector<long> ireal = wk.ireal;
         std::vector<long> jreal = wk.jreal;
-        std::sort(ireal.begin(), ireal.end());
-        std::sort(jreal.begin(), jreal.end());
+        std::sort(ireal.begin(), ireal.begin() + k);
+        std::sort(jreal.begin(), jreal.begin() + k);
 
         // Move rows and cols to be removed to the end, starting from the right.
         // Adjust the x_values and y_values vector accordingly and
