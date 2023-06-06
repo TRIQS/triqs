@@ -56,7 +56,7 @@ namespace triqs::gfs {
   template <typename G, typename M>
   concept MemoryGf = mesh::Mesh<M> and requires(G g) {
     { g.data() } -> nda::MemoryArray;
-    { auto(g.mesh()) } -> std::same_as<M>;
+    requires std::same_as<std::decay_t<decltype(g.mesh())>, M>;
   };
 
   template <typename G> using get_target_t = typename std::decay_t<G>::target_t;
