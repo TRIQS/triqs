@@ -41,7 +41,7 @@ namespace triqs::mesh {
   *   and work on the index
   **/
   struct matsubara_freq {
-    long n                   = 0;  /// The matsubara index
+    long n                   = 0; /// The matsubara index
     double beta              = 0.0;
     statistic_enum statistic = Fermion;
 
@@ -68,7 +68,7 @@ namespace triqs::mesh {
   inline matsubara_freq operator-(matsubara_freq const &mp) { return {-(mp.n + (mp.statistic == Fermion ? 1 : 0)), mp.beta, mp.statistic}; }
 
   inline std::complex<double> operator/(matsubara_freq const &x, matsubara_freq const &y) {
-     return std::complex<double>{x} * std::complex<double>{y};
+    return std::complex<double>{x} * std::complex<double>{y};
   }
 
   inline std::complex<double> operator*(matsubara_freq const &x, matsubara_freq const &y) {

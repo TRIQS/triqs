@@ -12,9 +12,8 @@ int main() {
 
   auto [ave, err] = mean_and_err(data);
 
-  std::cout << "Average: " << ave << std::endl; 
+  std::cout << "Average: " << ave << std::endl;
   // Output: (1.0 + 4.0 * world.size()) / 2.0
-  std::cout << "Standard Error: " << err << std::endl; 
+  std::cout << "Standard Error: " << err << std::endl;
   // Output: sqrt((world.size() + 1.) / 12.)
-} 
-
+}

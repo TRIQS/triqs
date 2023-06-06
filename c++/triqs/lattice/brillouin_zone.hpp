@@ -36,10 +36,10 @@ namespace triqs {
         K_reciprocal_inv = K_reciprocal;
       }
 
-      brillouin_zone( brillouin_zone &&) = default;
-      brillouin_zone( brillouin_zone const&) = default;
-      brillouin_zone& operator =( brillouin_zone const&) = default;
-      brillouin_zone& operator =( brillouin_zone &&) = default;
+      brillouin_zone(brillouin_zone &&)                 = default;
+      brillouin_zone(brillouin_zone const &)            = default;
+      brillouin_zone &operator=(brillouin_zone const &) = default;
+      brillouin_zone &operator=(brillouin_zone &&)      = default;
 
       /**
        * Construct a Brillouin Zone from a Bravais Lattice
@@ -52,7 +52,7 @@ namespace triqs {
       [[nodiscard]] bool contains(k_t const &) const { return true; }
 
       /// Access to the underlying bravais lattice
-      bravais_lattice const & lattice() const { return lattice_; }
+      bravais_lattice const &lattice() const { return lattice_; }
 
       /// Allow cast to bravais lattice
       explicit operator bravais_lattice() const { return lattice_; }
@@ -61,25 +61,27 @@ namespace triqs {
       int ndim() const { return lattice_.ndim(); }
 
       /// Matrix containing reciprocal basis vectors as rows
-      matrix_t const & units() const { return K_reciprocal; }
+      matrix_t const &units() const { return K_reciprocal; }
 
       /// Matrix containing reciprocal basis vectors as rows
-      matrix_t const & reciprocal_matrix() const { return K_reciprocal; }
+      matrix_t const &reciprocal_matrix() const { return K_reciprocal; }
 
       /// Inverse of the reciprocal matrix
-      matrix_t const & reciprocal_matrix_inv() const { return K_reciprocal_inv; }
+      matrix_t const &reciprocal_matrix_inv() const { return K_reciprocal_inv; }
 
       /// Transform from lattice to real coordinates
-      template <typename K> k_t lattice_to_real_coordinates(K const &k) const {return transpose(K_reciprocal)(range::all, range(ndim())) * nda::basic_array_view{k}; }
+      template <typename K> k_t lattice_to_real_coordinates(K const &k) const {
+        return transpose(K_reciprocal)(range::all, range(ndim())) * nda::basic_array_view{k};
+      }
 
       /// Transform from real to lattice coordinates
-      template <typename K> k_t real_to_lattice_coordinates(K const &k) const { return transpose(K_reciprocal_inv)(range::all, range(ndim())) * nda::basic_array_view{k}; }
+      template <typename K> k_t real_to_lattice_coordinates(K const &k) const {
+        return transpose(K_reciprocal_inv)(range::all, range(ndim())) * nda::basic_array_view{k};
+      }
 
       // ------------------- Comparison -------------------
 
-      bool operator==(brillouin_zone const &bz) const {
-        return reciprocal_matrix() == bz.reciprocal_matrix() && lattice() == bz.lattice();
-      }
+      bool operator==(brillouin_zone const &bz) const { return reciprocal_matrix() == bz.reciprocal_matrix() && lattice() == bz.lattice(); }
 
       bool operator!=(brillouin_zone const &bz) const { return !(operator==(bz)); }
 
@@ -103,8 +105,8 @@ namespace triqs {
 
       private:
       bravais_lattice lattice_;
-      matrix_t K_reciprocal = matrix_t::zeros(3,3);
-      matrix_t K_reciprocal_inv = matrix_t::zeros(3,3);
+      matrix_t K_reciprocal     = matrix_t::zeros(3, 3);
+      matrix_t K_reciprocal_inv = matrix_t::zeros(3, 3);
     };
   } // namespace lattice
 } // namespace triqs

@@ -75,26 +75,24 @@ namespace triqs {
       }
 
       //
-      measure(measure const &rhs) = delete;
-      measure(measure &&rhs)      = default;
+      measure(measure const &rhs)            = delete;
+      measure(measure &&rhs)                 = default;
       measure &operator=(measure const &rhs) = delete;
-      measure &operator=(measure &&rhs) = default;
+      measure &operator=(measure &&rhs)      = default;
 
       void accumulate(MCSignType signe) {
         assert(impl_);
         count_++;
-        if(enable_timer) Timer.start();
+        if (enable_timer) Timer.start();
         accumulate_(signe);
-        if(enable_timer) Timer.stop();
+        if (enable_timer) Timer.stop();
       }
       void collect_results(mpi::communicator const &c) {
-        if(enable_timer) Timer.start();
+        if (enable_timer) Timer.start();
         collect_results_(c);
-        if(enable_timer) Timer.stop();
+        if (enable_timer) Timer.stop();
       }
-      std::string report() const {
-        return report_();
-      }
+      std::string report() const { return report_(); }
 
       uint64_t count() const { return count_; }
       double duration() const { return double(Timer); }
@@ -118,11 +116,11 @@ namespace triqs {
       public:
       using measure_itr_t = typename m_map_t::iterator;
 
-      measure_set()                       = default;
-      measure_set(measure_set const &rhs) = delete;
-      measure_set(measure_set &&rhs)      = default;
+      measure_set()                                  = default;
+      measure_set(measure_set const &rhs)            = delete;
+      measure_set(measure_set &&rhs)                 = default;
       measure_set &operator=(measure_set const &rhs) = delete;
-      measure_set &operator=(measure_set &&rhs) = default;
+      measure_set &operator=(measure_set &&rhs)      = default;
 
       /**
     * Register the Measure M with a name

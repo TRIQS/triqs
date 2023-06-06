@@ -80,18 +80,26 @@ namespace triqs::gfs {
 
     block_gf_view() = default;
 
-    block_gf_view(block_gf<Mesh, Target, Arity> const &g) requires(IsConst) : block_gf_view(impl_tag{}, g) {}
-    
-    block_gf_view(block_gf<Mesh, Target, Arity> &g) requires(!IsConst) : block_gf_view(impl_tag{}, g) {}
+    block_gf_view(block_gf<Mesh, Target, Arity> const &g)
+      requires(IsConst)
+       : block_gf_view(impl_tag{}, g) {}
+
+    block_gf_view(block_gf<Mesh, Target, Arity> &g)
+      requires(!IsConst)
+       : block_gf_view(impl_tag{}, g) {}
 
     block_gf_view(block_gf<Mesh, Target, Arity> &&g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
 
-    block_gf_view(block_gf_view<Mesh, Target, Arity, !IsConst> const &g) requires(IsConst) : block_gf_view(impl_tag{}, g) {}
+    block_gf_view(block_gf_view<Mesh, Target, Arity, !IsConst> const &g)
+      requires(IsConst)
+       : block_gf_view(impl_tag{}, g) {}
 
     /// ---------------  Operator = --------------------
 
     /// Copy the data, without resizing the view.
-    block_gf_view &operator=(block_gf_view const &rhs) requires(not IsConst) {
+    block_gf_view &operator=(block_gf_view const &rhs)
+      requires(not IsConst)
+    {
       _assign_impl(rhs);
       return *this;
     }
@@ -99,7 +107,10 @@ namespace triqs::gfs {
     /**
      *  RHS can be anything with .block_names() and [n] -> gf or a scalar
      */
-    template <typename RHS> block_gf_view &operator=(RHS const &rhs) requires(not IsConst) {
+    template <typename RHS>
+    block_gf_view &operator=(RHS const &rhs)
+      requires(not IsConst)
+    {
       if constexpr (not nda::is_scalar_v<RHS>) {
         if (!(size() == rhs.size())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
         _assign_impl(rhs);
@@ -119,7 +130,10 @@ namespace triqs::gfs {
     *
     * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
     */
-    template <typename L, typename G> block_gf_view &operator=(lazy_transform_t<L, G> const &rhs) requires(not IsConst) {
+    template <typename L, typename G>
+    block_gf_view &operator=(lazy_transform_t<L, G> const &rhs)
+      requires(not IsConst)
+    {
       if constexpr (Arity == 1) {
         for (int i = 0; i < rhs.value.size(); ++i) (*this)[i] = rhs.lambda(rhs.value[i]);
       } else {
@@ -134,7 +148,9 @@ namespace triqs::gfs {
     * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
     * @param l The lazy object returned by reduce
     */
-    block_gf_view &operator=(mpi::lazy<mpi::tag::reduce, const_view_type> l) requires(not IsConst) {
+    block_gf_view &operator=(mpi::lazy<mpi::tag::reduce, const_view_type> l)
+      requires(not IsConst)
+    {
       if (l.rhs.size() != this->size())
         TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
       _block_names = l.rhs.block_names();
@@ -157,8 +173,16 @@ namespace triqs::gfs {
       _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
       name         = x.name;
     }
-    void rebind(block_gf_view<Mesh, Target, Arity, !IsConst> const &X) noexcept requires(IsConst) { rebind(block_gf_view{X}); }
-    void rebind(block_gf<Mesh, Target, Arity> const &X) noexcept requires(IsConst) { rebind(block_gf_view{X}); }
+    void rebind(block_gf_view<Mesh, Target, Arity, !IsConst> const &X) noexcept
+      requires(IsConst)
+    {
+      rebind(block_gf_view{X});
+    }
+    void rebind(block_gf<Mesh, Target, Arity> const &X) noexcept
+      requires(IsConst)
+    {
+      rebind(block_gf_view{X});
+    }
     void rebind(block_gf<Mesh, Target, Arity> &X) noexcept { rebind(block_gf_view{X}); }
 
     public:

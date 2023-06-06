@@ -36,7 +36,7 @@ struct A {
 
   /// Warning : the lambda MUST return a decltype(auto). By default, it would be auto, and loose the ref !!
   template <typename T> decltype(auto) operator[](T &&x) {
-    return triqs::utility::make_lazy_bracket<3>([this](auto &&... y) -> decltype(auto) { return this->_call(y...); }, x);
+    return triqs::utility::make_lazy_bracket<3>([this](auto &&...y) -> decltype(auto) { return this->_call(y...); }, x);
   }
 };
 
@@ -56,7 +56,7 @@ struct B {
   int _call(int i) { return 2 * i; }
 
   template <typename T> decltype(auto) operator[](T &&x) {
-    return triqs::utility::make_lazy_bracket<1>([this](auto &&... y) -> decltype(auto) { return this->_call(y...); }, x);
+    return triqs::utility::make_lazy_bracket<1>([this](auto &&...y) -> decltype(auto) { return this->_call(y...); }, x);
   }
 };
 

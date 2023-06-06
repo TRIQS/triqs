@@ -17,7 +17,6 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
-
 #include <cmath>
 #include <random>
 
@@ -33,9 +32,7 @@ using namespace nda;
 int seed = 1567;
 mpi::communicator world;
 
-void expect_near(double x, double y) {
-  EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y))));
-}
+void expect_near(double x, double y) { EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y)))); }
 
 // ----- TESTS ------------------
 

@@ -17,7 +17,6 @@
 //
 // Authors: Philipp D, Olivier Parcollet, Nils Wentzell, Thomas Ayral
 
-
 #pragma once
 
 #include <triqs/stat/accumulator.hpp>
@@ -26,9 +25,7 @@
 #include <triqs/stat/make_real.hpp>
 #include <triqs/stat/mean_error.hpp>
 
-#ifdef C2PY_INCLUDED 
+#ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram>  = true;
+template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram> = true;
 #endif
-
-

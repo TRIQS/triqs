@@ -30,15 +30,14 @@ namespace triqs::gfs {
 
   template <Mesh M> struct gf_evaluator {
 
-    template <typename G, typename... XS> requires(is_gf_v<G>)
-    auto operator()(G const &g, XS &&... xs) const {
-      auto l = [&g](auto &&...ys) -> decltype(auto) { return g.operator[](ys...); };
+    template <typename G, typename... XS>
+      requires(is_gf_v<G>)
+    auto operator()(G const &g, XS &&...xs) const {
+      auto l    = [&g](auto &&...ys) -> decltype(auto) { return g.operator[](ys...); };
       using r_t = std::decay_t<decltype(make_regular(evaluate(g.mesh(), l, std::forward<XS>(xs)...)))>;
       if constexpr (nda::Array<r_t> or nda::is_scalar_v<r_t>) {
         // Return zero if any mesh evaluates to zero
-        if (detail::eval_to_zero(g.mesh(), xs...)) {
-          return r_t{nda::zeros<typename G::target_t::scalar_t>(g.target_shape())};
-	}
+        if (detail::eval_to_zero(g.mesh(), xs...)) { return r_t{nda::zeros<typename G::target_t::scalar_t>(g.target_shape())}; }
       }
       return make_regular(evaluate(g.mesh(), l, std::forward<XS>(xs)...));
     }
@@ -50,8 +49,7 @@ namespace triqs::gfs {
 
   template <> struct gf_evaluator<mesh::imfreq> {
 
-    template <typename G>
-    auto operator()(G const &g, matsubara_freq const &f) const -> typename G::target_t::value_t {
+    template <typename G> auto operator()(G const &g, matsubara_freq const &f) const -> typename G::target_t::value_t {
 
       if (g.mesh().is_index_valid(f.n)) return g[f.n];
       if (g.mesh().positive_only()) {
@@ -62,7 +60,7 @@ namespace triqs::gfs {
 
       auto [tail, err] = fit_tail_no_normalize(g);
       dcomplex x       = std::abs(g.mesh().w_max()) / f;
-      auto res   = nda::zeros<dcomplex>(g.target_shape()); // a new array
+      auto res         = nda::zeros<dcomplex>(g.target_shape()); // a new array
 
       dcomplex z = 1.0;
       for (int n : range(tail.extent(0))) {

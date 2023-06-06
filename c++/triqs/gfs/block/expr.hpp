@@ -37,17 +37,27 @@ namespace triqs {
         int size2() const { return -1; }
         template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
         template <typename... Keys> S operator[](Keys &&...keys) const { return s; }
-        template <typename... Args> inline S operator()(Args &&... args) const { return s; }
+        template <typename... Args> inline S operator()(Args &&...args) const { return s; }
         friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
       };
 
       template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, remove_rvalue_ref_t<T>>;
 
-      template <typename A, typename B> struct same_or_void { using type = void; };
-      template <typename A> struct same_or_void<A, A> { using type = A; };
-      template <typename A> struct same_or_void<void, A> { using type = A; };
-      template <typename A> struct same_or_void<A, void> { using type = A; };
-      template <> struct same_or_void<void, void> { using type = void; };
+      template <typename A, typename B> struct same_or_void {
+        using type = void;
+      };
+      template <typename A> struct same_or_void<A, A> {
+        using type = A;
+      };
+      template <typename A> struct same_or_void<void, A> {
+        using type = A;
+      };
+      template <typename A> struct same_or_void<A, void> {
+        using type = A;
+      };
+      template <> struct same_or_void<void, void> {
+        using type = void;
+      };
 
     } // namespace details_bgfs_expr
 
@@ -79,10 +89,10 @@ namespace triqs {
           return l.block_names();
       }
 
-      template <typename... Keys> decltype(auto) operator[](Keys &&... keys) const {
+      template <typename... Keys> decltype(auto) operator[](Keys &&...keys) const {
         return utility::operation<Tag>()(l.operator[](std::forward<Keys>(keys)...), r.operator[](std::forward<Keys>(keys)...)); // Clang fix
       }
-      template <typename... Args> decltype(auto) operator()(Args &&... args) const {
+      template <typename... Args> decltype(auto) operator()(Args &&...args) const {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
       friend std::ostream &operator<<(std::ostream &sout, bgf_expr const &expr) {
@@ -103,8 +113,8 @@ namespace triqs {
       auto size() const { return l.size(); }
       auto block_names() const { return l.block_names(); }
 
-      template <typename... Keys> auto operator[](Keys &&... keys) const { return -l.operator[](std::forward<Keys>(keys)...); } // Clang fix
-      template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
+      template <typename... Keys> auto operator[](Keys &&...keys) const { return -l.operator[](std::forward<Keys>(keys)...); } // Clang fix
+      template <typename... Args> auto operator()(Args &&...args) const { return -l(std::forward<Args>(args)...); }
       friend std::ostream &operator<<(std::ostream &sout, bgf_unary_m_expr const &expr) { return sout << '-' << expr.l; }
     };
 

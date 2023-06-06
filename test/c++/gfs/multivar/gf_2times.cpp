@@ -31,8 +31,7 @@ TEST(Gf, TwoTimes) {
   double beta   = 1;
   int n_im_freq = 100;
 
-  auto G_w_wn2 =
-     gf<prod<imfreq, imfreq>>({mesh::imfreq(beta, Fermion, n_im_freq), mesh::imfreq(beta, Fermion, n_im_freq)}, {2, 2});
+  auto G_w_wn2 = gf<prod<imfreq, imfreq>>({mesh::imfreq(beta, Fermion, n_im_freq), mesh::imfreq(beta, Fermion, n_im_freq)}, {2, 2});
 
   std::cout << G_w_wn2.mesh();
 }

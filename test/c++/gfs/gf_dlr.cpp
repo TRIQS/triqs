@@ -37,11 +37,11 @@ double onefermion(double tau, double eps, double beta) { return -exp(-eps * tau)
 // Take a gf in time, go to coeffs, to freq, and back and check evals.
 TEST(Gf, G_dlr_mat) {
 
-  double beta   = 5;
-  double w_max  = 20.0;
-  double eps    = 1e-10;
-  double e0     = 1.2;
-  double tol    = 1.e-9;
+  double beta  = 5;
+  double w_max = 20.0;
+  double eps   = 1e-10;
+  double e0    = 1.2;
+  double tol   = 1.e-9;
 
   // imtime
   auto g1 = gf<dlr_imtime, matrix_valued>{{beta, Fermion, w_max, eps}, {1, 1}};
@@ -79,11 +79,11 @@ TEST(Gf, G_dlr_mat) {
 // simpler test, scalar_valued. Same as in Python.
 TEST(Gf, G_dlr_mat2) {
 
-  double beta   = 1.337;
-  double w_max  = 50.0;
-  double eps    = 1e-11;
-  double e0     = 1.42;
-  double tol    = 1.e-9;
+  double beta  = 1.337;
+  double w_max = 50.0;
+  double eps   = 1e-11;
+  double e0    = 1.42;
+  double tol   = 1.e-9;
 
   auto gw = gf<dlr_imfreq, scalar_valued>{dlr_imfreq{beta, Fermion, w_max, eps}};
   for (auto const &w : gw.mesh()) gw[w] = 1 / (w - e0);
@@ -98,12 +98,12 @@ TEST(Gf, G_dlr_mat2) {
 // Very basic properties of dlr_imtime
 
 TEST(Gf, DLR_basic) {
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  auto m_tau    = dlr_imtime{beta, Fermion, w_max, eps};
-  auto m_w_f    = dlr_imfreq{beta, Fermion, w_max, eps};
-  auto m_w_b    = dlr_imfreq{beta, Boson, w_max, eps};
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  auto m_tau   = dlr_imtime{beta, Fermion, w_max, eps};
+  auto m_w_f   = dlr_imfreq{beta, Fermion, w_max, eps};
+  auto m_w_b   = dlr_imfreq{beta, Boson, w_max, eps};
 
   EXPECT_EQ(m_tau.w_max(), w_max);
   EXPECT_EQ(m_w_f.w_max(), w_max);
@@ -122,9 +122,9 @@ TEST(Gf, DLR_basic) {
 // test cross construction of dlr meshes
 TEST(Gf, DLR_cross_construction) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   auto mc = dlr{beta, Fermion, w_max, eps};
   auto mt = dlr_imtime{beta, Fermion, w_max, eps};
@@ -164,10 +164,10 @@ TEST(Gf, DLR_cross_construction) {
 
 TEST(Gf, DLR_imtime_grid) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto mesh = dlr_imtime{beta, Fermion, w_max, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
@@ -211,10 +211,10 @@ TEST(Gf, DLR_imtime_grid) {
 // Check basic behaviour of GF. Not really useful ...
 TEST(Gf, DLR_imfreq_grid) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto mesh = dlr_imfreq{beta, Fermion, w_max, eps};
   auto G1   = gf<dlr_imfreq, scalar_valued>{mesh};
@@ -256,10 +256,10 @@ TEST(Gf, DLR_imfreq_grid) {
 // Test usage of clef
 
 TEST(Gf, DLR_clef) {
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
   gt[tau_] << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
@@ -288,9 +288,9 @@ TEST(Gf, DLR_clef) {
 
 TEST(Gf, DLR_imtime_interpolation) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   long dlr_idx = 6; // Pick one DLR frequency
 
@@ -310,10 +310,10 @@ TEST(Gf, DLR_imtime_interpolation) {
 
 TEST(Gf, DLR_imfreq_interpolation) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto gw = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, w_max, eps}};
   gw[iw_] << 1. / (iw_ - omega);
@@ -331,11 +331,11 @@ TEST(Gf, DLR_imfreq_interpolation) {
 
 TEST(Gf, DLR_imtime_fit) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
-  int n_tau     = 1001;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
+  int n_tau    = 1001;
 
   auto gtau = gf<imtime, scalar_valued>{{beta, Fermion, n_tau}};
   for (auto tau : gtau.mesh()) gtau[tau] = onefermion(tau, omega, eps);
@@ -348,7 +348,7 @@ TEST(Gf, DLR_imtime_fit) {
     auto gtau_noise = gtau;
     gtau_noise.data() += sigma * (nda::rand(gtau.mesh().size()) - 0.5);
     auto gcoef_noise = fit_gf_dlr(gtau_noise, w_max, eps);
-    auto gtau3 = make_gf_imtime(gcoef_noise, n_tau);
+    auto gtau3       = make_gf_imtime(gcoef_noise, n_tau);
     EXPECT_GF_NEAR(gtau, gtau3, sigma);
   }
 }
@@ -358,9 +358,9 @@ TEST(Gf, DLR_imtime_fit) {
 // Test some interpolation. Not really necessary
 TEST(Gf, DLR_ph_sym_interpolation) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
 
@@ -382,11 +382,11 @@ TEST(Gf, DLR_ph_sym_interpolation) {
 
 TEST(Gf, DLR_mesh_point_mismatch) {
 
-  double beta   = 2.0;
-  double beta2  = 2 * beta;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double beta2 = 2 * beta;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto gw  = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, w_max, eps}};
   auto gw2 = gf<dlr_imfreq, scalar_valued>{{beta2, Fermion, w_max, eps}};
@@ -401,9 +401,9 @@ TEST(Gf, DLR_mesh_point_mismatch) {
 //
 TEST(Gf, DLR_density) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
 
@@ -423,9 +423,9 @@ TEST(Gf, DLR_density) {
 // Same with matrix
 TEST(Gf, DLR_density_matrix) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   auto gt = gf<dlr_imtime, matrix_valued>{{beta, Fermion, w_max, eps}, {2, 2}};
 
@@ -445,10 +445,10 @@ TEST(Gf, DLR_density_matrix) {
 
 // ----------------------------------------------------------------
 TEST(Gf, DLR_h5) {
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
-  double omega  = 1.337;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
   gt[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
@@ -464,9 +464,9 @@ TEST(Gf, DLR_h5) {
 // Partial test with a more complex function. ?
 TEST(Gf, DLR_two_poles) {
 
-  double beta   = 2.0;
-  double w_max  = 5.0;
-  double eps    = 1e-10;
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
 
   double e1 = 0.0;
   double e2 = 2.0;

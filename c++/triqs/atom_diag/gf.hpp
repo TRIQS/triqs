@@ -144,8 +144,7 @@ namespace triqs {
  * @include triqs/atom_diag/gf.hpp
  */
     template <bool Complex>
-    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh,
-                                double broadening = 0);
+    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh, double broadening = 0);
 
     /// The atomic retarded Green's function, possibly with excluded states (none by default)
     /**

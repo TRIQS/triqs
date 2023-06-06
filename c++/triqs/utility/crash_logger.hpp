@@ -59,10 +59,10 @@ namespace triqs {
       public:
       ///
       crash_logger(std::string filename) : filename_(filename) {}
-      crash_logger(const crash_logger &) = delete;
-      crash_logger(crash_logger &&)      = default;
+      crash_logger(const crash_logger &)            = delete;
+      crash_logger(crash_logger &&)                 = default;
       crash_logger &operator=(const crash_logger &) = delete;
-      crash_logger &operator                        =(crash_logger &&x) {
+      crash_logger &operator=(crash_logger &&x) {
         using std::swap;
         swap(guards, x.guards);
         swap(names, x.names);

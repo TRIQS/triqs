@@ -158,7 +158,7 @@ namespace triqs {
       // Workaround needed for icc, checked with 17.0.1 20161005)
       sub_hilbert_space(sub_hilbert_space const &) = default;
       sub_hilbert_space(sub_hilbert_space &&)      = default;
-      sub_hilbert_space &operator                  =(sub_hilbert_space const &x) {
+      sub_hilbert_space &operator=(sub_hilbert_space const &x) {
         index         = x.index;
         fock_states   = x.fock_states;
         fock_to_index = x.fock_to_index;

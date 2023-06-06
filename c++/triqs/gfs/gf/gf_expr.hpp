@@ -96,7 +96,8 @@ namespace triqs {
         template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const { return l.data_shape(); }
       };
 
-      template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<std::decay_t<T>>, typename remove_rvalue_ref<T>::type>;
+      template <typename T>
+      using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<std::decay_t<T>>, typename remove_rvalue_ref<T>::type>;
 
       template <typename A, typename B> struct _or_ {
         using type = void;

@@ -61,9 +61,9 @@ struct test {
 
   test() : f(), D(f, 100) {}
 
-//#define PRINT_ALL
+  //#define PRINT_ALL
   void check() {
-    std::cerr << "---- check --- "<<std::endl;
+    std::cerr << "---- check --- " << std::endl;
 #ifndef PRINT_ALL
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
 #else
@@ -71,13 +71,13 @@ struct test {
               << D.inverse_matrix() << D.matrix() << nda::matrix<double>(inverse(D.matrix())) << std::endl;
     std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << D.determinant() << std::endl;
 #endif
-    auto diff = nda::matrix<double>( inverse(D.matrix())- D.inverse_matrix());
+    auto diff = nda::matrix<double>(inverse(D.matrix()) - D.inverse_matrix());
     //std::cerr  << diff <<std::endl;
     //std::cerr  << max_element(abs(diff)) <<std::endl;
     nda::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
     assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
-    std::cerr << "---- end check --- "<<std::endl;
+    std::cerr << "---- end check --- " << std::endl;
   }
 
   void run() {
@@ -134,32 +134,31 @@ struct test {
           }
           break;
         case 4:
-          if (D.size()==0) break;
-	  y        = RNG(10.0);
-          i0       = RNG(s);
+          if (D.size() == 0) break;
+          y  = RNG(10.0);
+          i0 = RNG(s);
           std::cerr << " try_change_col" << i0 << std::endl;
           detratio = D.try_change_col(i0, y);
           break;
         case 5:
-          if (D.size()==0) break;
-          y        = RNG(10.0);
-          i0       = RNG(s);
-          std::cerr << " try_change_row" << i0 <<std::endl;
+          if (D.size() == 0) break;
+          y  = RNG(10.0);
+          i0 = RNG(s);
+          std::cerr << " try_change_row" << i0 << std::endl;
           detratio = D.try_change_row(i0, y);
           break;
         case 6:
-          if (D.size()==0) break;
-          x        = RNG(10.0);
-          y        = RNG(10.0);
-          i0       = RNG(s);
-          j0       = RNG(s);
+          if (D.size() == 0) break;
+          x  = RNG(10.0);
+          y  = RNG(10.0);
+          i0 = RNG(s);
+          j0 = RNG(s);
 
-          std::cerr << " try_change_col_row" << i0 << "  "<< j0 << std::endl;
-         
-	  //D.try_change_col(j0,y);
-	  //D.try_change_row(i0,x);
+          std::cerr << " try_change_col_row" << i0 << "  " << j0 << std::endl;
+
+          //D.try_change_col(j0,y);
+          //D.try_change_row(i0,x);
           //D.reject_last_try();
-
 
           detratio = D.try_change_col_row(i0, j0, x, y);
           break;

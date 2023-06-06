@@ -35,8 +35,8 @@ TEST(Gf, PlaceHolder) {
 
   auto g1 = G1;
 
-  //for (auto w : g1.mesh()) {  
-    //g1[w] = G1(w);
+  //for (auto w : g1.mesh()) {
+  //g1[w] = G1(w);
   //}
 
   g1(om_) << g1(om_);

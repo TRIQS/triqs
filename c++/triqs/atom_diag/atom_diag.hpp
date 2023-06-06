@@ -180,9 +180,9 @@ namespace triqs {
 
       /// Get the dimensions of all subspaces
       std::vector<int> get_subspace_dims() const {
-	auto dims = std::vector<int>(n_subspaces());
-	for(long i: range(n_subspaces())) dims[i] = get_subspace_dim(i);
-	return dims;
+        auto dims = std::vector<int>(n_subspaces());
+        for (long i : range(n_subspaces())) dims[i] = get_subspace_dim(i);
+        return dims;
       }
 
       /// The list of Fock states for a particular subspace
@@ -332,7 +332,7 @@ namespace triqs {
       void compute_vacuum();
 
       /* Friend declarations of a template class are a bit ugly */
-      friend std::ostream &operator<<<Complex>(std::ostream &os, atom_diag const &ss);
+      friend std::ostream &operator<< <Complex>(std::ostream &os, atom_diag const &ss);
       friend void h5_write<Complex>(h5::group gr, std::string const &name, atom_diag const &);
       friend void h5_read<Complex>(h5::group gr, std::string const &name, atom_diag &);
 

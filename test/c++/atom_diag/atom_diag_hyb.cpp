@@ -43,7 +43,6 @@ h5::file out_file("atom_diag_real.h5", 'w');
 h5::file ref_file("atom_diag_real.ref.h5", 'r');
 #endif
 
-
 void print_binary(unsigned int n, int total_bits) {
 
   for (int i = 0; i < total_bits; i++) {
@@ -79,7 +78,7 @@ void print_atom_diag(atom_diag_real const &ad) {
     auto E_Udag = make_regular(dagger(sp.unitary_matrix));
     for (int i = 0; i < sp.eigenvalues.size(); i++) {
       for (int j = 0; j < sp.eigenvalues.size(); j++) E_Udag(i, j) *= sp.eigenvalues[i] + ad.get_gs_energy();
-    }   
+    }
     auto H = sp.unitary_matrix * E_Udag;
 
     std::printf("\nblock: %d \n   ", N++);
@@ -88,37 +87,34 @@ void print_atom_diag(atom_diag_real const &ad) {
     for (int i = 0; i < ad.get_subspace_dim(s); i++) {
       printf("  ");
       print_binary(fss[i], ad.get_fops().data().size());
-    }   
+    }
     std::printf("\n");
-    print_matrix(H,1.0);
-  }   
+    print_matrix(H, 1.0);
+  }
   std::printf("\n");
 }
-
 
 // Prepare funcdamental operator set
 fundamental_operator_set make_fops2() {
   fundamental_operator_set fops;
-  for (int o : range(2)) fops.insert("dn", o); 
-  for (int o : range(2)) fops.insert("up", o); 
+  for (int o : range(2)) fops.insert("dn", o);
+  for (int o : range(2)) fops.insert("up", o);
   return fops;
 }
 
-
 // Hamiltonian: 2 orbital Hubbard + hopping between orbitals 0 and 1
-template <typename O>
-O make_hamiltonian2(typename O::scalar_t mu, typename O::scalar_t U, typename O::scalar_t t) {
+template <typename O> O make_hamiltonian2(typename O::scalar_t mu, typename O::scalar_t U, typename O::scalar_t t) {
   auto orbs = range(2);
   O h;
   // Interaction terms
   for (int o : orbs) h += -mu * (n("up", o) + n("dn", o));
   for (int o : orbs) h += U * n("up", o) * n("dn", o);
-  
+
   // Hopping terms
   h += t * c_dag("up", 0) * c("up", 1) + dagger(t * c_dag("up", 0) * c("up", 1));
   h += t * c_dag("dn", 0) * c("dn", 1) + dagger(t * c_dag("dn", 0) * c("dn", 1));
 
-  return h; 
+  return h;
 }
 
 TEST(atom_diag_real, Autopartition2) {
@@ -128,63 +124,53 @@ TEST(atom_diag_real, Autopartition2) {
   double U  = 4.0;
   double t  = 1.0;
   auto h    = make_hamiltonian2<many_body_operator_real>(mu, U, t);
-  
+
   many_body_operator_real hyb_effecive;
   hyb_effecive += t * c_dag("up", 0) * c("dn", 0) + dagger(t * c_dag("dn", 0) * c("up", 0));
   hyb_effecive += t * c_dag("up", 1) * c("dn", 1) + dagger(t * c_dag("dn", 1) * c("up", 1));
   //auto orbs = range(1);
   //for (int o : orbs) zero += 1.0 * (n("up", o) + n("dn", o));
-  
+
   std::printf("-----------------\n ad without hyb\n-----------------\n");
   auto ad = atom_diag_real(h, fops);
   print_atom_diag(ad);
-  
-  EXPECT_EQ(ad.n_subspaces(),9);
-  
-  std::vector<int> ref_dims = {4,2,2,1,1,1,2,2,1}; 
-  
-  for (int s = 0; s < 9; s++) {
-    EXPECT_EQ(ref_dims[s],ad.get_subspace_dim(s));
-  } 
-  EXPECT_EQ(16, ad.get_full_hilbert_space_dim());  
 
-  std::vector<std::vector<int>> ref_states {{5,6,9,10},{1,2},{4,8},{3},
-                                          {12},{0},{7,11},{13,14},{15}};
+  EXPECT_EQ(ad.n_subspaces(), 9);
+
+  std::vector<int> ref_dims = {4, 2, 2, 1, 1, 1, 2, 2, 1};
+
+  for (int s = 0; s < 9; s++) { EXPECT_EQ(ref_dims[s], ad.get_subspace_dim(s)); }
+  EXPECT_EQ(16, ad.get_full_hilbert_space_dim());
+
+  std::vector<std::vector<int>> ref_states{{5, 6, 9, 10}, {1, 2}, {4, 8}, {3}, {12}, {0}, {7, 11}, {13, 14}, {15}};
 
   for (int s = 0; s < ad.n_subspaces(); s++) {
-    EXPECT_EQ(ref_dims[s],ad.get_subspace_dim(s));
+    EXPECT_EQ(ref_dims[s], ad.get_subspace_dim(s));
     auto fss = ad.get_fock_states()[s];
-    for (int i = 0; i < ad.get_subspace_dim(s); i++) {
-      EXPECT_EQ(fss[i], ref_states[s][i]);
-    }
-  }   
-  EXPECT_EQ(16, ad.get_full_hilbert_space_dim());  
-  
-  
+    for (int i = 0; i < ad.get_subspace_dim(s); i++) { EXPECT_EQ(fss[i], ref_states[s][i]); }
+  }
+  EXPECT_EQ(16, ad.get_full_hilbert_space_dim());
+
   std::printf("\n\n-----------------\n ad with hyb\n-----------------\n");
   auto ad_hyb = atom_diag_real(h, hyb_effecive, fops);
   print_atom_diag(ad_hyb);
-  
-  EXPECT_EQ(ad_hyb.n_subspaces(),5);
-  
-  std::vector<int> ref_dims_hyb = {6,4,1,4,1}; 
-  
-  std::vector<std::vector<int>> ref_states_hyb { {3,5,6,9,10,12},
-                                                 {1,2,4,8},{0},
-                                                 {7,11,13,14},{15}}; 
-  
+
+  EXPECT_EQ(ad_hyb.n_subspaces(), 5);
+
+  std::vector<int> ref_dims_hyb = {6, 4, 1, 4, 1};
+
+  std::vector<std::vector<int>> ref_states_hyb{{3, 5, 6, 9, 10, 12}, {1, 2, 4, 8}, {0}, {7, 11, 13, 14}, {15}};
+
   for (int s = 0; s < ad_hyb.n_subspaces(); s++) {
-    EXPECT_EQ(ref_dims_hyb[s],ad_hyb.get_subspace_dim(s));
+    EXPECT_EQ(ref_dims_hyb[s], ad_hyb.get_subspace_dim(s));
     auto fss = ad_hyb.get_fock_states()[s];
     for (int i = 0; i < ad_hyb.get_subspace_dim(s); i++) {
       //printf("  %lu, ", fss[i]);
       EXPECT_EQ(fss[i], ref_states_hyb[s][i]);
     }
     //printf("\n");
-  }   
-  EXPECT_EQ(16, ad_hyb.get_full_hilbert_space_dim());  
-
+  }
+  EXPECT_EQ(16, ad_hyb.get_full_hilbert_space_dim());
 }
-
 
 MAKE_MAIN;

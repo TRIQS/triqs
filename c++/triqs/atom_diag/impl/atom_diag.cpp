@@ -59,7 +59,6 @@ namespace triqs {
       compute_vacuum();
     }
 
-
     ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max))
        : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {
       atom_diag_worker<Complex>{this, n_min, n_max}.autopartition();
@@ -105,44 +104,39 @@ namespace triqs {
     //   - the corresponding matrix (not necessarily square)
 
     template <bool Complex>
-    auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const
-      -> std::pair<int, matrix_t> {
+    auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const -> std::pair<int, matrix_t> {
 
-      imperative_operator<class hilbert_space, scalar_t, false>
-        monomial_op(many_body_op_t(1.0, op_vec), fops);
+      imperative_operator<class hilbert_space, scalar_t, false> monomial_op(many_body_op_t(1.0, op_vec), fops);
 
       matrix_t m;
       int Bp = -1;
 
-      for(auto [i_index, i]: itertools::enumerate(get_fock_states(B))) {
+      for (auto [i_index, i] : itertools::enumerate(get_fock_states(B))) {
         state<class hilbert_space, scalar_t, true> initial_st(full_hs, i);
 
         auto final_st = monomial_op(initial_st);
 
         // The initializer for i_index is needed here because of the Core Language Defect #2313.
         // https://stackoverflow.com/a/46115028
-        foreach(final_st, [&, i_index = i_index, j_count = 0](fock_state_t j, scalar_t x) mutable {
+        foreach (final_st, [&, i_index = i_index, j_count = 0](fock_state_t j, scalar_t x) mutable {
           assert(++j_count == 1);
-          for(auto const& sp : sub_hilbert_spaces) {
-            if(sp.has_state(j)) {
+          for (auto const &sp : sub_hilbert_spaces) {
+            if (sp.has_state(j)) {
               Bp = sp.get_index();
 
-              if(m.empty()) {
-                m = matrix_t::zeros({get_subspace_dim(Bp), get_subspace_dim(B)});
-              }
+              if (m.empty()) { m = matrix_t::zeros({get_subspace_dim(Bp), get_subspace_dim(B)}); }
 
               m(sp.get_state_index(j), i_index) = x;
               break;
             }
           }
-        });
+        })
+          ;
       }
 
-      if(Bp == -1)
+      if (Bp == -1)
         return {-1, std::move(m)};
-      else {
-        return {Bp, dagger(get_unitary_matrix(Bp)) * m * get_unitary_matrix(B)};
-      }
+      else { return {Bp, dagger(get_unitary_matrix(Bp)) * m * get_unitary_matrix(B)}; }
     }
 
     // -----------------------------------------------------------------
@@ -150,20 +144,20 @@ namespace triqs {
     ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op) const) {
       op_block_mat_t op_mat(n_subspaces());
 
-      for(int b : range(n_subspaces()) ) {
-	for( auto const &term : op ) {
-	  auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
-	  if(bb == -1) continue;
+      for (int b : range(n_subspaces())) {
+        for (auto const &term : op) {
+          auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
+          if (bb == -1) continue;
 
-	  if( op_mat.connection(b) == -1 ) {
-	    op_mat.connection(b) = bb;
-	    op_mat.block_mat[b] = term.coef * mat;
-	  } else if ( op_mat.connection(b) != bb ) {
-	    TRIQS_RUNTIME_ERROR << "ERROR: <atom_diag::get_op_mat> Monomials in operator does not connect the same subspaces.";
-	  } else {
-	    op_mat.block_mat[b] += term.coef * mat;
-	  }
-	}
+          if (op_mat.connection(b) == -1) {
+            op_mat.connection(b) = bb;
+            op_mat.block_mat[b]  = term.coef * mat;
+          } else if (op_mat.connection(b) != bb) {
+            TRIQS_RUNTIME_ERROR << "ERROR: <atom_diag::get_op_mat> Monomials in operator does not connect the same subspaces.";
+          } else {
+            op_mat.block_mat[b] += term.coef * mat;
+          }
+        }
 
         // Given the environment variable CHECK_ISSUE833 was set by the user
         // throw an exception if the result of this function was previously effected by issue 833

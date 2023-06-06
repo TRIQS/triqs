@@ -110,7 +110,7 @@ TEST(Gf, BlockOfVertexScalar) {
 TEST(Gf, BlockOfVertexTensor) {
 
   // now with indices
-  auto vertex                = gf_vertex_tensor_t{{m, m, m}, {2, 2, 2}};
+  auto vertex              = gf_vertex_tensor_t{{m, m, m}, {2, 2, 2}};
   vertex[0, 1, 0](0, 0, 0) = 10;
 
   // Now make the block of vertices:

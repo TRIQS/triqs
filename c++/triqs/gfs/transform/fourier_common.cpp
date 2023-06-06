@@ -46,24 +46,24 @@ namespace triqs::gfs {
 
   //void _fourier_base(array_const_view<double, 2> in, array_view<dcomplex, 2> out, int rank, int *dims, int fftw_count) {
 
-    //auto in_fft  = reinterpret_cast<fftw_real *>(in.data());
-    //auto out_fft = reinterpret_cast<fftw_complex *>(out.data());
+  //auto in_fft  = reinterpret_cast<fftw_real *>(in.data());
+  //auto out_fft = reinterpret_cast<fftw_complex *>(out.data());
 
-    //auto p = fftw_plan_many_dft(rank,                        // rank
-                                //dims,                        // the dimension
-                                //fftw_count,                  // how many FFT : here 1
-                                //in_fft,                      // in data
-                                //NULL,                        // embed : unused. Doc unclear ?
-                                //in.indexmap().strides()[0],  // stride of the in data
-                                //1,                           // in : shift for multi fft.
-                                //out_fft,                     // out data
-                                //NULL,                        // embed : unused. Doc unclear ?
-                                //out.indexmap().strides()[0], // stride of the out data
-                                //1,                           // out : shift for multi fft.
-                                //FFTW_ESTIMATE);
+  //auto p = fftw_plan_many_dft(rank,                        // rank
+  //dims,                        // the dimension
+  //fftw_count,                  // how many FFT : here 1
+  //in_fft,                      // in data
+  //NULL,                        // embed : unused. Doc unclear ?
+  //in.indexmap().strides()[0],  // stride of the in data
+  //1,                           // in : shift for multi fft.
+  //out_fft,                     // out data
+  //NULL,                        // embed : unused. Doc unclear ?
+  //out.indexmap().strides()[0], // stride of the out data
+  //1,                           // out : shift for multi fft.
+  //FFTW_ESTIMATE);
 
-    //fftw_execute(p);
-    //fftw_destroy_plan(p);
+  //fftw_execute(p);
+  //fftw_destroy_plan(p);
   //}
 
 } // namespace triqs::gfs

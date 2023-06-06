@@ -15,7 +15,6 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
-
 #pragma once
 
 #include "./make_real.hpp"

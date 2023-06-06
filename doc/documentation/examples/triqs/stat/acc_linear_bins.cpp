@@ -10,7 +10,5 @@ int main() {
   std::vector<double> output = my_acc.linear_bins();
 
   // Print data of linear bins
-  for (auto &x : output) {
-    std::cout << x << std::endl;
-  }
+  for (auto &x : output) { std::cout << x << std::endl; }
 }

@@ -48,7 +48,10 @@ namespace triqs::gfs {
   }
 
   /// Make a const view of the positive frequency part of the function
-  template <typename G> view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g) requires(is_gf_v<G>) {
+  template <typename G>
+  view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g)
+    requires(is_gf_v<G>)
+  {
     static_assert(std::is_same<typename std::decay_t<G>::mesh_t, mesh::imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
     static_assert(std::decay_t<G>::is_view or std::is_lvalue_reference_v<G>, "Cannot construct a positive_freq_view from a temporary gf");
     if (g.mesh().positive_only()) return g;
@@ -75,7 +78,10 @@ namespace triqs::gfs {
    *
    * @return true iif the fundamental property holds for all points of the mesh
    */
-  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-12) requires(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G>
+  bool is_gf_hermitian(G const &g, double tolerance = 1.e-12)
+    requires(is_gf_v<G> or is_block_gf_v<G>)
+  {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
@@ -134,16 +140,15 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq>,
-                    "is_gf_hermitian requires an imfreq Green function");
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq>, "is_gf_hermitian requires an imfreq Green function");
 
       if (g.mesh().positive_only()) return true;
       for (auto const &w : g.mesh()) {
         if constexpr (target_t::rank == 0) { // ---- scalar_valued
           if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
-	} else {
+        } else {
           if (max_element(abs(conj(g[-w]) - g[w])) > tolerance) return false;
-	}
+        }
       }
       return true;
     } else { // Block Green function
@@ -167,7 +172,10 @@ namespace triqs::gfs {
    *
    * @return The symmetrized Green function object
    */
-  template <typename G> typename G::regular_type make_hermitian(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G>
+  typename G::regular_type make_hermitian(G const &g)
+    requires(is_gf_v<G> or is_block_gf_v<G>)
+  {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
@@ -217,18 +225,18 @@ namespace triqs::gfs {
    *
    * @return The symmetrized Green function object
    */
-  template <typename G> typename G::regular_type make_real_in_tau(G const &g) requires(is_gf_v<G> or is_block_gf_v<G>) {
+  template <typename G>
+  typename G::regular_type make_real_in_tau(G const &g)
+    requires(is_gf_v<G> or is_block_gf_v<G>)
+  {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq>,
-                    "make_real_in_tau requires an imfreq Green function");
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq>, "make_real_in_tau requires an imfreq Green function");
 
       if (g.mesh().positive_only()) return typename G::regular_type{g};
       auto g_sym = typename G::regular_type{g};
-      for (auto const &w : g.mesh()) {
-        g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
-      }
+      for (auto const &w : g.mesh()) { g_sym[w] = 0.5 * (g[w] + conj(g[-w])); }
       return g_sym;
     } else if (is_block_gf_v<G>) { // Block Green function
       return map_block_gf(make_real_in_tau<typename G::g_t>, g);
@@ -237,7 +245,7 @@ namespace triqs::gfs {
 
   // ------------------------------------------------------------------------------------------------------
 
-  template <template <typename, typename, typename ...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
+  template <template <typename, typename, typename...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
     auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
@@ -260,7 +268,7 @@ namespace triqs::gfs {
   }
 
   // Fit_tail on a window
-  template <template <typename, typename, typename ...> typename G, typename T>
+  template <template <typename, typename, typename...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
@@ -271,7 +279,7 @@ namespace triqs::gfs {
   }
 
   // Fit_tail on a window with the constraint of hermitian moment matrices
-  template <template <typename, typename ...> typename G, typename T>
+  template <template <typename, typename...> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();

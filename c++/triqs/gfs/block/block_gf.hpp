@@ -53,17 +53,14 @@ namespace triqs::gfs {
   //
   template <typename G, int n = 0> inline constexpr bool is_block_gf_v = false;
 
-  template <typename Mesh, typename Target, int Arity>
-  inline constexpr bool is_block_gf_v<block_gf<Mesh, Target, Arity>, Arity> = true;
+  template <typename Mesh, typename Target, int Arity> inline constexpr bool is_block_gf_v<block_gf<Mesh, Target, Arity>, Arity> = true;
 
   template <typename Mesh, typename Target, int Arity, bool IsConst>
   inline constexpr bool is_block_gf_v<block_gf_view<Mesh, Target, Arity, IsConst>, Arity> = true;
 
-  template<typename, typename = std::void_t<>>
-  inline constexpr int arity_of = -1;
+  template <typename, typename = std::void_t<>> inline constexpr int arity_of = -1;
 
-  template<typename T>
-  inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
+  template <typename T> inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
 
   template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
 
@@ -166,7 +163,10 @@ namespace triqs::gfs {
 
     /// Construct from anything which models BlockGreenFunction.
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-    template <typename G> block_gf(G const &x) requires(BlockGreenFunction<G>::value) : block_gf() {
+    template <typename G>
+    block_gf(G const &x)
+      requires(BlockGreenFunction<G>::value)
+       : block_gf() {
       static_assert(G::arity == Arity, "Impossible");
       *this = x;
     }
@@ -176,22 +176,34 @@ namespace triqs::gfs {
     template <typename Tag> block_gf(mpi::lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
 
     /// Construct from a vector of gf
-    block_gf(data_t V) requires(Arity == 1) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
+    block_gf(data_t V)
+      requires(Arity == 1)
+       : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
 
     /// Constructs a n block
-    block_gf(int n) requires(Arity == 1) : block_gf(data_t(n)) {}
+    block_gf(int n)
+      requires(Arity == 1)
+       : block_gf(data_t(n)) {}
 
     /// Constructs a n block with copies of g.
-    block_gf(int n, g_t const &g) requires(Arity == 1) : block_gf(data_t(n, g)) {}
+    block_gf(int n, g_t const &g)
+      requires(Arity == 1)
+       : block_gf(data_t(n, g)) {}
 
     /// Construct from the vector of names and one gf to be copied
-    block_gf(block_names_t b, g_t const &g) requires(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
+    block_gf(block_names_t b, g_t const &g)
+      requires(Arity == 1)
+       : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
 
     /// Construct from the vector of names
-    block_gf(block_names_t b) requires(Arity == 1) : _block_names(std::move(b)), _glist(_block_names.size()) {}
+    block_gf(block_names_t b)
+      requires(Arity == 1)
+       : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
     // Create Block Green function from Mesh and gf_struct
-    block_gf(Mesh const &m, gf_struct_t const &gf_struct) requires(Arity == 1) {
+    block_gf(Mesh const &m, gf_struct_t const &gf_struct)
+      requires(Arity == 1)
+    {
 
       for (auto const &[bl_name, bl_size] : gf_struct) {
         _block_names.push_back(bl_name);
@@ -204,7 +216,9 @@ namespace triqs::gfs {
 
     // Create Block Green function from Mesh and gf_struct
     template <typename Int>
-    block_gf(Mesh const &m, std::vector<Int> const & bl_sizes) requires(Arity == 1 && std::is_integral_v<Int>) {
+    block_gf(Mesh const &m, std::vector<Int> const &bl_sizes)
+      requires(Arity == 1 && std::is_integral_v<Int>)
+    {
 
       for (auto const &[bl, bl_size] : itertools::enumerate(bl_sizes)) {
         _block_names.push_back(std::to_string(bl));
@@ -218,15 +232,19 @@ namespace triqs::gfs {
     }
 
     /// Constructs a n blocks with copies of g.
-    block_gf(int n, int p, g_t const &g) requires(Arity == 2) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
+    block_gf(int n, int p, g_t const &g)
+      requires(Arity == 2)
+       : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
     /// Construct from a vector of gf
-    block_gf(data_t V) requires(Arity == 2) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
+    block_gf(data_t V)
+      requires(Arity == 2)
+       : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
 
     /// ---------------  Operator = --------------------
 
     block_gf &operator=(block_gf const &rhs) = default;
-    block_gf &operator=(block_gf &&rhs) = default;
+    block_gf &operator=(block_gf &&rhs)      = default;
 
     /**
      * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
@@ -234,7 +252,7 @@ namespace triqs::gfs {
      * @param l The lazy object returned by reduce
      */
     block_gf &operator=(mpi::lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
-      
+
       _block_names = l.rhs.block_names();
       _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
 

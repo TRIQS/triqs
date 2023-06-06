@@ -46,7 +46,7 @@ namespace triqs::gfs {
   // -------------------------------   Free Factories for block_gf_view and block_gf_const_view
 
   /// Make a block_gf_view from the G. Indices are '0', '1', '2', ....
-  template <typename G0, typename... G> block_gf_view_of<G0> make_block_gf_view(G0 &&g0, G &&... g) {
+  template <typename G0, typename... G> block_gf_view_of<G0> make_block_gf_view(G0 &&g0, G &&...g) {
     return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
   }
 
@@ -72,7 +72,7 @@ namespace triqs::gfs {
 
   // --- same with const_view
 
-  template <typename G0, typename... G> block_gf_const_view_of<G0> make_block_gf_const_view(G0 &&g0, G &&... g) {
+  template <typename G0, typename... G> block_gf_const_view_of<G0> make_block_gf_const_view(G0 &&g0, G &&...g) {
     return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
   }
 

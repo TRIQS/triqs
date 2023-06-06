@@ -58,7 +58,7 @@ namespace triqs::gfs {
 
   // this function just regroups the green function data, and calls the vector_valued gf core implementation
   template <int N, typename M1, typename M2, typename T1, typename T2, typename... OptArgs>
-  void _fourier(gf_const_view<M1, T1> gin, gf_view<M2, T2> gout, OptArgs const &... opt_args) {
+  void _fourier(gf_const_view<M1, T1> gin, gf_view<M2, T2> gout, OptArgs const &...opt_args) {
 
     static_assert(std::is_same<typename T1::complex_t, T2>::value, "Incompatible target types for fourier transform");
 
@@ -97,7 +97,7 @@ namespace triqs::gfs {
    * *-----------------------------------------------------------------------------------------------------*/
 
   template <int N = 0, typename M1, typename M2, typename T, typename... OptArgs>
-  auto make_gf_from_fourier(gf_const_view<M1, T> gin, M2 const &mesh, OptArgs const &... opt_args) {
+  auto make_gf_from_fourier(gf_const_view<M1, T> gin, M2 const &mesh, OptArgs const &...opt_args) {
     static_assert(N >= 0 && N < n_variables<M1>, "Mesh index exceeds Gf Mesh Rank");
     static_assert(n_variables<M2> == 1, "Cannot fourier transform on cartesian product mesh");
 
@@ -193,7 +193,9 @@ namespace triqs::gfs {
    * *-----------------------------------------------------------------------------------------------------*/
 
   template <int N = 0, typename G, typename M, int R>
-  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<array<dcomplex, R>> const &known_moments) requires(is_block_gf_v<G>) {
+  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<array<dcomplex, R>> const &known_moments)
+    requires(is_block_gf_v<G>)
+  {
 
     using r_t = decltype(make_gf_from_fourier<N>(gin[0], m, known_moments[0]));
     std::vector<r_t> g_vec;
@@ -205,7 +207,9 @@ namespace triqs::gfs {
   }
 
   template <int N = 0, typename G, typename M, int R>
-  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<std::vector<array<dcomplex, R>>> const &known_moments) requires(is_block_gf_v<G>) {
+  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<std::vector<array<dcomplex, R>>> const &known_moments)
+    requires(is_block_gf_v<G>)
+  {
 
     using r_t = decltype(make_gf_from_fourier<N>(gin(0, 0), m, known_moments[0][0]));
     std::vector<std::vector<r_t>> g_vecvec;
@@ -224,8 +228,10 @@ namespace triqs::gfs {
   }
 
   template <int N = 0, int... Ns, typename G, typename... Args>
-  auto make_gf_from_fourier(G const &gin, Args const &... args) requires(is_block_gf_v<G>) {
-    auto l = [&](auto&& g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), args...); };
+  auto make_gf_from_fourier(G const &gin, Args const &...args)
+    requires(is_block_gf_v<G>)
+  {
+    auto l = [&](auto &&g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), args...); };
     return map_block_gf(l, gin);
   }
 
@@ -235,13 +241,13 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf_view<V, T> gin, Args &&... args) {
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf_view<V, T> gin, Args &&...args) {
     return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf<V, T> const &gin, Args &&... args) {
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf<V, T> const &gin, Args &&...args) {
     return make_gf_from_fourier<N, Ns...>(gf_const_view{gin}, std::forward<Args>(args)...);
-//    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
+    //    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -254,7 +260,7 @@ namespace triqs::gfs {
     std::tuple<Args...> args; // Args can be a ref.
   };
 
-  template <int N = 0, typename G, typename... Args> _fourier_lazy<N, typename G::const_view_type, Args...> fourier(G const &g, Args &&... args) {
+  template <int N = 0, typename G, typename... Args> _fourier_lazy<N, typename G::const_view_type, Args...> fourier(G const &g, Args &&...args) {
     return {g(), {std::forward<Args>(args)...}};
   }
 
@@ -272,7 +278,7 @@ namespace triqs::gfs {
 
     // check the size of the "inactive" dimensions
 
-    std::apply([&](auto &&... u) { _fourier<N>(rhs.g, lhs_g, u...); }, rhs.args); // calls _fourier( rhs.g, lhs_g, rhs.args...)
+    std::apply([&](auto &&...u) { _fourier<N>(rhs.g, lhs_g, u...); }, rhs.args); // calls _fourier( rhs.g, lhs_g, rhs.args...)
   }
 
 } // namespace triqs::gfs

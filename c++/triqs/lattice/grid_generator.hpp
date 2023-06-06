@@ -23,7 +23,7 @@
 
 namespace triqs {
   namespace lattice {
-    
+
     using v_t = nda::vector<double>;
 
     /**

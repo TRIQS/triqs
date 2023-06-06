@@ -15,17 +15,14 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet
 
-
 #pragma once
 
 #include "./atom_diag/atom_diag.hpp"
 #include "./atom_diag/functions.hpp"
 #include "./atom_diag/gf.hpp"
 
-#ifdef C2PY_INCLUDED 
+#ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>> = true;
+template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>>  = true;
 template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<false>> = true;
 #endif
-
-

@@ -17,7 +17,6 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
-
 #pragma once
 #include <functional>
 #include <numeric>

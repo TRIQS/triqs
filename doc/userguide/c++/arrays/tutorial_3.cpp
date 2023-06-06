@@ -1,7 +1,7 @@
 #include <nda/nda.hpp>
+using itertools::range;
 using nda::array;
 using nda::array_view;
-using itertools::range;
 int main() {
   array<double, 2> A(3, 3);
   A() = 2.5;

@@ -89,7 +89,7 @@ namespace triqs {
     void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl) {
       auto gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, bl);
-      auto _       = range(0, bl.ndim());
+      auto _ = range(0, bl.ndim());
       h5::write(gr, "units", bl.units_(_, _));
       h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
       h5::write(gr, "atom_orb_name", bl.atom_orb_name);

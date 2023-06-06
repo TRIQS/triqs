@@ -26,12 +26,11 @@ template <typename Self, typename... Args> decltype(auto) operator()(this Self &
 template <typename Self, typename... Args> static decltype(auto) call_impl(Self &&self, Args &&...args) {
 #endif
   if constexpr (sizeof...(Args) == 0) {
-    if constexpr (std::is_const_v<std::remove_reference_t<Self>>) 
+    if constexpr (std::is_const_v<std::remove_reference_t<Self>>)
       return const_view_type{std::forward<Self>(self)};
     else
       return view_type{std::forward<Self>(self)};
-  }
-  else {
+  } else {
     static_assert((sizeof...(Args) == n_variables<mesh_t>), "Incorrect number of arguments");
     if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
       return clef::make_expr_call(std::forward<Self>(self), std::forward<Args>(args)...);
@@ -59,13 +58,13 @@ template <typename... T>
 decltype(auto) operator[](std::tuple<T...> const &tu) const noexcept(has_no_boundcheck)
   requires(sizeof...(T) == arity)
 {
-  return std::apply([this](auto &... x) -> decltype(auto) { return this->operator[](x...); }, tu);
+  return std::apply([this](auto &...x) -> decltype(auto) { return this->operator[](x...); }, tu);
 }
 template <typename... T>
 decltype(auto) operator[](std::tuple<T...> const &tu) noexcept(has_no_boundcheck)
   requires(sizeof...(T) == arity)
 {
-  return std::apply([this](auto &... x) -> decltype(auto) { return this->operator[](x...); }, tu);
+  return std::apply([this](auto &...x) -> decltype(auto) { return this->operator[](x...); }, tu);
 }
 
 private:
@@ -86,7 +85,9 @@ template <Mesh MT, typename X> static auto call_to_data_index(MT const &m, X con
 // General implementation for any set of arguments.
 // https://godbolt.org/z/sbqYv3oeE
 template <typename Self, typename... Arg>
-static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof...(Arg) == arity) {
+static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg)
+  requires(sizeof...(Arg) == arity)
+{
   if constexpr ((clef::is_any_lazy<Arg> or ... or false))
     return clef::make_expr_subscript(std::forward<Self>(self), std::forward<Arg>(arg)...);
   else {
@@ -106,7 +107,7 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
       // mesh is a tuple of meshes
       auto new_mesh = detail::filter_mesh<detail::compute_position<n_all>(mesh_filter)>(self.mesh());
       using mesh_t  = decltype(new_mesh);
-      using self_t = std::remove_reference_t<Self>;
+      using self_t  = std::remove_reference_t<Self>;
       if constexpr (self_t::is_const or std::is_const_v<self_t>)
         return gf_const_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data};
       else
@@ -116,7 +117,6 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg) requires(sizeof
 }
 
 public:
-
 // ------------------------------------------
 
 template <typename... Arg>

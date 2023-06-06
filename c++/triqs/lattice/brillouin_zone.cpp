@@ -32,8 +32,8 @@ namespace triqs {
 
       auto Units = lattice().units();
       if (abs(determinant(Units)) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
-      K_reciprocal       = 2 * M_PI * inverse(transpose(Units));
-      K_reciprocal_inv   = inverse(K_reciprocal);
+      K_reciprocal     = 2 * M_PI * inverse(transpose(Units));
+      K_reciprocal_inv = inverse(K_reciprocal);
     }
 
     // -------------- HDF5  --------------------------

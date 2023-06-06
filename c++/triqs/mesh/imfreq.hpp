@@ -44,7 +44,7 @@ namespace triqs::mesh {
 
     using index_t      = long;
     using data_index_t = long;
-    using value_t  = matsubara_freq;
+    using value_t      = matsubara_freq;
 
     // -------------------- Data -------------------
 

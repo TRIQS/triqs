@@ -37,22 +37,16 @@ namespace triqs {
         for (int j = 0; j < g.size2(); ++j) triqs_bgf_clef_auto_assign_impl_aux_assign(g(i, j), rhs(i, j));
     }
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf<M, T> &g, RHS const &rhs) {
-      clef_auto_assign(g(), rhs);
-    }
+    template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf<M, T> &g, RHS const &rhs) {
-      clef_auto_assign(g(), rhs);
-    }
+    template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
 
     // enable the writing g[om_] << .... also
     template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf_view<M, T> g, RHS const &rhs) {
       clef_auto_assign(g, rhs);
     }
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf<M, T> &g, RHS const &rhs) {
-      clef_auto_assign(g(), rhs);
-    }
+    template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
 
     template <typename G, typename RHS> void triqs_bgf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs) {
       std::forward<G>(g) = std::forward<RHS>(rhs);

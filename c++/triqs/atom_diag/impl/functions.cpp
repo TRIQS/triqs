@@ -82,9 +82,9 @@ namespace triqs {
       };
       // check if op && density matrix are hermitian, if so return real(result)
       // The product of two hermitian matrices is hermitian, hence the Tr(rho * Op)
-      // needs to be real in this case. Here, each monomial b_m is represented in the 
-      // eigenbasis of atom diag. This unitary rotation should not change any of the 
-      // above statements (Tr is invariant under trafo) However, the eigenbasis is obtained 
+      // needs to be real in this case. Here, each monomial b_m is represented in the
+      // eigenbasis of atom diag. This unitary rotation should not change any of the
+      // above statements (Tr is invariant under trafo) However, the eigenbasis is obtained
       // via LAPACK up to machine prec, introducing tiny imaginary elements. Here, we filter those.
       // Note: Here it assumed that op & den mat are truely hermitian, 0 tolerance
       if (is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {

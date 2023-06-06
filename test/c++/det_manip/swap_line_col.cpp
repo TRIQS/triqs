@@ -67,7 +67,7 @@ TEST(DetManip, SwapRow) {
 
         // result
         std::swap(X[i0], X[j0]);
-        auto d2   = d_t{fun{}, X, Y};
+        auto d2 = d_t{fun{}, X, Y};
 
         // ops
         d.swap_row(i0, j0);
@@ -103,7 +103,7 @@ TEST(DetManip, SwapCol) {
 
         // result
         std::swap(Y[i0], Y[j0]);
-        auto d2   = d_t{fun{}, X, Y};
+        auto d2 = d_t{fun{}, X, Y};
 
         // ops
         d.swap_col(i0, j0);

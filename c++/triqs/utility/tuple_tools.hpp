@@ -28,13 +28,13 @@ namespace triqs {
 
   template <typename... T> struct _triqs_zipped_tuple {
     std::tuple<T...> _tu;
-    template <typename... U> _triqs_zipped_tuple(U &&... u) : _tu(std::forward<U>(u)...) {}
+    template <typename... U> _triqs_zipped_tuple(U &&...u) : _tu(std::forward<U>(u)...) {}
 
     template <size_t I, size_t... Is> auto _get(std::index_sequence<Is...>) { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
     template <size_t I, size_t... Is> auto _get(std::index_sequence<Is...>) const { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
   };
 
-  template <typename... T> _triqs_zipped_tuple<T...> zip_tuples(T &&... x) { return {std::forward<T>(x)...}; }
+  template <typename... T> _triqs_zipped_tuple<T...> zip_tuples(T &&...x) { return {std::forward<T>(x)...}; }
 } // namespace triqs
 
 // 1. Overload & specialize the functions std::get and std::tuple_size for _triqs_zipped_tuple
@@ -48,7 +48,9 @@ namespace std {
   }
 
   // Reverse
-  template <typename TU> struct _triqs_reversed_tuple { TU _x; };
+  template <typename TU> struct _triqs_reversed_tuple {
+    TU _x;
+  };
 
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...>> reverse(std::tuple<T...> &&x) { return {std::move(x)}; }
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...> &> reverse(std::tuple<T...> &x) { return {x}; }
@@ -89,7 +91,9 @@ namespace triqs {
       using type = typename decltype(get(hole_seq()))::type;
     };
 
-    template <typename hole_seq, int... Is> struct complement_sequence_impl<-1, hole_seq, Is...> { using type = std::index_sequence<Is...>; };
+    template <typename hole_seq, int... Is> struct complement_sequence_impl<-1, hole_seq, Is...> {
+      using type = std::index_sequence<Is...>;
+    };
 
     // An index sequence of elements of [0,N-1] which are NOT Is
     template <int N, int... Is> using complement_sequence = typename complement_sequence_impl<N, all_indices<Is...>>::type;
@@ -187,7 +191,7 @@ namespace triqs {
     // _for_each_impl (f, x0, x1, ..., xn) calls f(x0); f(x1); ... f(xn); IN THIS ORDER
     template <typename F> void _for_each_impl(F &&f) {}
 
-    template <typename F, typename T0, typename... T> void _for_each_impl(F &&f, T0 &&x0, T &&... x) {
+    template <typename F, typename T0, typename... T> void _for_each_impl(F &&f, T0 &&x0, T &&...x) {
       f(std::forward<T0>(x0));
       _for_each_impl(f, std::forward<T>(x)...);
     }
@@ -195,7 +199,7 @@ namespace triqs {
     // _for_each_apply_impl (f, t0, t1, ..., tn) calls apply(f,x0); apply(f,t1); ... apply(f,tn);
     template <typename F> void _for_each_apply_impl(F &&f) {}
 
-    template <typename F, typename T0, typename... T> void _for_each_apply_impl(F &&f, T0 &&t0, T &&... t) {
+    template <typename F, typename T0, typename... T> void _for_each_apply_impl(F &&f, T0 &&t0, T &&...t) {
       triqs::tuple::apply(f, std::forward<T0>(t0));
       _for_each_apply_impl(f, std::forward<T>(t)...);
     }
@@ -233,7 +237,7 @@ namespace triqs {
   * calls f sucessively on the set of all ith tuple elements:
   *     for i1, ... , iN in zip(t1, ... , tn): f(i1, ... , iN)
   */
-    template <typename F, typename... T> void for_each_zip(F &&f, T &&... ts) {
+    template <typename F, typename... T> void for_each_zip(F &&f, T &&...ts) {
       for_each(zip_tuples(std::forward<T>(ts)...), called_on_tuple(std::forward<F>(f)));
     }
 
@@ -249,9 +253,9 @@ namespace triqs {
 
     template <typename F, typename T> decltype(auto) map(F &&f, T &&t) { return _map_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
 
-   // template <typename F, typename T> decltype(auto) map(F &&f, T &&t) { 
-   //   return [&f, &t]<size_t... Is>(std::index_sequence<Is...>) { return std::tuple{f(std::get<Is>(t))...};}(std::make_index_sequence<std::tuple_size_v<T>>>{});
-   // }
+    // template <typename F, typename T> decltype(auto) map(F &&f, T &&t) {
+    //   return [&f, &t]<size_t... Is>(std::index_sequence<Is...>) { return std::tuple{f(std::get<Is>(t))...};}(std::make_index_sequence<std::tuple_size_v<T>>>{});
+    // }
 
     /*
   * map_on_zip(f, t...)
@@ -259,7 +263,7 @@ namespace triqs {
   * t... tuples of the same size
   * Returns : [f(i,j, ...) for i,j,... in zip(t0,t1,...)]
   */
-    template <typename... T, typename F> auto map_on_zip(F &&f, T &&... ts) {
+    template <typename... T, typename F> auto map_on_zip(F &&f, T &&...ts) {
       return map(called_on_tuple(std::forward<F>(f)), zip_tuples(std::forward<T>(ts)...));
     }
 

@@ -12,6 +12,6 @@ int main() {
 
   auto ave = mean_mpi(world, data);
 
-  std::cout << "Average: " << ave << std::endl; 
+  std::cout << "Average: " << ave << std::endl;
   // =  (1.0 + 4.0 * world.size()) / 2.0
 }

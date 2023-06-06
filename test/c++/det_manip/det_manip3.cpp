@@ -70,10 +70,10 @@ TEST(det_manip, det_manip_zero_mat) {
 
   // using std::abs;
 
-  auto dm1                        = init_dm();
-  auto dm2                        = remove_second_row_col(dm1);
-  auto dm3                        = insert_second_row_col(dm2);
-  auto dm4                        = remove_first_row_col(dm2);
+  auto dm1                     = init_dm();
+  auto dm2                     = remove_second_row_col(dm1);
+  auto dm3                     = insert_second_row_col(dm2);
+  auto dm4                     = remove_first_row_col(dm2);
   nda::matrix<double> true_dm1 = {{1, 1}, {-3, 5}};
   nda::matrix<double> true_dm2 = {{1}};
   nda::matrix<double> true_dm3 = {{1, 2}, {1, 10}};

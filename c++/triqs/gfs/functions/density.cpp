@@ -141,7 +141,7 @@ namespace triqs::gfs {
     EXPECTS(wmin < 0.);
 
     auto N0    = int(std::floor(-wmin / dw)) + 1; // frequency index at or above w=0
-    double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
+    double dw0 = -wmin - (N0 - 1) * dw;           // last interval width to w=0
 
     nda::matrix<dcomplex> res(g.target_shape());
 
@@ -158,10 +158,10 @@ namespace triqs::gfs {
     // e.g. flat dos at dos edge (but keep complex matrix structure)
     diagonal(res) = imag(diagonal(res));
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
-    
+
     // writing back into res is problematic due to lazy expressionsreturn
     // return directly instead
-    return 0.5 * (res + dagger(res));     // A = i( g - g^+ )
+    return 0.5 * (res + dagger(res)); // A = i( g - g^+ )
   }
 
   /// Finite temperature density from integration on the real frequency axis
@@ -180,7 +180,7 @@ namespace triqs::gfs {
 
     // writing back into res is problematic due to lazy expressionsreturn
     // return directly instead
-    return 0.5 * (res + dagger(res));     // A = i( g - g^+ )
+    return 0.5 * (res + dagger(res)); // A = i( g - g^+ )
   }
 
   //-------------------------------------------------------

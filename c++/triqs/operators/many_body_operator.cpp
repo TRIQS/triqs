@@ -24,8 +24,8 @@
 namespace triqs {
   namespace operators {
 
-    using h5::object;
     using h5::dataset;
+    using h5::object;
     using hilbert_space::fundamental_operator_set;
 
 // maximum order of the monomial (here quartic operators)
@@ -77,7 +77,7 @@ namespace triqs {
         H5Tinsert(mono_obj, "re", HOFFSET(h5_monomial, re), H5T_NATIVE_DOUBLE);
         H5Tinsert(mono_obj, "im", HOFFSET(h5_monomial, im), H5T_NATIVE_DOUBLE);
         hsize_t array_dim[] = {MAX_MONOMIAL_SIZE};
-        object array_tid = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
+        object array_tid    = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
         H5Tinsert(mono_obj, "op_indices", HOFFSET(h5_monomial, op_indices), array_tid);
         return mono_obj;
       }
@@ -144,8 +144,7 @@ namespace triqs {
       std::array<hsize_t, 1> dims_out;
       int ndims = H5Sget_simple_extent_dims(dspace, dims_out.data(), NULL);
       if (ndims != 1)
-        TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "
-                            << ndims;
+        TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = " << ndims;
 
       // datatype
       object dt = h5_monomial_dtype();

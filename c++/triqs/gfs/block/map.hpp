@@ -104,7 +104,9 @@ namespace triqs {
 
     // the map function itself...
     template <typename F, typename G>
-    auto map(F &&f, G &&g) requires(is_block_gf_v<std::decay_t<G>>) {
+    auto map(F &&f, G &&g)
+      requires(is_block_gf_v<std::decay_t<G>>)
+    {
       return impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g));
     }
   } // namespace gfs

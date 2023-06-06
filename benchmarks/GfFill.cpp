@@ -34,13 +34,12 @@ static void ArrayFill(benchmark::State &state) {
   for (auto _ : state) {
     for (int q : range(-n_iw, n_iw + 1)) // Bosonic
       for (int m : range(-n_iw, n_iw))   // Fermionic
-	for (int n : range(-n_iw, n_iw)) // Fermionic
-	  tensor(q + n_iw, m + n_iw, n + n_iw) += arr(m + 2 * n_iw, q + m + 2 * n_iw) * arr(q + n + 2 * n_iw, n + 2 * n_iw);
+        for (int n : range(-n_iw, n_iw)) // Fermionic
+          tensor(q + n_iw, m + n_iw, n + n_iw) += arr(m + 2 * n_iw, q + m + 2 * n_iw) * arr(q + n + 2 * n_iw, n + 2 * n_iw);
   }
   state.SetBytesProcessed(int64_t(state.iterations()) * 8 * n_iw * n_iw * n_iw * sizeof(scalar_t));
 }
 BENCHMARK(ArrayFill)->RangeMultiplier(2)->Range(1 << 6, 1 << 8); //->Complexity();
-
 
 // ===== Fill Green function Tensor Loop
 
@@ -62,7 +61,6 @@ static void GfFillLoop(benchmark::State &state) {
   state.SetBytesProcessed(int64_t(state.iterations()) * 8 * n_iw * n_iw * n_iw * sizeof(scalar_t));
 }
 BENCHMARK(GfFillLoop)->RangeMultiplier(2)->Range(1 << 6, 1 << 8); //->Complexity();
-
 
 // ===== Fill Green function Tensor Clefs
 

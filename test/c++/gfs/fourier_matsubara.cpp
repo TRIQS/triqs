@@ -90,7 +90,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
 
   // Test the transform for the real-valued Gtau
   using target_real_t = typename _target_from_type_rank<double, TARGET_RANK>::type;
-  auto Gt1_real = gf<imtime, target_real_t>{{beta, statistic, N_tau}, shape};
+  auto Gt1_real       = gf<imtime, target_real_t>{{beta, statistic, N_tau}, shape};
   for (auto const &t : Gt1_real.mesh()) { Gt1_real[t] = one_pole(E, t) + one_pole(-2 * E, t) - 4.5 * one_pole(1.25 * E, t); }
   Gw1b() = fourier(Gt1_real);
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);

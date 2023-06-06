@@ -39,7 +39,7 @@ namespace triqs {
       scope_guard(const scope_guard &) = delete;
       scope_guard(scope_guard &&rhs) : f_(std::move(rhs.f_)), active_(rhs.active_) { rhs.dismiss(); }
       scope_guard &operator=(const scope_guard &) = delete;
-      scope_guard &operator                       =(scope_guard &&rhs) {
+      scope_guard &operator=(scope_guard &&rhs) {
         using std::swap;
         swap(f_, rhs.f_);
         swap(active_, rhs.active_);

@@ -26,7 +26,7 @@ namespace triqs::mesh {
   template <char OP, typename L> struct k_expr_unary {
     static_assert(OP == '-', "Internal error");
     L l;
-    
+
     /// The Hash for the associated mesh configuration
     [[nodiscard]] uint64_t mesh_hash() const { return l.mesh_hash(); };
 

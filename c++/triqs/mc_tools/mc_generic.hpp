@@ -233,7 +233,8 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{}) {
+    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure,
+            mpi::communicator c = mpi::communicator{}) {
 
       AllMoves.clear_statistics();
 

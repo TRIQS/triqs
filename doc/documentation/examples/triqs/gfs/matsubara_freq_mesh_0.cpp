@@ -6,7 +6,7 @@ using namespace triqs;
 int main() {
   double beta = 1;
   int n_pts   = 4;
-  auto m = mesh::imfreq{beta, Fermion, n_pts};
+  auto m      = mesh::imfreq{beta, Fermion, n_pts};
   std::cout << "Mesh m with positive and negative Matsubara frequencies : " << std::endl;
   for (auto const &w : m) std::cout << w << std::endl;
   std::cout << "m.first_index() = " << m.first_index() << std::endl;

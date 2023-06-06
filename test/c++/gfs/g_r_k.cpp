@@ -49,7 +49,7 @@ TEST(Gf, r_k) {
   EXPECT_ARRAY_NEAR(gk.data(), gk2.data());
 
   // check gr
-  auto gr_test           = gf<cyclat>{{N, N}, {S, S}};
+  auto gr_test                              = gf<cyclat>{{N, N}, {S, S}};
   gr_test[std::array<long, 3>{1, 0, 0}]     = -1;
   gr_test[std::array<long, 3>{N - 1, 0, 0}] = -1;
   gr_test[std::array<long, 3>{0, 1, 0}]     = -1;

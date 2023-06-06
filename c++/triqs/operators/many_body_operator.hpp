@@ -116,11 +116,11 @@ namespace triqs {
 
       [[nodiscard]] static std::string hdf5_format() { return "Operator"; }
 
-      many_body_operator_generic()                                   = default;
-      many_body_operator_generic(many_body_operator_generic const &) = default;
-      many_body_operator_generic(many_body_operator_generic &&)      = default;
+      many_body_operator_generic()                                              = default;
+      many_body_operator_generic(many_body_operator_generic const &)            = default;
+      many_body_operator_generic(many_body_operator_generic &&)                 = default;
       many_body_operator_generic &operator=(many_body_operator_generic const &) = default;
-      many_body_operator_generic &operator=(many_body_operator_generic &&) = default;
+      many_body_operator_generic &operator=(many_body_operator_generic &&)      = default;
 
       template <typename S> many_body_operator_generic(many_body_operator_generic<S> const &x) {
         static_assert(std::is_constructible<scalar_t, S>::value, "Construction is impossible");

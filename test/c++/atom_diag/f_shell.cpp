@@ -39,9 +39,8 @@ fundamental_operator_set make_fops(int n_orb) {
   return fops;
 }
 
-// 
-template <typename OP>
-OP make_hamiltonian(int n_orb, double mu, double U, double J) {
+//
+template <typename OP> OP make_hamiltonian(int n_orb, double mu, double U, double J) {
 
   auto orbs = range(n_orb);
 
@@ -74,7 +73,7 @@ OP make_hamiltonian(int n_orb, double mu, double U, double J) {
       h += -J * c_dag("up", o1) * c_dag("dn", o2) * c("up", o2) * c("dn", o1);
     }
   }
-  
+
   return h;
 }
 
@@ -83,19 +82,18 @@ TEST(atom_diag_real, f_shell_kanamori) {
   int n_orb = 7;
   auto fops = make_fops(n_orb);
 
-  double U = 1.0;
-  double J = 0.2;
-  double mu = 0.5*U;
-  
+  double U  = 1.0;
+  double J  = 0.2;
+  double mu = 0.5 * U;
+
   auto H = make_hamiltonian<many_body_operator_real>(n_orb, mu, U, J);
 
-  int n_min = 0, n_max = 3*2;
+  int n_min = 0, n_max = 3 * 2;
 
   auto ad = triqs::atom_diag::atom_diag<false>(H, fops, n_min, n_max);
 
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
   EXPECT_EQ(ad.n_subspaces(), 1040);
-  
 }
 
 MAKE_MAIN;

@@ -83,8 +83,8 @@ namespace triqs::gfs {
     // Construct a temporary imaginary-time Green's function gt
     // I set Nt time bins. This is ugly, one day we must code the direct
     // transformation without going through imaginary time
-    long Nt  = 50000;
-    auto gt  = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.mesh().beta(), gw.mesh().statistic(), Nt}, stdutil::front_pop(gw.data().shape())};
+    long Nt = 50000;
+    auto gt = gf<imtime, typename std::decay_t<G1>::target_t>{{gw.mesh().beta(), gw.mesh().statistic(), Nt}, stdutil::front_pop(gw.data().shape())};
 
     // We first transform to imaginary time because it's been coded with the knowledge of the tails
     gt() = fourier(gw);
@@ -120,7 +120,9 @@ namespace triqs::gfs {
 
   // ----------------------------
 
-  template <typename Tag, typename D, typename Target> struct gf_keeper { gf_const_view<D, Target> g; };
+  template <typename Tag, typename D, typename Target> struct gf_keeper {
+    gf_const_view<D, Target> g;
+  };
 
   template <typename G> inline gf_keeper<tags::legendre, legendre, typename G::target_t> legendre_to_imfreq(G const &gl) {
     static_assert(is_gf_v<G, legendre>, "legendre_to_imfreq takes a Legendre Green function");

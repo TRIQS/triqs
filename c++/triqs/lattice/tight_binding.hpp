@@ -86,7 +86,8 @@ namespace triqs {
        * @return The value for $h_k$ as a complex matrix
        */
       template <typename K>
-      requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) auto fourier(K const &k) const {
+        requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
+      auto fourier(K const &k) const {
         // Make sure to account for ndim in lattice
         auto k_ndim = make_regular(k(nda::ellipsis(), range(lattice().ndim())));
 
@@ -142,7 +143,9 @@ namespace triqs {
        * @return The value for $h_k$ as a complex matrix
        */
       template <typename K>
-      auto dispersion(K const &k) const requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>) {
+      auto dispersion(K const &k) const
+        requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
+      {
         if constexpr (nda::ArrayOfRank<K, 1>) {
           return nda::linalg::eigenvalues(fourier(k));
         } else { // Rank==2
@@ -214,7 +217,7 @@ namespace triqs {
       // Function to read tight_binding object from hdf5 file
       CPP2PY_IGNORE
       static tight_binding h5_read_construct(h5::group g, std::string subgroup_name) {
-        auto grp = g.open_group(subgroup_name);
+        auto grp             = g.open_group(subgroup_name);
         auto bl              = h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
         auto displ_vec       = h5::h5_read<std::vector<nda::vector<long>>>(grp, "displ_vec");
         auto overlap_mat_vec = h5::h5_read<std::vector<nda::matrix<dcomplex>>>(grp, "overlap_mat_vec");
@@ -224,7 +227,8 @@ namespace triqs {
     }; // tight_binding
 
     std::pair<nda::array<double, 1>, nda::array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
-    std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps, int ndiv);
+    std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps,
+                                                                      int ndiv);
 
     [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<dcomplex, 3>
     hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
@@ -236,6 +240,6 @@ namespace triqs {
     energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
 
     [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<double, 2> energies_on_bz_grid(tight_binding const &TB,
-                                                                                                                            int n_pts);
+                                                                                                                       int n_pts);
   } // namespace lattice
 } // namespace triqs

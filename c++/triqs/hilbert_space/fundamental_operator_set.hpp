@@ -108,7 +108,7 @@ namespace triqs::hilbert_space {
     }
 
     /// Insert a new index sequence given as multiple `int`/`std::string` arguments
-    template <typename... IndexType> void insert(IndexType const &... ind) { insert_from_indices_t(indices_t{ind...}); }
+    template <typename... IndexType> void insert(IndexType const &...ind) { insert_from_indices_t(indices_t{ind...}); }
 
     /// Number of elements in this set
     /**

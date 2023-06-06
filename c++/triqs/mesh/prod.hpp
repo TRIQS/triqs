@@ -33,10 +33,10 @@ namespace triqs::mesh {
   template <Mesh... Ms> static constexpr int n_variables<prod<Ms...>> = sizeof...(Ms);
 
   template <Mesh... Ms> struct prod_mesh_point : public std::tuple<typename Ms::mesh_point_t...> {
-    using mesh_t   = prod<Ms...>;
+    using mesh_t       = prod<Ms...>;
     using index_t      = typename mesh_t::index_t;
     using data_index_t = typename mesh_t::data_index_t;
-    using tuple_t  = std::tuple<typename Ms::mesh_point_t...>;
+    using tuple_t      = std::tuple<typename Ms::mesh_point_t...>;
 
     private:
     index_t _index           = std::apply([](auto &...x) { return std::make_tuple(x.index()...); }, *this);

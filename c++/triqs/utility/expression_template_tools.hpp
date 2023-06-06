@@ -26,9 +26,15 @@
 namespace triqs {
   namespace utility {
 
-    template <class T> struct remove_rvalue_ref { typedef T type; };
-    template <class T> struct remove_rvalue_ref<T &> { typedef T const &type; };
-    template <class T> struct remove_rvalue_ref<T &&> { typedef T type; };
+    template <class T> struct remove_rvalue_ref {
+      typedef T type;
+    };
+    template <class T> struct remove_rvalue_ref<T &> {
+      typedef T const &type;
+    };
+    template <class T> struct remove_rvalue_ref<T &&> {
+      typedef T type;
+    };
     template <class T> using remove_rvalue_ref_t = typename remove_rvalue_ref<T>::type;
 
     namespace tags {

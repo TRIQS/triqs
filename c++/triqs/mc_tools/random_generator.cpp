@@ -32,8 +32,8 @@
 
 // List of All available Boost random number generator
 #define RNG_LIST                                                                                                                                     \
-  (mt19937)(mt11213b)(lagged_fibonacci607)(lagged_fibonacci1279)(lagged_fibonacci2281)(lagged_fibonacci3217)(lagged_fibonacci4423)(                  \
-     lagged_fibonacci9689)(lagged_fibonacci19937)(lagged_fibonacci23209)(lagged_fibonacci44497)(ranlux3)
+  (mt19937)(mt11213b)(                                                                                                                               \
+     lagged_fibonacci607)(lagged_fibonacci1279)(lagged_fibonacci2281)(lagged_fibonacci3217)(lagged_fibonacci4423)(lagged_fibonacci9689)(lagged_fibonacci19937)(lagged_fibonacci23209)(lagged_fibonacci44497)(ranlux3)
 
 namespace triqs {
   namespace mc_tools {

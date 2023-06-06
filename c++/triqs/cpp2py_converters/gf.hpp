@@ -75,9 +75,9 @@ namespace cpp2py {
   // Converter for gf one var
   template <typename M, typename T> struct py_converter<triqs::gfs::gf_view<M, T>> {
 
-    using c_type    = triqs::gfs::gf_view<M, T>;
-    using mesh_t    = typename c_type::mesh_t;
-    using data_t    = typename c_type::data_t;
+    using c_type = triqs::gfs::gf_view<M, T>;
+    using mesh_t = typename c_type::mesh_t;
+    using data_t = typename c_type::data_t;
 
     static PyObject *c2py(c_type g) {
 

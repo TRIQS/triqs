@@ -38,7 +38,7 @@ namespace triqs {
       using many_body_op_t = typename atom_diag<Complex>::many_body_op_t;
 
       atom_diag_worker(atom_diag<Complex> *hdiag, int n_min = 0, int n_max = INT_MAX) : hdiag(hdiag), n_min(n_min), n_max(n_max) {}
-      
+
       //void autopartition();
       void autopartition(many_body_op_t const &hyb = many_body_op_t());
       void partition_with_qn(std::vector<many_body_op_t> const &qn_vector);

@@ -84,7 +84,7 @@ struct move_right {
 struct compute_histo {
   configuration *config;
   nda::array<double, 1> H; // an histogram of the positions of the walker
-  long xmax;                         //maximal position registered in the histo
+  long xmax;               //maximal position registered in the histo
   mpi::communicator world;
   long tot; //number of pointsregistered inthe histogram
   compute_histo(configuration &config_, nda::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}

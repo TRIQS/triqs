@@ -38,7 +38,7 @@ namespace triqs {
         Tu tu;
         template <typename U> decltype(auto) operator[](U const &u) { return make_bra<r - 1>(f, std::tuple_cat(tu, std::tie(u))); }
         template <typename T> void operator=(T &&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-        _bra &operator=(_bra const &) = delete;
+        _bra &operator=(_bra const &)              = delete;
       };
 
       // r=1 is special
@@ -47,7 +47,7 @@ namespace triqs {
         Tu tu;
         template <typename U> decltype(auto) operator[](U const &u) { return triqs::tuple::apply(f, std::tuple_cat(tu, std::tie(u))); }
         template <typename T> void operator=(T &&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-        _bra &operator=(_bra const &) = delete;
+        _bra &operator=(_bra const &)              = delete;
       };
 
       // dispatch the constexpr

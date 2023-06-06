@@ -50,8 +50,8 @@ namespace triqs {
 
           for (int i = 0; i < n_points; ++i) {
             z_in(i) = gw.mesh()[gw.mesh().to_data_index(i)];
-            u_in(i) = gw[i](n1, n2); 
-	  }
+            u_in(i) = gw[i](n1, n2);
+          }
 
           triqs::utility::pade_approximant PA(z_in, u_in);
 

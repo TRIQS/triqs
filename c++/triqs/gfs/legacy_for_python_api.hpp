@@ -25,7 +25,7 @@ namespace triqs {
 
     template <typename A> void _gf_invert_data_in_place(A &a) {
       auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
-      nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&... i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+      nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
     }
 
     // FOR LEGACY PYTHON CODE ONLY
@@ -40,12 +40,8 @@ namespace triqs {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
-    inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
-      operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
-    }
-    inline void operator-=(gf_view<imfreq> g, std::complex<double> a) {
-      operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
-    }
+    inline void operator+=(gf_view<imfreq> g, std::complex<double> a) { operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0]))); }
+    inline void operator-=(gf_view<imfreq> g, std::complex<double> a) { operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0]))); }
 
     // Same for scalar valued
     // THIS MUST be kept for python operations
@@ -63,12 +59,8 @@ namespace triqs {
       for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, nda::ellipsis()) -= m;
     }
 
-    inline void operator+=(gf_view<refreq> g, std::complex<double> a) {
-      operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
-    }
-    inline void operator-=(gf_view<refreq> g, std::complex<double> a) {
-      operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0])));
-    }
+    inline void operator+=(gf_view<refreq> g, std::complex<double> a) { operator+=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0]))); }
+    inline void operator-=(gf_view<refreq> g, std::complex<double> a) { operator-=(g, make_matrix(a * nda::eye<double>(g.target_shape()[0]))); }
 
     // Same for scalar valued
     // THIS MUST be kept for python operations

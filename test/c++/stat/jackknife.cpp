@@ -36,9 +36,7 @@ using namespace triqs::utility;
 int seed = 1567;
 mpi::communicator world;
 
-void expect_near(double x, double y) {
-  EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y))));
-}
+void expect_near(double x, double y) { EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y)))); }
 
 // FIXME : remove boost generator for std:: ones
 
@@ -61,7 +59,8 @@ TEST(Stat, Jack1) {
     }
   }
 
-  auto [x, d, xj, xn] = jackknife_mpi(world, [](auto &&a, auto &&b) { return a / b; }, a, b);
+  auto [x, d, xj, xn] = jackknife_mpi(
+     world, [](auto &&a, auto &&b) { return a / b; }, a, b);
 
   // redo the manual computation
   std::vector<double> A(Nsample, 0), B(Nsample, 0);
@@ -119,7 +118,8 @@ TEST(Stat, Jack1) {
 
   // for a linear function, the two average must be the same
 
-  auto [av1, avv, av3, av2] = jackknife_mpi(world, [](auto &&x) { return x; }, a);
+  auto [av1, avv, av3, av2] = jackknife_mpi(
+     world, [](auto &&x) { return x; }, a);
   EXPECT_NEAR(av1, av2, precision);
 }
 

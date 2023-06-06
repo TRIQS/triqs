@@ -19,10 +19,8 @@
 
 #include <triqs/operators/many_body_operator.hpp>
 
-#ifdef C2PY_INCLUDED 
+#ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
 #include "./cpp2py_converters/operators_real_complex.hpp"
-template <> static constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator>  = true;
+template <> static constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
 #endif
-
-

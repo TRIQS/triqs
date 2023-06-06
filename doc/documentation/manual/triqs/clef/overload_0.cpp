@@ -21,7 +21,7 @@ namespace nda::clef {
 
   using ::bar;
   CLEF_MAKE_FNT_LAZY(bar);
-} // namespace nda
+} // namespace nda::clef
 
 int main() {
   nda::clef::placeholder<3> x_;

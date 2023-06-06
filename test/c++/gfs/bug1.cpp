@@ -23,7 +23,6 @@ using namespace triqs::gfs;
 
 TEST(Gf, SimpleAssign) {
 
-
   static_assert(std::is_constructible<std::complex<double>, matsubara_freq>::value, "oops");
 
   triqs::clef::placeholder<0> om_;

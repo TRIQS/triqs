@@ -99,25 +99,26 @@ namespace triqs::gfs {
 
     if (known_moments.is_empty()) {
       // A simple check on whether or not we are dealing with noisy data
-      auto dat   = gt.data();
-      int n_tau  = gt.mesh().size();
-      auto der_1 = max_element(abs(dat(1, range::all) - dat(0, range::all)) + abs(dat(n_tau - 2, range::all) - dat(n_tau - 1, range::all))) / gt.mesh().delta();
-      auto der_2 =
-         0.5 * max_element(abs(dat(2, range::all) - dat(0, range::all)) + abs(dat(n_tau - 3, range::all) - dat(n_tau - 1, range::all))) / gt.mesh().delta();
+      auto dat  = gt.data();
+      int n_tau = gt.mesh().size();
+      auto der_1 =
+         max_element(abs(dat(1, range::all) - dat(0, range::all)) + abs(dat(n_tau - 2, range::all) - dat(n_tau - 1, range::all))) / gt.mesh().delta();
+      auto der_2 = 0.5 * max_element(abs(dat(2, range::all) - dat(0, range::all)) + abs(dat(n_tau - 3, range::all) - dat(n_tau - 1, range::all)))
+         / gt.mesh().delta();
       if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2) {
         std::cerr << "WARNING: Direct Fourier cannot deduce the high-frequency moments of G(tau) due to noise or a coarse tau-grid. \
 	  Please specify the high-frequency moments for higher accuracy.\n";
         return _fourier_impl(iw_mesh, gt, make_zero_tail(gt, 4));
       } else {
-	return _fourier_impl(iw_mesh, gt, fit_tail(gt));
+        return _fourier_impl(iw_mesh, gt, fit_tail(gt));
       }
     } else {
       double _abs_tail0 = max_element(abs(known_moments(0, range::all)));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
-      int n_known_moments = std::min<size_t>(known_moments.shape()[0], 4);
-      tail = make_zero_tail(gt, 4);
+      int n_known_moments                         = std::min<size_t>(known_moments.shape()[0], 4);
+      tail                                        = make_zero_tail(gt, 4);
       tail(range(0, n_known_moments), range::all) = known_moments(range(0, n_known_moments), range::all);
     }
 
@@ -156,7 +157,8 @@ namespace triqs::gfs {
       a3 = (m3 - m2) / 2;
 
       for (auto const &t : gt.mesh())
-  _gin(t.index(), _) = fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+        _gin(t.index(), _) =
+           fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
     } else {
       b1 = -0.5;
@@ -167,7 +169,7 @@ namespace triqs::gfs {
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
 
       for (auto const &t : gt.mesh())
-  _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+        _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
     int dims[] = {int(L)};
@@ -179,7 +181,7 @@ namespace triqs::gfs {
     // FIXME Avoid copy, by doing proper in-place operation
     auto corr = -0.5 * fact * (gt[0] + m1 + (is_fermion ? 1 : -1) * gt[L]);
     for (auto const &iw : iw_mesh) gw[iw] = _gout((iw.n + L) % L, _) + corr + a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3);
-    
+
     return std::move(gw);
   }
 

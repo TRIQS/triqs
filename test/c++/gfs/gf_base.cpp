@@ -42,8 +42,8 @@ TEST(Gf, Base) {
 
   Gv[0] = 0;
 
-  auto Gv2       = slice_target(G(), range(0, 1), range(0, 1));
-  Gv2[0] = 10;
+  auto Gv2 = slice_target(G(), range(0, 1), range(0, 1));
+  Gv2[0]   = 10;
   EXPECT_ARRAY_NEAR(G(0), matrix<double>{{10, 0}, {0, 0}});
 
   EXPECT_ARRAY_NEAR(eval(G(om_), om_ = 0), G(0));
@@ -109,7 +109,7 @@ TEST(Gf, EvaluatorMatrix) {
 
   triqs::clef::placeholder<0> iw_;
   g(iw_) << 1 / (iw_ + 2.3);
-  std::cout  << g[0] <<std::endl;
+  std::cout << g[0] << std::endl;
 
   auto f     = matsubara_freq{120, beta, Fermion};
   auto exact = matrix<dcomplex>{{1 / (f + 2.3), 0i}, {0i, 1 / (f + 2.3)}};
@@ -217,8 +217,8 @@ TEST(Gf, EvalSlice) {
 
 TEST(Gf, TransposeComparison) {
 
-  auto m     = gf_mesh<retime>{0, 10, 99};
-  auto Ginv  = gf<retime>{m, {2, 2}};
+  auto m    = gf_mesh<retime>{0, 10, 99};
+  auto Ginv = gf<retime>{m, {2, 2}};
 
   placeholder<0> w;
   placeholder<1> i;

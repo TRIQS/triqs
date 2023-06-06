@@ -122,7 +122,6 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
 }
 */
 
-
 /** 
  * Test auto correlation length estimation 
  * on a modified Gausian correlated random walk.

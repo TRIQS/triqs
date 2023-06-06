@@ -30,22 +30,22 @@ namespace triqs::gfs {
   using nda::array;
   using nda::array_view;
   using nda::ellipsis;
-  using triqs::arrays::make_shape;
   using nda::matrix;
   using nda::matrix_const_view;
   using nda::matrix_view;
+  using triqs::arrays::make_shape;
 
   using utility::factory;
 
   // Using from mesh namespace
-  using mesh::Mesh;
   using mesh::all_t;
   using mesh::Boson;
   using mesh::closest_mesh_pt;
+  using mesh::Mesh;
   //using mesh::closest_pt_wrap;
   using mesh::Fermion;
-  using mesh::n_variables;
   using mesh::matsubara_freq;
+  using mesh::n_variables;
   using mesh::statistic_enum;
 
   /*----------------------------------------------------------
@@ -68,35 +68,32 @@ namespace triqs::gfs {
 
   template <typename Mesh, typename Target> struct gf_h5_rw;
 
-  namespace detail { 
+  namespace detail {
 
-    template<auto Positions, Mesh M>
-    auto filter_mesh(M const & m) { 
+    template <auto Positions, Mesh M> auto filter_mesh(M const &m) {
       static_assert(Positions.size() > 0);
       if constexpr (Positions.size() == 1) {
-	return std::get<Positions[0]>(m);
+        return std::get<Positions[0]>(m);
       } else {
         return [&]<size_t... Is>(std::index_sequence<Is...>) {
-          return mesh::prod{std::get<Positions[Is]>(m)...}; 
+          return mesh::prod{std::get<Positions[Is]>(m)...};
         }(std::make_index_sequence<Positions.size()>{});
       }
     }
 
-    template<size_t L> 
-    constexpr std::array<int, L> compute_position(auto const &filter) { 
+    template <size_t L> constexpr std::array<int, L> compute_position(auto const &filter) {
       std::array<int, L> r{};
       int ii = 0;
-      for (int i = 0; i<filter.size() and ii<L; ++i) {
+      for (int i = 0; i < filter.size() and ii < L; ++i) {
         r[ii] = i;
-        ii+= int(filter[i]);
+        ii += int(filter[i]);
       }
-      return r;  
+      return r;
     }
 
-   template <Mesh M, typename... XS>
-    bool eval_to_zero(M const & m, XS const &... xs) {
+    template <Mesh M, typename... XS> bool eval_to_zero(M const &m, XS const &...xs) {
       if constexpr (sizeof...(XS) > 1) {
-        return [&]<std::size_t...Is>(std::index_sequence<Is...>) {
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
           return (eval_to_zero(std::get<Is>(m), xs) or ... or false);
         }(std::make_index_sequence<sizeof...(XS)>());
       } else if constexpr (requires { m.eval_to_zero(xs...); }) {
@@ -105,12 +102,13 @@ namespace triqs::gfs {
       return false;
     }
 
-    template<size_t Is, Mesh M> 
-    auto const & extract_mesh(M const & m) { 
-      static_assert( (Is==0) or mesh::is_product<M>);
-      if constexpr (mesh::is_product<M>) return std::get<Is>(m);
-      else return m;
+    template <size_t Is, Mesh M> auto const &extract_mesh(M const &m) {
+      static_assert((Is == 0) or mesh::is_product<M>);
+      if constexpr (mesh::is_product<M>)
+        return std::get<Is>(m);
+      else
+        return m;
     }
-  }
+  } // namespace detail
 
 } // namespace triqs::gfs

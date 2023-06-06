@@ -79,17 +79,17 @@ namespace triqs {
         h5_w = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_write(g, name, *p); }) h5_write(g, name, *p);
         };
-        NProposed           = 0;
-        Naccepted           = 0;
-        acceptance_rate_    = -1;
-        is_move_set_        = std::is_same<MoveType, move_set<MCSignType>>::value;
+        NProposed        = 0;
+        Naccepted        = 0;
+        acceptance_rate_ = -1;
+        is_move_set_     = std::is_same<MoveType, move_set<MCSignType>>::value;
       }
 
       // no default constructor.
-      move(move const &rhs) = delete;
-      move(move &&rhs)      = default;
+      move(move const &rhs)            = delete;
+      move(move &&rhs)                 = default;
       move &operator=(move const &rhs) = delete;
-      move &operator=(move &&rhs) = default;
+      move &operator=(move &&rhs)      = default;
 
       MCSignType attempt() {
         NProposed++;
@@ -106,9 +106,9 @@ namespace triqs {
       uint64_t n_accepted_config() const { return Naccepted; }
 
       void clear_statistics() {
-        NProposed           = 0;
-        Naccepted           = 0;
-        acceptance_rate_    = -1;
+        NProposed        = 0;
+        Naccepted        = 0;
+        acceptance_rate_ = -1;
       }
 
       void collect_statistics(mpi::communicator const &c) {
@@ -155,10 +155,10 @@ namespace triqs {
         debug_counter = 0;
       }
 
-      move_set(move_set const &rhs) = delete;
-      move_set(move_set &&rhs)      = default;
+      move_set(move_set const &rhs)            = delete;
+      move_set(move_set &&rhs)                 = default;
       move_set &operator=(move_set const &rhs) = delete;
-      move_set &operator=(move_set &&rhs) = default;
+      move_set &operator=(move_set &&rhs)      = default;
 
       /**
    * Add move M with its probability of being proposed.

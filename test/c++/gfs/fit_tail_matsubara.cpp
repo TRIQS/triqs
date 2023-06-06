@@ -109,7 +109,7 @@ TEST(FitTailMatsubara, Complex) { // NOLINT
 
   triqs::clef::placeholder<0> iw_;
   double beta = 10;
-  long N       = 200;
+  long N      = 200;
 
   auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
 
@@ -153,7 +153,7 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
   g(k_, iW_, iw_) << 1 / (iw_ + iW_ - cos(k_[0]) * cos(k_[1]));
 
   // Fix both the 0th and 1st moment
-  auto known_moments                       = array<dcomplex, 5>(2, N_k * N_k, 2 * N_iW - 1, 1, 1);
+  auto known_moments                             = array<dcomplex, 5>(2, N_k * N_k, 2 * N_iW - 1, 1, 1);
   known_moments(0, range::all, range::all, 0, 0) = 0.0;
   known_moments(1, range::all, range::all, 0, 0) = 1.0;
 

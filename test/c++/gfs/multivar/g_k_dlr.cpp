@@ -31,10 +31,10 @@ double onefermion(double tau, double eps, double beta) { return -exp(-eps * tau)
 
 TEST(Gf, Gk_dlr_mat) {
 
-  double beta   = 5;
-  int n_bz      = 10;
-  double w_max  = 100.0;
-  double eps    = 1e-10;
+  double beta  = 5;
+  int n_bz     = 10;
+  double w_max = 100.0;
+  double eps   = 1e-10;
 
   auto bz = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 
@@ -61,10 +61,10 @@ TEST(Gf, Gk_dlr_mat) {
 
 TEST(Gf, G_dlr_k_mat) {
 
-  double beta   = 5;
-  int n_bz      = 10;
-  double w_max  = 100.0;
-  double eps    = 1e-10;
+  double beta  = 5;
+  int n_bz     = 10;
+  double w_max = 100.0;
+  double eps   = 1e-10;
 
   auto bz = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 

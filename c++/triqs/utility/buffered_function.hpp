@@ -47,7 +47,7 @@ namespace triqs {
       template <typename Function> buffered_function(Function f, size_t size = 1000) : buffer(size) {
         refill = [f](buffered_function *bf) mutable { // without the mutable, the () of the lambda object is const, hence f
           for (auto &x : bf->buffer) x = f();
-          bf->index= 0;
+          bf->index = 0;
         };
         refill(this); // first filling of the buffer
       }

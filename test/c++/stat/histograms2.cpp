@@ -143,7 +143,7 @@ TEST(histogram, pdf) {
   auto hi1 = make_hi1();
 
   nda::vector<double> true_pdf_hi1 = {.3, .1, .3, .1, .0, .1, .0, .0, .0, .1, .0};
-  auto pdf_hi1                        = pdf(hi1);
+  auto pdf_hi1                     = pdf(hi1);
 
   EXPECT_ARRAY_NEAR(true_pdf_hi1, pdf_hi1.data());
 }
@@ -153,7 +153,7 @@ TEST(histogram, cdf) {
   auto hi1 = make_hi1();
 
   nda::vector<double> true_cdf_hi1 = {.3, .4, .7, .8, .8, .9, .9, .9, .9, 1.0, 1.0};
-  auto cdf_hi1                        = cdf(hi1);
+  auto cdf_hi1                     = cdf(hi1);
 
   EXPECT_ARRAY_NEAR(true_cdf_hi1, cdf_hi1.data());
 }

@@ -25,7 +25,7 @@ using namespace triqs::gfs;
 using namespace std::complex_literals;
 
 template <typename T> struct check {
-//  static_assert(std::is_same<typename T::view_type, view_or_type_t<T>>::value, "err");
+  //  static_assert(std::is_same<typename T::view_type, view_or_type_t<T>>::value, "err");
   static_assert(std::is_same<typename T::regular_type, regular_t<T>>::value, "err");
 };
 
@@ -43,19 +43,19 @@ TEST(ViewTools, PosFreqView) {
   auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, n_iw};
 
   // -- Build and Init Green function
-  auto g_iw    = gf<imfreq, matrix_valued>{iw_mesh, {1, 1}};
+  auto g_iw = gf<imfreq, matrix_valued>{iw_mesh, {1, 1}};
   triqs::clef::placeholder<0> iw_;
   g_iw(iw_) << 1.0 / (iw_ + 1.0 + 1i);
 
   // -- Test positive_freq_view()
   auto g_iw_cv = gf_const_view(g_iw);
 
-  auto g_iw_pfv = positive_freq_view(g_iw);
+  auto g_iw_pfv   = positive_freq_view(g_iw);
   auto g_iw_pfv_v = positive_freq_view(g_iw()); // From rvalue view
   //auto g_iw_pfv_v = positive_freq_view(gf{g_iw}); // From temporary gf: This should fail compilation
   auto g_iw_pfv_cv = positive_freq_view(g_iw_cv); // From lvalue view
 
-  auto pos_freq_data_view = g_iw.data()(range(n_iw,2*n_iw),ellipsis());
+  auto pos_freq_data_view = g_iw.data()(range(n_iw, 2 * n_iw), ellipsis());
   EXPECT_ARRAY_NEAR(pos_freq_data_view, g_iw_pfv.data());
   EXPECT_ARRAY_NEAR(pos_freq_data_view, g_iw_pfv_v.data());
   EXPECT_ARRAY_NEAR(pos_freq_data_view, g_iw_pfv_cv.data());

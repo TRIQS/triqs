@@ -24,15 +24,29 @@
 namespace triqs {
 
   namespace details {
-    template <typename T, typename Enable = void> struct _regular { using type = T; };
-    template <typename T> struct _regular<T, std::void_t<typename T::regular_type>> { using type = typename T::regular_type; };
+    template <typename T, typename Enable = void> struct _regular {
+      using type = T;
+    };
+    template <typename T> struct _regular<T, std::void_t<typename T::regular_type>> {
+      using type = typename T::regular_type;
+    };
 
-    template <typename T, typename Enable = void> struct _view_or_type { using type = T; };
-    template <typename T> struct _view_or_type<T, std::void_t<typename T::view_type>> { using type = typename T::view_type; };
-    template <typename T> struct _view_or_type<T const, std::void_t<typename T::view_type>> { using type = typename T::const_view_type; };
+    template <typename T, typename Enable = void> struct _view_or_type {
+      using type = T;
+    };
+    template <typename T> struct _view_or_type<T, std::void_t<typename T::view_type>> {
+      using type = typename T::view_type;
+    };
+    template <typename T> struct _view_or_type<T const, std::void_t<typename T::view_type>> {
+      using type = typename T::const_view_type;
+    };
 
-    template <typename T, typename Enable = void> struct _const_view_or_type { using type = T; };
-    template <typename T> struct _const_view_or_type<T, std::void_t<typename T::const_view_type>> { using type = typename T::const_view_type; };
+    template <typename T, typename Enable = void> struct _const_view_or_type {
+      using type = T;
+    };
+    template <typename T> struct _const_view_or_type<T, std::void_t<typename T::const_view_type>> {
+      using type = typename T::const_view_type;
+    };
   } // namespace details
 
   template <typename T> using regular_t            = typename details::_regular<std::decay_t<T>>::type;

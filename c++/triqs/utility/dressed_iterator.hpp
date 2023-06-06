@@ -53,7 +53,8 @@ namespace triqs {
     template <typename IteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType = void> struct dressed_iterator;
 
     namespace details {
-      template <typename IteratorType> constexpr bool is_bidir = std::is_same_v<typename IteratorType::iterator_category, std::bidirectional_iterator_tag>;
+      template <typename IteratorType>
+      constexpr bool is_bidir = std::is_same_v<typename IteratorType::iterator_category, std::bidirectional_iterator_tag>;
     } // namespace details
 
     // specialization when a aux data is present
@@ -61,15 +62,14 @@ namespace triqs {
     struct dressed_iterator
        : public boost::iterator_facade<
             dressed_iterator<IteratorType, Dressing, DressingAuxiliaryArgumentPtrType>, Dressing,
-            std::conditional_t<details::is_bidir<IteratorType>, boost::bidirectional_traversal_tag, boost::forward_traversal_tag>,
-            Dressing> {
+            std::conditional_t<details::is_bidir<IteratorType>, boost::bidirectional_traversal_tag, boost::forward_traversal_tag>, Dressing> {
       public:
       dressed_iterator() {}
       template <typename T> dressed_iterator(T const &it, DressingAuxiliaryArgumentPtrType *aux) : _it(it), _aux(aux) {}
-      dressed_iterator(dressed_iterator const &it) = default;
-      dressed_iterator(dressed_iterator &&it)      = default;
+      dressed_iterator(dressed_iterator const &it)            = default;
+      dressed_iterator(dressed_iterator &&it)                 = default;
       dressed_iterator &operator=(dressed_iterator const &it) = default;
-      dressed_iterator &operator                              =(dressed_iterator &&it) noexcept {
+      dressed_iterator &operator=(dressed_iterator &&it) noexcept {
         using std::swap;
         swap(it._it, this->_it);
         swap(this->_aux, it._aux);
@@ -82,13 +82,16 @@ namespace triqs {
       DressingAuxiliaryArgumentPtrType *get_aux() { return _aux; }
       const DressingAuxiliaryArgumentPtrType *get_aux() const { return _aux; }
 
-      template <typename OtherSentinel>
-      bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
+      template <typename OtherSentinel> bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
 
       private:
       friend class boost::iterator_core_access;
       void increment() { ++_it; }
-      void decrement() requires(details::is_bidir<IteratorType>) { --_it; }
+      void decrement()
+        requires(details::is_bidir<IteratorType>)
+      {
+        --_it;
+      }
       bool equal(dressed_iterator const &other) const { return (other._it == _it); }
       Dressing dereference() const { return Dressing(_it, _aux); }
       IteratorType _it;
@@ -105,10 +108,10 @@ namespace triqs {
       public:
       dressed_iterator() {}
       template <typename T> dressed_iterator(T const &it) : _it(it) {}
-      dressed_iterator(dressed_iterator const &it) = default;
-      dressed_iterator(dressed_iterator &&it)      = default;
+      dressed_iterator(dressed_iterator const &it)            = default;
+      dressed_iterator(dressed_iterator &&it)                 = default;
       dressed_iterator &operator=(dressed_iterator const &it) = default;
-      dressed_iterator &operator                              =(dressed_iterator &&it) noexcept {
+      dressed_iterator &operator=(dressed_iterator &&it) noexcept {
         using std::swap;
         swap(it._it, this->_it);
         return *this;
@@ -118,13 +121,16 @@ namespace triqs {
       IteratorType &get() { return _it; }
       operator IteratorType() const { return _it; }
 
-      template <typename OtherSentinel>
-      bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
+      template <typename OtherSentinel> bool operator==(itertools::sentinel_t<OtherSentinel> other) { return _it == other.it; }
 
       private:
       friend class boost::iterator_core_access;
       void increment() { ++_it; }
-      void decrement() requires(details::is_bidir<IteratorType>) { --_it; }
+      void decrement()
+        requires(details::is_bidir<IteratorType>)
+      {
+        --_it;
+      }
       bool equal(dressed_iterator const &other) const { return (other._it == _it); }
       Dressing dereference() const { return Dressing(_it); }
       IteratorType _it;

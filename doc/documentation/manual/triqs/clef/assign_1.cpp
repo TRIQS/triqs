@@ -6,9 +6,7 @@ struct Obj {
   double v;
   CLEF_IMPLEMENT_LAZY_CALL();
   //
-  template <typename Fnt> friend void clef_auto_assign(Obj &x, Fnt f) {
-    std::cout << " called triqs_clef_auto_assign " << f(x.v++) << std::endl;
-  }
+  template <typename Fnt> friend void clef_auto_assign(Obj &x, Fnt f) { std::cout << " called triqs_clef_auto_assign " << f(x.v++) << std::endl; }
 };
 
 int main() {

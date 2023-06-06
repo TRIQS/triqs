@@ -58,6 +58,6 @@ namespace triqs {
       }
     };
 
-    template <typename T, typename... U> T factory(U &&... x) { return factories<T>::invoke(std::forward<U>(x)...); }
+    template <typename T, typename... U> T factory(U &&...x) { return factories<T>::invoke(std::forward<U>(x)...); }
   } // namespace utility
 } // namespace triqs

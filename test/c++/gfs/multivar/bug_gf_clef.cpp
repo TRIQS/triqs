@@ -138,7 +138,7 @@ TEST(Gf, MixedIndexSliceClefImFreq) {
   int nw      = 10;
   double beta = 2.3;
   auto g      = gf<prod<imfreq, imfreq, imfreq>, matrix_valued>{{{beta, Boson, nw}, {beta, Fermion, nw}, {beta, Fermion, nw}}, {1, 1}};
-  g() = 0.0;
+  g()         = 0.0;
 
   auto Omega = std::get<0>(g.mesh())[4];
   auto n     = std::get<1>(g.mesh())[5];

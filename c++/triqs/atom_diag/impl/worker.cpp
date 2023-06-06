@@ -47,7 +47,7 @@ namespace triqs {
     //------------------------------------------------------------------------------------
 
     ATOM_DIAG_WORKER_METHOD(void, autopartition(many_body_op_t const &hyb)) {
-    //ATOM_DIAG_WORKER_METHOD(void, autopartition()) {
+      //ATOM_DIAG_WORKER_METHOD(void, autopartition()) {
 
       fundamental_operator_set const &fops = hdiag->get_fops();
       many_body_op_t const &h              = hdiag->get_h_atomic();
@@ -73,9 +73,9 @@ namespace triqs {
         int n                                              = o.linear_index;
         std::tie(creation_melem[n], annihilation_melem[n]) = SP.merge_subspaces(op_c_dag, op_c, true);
       }
- 
+
       // Fill subspaces
-      auto & h_spaces = hdiag->sub_hilbert_spaces;
+      auto &h_spaces = hdiag->sub_hilbert_spaces;
 
       h_spaces.reserve(SP.n_subspaces());
       for (int sp = 0; sp < SP.n_subspaces(); ++sp) h_spaces.emplace_back(sp);
@@ -86,16 +86,11 @@ namespace triqs {
         ;
 
       // Discard empty subspaces
-      h_spaces.erase(
-        std::remove_if(h_spaces.begin(), h_spaces.end(),
-                       [](sub_hilbert_space const& sp) { return sp.size() == 0; }
-        ),
-        h_spaces.end()
-      );
+      h_spaces.erase(std::remove_if(h_spaces.begin(), h_spaces.end(), [](sub_hilbert_space const &sp) { return sp.size() == 0; }), h_spaces.end());
 
       // Correspondence between subspace indices before and after filtering
       std::map<int, int> remap;
-      for(auto const& sp : h_spaces) remap.emplace(sp.get_index(), remap.size());
+      for (auto const &sp : h_spaces) remap.emplace(sp.get_index(), remap.size());
 
       // Fill connections
       hdiag->creation_connection.resize(fops.size(), h_spaces.size());
@@ -106,29 +101,28 @@ namespace triqs {
       for (auto const &o : fops) {
         int n = o.linear_index;
         for (auto const &[fs_pair, val] : creation_melem[n]) {
-          auto [i, f] = fs_pair;
+          auto [i, f]     = fs_pair;
           auto i_remap_it = remap.find(SP.lookup_basis_state(i));
-          if(i_remap_it == remap.end()) continue;
+          if (i_remap_it == remap.end()) continue;
           auto f_remap_it = remap.find(SP.lookup_basis_state(f));
-          if(f_remap_it == remap.end()) continue;
+          if (f_remap_it == remap.end()) continue;
           hdiag->creation_connection(n, i_remap_it->second) = f_remap_it->second;
         }
         for (auto const &[fs_pair, val] : annihilation_melem[n]) {
-          auto [i, f] = fs_pair;
+          auto [i, f]     = fs_pair;
           auto i_remap_it = remap.find(SP.lookup_basis_state(i));
-          if(i_remap_it == remap.end()) continue;
+          if (i_remap_it == remap.end()) continue;
           auto f_remap_it = remap.find(SP.lookup_basis_state(f));
-          if(f_remap_it == remap.end()) continue;
+          if (f_remap_it == remap.end()) continue;
           hdiag->annihilation_connection(n, i_remap_it->second) = f_remap_it->second;
         }
       }
 
       // Reindex subspaces
-      for(int i = 0; i < h_spaces.size(); ++i) h_spaces[i].set_index(i);
+      for (int i = 0; i < h_spaces.size(); ++i) h_spaces[i].set_index(i);
 
       complete();
     }
-
 
     // -----------------------------------------------------------------
 
@@ -307,10 +301,10 @@ namespace triqs {
         auto h_matrix = matrix_t(sp.size(), sp.size());
 
         for (int i = 0; i < sp.size(); ++i) {
-          i_state.amplitudes()() = 0;
-          i_state(i)             = 1;
-          auto f_state           = hamiltonian(i_state);
-          h_matrix(range::all, i)   = f_state.amplitudes();
+          i_state.amplitudes()()  = 0;
+          i_state(i)              = 1;
+          auto f_state            = hamiltonian(i_state);
+          h_matrix(range::all, i) = f_state.amplitudes();
         }
 
         auto eig                   = linalg::eigenelements(h_matrix);

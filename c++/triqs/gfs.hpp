@@ -84,8 +84,7 @@ namespace triqs::gfs {
   using mesh::refreq;
   using mesh::retime;
 
-  template <triqs::mesh::Mesh M>
-  using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
+  template <triqs::mesh::Mesh M> using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
 
   // Get shape of the data or of the target
   template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }

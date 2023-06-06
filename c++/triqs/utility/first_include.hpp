@@ -46,9 +46,8 @@ namespace boost {
 // missing complex * int and in * complex
 #include <h5/std_addons/complex.hpp>
 
-#define CPP2PY_IGNORE  __attribute__((annotate("ignore_in_python")))
+#define CPP2PY_IGNORE __attribute__((annotate("ignore_in_python")))
 #define CPP2PY_ARG_AS_DICT __attribute__((annotate("use_parameter_class")))
-
 
 // MACRO USED only in automatic Python wrapper generator desc.
 // Only on clang, other compilers : not needed,

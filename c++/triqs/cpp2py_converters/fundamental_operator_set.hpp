@@ -26,6 +26,5 @@ namespace cpp2py {
   // reduction of fundamental_operator_set to/from it.
   template <>
   struct py_converter<triqs::hilbert_space::fundamental_operator_set>
-     : py_converter_generic_cast_construct<triqs::hilbert_space::fundamental_operator_set,
-                                           triqs::hilbert_space::fundamental_operator_set::data_t> {};
+     : py_converter_generic_cast_construct<triqs::hilbert_space::fundamental_operator_set, triqs::hilbert_space::fundamental_operator_set::data_t> {};
 } // namespace cpp2py

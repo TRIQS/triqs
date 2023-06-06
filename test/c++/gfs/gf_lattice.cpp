@@ -21,8 +21,8 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <nda/stdutil/array.hpp>
 
-using idx_t   = std::array<long, 3>;
-using k_t     = std::array<double, 3>;
+using idx_t = std::array<long, 3>;
+using k_t   = std::array<double, 3>;
 
 TEST(Gfs, cyclat) {
   double beta = 1;

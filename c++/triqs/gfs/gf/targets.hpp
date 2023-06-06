@@ -92,15 +92,28 @@ namespace triqs {
 
     /// invert the relation:  type, rank -> target.
     template <typename T, int R> struct _target_from_type_rank;
-    template <int R> struct _target_from_type_rank<dcomplex, R> { using type = tensor_valued<R>; };
-    template <> struct _target_from_type_rank<dcomplex, 2> { using type = matrix_valued; };
-    template <> struct _target_from_type_rank<dcomplex, 0> { using type = scalar_valued; };
-    template <int R> struct _target_from_type_rank<double, R> { using type = tensor_real_valued<R>; };
-    template <> struct _target_from_type_rank<double, 2> { using type = matrix_real_valued; };
-    template <> struct _target_from_type_rank<double, 0> { using type = scalar_real_valued; };
+    template <int R> struct _target_from_type_rank<dcomplex, R> {
+      using type = tensor_valued<R>;
+    };
+    template <> struct _target_from_type_rank<dcomplex, 2> {
+      using type = matrix_valued;
+    };
+    template <> struct _target_from_type_rank<dcomplex, 0> {
+      using type = scalar_valued;
+    };
+    template <int R> struct _target_from_type_rank<double, R> {
+      using type = tensor_real_valued<R>;
+    };
+    template <> struct _target_from_type_rank<double, 2> {
+      using type = matrix_real_valued;
+    };
+    template <> struct _target_from_type_rank<double, 0> {
+      using type = scalar_real_valued;
+    };
 
     // Given an array A, compute the target, with A::rank - nvar
     template <typename A, int nvar>
-    using target_from_array = typename _target_from_type_rank<typename std::decay_t<typename std::decay_t<A>::value_type>, std::decay_t<A>::rank - nvar>::type;
+    using target_from_array =
+       typename _target_from_type_rank<typename std::decay_t<typename std::decay_t<A>::value_type>, std::decay_t<A>::rank - nvar>::type;
   } // namespace gfs
 } // namespace triqs

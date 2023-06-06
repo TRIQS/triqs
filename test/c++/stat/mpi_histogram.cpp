@@ -48,7 +48,7 @@ TEST(histogram, mpi_broadcast) {
 TEST(histogram, mpi_reduce) {
 
   mpi::communicator world;
-  auto h                            = make_hd();
+  auto h                         = make_hd();
   nda::vector<double> true_h_rec = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
   true_h_rec *= world.size();
 

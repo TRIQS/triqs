@@ -77,9 +77,7 @@ namespace triqs {
       imperative_operator() {}
 
       /// Check if the operator is empty
-      bool is_empty() const{
-        return (all_terms.size()==0);
-      }
+      bool is_empty() const { return (all_terms.size() == 0); }
 
       /// Constructor from a `many_body_operator` and a `fundamental_operator_set`
       /**
@@ -95,26 +93,24 @@ namespace triqs {
         hilbert_map = hmap;
         if ((hilbert_map.size() == 0) != !UseMap) TRIQS_RUNTIME_ERROR << "Internal error";
 
-        auto greater = [&fops](triqs::operators::canonical_ops_t const& op1,
-                               triqs::operators::canonical_ops_t const& op2) {
-          if(op1.dagger != op2.dagger) return op2.dagger;
-          return op1.dagger ? (fops[op1.indices] > fops[op2.indices]) :
-                              (fops[op1.indices] < fops[op2.indices]);
+        auto greater = [&fops](triqs::operators::canonical_ops_t const &op1, triqs::operators::canonical_ops_t const &op2) {
+          if (op1.dagger != op2.dagger) return op2.dagger;
+          return op1.dagger ? (fops[op1.indices] > fops[op2.indices]) : (fops[op1.indices] < fops[op2.indices]);
         };
 
         // The goal here is to have a transcription of the many_body_operator in terms
         // of simple vectors (maybe the code below could be more elegant)
-        for (auto const& term : op) {
+        for (auto const &term : op) {
           auto monomial = term.monomial;
-          auto coef = term.coef;
+          auto coef     = term.coef;
 
           // Sort monomial according to the order established by fops
           int n = monomial.size();
           bool swapped;
           do {
             swapped = false;
-            for(int i = 1; i < n; ++i) {
-              if(greater(monomial[i - 1], monomial[i])) {
+            for (int i = 1; i < n; ++i) {
+              if (greater(monomial[i - 1], monomial[i])) {
                 using std::swap;
                 swap(monomial[i - 1], monomial[i]);
                 swapped = true;
@@ -122,7 +118,7 @@ namespace triqs {
               }
             }
             --n;
-          } while(swapped);
+          } while (swapped);
 
           // Given the environment variable CHECK_ISSUE819 was set by the user
           // throw an exception if the result of this model was effected by issue 819
@@ -188,8 +184,7 @@ namespace triqs {
       }
 
       // Forward the call to the coefficient
-      template <typename... Args>
-      static auto apply_if_possible(scalar_t const &x, Args &&... args) -> std::invoke_result_t<scalar_t, Args...> {
+      template <typename... Args> static auto apply_if_possible(scalar_t const &x, Args &&...args) -> std::invoke_result_t<scalar_t, Args...> {
         return x(std::forward<Args>(args)...);
       }
       static auto apply_if_possible(scalar_t const &x) -> scalar_t { return x; }
@@ -209,7 +204,7 @@ namespace triqs {
    @param st Initial state
    @param args Optional argument pack passed to each coefficient of the operator
   */
-      template <typename StateType, typename... Args> StateType operator()(StateType const &st, Args &&... args) const {
+      template <typename StateType, typename... Args> StateType operator()(StateType const &st, Args &&...args) const {
 
         StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
         auto const &hs      = st.get_hilbert();

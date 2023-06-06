@@ -29,11 +29,11 @@ double beta = 20;
 int main() {
 
   // Meshes
-  auto iw_mesh = mesh::imfreq{beta, Fermion, nw};
+  auto iw_mesh     = mesh::imfreq{beta, Fermion, nw};
   auto iw_inu_mesh = iw_mesh * iw_mesh;
 
   // -- Product Gf
-  auto Gp = gf{iw_inu_mesh, {1, 1}};
+  auto Gp  = gf{iw_inu_mesh, {1, 1}};
   auto Gp1 = gf{Gp};
 
   // Before commit 68b1d85e the following line was creating a copy
@@ -43,11 +43,11 @@ int main() {
   std::get<0>(iw_inu_mesh);
   std::begin(iw_inu_mesh);
   std::get<0>(*std::begin(iw_inu_mesh));
-  for(auto const &mp: iw_inu_mesh) {
+  for (auto const &mp : iw_inu_mesh) {
     std::get<0>(mp);
     std::get<1>(mp);
     auto mp2 = mp;
-    std::get<0>(mp2); 
+    std::get<0>(mp2);
     //std::apply([](auto const &x, auto const &y) { return x; }, mp);
     std::apply([](auto const &x, auto const &y) { return x; }, mp2);
   }

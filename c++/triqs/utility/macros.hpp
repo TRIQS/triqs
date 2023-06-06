@@ -27,7 +27,6 @@
 
 #include <nda/macros.hpp>
 
-
 #define DECL_AND_RETURN(...)                                                                                                                         \
   ->decltype(__VA_ARGS__) { return __VA_ARGS__; }
 
@@ -61,4 +60,3 @@ namespace triqs {
   std::cerr << X;                                                                                                                                    \
   std::terminate();                                                                                                                                  \
   }
-

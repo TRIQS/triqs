@@ -38,5 +38,4 @@ int main() {
   // If you insist using on more complex containers...
   std::vector<std::vector<double>> W(3, std::vector<double>(5));
   nda::clef::make_expr(W)[i_][j_] << i_ + cos(time_consuming_function(10) * j_ + i_);
-
 }

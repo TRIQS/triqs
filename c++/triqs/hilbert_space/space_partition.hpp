@@ -84,14 +84,16 @@ namespace triqs {
           };
 
           // Iterate over non-zero final amplitudes
-          foreach (final_state, mapping);
-          
+          foreach (final_state, mapping)
+            ;
+
           // redo for additionnal Hyb
-          if(not Hyb.is_empty()){
+          if (not Hyb.is_empty()) {
             final_state = Hyb(tmp_state);
-            foreach (final_state, mapping);
+            foreach (final_state, mapping)
+              ;
           }
-          
+
           tmp_state(i) = amplitude_t(0.);
         }
 
