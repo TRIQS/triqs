@@ -430,7 +430,7 @@ namespace triqs {
 
       // Given a lambda f : x,y,M, it calls f(x_i,y_j,M_ji) for all i,j
       // Order of iteration is NOT fixed, it is optimised (for memory traversal)
-      template <typename w_maxType> friend void foreach (det_manip const &d, w_maxType const &f) {
+      template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &f) {
         nda::for_each(std::array{d.N, d.N}, [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
       }
 
