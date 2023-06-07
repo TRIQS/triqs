@@ -246,6 +246,11 @@ latex_documents = [
 # Disable nbsphinx notebook execution
 nbsphinx_execute = 'never'
 
+# Plot options
+plot_include_source = True
+plot_html_show_source_link = False
+plot_html_show_formats = False
+
 # open links in new tabs
 # open links in new tab instead of same window
 from sphinx.writers.html import HTMLTranslator
