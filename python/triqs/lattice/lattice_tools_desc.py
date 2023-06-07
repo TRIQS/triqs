@@ -188,18 +188,6 @@ module.add_function(name = "dos",
 module.add_function(name = "dos_patch",
                     signature = "std::pair<array<double, 1>, array<double, 1>> (tight_binding  TB, array<double, 2> triangles, int neps, int ndiv)",
                     doc = """ """)
-module.add_function(name = "hopping_stack",
-                    signature = "array<dcomplex, 3> (tight_binding  TB, array_const_view<double, 2> k_stack)",
-                    doc = """ """)
-module.add_function(name = "energies_on_bz_path",
-                    signature = "array<double, 2> (tight_binding  TB, k_cvt  K1, k_cvt  K2, int n_pts)",
-                    doc = """ """)
-module.add_function(name = "energy_matrix_on_bz_path",
-                    signature = "array<dcomplex, 3> (tight_binding  TB, k_cvt  K1, k_cvt  K2, int n_pts)",
-                    doc = """ """)
-module.add_function(name = "energies_on_bz_grid",
-                    signature = "array<double, 2> (tight_binding  TB, int n_pts)",
-                    doc = """ """)
 
 ########################
 ##   Code generation

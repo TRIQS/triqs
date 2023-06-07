@@ -19,8 +19,7 @@
 
 
 from h5.formats import register_class
-__all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
-           'hopping_stack', 'TBLattice']
+__all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'TBLattice']
 
 from ..gf import Gf, MeshBrZone, MeshCycLat
 from .lattice_tools import BravaisLattice
@@ -28,7 +27,6 @@ from .lattice_tools import BrillouinZone
 from .lattice_tools import TightBinding
 from .lattice_tools import dos_patch as dos_patch_c
 from .lattice_tools import dos as dos_c
-from .lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from triqs.dos import DOS
 import numpy
 import warnings
@@ -217,42 +215,6 @@ class TBLattice(object):
 
     def __str__(self):
         return str(self.tb)
-
-    # ---- Backward Compatibility ----
-
-    @property
-    def Units(self):
-        warnings.warn(
-            "TBLattice.Units is deprecated; use TBLattice.units instead.", DeprecationWarning)
-        return self.units
-
-    @property
-    def NOrbitalsInUnitCell(self):
-        warnings.warn(
-            "TBLattice.tb is deprecated; use TBLattice.n_orbitals instead.", DeprecationWarning)
-        return self.n_orbitals
-
-    @property
-    def OrbitalPositions(self):
-        warnings.warn(
-            "TBLattice.OrbitalPositions is deprecated; use TBLattice.orbital_positions instead.", DeprecationWarning)
-        return self.orbital_positions
-
-    @property
-    def OrbitalNames(self):
-        warnings.warn(
-            "TBLattice.OrbitalNames is deprecated; use TBLattice.orbital_names instead.", DeprecationWarning)
-        return self.orbital_names
-
-    def hopping_dict(self):
-        warnings.warn(
-            "TBLattice.hopping_dict() is deprecated; use TBLattice.hoppings instead.", DeprecationWarning)
-        return self.hoppings
-
-    def hopping(self, k):
-        warnings.warn(
-            "TBLattice.hopping(k) is deprecated; use TBLattice.dispersion(k) instead.", DeprecationWarning)
-        return hopping_stack(self, k)
 
 
 register_class(TBLattice)

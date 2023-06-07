@@ -229,17 +229,5 @@ namespace triqs {
     std::pair<nda::array<double, 1>, nda::array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
     std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps,
                                                                       int ndiv);
-
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<dcomplex, 3>
-    hopping_stack(tight_binding const &TB, nda::array_const_view<double, 2> k_stack);
-
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<double, 2>
-    energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
-
-    [[deprecated("Use tight_binding member-function 'fourier' instead")]] nda::array<dcomplex, 3>
-    energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts);
-
-    [[deprecated("Use tight_binding member-function 'dispersion' instead")]] nda::array<double, 2> energies_on_bz_grid(tight_binding const &TB,
-                                                                                                                       int n_pts);
   } // namespace lattice
 } // namespace triqs
