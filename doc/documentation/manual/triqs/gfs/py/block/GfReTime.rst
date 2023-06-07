@@ -41,6 +41,5 @@ Example
 ---------------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_retime.py
-   :include-source:
    :scale: 70
 

@@ -12,7 +12,6 @@ Let us for example fit the Green function :
 
 
 .. plot:: documentation/manual/triqs/plotting_protocols/fit/fit_test.py
-   :include-source:
    :scale: 70
 
 Note that `x_window` appears in the `x_data_view` method to clip the data on a given window

@@ -15,7 +15,6 @@ Green's function defined in frequency (time) from a block Green's function defin
 in time (frequency). Here's a simple example:
 
 .. plot:: documentation/manual/triqs/gfs/py/fourier.py
-   :include-source:
    :scale: 70
 
 The same command can be used for real-time <-> real-frequency transformations.
@@ -29,5 +28,4 @@ imaginary frequencies) from a Legendre Green's function and conversely.
 Example:
 
 .. plot:: documentation/manual/triqs/gfs/py/legendre.py
-   :include-source:
    :scale: 70

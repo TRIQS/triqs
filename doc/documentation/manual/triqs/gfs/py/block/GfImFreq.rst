@@ -44,5 +44,4 @@ Example
 ---------------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_imfreq.py
-   :include-source:
    :scale: 70

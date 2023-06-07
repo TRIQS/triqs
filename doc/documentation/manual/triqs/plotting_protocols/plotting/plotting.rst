@@ -23,7 +23,6 @@ but that can plot TRIQS objects (in fact *any* object, see below).
 We can reproduce the first example of the Green function tutorial:
 
 .. plot:: gfs_example.py
-   :include-source:
    :scale: 70
 
 The *oplot* function takes:
@@ -46,7 +45,6 @@ While one can use the regular matplotlib subfigure to make multi-panel figures,
 subplots makes it a bit more pythonic:
 
 .. plot:: documentation/manual/triqs/plotting_protocols/plotting/example.py
-   :include-source:
    :scale: 70
 
 .. index:: plotting protocol
@@ -88,7 +86,6 @@ Example
 Here's a simple example to illustrate the protocol:
 
 .. plot:: documentation/manual/triqs/plotting_protocols/plotting/myobject.py
-   :include-source:
    :scale: 70
 
 Example with options
@@ -102,5 +99,4 @@ returned dict, using the dict `update` method for example, otherwise they will
 not be used.
 
 .. plot:: documentation/manual/triqs/plotting_protocols/plotting/myobject2.py
-   :include-source:
    :scale: 70

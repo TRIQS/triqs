@@ -41,7 +41,6 @@ Examples
 ---------------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_refreq.py
-   :include-source:
    :scale: 70
 
 Note that `g` is a **retarded** Green's function.
@@ -52,5 +51,4 @@ reconstructed from an imaginary frequency counterpart using ``set_from_pade()``
 method.
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_pade.py
-   :include-source:
    :scale: 70

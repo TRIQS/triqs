@@ -37,7 +37,6 @@ Example
 Here's a simple example showing how to use the generator.
 
 .. plot:: documentation/manual/triqs/random_generator/random.py
-   :include-source:
    :scale: 70
 
 Complete documentation/manual/triqs

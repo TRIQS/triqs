@@ -20,7 +20,6 @@ Introductory example
 Here, we take the simple square lattice in d=2 and compute the density of state. It produces:
 
 .. plot:: documentation/manual/triqs/lattice_tools/ex1.py
-   :include-source:
    :scale: 70
 
 Reference documentation/manual

@@ -41,6 +41,5 @@ Example
 -------
 
 .. plot:: documentation/manual/triqs/gfs/py/block/green_imtime.py
-   :include-source:
    :scale: 70
 

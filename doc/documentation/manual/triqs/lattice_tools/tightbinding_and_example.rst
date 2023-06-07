@@ -70,5 +70,4 @@ three tight-binding models with hopping dictionaries ``hop_1``,
 ``hop_2`` and ``hop_4``
 
 .. plot:: documentation/manual/triqs/lattice_tools/ex2.py
-    :include-source:
     :scale: 70
