@@ -132,7 +132,7 @@ def dlr_imtime(self, opt_dict):
     opt_dict['linestyle'] = 'None'
     if not 'marker' in opt_dict:
         opt_dict['marker'] = 'x'
-    return plot_base.plot_base( self, opt_dict,  r'$\tau$', lambda x : r'%s$(\tau)$'%x, list(self.mesh.values()))
+    return plot_base.plot_base( self, opt_dict,  r'$\tau$', lambda x : r'%s$(\tau)$'%x, list(range(len(self.mesh))))
 
 #----------------------------------------------------------------
 
