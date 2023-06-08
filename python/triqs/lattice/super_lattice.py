@@ -64,7 +64,7 @@ class TBSuperLattice(TBLattice):
         self._Mtilde = numpy.array(numpy.rint(numpy.linalg.inv(self._M)*Ncluster_sites), dtype = int)
 
         self.__remove_internal_hoppings = remove_internal_hoppings
-        self.Norb = tb_lattice.NOrbitalsInUnitCell * Ncluster_sites
+        self.Norb = tb_lattice.n_orbitals * Ncluster_sites
 
         # cluster_sites computation
         if cluster_sites!=None:
@@ -89,31 +89,31 @@ class TBSuperLattice(TBLattice):
         assert len(self.__cluster_sites) == Ncluster_sites, """Number of cluster positions incorrect (compared to the volume of unit cell of the Superlattice)"""
         self.Ncluster_sites = Ncluster_sites
 
-        # Compute the new Hopping in the supercell
-        Hopping = self.fold(tb_lattice.hopping_dict(), remove_internal_hoppings)
+        # Compute the new hoppings in the supercell
+        hoppings = self.fold(tb_lattice.hoppings, remove_internal_hoppings)
         if 0:
-            for k, v in list(Hopping.items()):
+            for k, v in list(hoppings.items()):
                 print(k)
                 print(v.real)
 
         # Compute the new units of the lattice in real coordinates
-        Units = numpy.dot(self.__super_lattice_units, tb_lattice.Units)
+        units = numpy.dot(self.__super_lattice_units, tb_lattice.units)
 
         # Positions and names of orbitals in the supercell: just translate all orbitals for cluster site positions
         # in R^3 coordinates.
-        Orbital_Positions = [POS + tb_lattice.lattice_to_real_coordinates(CS) for POS in tb_lattice.OrbitalPositions for CS in self.__cluster_sites]
+        orbital_positions = [POS + tb_lattice.lattice_to_real_coordinates(CS) for POS in tb_lattice.orbital_positions for CS in self.__cluster_sites]
 
-        #Orbital_Names = [ '%s%s'%(n, s) for n in tb_lattice.OrbitalNames for s in range(Ncluster_sites)]
-        site_index_list, orbital_index_list = list(range(1, Ncluster_sites+1)), tb_lattice.OrbitalNames
+        #orbital_names = [ '%s%s'%(n, s) for n in tb_lattice.OrbitalNames for s in range(Ncluster_sites)]
+        site_index_list, orbital_index_list = list(range(1, Ncluster_sites+1)), tb_lattice.orbital_names
         if len(orbital_index_list)==1:
-            Orbital_Names= [ str(s) for s in site_index_list ]
+            orbital_names= [ str(s) for s in site_index_list ]
         elif len(site_index_list)==1 and len(orbital_index_list)>1:
-            Orbital_Names= [ o for o in orbital_index_list]
+            orbital_names= [ o for o in orbital_index_list]
         elif len(site_index_list)>1 and len(orbital_index_list)>1:
-            Orbital_Names= [ "{}_{}".format(pos, o) for o in orbital_index_list for pos in site_index_list]
+            orbital_names= [ "{}_{}".format(pos, o) for o in orbital_index_list for pos in site_index_list]
 
-        TBLattice.__init__(self, Units, Hopping, Orbital_Positions, Orbital_Names)
-        assert self.Norb == self.NOrbitalsInUnitCell
+        TBLattice.__init__(self, units, hoppings, orbital_positions, orbital_names)
+        assert self.Norb == self.n_orbitals
 
 
     __HDF_reduction__ = ['__BaseLattice', '__super_lattice_units', '__cluster_sites', '__remove_internal_hoppings']
@@ -127,7 +127,7 @@ class TBSuperLattice(TBLattice):
             Only requirement is that f(r)[orbital1, orbital2] is properly defined.
             Hence f(r) can be a numpy, a GFBloc, etc...
             """
-        #Res , norb = {} , self.__BaseLattice.NOrbitalsInUnitCell
+        #Res , norb = {} , self.__BaseLattice.n_orbitals
         Res , norb = {} , len(list(D1.values())[0])
         pack = self.pack_index_site_orbital
         for nsite, CS in enumerate(self.__cluster_sites):
@@ -159,6 +159,7 @@ class TBSuperLattice(TBLattice):
         """Inverse of pack_index_site_orbital"""
         n_orbital  =   (index)//self.Ncluster_sites
         n_site =  index - n_orbital*self.Ncluster_sites
+
         return n_site, n_orbital
 
     def cluster_sites(self):
@@ -173,6 +174,6 @@ class TBSuperLattice(TBLattice):
             return list([ tuple(x) for x in A])
         return """SuperLattice class: \n
    Base TBLattice: %s
-   SuperLattice Units: %s
-   Remove internal Hoppings: %s
+   SuperLattice units: %s
+   Remove internal hoppings: %s
    Cluster site positions: %s"""%(self.__BaseLattice, f(self.__super_lattice_units), self.__remove_internal_hoppings, self.__cluster_sites)
