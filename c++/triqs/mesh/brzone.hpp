@@ -1,6 +1,7 @@
 // Copyright (c) 2016-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 // Copyright (c) 2016-2018 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2018-2023 Simons Foundation
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -199,7 +200,7 @@ namespace triqs::mesh {
       long i0 = data_index / stride0;
       long r0 = data_index % stride0;
       long i1 = r0 / stride1;
-      long i2 = i0 % stride1;
+      long i2 = r0 % stride1;
       return {i0, i1, i2};
     }
 
