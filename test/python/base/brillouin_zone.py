@@ -1,6 +1,7 @@
 # Copyright (c) 2016 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2016 Centre national de la recherche scientifique (CNRS)
 # Copyright (c) 2019-2023 Simons Foundation
+# Copyright (c) 2023 Hugo U.R. Strand
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Nils Wentzell, Thomas Ayral
+# Authors: Nils Wentzell, Thomas Ayral, Hugo U.R. Strand
 
 from numpy import *
 from numpy.linalg import *
@@ -28,8 +29,44 @@ import unittest
 
 class test_brillouin_zone(unittest.TestCase):
 
-    def test_mesh_construction(self):
+    def test_mesh_point_construction(self):
 
+        # ---- Sr2RuO4 lattice : 3 x 3 x 3
+        #units = array([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]])
+
+        units = [[-1.9315,  1.9315,  6.362 ],
+                 [ 1.9315, -1.9315,  6.362 ],
+                 [ 1.9315,  1.9315, -6.362 ]]
+        
+        nk = 3
+        dims = [nk]*3
+        bl     = BravaisLattice(units)
+        bz     = BrillouinZone(bl)
+        k_mesh = MeshBrZone(bz, dims)
+        
+        tol = 1e-9
+        
+        for idx, (k, k_val) in enumerate(zip(k_mesh, k_mesh.values())):
+
+            assert( max(abs(k.value - k_val)) < tol )
+            
+            a = idx // nk**2
+            b = ( idx - nk**2 * a ) // nk
+            c = idx - nk**2 * a - nk * b
+
+            idx_vec = array([a, b, c])
+
+            didx = k_mesh.to_data_index(idx_vec)
+            assert( didx == idx )
+
+            idx_vec_ref = k_mesh.to_index(didx)
+            assert( max(abs(idx_vec - idx_vec_ref)) < tol )
+
+            k_ref = idx_vec / nk @ bz.units
+            assert( max(abs(k.value - k_ref)) < tol )
+
+
+    def test_mesh_construction(self):
         # Helper function
         def run(units, dims):
             bl     = BravaisLattice(units)
@@ -60,7 +97,6 @@ class test_brillouin_zone(unittest.TestCase):
         run(units, dims)
 
     def test_interpolate(self):
-
         # ---- Construct Brillouin Zone Meshes for a Triangular Bravais Lattice -----
 
         n_orb = 3
