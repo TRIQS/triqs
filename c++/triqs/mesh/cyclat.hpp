@@ -158,7 +158,7 @@ namespace triqs::mesh {
       long i0 = data_index / stride0;
       long r0 = data_index % stride0;
       long i1 = r0 / stride1;
-      long i2 = i0 % stride1;
+      long i2 = r0 % stride1;
       return {i0, i1, i2};
     }
 
