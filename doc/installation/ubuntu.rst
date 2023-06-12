@@ -43,4 +43,4 @@ If you encounter compile-time error messages such as::
         
 make sure that the include directories of your openmpi and hdf5 installation are in the CPLUS_INCLUDE_PATH :ref:`environment variable <environment_vars>`::
 
-        export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
+        export CPLUS_INCLUDE_PATH=/usr/include/x86_64-linux-gnu/openmpi/:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
