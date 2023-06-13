@@ -296,24 +296,11 @@ class BlockGf:
           * G << g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-            for (i,g) in self: g.copy_from(A[i])
+            for (i,g) in self: g << A[i]
         elif hasattr(A, "is_block_descriptor") and A.is_block_descriptor():
             for g,a in zip(self.__GFlist, A): g << a
         else:
             for g in self.__GFlist: g << A
-        return self
-
-    def __ilshift__(self, A):
-        """ A can be 2 things:
-          * G << any_init will init all the BlockGf with the initializer
-          * G << g2 where g2 is a BlockGf will copy g2 into self
-          """
-        if isinstance(A, self.__class__):
-            for (i,g) in self: g.copy_from(A[i])
-        else:
-            try:
-                for i,g in self: g << A
-            except: return NotImplemented
         return self
 
     def __iadd__(self,arg):

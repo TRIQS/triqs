@@ -235,7 +235,7 @@ class Block2Gf:
           * G << g2 where g2 is a Block2Gf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-           for bn, g in self: g.copy_from(A[bn])
+           for bn, g in self: g << A[bn]
         else:
            for bn, g in self:  self[bn] << A[bn]
         return self
