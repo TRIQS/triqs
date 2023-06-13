@@ -296,36 +296,16 @@ class BlockGf:
           * G << g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-            for (i,g) in self:
-                assert g.mesh == A[i].mesh, f"Green function meshes of block [{i}] are not compatible:\n  {self.mesh}\nand\n  {A.mesh}"
-                g.copy_from(A[i])
+            for (i,g) in self: g << A[i]
         elif hasattr(A, "is_block_descriptor") and A.is_block_descriptor():
             for g,a in zip(self.__GFlist, A): g << a
         else:
             for g in self.__GFlist: g << A
         return self
 
-    def __ilshift__(self, A):
-        """ A can be 2 things:
-          * G << any_init will init all the BlockGf with the initializer
-          * G << g2 where g2 is a BlockGf will copy g2 into self
-          """
-        if isinstance(A, self.__class__):
-            for (i,g) in self:
-                assert g.mesh == A[i].mesh, f"Green function meshes of block [{i}] are not compatible:\n  {self.mesh}\nand\n  {A.mesh}"
-                g.copy_from(A[i])
-        else:
-            try:
-                for i,g in self: g << A
-            except: return NotImplemented
-        return self
-
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
-            for (n,g) in self:
-                assert type(g.mesh) == type(arg[n].mesh), "Can not add two Gf with meshes of different type"
-                assert g.mesh == arg[n].mesh, "Can not add two Gf with different mesh"
-                self[n] += arg[n]
+            for (n,g) in self: self[n] += arg[n]
         elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g +=l
@@ -342,10 +322,7 @@ class BlockGf:
 
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
-           for (n,g) in self:
-               assert type(g.mesh) == type(arg[n].mesh), "Can not subtract two Gf with meshes of different type"
-               assert g.mesh == arg[n].mesh, "Can not subtract two Gf with different mesh"
-               self[n] -= arg[n]
+           for (n,g) in self: self[n] -= arg[n]
         elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g -=l
@@ -365,10 +342,7 @@ class BlockGf:
 
     def __imul__(self,arg):
         if isinstance(arg, BlockGf):
-            for (n,g) in self:
-                assert type(g.mesh) == type(arg[n].mesh), "Can not multiply two Gf with meshes of different type"
-                assert g.mesh == arg[n].mesh, "Can not use in-place multiplication for two Gf with different mesh"
-                self[n] *= arg[n]
+            for (n,g) in self: self[n] *= arg[n]
         else:
             for i,g in self: g *= arg
         return self

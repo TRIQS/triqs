@@ -235,19 +235,14 @@ class Block2Gf:
           * G << g2 where g2 is a Block2Gf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-           for bn, g in self:
-               assert g.mesh == A[bn].mesh, f"Green function meshes of block [{i}] are not compatible:\n  {self.mesh}\nand\n  {A.mesh}"
-               g.copy_from(A[bn])
+           for bn, g in self: g << A[bn]
         else:
            for bn, g in self:  self[bn] << A[bn]
         return self
 
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
-            for bn, g in self:
-                assert type(g.mesh) == type(arg[bn].mesh), "Can not add two Gf with meshes of different type"
-                assert g.mesh == arg[bn].mesh, "Can not add two Gf with different mesh"
-                self[bn] += arg[bn]
+            for bn, g in self: self[bn] += arg[bn]
         elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] += l
@@ -264,10 +259,7 @@ class Block2Gf:
 
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
-           for bn, g in self:
-               assert type(g.mesh) == type(arg[bn].mesh), "Can not subtract two Gf with meshes of different type"
-               assert g.mesh == arg[bn].mesh, "Can not subtract two Gf with different mesh"
-               self[bn] -= arg[bn]
+           for bn, g in self: self[bn] -= arg[bn]
         elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] -= l
@@ -287,10 +279,7 @@ class Block2Gf:
 
     def __imul__(self,arg):
         if isinstance(arg, self.__class__):
-            for bn, g in self:
-                assert type(g.mesh) == type(arg[bn].mesh), "Can not multiply two Gf with meshes of different type"
-                assert g.mesh == arg[bn].mesh, "Can not use in-place multiplication for two Gf with different mesh"
-                self[bn] *= arg[bn]
+            for bn, g in self: self[bn] *= arg[bn]
         elif isinstance(arg, Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l, (bn, g) in zip(arg,self.__GFlist): self[bn] *= l
