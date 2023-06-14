@@ -792,6 +792,10 @@ def bckwd(hdf_scheme):
             break
     return { 'mesh': 'Mesh'+m }
 
+# backward compatibility: suppress unrecognized GfIndices warnings
+# when reading a Gf stored with triqs <3.2.x
+warnings.filterwarnings("ignore", message="The hdf5 format GfIndices")
+
 register_backward_compatibility_method("GfImFreq", "Gf", bckwd)
 register_backward_compatibility_method("GfImTime", "Gf", bckwd)
 register_backward_compatibility_method("GfLegendre", "Gf", bckwd)
