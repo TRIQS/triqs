@@ -48,6 +48,9 @@ class BlockGf:
     """
     Generic Green's Function by Block.
     """
+
+    __array_priority__ = 10000 # Makes sure the operations of this class are applied as priority
+
     # not implemented as a dictionary since we want to be sure of the order !).
     def __init__(self, **kwargs):
         """
