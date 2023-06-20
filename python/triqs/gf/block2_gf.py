@@ -28,6 +28,9 @@ class Block2Gf:
     """
     Generic Green's Function by two-index Block.
     """
+
+    __array_priority__ = 10000 # Makes sure the operations of this class are applied as priority
+
     def __init__(self, name_list1, name_list2, block_list, **kwargs):
         """
     * Block2Gf(name_list1, name_list2, block_list, make_copies = False, name = 'G2')
