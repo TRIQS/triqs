@@ -103,7 +103,7 @@ external_dependency(mpi
 external_dependency(h5
   GIT_REPO https://github.com/TRIQS/h5
   VERSION 1.1
-  GIT_TAG DEV_GFV2
+  GIT_TAG unstable
 )
 
 # -- nda --
