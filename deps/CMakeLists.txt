@@ -80,9 +80,10 @@ if(Build_Benchs)
 endif()
 
 # -- fmt --
+set(FMT_INSTALL ON)
 external_dependency(fmt
   GIT_REPO https://github.com/fmtlib/fmt
-  GIT_TAG master
+  GIT_TAG 9.1.0 # Compatible against spdlog 1.11.0
 )
 
 # -- itertools --
