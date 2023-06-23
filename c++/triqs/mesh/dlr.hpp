@@ -188,7 +188,7 @@ namespace triqs::mesh {
 
     private:
     [[nodiscard]] auto r_() const {
-      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
+      return itertools::transform(nda::range(size()), [this](long i) { return (*this)[i]; });
     }
 
     public:
