@@ -5,9 +5,8 @@ export CC=clang
 export CXX=clang++
 export FC=gfortran
 #python version detection
-export PYVER=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+export PYVER=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 # compiler flags add stdlib=libc++ for clang
-export CFLAGS="-march=native"
 export CXXFLAGS="-stdlib=libc++ -Wno-register -march=native"
 
 # set blas / lapack Intel10_64_dyn | OpenBLAS | FlexiBLAS
@@ -25,7 +24,6 @@ NCORES=10
 BUILDDIR=$(pwd)
 # set installation directory (default pwd/install)
 INSTALLDIR=$(pwd)/install
-mkdir -p $INSTALLDIR/lib/python${PYVER}/site-packages
 
 export TRIQS_ROOT=${INSTALLDIR}
 export PATH=${INSTALLDIR}/bin:$PATH
