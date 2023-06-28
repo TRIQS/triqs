@@ -59,6 +59,10 @@
 
 #include "./mesh/evaluate.hpp"
 
+#ifdef C2PY_INCLUDED
+#include "./cpp2py_converters/mesh.hpp"
+#endif
+
 namespace triqs::mesh {
 
   // -- Backward compat aliases --
