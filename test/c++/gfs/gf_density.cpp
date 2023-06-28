@@ -74,16 +74,20 @@ TEST(Gf, Density_with_not_all_moments) {
 
 TEST(Gf, DensityFermionReFreq) {
 
-  double wmax = 10;
-  int N       = 1000;
-  auto h      = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
-  auto G      = gf<refreq>{{-wmax, wmax, N}, {2, 2}};
+  int N  = 20000;
+  auto h = matrix<dcomplex>{{{-2 + 0i, 1i}, {-1i, -3.5 + 0i}}};
+  auto G = gf<refreq>{{-10.0, 3.0, N}, {2, 2}};
 
   //G(iw_) << inverse(w_ - h + eta); // FIXME
-  for (auto const &w : G.mesh()) G[w] = inverse(w - h + 1e-8i);
+  for (auto const &w : G.mesh()) G[w] = inverse(w - h + 1e-3i);
 
+  // test zero temperature implementation here / finite T tested in python
   auto n = triqs::gfs::density(G);
+
   EXPECT_ARRAY_EQ(n, dagger(n));
+
+  // check if filling is correct
+  EXPECT_COMPLEX_NEAR(trace(n), 2.0 + 0.0i, 1.e-3);
 }
 
 MAKE_MAIN;

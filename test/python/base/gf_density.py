@@ -27,11 +27,10 @@ beta = 50.0
 
 # -- Test Matsubara frequency density for free Gf
 
-g_iw = GfImFreq(beta=beta, indices=[0], n_points=1000)
+iw_mesh = MeshImFreq(beta=beta, S='Fermion', n_iw=1000)
+g_iw = GfImFreq(mesh=iw_mesh, target_shape=[1,1])
 
 print("==============================================")
-
-print(g_iw.density())
 
 for eps in np.random.random(10):
     g_iw << inverse(iOmega_n - eps)
@@ -40,3 +39,19 @@ for eps in np.random.random(10):
     n = np.squeeze(g_iw.density(km))
     n_ref = fermi(eps, beta)
     np.testing.assert_almost_equal(n, n_ref)
+
+
+print("==============================================")
+# -- Test real frequency density for free Gf
+
+energies = np.diag(np.array([-3, -2, -1],dtype=complex))
+
+mesh = MeshReFreq(n_w=20001, window=(-10,3))
+gf_w = Gf(mesh=mesh, target_shape=[3,3])
+eta = 0.001
+
+gf_w[:,:] << inverse(Omega + 1j*eta - energies )
+
+assert( np.allclose(np.eye(3), gf_w.density(beta=1000), rtol=1e-3 ) )
+
+assert( gf_w.total_density(beta=1000).real - 3.0 < 1e-3)
