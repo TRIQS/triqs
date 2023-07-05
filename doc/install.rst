@@ -192,12 +192,12 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
 .. literalinclude:: install.sh
    :language: bash
 
-To install TRIQS plus a list of applications we also provide a bash script that automatizes
-the build and testing: :download:`build_triqs.sh <installation/build_triqs.sh>`. In the script
-different environment variables mentioned here can be set to streamline the compilation of TRIQS
-and its applications. Note, that the script assumes that all dependencies / required libraries
-are already installed. Executing the script via `bash build_triqs.sh` will generate both a 
-`build_x.log` containing the std out and `build_x_test.log` containing the test output. 
+To install TRIQS together with several of its :ref:`applications<applications>` we also provide a bash script that
+automatizes the build and test process :download:`build_triqs.sh <installation/build_triqs.sh>`. The script
+can be edited to customize the compilation of TRIQS and its applications using both environment variables
+and cmake configuration options. The script assumes that all dependencies / required libraries are already
+installed. Executing the script via `bash build_triqs.sh` will generate a `build_x.log` containing the
+command-line build output and a `build_x_test.log` containing the test output. 
 
 .. note:: Caution: The compilation of TRIQS, even if run in serial mode, can temporarily
           use up to 4 Gigabytes of RAM. The restrictions on the Login-Nodes of certain
