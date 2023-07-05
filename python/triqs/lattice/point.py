@@ -85,3 +85,6 @@ class LatticePoint:
 
     def __truediv__(self, other):
         return self.__array__() / other
+
+    def __len__(self):
+        return self.lattice.ndim
