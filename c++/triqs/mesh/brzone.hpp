@@ -145,7 +145,7 @@ namespace triqs::mesh {
       [[nodiscard]] long data_index() const { return _data_index; }
 
       /// The value of the mesh point
-      [[nodiscard]] value_t const &value() const {
+      value_t const &value() const {
         if (_value)
           return *_value;
         else
