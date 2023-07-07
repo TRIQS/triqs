@@ -40,8 +40,14 @@ else()
   message(FATAL_ERROR "Sanitizer is not available for your compiler")
 endif()
 
+set(sanitizer_rt_libraries ${SANITIZER_RT_LIBRARIES})
 set(required_vars "")
+
 foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
+  if(${component} STREQUAL "msan" OR TARGET ${component})
+    continue()
+  endif()
+
   string(TOUPPER ${component} COMPONENT)
   if((${component} STREQUAL "ubsan") AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang") AND ASAN_RT_LIBRARY)
     set(component ubsan_minimal)
@@ -60,7 +66,7 @@ foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
   if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_${component})
     list(APPEND required_vars ${COMPONENT}_RT_LIBRARY)
   endif()
-  if(DEFINED sanitizer_rt_libraries)
+  if(DEFINED sanitizer_rt_libraries AND NOT ${COMPONENT}_RT_LIBRARY MATCHES sanitizer_rt_libraries)
     string(APPEND sanitizer_rt_libraries :${${COMPONENT}_RT_LIBRARY})
   else()
     set(sanitizer_rt_libraries ${${COMPONENT}_RT_LIBRARY})
@@ -73,26 +79,56 @@ else()
   set(preload_var LD_PRELOAD)
 endif()
 
-set(SANITIZER_RT_PRELOAD ${preload_var}=${sanitizer_rt_libraries} CACHE INTERNAL "Runtime shared libraries needed to load the sanitizer")
+set(SANITIZER_RT_LIBRARIES ${sanitizer_rt_libraries} CACHE INTERNAL "Runtime shared libraries needed to load the LLVM sanitizers")
+mark_as_advanced(SANITIZER_RT_LIBRARIES)
+set(SANITIZER_RT_PRELOAD ${preload_var}=${SANITIZER_RT_LIBRARIES} CACHE INTERNAL "Preload command for santitizer runtime libraries")
 mark_as_advanced(SANITIZER_RT_PRELOAD)
 
 # ----- Create Interface Targets -----
-if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_asan)
+
+# Address Sanitizer
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_asan AND NOT TARGET asan)
   add_library(asan INTERFACE)
   target_compile_options(asan INTERFACE -fsanitize=address -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(asan INTERFACE "-fsanitize=address $<$<CXX_COMPILER_ID:GNU>:-fuse-ld=gold> -fno-omit-frame-pointer")
+  target_link_libraries(asan INTERFACE "-fsanitize=address -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
   if(NOT DEFINED ENV{ASAN_OPTIONS})
-    message(WARNING "ASAN_OPTIONS is not set. Consider setting ASAN_OPTIONS=symbolize=1:detect_leaks=0 when running tests")
+    message(WARNING "ASAN_OPTIONS is not set. Consider setting ASAN_OPTIONS=symbolize=1:detect_leaks=0:halt_on_error=1 when running tests")
   endif()
 endif()
-if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_ubsan)
+
+# Undefined Behavior Sanitizer
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_ubsan AND NOT TARGET ubsan)
   add_library(ubsan INTERFACE)
   target_compile_options(ubsan INTERFACE -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(ubsan INTERFACE "-fsanitize=undefined $<$<CXX_COMPILER_ID:GNU>:-fuse-ld=gold> -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer")
+  target_link_libraries(ubsan INTERFACE "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
   if(NOT DEFINED ENV{UBSAN_OPTIONS})
     message(WARNING "UBSAN_OPTIONS is not set. Consider setting UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 when running tests")
   endif()
 endif()
+
+# Memory Sanitizer
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_msan AND NOT TARGET msan)
+  if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_asan OR ${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_ubsan OR ${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_tsan)
+    message(FATAL_ERROR "Memory Sanitizer cannot be used with other sanitizers")
+  endif()
+  add_library(msan INTERFACE)
+  target_compile_options(msan INTERFACE -fsanitize=memory -fsanitize-memory-track-origins=2 -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(msan INTERFACE "-fsanitize=memory -fsanitize-memory-track-origins=2 -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
+  if(NOT DEFINED ENV{MSAN_OPTIONS})
+    message(WARNING "MSAN_OPTIONS is not set. Consider setting MBSAN_OPTIONS=symbolize=1 when running tests")
+  endif()
+endif()
+
+# Thread Sanitizer
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_tsan AND NOT TARGET tsan)
+  add_library(tsan INTERFACE)
+  target_compile_options(tsan INTERFACE -fsanitize=thread -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(tsan INTERFACE "-fsanitize=thread -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
+  if(NOT DEFINED ENV{TSAN_OPTIONS})
+    message(WARNING "TSAN_OPTIONS is not set. Consider setting TSAN_OPTIONS=symbolize=1 when running tests")
+  endif()
+endif()
+
 # ------------------------------------
 
 include(FindPackageHandleStandardArgs)

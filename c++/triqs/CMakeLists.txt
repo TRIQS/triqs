@@ -150,14 +150,11 @@ endif()
 if(UBSAN)
   target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:ubsan>)
 endif()
-
 if(MSAN)
-  if(NOT TARGET msan)
-    add_library(msan INTERFACE)
-    target_compile_options(msan INTERFACE -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
-    target_link_libraries(msan INTERFACE "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
-  endif()
   target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:msan>)
+endif()
+if(TSAN)
+  target_link_libraries(triqs PUBLIC $<BUILD_INTERFACE:tsan>)
 endif()
 
 # ---------------------------------
