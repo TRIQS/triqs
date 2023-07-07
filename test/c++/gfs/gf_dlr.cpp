@@ -303,7 +303,7 @@ TEST(Gf, DLR_imtime_interpolation) {
   double omega = 1. / beta * cmesh.dlr_freq()[dlr_idx];
 
   // WARNING : + here because cppdlr is one global minus sign off from usual convention
-  for (auto const &tau : tmesh) { EXPECT_CLOSE(g(tau), (-onefermion(tau, omega, beta))); }
+  for (auto const &tau : tmesh) { EXPECT_CLOSE(g(tau), onefermion(tau, omega, beta)); }
 }
 
 // ----------------------------------------------------------------
@@ -365,7 +365,7 @@ TEST(Gf, DLR_ph_sym_interpolation) {
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
 
   double omega = 1.337;
-  gt[tau_] << +nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
+  gt[tau_] << -nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
 
   auto gc  = make_gf_dlr(gt);
   auto gt2 = gt;
@@ -373,7 +373,7 @@ TEST(Gf, DLR_ph_sym_interpolation) {
 
   // Interpolation in imaginary time using dlr grid (efficient by design)
   for (auto const &tau : gt2.mesh()) {
-    double val = std::exp(-omega * (beta - tau)) / (1 + std::exp(-beta * omega));
+    double val = -std::exp(-omega * (beta - tau)) / (1 + std::exp(-beta * omega));
     EXPECT_COMPLEX_NEAR(gt2[tau].real(), val, eps);
     EXPECT_COMPLEX_NEAR(gt2[tau], gc(beta - tau), eps);
   }

@@ -117,8 +117,7 @@ class test_dlr_mesh(unittest.TestCase):
         n_iw = 10
         iw_mesh = MeshImFreq(beta, 'Fermion', n_iw)
         for iw in iw_mesh:
-            ref = - np.sum(g.data / ( complex(iw) - rf/beta ) ) # - due to sign  convention
-            #print(g(iw), ref)
+            ref = np.sum(g.data / ( complex(iw) - rf/beta ) )
             np.testing.assert_almost_equal(g(iw), ref)
 
     
@@ -133,8 +132,7 @@ class test_dlr_mesh(unittest.TestCase):
         g.data[:] = np.random.randn(len(m))
 
         for tau in np.linspace(0, beta, num=10):
-            ref = np.sum(g.data * np.exp(-rf * tau/beta) / ( 1 + np.exp(-rf) ))
-            #print(g(tau), ref)
+            ref = np.sum(g.data * -np.exp(-rf * tau/beta) / ( 1 + np.exp(-rf) ))
             np.testing.assert_almost_equal(g(tau), ref)
 
 
