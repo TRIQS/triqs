@@ -132,11 +132,14 @@ namespace triqs::mesh {
       long _data_index                      = 0;
       uint64_t _mesh_hash                   = 0;
       mutable std::optional<value_t> _value = {};
+      mutable std::mutex value_mutex        = {};
 
       public:
       mesh_point_t() = default;
       mesh_point_t(std::array<long, 3> const &index, brzone const *m_ptr, long data_index)
          : _index(index), _m_ptr(m_ptr), _data_index(data_index), _mesh_hash(m_ptr->mesh_hash()) {}
+      mesh_point_t(mesh_point_t const &mp)
+         : _index(mp._index), _m_ptr(mp._m_ptr), _data_index(mp._data_index), _mesh_hash(mp._mesh_hash), _value(mp._value) {}
 
       /// The index of the mesh point
       [[nodiscard]] mesh_t::index_t index() const { return _index; }
@@ -148,8 +151,13 @@ namespace triqs::mesh {
       value_t const &value() const {
         if (_value)
           return *_value;
-        else
-          return *(_value = _m_ptr->to_value(_index));
+        else {
+          auto guard = std::lock_guard{value_mutex};
+          if (_value)
+            return *_value;
+          else
+            return *(_value = _m_ptr->to_value(_index));
+        }
       }
 
       /// The Hash for the mesh configuration
