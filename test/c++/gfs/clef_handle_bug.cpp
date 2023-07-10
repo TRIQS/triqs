@@ -43,7 +43,7 @@ int main() {
   std::get<0>(iw_inu_mesh);
   std::begin(iw_inu_mesh);
   std::get<0>(*std::begin(iw_inu_mesh));
-  for (auto const &mp : iw_inu_mesh) {
+  for (auto mp : iw_inu_mesh) {
     std::get<0>(mp);
     std::get<1>(mp);
     auto mp2 = mp;

@@ -79,7 +79,7 @@ TEST(Gf, DensityFermionReFreq) {
   auto G = gf<refreq>{{-10.0, 3.0, N}, {2, 2}};
 
   //G(iw_) << inverse(w_ - h + eta); // FIXME
-  for (auto const &w : G.mesh()) G[w] = inverse(w - h + 1e-3i);
+  for (auto w : G.mesh()) G[w] = inverse(w - h + 1e-3i);
 
   // test zero temperature implementation here / finite T tested in python
   auto n = triqs::gfs::density(G);

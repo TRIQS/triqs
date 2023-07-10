@@ -30,7 +30,7 @@ TEST(ClosestMeshPoint, ReTime) {
   triqs::clef::placeholder<0> t_;
   g(t_) << 1.0 * t_;
 
-  for (auto const &t : g.mesh()) std::cerr << double(t) << std::endl;
+  for (auto t : g.mesh()) std::cerr << double(t) << std::endl;
 
   EXPECT_CLOSE(g[closest_mesh_pt(0.1)], 1.0 / (N - 1));
   EXPECT_CLOSE(g[closest_mesh_pt(-0.1)], -1.0 / (N - 1));

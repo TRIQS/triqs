@@ -92,8 +92,8 @@ namespace triqs::gfs {
 
       if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
         if (g.mesh().positive_only()) return true;
-        //for (auto const &w : g.mesh().get_positive_freq()) {
-        for (auto const &w : g.mesh()) {
+        //for (auto w : g.mesh().get_positive_freq()) {
+        for (auto w : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
             if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
           } else if constexpr (target_t::rank == 2) { // matrix_valued
@@ -105,7 +105,7 @@ namespace triqs::gfs {
         }
         return true;
       } else { // === gf<imtime>
-        for (auto const &t : g.mesh()) {
+        for (auto t : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
             if (abs(conj(g[t]) - g[t]) > tolerance) return false;
           } else if constexpr (target_t::rank == 2) { // matrix_valued
@@ -143,7 +143,7 @@ namespace triqs::gfs {
       static_assert(std::is_same_v<mesh_t, mesh::imfreq>, "is_gf_hermitian requires an imfreq Green function");
 
       if (g.mesh().positive_only()) return true;
-      for (auto const &w : g.mesh()) {
+      for (auto w : g.mesh()) {
         if constexpr (target_t::rank == 0) { // ---- scalar_valued
           if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
         } else {
@@ -187,7 +187,7 @@ namespace triqs::gfs {
       if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
         if (g.mesh().positive_only()) return typename G::regular_type{g};
         auto g_sym = typename G::regular_type{g};
-        for (auto const &w : g.mesh()) {
+        for (auto w : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
           else if constexpr (target_t::rank == 2) // matrix_valued
@@ -199,7 +199,7 @@ namespace triqs::gfs {
 
       } else { // === gf<imtime>
         auto g_sym = typename G::regular_type{g};
-        for (auto const &t : g.mesh()) {
+        for (auto t : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
             g_sym[t] = 0.5 * (g[t] + conj(g[t]));
           else if constexpr (target_t::rank == 2) // matrix_valued
@@ -236,7 +236,7 @@ namespace triqs::gfs {
 
       if (g.mesh().positive_only()) return typename G::regular_type{g};
       auto g_sym = typename G::regular_type{g};
-      for (auto const &w : g.mesh()) { g_sym[w] = 0.5 * (g[w] + conj(g[-w])); }
+      for (auto w : g.mesh()) { g_sym[w] = 0.5 * (g[w] + conj(g[-w])); }
       return g_sym;
     } else if (is_block_gf_v<G>) { // Block Green function
       return map_block_gf(make_real_in_tau<typename G::g_t>, g);
@@ -257,7 +257,7 @@ namespace triqs::gfs {
   }
 
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
-    for (auto const &iw : g.mesh())
+    for (auto iw : g.mesh())
       if (iw.n >= n_min or iw.n < -n_min) g[iw] = tail_eval(tail, iw);
   }
 

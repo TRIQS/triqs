@@ -88,7 +88,7 @@ TEST(BlockGfCartesian, OutOfBounds) {
   g_2w(om_, nu_) << 1 / (om_ + nu_) * 1 / om_;
   auto g_w = gf<imfreq, matrix_valued>{{beta, Fermion, 10}, {1, 1}}; //longer than g
   auto W0  = matsubara_freq(0, beta, Boson);
-  for (auto const &om : g_w.mesh()) { auto x = g_2w(om, W0)(0, 0, 0); }
+  for (auto om : g_w.mesh()) { auto x = g_2w(om, W0)(0, 0, 0); }
 }
 TEST(BlockGfCartesian, VectorConstruction) {
   double beta = 1;

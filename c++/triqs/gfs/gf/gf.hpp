@@ -306,7 +306,7 @@ namespace triqs::gfs {
     {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
-      for (auto const &w : _mesh) (*this)[w] = rhs[w];
+      for (auto w : _mesh) (*this)[w] = rhs[w];
       return *this;
     }
 

@@ -82,7 +82,7 @@ namespace triqs::gfs {
     else {
       // inverse operation as flatten_2d, exactly
       auto g_rot = nda::rotate_index_view<N>(gout.data());
-      for (auto const &mp : out_mesh) {
+      for (auto mp : out_mesh) {
         auto g_rot_sl = g_rot(mp.data_index(), _); // if the array is long, it is faster to precompute the view ...
         auto gout_col = gout_flatten.data()(mp.data_index(), _);
         nda::for_each(g_rot_sl.shape(), [&g_rot_sl, &gout_col, c = long(0)](auto &&...i) mutable { return g_rot_sl(i...) = gout_col(c++); });

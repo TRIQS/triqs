@@ -38,9 +38,9 @@ namespace triqs {
 
     template <typename RHS, typename M, typename T, typename L, typename E> FORCEINLINE void clef_auto_assign(gf_view<M, T, L, E> g, RHS const &rhs) {
       if constexpr (mesh::is_product<M>) {
-        for (auto const &w : g.mesh()) { triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w)); }
+        for (auto w : g.mesh()) { triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w)); }
       } else {
-        for (auto const &w : g.mesh()) { triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w)); }
+        for (auto w : g.mesh()) { triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w)); }
       }
     }
 

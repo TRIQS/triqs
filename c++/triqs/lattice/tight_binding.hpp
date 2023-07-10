@@ -115,7 +115,7 @@ namespace triqs {
        */
       inline auto fourier(mesh::brzone const &k_mesh) const {
         auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
-        for (auto const &[n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
+        for (auto [n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
         auto kvecs_rec = make_regular(kvecs * k_mesh.bz().reciprocal_matrix_inv());
         auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_orbitals(), n_orbitals()});
         h_k.data()     = fourier(kvecs_rec);
@@ -167,7 +167,7 @@ namespace triqs {
       inline auto dispersion(mesh::brzone const &k_mesh) const {
         auto h_k = fourier(k_mesh);
         auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_orbitals()});
-        for (auto const &k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
+        for (auto k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
         return e_k;
       }
 

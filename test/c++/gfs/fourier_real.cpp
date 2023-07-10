@@ -49,7 +49,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   // === Fourier of a simple Lorentzian ===
 
-  for (auto const &w : w_mesh) Gw1[w] = lorentzian(w, E);
+  for (auto w : w_mesh) Gw1[w] = lorentzian(w, E);
 
   auto [tail, err] = fit_tail(Gw1);
   auto Gt1         = make_gf_from_fourier(Gw1, t_mesh, tail);
@@ -60,12 +60,12 @@ template <int TARGET_RANK> void test_fourier() {
 
   // Comparision against exact result
   auto Gt1_exact = Gt1;
-  for (auto const &t : t_mesh) Gt1_exact[t] = lorentzian_inverse(t, E);
+  for (auto t : t_mesh) Gt1_exact[t] = lorentzian_inverse(t, E);
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
   // === Fourier of a Product of theta function and exponential ===
 
-  for (auto const &t : t_mesh) Gt1[t] = 0.5i * (lorentzian_inverse(-t, E) * theta(-t) - lorentzian_inverse(t, E) * theta(t));
+  for (auto t : t_mesh) Gt1[t] = 0.5i * (lorentzian_inverse(-t, E) * theta(-t) - lorentzian_inverse(t, E) * theta(t));
 
   auto known_moments = make_zero_tail(Gt1);
 
@@ -83,7 +83,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   // Comparision against exact result
   auto Gw1_exact = Gw1;
-  for (auto const &w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1i) + 0.5 / (w - E * 1i);
+  for (auto w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1i) + 0.5 / (w - E * 1i);
   EXPECT_GF_NEAR(Gw1, Gw1_exact, precision);
 }
 

@@ -72,7 +72,7 @@ TEST(make_gf, new_layout) {
 
   for (int w = 0; w < 5; ++w) { EXPECT_ARRAY_NEAR(G2.data()(w, _, _), G1.data()(w, _, _)); }
 
-  for (auto const &w : G1.mesh()) { EXPECT_ARRAY_NEAR(G2[w], G1[w]); }
+  for (auto w : G1.mesh()) { EXPECT_ARRAY_NEAR(G2[w], G1[w]); }
 
   EXPECT_EQ(G1.data().indexmap().stride_order, (std::array{0, 1, 2}));
   EXPECT_EQ(G2.data().indexmap().stride_order, (std::array{1, 0, 2}));

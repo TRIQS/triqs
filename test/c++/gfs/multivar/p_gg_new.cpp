@@ -48,9 +48,9 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   auto G_k_tau    = gf<prod<brzone, imtime>, matrix_valued>{{k_mesh, {beta, Fermion, ntau}}, {1, 1}};
   auto G_R_tau    = gf<prod<cyclat, imtime>, matrix_valued>{{{nk, nk}, {beta, Fermion, ntau}}, {1, 1}};
 
-  for (auto const &k : std::get<0>(G_k_tau.mesh())) G_k_tau[k, _] = fourier(G_k_w[k, _]);
+  for (auto k : std::get<0>(G_k_tau.mesh())) G_k_tau[k, _] = fourier(G_k_w[k, _]);
 
-  for (auto const &tau : std::get<1>(G_R_tau.mesh())) G_R_tau[_, tau] = fourier(G_k_tau[_, tau]);
+  for (auto tau : std::get<1>(G_R_tau.mesh())) G_R_tau[_, tau] = fourier(G_k_tau[_, tau]);
 
   chi0_R_tau(r_, tau_) << -G_R_tau(r_, tau_) * G_R_tau(-r_, beta - tau_);
 
@@ -60,9 +60,9 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  h5_write(file, "chi0_R_tau", chi0_R_tau);
  */
 
-  for (auto const &tau : std::get<1>(chi0_q_tau.mesh())) chi0_q_tau[_, tau] = fourier(chi0_R_tau[_, tau]);
+  for (auto tau : std::get<1>(chi0_q_tau.mesh())) chi0_q_tau[_, tau] = fourier(chi0_R_tau[_, tau]);
 
-  for (auto const &k : std::get<0>(chi0_q_nu.mesh())) chi0_q_nu[k, _] = fourier(chi0_q_tau[k, _], make_zero_tail(chi0_R_tau[_, 0]));
+  for (auto k : std::get<0>(chi0_q_nu.mesh())) chi0_q_nu[k, _] = fourier(chi0_q_tau[k, _], make_zero_tail(chi0_R_tau[_, 0]));
 
   return chi0_q_nu;
 }

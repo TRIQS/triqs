@@ -31,8 +31,8 @@ placeholder<3> d;
 void disconnected_PP_G2(gf_view<imfreq, matrix_valued> g, gf_view<prod<imfreq, imfreq, imfreq>, tensor_valued<4>> g2, bool diag_block = false) {
 
   g2() = 0.0;
-  for (auto const &Omega : std::get<0>(g2.mesh())) {
-    for (auto const &n : std::get<1>(g2.mesh())) { g2[Omega, n, Omega - n](a, b, c, d) << g(n)(b, a) * g(Omega - n)(d, c); }
+  for (auto Omega : std::get<0>(g2.mesh())) {
+    for (auto n : std::get<1>(g2.mesh())) { g2[Omega, n, Omega - n](a, b, c, d) << g(n)(b, a) * g(Omega - n)(d, c); }
   }
   g2 *= g.mesh().beta();
 }

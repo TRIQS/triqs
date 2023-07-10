@@ -62,9 +62,9 @@ TEST(Gf, AutoAssignImagTime) {
   }
 
   // CHECK
-  for (auto const &t1 : std::get<0>(g.mesh())) {
-    for (auto const &t2 : std::get<1>(g.mesh())) {
-      for (auto const &t3 : std::get<2>(g.mesh())) {
+  for (auto t1 : std::get<0>(g.mesh())) {
+    for (auto t2 : std::get<1>(g.mesh())) {
+      for (auto t3 : std::get<2>(g.mesh())) {
         double ref_val = 2 * t1 - 0.3 * t2 - 10. * t3;
         double val     = g[closest_mesh_pt(t1.value(), t2.value(), t3.value())](0, 0).real();
         //std::cout << t1 << ", " << t2 << ", " << t3 << ", " << val << " -- " << ref_val << "\n";
@@ -91,9 +91,9 @@ TEST(Gf, AutoAssignAccumulateImagTime) {
   }
 
   // CHECK
-  for (auto const &t1 : std::get<0>(g.mesh())) {
-    for (auto const &t2 : std::get<1>(g.mesh())) {
-      for (auto const &t3 : std::get<2>(g.mesh())) {
+  for (auto t1 : std::get<0>(g.mesh())) {
+    for (auto t2 : std::get<1>(g.mesh())) {
+      for (auto t3 : std::get<2>(g.mesh())) {
         double ref_val = 2 * t1 - 0.3 * t2 - 10. * t3;
         double val     = g[closest_mesh_pt(t1.value(), t2.value(), t3.value())](0, 0).real();
         //std::cout << t1 << ", " << t2 << ", " << t3 << ", " << val << " -- " << ref_val << "\n";
@@ -120,9 +120,9 @@ TEST(Gf, MixedIndexClefImFreq) {
   }
 
   // CHECK
-  for (auto const &Omega : std::get<0>(g.mesh())) {
-    for (auto const &n : std::get<1>(g.mesh())) {
-      for (auto const &np : std::get<2>(g.mesh())) {
+  for (auto Omega : std::get<0>(g.mesh())) {
+    for (auto n : std::get<1>(g.mesh())) {
+      for (auto np : std::get<2>(g.mesh())) {
         dcomplex ref_val = 0.0;
         if (std::abs(dcomplex(n + np - Omega)) < 1e-6) ref_val = 2 * Omega - 0.2 * n;
         dcomplex val = g(Omega, n, np)(0, 0);

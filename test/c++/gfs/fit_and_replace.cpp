@@ -57,7 +57,7 @@ TEST(Gf, FitAndReplace) {
   int n_max = 80;
 
   // Fill Green function with Garbage in the last part
-  for (auto const &iw : iw_mesh)
+  for (auto iw : iw_mesh)
     if (abs(iw.n) > n_max) G_new_iw[iw] = iw * iw;
 
   array<dcomplex, 3> km(2, 2, 2);

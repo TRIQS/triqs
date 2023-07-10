@@ -75,14 +75,14 @@ namespace triqs::gfs {
   /// Transform a DLR coefficient Green's function to a imaginary time Green's function
   auto make_gf_imtime(MemoryGf<dlr> auto const &g, long n_tau) {
     auto result = gf{mesh::imtime{g.mesh().beta(), g.mesh().statistic(), n_tau}, g.target_shape()};
-    for (auto const &tau : result.mesh()) result[tau] = g(tau.value());
+    for (auto tau : result.mesh()) result[tau] = g(tau.value());
     return result;
   }
 
   /// Transform a DLR coefficient Green's  to a Matsubara frequency Green's function
   auto make_gf_imfreq(MemoryGf<dlr> auto const &g, long n_iw) {
     auto result = gf{mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), n_iw}, g.target_shape()};
-    for (auto const &w : result.mesh()) result[w] = g(w.value());
+    for (auto w : result.mesh()) result[w] = g(w.value());
     return result;
   }
 

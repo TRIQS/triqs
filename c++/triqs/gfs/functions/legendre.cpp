@@ -57,10 +57,10 @@ namespace triqs {
 
       nda::array<dcomplex, 2> corr(disc.shape());
       corr() = 0;
-      for (auto const &l : gl.mesh()) corr += t(l.index()) * gl[l];
+      for (auto l : gl.mesh()) corr += t(l.index()) * gl[l];
 
       auto _ = nda::range::all;
-      for (auto const &l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
+      for (auto l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
     }
 
   } // namespace gfs

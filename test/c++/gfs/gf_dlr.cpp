@@ -45,7 +45,7 @@ TEST(Gf, G_dlr_mat) {
 
   // imtime
   auto g1 = gf<dlr_imtime, matrix_valued>{{beta, Fermion, w_max, eps}, {1, 1}};
-  for (auto const &tau : g1.mesh()) g1[tau] = onefermion(tau, e0, beta);
+  for (auto tau : g1.mesh()) g1[tau] = onefermion(tau, e0, beta);
 
   // coefs
   auto g2 = make_gf_dlr(g1);
@@ -65,15 +65,15 @@ TEST(Gf, G_dlr_mat) {
 
   // check value
   auto g3_check = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, w_max, eps}, {1, 1}};
-  for (auto const &w : g3_check.mesh()) g3_check[w] = 1 / (w - e0);
+  for (auto w : g3_check.mesh()) g3_check[w] = 1 / (w - e0);
 
   EXPECT_GF_NEAR(g3, g3_check);
   EXPECT_EQ(g3.mesh().mesh_hash(), g3_check.mesh().mesh_hash());
 
   // eval g2 on tau is fine
-  for (auto const &tau : g1.mesh()) { EXPECT_COMPLEX_NEAR(g2(tau)(0, 0), g1[tau](0, 0), tol); }
+  for (auto tau : g1.mesh()) { EXPECT_COMPLEX_NEAR(g2(tau)(0, 0), g1[tau](0, 0), tol); }
   // eval g2 on w is fine
-  for (auto const &w : g3.mesh()) { EXPECT_COMPLEX_NEAR(g2(w)(0, 0), g3[w](0, 0), tol); }
+  for (auto w : g3.mesh()) { EXPECT_COMPLEX_NEAR(g2(w)(0, 0), g3[w](0, 0), tol); }
 }
 // ------------------------------------------------------------
 // simpler test, scalar_valued. Same as in Python.
@@ -86,12 +86,12 @@ TEST(Gf, G_dlr_mat2) {
   double tol   = 1.e-9;
 
   auto gw = gf<dlr_imfreq, scalar_valued>{dlr_imfreq{beta, Fermion, w_max, eps}};
-  for (auto const &w : gw.mesh()) gw[w] = 1 / (w - e0);
+  for (auto w : gw.mesh()) gw[w] = 1 / (w - e0);
 
   auto gc = make_gf_dlr(gw);
   auto gt = make_gf_dlr_imtime(gc);
 
-  for (auto const &tau : gt.mesh()) { EXPECT_COMPLEX_NEAR(gc(tau), onefermion(tau, e0, beta), tol); }
+  for (auto tau : gt.mesh()) { EXPECT_COMPLEX_NEAR(gc(tau), onefermion(tau, e0, beta), tol); }
 }
 
 // ------------------------------------------------------------
@@ -303,7 +303,7 @@ TEST(Gf, DLR_imtime_interpolation) {
   double omega = 1. / beta * cmesh.dlr_freq()[dlr_idx];
 
   // WARNING : + here because cppdlr is one global minus sign off from usual convention
-  for (auto const &tau : tmesh) { EXPECT_CLOSE(g(tau), onefermion(tau, omega, beta)); }
+  for (auto tau : tmesh) { EXPECT_CLOSE(g(tau), onefermion(tau, omega, beta)); }
 }
 
 // ----------------------------------------------------------------
@@ -324,7 +324,7 @@ TEST(Gf, DLR_imfreq_interpolation) {
   gw2[iw_] << gc(iw_); // Interpolate DLR in imaginary frequency
 
   EXPECT_GF_NEAR(gw, gw2);
-  for (auto const &iw : gw.mesh()) EXPECT_CLOSE(gw[iw], gw2[iw]);
+  for (auto iw : gw.mesh()) EXPECT_CLOSE(gw[iw], gw2[iw]);
 }
 
 // ----------------------------------------------------------------
@@ -372,7 +372,7 @@ TEST(Gf, DLR_ph_sym_interpolation) {
   gt2[tau_] << gc(beta - tau_);
 
   // Interpolation in imaginary time using dlr grid (efficient by design)
-  for (auto const &tau : gt2.mesh()) {
+  for (auto tau : gt2.mesh()) {
     double val = -std::exp(-omega * (beta - tau)) / (1 + std::exp(-beta * omega));
     EXPECT_COMPLEX_NEAR(gt2[tau].real(), val, eps);
     EXPECT_COMPLEX_NEAR(gt2[tau], gc(beta - tau), eps);
@@ -390,11 +390,11 @@ TEST(Gf, DLR_mesh_point_mismatch) {
 
   auto gw  = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, w_max, eps}};
   auto gw2 = gf<dlr_imfreq, scalar_valued>{{beta2, Fermion, w_max, eps}};
-  for (auto const &iw : gw.mesh()) EXPECT_DEBUG_DEATH(gw2[iw], "Precondition m.mesh_hash");
+  for (auto iw : gw.mesh()) EXPECT_DEBUG_DEATH(gw2[iw], "Precondition m.mesh_hash");
 
   // THIS PART SHOULD NOT COMPILE AND GIVE A GOOD ERROR MESSAGE
   // auto gwold = gf<imfreq, scalar_valued>{{beta2, Fermion}};
-  // for (auto const &iw : gw.mesh()) gwold[iw] = 0; // must not compile
+  // for (auto iw : gw.mesh()) gwold[iw] = 0; // must not compile
 }
 
 // ----------------------------------------------------------------

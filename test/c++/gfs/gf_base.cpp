@@ -76,7 +76,7 @@ TEST(Gf, Base) {
     auto Sigma_w = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
     G0w(om_) << 1 / (om_ - 3);
 
-    for (auto const &nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
+    for (auto nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
   }
 
   {
@@ -85,7 +85,7 @@ TEST(Gf, Base) {
     auto Sigma_w = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1, 1}};
     G0w(om_) << 1 / (om_ - 3);
 
-    for (auto const &nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
+    for (auto nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
   }
 }
 

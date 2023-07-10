@@ -156,7 +156,7 @@ namespace triqs::gfs {
       a2 = (m2 + m3) / 2;
       a3 = (m3 - m2) / 2;
 
-      for (auto const &t : gt.mesh())
+      for (auto t : gt.mesh())
         _gin(t.index(), _) =
            fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
@@ -168,7 +168,7 @@ namespace triqs::gfs {
       a2 = m3 - (m1 + m2) / 2;
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
 
-      for (auto const &t : gt.mesh())
+      for (auto t : gt.mesh())
         _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
@@ -180,7 +180,7 @@ namespace triqs::gfs {
     // Correction term to account for proper Trapezoidal integration
     // FIXME Avoid copy, by doing proper in-place operation
     auto corr = -0.5 * fact * (gt[0] + m1 + (is_fermion ? 1 : -1) * gt[L]);
-    for (auto const &iw : iw_mesh) gw[iw] = _gout((iw.n + L) % L, _) + corr + a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3);
+    for (auto iw : iw_mesh) gw[iw] = _gout((iw.n + L) % L, _) + corr + a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3);
 
     return std::move(gw);
   }
@@ -251,7 +251,7 @@ namespace triqs::gfs {
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
     }
 
-    for (auto const &iw : gw.mesh()) _gin((iw.n + L) % L, _) = fact * (gw[iw] - (a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3)));
+    for (auto iw : gw.mesh()) _gin((iw.n + L) % L, _) = fact * (gw[iw] - (a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3)));
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
@@ -259,10 +259,10 @@ namespace triqs::gfs {
     auto gt = gf_vec_t<imtime>{tau_mesh, {n_others}};
 
     if (is_fermion)
-      for (auto const &t : tau_mesh)
+      for (auto t : tau_mesh)
         gt[t] = _gout(t.index(), _) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
     else
-      for (auto const &t : tau_mesh) gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
+      for (auto t : tau_mesh) gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
 
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);

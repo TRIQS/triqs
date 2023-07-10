@@ -66,13 +66,13 @@ namespace triqs::gfs {
 
     array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
 
-    for (auto const &t : gt.mesh()) _gin(t.index(), _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
+    for (auto t : gt.mesh()) _gin(t.index(), _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
     auto gw = gf_vec_t<mesh::refreq>{w_mesh, {n_others}};
-    for (auto const &w : w_mesh)
+    for (auto w : w_mesh)
       gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.index(), _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
 
     return std::move(gw);
@@ -118,14 +118,14 @@ namespace triqs::gfs {
 
     array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
 
-    for (auto const &w : gw.mesh()) _gin(w.index(), _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
+    for (auto w : gw.mesh()) _gin(w.index(), _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
 
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
     auto gt           = gf_vec_t<retime>{t_mesh, {n_others}};
     const double corr = 1.0 / (t_mesh.delta() * L);
-    for (auto const &t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
+    for (auto t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
 
     return std::move(gt);
   }

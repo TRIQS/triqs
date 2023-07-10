@@ -125,7 +125,7 @@ TEST(FitTailReal, Multivar) { // NOLINT
 
   // Calculate the exact tail
   auto tail_exact = array<dcomplex, 2>(5, N_k * N_k);
-  for (auto const &k : k_mesh) {
+  for (auto k : k_mesh) {
     dcomplex pole                          = cos(k[0]) * cos(k[1]) + ieta;
     tail_exact(range::all, k.data_index()) = array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
   }

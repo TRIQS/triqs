@@ -284,10 +284,10 @@ namespace triqs::gfs {
 
   template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
     if constexpr (nda::is_scalar_v<RHS>) {
-      for (auto const &w : g.mesh()) g[w] = rhs;
+      for (auto w : g.mesh()) g[w] = rhs;
     } else {
       if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
-      for (auto const &w : g.mesh()) g[w] = rhs[w];
+      for (auto w : g.mesh()) g[w] = rhs[w];
     }
   }
 } // namespace triqs::gfs

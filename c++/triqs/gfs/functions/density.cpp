@@ -109,7 +109,7 @@ namespace triqs::gfs {
           TRIQS_RUNTIME_ERROR << "ERROR: Unknown statistic in density\n";
 
         dcomplex r = 0;
-        for (auto const &w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
+        for (auto w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
         res(n1, n2) = r / beta + m1 + F(a1, b1) + F(a2, b2) + F(a3, b3);
         res(n1, n2) *= -xi;
 
@@ -171,7 +171,7 @@ namespace triqs::gfs {
     EXPECTS(beta > 0 and N == M);
 
     auto res = nda::matrix<dcomplex>::zeros(N, N);
-    for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
+    for (auto w : g.mesh()) res += g[w] / (1. + exp(beta * w));
 
     // -- Required to filter out divergent real parts of g that are inf
     // -- eg flat dos at dos edge
@@ -199,7 +199,7 @@ namespace triqs::gfs {
     res() = 0.0;
 
     // Calculate <cdag_j c_i> = -G_ij(beta^{-}) using Eq. (1,2) of PhysRevB.84.075145
-    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
+    for (auto l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
     res /= gl.mesh().beta();
 
     // Transpose to get <cdag_i c_j> instead of <cdag_j c_i>

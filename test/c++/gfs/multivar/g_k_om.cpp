@@ -130,7 +130,7 @@ TEST(Gkom, EvalSlice) {
   auto gw = g(pi_pi, all_t{});
 
   EXPECT_TRUE(std::get<1>(g.mesh()) == gw.mesh());
-  for (auto const &w : gw.mesh()) EXPECT_COMPLEX_NEAR(gw[w], g(pi_pi, w), 1.e-12);
+  for (auto w : gw.mesh()) EXPECT_COMPLEX_NEAR(gw[w], g(pi_pi, w), 1.e-12);
 }
 
 MAKE_MAIN;
