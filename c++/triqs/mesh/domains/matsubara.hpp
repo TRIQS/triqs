@@ -77,14 +77,14 @@ namespace triqs::mesh {
 
 #define IMPL_OP(OP)                                                                                                                                  \
   template <typename T>                                                                                                                              \
-    requires(not std::is_base_of_v<matsubara_freq, T>)                                                                                               \
-  inline auto operator OP(matsubara_freq const &iw, T const &y) {                                                                                    \
-    return dcomplex(iw) OP y;                                                                                                                        \
+    requires(not std::is_base_of_v<matsubara_freq, std::decay_t<T>>)                                                                                 \
+  inline auto operator OP(matsubara_freq const &iw, T &&y) {                                                                                         \
+    return dcomplex(iw) OP std::forward<T>(y);                                                                                                       \
   }                                                                                                                                                  \
   template <typename T>                                                                                                                              \
-    requires(not std::is_base_of_v<matsubara_freq, T>)                                                                                               \
-  inline auto operator OP(T const &x, matsubara_freq const &iw) {                                                                                    \
-    return x OP dcomplex(iw);                                                                                                                        \
+    requires(not std::is_base_of_v<matsubara_freq, std::decay_t<T>>)                                                                                 \
+  inline auto operator OP(T &&x, matsubara_freq const &iw) {                                                                                         \
+    return std::forward<T>(x) OP dcomplex(iw);                                                                                                       \
   }
   IMPL_OP(+);
   IMPL_OP(-);
