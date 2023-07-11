@@ -93,11 +93,12 @@ namespace triqs::mesh::details {
 
       // https://godbolt.org/z/xoYP3vTW4
 #define IMPL_OP(OP)                                                                                                                                  \
-  friend auto operator OP(mesh_point_t const &mp, auto const &y) { return mp.value() OP y; }                                                         \
-  friend auto operator OP(auto const &x, mesh_point_t const &mp)                                                                                     \
-    requires(not std::is_same_v<decltype(x), mesh_point_t const &>)                                                                                  \
+  template <typename T> friend auto operator OP(mesh_point_t const &mp, T &&y) { return mp.value() OP std::forward<T>(y); }                          \
+  template <typename T>                                                                                                                              \
+  friend auto operator OP(T &&x, mesh_point_t const &mp)                                                                                             \
+    requires(not std::is_same_v<std::decay_t<T>, mesh_point_t>)                                                                                      \
   {                                                                                                                                                  \
-    return x OP mp.value();                                                                                                                          \
+    return std::forward<T>(x) OP mp.value();                                                                                                         \
   }
       IMPL_OP(+);
       IMPL_OP(-);
