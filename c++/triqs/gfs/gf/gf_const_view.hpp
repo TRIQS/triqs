@@ -51,6 +51,9 @@ namespace triqs::gfs {
     /// The associated real type
     using real_t = gf_const_view<M, typename Target::real_t, Layout, EvalPolicy>;
 
+    /// The associated complex type
+    using complex_t = gf_const_view<M, typename Target::complex_t, Layout, EvalPolicy>;
+
     /// Template type
     using target_t = Target;
 
