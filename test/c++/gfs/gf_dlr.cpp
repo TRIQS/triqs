@@ -26,16 +26,18 @@ using triqs::mesh::dlr_imfreq;
 using triqs::mesh::dlr_imtime;
 
 constexpr triqs::clef::placeholder<0> iw_;
-constexpr triqs::clef::placeholder<1> tau_;
+constexpr triqs::clef::placeholder<1> iwp_;
+constexpr triqs::clef::placeholder<2> tau_;
+constexpr triqs::clef::placeholder<3> taup_;
 
 constexpr auto _ = all_t{}; // NOLINT
 using std::exp;
 
-double onefermion(double tau, double eps, double beta) { return -exp(-eps * tau) / (1 + exp(-beta * eps)); }
+auto onefermion(auto tau, double eps, double beta) { return -exp(-eps * tau) / (1 + exp(-beta * eps)); }
 
 // ------------------------------------------------------------
 // Take a gf in time, go to coeffs, to freq, and back and check evals.
-TEST(Gf, G_dlr_mat) {
+TEST(Gf, dlr_mat) {
 
   double beta  = 5;
   double w_max = 20.0;
@@ -77,7 +79,7 @@ TEST(Gf, G_dlr_mat) {
 }
 // ------------------------------------------------------------
 // simpler test, scalar_valued. Same as in Python.
-TEST(Gf, G_dlr_mat2) {
+TEST(Gf, dlr_mat2) {
 
   double beta  = 1.337;
   double w_max = 50.0;
@@ -171,8 +173,7 @@ TEST(Gf, DLR_imtime_grid) {
 
   auto mesh = dlr_imtime{beta, Fermion, w_max, eps};
   auto G1   = gf<dlr_imtime, scalar_valued>{mesh};
-
-  for (const auto &tau : mesh) { G1[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
+  G1[tau_] << onefermion(tau_, omega, beta);
 
   auto Gc = G1; // copy
   EXPECT_GF_NEAR(G1, Gc);
@@ -183,7 +184,7 @@ TEST(Gf, DLR_imtime_grid) {
   // Take view and assign
   auto G2  = gf<dlr_imtime, scalar_valued>{mesh};
   auto G2v = gf_view(G2);
-  for (const auto &tau : mesh) { G2v[tau] = std::exp(-omega * tau) / (1 + std::exp(-beta * omega)); }
+  G2v[tau_] << onefermion(tau_, omega, beta);
 
   EXPECT_GF_NEAR(G2, G2v);
   EXPECT_GF_NEAR(G1, G2v);
@@ -338,7 +339,7 @@ TEST(Gf, DLR_imtime_fit) {
   int n_tau    = 1001;
 
   auto gtau = gf<imtime, scalar_valued>{{beta, Fermion, n_tau}};
-  for (auto tau : gtau.mesh()) gtau[tau] = onefermion(tau, omega, eps);
+  gtau[tau_] << onefermion(tau_, omega, beta);
 
   auto gcoef = fit_gf_dlr(gtau, w_max, eps);
   auto gtau2 = make_gf_imtime(gcoef, n_tau);
@@ -471,18 +472,17 @@ TEST(Gf, DLR_two_poles) {
   double e1 = 0.0;
   double e2 = 2.0;
 
-  auto G_tau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
-  G_tau[tau_] <<                                                          //
-     -0.5 * nda::clef::exp(-e1 * tau_) / (1 + nda::clef::exp(-beta * e1)) //
-        - 0.5 * nda::clef::exp(-e2 * tau_) / (1 + nda::clef::exp(-beta * e2));
 
-  auto G_dlr = make_gf_dlr(G_tau);
-  auto G_iw  = make_gf_dlr_imfreq(G_dlr);
+  auto gtau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
+  gtau[tau_] << 0.5 * onefermion(tau_, e1, beta) + 0.5 * onefermion(tau_, e2, beta);
 
-  auto gw2 = G_iw;
-  gw2[iw_] << 0.5 / (iw_ - e1) + 0.5 / (iw_ - e2);
+  auto gdlr = make_gf_dlr(gtau);
+  auto giw  = make_gf_dlr_imfreq(gdlr);
 
-  EXPECT_GF_NEAR(G_iw, gw2);
+  auto G2_iw = giw;
+  G2_iw[iw_] << 0.5 / (iw_ - e1) + 0.5 / (iw_ - e2);
+
+  EXPECT_GF_NEAR(giw, G2_iw);
 }
 
 // ----------------------------------------------------------------
