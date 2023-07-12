@@ -356,6 +356,36 @@ TEST(Gf, DLR_imtime_fit) {
 
 // ----------------------------------------------------------------
 
+TEST(Gf, DLR_multivar_fit) {
+
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+
+  double e1 = 1.0;
+  double e2 = 2.0;
+
+  int n_tau = 1001;
+
+  auto it_mesh = imtime{beta, Fermion, n_tau};
+  auto gtau    = gf{it_mesh * it_mesh, make_shape()};
+  gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
+
+  auto gcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau, w_max, eps), w_max, eps);
+  auto gtau2 = make_gf_imtime<0>(make_gf_imtime<1>(gcoef, n_tau), n_tau);
+  EXPECT_GF_NEAR(gtau, gtau2);
+
+  for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
+    auto gtau_noise = gtau;
+    gtau_noise.data() += sigma * (nda::rand(n_tau, n_tau) - 0.5);
+    auto gcoef_noise = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau_noise, w_max, eps), w_max, eps);
+    auto gtau3       = make_gf_imtime<0>(make_gf_imtime<1>(gcoef_noise, n_tau), n_tau);
+    EXPECT_GF_NEAR(gtau, gtau3, 25*sigma);
+  }
+}
+
+// ----------------------------------------------------------------
+
 // Test some interpolation. Not really necessary
 TEST(Gf, DLR_ph_sym_interpolation) {
 
@@ -472,7 +502,6 @@ TEST(Gf, DLR_two_poles) {
   double e1 = 0.0;
   double e2 = 2.0;
 
-
   auto gtau = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
   gtau[tau_] << 0.5 * onefermion(tau_, e1, beta) + 0.5 * onefermion(tau_, e2, beta);
 
@@ -481,6 +510,29 @@ TEST(Gf, DLR_two_poles) {
 
   auto G2_iw = giw;
   G2_iw[iw_] << 0.5 / (iw_ - e1) + 0.5 / (iw_ - e2);
+
+  EXPECT_GF_NEAR(giw, G2_iw);
+}
+
+// ----------------------------------------------------------------
+TEST(Gf, DLR_multivar) {
+
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+
+  double e1 = 1.0;
+  double e2 = 2.0;
+
+  auto dlr_it_mesh = dlr_imtime{beta, Fermion, w_max, eps};
+  auto gtau        = gf{dlr_it_mesh * dlr_it_mesh, std::array<long, 0>{}};
+  gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
+
+  auto gdlr = make_gf_dlr<0>(make_gf_dlr<1>(gtau));
+  auto giw  = make_gf_dlr_imfreq<0>(make_gf_dlr_imfreq<1>(gdlr));
+
+  auto G2_iw = giw;
+  G2_iw[iw_, iwp_] << 1.0 / (iw_ - e1) / (iwp_ - e2);
 
   EXPECT_GF_NEAR(giw, G2_iw);
 }
