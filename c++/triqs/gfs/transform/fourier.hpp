@@ -76,7 +76,7 @@ namespace triqs::gfs {
     // TODO : put back the optimisation in nda (MACRO ??)
     // some tests will fail and check in a test that flatten_2d and the inverse op are indeed inverse...
     auto gin_fl = [&gin]() {
-      using gfl_t = decltype(flatten_gf_2d<N>(gin))::complex_t;
+      using gfl_t = typename decltype(flatten_gf_2d<N>(gin))::complex_t;
       return gfl_t{flatten_gf_2d<N>(gin)};
     }();
 
