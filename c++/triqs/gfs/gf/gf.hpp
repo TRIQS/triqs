@@ -53,7 +53,7 @@ namespace triqs::gfs {
      is_instantiation_of_v<gf, G> or is_instantiation_of_v<gf_view, G> or is_instantiation_of_v<gf_const_view, G>;
   template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
 
-  template <typename G, typename M>
+  template <typename G, typename M = std::decay_t<G>::mesh_t>
   concept MemoryGf = mesh::Mesh<M> and requires(G g) {
     { g.data() } -> nda::MemoryArray;
     requires std::same_as<std::decay_t<decltype(g.mesh())>, M>;
