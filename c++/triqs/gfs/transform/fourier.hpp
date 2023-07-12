@@ -75,19 +75,13 @@ namespace triqs::gfs {
     // between nda::for_each and the flatten which were not inverse of each other any more
     // TODO : put back the optimisation in nda (MACRO ??)
     // some tests will fail and check in a test that flatten_2d and the inverse op are indeed inverse...
-    auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d<0>(make_array_const_view(opt_args))...);
-    auto _            = ellipsis();
-    if constexpr (gin.data_rank == 1)
-      gout.data() = gout_flatten.data()(_, 0); // gout is scalar, gout_flatten vectorial
-    else {
-      // inverse operation as flatten_2d, exactly
-      auto g_rot = nda::rotate_index_view<N>(gout.data());
-      for (auto mp : out_mesh) {
-        auto g_rot_sl = g_rot(mp.data_index(), _); // if the array is long, it is faster to precompute the view ...
-        auto gout_col = gout_flatten.data()(mp.data_index(), _);
-        nda::for_each(g_rot_sl.shape(), [&g_rot_sl, &gout_col, c = long(0)](auto &&...i) mutable { return g_rot_sl(i...) = gout_col(c++); });
-      }
-    }
+    auto gin_fl = [&gin]() {
+      using gfl_t = decltype(flatten_gf_2d<N>(gin))::complex_t;
+      return gfl_t{flatten_gf_2d<N>(gin)};
+    }();
+
+    auto gout_fl = _fourier_impl(out_mesh, gin_fl, flatten_2d(opt_args)...);
+    unflatten_gf_2d<N>(gout, gout_fl);
   }
 
   /* *-----------------------------------------------------------------------------------------------------

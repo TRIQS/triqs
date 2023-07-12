@@ -38,8 +38,8 @@ namespace triqs::gfs {
     auto mesh_tpl = triqs::tuple::replace<N>(gin.mesh().components(), g2_flat.mesh());
     auto g_out    = gf{mesh::prod{mesh_tpl}, gin.target_shape()};
 
-    unflatten_2d<N>(make_array_view(g_out.data()), make_array_const_view(g2_flat.data()));
-    return std::move(g_out);
+    unflatten_2d<N>(g_out.data(), g2_flat.data());
+    return g_out;
   }
 
 } // namespace triqs::gfs
