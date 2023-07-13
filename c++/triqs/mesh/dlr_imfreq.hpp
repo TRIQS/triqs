@@ -195,7 +195,7 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, dlr_imfreq const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m._beta, m.size(), stat_cstr,
+      return sout << fmt::format("DLR imfreq mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m.size(), m._beta, stat_cstr,
                                  m._w_max, m._eps);
     }
 

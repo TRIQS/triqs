@@ -201,7 +201,7 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, dlr const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m._beta, m.size(), stat_cstr,
+      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m.size(), m._beta, stat_cstr,
                                  m._w_max, m._eps);
     }
 
