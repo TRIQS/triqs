@@ -61,6 +61,15 @@ namespace triqs::gfs {
 
   template <typename G> using get_target_t = typename std::decay_t<G>::target_t;
 
+  /// ---------------------------  get_mesh  ---------------------------------
+
+  template <int N, MemoryGf G> auto const &get_mesh(G const &g) {
+    if constexpr (mesh::is_product<typename G::mesh_t>)
+      return std::get<N>(g.mesh());
+    else
+      return g.mesh();
+  }
+
   /// ---------------------------  tags for some implementation details  ---------------------------------
 
   struct impl_tag {};

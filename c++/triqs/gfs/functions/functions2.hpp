@@ -51,12 +51,8 @@ namespace triqs::gfs {
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {})
     requires(is_gf_v<G>)
   {
-    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
-      auto const &m = std::get<N>(g.mesh());
-      return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true, make_array_const_view(known_moments));
-    } else { // single mesh
-      return g.mesh().get_tail_fitter().template fit<0>(g.mesh(), make_array_const_view(g.data()), true, make_array_const_view(known_moments));
-    }
+    auto const &m = get_mesh<N>(g);
+    return m.get_tail_fitter().template fit<N>(m, make_array_const_view(g.data()), true, make_array_const_view(known_moments));
   }
 
   /**
@@ -107,13 +103,9 @@ namespace triqs::gfs {
       inner_matrix_dim = g.target_shape()[0];
     } else
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
-    if constexpr (mesh::is_product<typename G::mesh_t>) { // product mesh
-      auto const &m = std::get<N>(g.mesh());
-      return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
-    } else { // single mesh
-      return g.mesh().get_tail_fitter().template fit_hermitian<0>(g.mesh(), make_array_const_view(g.data()), true,
-                                                                  make_array_const_view(known_moments), inner_matrix_dim);
-    }
+
+    auto const &m = get_mesh<N>(g);
+    return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
   }
 
   /**

@@ -102,13 +102,6 @@ namespace triqs::gfs {
       return false;
     }
 
-    template <size_t Is, Mesh M> auto const &extract_mesh(M const &m) {
-      static_assert((Is == 0) or mesh::is_product<M>);
-      if constexpr (mesh::is_product<M>)
-        return std::get<Is>(m);
-      else
-        return m;
-    }
   } // namespace detail
 
 } // namespace triqs::gfs

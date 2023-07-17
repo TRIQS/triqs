@@ -59,22 +59,16 @@ namespace triqs::gfs {
    * @return : the single-mesh tensor-valued Green-function
    */
   template <int N = 0, MemoryGf G> auto flatten_gf_2d(G const &g) {
-    auto const &mesh = [&g]() {
-      if constexpr (mesh::is_product<typename G::mesh_t>)
-        return std::get<N>(g.mesh());
-      else
-        return g.mesh();
-      ;
-    }();
+    auto const &mesh = get_mesh<N>(g);
     return gf{mesh, flatten_2d<N>(g.data())};
   }
 
   //-------------------------------------
 
   /// Inverse of flatten_gf_2d
-  template <int N = 0, MemoryGf Gfl> void unflatten_gf_2d(MemoryGf auto &&g, Gfl const &gfl) {
+  template <int N = 0, MemoryGf Gfl> void unflatten_gf_2d(MemoryGf auto &g, Gfl const &gfl) {
     static_assert(not mesh::is_product<typename Gfl::mesh_t>, "unflatten_gf_2d: Flattened Green-function must have non-product mesh");
-    EXPECTS(std::get<N>(g.mesh()) == gfl.mesh());
+    EXPECTS(get_mesh<N>(g) == gfl.mesh());
     unflatten_2d<N>(g.data(), gfl.data());
   }
 

@@ -98,7 +98,7 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg)
     decltype(auto) new_data = [&self,
                                &arg...]<size_t... Is>(std::index_sequence<Is...>) -> decltype(auto) { // the trailing ->decltype(auto) is crucial
       return data_t::template call<(target_t::is_matrix and n_all == 0 ? 'M' : 'A'), false>(
-         std::forward<Self>(self)._data, this_t::call_to_data_index(detail::extract_mesh<Is>(self.mesh()), std::forward<Arg>(arg))..., ellipsis{});
+         std::forward<Self>(self)._data, this_t::call_to_data_index(get_mesh<Is>(self), std::forward<Arg>(arg))..., ellipsis{});
     }(std::make_index_sequence<arity>{}); //keep arity here. we could authorize to pass additional integers for direct access here ??
 
     if constexpr (n_all == 0)
