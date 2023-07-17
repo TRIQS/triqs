@@ -35,7 +35,7 @@ template <typename Self, typename... Args> static decltype(auto) call_impl(Self 
     if constexpr ((... or clef::is_any_lazy<Args>)) // any argument is lazy ?
       return clef::make_expr_call(std::forward<Self>(self), std::forward<Args>(args)...);
     else
-      return evaluator_t()(std::forward<Self>(self), std::forward<Args>(args)...);
+      return gf_evaluator<mesh_t>{}(std::forward<Self>(self), std::forward<Args>(args)...);
   }
 }
 #if __cpp_explicit_this_parameter < 202110L

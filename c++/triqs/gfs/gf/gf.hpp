@@ -26,9 +26,9 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------*/
   using nda::C_layout;
 
-  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_layout, typename EvalPolicy = default_evaluator> class gf;
-  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator> class gf_view;
-  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout, typename EvalPolicy = default_evaluator>
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_layout> class gf;
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout> class gf_view;
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout>
   class gf_const_view;
 
   /*----------------------------------------------------------
@@ -84,33 +84,33 @@ namespace triqs::gfs {
    *
    * @include triqs/gfs.hpp
    */
-  template <Mesh M, typename Target, typename Layout, typename EvalPolicy> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <Mesh M, typename Target, typename Layout> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
     static_assert(not std::is_same_v<M, triqs::lattice::brillouin_zone>,
                   "Since TRIQS 2.3, brillouin_zone is replaced by mesh::brzone as a mesh name. Cf Doc, changelog");
 
-    using this_t = gf<M, Target, Layout, EvalPolicy>; // used in common code
+    using this_t = gf<M, Target, Layout>; // used in common code
 
     public:
     static constexpr bool is_view  = false;
     static constexpr bool is_const = false;
 
-    using mutable_view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using mutable_view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using const_view_type = gf_const_view<M, Target, typename Layout::with_lowest_guarantee_t>;
 
     /// Associated (non const) view type
-    using view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t, EvalPolicy>;
+    using view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t>;
 
     /// Associated regular type (gf<....>)
-    using regular_type = gf<M, Target, Layout, EvalPolicy>;
+    using regular_type = gf<M, Target, Layout>;
 
     /// The associated real type
-    using real_t = gf<M, typename Target::real_t, Layout, EvalPolicy>;
+    using real_t = gf<M, typename Target::real_t, Layout>;
 
     /// The associated complex type
-    using complex_t = gf<M, typename Target::complex_t, Layout, EvalPolicy>;
+    using complex_t = gf<M, typename Target::complex_t, Layout>;
 
     /// Template type
     using target_t = Target;
@@ -123,8 +123,6 @@ namespace triqs::gfs {
 
     // NO DOC
     using mesh_index_t = typename mesh_t::index_t;
-
-    using evaluator_t = typename EvalPolicy::template evaluator_t<M>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;

@@ -28,31 +28,30 @@ namespace triqs::gfs {
      *
      * @include triqs/gfs.hpp
      */
-  template <Mesh M, typename Target, typename Layout, typename EvalPolicy> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <Mesh M, typename Target, typename Layout> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    using this_t = gf_const_view<M, Target, Layout, EvalPolicy>; // used in common code
+    using this_t = gf_const_view<M, Target, Layout>; // used in common code
 
     public:
     static constexpr bool is_view  = true;
     static constexpr bool is_const = true;
 
-    using mutable_view_type = gf_view<M, Target, Layout, EvalPolicy>;
+    using mutable_view_type = gf_view<M, Target, Layout>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<M, Target, Layout, EvalPolicy>;
+    using const_view_type = gf_const_view<M, Target, Layout>;
 
     /// Associated (non const) view type
-    using view_type = gf_const_view<M, Target, Layout, EvalPolicy>;
+    using view_type = gf_const_view<M, Target, Layout>;
 
     /// Associated regular type (gf<....>)
     using regular_type = gf<M, Target>; // FIXME : find the Layout
-    //using regular_type = gf<M, Target, Layout, EvalPolicy>;
 
     /// The associated real type
-    using real_t = gf_const_view<M, typename Target::real_t, Layout, EvalPolicy>;
+    using real_t = gf_const_view<M, typename Target::real_t, Layout>;
 
     /// The associated complex type
-    using complex_t = gf_const_view<M, typename Target::complex_t, Layout, EvalPolicy>;
+    using complex_t = gf_const_view<M, typename Target::complex_t, Layout>;
 
     /// Template type
     using target_t = Target;
@@ -65,8 +64,6 @@ namespace triqs::gfs {
 
     // NO DOC
     using mesh_index_t = typename mesh_t::index_t;
-
-    using evaluator_t = typename EvalPolicy::template evaluator_t<M>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;

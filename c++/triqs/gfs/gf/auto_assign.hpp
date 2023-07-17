@@ -36,7 +36,7 @@ namespace triqs {
       clef_auto_assign(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
     }
 
-    template <typename RHS, typename M, typename T, typename L, typename E> FORCEINLINE void clef_auto_assign(gf_view<M, T, L, E> g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L> FORCEINLINE void clef_auto_assign(gf_view<M, T, L> g, RHS const &rhs) {
       if constexpr (mesh::is_product<M>) {
         for (auto w : g.mesh()) { triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w)); }
       } else {
@@ -44,21 +44,21 @@ namespace triqs {
       }
     }
 
-    template <typename RHS, typename M, typename T, typename L, typename E> FORCEINLINE void clef_auto_assign(gf<M, T, L, E> &g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L> FORCEINLINE void clef_auto_assign(gf<M, T, L> &g, RHS const &rhs) {
       clef_auto_assign(g(), rhs);
     }
 
     // enable the writing g[om_] << .... also
-    template <typename RHS, typename M, typename T, typename L, typename E>
-    FORCEINLINE void clef_auto_assign_subscript(gf_view<M, T, L, E> g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L>
+    FORCEINLINE void clef_auto_assign_subscript(gf_view<M, T, L> g, RHS const &rhs) {
       clef_auto_assign(g, rhs);
     }
 
-    /* template <typename RHS, typename M, typename T, typename L, typename E>*/
-    /*FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L, E> const &g, RHS const &rhs) { return 1;} // = delete;*/
+    /* template <typename RHS, typename M, typename T, typename L>*/
+    /*FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L> const &g, RHS const &rhs) { return 1;} // = delete;*/
 
-    template <typename RHS, typename M, typename T, typename L, typename E>
-    FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L, E> &g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L>
+    FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L> &g, RHS const &rhs) {
       clef_auto_assign(g, rhs);
     }
 
