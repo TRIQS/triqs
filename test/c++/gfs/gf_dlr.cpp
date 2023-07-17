@@ -368,7 +368,7 @@ TEST(Gf, DLR_multivar_fit) {
   int n_tau = 1001;
 
   auto it_mesh = imtime{beta, Fermion, n_tau};
-  auto gtau    = gf{it_mesh * it_mesh, make_shape()};
+  auto gtau    = gf{it_mesh * it_mesh};
   gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
 
   auto gcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau, w_max, eps), w_max, eps);
@@ -525,7 +525,7 @@ TEST(Gf, DLR_multivar) {
   double e2 = 2.0;
 
   auto dlr_it_mesh = dlr_imtime{beta, Fermion, w_max, eps};
-  auto gtau        = gf{dlr_it_mesh * dlr_it_mesh, std::array<long, 0>{}};
+  auto gtau        = gf{dlr_it_mesh * dlr_it_mesh};
   gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
 
   auto gdlr = make_gf_dlr<0>(make_gf_dlr<1>(gtau));
