@@ -65,6 +65,8 @@
 
 namespace triqs::mesh {
 
+  template <triqs::mesh::Mesh M> using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
+
   // -- Backward compat aliases --
   using cyclic_lattice                         = cyclat;
   template <Mesh... M> using cartesian_product = prod<M...>;

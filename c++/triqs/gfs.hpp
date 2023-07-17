@@ -28,6 +28,20 @@
 
 // the meshes
 #include "./mesh.hpp"
+namespace triqs::gfs {
+  using mesh::brzone;
+  using mesh::cyclat;
+  using mesh::dlr;
+  using mesh::dlr_imfreq;
+  using mesh::dlr_imtime;
+  using mesh::imfreq;
+  using mesh::imtime;
+  using mesh::legendre;
+  using mesh::make_adjoint_mesh;
+  using mesh::prod;
+  using mesh::refreq;
+  using mesh::retime;
+} // namespace triqs::gfs
 
 // the targets
 #include "./gfs/gf/defs.hpp"
@@ -39,10 +53,6 @@
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
-//#include "./gfs/gf/evaluate.hpp"
-
-// multivar
-//#include "./mesh/prod.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"
@@ -63,34 +73,6 @@
 
 // hdf5
 #include "./gfs/h5.hpp"
-
-#include "./mesh/concepts.hpp"
-
-//----------------------------------------------------------------
-// Backward compatibility :  aliases, etc..
-//----------------------------------------------------------------
-namespace triqs::gfs {
-
-  using mesh::brzone;
-  using mesh::cyclat;
-  using mesh::dlr;
-  using mesh::dlr_imfreq;
-  using mesh::dlr_imtime;
-  using mesh::imfreq;
-  using mesh::imtime;
-  using mesh::legendre;
-  using mesh::make_adjoint_mesh;
-  using mesh::prod;
-  using mesh::refreq;
-  using mesh::retime;
-
-  template <triqs::mesh::Mesh M> using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
-
-  // Get shape of the data or of the target
-  template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }
-  template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
-
-} // namespace triqs::gfs
 
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
