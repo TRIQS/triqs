@@ -246,3 +246,161 @@ def TB_from_pythTB(ptb):
                     orbital_names=[str(i) for i in range(ptb.get_num_orbitals())])
 
     return TBL
+
+# importing necessary dependencies
+from itertools import product as itp
+from pythtb import *
+# from triqs.lattice.tight_binding import TBLattice # TRIQS needs to be installed for this dependency to work
+import sympy as sp
+from sympy import *
+import warnings
+
+def sympyfy(tb_lat_obj, analytical = True):
+    r"""
+    returns the analytical form of the momentum space hamiltonian of the tight-binding model,  
+    from a tight-binding lattice object, by utilizing Fourier series
+    
+    Parameters
+    ----------
+    tb_lat_obj: triqs TBLattice object
+        triqs tight binding object
+    analytical: boolean, default = True
+        a boolean which will cause the function will return an analytical Hamiltonian, when true, and 
+        an numerical Hamiltonian otherwise
+    
+    Returns
+    -------
+    Hk_numerical: NumPy Array
+        the hamiltonian of the tight-binding model in momentum space in numerical form
+    Hk: NumPy Array
+        the hamiltonian of the tight-binding model in momentum space in reduced analytical form
+
+    """
+
+    # imaginary number
+    I = sp.I
+
+    # matrix from the axis directions in momentum space
+    kx, ky, kz = sp.symbols("kx ky kz", real = True)
+    k_space_matrix = sp.Matrix([kx, ky, kz])
+
+    # symbolic dot product representation between the lattice unit vectors
+    # and the momentum space matrix
+    a1k, a2k, a3k = sp.symbols("a1k a2k a3k", real = True)
+    lattice = sp.Matrix([a1k, a2k, a3k])
+
+    # the number of orbitals involved in the electron hoppings
+    num_orb = tb_lat_obj.n_orbitals
+
+    # dictionary containing details about the hopping of the electrons
+    TB_lat_obj_hops = tb_lat_obj.hoppings 
+
+    # maximum hopping distances of electrons in each of the axial directions
+    max_x, max_y, max_z = list(np.max(np.array(list(TB_lat_obj_hops.keys())), axis = 0))
+
+    # number of cells involved in the hopping of electrons in each of the axial directions
+    num_cells_x, num_cells_y, num_cells_z = [2 * max_coord + 1 for max_coord in [max_x, max_y, max_z]]
+    
+    # basis of the 5D tensor real-space Hamiltonian
+    Hrij = np.zeros((num_cells_x, num_cells_y, num_cells_z, num_orb, num_orb), dtype = sp.exp)
+
+    # looping through the hopping parameters of the electrons involved in the inter-orbital hoppings
+    # key represents the cell coordinates of where the electrons hop to relative to the home unit cell
+    # hopping represents the matrix with the embedded hopping amplitudes
+    for key, hopping in TB_lat_obj_hops.items():
+        rx, ry, rz = key
+        # reduce floating point precision of hopping parameters to 3 decimal places
+        hopping = np.around(hopping, decimals = 3)
+        Hrij[rx + max_x, ry + max_y, rz + max_z] = hopping
+
+    # basis of the exponential term in the calculation of Hk
+    Hexp = np.empty_like(Hrij, dtype = sp.exp)
+
+    # perform the Fourier transform
+    for xi, yi, zi in itp(range(num_cells_x), range(num_cells_y), range(num_cells_z)):
+        coefficients = np.array([xi - max_x, yi - max_y, zi - max_z])
+        r = lattice.dot(coefficients)
+        eikr = sp.exp(-I * r)
+        Hexp[xi, yi, zi, :, :] = eikr
+
+    # summation over all real space axes
+    Hk = np.sum(Hrij * Hexp, axis = (0, 1, 2))
+    
+    # rewriting the exponential terms in the analytical expression in terms of 
+    for i, j in itp(range(num_orb), repeat = 2):
+        Hk[i, j] = Hk[i, j].rewrite(sp.cos)
+
+    # dealing with the numerical Hamiltonian
+    # we convert it to a SymPy matrix to use the substitutions method available in SymPy
+    Hk_numerical = sp.Matrix(Hk)
+    TB_lat_obj_units = tb_lat_obj.units
+    TB_lat_obj_units_transpose = np.transpose(TB_lat_obj_units)
+    
+    # obtaining unit vectors
+    # reduce floating point precision to 3 decimal places
+    a1 = np.around(TB_lat_obj_units_transpose[0], decimals = 3)
+    a2 = np.around(TB_lat_obj_units_transpose[1], decimals = 3)
+    a3 = np.around(TB_lat_obj_units_transpose[2], decimals = 3)
+
+    # numerical dot products between the unit vectors
+    # and the momentum space matrix
+    a1k_numerical = a1.dot(k_space_matrix)[0]
+    a2k_numerical = a2.dot(k_space_matrix)[0]
+    a3k_numerical = a3.dot(k_space_matrix)[0]
+    
+    # performing the numerical dot product substitutions
+    Hk_numerical = Hk_numerical.subs(a1k, a1k_numerical)
+    Hk_numerical = Hk_numerical.subs(a2k, a2k_numerical)
+    Hk_numerical = Hk_numerical.subs(a3k, a3k_numerical)
+
+    # converting the numerical Hamiltonian to a NumPy array from a SymPy matrix
+    Hk_numerical = np.array(Hk_numerical)
+
+    def has_complex_exponential(matrix):
+        """
+        Checks if a NumPy array containing SymPy elements has a complex exponential element.
+
+        Args:
+            matrix (NumPy array): The input NumPy array containing SymPy elements
+        
+        Returns:
+            bool: True if the matrix array contains a complex exponential element, False otherwise.
+        """
+        for sublist in matrix:
+            for element in sublist:
+                if element.is_complex and element.has(exp):
+                    return True
+        return False
+    
+    def is_hermitian(matrix):
+        """
+        Checks if a NumPy array containing SymPy elements is hermitian
+
+        Args:
+            matrix (NumPy array): The input NumPy array containing SymPy elements
+        
+        Returns:
+            bool: True if the matrix is a hermitian, False otherwise
+        """
+        n = matrix.shape[0]
+        for i in range(n):
+            for j in range(n):
+                if matrix[i,j] != matrix[j,i].conjugate():
+                    return False
+        return True
+    
+    # warning indicating when the output Hamiltonian is not hermitian
+    if is_hermitian(Hk) == False or is_hermitian(Hk_numerical) == False:
+        return warnings.warn("The resulting Hamiltonian is not hermitian.")
+
+    # warning indicating when the Hamiltonian contains a complex exponential element
+    if has_complex_exponential(Hk_numerical) or has_complex_exponential(Hk):
+        return warnings.warn("""Your expression has a complex exponential. 
+                                Choosing a different unit cell could make 
+                                your Hamiltonian expression real.""")
+    
+    # returning the analytical or numerical form of the Hamiltonian
+    # depending on the user's preference
+    if analytical:
+        return Hk
+    return Hk_numerical
