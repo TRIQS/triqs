@@ -255,9 +255,9 @@ def TB_from_pythTB(ptb):
 # from triqs.lattice.tight_binding import TBLattice # TRIQS needs to be installed for this dependency to work
 
 
-def sympyfy(tb_lat_obj, analytical = True):
+def sympyfy(tb_lat_obj, analytical = True, precision = 6):
     r"""
-    returns the analytical form of the momentum space hamiltonian of the tight-binding model,  
+    returns the analytical form of the momentum space hamiltonian of the tight-binding model 
     from a tight-binding lattice object, by utilizing Fourier series
     
     Parameters
@@ -267,19 +267,25 @@ def sympyfy(tb_lat_obj, analytical = True):
     analytical: boolean, default = True
         a boolean which will cause the function will return an analytical Hamiltonian, when true, and 
         an numerical Hamiltonian otherwise
+    precision: integer, default = 6
+        An integer that specifies the decimal point precision of the floating point hopping amplitudes of
+        the electrons involved in the hoppings
+        Wannier90's default precision is 10^-6 which is why the default precision is 6
+        The user might want to decrease the default precision to ensure that similar hopping amplitudes
+        especially those tied to symmetrical hoppings across the crysal lattice are easily recognizable
     
     Returns
     -------
     Hk: NumPy array
         The hamiltonian of the tight-binding model in momentum space. This can be returned either in
-        numerical form or reduced analytical form depending on what the user chooses. The default output, 
-        which depends on the optional analytical flag or parameter, is the reduced analytical form
-
-        #TODO: Explain what the numerical form means. Only depends on k and no other variables? 
-        # TODO: versus the analytical form. 
-
+        numerical form (Hk_numerical) or reduced analytical form (Hk) depending the user's preference.
+        The default output, which depends on the optional analytical parameter, is the reduced analytical form
+        The numerical form only depends on the k-space vector components, i.e., the lattice constants and
+        lattice vectors are expressed numerically
+        The analytical form depends on the k-space vector components alongside the lattice vectors too
 
     """
+
     import sympy as sp
 
     # imaginary number
@@ -315,7 +321,7 @@ def sympyfy(tb_lat_obj, analytical = True):
     for key, hopping in TB_lat_obj_hops.items():
         rx, ry, rz = key
         # reduce floating point precision of hopping parameters to 3 decimal places
-        hopping = np.around(hopping, decimals = 3)
+        hopping = np.around(hopping, precision)
         Hrij[rx + max_x, ry + max_y, rz + max_z] = hopping
 
     # basis of the exponential term in the calculation of Hk
@@ -343,9 +349,9 @@ def sympyfy(tb_lat_obj, analytical = True):
     
     # obtaining unit vectors
     # reduce floating point precision to 3 decimal places
-    a1 = np.around(TB_lat_obj_units_transpose[0], decimals = 3)
-    a2 = np.around(TB_lat_obj_units_transpose[1], decimals = 3)
-    a3 = np.around(TB_lat_obj_units_transpose[2], decimals = 3)
+    a1 = np.around(TB_lat_obj_units_transpose[0], precision)
+    a2 = np.around(TB_lat_obj_units_transpose[1], precision)
+    a3 = np.around(TB_lat_obj_units_transpose[2], precision)
 
     # numerical dot products between the unit vectors
     # and the momentum space matrix
@@ -370,7 +376,9 @@ def sympyfy(tb_lat_obj, analytical = True):
         
         Returns:
             bool: True if the matrix array contains a complex exponential element, False otherwise.
+        
         """
+        
         for sublist in matrix:
             for element in sublist:
                 if element.is_complex and element.has(sp.exp):
@@ -386,11 +394,13 @@ def sympyfy(tb_lat_obj, analytical = True):
         
         Returns:
             bool: True if the matrix is a hermitian, False otherwise
+
         """
+
         n = matrix.shape[0]
         for i in range(n):
             for j in range(n):
-                if matrix[i,j] != matrix[j,i].conjugate():
+                if matrix[i, j] != matrix[j, i].conjugate():
                     return False
         return True
     
