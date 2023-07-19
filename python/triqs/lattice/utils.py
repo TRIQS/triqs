@@ -249,11 +249,6 @@ def TB_from_pythTB(ptb):
 
     return TBL
 
-# importing necessary dependencies
-
-
-# from triqs.lattice.tight_binding import TBLattice # TRIQS needs to be installed for this dependency to work
-
 
 def sympyfy(tb_lat_obj, analytical = True, precision = 6):
     r"""
