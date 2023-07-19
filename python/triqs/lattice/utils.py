@@ -17,6 +17,8 @@
 
 from io import StringIO
 import numpy as np
+from itertools import product as itp
+import warnings
 
 __all__ = ['k_space_path', 'TB_from_wannier90']
 
@@ -248,12 +250,10 @@ def TB_from_pythTB(ptb):
     return TBL
 
 # importing necessary dependencies
-from itertools import product as itp
-from pythtb import *
+
+
 # from triqs.lattice.tight_binding import TBLattice # TRIQS needs to be installed for this dependency to work
-import sympy as sp
-from sympy import *
-import warnings
+
 
 def sympyfy(tb_lat_obj, analytical = True):
     r"""
@@ -270,12 +270,14 @@ def sympyfy(tb_lat_obj, analytical = True):
     
     Returns
     -------
-    Hk_numerical: NumPy Array
-        the hamiltonian of the tight-binding model in momentum space in numerical form
-    Hk: NumPy Array
-        the hamiltonian of the tight-binding model in momentum space in reduced analytical form
+    Hk: NumPy array
+        The hamiltonian of the tight-binding model in momentum space. This can be returned either in
+        numerical form or reduced analytical form depending on what the user chooses. The default output, 
+        which depends on the optional analytical flag or parameter, is the reduced analytical form
 
     """
+    import sympy as sp
+    from sympy import exp
 
     # imaginary number
     I = sp.I
@@ -356,7 +358,7 @@ def sympyfy(tb_lat_obj, analytical = True):
     # converting the numerical Hamiltonian to a NumPy array from a SymPy matrix
     Hk_numerical = np.array(Hk_numerical)
 
-    def has_complex_exponential(matrix):
+    def _has_complex_exponential_sympy(matrix):
         """
         Checks if a NumPy array containing SymPy elements has a complex exponential element.
 
@@ -372,7 +374,7 @@ def sympyfy(tb_lat_obj, analytical = True):
                     return True
         return False
     
-    def is_hermitian(matrix):
+    def _is_hermitian_sympy(matrix):
         """
         Checks if a NumPy array containing SymPy elements is hermitian
 
@@ -390,11 +392,11 @@ def sympyfy(tb_lat_obj, analytical = True):
         return True
     
     # warning indicating when the output Hamiltonian is not hermitian
-    if is_hermitian(Hk) == False or is_hermitian(Hk_numerical) == False:
+    if _is_hermitian_sympy(Hk) == False or _is_hermitian_sympy(Hk_numerical) == False:
         return warnings.warn("The resulting Hamiltonian is not hermitian.")
 
     # warning indicating when the Hamiltonian contains a complex exponential element
-    if has_complex_exponential(Hk_numerical) or has_complex_exponential(Hk):
+    if _has_complex_exponential_sympy(Hk_numerical) or _has_complex_exponential_sympy(Hk):
         return warnings.warn("""Your expression has a complex exponential. 
                                 Choosing a different unit cell could make 
                                 your Hamiltonian expression real.""")
