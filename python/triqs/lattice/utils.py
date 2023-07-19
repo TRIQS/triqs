@@ -275,9 +275,12 @@ def sympyfy(tb_lat_obj, analytical = True):
         numerical form or reduced analytical form depending on what the user chooses. The default output, 
         which depends on the optional analytical flag or parameter, is the reduced analytical form
 
+        #TODO: Explain what the numerical form means. Only depends on k and no other variables? 
+        # TODO: versus the analytical form. 
+
+
     """
     import sympy as sp
-    from sympy import exp
 
     # imaginary number
     I = sp.I
@@ -370,7 +373,7 @@ def sympyfy(tb_lat_obj, analytical = True):
         """
         for sublist in matrix:
             for element in sublist:
-                if element.is_complex and element.has(exp):
+                if element.is_complex and element.has(sp.exp):
                     return True
         return False
     
