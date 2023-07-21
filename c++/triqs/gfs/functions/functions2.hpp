@@ -105,7 +105,7 @@ namespace triqs::gfs {
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
 
     auto const &m = get_mesh<N>(g);
-    return m.get_tail_fitter().template fit_hermitian<N>(m, make_const_view(g.data()), true, make_const_view(known_moments), inner_matrix_dim);
+    return m.get_tail_fitter().template fit_hermitian<N>(m, make_array_const_view(g.data()), true, make_array_const_view(known_moments), inner_matrix_dim);
   }
 
   /**
