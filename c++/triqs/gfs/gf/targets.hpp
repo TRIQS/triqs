@@ -18,9 +18,9 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+
 #include <triqs/arrays.hpp>
-#include "../../std_addons/complex.hpp"
-#include <utility>
+#include <nda/stdutil/complex.hpp>
 
 namespace triqs {
   namespace gfs {
