@@ -21,7 +21,6 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/operators/many_body_operator.hpp>
-#include <triqs/operators/many_body_operator_serialization.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <string>
 #include <vector>
