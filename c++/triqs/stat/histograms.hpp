@@ -195,24 +195,6 @@ namespace triqs::stat {
     /// @return Reference to the same output stream
     /// @brief Output stream insertion
     friend std::ostream &operator<<(std::ostream &os, histogram const &h);
-
-    // BOOST Serialization
-    friend class boost::serialization::access;
-
-    /// Serialize Histogram
-    /// @tparam Archive Archive type for serialization
-    /// @param ar Archive object to serialize to/deserialize from
-    /// @param version Archive format version tag
-    /// @brief Serialize Histogram
-    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-      ar &a;
-      ar &b;
-      ar &n_bins;
-      ar &_data;
-      ar &_n_data_pts;
-      ar &_n_lost_pts;
-      ar &_step;
-    }
   };
 
   //-------------------------------------------------------------------------------

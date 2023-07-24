@@ -344,10 +344,6 @@ namespace triqs {
         });
       }
 
-      // Boost.Serialization
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &monomials; }
-
       private:
       // Normalize a monomial and insert into a map
       static void normalize_and_insert(monomial_t m, scalar_t coeff, monomials_map_t &target) {

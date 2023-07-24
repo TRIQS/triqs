@@ -28,7 +28,7 @@ c = class_(
         hdf5 = True,
         comparisons = "==",
         arithmetic = "add_only",
-        serializable = "tuple",
+        serializable = "h5",
         doc = r"""Statistical histogram
 
    This class serves to sample a continuous random variable, and to 'bin' it.

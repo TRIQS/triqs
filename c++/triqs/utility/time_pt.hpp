@@ -105,13 +105,6 @@ namespace triqs {
       uint64_t n;
       double val, beta;
 
-      friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &n;
-        ar &val;
-        ar &beta;
-      }
-
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, time_pt const &g) {
         auto gr = fg.create_group(subgroup_name);
