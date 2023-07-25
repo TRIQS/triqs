@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
-      g++ \
+      g++-12 \
       gfortran \
       git \
       vim \
@@ -62,13 +62,13 @@ RUN cd /tmp && tar xf /tmp/zlib-1.2.13.tar.gz && cd zlib-1.2.13 && \
       cd /tmp && rm -rf /tmp/zlib*
 
 # HDF5
-ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.2/src/CMake-hdf5-1.12.2.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.12.2.tar.gz && chmod 1777 . && \
+ADD https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_1-2.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.14.1.tar.gz && chmod 1777 . && \
       mkdir build && cd build && \
-      cmake /tmp/CMake-hdf5-1.12.2/hdf5-1.12.2 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+      cmake /tmp/CMake-hdf5-1.14.1/hdf5-1.14.1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
                                                -DHDF5_ENABLE_Z_LIB_SUPPORT=ON -DZLIB_LIBRARY=/opt/zlib/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=/opt/zlib/include && \
       make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/CMake-hdf5-1.12.2* /tmp/build
+      cd /tmp && rm -rf /tmp/CMake-hdf5-1.14.1* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
 # libevent
@@ -78,17 +78,16 @@ RUN cd /tmp && tar xf /tmp/libevent-2.1.12-stable.tar.gz && cd libevent-2.1.12-s
       cd /tmp && rm -rf /tmp/libevent*
 
 # hwloc
-ADD https://download.open-mpi.org/release/hwloc/v2.2/hwloc-2.2.0.tar.bz2 /tmp/
-COPY packaging/hwloc.patch /tmp/
-RUN cd /tmp && tar xf /tmp/hwloc-2.2.0.tar.bz2 && patch -p0 -i hwloc.patch && cd hwloc-2.2.0 && \
+ADD https://download.open-mpi.org/release/hwloc/v2.9/hwloc-2.9.2.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/hwloc-2.9.2.tar.bz2 && cd hwloc-2.9.2 && \
       ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
       cd /tmp && rm -rf /tmp/hwloc*
 
 # OpenMPI
-ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.4.tar.bz2 /tmp/
-RUN cd /tmp && tar xf /tmp/openmpi-4.1.4.tar.bz2 && cd openmpi-4.1.4 && \
+ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.5.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/openmpi-4.1.5.tar.bz2 && cd openmpi-4.1.5 && \
       ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/openmpi-4.1.4*
+      cd /tmp && rm -rf /tmp/openmpi-4.1.5*
 ENV MPI_HOME=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
 
