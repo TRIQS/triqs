@@ -1,5 +1,4 @@
-FROM ubuntu:jammy
-ARG RELEASE=jammy
+FROM ubuntu:22.04
 ARG LLVM=15
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
@@ -7,7 +6,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
-      g++ \
+      g++-12 \
       gfortran \
       git \
       vim \
