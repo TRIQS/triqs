@@ -63,12 +63,12 @@ RUN cd /tmp && tar xf /tmp/zlib-1.2.13.tar.gz && cd zlib-1.2.13 && \
 
 # HDF5
 ADD https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_1-2.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/CMake-hdf5-1.14.1.tar.gz && chmod 1777 . && \
+RUN cd /tmp && tar xf /tmp/hdf5-1_14_1-2.tar.gz && chmod 1777 . && \
       mkdir build && cd build && \
-      cmake /tmp/CMake-hdf5-1.14.1/hdf5-1.14.1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+      cmake /tmp/hdf5-hdf5-1_14_1-2 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
                                                -DHDF5_ENABLE_Z_LIB_SUPPORT=ON -DZLIB_LIBRARY=/opt/zlib/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=/opt/zlib/include && \
       make -j${NTHREAD} && make install && \
-      cd /tmp && rm -rf /tmp/CMake-hdf5-1.14.1* /tmp/build
+      cd /tmp && rm -rf /tmp/hdf5-* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
 # libevent
