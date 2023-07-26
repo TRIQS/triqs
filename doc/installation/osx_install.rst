@@ -78,12 +78,10 @@ They may work (possibly with some modifications) for earlier versions of OS X.
 
    As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>` and we set clang as the default compiler ::
 
-     __brew_prefix=$(brew --prefix)
-     export PATH=$__brew_prefix/opt/llvm/bin:$PATH
-     export LIBRARY_PATH=$__brew_prefix/opt/llvm/lib:$LIBRARY_PATH
-     export CC=$__brew_prefix/opt/llvm/bin/clang
-     export CXX=$__brew_prefix/opt/llvm/bin/clang++
-     unset __brew_prefix
+     export PATH=$(brew --prefix)/opt/llvm/bin:$PATH
+     export LIBRARY_PATH=$(brew --prefix)/opt/llvm/lib:$LIBRARY_PATH
+     export CC=$(brew --prefix)/opt/llvm/bin/clang
+     export CXX=$(brew --prefix)/opt/llvm/bin/clang++
 
   To make this choice permanent, add these lines to your ``$HOME/.zshrc``.
 
