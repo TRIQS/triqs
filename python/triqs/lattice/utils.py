@@ -250,79 +250,74 @@ def TB_from_pythTB(ptb):
     return TBL
 
 
-def sympyfy(tb_lat_obj, analytical = True, precision = 6):
+def TB_to_sympy(w90_triqs, analytical = True, precision = 6):
     r"""
     returns the analytical form of the momentum space hamiltonian of the tight-binding model 
-    from a tight-binding lattice object, by utilizing Fourier series
+    from a tight-binding lattice object by utilizing Fourier series
     
     Parameters
     ----------
-    tb_lat_obj: triqs TBLattice object
+    w90_triqs: triqs TBLattice object
         triqs tight binding object
     analytical: boolean, default = True
         a boolean which will cause the function will return an analytical Hamiltonian, when true, and 
         an numerical Hamiltonian otherwise
     precision: integer, default = 6
-        An integer that specifies the decimal point precision of the floating point hopping amplitudes of
-        the electrons involved in the hoppings
-        Wannier90's default precision is 10^-6 which is why the default precision is 6
-        The user might want to decrease the default precision to ensure that similar hopping amplitudes
-        especially those tied to symmetrical hoppings across the crysal lattice are easily recognizable
+        specifies the precision of the floating point amplitudes. The default precision is 6 but the user
+        can decrease this parameter for better recognition of similar hopping amplitudes, particularly
+        for symmetrical hoppings across the crystal lattice
     
     Returns
     -------
     Hk: NumPy array
-        The hamiltonian of the tight-binding model in momentum space. This can be returned either in
-        numerical form (Hk_numerical) or reduced analytical form (Hk) depending the user's preference.
-        The default output, which depends on the optional analytical parameter, is the reduced analytical form
-        The numerical form only depends on the k-space vector components, i.e., the lattice constants and
-        lattice vectors are expressed numerically
-        The analytical form depends on the k-space vector components alongside the lattice vectors too
+        the Hamiltonian of the tight-binding model in momentum space. It can be output in either numerical
+        form (Hk_numerical) or reduced analytical form (Hk) based on the user's choice. The default output
+        is the reduced analytical form. The numerical form depends solely on the k-space vector components
+        while the analytical form takes into account both the k-space vector components and the lattice
+        vectors
 
     """
 
     import sympy as sp
-
+    
     # imaginary number
     I = sp.I
 
-    # matrix from the axis directions in momentum space
+    # matrix from axis directions in momentum space
     kx, ky, kz = sp.symbols("kx ky kz", real = True)
     k_space_matrix = sp.Matrix([kx, ky, kz])
 
-    # symbolic dot product representation between the lattice unit vectors
-    # and the momentum space matrix
+    # symbolic dot product representation between lattice unit vectors
+    # and momentum space matrix
     a1k, a2k, a3k = sp.symbols("a1k a2k a3k", real = True)
     lattice = sp.Matrix([a1k, a2k, a3k])
 
-    # the number of orbitals involved in the electron hoppings
-    num_orb = tb_lat_obj.n_orbitals
+    # number of orbitals involved in the unit cell
+    num_orb = w90_triqs.n_orbitals
 
-    # dictionary containing details about the hopping of the electrons
-    TB_lat_obj_hops = tb_lat_obj.hoppings 
+    # dictionary containing details about hopping of electrons such as
+    # orbital and hopping amplitude info
+    TB_lat_obj_hops = w90_triqs.hoppings
 
-    # maximum hopping distances of electrons in each of the axial directions
+    # maximum hopping distances of electrons in each direction
     max_x, max_y, max_z = list(np.max(np.array(list(TB_lat_obj_hops.keys())), axis = 0))
 
-    # number of cells involved in the hopping of electrons in each of the axial directions
+    # number of cells involved in the hopping of electrons in each direction
     num_cells_x, num_cells_y, num_cells_z = [2 * max_coord + 1 for max_coord in [max_x, max_y, max_z]]
     
-    # basis of the 5D tensor real-space Hamiltonian
+    # real-space Hamiltonian
     Hrij = np.zeros((num_cells_x, num_cells_y, num_cells_z, num_orb, num_orb), dtype = sp.exp)
 
-    # looping through the hopping parameters of the electrons involved in the inter-orbital hoppings
-    # key represents the cell coordinates of where the electrons hop to relative to the home unit cell
-    # hopping represents the matrix with the embedded hopping amplitudes
+    # looping through hopping parameters of electrons involved in inter-orbital hoppings
     for key, hopping in TB_lat_obj_hops.items():
         rx, ry, rz = key
-        # reduce floating point precision of hopping parameters to 3 decimal places
         hopping = np.around(hopping, precision)
         Hrij[rx + max_x, ry + max_y, rz + max_z] = hopping
 
-    # basis of the exponential term in the calculation of Hk
+    # basis of the exponential term in calculation of Hk
     Hexp = np.empty_like(Hrij, dtype = sp.exp)
 
-    # perform the Fourier transform
+    # perform Fourier transform
     for xi, yi, zi in itp(range(num_cells_x), range(num_cells_y), range(num_cells_z)):
         coefficients = np.array([xi - max_x, yi - max_y, zi - max_z])
         r = lattice.dot(coefficients)
@@ -332,34 +327,35 @@ def sympyfy(tb_lat_obj, analytical = True, precision = 6):
     # summation over all real space axes
     Hk = np.sum(Hrij * Hexp, axis = (0, 1, 2))
     
-    # rewriting the exponential terms in the analytical expression in terms of 
+    # rewriting exponential terms in Hamiltonian expression in terms of cosine
     for i, j in itp(range(num_orb), repeat = 2):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
 
     # dealing with the numerical Hamiltonian
-    # we convert it to a SymPy matrix to use the substitutions method available in SymPy
-    Hk_numerical = sp.Matrix(Hk)
-    TB_lat_obj_units = tb_lat_obj.units
-    TB_lat_obj_units_transpose = np.transpose(TB_lat_obj_units)
-    
-    # obtaining unit vectors
-    # reduce floating point precision to 3 decimal places
-    a1 = np.around(TB_lat_obj_units_transpose[0], precision)
-    a2 = np.around(TB_lat_obj_units_transpose[1], precision)
-    a3 = np.around(TB_lat_obj_units_transpose[2], precision)
 
-    # numerical dot products between the unit vectors
-    # and the momentum space matrix
+    # convert to SymPy matrix to use substitutions method available in SymPy
+    Hk_numerical = sp.Matrix(Hk)
+
+    # matrix containing displacement vectors
+    TB_lat_obj_units = w90_triqs.units
+
+    # obtaining individual displacement vectors
+    a1 = np.around(TB_lat_obj_units[0], precision)
+    a2 = np.around(TB_lat_obj_units[1], precision)
+    a3 = np.around(TB_lat_obj_units[2], precision)
+
+    # numerical dot products between unit vectors
+    # and momentum space matrix
     a1k_numerical = a1.dot(k_space_matrix)[0]
     a2k_numerical = a2.dot(k_space_matrix)[0]
     a3k_numerical = a3.dot(k_space_matrix)[0]
     
-    # performing the numerical dot product substitutions
+    # performing numerical dot product substitutions
     Hk_numerical = Hk_numerical.subs(a1k, a1k_numerical)
     Hk_numerical = Hk_numerical.subs(a2k, a2k_numerical)
     Hk_numerical = Hk_numerical.subs(a3k, a3k_numerical)
 
-    # converting the numerical Hamiltonian to a NumPy array from a SymPy matrix
+    # converting numerical Hamiltonian to NumPy array
     Hk_numerical = np.array(Hk_numerical)
 
     def _has_complex_exponential_sympy(matrix):
@@ -371,9 +367,9 @@ def sympyfy(tb_lat_obj, analytical = True, precision = 6):
         
         Returns:
             bool: True if the matrix array contains a complex exponential element, False otherwise.
-        
+
         """
-        
+
         for sublist in matrix:
             for element in sublist:
                 if element.is_complex and element.has(sp.exp):
@@ -391,7 +387,7 @@ def sympyfy(tb_lat_obj, analytical = True, precision = 6):
             bool: True if the matrix is a hermitian, False otherwise
 
         """
-
+        
         n = matrix.shape[0]
         for i in range(n):
             for j in range(n):
@@ -399,18 +395,17 @@ def sympyfy(tb_lat_obj, analytical = True, precision = 6):
                     return False
         return True
     
-    # warning indicating when the output Hamiltonian is not hermitian
+    # warning indicating when Hamiltonian is not hermitian
     if _is_hermitian_sympy(Hk) == False or _is_hermitian_sympy(Hk_numerical) == False:
         return warnings.warn("The resulting Hamiltonian is not hermitian.")
 
-    # warning indicating when the Hamiltonian contains a complex exponential element
+    # warning indicating when Hamiltonian contains complex exponential element
     if _has_complex_exponential_sympy(Hk_numerical) or _has_complex_exponential_sympy(Hk):
         return warnings.warn("""Your expression has a complex exponential. 
                                 Choosing a different unit cell could make 
                                 your Hamiltonian expression real.""")
     
-    # returning the analytical or numerical form of the Hamiltonian
-    # depending on the user's preference
+    # returning analytical or numerical form of Hamiltonian
     if analytical:
         return Hk
     return Hk_numerical
