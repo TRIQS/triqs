@@ -17,16 +17,12 @@
 
 import unittest
 import sys
-
 from triqs.lattice import BravaisLattice, BrillouinZone, TightBinding
 from triqs.lattice.tight_binding import TBLattice
 from h5 import HDFArchive
-
-import numpy as np
-sys.path.append('/triqs-sympyfy/python/triqs/lattice/')
 import utils
 
-
+import numpy as np
 
 class test_lattice_tight_binding(unittest.TestCase):
 
