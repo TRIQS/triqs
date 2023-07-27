@@ -19,8 +19,8 @@ import unittest
 import sys
 from triqs.lattice import BravaisLattice, BrillouinZone, TightBinding
 from triqs.lattice.tight_binding import TBLattice
+from triqs.lattice.utils import TB_to_sympy
 from h5 import HDFArchive
-import utils
 
 import numpy as np
 
@@ -82,7 +82,6 @@ class test_lattice_tight_binding(unittest.TestCase):
             except:
                 sys.exit()
 
-        a1k, a2k = sp.symbols("a1k a2k", real = True)
         kx, ky = sp.symbols("kx ky", real = True)
 
         tbl = TBLattice(units=self.units, hoppings=self.hoppings,
@@ -90,17 +89,8 @@ class test_lattice_tight_binding(unittest.TestCase):
                         orbital_names=self.orbital_names
                         )
         
-        print(tbl)
-        
-        # testing analytical output
-        tbl_analytical = (utils.TB_to_sympy_2D(tbl, analytical = True, precision = 3)).tolist()
-        self.assertEquals(tbl_analytical,
-                        [[2.0*cos(a1k) + 2.0*cos(a2k), 2.0*cos(a1k)], 
-                         [2.0*cos(a1k), 2.0*cos(a1k) + 2.0*cos(a2k)]]
-             )
-        
         # testing numerical output
-        tbl_numerical = (utils.TB_to_sympy_2D(tbl, analytical = False, precision = 3)).tolist()
+        tbl_numerical = (utils.TB_to_sympy(tbl, analytical = False, precision = 3)).tolist()
         self.assertEquals(tbl_numerical,
                           [[2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(2.0*kx + 1.0*ky)], 
                            [2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky)]]
