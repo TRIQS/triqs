@@ -250,14 +250,14 @@ def TB_from_pythTB(ptb):
     return TBL
 
 
-def TB_to_sympy(w90_triqs, analytical = True, precision = 6):
+def TB_to_sympy_2D(TBL, analytical = True, precision = 6):
     r"""
     returns the analytical form of the momentum space hamiltonian of the tight-binding model 
     from a tight-binding lattice object by utilizing Fourier series
     
     Parameters
     ----------
-    w90_triqs: triqs TBLattice object
+    TBL: triqs TBLattice object
         triqs tight binding object
     analytical: boolean, default = True
         a boolean which will cause the function will return an analytical Hamiltonian, when true, and 
@@ -279,54 +279,54 @@ def TB_to_sympy(w90_triqs, analytical = True, precision = 6):
     """
 
     import sympy as sp
-    
+
     # imaginary number
     I = sp.I
 
     # matrix from axis directions in momentum space
-    kx, ky, kz = sp.symbols("kx ky kz", real = True)
-    k_space_matrix = sp.Matrix([kx, ky, kz])
+    kx, ky = sp.symbols("kx ky", real = True)
+    k_space_matrix = sp.Matrix([kx, ky])
 
     # symbolic dot product representation between lattice unit vectors
     # and momentum space matrix
-    a1k, a2k, a3k = sp.symbols("a1k a2k a3k", real = True)
-    lattice = sp.Matrix([a1k, a2k, a3k])
+    a1k, a2k = sp.symbols("a1k a2k", real = True)
+    lattice = sp.Matrix([a1k, a2k])
 
     # number of orbitals involved in the unit cell
-    num_orb = w90_triqs.n_orbitals
+    num_orb = TBL.n_orbitals
 
     # dictionary containing details about hopping of electrons such as
     # orbital and hopping amplitude info
-    TB_lat_obj_hops = w90_triqs.hoppings
+    TBL_hops = TBL.hoppings
 
     # maximum hopping distances of electrons in each direction
-    max_x, max_y, max_z = list(np.max(np.array(list(TB_lat_obj_hops.keys())), axis = 0))
+    max_x, max_y = list(np.max(np.array(list(TBL_hops.keys())), axis = 0))
 
     # number of cells involved in the hopping of electrons in each direction
-    num_cells_x, num_cells_y, num_cells_z = [2 * max_coord + 1 for max_coord in [max_x, max_y, max_z]]
+    num_cells_x, num_cells_y = [2 * max_coord + 1 for max_coord in [max_x, max_y]]
     
     # real-space Hamiltonian
-    Hrij = np.zeros((num_cells_x, num_cells_y, num_cells_z, num_orb, num_orb), dtype = sp.exp)
+    Hrij = np.zeros((num_cells_x, num_cells_y, num_orb, num_orb), dtype = sp.exp)
 
     # looping through hopping parameters of electrons involved in inter-orbital hoppings
-    for key, hopping in TB_lat_obj_hops.items():
-        rx, ry, rz = key
+    for key, hopping in TBL_hops.items():
+        rx, ry= key
         hopping = np.around(hopping, precision)
-        Hrij[rx + max_x, ry + max_y, rz + max_z] = hopping
+        Hrij[rx + max_x, ry + max_y] = hopping
 
     # basis of the exponential term in calculation of Hk
     Hexp = np.empty_like(Hrij, dtype = sp.exp)
 
     # perform Fourier transform
-    for xi, yi, zi in itp(range(num_cells_x), range(num_cells_y), range(num_cells_z)):
-        coefficients = np.array([xi - max_x, yi - max_y, zi - max_z])
+    for xi, yi in itp(range(num_cells_x), range(num_cells_y)):
+        coefficients = np.array([xi - max_x, yi - max_y])
         r = lattice.dot(coefficients)
         eikr = sp.exp(-I * r)
-        Hexp[xi, yi, zi, :, :] = eikr
+        Hexp[xi, yi, :, :] = eikr
 
     # summation over all real space axes
-    Hk = np.sum(Hrij * Hexp, axis = (0, 1, 2))
-    
+    Hk = np.sum(Hrij * Hexp, axis = (0, 1))
+
     # rewriting exponential terms in Hamiltonian expression in terms of cosine
     for i, j in itp(range(num_orb), repeat = 2):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
@@ -337,23 +337,20 @@ def TB_to_sympy(w90_triqs, analytical = True, precision = 6):
     Hk_numerical = sp.Matrix(Hk)
 
     # matrix containing displacement vectors
-    TB_lat_obj_units = w90_triqs.units
+    TBL_units = TBL.units
 
     # obtaining individual displacement vectors
-    a1 = np.around(TB_lat_obj_units[0], precision)
-    a2 = np.around(TB_lat_obj_units[1], precision)
-    a3 = np.around(TB_lat_obj_units[2], precision)
+    a1 = np.around(TBL_units[0], precision)
+    a2 = np.around(TBL_units[1], precision)
 
     # numerical dot products between unit vectors
     # and momentum space matrix
     a1k_numerical = a1.dot(k_space_matrix)[0]
     a2k_numerical = a2.dot(k_space_matrix)[0]
-    a3k_numerical = a3.dot(k_space_matrix)[0]
     
     # performing numerical dot product substitutions
     Hk_numerical = Hk_numerical.subs(a1k, a1k_numerical)
     Hk_numerical = Hk_numerical.subs(a2k, a2k_numerical)
-    Hk_numerical = Hk_numerical.subs(a3k, a3k_numerical)
 
     # converting numerical Hamiltonian to NumPy array
     Hk_numerical = np.array(Hk_numerical)
