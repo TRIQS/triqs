@@ -278,6 +278,8 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
     """
 
+    import sympy as sp
+    
     # imaginary number
     I = sp.I
 
@@ -290,18 +292,17 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     a1k, a2k, a3k = sp.symbols("a1k a2k a3k", real = True)
     lattice = sp.Matrix([a1k, a2k, a3k])
 
-    # TODO: write appropriate comments
-    # matrix containing displacement vectors
-    # dictionary containing details about hopping of electrons such as
-    # orbital and hopping amplitude info
-
-    if TBL.units.shape == (2,2):
+    # units contains the displacement vectors
+    # hops contains details about hopping of electrons such as orbital
+    # and hopping amplitude
+    if TBL.units.shape == (2, 2):
         TBL_units = np.eye(3)
         TBL_units[:2, :2] = TBL.units
         TBL_hops = {key + (0,): val for key, val in TBL.hoppings.items()}
     elif TBL.units.shape == (3,3):
         TBL_units = TBL.units
         TBL_hops = TBL.hoppings
+    # raises error for when the dimensions of the tb object is neither 2D nor 3D
     else:
         raise ValueError("This format of the tight-binding model is not implemented for this function.")
    
