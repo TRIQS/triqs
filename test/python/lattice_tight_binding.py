@@ -16,11 +16,16 @@
 # Authors: Nils Wentzell
 
 import unittest
+import sys
+
 from triqs.lattice import BravaisLattice, BrillouinZone, TightBinding
 from triqs.lattice.tight_binding import TBLattice
 from h5 import HDFArchive
 
 import numpy as np
+sys.path.append('/triqs-sympyfy/python/triqs/lattice/')
+import utils
+
 
 
 class test_lattice_tight_binding(unittest.TestCase):
@@ -69,6 +74,35 @@ class test_lattice_tight_binding(unittest.TestCase):
             tbl_read = arch['tbl']
 
         self.assertEqual(tbl, tbl_read)
+    
+    def test_TB_to_sympy_2D(self):
+        import sympy as sp
+        from sympy import cos
+
+        a1k, a2k = sp.symbols("a1k a2k", real = True)
+        kx, ky = sp.symbols("kx ky", real = True)
+
+        tbl = TBLattice(units=self.units, hoppings=self.hoppings,
+                        orbital_positions=self.orbital_positions,
+                        orbital_names=self.orbital_names
+                        )
+        
+        print(tbl)
+        
+        # testing analytical output
+        tbl_analytical = (utils.TB_to_sympy_2D(tbl, analytical = True, precision = 3)).tolist()
+        self.assertEquals(tbl_analytical,
+                        [[2.0*cos(a1k) + 2.0*cos(a2k), 2.0*cos(a1k)], 
+                         [2.0*cos(a1k), 2.0*cos(a1k) + 2.0*cos(a2k)]]
+             )
+        
+        # testing numerical output
+        tbl_numerical = (utils.TB_to_sympy_2D(tbl, analytical = False, precision = 3)).tolist()
+        self.assertEquals(tbl_numerical,
+                          [[2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(2.0*kx + 1.0*ky)], 
+                           [2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky)]]
+                          )
+        
 
 
 if __name__ == '__main__':
