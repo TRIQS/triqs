@@ -77,10 +77,7 @@ class test_lattice_tight_binding(unittest.TestCase):
             from sympy import cos
         except ImportError:
             print("ImportError: SymPy needs to be installed to run this test")
-            try:
-                mpi.MPI.COMM_WORLD_Abort(1)
-            except:
-                sys.exit()
+            return
 
         kx, ky = sp.symbols("kx ky", real = True)
 
