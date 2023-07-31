@@ -26,31 +26,31 @@ def all_calls():
     for M in ['imfreq']:
         yield M, 2*["dcomplex"], 0, 'scalar_valued', ['int', 'matsubara_freq'] # R =0
         yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['int', 'matsubara_freq'] # R =2
-        for R in [3,4]:
+        for R in [1,3,4]:
             yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int', 'matsubara_freq']
 
     for M in ['dlr']:
         yield M, 2*["dcomplex"], 0, 'scalar_valued', ['double', 'matsubara_freq'] # R =0
         yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['double', 'matsubara_freq'] # R =2
-        for R in [3,4]:
+        for R in [1,3,4]:
             yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double', 'matsubara_freq']
 
     for M in ['imtime', 'refreq', 'retime']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =0
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
-        for R in [3,4]:
+        for R in [1,3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
 
     for M in ['brzone']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =0
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
-        for R in [3,4]:
+        for R in [1,3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>']
 
     for M in ['cyclat']:
         yield M, 2*["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =0
         yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =2
-        for R in [3,4]:
+        for R in [1,3,4]:
             yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
 
     for M1 in ['brzone', 'cyclat']:
