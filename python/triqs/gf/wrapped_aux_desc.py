@@ -58,9 +58,17 @@ def all_calls():
 
       for M2 in ['imfreq']:
         yield 'prod<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
+        yield 'prod<%s,%s>'%(M1,M2), ["matrix<dcomplex>", "gf<imfreq, matrix_valued>"], 2, 'matrix_valued',[ (k_x, 'long'), (k_x, 'all_t')]
+
+        yield 'prod<%s,%s>'%(M2,M1), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ ('long', k_x), ('all_t', k_x)]
+        yield 'prod<%s,%s>'%(M2,M1), ["matrix<dcomplex>", "gf<imfreq, matrix_valued>"], 2, 'matrix_valued',[ ('long', k_x), ('all_t', k_x)]
 
       for M2 in ['imtime', 'refreq', 'retime']:
         yield 'prod<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
+        yield 'prod<%s,%s>'%(M1,M2),["matrix<dcomplex>"], 2, 'matrix_valued', [(k_x, 'double')]
+
+        yield 'prod<%s,%s>'%(M2,M1),["dcomplex"], 0, 'scalar_valued', [('double', k_x)]
+        yield 'prod<%s,%s>'%(M2,M1),["matrix<dcomplex>"], 2, 'matrix_valued', [('double', k_x)]
 
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq',
@@ -78,6 +86,14 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'prod<cyclat,imtime>': 'CycLat_x_ImTime',
                    'prod<cyclat,refreq>': 'CycLat_x_ReFreq',
                    'prod<cyclat,retime>': 'CycLat_x_ReTime',
+                   'prod<imfreq,brzone>': 'ImFreq_x_BrZone',
+                   'prod<imtime,brzone>': 'ImTime_x_BrZone',
+                   'prod<refreq,brzone>': 'ReFreq_x_BrZone',
+                   'prod<retime,brzone>': 'ReTime_x_BrZone',
+                   'prod<imfreq,cyclat>': 'ImFreq_x_CycLat',
+                   'prod<imtime,cyclat>': 'ImTime_x_CycLat',
+                   'prod<refreq,cyclat>': 'ReFreq_x_CycLat',
+                   'prod<retime,cyclat>': 'ReTime_x_CycLat',
                    }
 
 m.add_preamble("""
