@@ -60,7 +60,7 @@ m.add_function("matrix<dcomplex> density(gf_view<dlr, matrix_valued> g)", doc = 
 m.add_function("dcomplex density(gf_view<dlr, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
 # ---------------------- miscellaneous --------------------
-for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     # set_from_legendre
     m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<triqs::gfs::legendre, %s> gl)"%(Target, Target),
@@ -113,7 +113,7 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
 
 
 # ---------------------- Fourier functionality --------------------
-for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     # === Matsubara and ReTime/Freq Fourier
     for Meshes in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:

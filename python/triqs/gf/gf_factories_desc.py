@@ -44,7 +44,7 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
                 doc = "Symmetrize the Green function in freq, to ensure its real in tau (G[iw](i,j,k,l) = G[-iw](i,j,k,l)*)")
 
 # ---------------------- make_gf_from_fourier --------------------
-for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     # === Matsubara and ReTime/Freq Fourier
     for Meshes in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
@@ -107,7 +107,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                     doc ="""Create Green function from the Fourier transform of g_in""")
 
 # ---------------------- DLR mesh conversions --------------------
-for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     # dlr_imtime <-> dlr
     m.add_function(f"gf<dlr, {Target}> make_gf_dlr(gf_const_view<dlr_imtime, {Target}> g_tau)")
