@@ -23,49 +23,36 @@
 #include <triqs/arrays.hpp>
 #include <triqs/utility/pade_approximants.hpp>
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::gfs {
 
-    typedef std::complex<double> dcomplex;
+  typedef std::complex<double> dcomplex;
 
-    void pade(gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset) {
+  void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
 
-      // make sure the GFs have the same structure
-      //assert(gw.shape() == gr.shape());
+    // make sure the GFs have the same structure
+    //assert(gw.shape() == gr.shape());
 
-      if (n_points < 0 || n_points > gw.mesh().last_index() + 1)
-        TRIQS_RUNTIME_ERROR << "Pade argument n_points (" << n_points
-                            << ") should be positive and not be greater than the positive number of Matsubara frequencies ("
-                            << gw.mesh().last_index() + 1 << ")\n";
+    if (n_points < 0 || n_points > gw.mesh().last_index() + 1)
+      TRIQS_RUNTIME_ERROR << "Pade argument n_points (" << n_points
+                          << ") should be positive and not be greater than the positive number of Matsubara frequencies ("
+                          << gw.mesh().last_index() + 1 << ")\n";
 
-      gr() = 0.0;
+    gr() = 0.0;
 
-      auto sh = stdutil::front_pop(gw.data().shape());
-      int N1 = sh[0], N2 = sh[1];
-      for (int n1 = 0; n1 < N1; n1++) {
-        for (int n2 = 0; n2 < N2; n2++) {
+    nda::vector<dcomplex> z_in(n_points); // complex points
+    nda::vector<dcomplex> u_in(n_points); // values at these points
 
-          nda::vector<dcomplex> z_in(n_points); // complex points
-          nda::vector<dcomplex> u_in(n_points); // values at these points
-
-          for (int i = 0; i < n_points; ++i) {
-            z_in(i) = gw.mesh()[gw.mesh().to_data_index(i)];
-            u_in(i) = gw[i](n1, n2);
-          }
-
-          triqs::utility::pade_approximant PA(z_in, u_in);
-
-          for (auto om : gr.mesh()) {
-            dcomplex e     = om + dcomplex(0.0, 1.0) * freq_offset;
-            gr[om](n1, n2) = PA(e);
-          }
-        }
-      }
+    for (int i = 0; i < n_points; ++i) {
+      z_in(i) = gw.mesh()(i);
+      u_in(i) = gw[i];
     }
 
-    void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
-      pade(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gw), n_points, freq_offset);
-    }
+    triqs::utility::pade_approximant PA(z_in, u_in);
 
-  } // namespace gfs
-} // namespace triqs
+    for (auto om : gr.mesh()) {
+      dcomplex e = om + dcomplex(0.0, 1.0) * freq_offset;
+      gr[om]     = PA(e);
+    }
+  }
+
+} // namespace triqs::gfs

@@ -19,10 +19,18 @@
 
 #pragma once
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::gfs {
 
-    void pade(gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset);
-    void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset);
-  } // namespace gfs
-} // namespace triqs
+  void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset);
+
+  template <MemoryGf<refreq> GR, MemoryGf<imfreq> GW>
+  void pade(GR &gr, GW const &gw, int n_points, double freq_offset)
+    requires(GR::target_rank > 0 && GW::target_rank > 0)
+  {
+    EXPECTS(gr.target_shape() == gw.target_shape());
+    for (auto argtpl : gr.target_indices()) {
+      std::apply([&](auto &&...args) { pade(slice_target_to_scalar(gr, args...), slice_target_to_scalar(gw, args...), n_points, freq_offset); },
+                 argtpl);
+    }
+  }
+} // namespace triqs::gfs

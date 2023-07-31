@@ -82,7 +82,7 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
                 doc = """Fills self with the legendre transform of gt""")
 
     # set_from_pade
-    m.add_function("void set_from_pade (gf_view<refreq, matrix_valued> gw, gf_view<imfreq, matrix_valued> giw, int n_points = 100, double freq_offset = 0.0)",
+    m.add_function("void set_from_pade (gf_view<refreq, %s> gw, gf_view<imfreq, %s> giw, int n_points = 100, double freq_offset = 0.0)"%(Target, Target),
                 calling_pattern = "pade(gw, giw, n_points, freq_offset)",
                 doc = """""")
 

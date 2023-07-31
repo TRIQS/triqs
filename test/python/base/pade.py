@@ -43,14 +43,28 @@ def GSC(z):
 def G(z):
     return 0.5*GLorentz(z) + 0.5*GSC(z)
 
-# Matsubara GF
-gm = GfImFreq(indices = [0], beta = beta, name = "gm")
-gm << Function(G)
+for sh in [(), (2,), (1,1), (2,2), (2,2,2), (2,2,2,2)]:
+    # Matsubara GF
+    gm = GfImFreq(target_shape=sh, beta = beta, name = "gm")
 
-# Analytic continuation of gm
-g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "g_pade")
-g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
+    scalar_valued = (len(sh) == 0)
 
-from h5 import HDFArchive
-R = HDFArchive('pade.ref.h5','r')
-assert_gfs_are_close(g_pade, R['g_pade'])
+    idx0 = next(gm.target_indices)
+    for idx in gm.target_indices:
+        if scalar_valued: gm << Function(G)
+        else:
+            gm[idx] << (1 + sum(idx)) * Function(G)
+            # Compare against first element
+            assert_gfs_are_close((1 + sum(idx)) * gm[idx0], gm[idx])
+
+    # Analytic continuation of gm
+    g_pade = GfReFreq(target_shape=sh, window = (-5.995, 5.995), n_points = 1200, name = "g_pade")
+    g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
+    if not scalar_valued:
+        for idx in gm.target_indices:
+             assert_gfs_are_close((1 + sum(idx)) * g_pade[idx0], g_pade[idx])
+
+    if sh == (1,1):
+        from h5 import HDFArchive
+        R = HDFArchive('pade.ref.h5','r')
+        assert_gfs_are_close(g_pade, R['g_pade'])
