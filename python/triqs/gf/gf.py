@@ -408,7 +408,13 @@ class Gf(metaclass=AddMethod):
     
     def __call__(self, *args) : 
         assert self._c_proxy, " no proxy"
-        return self._c_proxy(*[x.value if isinstance(x, MeshPoint) else x for x in args]) 
+        def filt(x):
+            if isinstance(x, MeshPoint):
+                return x.value
+            if isinstance(x, Idx):
+                return x.idx
+            return x
+        return self._c_proxy(*[filt(x) for x in args])
 
     # -------------- Various operations -------------------------------------
  
