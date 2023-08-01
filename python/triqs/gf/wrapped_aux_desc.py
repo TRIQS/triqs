@@ -63,6 +63,10 @@ def all_calls():
         yield 'prod<%s,%s>'%(M2,M1), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ ('long', k_x), ('all_t', k_x)]
         yield 'prod<%s,%s>'%(M2,M1), ["matrix<dcomplex>", "gf<imfreq, matrix_valued>"], 2, 'matrix_valued',[ ('long', k_x), ('all_t', k_x)]
 
+        for R in [1,3,4]:
+            yield 'prod<%s,%s>'%(M1,M2), ["array<dcomplex,%s>"%R, "gf<imfreq, tensor_valued<%s>>"%R], R, 'tensor_valued<%s>'%R,[ (k_x, 'long'), (k_x, 'all_t')]
+            yield 'prod<%s,%s>'%(M2,M1), ["array<dcomplex,%s>"%R, "gf<imfreq, tensor_valued<%s>>"%R], R, 'tensor_valued<%s>'%R,[ ('long', k_x), ('all_t', k_x)]
+        
       for M2 in ['imtime', 'refreq', 'retime']:
         yield 'prod<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
         yield 'prod<%s,%s>'%(M1,M2),["matrix<dcomplex>"], 2, 'matrix_valued', [(k_x, 'double')]
@@ -70,6 +74,11 @@ def all_calls():
         yield 'prod<%s,%s>'%(M2,M1),["dcomplex"], 0, 'scalar_valued', [('double', k_x)]
         yield 'prod<%s,%s>'%(M2,M1),["matrix<dcomplex>"], 2, 'matrix_valued', [('double', k_x)]
 
+        for R in [1,3,4]:
+            yield 'prod<%s,%s>'%(M1,M2), ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R,[ (k_x, 'double')]
+            yield 'prod<%s,%s>'%(M2,M1), ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R,[ ('double', k_x)]
+
+        
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
