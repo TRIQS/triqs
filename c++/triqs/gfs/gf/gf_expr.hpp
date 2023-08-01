@@ -118,10 +118,11 @@ namespace triqs {
     } // namespace gfs_expr_tools
 
     template <typename Tag, typename L, typename R> struct gf_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
-      using L_t      = typename std::remove_reference<L>::type;
-      using R_t      = typename std::remove_reference<R>::type;
-      using mesh_t   = typename gfs_expr_tools::_or_<typename L_t::mesh_t, typename R_t::mesh_t>::type;
-      using target_t = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
+      using L_t       = typename std::remove_reference<L>::type;
+      using R_t       = typename std::remove_reference<R>::type;
+      using mesh_t    = typename gfs_expr_tools::_or_<typename L_t::mesh_t, typename R_t::mesh_t>::type;
+      using target_t  = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
+      using regular_t = gf<mesh_t, target_t>;
       static_assert(!std::is_same<mesh_t, void>::value, "Cannot combine two gf expressions with different variables");
       static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
 
@@ -153,9 +154,10 @@ namespace triqs {
     // -------------------------------------------------------------------
     // a special case : the unary operator !
     template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
-      using L_t      = typename std::remove_reference<L>::type;
-      using mesh_t   = typename L_t::mesh_t;
-      using target_t = typename L_t::target_t;
+      using L_t       = typename std::remove_reference<L>::type;
+      using mesh_t    = typename L_t::mesh_t;
+      using target_t  = typename L_t::target_t;
+      using regular_t = gf<mesh_t, target_t>;
 
       L l;
       template <typename LL> gf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
