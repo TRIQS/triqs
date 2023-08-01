@@ -32,7 +32,7 @@ namespace cpp2py {
     }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      static pyref all = pyref::get_class("builtins", "all", true);
+      pyref all = pyref::get_class("builtins", "all", true);
       return (all == ob);
     }
 

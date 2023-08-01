@@ -23,86 +23,68 @@ m.add_preamble("""
 # Call operators
 #------------------------------------------------------------
 def all_calls():
-    for M in ['imfreq']:
-        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['int', 'matsubara_freq'] # R =0
-        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['int', 'matsubara_freq'] # R =2
-        for R in [1,3,4]:
-            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int', 'matsubara_freq']
+    validargs = {
+        'imfreq' : ['long', 'matsubara_freq'],
+        'imtime' : ['long', 'double'],
+        'refreq' : ['long', 'double'],
+        'retime' : ['long', 'double'],
+        'dlr'    : ['long', 'double', 'matsubara_freq'],
+        'brzone' : ['std::array<long,3>', 'std::array<double, 3>'],
+        'cyclat' : ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
+        }
+    target_and_return = [
+        # rank, target, return_t
+        [ 0, 'scalar_valued', 'dcomplex'],
+        [ 1, 'tensor_valued<1>', 'array<dcomplex, 1>'],
+        [ 2, 'matrix_valued', 'matrix<dcomplex>'],
+        [ 3, 'tensor_valued<3>', 'array<dcomplex, 3>'],
+        [ 4, 'tensor_valued<4>', 'array<dcomplex, 4>']
+        ]
 
-    for M in ['dlr']:
-        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['double', 'matsubara_freq'] # R =0
-        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['double', 'matsubara_freq'] # R =2
-        for R in [1,3,4]:
-            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double', 'matsubara_freq']
+    meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'dlr', 'brzone', 'cyclat']
 
-    for M in ['imtime', 'refreq', 'retime']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =0
-        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
-        for R in [1,3,4]:
-            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
+    for rank, target, return_t in target_and_return:
+        for M1 in meshes:
+            xs = validargs[M1]
+            nxs = len(xs)
+            yield M1, [return_t]*nxs, rank, target, xs
+            for M2 in meshes:
+                if sum([M1 in ['brzone', 'cyclat'], M2 in ['brzone', 'cyclat']]) == 1:
+                    ys = validargs[M2]
+                    nys = len(ys)
+                    ret_lst = [return_t]*nxs*nys + [f"gf<{M1}, {target}>"]*nys + [f"gf<{M2}, {target}>"]*nxs
+                    arg_lst = [(x, y) for x in xs for y in ys] + [('all_t', y) for y in ys] + [(x, 'all_t') for x in xs]
+                    yield 'prod<%s,%s>'%(M1,M2), ret_lst, rank, target, arg_lst
 
-    for M in ['brzone']:
-        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =0
-        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
-        for R in [1,3,4]:
-            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>']
 
-    for M in ['cyclat']:
-        yield M, 2*["dcomplex"], 0, 'scalar_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =0
-        yield M, 2*["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'] # R =2
-        for R in [1,3,4]:
-            yield M, 2*["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
-
-    for M1 in ['brzone', 'cyclat']:
-      k_x = {'brzone' : 'std::array<double, 3>', 'cyclat' : 'std::array<long,3>'}[M1]
-
-      for M2 in ['imfreq']:
-        yield 'prod<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
-        yield 'prod<%s,%s>'%(M1,M2), ["matrix<dcomplex>", "gf<imfreq, matrix_valued>"], 2, 'matrix_valued',[ (k_x, 'long'), (k_x, 'all_t')]
-
-        yield 'prod<%s,%s>'%(M2,M1), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ ('long', k_x), ('all_t', k_x)]
-        yield 'prod<%s,%s>'%(M2,M1), ["matrix<dcomplex>", "gf<imfreq, matrix_valued>"], 2, 'matrix_valued',[ ('long', k_x), ('all_t', k_x)]
-
-        for R in [1,3,4]:
-            yield 'prod<%s,%s>'%(M1,M2), ["array<dcomplex,%s>"%R, "gf<imfreq, tensor_valued<%s>>"%R], R, 'tensor_valued<%s>'%R,[ (k_x, 'long'), (k_x, 'all_t')]
-            yield 'prod<%s,%s>'%(M2,M1), ["array<dcomplex,%s>"%R, "gf<imfreq, tensor_valued<%s>>"%R], R, 'tensor_valued<%s>'%R,[ ('long', k_x), ('all_t', k_x)]
-        
-      for M2 in ['imtime', 'refreq', 'retime']:
-        yield 'prod<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
-        yield 'prod<%s,%s>'%(M1,M2),["matrix<dcomplex>"], 2, 'matrix_valued', [(k_x, 'double')]
-
-        yield 'prod<%s,%s>'%(M2,M1),["dcomplex"], 0, 'scalar_valued', [('double', k_x)]
-        yield 'prod<%s,%s>'%(M2,M1),["matrix<dcomplex>"], 2, 'matrix_valued', [('double', k_x)]
-
-        for R in [1,3,4]:
-            yield 'prod<%s,%s>'%(M1,M2), ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R,[ (k_x, 'double')]
-            yield 'prod<%s,%s>'%(M2,M1), ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R,[ ('double', k_x)]
-
-        
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
-                   'dlr' : 'DLR',
                    'retime' : 'ReTime',
+                   'dlr'    : 'DLR',
                    'brzone' : 'BrZone',
                    'cyclat' : 'CycLat',
                    'prod<brzone,imfreq>': 'BrZone_x_ImFreq',
                    'prod<brzone,imtime>': 'BrZone_x_ImTime',
                    'prod<brzone,refreq>': 'BrZone_x_ReFreq',
                    'prod<brzone,retime>': 'BrZone_x_ReTime',
+                   'prod<brzone,dlr>'   : 'BrZone_x_DLR',
                    'prod<cyclat,imfreq>': 'CycLat_x_ImFreq',
                    'prod<cyclat,imtime>': 'CycLat_x_ImTime',
                    'prod<cyclat,refreq>': 'CycLat_x_ReFreq',
                    'prod<cyclat,retime>': 'CycLat_x_ReTime',
+                   'prod<cyclat,dlr>'   : 'CycLat_x_DLR',
                    'prod<imfreq,brzone>': 'ImFreq_x_BrZone',
                    'prod<imtime,brzone>': 'ImTime_x_BrZone',
                    'prod<refreq,brzone>': 'ReFreq_x_BrZone',
                    'prod<retime,brzone>': 'ReTime_x_BrZone',
+                   'prod<dlr,brzone>'   : 'DLR_x_BrZone',
                    'prod<imfreq,cyclat>': 'ImFreq_x_CycLat',
                    'prod<imtime,cyclat>': 'ImTime_x_CycLat',
                    'prod<refreq,cyclat>': 'ReFreq_x_CycLat',
                    'prod<retime,cyclat>': 'ReTime_x_CycLat',
+                   'prod<dlr,cyclat>'   : 'DLR_x_CycLat',
                    }
 
 m.add_preamble("""

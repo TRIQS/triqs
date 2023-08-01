@@ -90,4 +90,3 @@ class MeshPoint :
     @property
     def imag(self):
         return self.value.imag
-
