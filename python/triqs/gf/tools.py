@@ -31,12 +31,13 @@ from timeit import default_timer as timer
 
 def inverse(x):
     """
-    Return the inverse of a Green's function
+    Return the inverse of its argument, with proper treatement of lazy expressions.
     """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("inverse", inverse) (x)
-    assert hasattr(x,'inverse')
-    return x.inverse()
+    if hasattr(x,'inverse'):
+        return x.inverse()
+    return 1.0 / x
 
 def conjugate(x):
     """
