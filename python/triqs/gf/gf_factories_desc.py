@@ -47,63 +47,81 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
 for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     # === Matsubara and ReTime/Freq Fourier
-    for Meshes in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
-        for gf_type in ["gf", "block_gf", "block2_gf"]:
-            gf_view_type = gf_type +  '_view'
+    for gf_type in ["gf", "block_gf", "block2_gf"]:
+        gf_view_type = gf_type +  '_view'
 
-            # make_gf_from_fourier
+        for M0, M1 in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
+            # -- make_gf_from_fourier
             m.add_function(name = "make_gf_from_fourier",
-                    signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
+                    signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, M0, Target, gf_view_type, M1, Target),
                     doc ="""Create Green function from the Fourier transform of g_in""")
 
-            if Meshes[1] in ["imtime", "retime"]:
+            if M1 in ["imtime", "retime"]:
                 m.add_function(name = "make_gf_from_fourier",
-                        signature="%s<%s, %s> make_gf_from_fourier(%s<%s, typename %s::real_t> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
+                        signature="%s<%s, %s> make_gf_from_fourier(%s<%s, typename %s::real_t> g_in)"%(gf_type, M0, Target, gf_view_type, M1, Target),
                         doc ="""Create Green function from the Fourier transform of g_in""")
+
+        # Mesh specific overloads of make_gf_from_fourier
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<imfreq, %s> make_gf_from_fourier(%s<imtime, %s> g_in, int n_iw)"%(gf_type, Target, gf_view_type, Target),
+                       doc ="""Create Green function from the Fourier transform of g_tau""")
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<imfreq, %s> make_gf_from_fourier(%s<imtime, typename %s::real_t> g_in, int n_iw)"%(gf_type, Target, gf_view_type, Target),
+                       doc ="""Create Green function from the Fourier transform of g_tau""")
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<imtime, %s> make_gf_from_fourier(%s<imfreq, %s> g_in, int n_tau)"%(gf_type, Target, gf_view_type, Target),
+                       doc ="""Create Green function from the Fourier transform of g_iw""")
+
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<refreq, %s> make_gf_from_fourier(%s<retime, %s> g_in, bool shift_half_bin)"%(gf_type, Target, gf_view_type, Target),
+                       doc ="""Create Green function from the Fourier transform of g_t""")
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<refreq, %s> make_gf_from_fourier(%s<retime, typename %s::real_t> g_in, bool shift_half_bin)"%(gf_type, Target, gf_view_type, Target),
+                       doc ="""Create Green function from the Fourier transform of g_t""")
+        m.add_function(name = "make_gf_from_fourier",
+                       signature="%s<retime, %s> make_gf_from_fourier(%s<refreq, %s> g_in, bool shift_half_bin)"%(gf_type, Target, gf_view_type, Target),
+                   doc ="""Create Green function from the Fourier transform of g_w""")
+
+    for M0, M1 in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
 
         # make_gf_from_fourier with known moments
         m.add_function(name = "make_gf_from_fourier",
-               signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in, %s mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+               signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in, %s mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(M0, Target, M1, Target, M0, Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
         # FIXME We are making copies of the tail
         m.add_function(name = "make_gf_from_fourier",
-                signature="block_gf<%s, %s> make_gf_from_fourier(block_gf_view<%s, %s> g_in, %s mesh, std::vector<array<dcomplex, %s::rank + 1>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+                signature="block_gf<%s, %s> make_gf_from_fourier(block_gf_view<%s, %s> g_in, %s mesh, std::vector<array<dcomplex, %s::rank + 1>> known_moments)"%(M0, Target, M1, Target, M0, Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
         # FIXME We are making copies of the tail
         m.add_function(name = "make_gf_from_fourier",
-                signature="block2_gf<%s, %s> make_gf_from_fourier(block2_gf_view<%s, %s> g_in, %s mesh, std::vector<std::vector<array<dcomplex, %s::rank + 1>>> known_moments)"%(Meshes[0], Target, Meshes[1], Target, Meshes[0], Target),
+                signature="block2_gf<%s, %s> make_gf_from_fourier(block2_gf_view<%s, %s> g_in, %s mesh, std::vector<std::vector<array<dcomplex, %s::rank + 1>>> known_moments)"%(M0, Target, M1, Target, M0, Target),
                doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
-    # Additional overloads for make_gf_from_fourier
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="gf<imfreq, %s> make_gf_from_fourier(gf_view<imtime, %s> g_in, int n_iw)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_tau""")
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="gf<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_iw""")
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="block_gf<imfreq, %s> make_gf_from_fourier(block_gf_view<imtime, %s> g_in, int n_iw)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_tau""")
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="block_gf<imtime, %s> make_gf_from_fourier(block_gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_iw""")
+        if M1 in ["imtime", "retime"]:
+            # make_gf_from_fourier with known moments
+            m.add_function(name = "make_gf_from_fourier",
+                           signature="gf<%s, %s> make_gf_from_fourier(gf_view<%s, typename %s::real_t> g_in, %s mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(M0, Target, M1, Target, M0, Target),
+                   doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="gf<refreq, %s> make_gf_from_fourier(gf_view<retime, %s> g_in, bool shift_half_bin)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_t""")
-    m.add_function(name = "make_gf_from_fourier",
-                   signature="gf<retime, %s> make_gf_from_fourier(gf_view<refreq, %s> g_in, bool shift_half_bin)"%(Target, Target),
-                   doc ="""Create Green function from the Fourier transform of g_w""")
+            # FIXME We are making copies of the tail
+            m.add_function(name = "make_gf_from_fourier",
+                           signature="block_gf<%s, %s> make_gf_from_fourier(block_gf_view<%s, typename %s::real_t> g_in, %s mesh, std::vector<array<dcomplex, %s::rank + 1>> known_moments)"%(M0, Target, M1, Target, M0, Target),
+                   doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
+
+            # FIXME We are making copies of the tail
+            m.add_function(name = "make_gf_from_fourier",
+                           signature="block2_gf<%s, %s> make_gf_from_fourier(block2_gf_view<%s, typename %s::real_t> g_in, %s mesh, std::vector<std::vector<array<dcomplex, %s::rank + 1>>> known_moments)"%(M0, Target, M1, Target, M0, Target),
+                   doc ="""Create Green function from the Fourier transform of g_in using the known high-frequency moments""")
 
     # === Lattice Fourier
-    for Meshes in [["cyclat", "brzone"], ["brzone", "cyclat"]]:
+    for M0, M1 in [["cyclat", "brzone"], ["brzone", "cyclat"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
             gf_view_type = gf_type +  '_view'
             # make_gf_from_fourier
             m.add_function(name = "make_gf_from_fourier",
-                    signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
+                    signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, M0, Target, gf_view_type, M1, Target),
                     doc ="""Create Green function from the Fourier transform of g_in""")
 
 # ---------------------- DLR mesh conversions --------------------

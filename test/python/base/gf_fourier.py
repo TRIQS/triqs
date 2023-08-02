@@ -25,8 +25,11 @@ n_iw = 100
 n_tau = 6 * n_iw + 1
 beta=20.0
 
-gt = GfImTime(beta=beta, n_points=n_tau, indices=[0])
-gw = GfImFreq(beta=beta, n_points=n_iw,  indices=[0])
+t_mesh = MeshImTime(beta=beta, statistic='Fermion', n_tau=n_tau)
+w_mesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=n_iw)
+
+gt = Gf(mesh=t_mesh, target_shape=[1,1])
+gw = Gf(mesh=w_mesh, target_shape=[1,1])
 gw2 = gw.copy()
 
 gw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
@@ -75,6 +78,23 @@ assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
 gw2 << Fourier(0.3*gt)
 assert abs(gw2.data[0].real) < 1e-7
+
+# ==== With Tailfit
+
+tail, err = fit_tail(gw, make_zero_tail(gw, 1))
+
+gt2 = gt.copy()
+gt2 << Fourier(gw, tail)
+gt3 = make_gf_from_fourier(gw, gt.mesh, tail)
+
+gw2 << Fourier(gt2, tail)
+gw3 = make_gf_from_fourier(gt3, w_mesh, tail)
+
+assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
+
+gw3 = make_gf_from_fourier(gt3.real, w_mesh, tail)
+assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
 # # ==== Block Green functions
 

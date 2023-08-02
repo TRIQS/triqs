@@ -42,7 +42,7 @@ print(max(abs(gw.data[:] - gw3.data[:])))
 assert max(abs(gw.data[:] - gw2.data[:])) < 1e-7
 assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
 
-# Check Fourier transform of real frequency Green function
+# Check Fourier transform of real time Green function
 gw3 = make_gf_from_fourier(gt3.real) + 1j * make_gf_from_fourier(gt3.imag)
 print(max(abs(gw.data[:] - gw3.data[:])))
 assert max(abs(gw.data[:] - gw3.data[:])) < 1e-7
