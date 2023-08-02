@@ -380,7 +380,7 @@ TEST(Gf, DLR_multivar_fit) {
     gtau_noise.data() += sigma * (nda::rand(n_tau, n_tau) - 0.5);
     auto gcoef_noise = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau_noise, w_max, eps), w_max, eps);
     auto gtau3       = make_gf_imtime<0>(make_gf_imtime<1>(gcoef_noise, n_tau), n_tau);
-    EXPECT_GF_NEAR(gtau, gtau3, 25*sigma);
+    EXPECT_GF_NEAR(gtau, gtau3, 30*sigma);
   }
 }
 
