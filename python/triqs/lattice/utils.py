@@ -361,8 +361,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     Hk_numerical = Hk_numerical.subs(a2k, a2k_n)
     Hk_numerical = Hk_numerical.subs(a3k, a3k_n)
 
-    # converting numerical Hamiltonian to NumPy array
-    Hk_numerical = np.array(Hk_numerical)
+    return np.array(Hk_numerical)
 
     def _has_complex_exponential_sympy(matrix):
         """
