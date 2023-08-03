@@ -407,7 +407,3 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
                                 Choosing a different unit cell could make 
                                 your Hamiltonian expression real.""")
     
-    # returning analytical or numerical form of Hamiltonian
-    if analytical:
-        return Hk
-    return Hk_numerical
