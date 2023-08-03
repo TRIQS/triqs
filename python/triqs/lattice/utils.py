@@ -340,7 +340,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     for i, j in itp(range(num_orb), repeat = 2):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
         
-        if analytical: return Hk
+    if analytical: return Hk
 
     # dealing with the numerical Hamiltonian
 
