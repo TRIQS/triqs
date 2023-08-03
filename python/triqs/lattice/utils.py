@@ -353,9 +353,9 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     a1k_n, a2k_n, a3k_n = np.around(TBL_units.dot(k_space_matrix), precision)
     
     # performing numerical dot product substitutions
-    Hk_numerical = Hk_numerical.subs(a1k, a1k_numerical)
-    Hk_numerical = Hk_numerical.subs(a2k, a2k_numerical)
-    Hk_numerical = Hk_numerical.subs(a3k, a3k_numerical)
+    Hk_numerical = Hk_numerical.subs(a1k, a1k_n)
+    Hk_numerical = Hk_numerical.subs(a2k, a2k_n)
+    Hk_numerical = Hk_numerical.subs(a3k, a3k_n)
 
     # converting numerical Hamiltonian to NumPy array
     Hk_numerical = np.array(Hk_numerical)
