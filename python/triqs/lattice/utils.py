@@ -352,7 +352,9 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
     # numerical dot products between unit vectors
     # and momentum space matrix
-    a1k_n, a2k_n, a3k_n = np.around(TBL_units.dot(k_space_matrix), precision)
+    a1k_n = a1.dot(k_space_matrix)[0]
+    a2k_n = a2.dot(k_space_matrix)[0]
+    a3k_n = a3.dot(k_space_matrix)[0]
     
     # performing numerical dot product substitutions
     Hk_numerical = Hk_numerical.subs(a1k, a1k_n)
