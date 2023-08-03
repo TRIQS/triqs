@@ -339,29 +339,6 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     # rewriting exponential terms in Hamiltonian expression in terms of cosine
     for i, j in itp(range(num_orb), repeat = 2):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
-        
-    if analytical: return Hk
-
-    # dealing with the numerical Hamiltonian
-
-    # convert to SymPy matrix to use substitutions method available in SymPy
-    Hk_numerical = sp.Matrix(Hk)
-
-    # obtaining individual displacement vectors
-    a1, a2, a3 = np.around(TBL_units, precision)
-
-    # numerical dot products between unit vectors
-    # and momentum space matrix
-    a1k_n = a1.dot(k_space_matrix)[0]
-    a2k_n = a2.dot(k_space_matrix)[0]
-    a3k_n = a3.dot(k_space_matrix)[0]
-    
-    # performing numerical dot product substitutions
-    Hk_numerical = Hk_numerical.subs(a1k, a1k_n)
-    Hk_numerical = Hk_numerical.subs(a2k, a2k_n)
-    Hk_numerical = Hk_numerical.subs(a3k, a3k_n)
-
-    return np.array(Hk_numerical)
 
     def _has_complex_exponential_sympy(matrix):
         """
@@ -400,13 +377,39 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
                     return False
         return True
     
-    # warning indicating when Hamiltonian is not hermitian
-    if _is_hermitian_sympy(Hk) == False or _is_hermitian_sympy(Hk_numerical) == False:
-        return warnings.warn("The resulting Hamiltonian is not hermitian.")
+    # performing the check on the analytical Hamiltonian
+    if not _is_hermitian_sympy(Hk): return warnings.warn("The resulting Hamiltonian is not hermitian.")
+    if _has_complex_exponential_sympy(Hk): return warnings.warn("""Your expression has a complex exponential. 
+                                                                    Choosing a different unit cell could make 
+                                                                    your Hamiltonian expression real.""")
+    
+    if analytical: return Hk
 
-    # warning indicating when Hamiltonian contains complex exponential element
-    if _has_complex_exponential_sympy(Hk_numerical) or _has_complex_exponential_sympy(Hk):
-        return warnings.warn("""Your expression has a complex exponential. 
-                                Choosing a different unit cell could make 
-                                your Hamiltonian expression real.""")
+    # dealing with the numerical Hamiltonian
+
+    # convert to SymPy matrix to use substitutions method available in SymPy
+    Hk_numerical = sp.Matrix(Hk)
+
+    # obtaining individual displacement vectors
+    a1, a2, a3 = np.around(TBL_units, precision)
+
+    # numerical dot products between unit vectors
+    # and momentum space matrix
+    a1k_n = a1.dot(k_space_matrix)[0]
+    a2k_n = a2.dot(k_space_matrix)[0]
+    a3k_n = a3.dot(k_space_matrix)[0]
+    
+    # performing numerical dot product substitutions
+    Hk_numerical = Hk_numerical.subs(a1k, a1k_n)
+    Hk_numerical = Hk_numerical.subs(a2k, a2k_n)
+    Hk_numerical = Hk_numerical.subs(a3k, a3k_n)
+
+    # converting numerical Hamiltonian to NumPy array
+    Hk_numerical = np.array(Hk_numerical)
+
+    if not _is_hermitian_sympy(Hk_numerical): return warnings.warn("The resulting Hamiltonian is not hermitian.")
+    if _has_complex_exponential_sympy(Hk_numerical): return warnings.warn("""Your expression has a complex exponential. 
+                                                                            Choosing a different unit cell could make 
+                                                                            your Hamiltonian expression real.""")
+    return Hk_numerical
     
