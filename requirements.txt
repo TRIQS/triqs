@@ -3,6 +3,7 @@ scipy
 mpi4py --no-binary=mpi4py
 matplotlib
 mako
+sympy
 # For cthyb and tprf documentation only:
 #sphinx<6
 #nbsphinx
