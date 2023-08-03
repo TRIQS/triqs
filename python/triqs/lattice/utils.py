@@ -262,9 +262,9 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     analytical: boolean, default = True
         whether to return the Hamiltonian in analytical (true) or numerical (false) form.
     precision: integer, default = 6
-        specifies the precision of the floating point amplitudes. The default precision is 6 but the user
-        can decrease this parameter for better recognition of similar hopping amplitudes, particularly
-        for symmetrical hoppings across the crystal lattice
+        specifies the number of digits in the floating point amplitudes. The default value is 6 but the user
+        can decrease it to help recognize similar hopping amplitudes, particularly for symmetrical hoppings
+        across the crystal lattice
     
     Returns
     -------
