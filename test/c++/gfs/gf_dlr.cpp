@@ -352,6 +352,15 @@ TEST(Gf, DLR_imtime_fit) {
     auto gtau3       = make_gf_imtime(gcoef_noise, n_tau);
     EXPECT_GF_NEAR(gtau, gtau3, sigma);
   }
+
+  // BlockGf test
+  auto G2 = gtau;
+  auto G_vec = std::vector{gtau, G2};
+  auto Bgtau = block_gf{G_vec};
+
+  auto Bgcoef = fit_gf_dlr(Bgtau, w_max, eps);
+  auto Bgtau2 = make_gf_imtime(Bgcoef, n_tau);
+  EXPECT_BLOCK_GF_NEAR(Bgtau, Bgtau2);
 }
 
 // ----------------------------------------------------------------
@@ -374,6 +383,16 @@ TEST(Gf, DLR_multivar_fit) {
   auto gcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau, w_max, eps), w_max, eps);
   auto gtau2 = make_gf_imtime<0>(make_gf_imtime<1>(gcoef, n_tau), n_tau);
   EXPECT_GF_NEAR(gtau, gtau2);
+
+  // BlockGf
+  auto G2 = gtau;
+  auto G_vec = std::vector{gtau, G2};
+  auto Bgtau = block_gf{G_vec};
+
+  auto Bgcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(Bgtau, w_max, eps), w_max, eps);
+  auto Bgtau2 = make_gf_imtime<0>(make_gf_imtime<1>(Bgcoef, n_tau), n_tau);
+  EXPECT_BLOCK_GF_NEAR(Bgtau, Bgtau2);
+
 
   for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
     auto gtau_noise = gtau;
@@ -484,11 +503,21 @@ TEST(Gf, DLR_h5) {
   auto gt = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps}};
   gt[tau_] << nda::clef::exp(-omega * tau_) / (1 + nda::clef::exp(-beta * omega));
   auto gc = make_gf_dlr(gt);
-  auto gw = make_gf_dlr_imtime(gc);
+  auto gw = make_gf_dlr_imfreq(gc);
+
+  // BlockGf test
+  auto G2 = gt;
+  auto G_vec = std::vector{gt, G2};
+  auto Bgtau = block_gf{G_vec};
+  auto Bgcoef = make_gf_dlr(Bgtau);
+  auto Bgiwn = make_gf_dlr_imfreq(Bgcoef);
 
   rw_h5(gt, "g_dlr_imtime");
   rw_h5(gc, "g_dlr");
   rw_h5(gw, "g_dlr_imfreq");
+  rw_h5(Bgtau, "g_dlr_imtime");
+  rw_h5(Bgcoef, "g_dlr");
+  rw_h5(Bgiwn, "g_dlr_imfreq");
 }
 
 // ----------------------------------------------------------------

@@ -18,6 +18,7 @@
 
 #pragma once
 #include "triqs/gfs/gf/gf.hpp"
+#include "triqs/gfs/block/block_gf.hpp"
 #include "../../mesh/imtime.hpp"
 #include "../../mesh/imfreq.hpp"
 #include "../../mesh/dlr_imtime.hpp"
@@ -33,20 +34,30 @@ namespace triqs::gfs {
   // Transformation of DLR Green's functions
   // ------------------------------------------------------
 
-  template <int N = 0, MemoryGf G, typename F> auto apply_to_mesh(F const &f, G const &g) {
+  template <int N = 0, typename G, typename F>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto apply_to_mesh(F const &f, G const &g) {
     using M = typename G::mesh_t;
-    static_assert(mesh::is_product<M>, "requires product mesh");
-    auto gfl      = f(flatten_gf_2d<N>(g));
-    auto out_mesh = mesh::prod{triqs::tuple::replace<N>(g.mesh(), gfl.mesh())};
-    auto g_out    = gf{out_mesh, g.target_shape()};
-    unflatten_gf_2d<N>(g_out, gfl);
-    return g_out;
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return apply_to_mesh<N>(f, gbl); }, g);
+    } else {
+      static_assert(mesh::is_product<M>, "requires product mesh");
+      auto gfl      = f(flatten_gf_2d<N>(g));
+      auto out_mesh = mesh::prod{triqs::tuple::replace<N>(g.mesh(), gfl.mesh())};
+      auto g_out    = gf{out_mesh, g.target_shape()};
+      unflatten_gf_2d<N>(g_out, gfl);
+      return g_out;
+    }
   }
 
   /// Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation
-  template <int N = 0, MemoryGf G> auto make_gf_dlr(G const &g) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto make_gf_dlr(G const &g) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return make_gf_dlr<N>(gbl); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return make_gf_dlr(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -63,9 +74,13 @@ namespace triqs::gfs {
   }
 
   /// Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
-  template <int N = 0, MemoryGf G> auto fit_gf_dlr(G const &g, double w_max, double eps) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto fit_gf_dlr(G const &g, double w_max, double eps) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return fit_gf_dlr<N>(gbl, w_max, eps); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return fit_gf_dlr(gfl, w_max, eps); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -79,9 +94,13 @@ namespace triqs::gfs {
   }
 
   /// Transform a DLR coefficient Green's function to it's DLR imaginary time representation
-  template <int N = 0, MemoryGf G> auto make_gf_dlr_imtime(G const &g) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto make_gf_dlr_imtime(G const &g) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return make_gf_dlr_imtime<N>(gbl); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return make_gf_dlr_imtime(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -93,9 +112,13 @@ namespace triqs::gfs {
   }
 
   /// Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation
-  template <int N = 0, MemoryGf G> auto make_gf_dlr_imfreq(G const &g) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto make_gf_dlr_imfreq(G const &g) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return make_gf_dlr_imfreq<N>(gbl); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return make_gf_dlr_imfreq(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -108,9 +131,13 @@ namespace triqs::gfs {
   }
 
   /// Transform a DLR coefficient Green's function to a imaginary time Green's function
-  template <int N = 0, MemoryGf G> auto make_gf_imtime(G const &g, long n_tau) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto make_gf_imtime(G const &g, long n_tau) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return make_gf_imtime<N>(gbl, n_tau); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return make_gf_imtime(gfl, n_tau); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -122,9 +149,13 @@ namespace triqs::gfs {
   }
 
   /// Transform a DLR coefficient Green's  to a Matsubara frequency Green's function
-  template <int N = 0, MemoryGf G> auto make_gf_imfreq(G const &g, long n_iw) {
+  template <int N = 0, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto make_gf_imfreq(G const &g, long n_iw) {
     using M = typename G::mesh_t;
-    if constexpr (mesh::is_product<M>) {
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return make_gf_imfreq<N>(gbl, n_iw); }, g);
+    } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N>([&](auto const &gfl) { return make_gf_imfreq(gfl, n_iw); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
