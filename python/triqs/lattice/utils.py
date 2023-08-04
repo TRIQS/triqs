@@ -282,10 +282,6 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     # imaginary number
     I = sp.I
 
-    # matrix from axis directions in momentum space
-    kx, ky, kz = sp.symbols("kx ky kz", real = True)
-    k_space_matrix = sp.Matrix([kx, ky, kz])
-
     # symbolic dot product representation between lattice unit vectors
     # and momentum space matrix
     a1k, a2k, a3k = sp.symbols("a1k a2k a3k", real = True)
