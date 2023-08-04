@@ -398,8 +398,8 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
     Hk_numerical = np.array(Hk_numerical)
 
-    if not _is_hermitian_sympy(Hk_numerical): return warnings.warn("The resulting Hamiltonian is not hermitian.")
-    if _has_complex_exponential_sympy(Hk_numerical): return warnings.warn("""Your expression has a complex exponential. 
+    if not _is_hermitian_sympy(Hk_numerical): warnings.warn("The resulting Hamiltonian is not hermitian.")
+    if _has_complex_exponential_sympy(Hk_numerical): warnings.warn("""Your expression has a complex exponential. 
                                                                             Choosing a different unit cell could make 
                                                                             your Hamiltonian expression real.""")
     return Hk_numerical
