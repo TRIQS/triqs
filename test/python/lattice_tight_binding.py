@@ -16,12 +16,13 @@
 # Authors: Nils Wentzell
 
 import unittest
+import sys
 from triqs.lattice import BravaisLattice, BrillouinZone, TightBinding
 from triqs.lattice.tight_binding import TBLattice
+from triqs.lattice.utils import TB_to_sympy
 from h5 import HDFArchive
 
 import numpy as np
-
 
 class test_lattice_tight_binding(unittest.TestCase):
 
@@ -69,6 +70,29 @@ class test_lattice_tight_binding(unittest.TestCase):
             tbl_read = arch['tbl']
 
         self.assertEqual(tbl, tbl_read)
+    
+    def test_TB_to_sympy_2D(self):
+        try:
+            import sympy as sp
+            from sympy import cos
+        except ImportError:
+            print("ImportError: SymPy needs to be installed to run this test")
+            return
+
+        kx, ky = sp.symbols("kx ky", real = True)
+
+        tbl = TBLattice(units=self.units, hoppings=self.hoppings,
+                        orbital_positions=self.orbital_positions,
+                        orbital_names=self.orbital_names
+                        )
+        
+        # testing numerical output
+        tbl_numerical = (TB_to_sympy(tbl, analytical = False, precision = 3)).tolist()
+        self.assertEquals(tbl_numerical,
+                          [[2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(2.0*kx + 1.0*ky)], 
+                           [2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky)]]
+                          )
+        
 
 
 if __name__ == '__main__':
