@@ -397,10 +397,8 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     k_vec = sp.symbols("kx ky kz", real = True)
     a1k_n, a2k_n, a3k_n = TBL_units_prec.dot(k_vec)
     
-    # performing numerical dot product substitutions
-    Hk_numerical = Hk_numerical.subs(a1k, a1k_n)
-    Hk_numerical = Hk_numerical.subs(a2k, a2k_n)
-    Hk_numerical = Hk_numerical.subs(a3k, a3k_n)
+    # substitute numerical unit vectors into H_k
+    Hk_numerical = Hk_numerical.subs([(a1k, a1k_n), (a2k, a2k_n), (a3k, a3k_n)])
 
     # converting numerical Hamiltonian to NumPy array
     Hk_numerical = np.array(Hk_numerical)
