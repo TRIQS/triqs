@@ -396,7 +396,6 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     # substitute numerical unit vectors into H_k
     Hk_numerical = Hk_numerical.subs([(a1k, a1k_n), (a2k, a2k_n), (a3k, a3k_n)])
 
-    # converting numerical Hamiltonian to NumPy array
     Hk_numerical = np.array(Hk_numerical)
 
     if not _is_hermitian_sympy(Hk_numerical): return warnings.warn("The resulting Hamiltonian is not hermitian.")
