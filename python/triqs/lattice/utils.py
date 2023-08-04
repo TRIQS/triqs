@@ -391,7 +391,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     Hk_numerical = sp.Matrix(Hk)
 
     # obtaining individual displacement vectors
-    a1, a2, a3 = np.around(TBL_units, precision)
+    TBL_units_prec = np.around(TBL_units, precision)
 
     # numerical dot products between unit vectors
     # and momentum space matrix
