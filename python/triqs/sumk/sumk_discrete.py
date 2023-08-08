@@ -1,7 +1,7 @@
 # Copyright (c) 2013-2017 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2013-2017 Centre national de la recherche scientifique (CNRS)
 # Copyright (c) 2020-2023 Simons Foundation
-# Copyright (c) 2017 Hugo Strand
+# Copyright (c) 2017 Hugo U.R. Strand
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

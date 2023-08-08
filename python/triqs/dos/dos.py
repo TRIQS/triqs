@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Olivier Parcollet, Priyanka Seth, Nils Wentzell, Thomas Ayral
+# Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Priyanka Seth, Nils Wentzell
 
 
 import types,string,itertools

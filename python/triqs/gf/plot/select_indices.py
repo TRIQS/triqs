@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Nils Wentzell, Thomas Ayral
+# Authors: Thomas Ayral, Michel Ferrero, Nils Wentzell
 
 import numpy as np
 import math

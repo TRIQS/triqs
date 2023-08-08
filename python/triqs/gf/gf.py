@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Olivier Gingras, Jonathan Karp, Manuel, Olivier Parcollet, Markus Richter, Hugo U. R. Strand, Nils Wentzell
+# Authors: Michel Ferrero, Olivier Gingras, Alexander Hampel, Jonathan Karp, Manuel, Olivier Parcollet, Markus Richter, Hugo U. R. Strand, Nils Wentzell
 
 import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3

@@ -1,6 +1,6 @@
 # Copyright (c) 2013 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2013 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2019-2021 Simons Foundation
+# Copyright (c) 2019-2023 Simons Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

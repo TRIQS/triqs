@@ -16,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Igor Krivenko, Olivier Parcollet, Nils Wentzell, Thomas Ayral
+# Authors: Thomas Ayral, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
 from triqs.gf import *
 from h5 import *

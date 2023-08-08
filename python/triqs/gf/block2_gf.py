@@ -1,6 +1,6 @@
-# Copyright (c) 2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
-# Copyright (c) 2018 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2018-2021 Simons Foundation
+# Copyright (c) 2016-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2016-2018 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2018-2023 Simons Foundation
 # Copyright (c) 2016 Igor Krivenko
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Weh Andreas, Michel Ferrero, Jonathan Karp, Igor Krivenko, Nils Wentzell
+# Authors: Weh Andreas, Michel Ferrero, Alexander Hampel, Jonathan Karp, Igor Krivenko, Nils Wentzell
 
 from collections.abc import Sequence
 from itertools import chain, product

@@ -16,7 +16,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Nils Wentzell, Thomas Ayral, Hugo U.R. Strand
+# Authors: Thomas Ayral, Hugo U. R. Strand, Nils Wentzell
 
 import numpy as np
 from numpy import eye, dot, linalg

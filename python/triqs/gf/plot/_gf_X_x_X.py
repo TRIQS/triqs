@@ -1,6 +1,5 @@
 # Copyright (c) 2016 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2016 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2020 Simons Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +14,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Nils Wentzell, Thomas Ayral
+# Authors: Thomas Ayral, Michel Ferrero
 
 import numpy as np
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime

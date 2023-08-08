@@ -1,8 +1,8 @@
 # Copyright (c) 2013-2018 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
 # Copyright (c) 2018-2023 Simons Foundation
-# Copyright (c) 2017 Hugo Strand
-# Copyright (c) 2014-2016 Igor Krivenko
+# Copyright (c) 2017 Hugo U.R. Strand
+# Copyright (c) 2014 Igor Krivenko
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Weh Andreas, Michel Ferrero, Hartmut Hafermann, Jonathan Karp, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, Thomas Ayral
+# Authors: Weh Andreas, Thomas Ayral, Michel Ferrero, Hartmut Hafermann, Alexander Hampel, Jonathan Karp, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
 from collections.abc import Sequence
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Simons Foundation
-# Copyright (c) 2023 Hugo Strand
+# Copyright (c) 2023 Hugo U.R. Strand
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

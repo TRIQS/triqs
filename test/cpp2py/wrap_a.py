@@ -1,5 +1,5 @@
-# Copyright (c) 2014 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
-# Copyright (c) 2014 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2014-2015 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2014-2015 Centre national de la recherche scientifique (CNRS)
 # Copyright (c) 2020 Simons Foundation
 # Copyright (c) 2014-2015 Igor Krivenko
 #
