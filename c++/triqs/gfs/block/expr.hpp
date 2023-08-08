@@ -148,8 +148,10 @@ namespace triqs {
     // we implement them trivially.
 
 #define DEFINE_OPERATOR(OP1, OP2)                                                                                                                    \
-  template <typename Var, typename Target, typename T> void operator OP1(block_gf_view<Var, Target> g, T const &x) { g = g OP2 x; }                  \
-  template <typename Var, typename Target, typename T> void operator OP1(block_gf<Var, Target> &g, T const &x) { g = g OP2 x; }
+  template <typename Mesh, typename Target, int Arity, typename T> void operator OP1(block_gf_view<Mesh, Target, Arity> g, T const &x) {             \
+    g = g OP2 x;                                                                                                                                     \
+  }                                                                                                                                                  \
+  template <typename Mesh, typename Target, int Arity, typename T> void operator OP1(block_gf<Mesh, Target, Arity> &g, T const &x) { g = g OP2 x; }
 
     DEFINE_OPERATOR(+=, +);
     DEFINE_OPERATOR(-=, -);
