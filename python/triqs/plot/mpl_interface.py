@@ -25,6 +25,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from .protocol import plot_protocol_apply
 from matplotlib import rc
+import warnings
 
 try:
     subplots = mpl.pyplot.subplots
@@ -47,6 +48,7 @@ def oplotr(obj, *opt_list, **opt_dict):
     """
     Same as oplot, but enforce option mode='R'
     """
+    warnings.warn("oplotr is deprecated, use oplot(G.real, ...) instead", DeprecationWarning)
     opt_dict['mode'] = 'R'
     oplot(obj, *opt_list, **opt_dict)
 
@@ -55,6 +57,7 @@ def oploti(obj, *opt_list, **opt_dict):
     """
     Same as oplot, but enforce option mode='I'
     """
+    warnings.warn("oploti is deprecated, use oplot(G.imag, ...) instead", DeprecationWarning)
     opt_dict['mode'] = 'I'
     oplot(obj, *opt_list, **opt_dict)
 
