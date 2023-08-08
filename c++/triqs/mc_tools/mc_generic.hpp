@@ -126,7 +126,7 @@ namespace triqs::mc_tools {
    */
     void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty = f; }
 
-    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
+    int warmup(int64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nWarming up ..." << std::endl;
       auto status  = run(n_warmup_cycles, length_cycle, stop_callback, false, c);
       timer_warmup = timer_run;
@@ -152,7 +152,7 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init,
+    int warmup(int64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init,
                mpi::communicator c = mpi::communicator{}) {
       sign = sign_init;
       return warmup(n_warmup_cycles, length_cycle, stop_callback, c);
@@ -162,6 +162,7 @@ namespace triqs::mc_tools {
      * Accumulate/Measure
      *
      * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
+     *                                If negative, the accumulation is done until the stop_callback returns true or signal is received.
      * @param length_cycle            Number of QMC move attempts in one cycle
      * @param stop_callback 
      * 
@@ -178,7 +179,7 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
+    int accumulate(int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
                    mpi::communicator c = mpi::communicator{}) {
       report(3) << "\nAccumulating ..." << std::endl;
       auto status        = run(n_accumulation_cycles, length_cycle, stop_callback, true, c);
@@ -186,7 +187,7 @@ namespace triqs::mc_tools {
       return status;
     }
 
-    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
+    int warmup_and_accumulate(int64_t n_warmup_cycles, int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
                               mpi::communicator c = mpi::communicator{}) {
       int status = warmup(n_warmup_cycles, length_cycle, stop_callback, c);
       if (status == 0) status = accumulate(n_accumulation_cycles, length_cycle, stop_callback, c);
@@ -198,6 +199,7 @@ namespace triqs::mc_tools {
      *
      * @param n_warmup_cycles         Number of QMC cycles in the warmup
      * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
+     *                                If negative, the accumulation is done until the stop_callback returns true or signal is received.
      * @param length_cycle            Number of QMC move attempts in one cycle
      * @param stop_callback           A callback function () -> bool. It is called after each cycle
      *                                to and the computation stops when it returns true.
@@ -212,7 +214,7 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
+    int warmup_and_accumulate(int64_t n_warmup_cycles, int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
                               MCSignType sign_init, mpi::communicator c = mpi::communicator{}) {
       sign = sign_init; // init the sign
       return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback, c);
@@ -222,6 +224,7 @@ namespace triqs::mc_tools {
      * Generic function to run the Monte-Carlo. Used by both warmup and accumulate.
      *
      * @param n_cycles         Number of QMC cycles
+     *                         If negative, the accumulation is done until the stop_callback returns true or signal is received.
      * @param length_cycle     Number of QMC move attempts in one cycle
      * @param stop_callback    A callback function () -> bool. It is called after each cycle
      *                         to and the computation stops when it returns true.
@@ -237,8 +240,8 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure,
-            mpi::communicator c = mpi::communicator{}) {
+    int run(int64_t n_cycles, int64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{}) {
+      EXPECTS(length_cycle > 0);
 
       AllMoves.clear_statistics();
 
@@ -248,7 +251,7 @@ namespace triqs::mc_tools {
       triqs::signal_handler::start();
       done_percent = 0;
       nmeasures    = 0;
-      bool stop_it = false, finished = false;
+      bool stop_it = false, finished = false, infinite = (n_cycles < 0);
       int NC                = 0;
       double next_info_time = 0.1;
 
@@ -258,7 +261,7 @@ namespace triqs::mc_tools {
       for (; !stop_it; ++NC) { // do NOT reinit NC to 0
         try {
           // Metropolis loop. Switch here for HeatBath, etc...
-          for (uint64_t k = 1; (k <= length_cycle); k++) {
+          for (int64_t k = 1; (k <= length_cycle); k++) {
             if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
             double r = AllMoves.attempt();
             if (RandomGenerator() < std::min(1.0, r)) {
@@ -290,14 +293,18 @@ namespace triqs::mc_tools {
         }
 
         // recompute fraction done
-        done_percent = uint64_t(floor(((NC + 1) * 100.0) / n_cycles));
+        done_percent = int64_t(floor(((NC + 1) * 100.0) / n_cycles));
         if (timer_run > next_info_time || done_percent == 100) {
-          report(3) << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
-                    << " ETA " << estimate_time_left(n_cycles, NC, timer_run) << " cycle " << NC << " of " << n_cycles << std::endl;
+          if (infinite) {
+            report(3) << utility::timestamp() << " cycle " << NC << std::endl;
+          } else {
+            report(3) << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
+                      << " ETA " << estimate_time_left(n_cycles, NC, timer_run) << " cycle " << NC << " of " << n_cycles << std::endl;
+          }
           if (do_measure) report(3) << AllMeasures.report();
           next_info_time = 1.25 * timer_run + 2.0; // Increase time interval non-linearly
         }
-        finished = NC + 1 >= n_cycles;
+        finished = NC + 1 >= n_cycles and not infinite;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
 
         // Stop if an emergeny occured on any node
@@ -330,7 +337,7 @@ namespace triqs::mc_tools {
       report(3) << "[Rank " << c.rank() << "] Collect results: Waiting for all mpi-threads to finish accumulating...\n";
       AllMeasures.collect_results(c);
       AllMoves.collect_statistics(c);
-      uint64_t nmeasures_tot = mpi::reduce(nmeasures, c);
+      int64_t nmeasures_tot = mpi::reduce(nmeasures, c);
 
       report(3) << "[Rank " << c.rank() << "] Timings for all measures:\n" << AllMeasures.get_timings();
       report(3) << "[Rank " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
@@ -351,7 +358,7 @@ namespace triqs::mc_tools {
     /**
    *  The current percents done
    */
-    uint64_t get_percent() const { return done_percent; }
+    int64_t get_percent() const { return done_percent; }
 
     /**
    * An access to the random number generator
@@ -424,12 +431,12 @@ namespace triqs::mc_tools {
     measure_set<MCSignType> AllMeasures;
     std::vector<measure_aux> AllMeasuresAux;
     utility::report_stream report;
-    uint64_t nmeasures, current_cycle_number = 0;
+    int64_t nmeasures, current_cycle_number = 0;
     utility::timer timer_run, timer_accumulation, timer_warmup;
     std::function<void()> after_cycle_duty;
     MCSignType sign        = 1;
-    uint64_t done_percent  = 0;
-    uint64_t config_id     = 0;
+    int64_t done_percent   = 0;
+    int64_t config_id      = 0;
     bool rethrow_exception = true;
   };
 } // namespace triqs::mc_tools
