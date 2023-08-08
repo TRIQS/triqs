@@ -41,7 +41,7 @@ class Cpp2pyInfo:
         'triqs::operators::many_body_operator*' : 'operators_real_complex',
         'triqs::hilbert_space::fundamental_operator_set' : 'fundamental_operator_set',
         'triqs::utility::real_or_complex' : 'real_or_complex',
-        '*::mesh_point_t' : 'mesh',
+        'triqs::mesh::*::mesh_point_t' : 'mesh',
         'triqs::mesh::statistic_enum' : 'mesh',
         'triqs::lattice' : 'mesh',
         }
