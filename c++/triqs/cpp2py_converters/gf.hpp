@@ -29,6 +29,8 @@
 #include <cpp2py/converters/std_array.hpp>
 #include <cpp2py/converters/string.hpp>
 
+#include "./mesh.hpp"
+
 /// Additional converters for gf
 namespace cpp2py {
 
