@@ -156,7 +156,7 @@ namespace triqs::gfs {
 
     // Filter out divergent real parts of g that are inf
     // e.g. flat dos at dos edge (but keep complex matrix structure)
-    diagonal(res) = dcomplex(0.,1.)*imag(diagonal(res));
+    diagonal(res) = dcomplex(0., 1.) * imag(diagonal(res));
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
 
     // writing back into res is problematic due to lazy expressions
@@ -175,7 +175,7 @@ namespace triqs::gfs {
 
     // -- Required to filter out divergent real parts of g that are inf
     // -- eg flat dos at dos edge
-    diagonal(res) = dcomplex(0.,1.)*imag(diagonal(res));
+    diagonal(res) = dcomplex(0., 1.) * imag(diagonal(res));
     res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
 
     // writing back into res is problematic due to lazy expressions

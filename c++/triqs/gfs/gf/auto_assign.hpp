@@ -49,16 +49,14 @@ namespace triqs {
     }
 
     // enable the writing g[om_] << .... also
-    template <typename RHS, typename M, typename T, typename L>
-    FORCEINLINE void clef_auto_assign_subscript(gf_view<M, T, L> g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L> FORCEINLINE void clef_auto_assign_subscript(gf_view<M, T, L> g, RHS const &rhs) {
       clef_auto_assign(g, rhs);
     }
 
     /* template <typename RHS, typename M, typename T, typename L>*/
     /*FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L> const &g, RHS const &rhs) { return 1;} // = delete;*/
 
-    template <typename RHS, typename M, typename T, typename L>
-    FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L> &g, RHS const &rhs) {
+    template <typename RHS, typename M, typename T, typename L> FORCEINLINE void clef_auto_assign_subscript(gf<M, T, L> &g, RHS const &rhs) {
       clef_auto_assign(g, rhs);
     }
 

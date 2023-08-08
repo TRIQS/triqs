@@ -45,10 +45,10 @@ struct A {
   /// Doc of x,y
   double x = 3, y = 89;
 
-  A()          = default;
-  A(A &&)      = default;
-  A(A const &) = delete; // to prevent using copy
-  A &operator=(A &&) = default;
+  A()                     = default;
+  A(A &&)                 = default;
+  A(A const &)            = delete; // to prevent using copy
+  A &operator=(A &&)      = default;
   A &operator=(A const &) = default;
 
   std::vector<int> data = {1, 2, 3, 4, 5, 6};
@@ -181,13 +181,13 @@ inline std::vector<int> vector_x2(std::vector<int> const &v) {
   return r;
 }
 
+using itertools::range;
 using triqs::arrays::array;
 using triqs::arrays::matrix;
-using itertools::range;
 using namespace triqs::arrays;
 
 inline void iter_on_range(range r) {
-  itertools::foreach(r, [](int i) { std::cout << i << std::endl; });
+  itertools::foreach (r, [](int i) { std::cout << i << std::endl; });
 }
 
 inline matrix<double> make_matrix(int size) { return nda::eye<double>(size); }
@@ -246,4 +246,4 @@ inline std::function<void(int, int)> make_fnt_void() {
   return [](int i, int j) { std::cout << " I am a C++ lambda : " << i << " " << j << std::endl; };
 }
 
-std::complex<double> complex_to_complex(std::complex<double> cplx){ return cplx; }
+std::complex<double> complex_to_complex(std::complex<double> cplx) { return cplx; }

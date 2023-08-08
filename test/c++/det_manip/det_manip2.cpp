@@ -104,9 +104,7 @@ struct test {
           std::cout << " Remove" << k << std::endl;
           if (D.size() >= 2) {
             std::vector<long> w(k);
-            for (auto m : itertools::range(k)) {
-              w.at(m) = RNG(s);
-            }
+            for (auto m : itertools::range(k)) { w.at(m) = RNG(s); }
             std::sort(w.begin(), w.end());
             if (std::unique(w.begin(), w.end()) == w.end()) detratio = D.try_remove_k(w, w);
           }

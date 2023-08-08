@@ -28,8 +28,7 @@ namespace triqs::gfs {
 
   template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_layout> class gf;
   template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout> class gf_view;
-  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout>
-  class gf_const_view;
+  template <Mesh M, typename Target = matrix_valued, typename Layout = nda::C_stride_layout> class gf_const_view;
 
   /*----------------------------------------------------------
    *   Traits

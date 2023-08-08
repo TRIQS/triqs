@@ -117,9 +117,9 @@ namespace triqs::gfs {
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
-      int n_known_moments                         = std::min<size_t>(known_moments.shape()[0], 4);
-      tail                                        = make_zero_tail(gt, 4);
-      tail(range(n_known_moments), range::all)    = known_moments(range(n_known_moments), range::all);
+      int n_known_moments                      = std::min<size_t>(known_moments.shape()[0], 4);
+      tail                                     = make_zero_tail(gt, 4);
+      tail(range(n_known_moments), range::all) = known_moments(range(n_known_moments), range::all);
     }
 
     double beta = gt.mesh().beta();
