@@ -27,9 +27,15 @@ from numpy import cos
 
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0)])
 mesh_k = MeshBrZone(BrillouinZone(BL), n_k=20)
+
 mesh_iw = MeshImFreq(beta=1., S='Fermion', n_iw=100)
-mesh_iw_dlr = MeshDLRImFreq(beta=1., statistic='Fermion', w_max=10, eps=1e-7)
 mesh_k_iw = MeshProduct(mesh_k, mesh_iw)
+
+mesh_iw_dlr = MeshDLRImFreq(beta=1., statistic='Fermion', w_max=10, eps=1e-7)
+mesh_k_iw_dlr = MeshProduct(mesh_k, mesh_iw_dlr)
+
+mesh_dlr = MeshDLR(beta=1., statistic='Fermion', w_max=10, eps=1e-7)
+mesh_k_dlr = MeshProduct(mesh_k, mesh_dlr)
 
 # === Fill two G_k_iw
 
@@ -43,11 +49,13 @@ eps = lambda k: 2*t*(cos(k[0])+cos(k[1]))
 Sigma = lambda iw: 0.25*U**2*inverse(iw)
 
 G_k_iw = Gf(mesh = mesh_k_iw, target_shape = [1,1])
-G_k_iw_dlr = Gf(mesh = mesh_k_iw, target_shape = [1,1])
+G_k_iw_dlr = Gf(mesh = mesh_k_iw_dlr, target_shape = [1,1])
+G_k_dlr = Gf(mesh = mesh_k_dlr, target_shape = [1,1])
 
 for k in mesh_k:
     G_k_iw[k,:] << inverse(iOmega_n - eps(k) - Sigma(iOmega_n))
     G_k_iw_dlr[k,:] << inverse(iOmega_n - eps(k) - Sigma(iOmega_n))
+    G_k_dlr[k,:] = make_gf_dlr(G_k_iw_dlr[k,:])
 
 # === Test Evaluation
 
@@ -63,9 +71,9 @@ for n in range(3):
       assert_gfs_are_close(G_iw, G_k_iw(k.value, all))
   
       iwn = mesh_iw(n)
-      assert_arrays_are_close(G_iw[Idx(n)], G_k_iw_dlr(k, iwn))
-      assert_arrays_are_close(G_iw[Idx(n)], G_k_iw_dlr(k.index, iwn))
-      assert_arrays_are_close(G_iw[Idx(n)], G_k_iw_dlr(k.value, iwn))
+      assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k, iwn))
+      assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k.index, iwn))
+      assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k.value, iwn))
   
   G_k = Gf(mesh=mesh_k, target_shape = [1,1])
   for iw in mesh_iw:
@@ -77,10 +85,9 @@ for n in range(3):
       assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw([n,0,0], iw.value))
       assert_gfs_are_close(G_k, G_k_iw(all, iw))
   
-      assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw_dlr([n,0,0], iw))
-      assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw_dlr([n,0,0], iw.index))
-      assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw_dlr([n,0,0], iw.value))
-      assert_gfs_are_close(G_k, G_k_iw_dlr(all, iw))
+      assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_dlr([n,0,0], iw))
+      assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_dlr([n,0,0], iw.value))
+      assert_gfs_are_close(G_k, G_k_dlr(all, iw))
 
 # === Test the hdf5 write/read
 
