@@ -160,7 +160,7 @@ namespace triqs::mesh {
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
 
       long max_n{};
-      if (not h5::try_read(gr, "max_n", max_n)) h5::read(gr, "n_max", max_n); // Backward Compat
+      if (not h5::try_read(gr, "max_n", max_n)) max_n = h5::read<size_t>(gr, "n_max"); // Backward Compat
 
       m = legendre(beta, statistic, max_n);
     }
