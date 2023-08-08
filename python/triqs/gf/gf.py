@@ -39,10 +39,10 @@ all_call_proxies = dict( (c.__name__, c) for c in list(wrapped_aux.__dict__.valu
 
 class CallProxyNone:
     """Default do nothing value"""
-    def __init__(self, a):
+    def __init__(self, *args):
         pass
-    def __call__(self, a): 
-        raise NotImplemented
+    def __call__(self, *args):
+        raise NotImplementedError
 
 # For IO later
 def call_factory_from_dict(cl,name, dic):
