@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Dominik Kiese, Olivier Parcollet
+// Authors: Dominik Kiese, Olivier Parcollet, Nils Wentzell
 
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::lattice;

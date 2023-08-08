@@ -1,3 +1,5 @@
+// Copyright (c) 2017 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
+// Copyright (c) 2017 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2020 Simons Foundation
 // Copyright (c) 2017 Igor Krivenko
 //

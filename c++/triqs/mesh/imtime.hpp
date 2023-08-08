@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell, Thomas Ayral
+// Authors: Thomas Ayral, Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
 #pragma once
 #include "./utils.hpp"

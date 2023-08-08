@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Simons Foundation
+// Copyright (c) 2021-2023 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Philipp Dumitrescu
+// Authors: Philipp Dumitrescu, Nils Wentzell
 
 #include <itertools/itertools.hpp>
 #include <numeric>

@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
+// Authors: Alexander Hampel, Olivier Parcollet, Nils Wentzell
 
 #pragma once
 #include "utils.hpp"

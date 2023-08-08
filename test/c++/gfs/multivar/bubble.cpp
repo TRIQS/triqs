@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Hartmut Hafermann, Olivier Parcollet, Nils Wentzell, Thomas Ayral
+// Authors: Thomas Ayral, Michel Ferrero, Hartmut Hafermann, Olivier Parcollet, Nils Wentzell
 
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
