@@ -54,27 +54,26 @@ class BlockGf:
         """
    * There are several possible constructors, which accept only keyword arguments.
 
-            * BlockGf(name_list = list of names, block_list = list of blocks, make_copies = False, name = '')
+            * BlockGf(block_list = list of blocks, name_list = list of names, make_copies = False)
 
-                   * ``name_list``: list of the names of the blocks, e.g. ["up","down"].
                    * ``block_list``: list of blocks of Green's functions.
-                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
+                   * ``name_list``: list of the names of the blocks, e.g. ["up","down"]. Default to ["0", "1", ...]
+                   * ``make_copies``: If True, build the Green's function from a copy of the blocks (default: False).
 
-            * BlockGf(mesh = mesh, gf_struct = block structure, target_rank = rank of target space, name = '')
+            * BlockGf(mesh = mesh, gf_struct = block structure, target_rank = rank of target space)
 
                    * ``mesh``: The mesh used to construct each block
-                   * ``target_rank``: The rank of the target space of each block (default: 2)
                    * ``gf_struct``: List of pairs [ (str,int), ... ] providing the block name and its linear size
+                   * ``target_rank``: The rank of the target space of each block (default: 2)
 
-            * BlockGf(name_block_generator, make_copies = False, name = '')
+            * BlockGf(name_block_generator, make_copies = False)
 
                    * ``name_block_generator``: a generator of (name, block)
-                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
+                   * ``make_copies``: If True, build the Green's function from a copy of the blocks (default: False).
 
           """
         # first extract the optional name argument
         self.name = kwargs.pop('name','G')
-        self.note = kwargs.pop('note','')
         self._rename_gf = kwargs.pop('rename_gf',True)
 
         # Default arguments
@@ -129,7 +128,6 @@ class BlockGf:
         self.__BlockIndexNumberTable = dict( (i,n) for n,i in enumerate(self.__indices) ) # a dict: index -> number of its order
 
         # Add the name to the G
-        self.note = ''
         if self._rename_gf:
             for i,g in self: g.name = "%s_%s"%(str(self.name),i) if self.name else '%s'%(i,)
         del self._rename_gf
