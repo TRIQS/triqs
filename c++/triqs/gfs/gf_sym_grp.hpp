@@ -22,8 +22,12 @@
 
 namespace triqs {
   namespace gfs {
-
-    // symmetry concept for scalar valued gf: symmetry accepts mesh index and returns new mesh index & operation
+    /**
+     * Symmetry concept for scalar valued gf: ScalarGfSymmetry accepts a mesh index and returns new mesh index & nda::operation
+     * @tparam F Anything callable with mesh_index_t
+     * @tparam G Anything modeling the gf concept
+     * @tparam mesh_index_t Mesh index type for G
+     */
     template <typename F, typename G, typename mesh_index_t = typename G::mesh_t::index_t>
     concept ScalarGfSymmetry = is_gf_v<G> and //
        requires(F f, mesh_index_t const &mesh_index) {
@@ -31,7 +35,13 @@ namespace triqs {
          { f(mesh_index) } -> std::same_as<std::tuple<mesh_index_t, nda::operation>>;
        };
 
-    // symmetry concept for tensor valued gf: symmetry accepts mesh + target index and returns new mesh + target index & operation
+    /**
+     * Symmetry concept for tensor valued gf: TensorGfSymmetry accepts a mesh & target index and returns new mesh index, target index & nda::operation
+     * @tparam F Anything callable with mesh_index_t and target_index_t
+     * @tparam G Anything modeling the gf concept
+     * @tparam mesh_index_t Mesh index type for G
+     * @tparam target_index_t Target index type for G
+     */
     template <typename F, typename G, typename mesh_index_t = typename G::mesh_t::index_t,
               typename target_index_t = std::array<long, static_cast<std::size_t>(G::target_rank)>>
     concept TensorGfSymmetry = is_gf_v<G> and //
@@ -40,7 +50,12 @@ namespace triqs {
          { f(mesh_index, target_index) } -> std::same_as<std::tuple<mesh_index_t, target_index_t, nda::operation>>;
        };
 
-    // init function concept for scalar valued gf: init function accepts mesh index and returns gf value type
+    /**
+     * Init function concept for scalar valued gf: ScalarGfInitFunc accepts a mesh index and returns gf value type
+     * @tparam F Anything callable with mesh_index_t
+     * @tparam G Anything modeling the gf concept
+     * @tparam mesh_index_t Mesh index type for G
+     */
     template <typename F, typename G, typename mesh_index_t = typename G::mesh_t::index_t>
     concept ScalarGfInitFunc = is_gf_v<G> and //
        requires(F f, mesh_index_t const &mesh_index) {
@@ -48,7 +63,13 @@ namespace triqs {
          { f(mesh_index) } -> std::same_as<typename G::scalar_t>;
        };
 
-    // init function concept for tensor valued gf: init function accepts mesh index + target index and returns gf value type
+    /**
+     * Init function concept for tensor valued gf: TensorGfInitFunc accepts a mesh and target index and returns gf value type
+     * @tparam F Anything callable with mesh_index_t and target_index_t
+     * @tparam G Anything modeling the gf concept
+     * @tparam mesh_index_t Mesh index type for G
+     * @tparam target_index_t Target index type for G
+     */
     template <typename F, typename G, typename mesh_index_t = typename G::mesh_t::index_t,
               typename target_index_t = std::array<long, static_cast<std::size_t>(G::target_rank)>>
     concept TensorGfInitFunc = is_gf_v<G> and //
@@ -74,6 +95,11 @@ namespace triqs {
       return std::apply(fetch, tpl);
     }
 
+    /**
+     * The sym_grp class 
+     * @tparam F Anything modeling either ScalarGfSymmetry or TensorGfSymmetry with G
+     * @tparam G Anything modeling the gf concept
+     */
     template <typename F, typename G>
       requires(is_gf_v<G> && (ScalarGfSymmetry<F, G> || TensorGfSymmetry<F, G>))
     class sym_grp {
@@ -188,14 +214,39 @@ namespace triqs {
       };
 
       public:
+      /**
+       * Accessor for symmetry group of the data array
+       * @return Instance of type nda::sym_grp
+       */
       [[nodiscard]] nda::sym_grp<data_sym_func_t, data_t> const &get_data_sym_grp() const { return data_sym_grp; }
+
+      /**
+       * Accessor for number of symmetry classes
+       * @return Number of deduced symmetry classes
+       */
       [[nodiscard]] long num_classes() const { return data_sym_grp.num_classes(); }
 
+      /**
+       * Default constructor for sym_grp class
+       */
       sym_grp() = default;
+
+      /**
+       * Constructor for sym_grp class
+       * @param g A Green's function
+       * @param sym_list List of symmetries modeling one of gf symmetry concepts
+       * @param max_length Maximum recursion depth for out-of-bounds projection. Default is 0.
+       */
       sym_grp(G const &g, std::vector<F> const &sym_list, long const max_length = 0)
          : data_sym_grp{g.data(), to_data_symmetry_list(g, sym_list), max_length} {};
 
-      // initializer method
+      /**
+       * Initializer method: Iterates over all classes and propagates result from evaluation of init function
+       * @tparam H Anything modeling either ScalarGfInitFunc or TensorGfInitFunc with G
+       * @param g A Green's function
+       * @param h The init function to be used
+       * @param parallel Switch to enable OMP parallel evaluation of init_func. Default is false
+      */
       template <typename H>
       void init(G &g, H const &h, bool parallel = false) const
         requires(ScalarGfInitFunc<H, G> || TensorGfInitFunc<H, G>)
@@ -203,7 +254,11 @@ namespace triqs {
         data_sym_grp.init(g.data(), to_data_init_func(g, h), parallel);
       }
 
-      // symmetrization method
+      /**
+       * Symmetrization method: Symmetrizes a gf returning the maximum symmetry violation and its corresponding mesh & target index
+       * @param g A Green's function
+       * @return Maximum symmetry violation and corresponding mesh & target index
+      */
       std::tuple<double, mesh_index_t, target_index_t> symmetrize(G &g) const {
         auto const &[max_diff, max_index] = data_sym_grp.symmetrize(g.data());
         auto const m                      = g.mesh();
