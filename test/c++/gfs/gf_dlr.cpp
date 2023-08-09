@@ -383,9 +383,7 @@ TEST(Gf, DLR_multivar_fit) {
   EXPECT_GF_NEAR(gtau, gtau2);
 
   // BlockGf
-  auto G2 = gtau;
-  auto G_vec = std::vector{gtau, G2};
-  auto Bgtau = block_gf{G_vec};
+  auto Bgtau = block_gf{std::vector{gtau, gtau}};
 
   auto Bgcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(Bgtau, w_max, eps), w_max, eps);
   auto Bgtau2 = make_gf_imtime<0>(make_gf_imtime<1>(Bgcoef, n_tau), n_tau);
