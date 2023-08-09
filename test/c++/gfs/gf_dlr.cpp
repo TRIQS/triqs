@@ -502,9 +502,7 @@ TEST(Gf, DLR_h5) {
   auto gw = make_gf_dlr_imfreq(gc);
 
   // BlockGf test
-  auto G2 = gt;
-  auto G_vec = std::vector{gt, G2};
-  auto Bgtau = block_gf{G_vec};
+  auto Bgtau = block_gf{std::vector{gt, gt}};
   auto Bgcoef = make_gf_dlr(Bgtau);
   auto Bgiwn = make_gf_dlr_imfreq(Bgcoef);
 
