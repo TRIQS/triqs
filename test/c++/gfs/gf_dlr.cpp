@@ -509,9 +509,9 @@ TEST(Gf, DLR_h5) {
   rw_h5(gt, "g_dlr_imtime");
   rw_h5(gc, "g_dlr");
   rw_h5(gw, "g_dlr_imfreq");
-  rw_h5(Bgtau, "g_dlr_imtime");
-  rw_h5(Bgcoef, "g_dlr");
-  rw_h5(Bgiwn, "g_dlr_imfreq");
+  rw_h5(Bgtau, "bg_dlr_imtime");
+  rw_h5(Bgcoef, "bg_dlr");
+  rw_h5(Bgiwn, "bg_dlr_imfreq");
 }
 
 // ----------------------------------------------------------------
