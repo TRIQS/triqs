@@ -354,9 +354,7 @@ TEST(Gf, DLR_imtime_fit) {
   }
 
   // BlockGf test
-  auto G2 = gtau;
-  auto G_vec = std::vector{gtau, G2};
-  auto Bgtau = block_gf{G_vec};
+  auto Bgtau = block_gf{std::vector{gtau, gtau}};
 
   auto Bgcoef = fit_gf_dlr(Bgtau, w_max, eps);
   auto Bgtau2 = make_gf_imtime(Bgcoef, n_tau);
