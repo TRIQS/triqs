@@ -86,7 +86,19 @@ class test_dlr_mesh(unittest.TestCase):
 
         for w in g_w_new.mesh:
             np.testing.assert_almost_equal(g_w[w], g_w_new[w])
-            
+
+        # BlockGf test
+        Bg_w = BlockGf(name_list=['1', '2'], block_list=[g_w, g_w], make_copies=True)
+        Bg_c = make_gf_dlr(Bg_w)
+        Bg_t = make_gf_dlr_imtime(Bg_c)
+        for t in g_t.mesh:
+            ref = -np.exp(-e * t.value) / ( 1 + np.exp(-e * beta) )
+            np.testing.assert_almost_equal(Bg_c['1'](t), ref)
+
+        Bg_w_new = make_gf_dlr_imfreq(Bg_c)
+        for w in g_w_new.mesh:
+            np.testing.assert_almost_equal(Bg_w['1'][w], Bg_w_new['1'][w])
+            np.testing.assert_almost_equal(Bg_w['2'][w], Bg_w_new['2'][w])
     
     def test_dlr_gfs_density(self):
 
@@ -105,8 +117,9 @@ class test_dlr_mesh(unittest.TestCase):
 
         # block gf test
         Bgw = BlockGf(name_list=['1', '2'], block_list=[g_c, g_c], make_copies=True)
+        Bden = Bgw.density()
         for block, gw in Bgw:
-            np.testing.assert_almost_equal(density(gw), ref)
+            np.testing.assert_almost_equal(Bden[block], ref)
 
 
     def test_dlr_gfs_imfreq_interp(self):
@@ -142,7 +155,6 @@ class test_dlr_mesh(unittest.TestCase):
         for tau in np.linspace(0, beta, num=10):
             ref = np.sum(g.data * -np.exp(-rf * tau/beta) / ( 1 + np.exp(-rf) ))
             np.testing.assert_almost_equal(g(tau), ref)
-
             for block, gdlr in Bgdlr:
                 np.testing.assert_almost_equal(gdlr(tau), ref)
 
