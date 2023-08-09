@@ -222,10 +222,7 @@ module.add_class(m)
 ########################
 
 m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
-        doc =  """Mesh of DLR imaginary times
-
-        Mesh-points are evenly distributed in the interval [0,beta]
-        including points at both edges.
+        doc =  """Mesh of DLR coefficients
 
         Parameters
         ----------
@@ -233,8 +230,10 @@ m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
             Inverse temperature
         statistic : str
             Statistic, 'Fermion' or 'Boson'
-        n_tau : int
-            Number of mesh-points
+        w_max : float
+            DLR energy cutoff
+        eps : float
+            DLR epsilon accuracy
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
 m.add_property(name = "beta",
