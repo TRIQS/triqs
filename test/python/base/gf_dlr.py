@@ -143,8 +143,8 @@ class test_dlr_mesh(unittest.TestCase):
             ref = np.sum(g.data * -np.exp(-rf * tau/beta) / ( 1 + np.exp(-rf) ))
             np.testing.assert_almost_equal(g(tau), ref)
 
-            for block, gf in Bgdlr:
-                np.testing.assert_almost_equal(Bgdlr[block](tau), ref)
+            for block, gdlr in Bgdlr:
+                np.testing.assert_almost_equal(gdlr(tau), ref)
 
 
     def test_dlr_gfs_imtime_fit(self):
