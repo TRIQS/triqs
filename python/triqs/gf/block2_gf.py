@@ -44,12 +44,10 @@ class Block2Gf:
             * callable object taking two block names and returning a Green's function block object.
 
         * ``make_copies``: if True, it makes a copy of the blocks and build the Green's function from these copies.
-        * ``note``: optional note describing this Green's Function object
 
         """
         # first extract the optional name argument
         self.name = kwargs.pop('name','')
-        self.note = kwargs.pop('note','')
 
         rename_gf = kwargs.pop('rename_gf',True)
         make_copies = kwargs.get('make_copies', False)
@@ -190,16 +188,14 @@ class Block2Gf:
         d = {"%s_%s"%bn : g for bn, g in self}
         d['block_names1'] = list(self.__indices1)
         d['block_names2'] = list(self.__indices2)
-        d['note'] = self.note
         return d
 
     @classmethod
     def __factory_from_dict__(cls, name, d):
         block_names1, block_names2 = tuple(d.pop('block_names1')), tuple(d.pop('block_names2'))
-        note = d.pop('note','')
         expected_keys = ["%s_%s" % bn for bn in product(block_names1, block_names2)]
         assert sorted(expected_keys) == sorted(d.keys()), "Reload mismatch: the indices and the group names do not corresponds"
-        res = cls(block_names1, block_names2, lambda bn1, bn2: d["%s_%s"%(bn1,bn2)], make_copies=False, name=name, note=note)
+        res = cls(block_names1, block_names2, lambda bn1, bn2: d["%s_%s"%(bn1,bn2)], make_copies=False, name=name)
         return res
 
     #--------------  Pretty print -------------------------
@@ -208,7 +204,6 @@ class Block2Gf:
         s =  "Green's Function %s composed of %d 2-index blocks: \n"%(self.name,self.n_blocks)
         for i,g in self:
             s += " %s \n"%repr(g)
-        if self.note: s += "NB: %s\n"%self.note
         return s
 
     def __str__ (self):
