@@ -115,9 +115,8 @@ class test_dlr_mesh(unittest.TestCase):
 
         # block gf test
         Bgw = BlockGf(name_list=['1', '2'], block_list=[g_c, g_c], make_copies=True)
-        Bden = Bgw.density()
-        for block, gw in Bgw:
-            np.testing.assert_almost_equal(Bden[block], ref)
+        for block, den in Bgw.density().items():
+            np.testing.assert_almost_equal(den, ref)
 
 
     def test_dlr_gfs_imfreq_interp(self):
