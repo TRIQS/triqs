@@ -207,7 +207,7 @@ namespace triqs::mesh {
 
     // -------------------- HDF5 -------------------
 
-    [[nodiscard]] static std::string hdf5_format() { return "MeshDLRImTime"; }
+    [[nodiscard]] static std::string hdf5_format() { return "MeshDLR"; }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr const &m) {

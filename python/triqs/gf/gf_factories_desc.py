@@ -126,21 +126,23 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
 
 # ---------------------- DLR mesh conversions --------------------
 for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+    for gf_type in ["gf", "block_gf", "block2_gf"]:
+        gf_view_type = gf_type +  '_const_view'
 
-    # dlr_imtime <-> dlr
-    m.add_function(f"gf<dlr, {Target}> make_gf_dlr(gf_const_view<dlr_imtime, {Target}> g_tau)")
-    m.add_function(f"gf<dlr_imtime, {Target}> make_gf_dlr_imtime(gf_const_view<dlr, {Target}> g_dlr)")
+        # dlr_imtime <-> dlr
+        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imtime, {Target}> g_tau)")
+        m.add_function(f"{gf_type}<dlr_imtime, {Target}> make_gf_dlr_imtime({gf_view_type}<dlr, {Target}> g_dlr)")
 
-    # dlr_imfreq <-> dlr
-    m.add_function(f"gf<dlr, {Target}> make_gf_dlr(gf_const_view<dlr_imfreq, {Target}> g_iw)")
-    m.add_function(f"gf<dlr_imfreq, {Target}> make_gf_dlr_imfreq(gf_const_view<dlr, {Target}> g_dlr)")
+        # dlr_imfreq <-> dlr
+        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imfreq, {Target}> g_iw)")
+        m.add_function(f"{gf_type}<dlr_imfreq, {Target}> make_gf_dlr_imfreq({gf_view_type}<dlr, {Target}> g_dlr)")
 
-    # imtime <-> dlr
-    m.add_function(f"gf<dlr, {Target}> fit_gf_dlr(gf_const_view<imtime, {Target}> g_tau, double w_max, double eps)")
-    m.add_function(f"gf<imtime, {Target}> make_gf_imtime(gf_const_view<dlr, {Target}> g_dlr, long n_tau)")
+        # imtime <-> dlr
+        m.add_function(f"{gf_type}<dlr, {Target}> fit_gf_dlr({gf_view_type}<imtime, {Target}> g_tau, double w_max, double eps)")
+        m.add_function(f"{gf_type}<imtime, {Target}> make_gf_imtime({gf_view_type}<dlr, {Target}> g_dlr, long n_tau)")
 
-    # imfreq <- dlr
-    m.add_function(f"gf<imfreq, {Target}> make_gf_imfreq(gf_const_view<dlr, {Target}> g_dlr, long n_iw)")
+        # imfreq <- dlr
+        m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr, {Target}> g_dlr, long n_iw)")
 
 
 ########################
