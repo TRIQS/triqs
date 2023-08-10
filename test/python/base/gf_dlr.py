@@ -147,7 +147,7 @@ class test_dlr_mesh(unittest.TestCase):
         g.data[:] = np.random.randn(len(m))
 
         # block gf test
-        Bgdlr = BlockGf(name_list=['1', '2'], block_list=[g, g], make_copies=True)
+        Bgdlr = BlockGf(block_list=[g, g], make_copies=True)
 
         for tau in np.linspace(0, beta, num=10):
             ref = np.sum(g.data * -np.exp(-rf * tau/beta) / ( 1 + np.exp(-rf) ))
