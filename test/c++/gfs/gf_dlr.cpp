@@ -378,23 +378,22 @@ TEST(Gf, DLR_multivar_fit) {
   auto gtau    = gf{it_mesh * it_mesh};
   gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
 
-  auto gcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau, w_max, eps), w_max, eps);
-  auto gtau2 = make_gf_imtime<0>(make_gf_imtime<1>(gcoef, n_tau), n_tau);
+  auto gcoef = fit_gf_dlr<0, 1>(gtau, w_max, eps);
+  auto gtau2 = make_gf_imtime<0, 1>(gcoef, n_tau);
   EXPECT_GF_NEAR(gtau, gtau2);
 
   // BlockGf
   auto Bgtau = block_gf{std::vector{gtau, gtau}};
 
-  auto Bgcoef = fit_gf_dlr<0>(fit_gf_dlr<1>(Bgtau, w_max, eps), w_max, eps);
-  auto Bgtau2 = make_gf_imtime<0>(make_gf_imtime<1>(Bgcoef, n_tau), n_tau);
+  auto Bgcoef = fit_gf_dlr<0, 1>(Bgtau, w_max, eps);
+  auto Bgtau2 = make_gf_imtime<0, 1>(Bgcoef, n_tau);
   EXPECT_BLOCK_GF_NEAR(Bgtau, Bgtau2);
-
 
   for (double sigma : {0.1, 0.01, 0.001, 0.0001, 0.00001}) {
     auto gtau_noise = gtau;
     gtau_noise.data() += sigma * (nda::rand(n_tau, n_tau) - 0.5);
-    auto gcoef_noise = fit_gf_dlr<0>(fit_gf_dlr<1>(gtau_noise, w_max, eps), w_max, eps);
-    auto gtau3       = make_gf_imtime<0>(make_gf_imtime<1>(gcoef_noise, n_tau), n_tau);
+    auto gcoef_noise = fit_gf_dlr<0, 1>(gtau_noise, w_max, eps);
+    auto gtau3       = make_gf_imtime<0, 1>(gcoef_noise, n_tau);
     EXPECT_GF_NEAR(gtau, gtau3, 30 * sigma);
   }
 }
@@ -502,9 +501,9 @@ TEST(Gf, DLR_h5) {
   auto gw = make_gf_dlr_imfreq(gc);
 
   // BlockGf test
-  auto Bgtau = block_gf{std::vector{gt, gt}};
+  auto Bgtau  = block_gf{std::vector{gt, gt}};
   auto Bgcoef = make_gf_dlr(Bgtau);
-  auto Bgiwn = make_gf_dlr_imfreq(Bgcoef);
+  auto Bgiwn  = make_gf_dlr_imfreq(Bgcoef);
 
   rw_h5(gt, "g_dlr_imtime");
   rw_h5(gc, "g_dlr");
@@ -551,8 +550,8 @@ TEST(Gf, DLR_multivar) {
   auto gtau        = gf{dlr_it_mesh * dlr_it_mesh};
   gtau[tau_, taup_] << onefermion(tau_, e1, beta) * onefermion(taup_, e2, beta);
 
-  auto gdlr = make_gf_dlr<0>(make_gf_dlr<1>(gtau));
-  auto giw  = make_gf_dlr_imfreq<0>(make_gf_dlr_imfreq<1>(gdlr));
+  auto gdlr = make_gf_dlr<0, 1>(gtau);
+  auto giw  = make_gf_dlr_imfreq<0, 1>(gdlr);
 
   auto G2_iw = giw;
   G2_iw[iw_, iwp_] << 1.0 / (iw_ - e1) / (iwp_ - e2);
