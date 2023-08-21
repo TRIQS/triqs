@@ -1,6 +1,10 @@
 find_package(Test)
 enable_testing()
 
+# Copy h5 files to binary dir
+FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 option(TESTS_C_WITH_VALGRIND "Run all the tests also through valgrind" OFF)
 
 macro(all_tests)
