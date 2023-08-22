@@ -150,7 +150,7 @@ namespace triqs::gfs {
     }
   }
 
-  /// Transform a DLR coefficient Green's  to a Matsubara frequency Green's function
+  /// Transform a DLR coefficient Green's function to a Matsubara frequency Green's function
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_imfreq(G const &g, long n_iw) {

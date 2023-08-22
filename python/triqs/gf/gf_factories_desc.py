@@ -130,19 +130,19 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
         gf_view_type = gf_type +  '_const_view'
 
         # dlr_imtime <-> dlr
-        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imtime, {Target}> g_tau)")
-        m.add_function(f"{gf_type}<dlr_imtime, {Target}> make_gf_dlr_imtime({gf_view_type}<dlr, {Target}> g_dlr)")
+        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imtime, {Target}> g_tau)", doc="""Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation""")
+        m.add_function(f"{gf_type}<dlr_imtime, {Target}> make_gf_dlr_imtime({gf_view_type}<dlr, {Target}> g_dlr)", doc="""Transform a DLR coefficient Green's function to it's DLR imaginary time representation""")
 
         # dlr_imfreq <-> dlr
-        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imfreq, {Target}> g_iw)")
-        m.add_function(f"{gf_type}<dlr_imfreq, {Target}> make_gf_dlr_imfreq({gf_view_type}<dlr, {Target}> g_dlr)")
+        m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imfreq, {Target}> g_iw)", doc="""Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation""")
+        m.add_function(f"{gf_type}<dlr_imfreq, {Target}> make_gf_dlr_imfreq({gf_view_type}<dlr, {Target}> g_dlr)", doc="""Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation""")
 
         # imtime <-> dlr
-        m.add_function(f"{gf_type}<dlr, {Target}> fit_gf_dlr({gf_view_type}<imtime, {Target}> g_tau, double w_max, double eps)")
-        m.add_function(f"{gf_type}<imtime, {Target}> make_gf_imtime({gf_view_type}<dlr, {Target}> g_dlr, long n_tau)")
+        m.add_function(f"{gf_type}<dlr, {Target}> fit_gf_dlr({gf_view_type}<imtime, {Target}> g_tau, double w_max, double eps)", doc="""Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation""")
+        m.add_function(f"{gf_type}<imtime, {Target}> make_gf_imtime({gf_view_type}<dlr, {Target}> g_dlr, long n_tau)", doc="""Transform a DLR coefficient Green's function to a imaginary time Green's function""")
 
         # imfreq <- dlr
-        m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr, {Target}> g_dlr, long n_iw)")
+        m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr, {Target}> g_dlr, long n_iw)", doc="""Transform a DLR coefficient Green's function to a Matsubara frequency Green's function""")
 
 
 ########################
