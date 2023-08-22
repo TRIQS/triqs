@@ -15,7 +15,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Nils Wentzell
+# Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
 
 from h5.formats import register_class
