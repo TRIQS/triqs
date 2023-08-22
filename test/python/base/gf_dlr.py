@@ -76,11 +76,9 @@ class test_dlr_mesh(unittest.TestCase):
 
         for t in g_t.mesh:
             ref = -np.exp(-e * t.value) / ( 1 + np.exp(-e * beta) )
-            #print(ref, g_t[t].real)
-            #print(ref, t, g_c[t].real) # FIXME : SHOULD NOT WORK
-            #print(ref, t.value,  g_c(t.value))
-            #np.testing.assert_almost_equal(g_t[t], ref)
+            np.testing.assert_almost_equal(g_t[t], ref)
             np.testing.assert_almost_equal(g_c(t), ref)
+            np.testing.assert_almost_equal(g_c(t.value), ref)
 
         g_w_new = make_gf_dlr_imfreq(g_c)
 
@@ -174,6 +172,9 @@ class test_dlr_mesh(unittest.TestCase):
             gt2[tau] = onefermion(tau, omega, eps)
 
         assert_gfs_are_close(gt, gt2)
+
+    def test_dlr_bug_segfault(self):
+        dlr_iw_mesh = MeshDLRImFreq(beta=5.0, statistic='Fermion', w_max=1.0, eps=1e-15)
 
 if __name__ == '__main__':
     unittest.main()        
