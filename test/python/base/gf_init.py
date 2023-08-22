@@ -29,18 +29,39 @@ class test_gf_init(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_gf_init_lshift(self):
-
-        h=HDFArchive('gf_init.ref.h5','r')
+    def test_gf_init_semicircular(self):
 
         g = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
         g[0,0] << SemiCircular(half_bandwidth = 1)
         g[1,1] << SemiCircular(half_bandwidth = 2)
 
+        h=HDFArchive('gf_init.ref.h5','r')
         assert_gfs_are_close(g, h['g1'])
 
+        dlr_mesh = MeshDLRImFreq(beta = 50, statistic = 'Fermion', w_max = 10.0, eps = 1e-8)
+        gdlr = Gf(mesh = dlr_mesh, target_shape = (2,2))
+        gdlr[0,0] << SemiCircular(half_bandwidth = 1)
+        gdlr[1,1] << SemiCircular(half_bandwidth = 2)
+        assert_gfs_are_close(g, make_gf_imfreq(make_gf_dlr(gdlr), n_iw = 100))
+
+    def test_gf_init_flat(self):
+
+        g = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
+        g[0,0] << Flat(half_bandwidth = 1)
+        g[1,1] << Flat(half_bandwidth = 2)
+
+        dlr_mesh = MeshDLRImFreq(beta = 50, statistic = 'Fermion', w_max = 10.0, eps = 1e-8)
+        gdlr = Gf(mesh = dlr_mesh, target_shape = (2,2))
+        gdlr[0,0] << Flat(half_bandwidth = 1)
+        gdlr[1,1] << Flat(half_bandwidth = 2)
+        assert_gfs_are_close(g, make_gf_imfreq(make_gf_dlr(gdlr), n_iw = 100))
+
+    def test_gf_init_lshift(self):
+
+        g = GfImFreq(beta = 50, n_points = 100, target_shape = (2,2), name = "egBlock")
         g << numpy.array([[1,2],[2,3]])
 
+        h=HDFArchive('gf_init.ref.h5','r')
         assert_gfs_are_close(g, h['g2'])
 
         some_mesh = numpy.arange(-5,5,0.1)
@@ -50,7 +71,6 @@ class test_gf_init(unittest.TestCase):
         g[1,1] << iOmega_n + 1.0
 
         assert_gfs_are_close(g, h['g3'])
-
 
     def test_gf_init_fromgf(self):
 

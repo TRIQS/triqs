@@ -24,6 +24,7 @@ r""" """
 import numpy
 from math import *
 from .lazy_expressions import LazyExprTerminal, LazyExpr, transform
+from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq
 
 class LazyCTX:
     def __init__ (self, G): 
@@ -111,7 +112,7 @@ class Const(Base):
          
     def __call__(self,G):
         C = self.C
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq', 'MeshDLRImFreq']:
+        if type(G.mesh) not in [MeshImFreq, MeshDLRImFreq, MeshReFreq]:
             raise TypeError("This initializer is only correct in frequency")
 
         if not isinstance(C,numpy.ndarray) and G.target_rank > 0: 
@@ -128,7 +129,7 @@ class Omega_(Base):
     r"""The function:math:`\omega \rightarrow \omega` """
     def __str__(self): return "Omega" 
     def __call__(self,G):
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq', 'MeshDLRImFreq']:
+        if type(G.mesh) not in [MeshImFreq, MeshDLRImFreq, MeshReFreq]:
             raise TypeError("This initializer is only correct in frequency")
 
         Id = 1. if G.target_rank == 0 else numpy.identity(G.target_shape[0])

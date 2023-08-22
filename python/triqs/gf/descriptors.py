@@ -22,7 +22,7 @@
 r""" """
 
 from .descriptor_base import *
-from .meshes import MeshImFreq, MeshReFreq
+from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq
 import warnings
                 
 #######################################
@@ -88,7 +88,7 @@ semicircle
         mu = self.chem_potential
         Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex_)
         from cmath import sqrt
-        if type(G.mesh) == MeshImFreq:
+        if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
             def f(om_):
                 om = om_ + mu
                 return (om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2))/D/D*2*Id
@@ -130,7 +130,7 @@ class Flat (Base):
         D = self.half_bandwidth
         Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0], numpy.complex_)
 
-        if type(G.mesh) == MeshImFreq:
+        if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
             f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
         elif type(G.mesh) == MeshReFreq:
             def f(om):

@@ -150,7 +150,7 @@ class test_tail_issues(unittest.TestCase):
             self.noisy_gf(noise)
 
     def noisy_gf(self, noise):
-        # Init Gf using Flat Descriptor
+        # Init Gf
         g = GfImFreq(indices = [0,1], beta = 1., n_points = 1000)
         H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
         g << inverse(iOmega_n - H)
