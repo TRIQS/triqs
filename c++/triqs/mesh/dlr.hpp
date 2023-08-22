@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Simons Foundation
-// Copyright (c) 2023 Hugo Strand
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Alexander Hampel, Olivier Parcollet, Nils Wentzell
+// Authors: Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
 #pragma once
 #include "utils.hpp"
