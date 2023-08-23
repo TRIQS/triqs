@@ -49,7 +49,7 @@ def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_tick
         the distance travelled along the path. Useful for plotting.
         If bz is provided, calculate the distance in absolute units.
         The distances for the relevant k-points in paths can be obtained with dist[num::num].
-    ticks : numpy.ndarray [shape=(len(paths)-1)], optional
+    ticks : numpy.ndarray [shape=(len(paths)+1)], optional
         Array with tick points, i.e. distances at the interfaces of path segments.
         Only returned if `return_ticks` is `True`.
     """
@@ -74,7 +74,7 @@ def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_tick
 
     if not relative_coordinates: kvecs = kvecs_abs
     if return_ticks:
-        return np.vstack(kvecs), dist, dist[num::num]
+        return np.vstack(kvecs), dist, np.concatenate(([dist[0]], dist[num::num], [dist[-1]]))
     else:
         return np.vstack(kvecs), dist
 
