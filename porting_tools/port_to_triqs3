@@ -93,8 +93,6 @@ repl_dict = {
         "x_max\(\)": "t_max()",
         "omega_min\(\)": "w_min()",
         "omega_max\(\)": "w_max()",
-        "omega_min": "w_min",
-        "omega_max": "w_max",
         "domain\(\).beta": "beta()",
         "domain\(\).statistic": "statistic()",
         "domain.beta": "beta()",
