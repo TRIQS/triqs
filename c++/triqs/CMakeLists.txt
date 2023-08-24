@@ -24,11 +24,8 @@ target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_IN
 # C++ Standard
 target_compile_features(triqs PUBLIC cxx_std_23)
 
-# Disable certain warnings
-target_compile_options(triqs PUBLIC
-  $<$<CXX_COMPILER_ID:Clang>:-Wno-c++20-compat>
-  $<$<CXX_COMPILER_ID:AppleClang>:-Wno-c++20-compat>
-)
+# Link to the Interface target for compiler warnings
+target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:triqs_warnings>)
 
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)

@@ -62,7 +62,7 @@ foreach(example ${ExampleList})
   set(bin doc_${pd}_${f})
   add_executable(${bin} EXCLUDE_FROM_ALL ${example})
   set_property(TARGET ${bin} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
-  target_link_libraries(${bin} triqs)
+  target_link_libraries(${bin} triqs triqs_warnings)
   add_custom_command(TARGET ${bin}
    COMMAND ${bin} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output
    WORKING_DIRECTORY ${d}

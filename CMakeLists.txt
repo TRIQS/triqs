@@ -173,6 +173,24 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   endforeach()
 endif()
 
+# -------------------------------------------------------
+# Create an Interface target for compiler warnings
+# -------------------------------------------------------
+add_library(triqs_warnings INTERFACE)
+target_compile_options(triqs_warnings
+  INTERFACE
+    -Wno-sign-compare
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-attributes>
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-deprecated-comma-subscript>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-unknown-warning-option>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-gcc-compat>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c++20-extensions>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c++20-compat>
+    $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>
+)
+
 #---------------------------------------------------------------------
 # External Dependencies (nda, h5, itertools, gtest, ...)
 #---------------------------------------------------------------------

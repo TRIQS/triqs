@@ -26,7 +26,7 @@ If("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- add_compile_options(-Wno-literal-suffix) 
+ add_compile_options(-Wno-literal-suffix -Wno-attributes -Wno-deprecated-declarations) 
 endif()
 
 # ---------------------------------------------
