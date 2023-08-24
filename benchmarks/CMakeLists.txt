@@ -5,7 +5,7 @@ foreach(bench ${all_benchs})
   get_filename_component(bench_name ${bench} NAME_WE)
   get_filename_component(bench_dir ${bench} DIRECTORY)
   add_executable(${bench_name} ${bench})
-  target_link_libraries(${bench_name} triqs benchmark_main)
+  target_link_libraries(${bench_name} triqs triqs_warnings benchmark_main)
   set_property(TARGET ${bench_name} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${bench_dir})
   #add_bench(NAME ${bench_name} COMMAND ${bench_name} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${bench_dir})
   # Run clang-tidy if found
