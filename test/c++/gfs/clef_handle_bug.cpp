@@ -41,7 +41,7 @@ int main() {
   // This lead to Heap use after free (ASAN)
 
   std::get<0>(iw_inu_mesh);
-  std::begin(iw_inu_mesh);
+  std::ignore = std::begin(iw_inu_mesh);
   std::get<0>(*std::begin(iw_inu_mesh));
   for (auto mp : iw_inu_mesh) {
     std::get<0>(mp);
