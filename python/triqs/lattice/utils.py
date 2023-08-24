@@ -24,12 +24,12 @@ import warnings
 __all__ = ['k_space_path', 'TB_from_wannier90']
 
 
-def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_ticks=False):
+def k_space_path(segments, num=101, bz=None, relative_coordinates=True):
     """ Generate an array of k-vectors along a path defined by a list of pairs of k-vectors
 
     Parameters
     ----------
-    paths : list of pairs of three-vectors of floats
+    segments : list of pairs of three-vectors of floats
        List of pairs of k-vectors in reciprocal units to create a path in-between.
     num : int, default=100
        Number of k-vectors along each segment of the overall path
@@ -42,16 +42,15 @@ def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_tick
 
     Returns
     -------
-    kvecs: numpy.ndarray [shape=(len(paths)*num,3)]
+    kvecs: numpy.ndarray [shape=(len(segments)*num,3)]
         Two-dimensional numpy array containing the path vectors (in reciprocal units) as rows
     dist: numpy.ndarray  [shape=(kvecs.shape[0])]
         One-dimensional numpy array containing, for each element in kvecs,
         the distance travelled along the path. Useful for plotting.
         If bz is provided, calculate the distance in absolute units.
-        The distances for the relevant k-points in paths can be obtained with dist[num::num].
-    ticks : numpy.ndarray [shape=(len(paths)+1)], optional
-        Array with tick points, i.e. distances at the interfaces of path segments.
-        Only returned if `return_ticks` is `True`.
+    ticks : numpy.ndarray [shape=(len(segments)+1)]
+        Array with tick points, i.e. distances at the interfaces between segment.
+        Includes the initial and final distance.
     """
 
     if bz is None:
@@ -60,8 +59,8 @@ def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_tick
         cell = bz.units
 
     x = np.linspace(0., 1., num=num)
-    paths = [(np.asarray(ki), np.asarray(kf)) for ki, kf in paths]
-    kvecs = [ki[None, :] + x[:, None] * (kf - ki)[None, :] for ki, kf in paths]
+    segments = [(np.asarray(ki), np.asarray(kf)) for ki, kf in segments]
+    kvecs    = [ki[None, :] + x[:, None] * (kf - ki)[None, :] for ki, kf in segments]
 
     cur_dist = 0.0
     dist = np.array([], dtype=float)
@@ -73,10 +72,7 @@ def k_space_path(paths, num=101, bz=None, relative_coordinates=True, return_tick
         cur_dist = dist[-1]
 
     if not relative_coordinates: kvecs = kvecs_abs
-    if return_ticks:
-        return np.vstack(kvecs), dist, np.concatenate(([dist[0]], dist[num::num], [dist[-1]]))
-    else:
-        return np.vstack(kvecs), dist
+    return np.vstack(kvecs), dist, np.concatenate(([0], dist[num-1::num]))
 
 
 # ----------------------------------------------------------------------

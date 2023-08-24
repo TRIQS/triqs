@@ -41,9 +41,9 @@ class test_utils(unittest.TestCase):
 
         num = 101
         paths = [(Gamma, M), (M, R), (X, Z)]
-        kvecs, dist = k_space_path(paths, num=num, bz=bz)
+        kvecs, dist, ticks = k_space_path(paths, num=num, bz=bz)
 
-        dist_cmp_exact = [0.]
+        ticks_exact = [0.]
         for n, (ki, kf) in enumerate(paths):
             dk = kf - ki
 
@@ -52,10 +52,9 @@ class test_utils(unittest.TestCase):
             self.assertTrue(np.array_equal(kvec, kvec_exact))
 
             dd = np.linalg.norm(np.dot(dk, bz.units))
-            dist_cmp_exact.append(dd + dist_cmp_exact[-1])
+            ticks_exact.append(dd + ticks_exact[-1])
 
-        dist_cmp = np.concatenate((dist[0:1], dist[num-1::num]))
-        self.assertTrue(np.array_equal(dist_cmp, dist_cmp_exact))
+        self.assertTrue(np.array_equal(ticks, ticks_exact))
 
     def test_TB_from_w90(self):
 
@@ -80,7 +79,7 @@ class test_utils(unittest.TestCase):
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
-        kvecs, dist = k_space_path(paths, num=101, bz=tbl_w90.bz)
+        kvecs, dist, ticks = k_space_path(paths, num=101, bz=tbl_w90.bz)
         epsilon_k = tbl_w90.dispersion(kvecs)
         self.assertTrue(epsilon_k.shape == (101, 3))
 
@@ -136,7 +135,7 @@ class test_utils(unittest.TestCase):
         Gamma = np.array([0.0, 0.0, 0.0])
         M = np.array([0.5, 0.5, 0.0])
         paths = [(Gamma, M)]
-        kvecs, dist = k_space_path(paths, num=101, bz=tbl_ptb.bz)
+        kvecs, dist, ticks = k_space_path(paths, num=101, bz=tbl_ptb.bz)
         epsilon_k = tbl_ptb.dispersion(kvecs)
         self.assertTrue(epsilon_k.shape == (101, 3))
 
