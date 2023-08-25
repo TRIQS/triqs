@@ -165,6 +165,18 @@ tb.add_method(name = "fourier",
               signature = "gf<mesh::brzone, matrix_valued> (mesh::brzone k_mesh)",
               doc = """Evaluate the fourier transform on the k_mesh and return the associated Green-function object""")
 
+tb.add_method(name = "fourier_dk",
+              signature = "matrix<dcomplex> fourier_dk(k_cvt K, size_t cartesian_index)",
+              doc = """Evaluate the fourier transform for a momentum vector k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "fourier_dk",
+              signature = "nda::array<dcomplex, 3> fourier_dk(nda::array_const_view<double, 2> K, size_t cartesian_index)",
+              doc = """Evaluate the fourier transform for an array of momentum vectors k in units of the reciprocal lattice vectors""")
+
+tb.add_method(name = "fourier_dk",
+              signature = "gf<mesh::brzone, matrix_valued> fourier_dk(mesh::brzone k_mesh, size_t cartesian_index)",
+              doc = """Evaluate the fourier transform on the k_mesh and return the associated Green-function object""")
+
 tb.add_method(name = "dispersion",
               signature = "nda::array<double, 1> (k_cvt K)",
               doc = """Evaluate the dispersion relation for a momentum vector k in units of the reciprocal lattice vectors""")

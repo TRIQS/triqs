@@ -1,4 +1,5 @@
 # Copyright (c) 2021-2022 Simons Foundation
+# Copyright (c) 2023 Hugo U. R. Strand
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,7 +14,7 @@
 # You may obtain a copy of the License at
 #     https:#www.gnu.org/licenses/gpl-3.0.txt
 #
-# Authors: Alexander Hampel, Nils Wentzell
+# Authors: Alexander Hampel, Hugo U. R. Strand, Nils Wentzell
 
 import unittest
 from triqs.gf import GfImFreq, MeshImFreq, BlockGf
@@ -165,6 +166,103 @@ class test_utils(unittest.TestCase):
         # check if density is close to 1, not to strict since nkpts is relatively small
         assert abs(Gloc.total_density().real - 1.0) < 1e-2
 
+    def test_tb_lattice_1d_v_k(self, verbose=False):
+
+        from triqs.lattice.tight_binding import TBLattice
+
+        t = 1.0 # nearest-neigbhour hopping amplitude
+
+        H_r = TBLattice( 
+            units=[
+                (1,0,0), # basis vector in the x-direction 
+            ],
+            hoppings={
+                (+1,) : [[-t]], # hopping in the +x direction
+                (-1,) : [[-t]], # hopping in the -x direction
+            })
+
+        def e_k_analytic(k, dim=1):
+            return -2 * t * np.sum(np.cos(k[0:dim] * 2*np.pi))
+
+        def v_k_analytic(k, idx, dim=1):
+            return -2 * t * np.sum(np.cos(k[0:dim] * 2*np.pi)) * 2*np.pi * -np.tan(k[idx] * 2*np.pi)
+
+        dim = 1
+
+        ks = np.zeros((10, 3))
+        ks[:,0] = np.linspace(0, 1, num=ks.shape[0])
+
+        e_k = np.array([ np.squeeze(H_r.fourier(k)) for k in ks ])
+        e_k_ref = np.array([ e_k_analytic(k, dim=dim) for k in ks ])
+        
+        idx = 0
+        v_k = np.array([ np.squeeze(H_r.tb.fourier_dk(k, idx)) for k in ks ])
+        v_k_ref = np.array([ v_k_analytic(k, idx, dim=dim) for k in ks ])
+
+        if verbose:
+            import matplotlib.pyplot as plt
+            plt.plot(ks[:, 0], e_k, label='e_k')
+            plt.plot(ks[:, 0], e_k_ref, '.', label='e_k_ref')
+            plt.plot(ks[:, 0], v_k, '--', label='v_k')
+            plt.plot(ks[:, 0], v_k_ref, 'x', label='v_k_ref')
+            plt.legend()
+            plt.show()
+
+        np.testing.assert_almost_equal(e_k, e_k_ref)
+        np.testing.assert_almost_equal(v_k, v_k_ref)
+
+    def test_tb_lattice_2d_v_k(self, verbose=False):
+
+        from triqs.lattice.tight_binding import TBLattice
+
+        t = 1.0 # nearest-neigbhour hopping amplitude
+
+        H_r = TBLattice( 
+            units=[
+                (1,0,0), # basis vector in the x-direction 
+                (0,1,0), # basis vector in the y-direction
+            ],
+            hoppings={
+                (+1,0) : [[-t]], # hopping in the +x direction
+                (-1,0) : [[-t]], # hopping in the -x direction
+                (0,+1) : [[-t]], # hopping in the +y direction
+                (0,-1) : [[-t]], # hopping in the -y direction
+            })
+
+        def e_k_analytic(k, dim=1):
+            return -2 * t * np.sum(np.cos(k[0:dim] * 2*np.pi))
+
+        def v_k_analytic(k, idx, dim=1):
+            return -2 * t * 2*np.pi * -np.sin(k[idx] * 2*np.pi)
+
+        dim = 2
+
+        n_k = 10
+        ks = np.zeros((n_k**2, 3))
+        k = np.linspace(0, 1, num=n_k)
+        kx, ky = np.meshgrid(k, k)
+        ks[:,0] = kx.flatten()
+        ks[:,1] = ky.flatten()
+
+        e_k = np.array([ np.squeeze(H_r.fourier(k)) for k in ks ])
+        e_k_ref = np.array([ e_k_analytic(k, dim=dim) for k in ks ])
+        
+        idx = 0
+        v_k = np.array([ np.squeeze(H_r.tb.fourier_dk(k, idx)) for k in ks ])
+        v_k_ref = np.array([ v_k_analytic(k, idx, dim=dim) for k in ks ])
+
+        if verbose:
+            import matplotlib.pyplot as plt
+            plt.plot(ks[:, 0], e_k, label='e_k')
+            plt.plot(ks[:, 0], e_k_ref, '.', label='e_k_ref')
+            plt.plot(ks[:, 0], v_k, '--', label='v_k')
+            plt.plot(ks[:, 0], v_k_ref, 'x', label='v_k_ref')
+            plt.legend()
+            plt.show()
+
+        np.testing.assert_almost_equal(e_k, e_k_ref)
+        np.testing.assert_almost_equal(v_k, v_k_ref)
+        
 
 if __name__ == '__main__':
     unittest.main()

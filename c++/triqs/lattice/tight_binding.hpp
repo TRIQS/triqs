@@ -2,6 +2,7 @@
 // Copyright (c) 2013-2018 Centre national de la recherche scientifique (CNRS)
 // Copyright (c) 2016 Igor Krivenko
 // Copyright (c) 2018-2023 Simons Foundation
+// Copyright (c) 2023 Hugo U. R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +17,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell, Thomas Ayral
+// Authors: Michel Ferrero, Igor Krivenko, Hugo U. R. Strand, Olivier Parcollet, Nils Wentzell, Thomas Ayral
 
 #pragma once
 #include "brillouin_zone.hpp"
@@ -133,6 +134,70 @@ namespace triqs {
       inline auto fourier(int n_l) const {
         auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
         return fourier(k_mesh);
+      }
+
+      /**
+       * Calculate the derivative of the fourier transform for a given momentum vector k (or array of vectors)
+       *
+       *   $$ dh_k /d k_l = \sum_j (2\pi i [\mathbf{r}_j]_l) * m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
+       *
+       * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
+       * k needs to be represented in units of the reciprocal lattice vectors
+       *
+       * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
+       * @param cartesian_index The cartesian direction of the derivative [0, 1, 2] corresponding to [x, y, z]
+       * @return The value for $dh_k / k_l$ as a complex matrix
+       */
+      template <typename K>
+        requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
+      auto fourier_dk(K const &k, size_t cartesian_index) const {
+        // Make sure to account for ndim in lattice
+        auto k_ndim = make_regular(k(nda::ellipsis(), range(lattice().ndim())));
+
+        auto vals = [&](int j) {
+          if constexpr (nda::ArrayOfRank<K, 1>) {
+	    return 2i * M_PI * displ_vec_[j][cartesian_index] *
+	      std::exp(2i * M_PI * nda::blas::dot_generic(k_ndim, displ_vec_[j])) * overlap_mat_vec_[j];
+          } else { // Rank==2
+            auto k_mat = nda::make_matrix_view(k_ndim);
+            auto exp   = [](auto d) { return std::exp(d); };
+            auto exp_j = make_regular(nda::map(exp)(2i * M_PI * k_mat * displ_vec_[j]));
+	    exp_j *= 2i * M_PI * displ_vec_[j][cartesian_index];
+            return nda::blas::outer_product(exp_j, overlap_mat_vec_[j]);
+          }
+        };
+        auto res = make_regular(vals(0));
+        for (int i = 1; i < displ_vec_.size(); ++i) res += vals(i);
+        return res;
+      }
+
+      /**
+       * Calculate the fourier transform on a given k-mesh
+       * and return the associated Green-function object
+       *
+       * @param k_mesh The brillouin-zone mesh
+       * @return Green function on the k_mesh initialized with the fourier transform
+       */
+      inline auto fourier_dk(mesh::brzone const &k_mesh, size_t cartesian_index) const {
+        auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
+        for (auto [n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
+        auto kvecs_rec = make_regular(kvecs * k_mesh.bz().reciprocal_matrix_inv());
+        auto h_k       = gfs::gf<mesh::brzone, gfs::matrix_valued>(k_mesh, {n_orbitals(), n_orbitals()});
+        h_k.data()     = fourier_dk(kvecs_rec, cartesian_index);
+        return h_k;
+      }
+
+      /**
+       * Calculate the fourier transform on a regular k-mesh
+       * with n_l grid-points in each reciprocal direction.
+       * Return the associated Green-function object.
+       *
+       * @param n_l The number of grid-points for each dimension
+       * @return Green function on the k_mesh initialized with the fourier transform
+       */
+      inline auto fourier(int n_l, size_t cartesian_index) const {
+        auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
+        return fourier_dk(k_mesh, cartesian_index);
       }
 
       /**
