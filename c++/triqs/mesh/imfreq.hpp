@@ -249,7 +249,7 @@ namespace triqs::mesh {
 
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary Freq Mesh with beta = {}, statistic = {}, n_iw = {}, positive_only = {}", m._beta, stat_cstr, m.size(),
+      return sout << fmt::format("Imaginary Freq Mesh with beta = {}, statistic = {}, n_iw = {}, positive_only = {}", m._beta, stat_cstr, m._n_iw,
                                  m.positive_only());
     }
 
