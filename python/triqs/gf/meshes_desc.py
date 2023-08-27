@@ -88,7 +88,7 @@ m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq",
         ----------
         beta : float
             Inverse temperature
-        S : str
+        statistic : str
             Statistic, 'Fermion' or 'Boson'
         n_iw : int [default=1025]
             Number of positive Matsubara frequencies
@@ -160,7 +160,7 @@ m = make_mesh(py_type = "MeshImTime", c_tag = "imtime",
         ----------
         beta : float
             Inverse temperature
-        S : str
+        statistic : str
             Statistic, 'Fermion' or 'Boson'
         n_tau : int
             Number of mesh-points
@@ -268,7 +268,7 @@ m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::mesh::legendre", with_v
         ----------
         beta : float
             Inverse temperature
-        S : str
+        statistic : str
             Statistic, 'Fermion' or 'Boson'
         max_n : int
             Largest degree
