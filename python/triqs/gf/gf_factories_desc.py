@@ -144,6 +144,34 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
         # imfreq <- dlr
         m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr, {Target}> g_dlr, long n_iw)", doc="""Transform a DLR coefficient Green's function to a Matsubara frequency Green's function""")
 
+# DLR Product Mesh Conversion
+# Limit combinations to avoid compile-time blowup
+for Target in  ["scalar_valued", "matrix_valued"]:
+    for gf_type in ["gf", "block_gf"]:
+        gf_view_type = gf_type +  '_const_view'
+        for M in ['brzone', 'cyclat']:
+
+            # dlr_imtime <-> dlr
+            m.add_function(f"{gf_type}<prod<dlr, {M}>, {Target}> make_gf_dlr({gf_view_type}<prod<dlr_imtime, {M}>, {Target}> g_tau)", calling_pattern = "auto result = make_gf_dlr<0>(g_tau)" )
+            m.add_function(f"{gf_type}<prod<{M}, dlr>, {Target}> make_gf_dlr({gf_view_type}<prod<{M}, dlr_imtime>, {Target}> g_tau)", calling_pattern = "auto result = make_gf_dlr<1>(g_tau)")
+            m.add_function(f"{gf_type}<prod<dlr_imtime, {M}>, {Target}> make_gf_dlr_imtime({gf_view_type}<prod<dlr, {M}>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imtime<0>(g_dlr)")
+            m.add_function(f"{gf_type}<prod<{M}, dlr_imtime>, {Target}> make_gf_dlr_imtime({gf_view_type}<prod<{M}, dlr>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imtime<1>(g_dlr)")
+
+            # dlr_imfreq <-> dlr
+            m.add_function(f"{gf_type}<prod<dlr, {M}>, {Target}> make_gf_dlr({gf_view_type}<prod<dlr_imfreq, {M}>, {Target}> g_iw)", calling_pattern = "auto result = make_gf_dlr<0>(g_iw)")
+            m.add_function(f"{gf_type}<prod<{M}, dlr>, {Target}> make_gf_dlr({gf_view_type}<prod<{M}, dlr_imfreq>, {Target}> g_iw)", calling_pattern = "auto result = make_gf_dlr<1>(g_iw)")
+            m.add_function(f"{gf_type}<prod<dlr_imfreq, {M}>, {Target}> make_gf_dlr_imfreq({gf_view_type}<prod<dlr, {M}>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imfreq<0>(g_dlr)")
+            m.add_function(f"{gf_type}<prod<{M}, dlr_imfreq>, {Target}> make_gf_dlr_imfreq({gf_view_type}<prod<{M}, dlr>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imfreq<1>(g_dlr)")
+
+            # imtime <-> dlr
+            m.add_function(f"{gf_type}<prod<dlr, {M}>, {Target}> fit_gf_dlr({gf_view_type}<prod<imtime, {M}>, {Target}> g_tau, double w_max, double eps)", calling_pattern = "auto result = fit_gf_dlr<0>(g_tau, w_max, eps)")
+            m.add_function(f"{gf_type}<prod<{M}, dlr>, {Target}> fit_gf_dlr({gf_view_type}<prod<{M}, imtime>, {Target}> g_tau, double w_max, double eps)", calling_pattern = "auto result = fit_gf_dlr<1>(g_tau, w_max, eps)")
+            m.add_function(f"{gf_type}<prod<imtime, {M}>, {Target}> make_gf_imtime({gf_view_type}<prod<dlr, {M}>, {Target}> g_dlr, long n_tau)", calling_pattern = "auto result = make_gf_imtime<0>(g_dlr, n_tau)")
+            m.add_function(f"{gf_type}<prod<{M}, imtime>, {Target}> make_gf_imtime({gf_view_type}<prod<{M}, dlr>, {Target}> g_dlr, long n_tau)", calling_pattern = "auto result = make_gf_imtime<1>(g_dlr, n_tau)")
+
+            # imfreq <- dlr
+            m.add_function(f"{gf_type}<prod<imfreq, {M}>, {Target}> make_gf_imfreq({gf_view_type}<prod<dlr, {M}>, {Target}> g_dlr, long n_iw)", calling_pattern = "auto result = make_gf_imfreq<0>(g_dlr, n_iw)")
+            m.add_function(f"{gf_type}<prod<{M}, imfreq>, {Target}> make_gf_imfreq({gf_view_type}<prod<{M}, dlr>, {Target}> g_dlr, long n_iw)", calling_pattern = "auto result = make_gf_imfreq<1>(g_dlr, n_iw)")
 
 ########################
 ##   Code generation
