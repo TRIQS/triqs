@@ -51,7 +51,7 @@ packages="triqs dft_tools cthyb tprf maxent hubbardI hartree_fock solid_dmft"
         cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALLDIR} -DMPIEXEC_PREFLAGS='--allow-run-as-root'
         make -j$NCORES
         # some test may use mpi
-        ctest -j1 &>> ${testlog}
+        ctest -j1 2>&1 >> ${testlog}
         make install
     done
 )  &> ${log}
