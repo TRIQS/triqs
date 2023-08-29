@@ -36,6 +36,6 @@ def dispatcher(g) :
         if isinstance(m, MeshLegendre) : return one_var.legendre
 
     else:
-        raise NotImplemented 
+        raise NotImplementedError
 
 __init__ = [dispatcher]
