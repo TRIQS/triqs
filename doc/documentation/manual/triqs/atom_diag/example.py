@@ -55,7 +55,7 @@ print(trace_rho_op(dm, n('up',1) * n('dn',1), ad))
 print(trace_rho_op(dm, n('up',2) * n('dn',2), ad))
 
 # Atomic Green's functions
-gf_struct = [['dn',orb_names],['up',orb_names]]
+gf_struct = [['dn',len(orb_names)],['up',len(orb_names)]] # fix the bug in the old version by changing orb_names to len(orb_names).
 G_w = atomic_g_w(ad, beta, gf_struct, (-2, 2), 400, 0.01)
 G_tau = atomic_g_tau(ad, beta, gf_struct, 400)
 G_iw = atomic_g_iw(ad, beta, gf_struct, 100)
