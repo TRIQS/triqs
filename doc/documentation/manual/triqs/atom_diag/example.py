@@ -8,9 +8,9 @@ from itertools import product
 
 # Definition of a 3-orbital atom
 spin_names = ('up','dn')
-orb_names = [0,1,2]
+n_orb = 3
 # Set of fundamental operators
-fops = [(sn,on) for sn, on in product(spin_names,orb_names)]
+fops = [(sn,on) for sn, on in product(spin_names,range(n_orb))]
 
 # Numbers of particles with spin up/down
 N_up = n('up',0) + n('up',1) + n('up',2)
@@ -21,7 +21,7 @@ U = 3.0 * np.ones((3,3))
 Uprime = 2.0 * np.ones((3,3))
 J_hund = 0.5
 
-H = h_int_kanamori(spin_names, orb_names, U, Uprime, J_hund, True)
+H = h_int_kanamori(spin_names, n_orb, U, Uprime, J_hund, True)
 
 # Add chemical potential
 H += -4.0 * (N_up + N_dn)
@@ -55,7 +55,7 @@ print(trace_rho_op(dm, n('up',1) * n('dn',1), ad))
 print(trace_rho_op(dm, n('up',2) * n('dn',2), ad))
 
 # Atomic Green's functions
-gf_struct = [['dn',orb_names],['up',orb_names]]
+gf_struct = [('dn',n_orb),('up',n_orb)] # fix the bug in the old version by changing orb_names to len(orb_names).
 G_w = atomic_g_w(ad, beta, gf_struct, (-2, 2), 400, 0.01)
 G_tau = atomic_g_tau(ad, beta, gf_struct, 400)
 G_iw = atomic_g_iw(ad, beta, gf_struct, 100)
