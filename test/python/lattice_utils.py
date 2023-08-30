@@ -262,7 +262,63 @@ class test_utils(unittest.TestCase):
 
         np.testing.assert_almost_equal(e_k, e_k_ref)
         np.testing.assert_almost_equal(v_k, v_k_ref)
+
+    def test_tb_lattice_3d_v_k(self, verbose=False):
+
+        import itertools
+        from triqs.lattice.tight_binding import TBLattice
+
+        hoppings = {}
+        for i,j,k in itertools.product(range(-5,6), repeat=3):
+            t = np.random.rand(1, 1)
+            hoppings[(i, j, k)] = t
+            hoppings[(-i, -j, -k)] = t
         
+        H_r = TBLattice( 
+            units=[
+                (1,0,0), # basis vector in the x-direction 
+                (0,1,0), # basis vector in the y-direction
+                (0,0,1), # basis vector in the z-direction
+            ],
+            hoppings=hoppings,
+            )
+
+        n_k = 10
+        ks = np.zeros((n_k**3, 3))
+        k = np.linspace(0, 1, num=n_k)
+        kx, ky, kz = np.meshgrid(k, k, k)
+        ks[:,0] = kx.flatten()
+        ks[:,1] = ky.flatten()
+        ks[:,2] = kz.flatten()
+
+        # -- 4th order central differences for first order derivative
+        
+        dkx = 1e-5
+
+        e_k_p_dkx_1 = np.array([ np.squeeze(H_r.fourier(k + np.array([+1*dkx, 0, 0])[None, :])) for k in ks ])
+        e_k_p_dkx_2 = np.array([ np.squeeze(H_r.fourier(k + np.array([+2*dkx, 0, 0])[None, :])) for k in ks ])
+        e_k_m_dkx_1 = np.array([ np.squeeze(H_r.fourier(k + np.array([-1*dkx, 0, 0])[None, :])) for k in ks ])
+        e_k_m_dkx_2 = np.array([ np.squeeze(H_r.fourier(k + np.array([-2*dkx, 0, 0])[None, :])) for k in ks ])
+        
+        e_k = np.array([ np.squeeze(H_r.fourier(k)) for k in ks ])
+
+        idx = 0
+        v_k = np.array([ np.squeeze(H_r.tb.fourier_dk(k, idx)) for k in ks ])
+        v_k_ref = 1/12 * e_k_m_dkx_2 - 2/3 * e_k_m_dkx_1 + 2/3 * e_k_p_dkx_1 - 1/12 * e_k_p_dkx_2
+        v_k_ref /= dkx
+
+        diff = np.max(np.abs(v_k - v_k_ref))
+        
+        if verbose:
+            print(diff)
+            import matplotlib.pyplot as plt
+            plt.plot(ks[:, 0], v_k, '--', label='v_k')
+            plt.plot(ks[:, 0], v_k_ref, 'x', label='v_k_ref')
+            plt.legend()
+            plt.show()
+
+        assert( diff < 1e-6 ) 
+
 
 if __name__ == '__main__':
     unittest.main()
