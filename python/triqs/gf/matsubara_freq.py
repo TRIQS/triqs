@@ -98,3 +98,6 @@ class MatsubaraFreq:
 
     def __pow__(self, other):
         return complex(self)**other
+
+    def __str__(self):
+        return f"MatsubaraFreq(n: {self.n}, beta: {self.beta}, statistic: {self.statistic})"
