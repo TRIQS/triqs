@@ -43,18 +43,25 @@ def all_calls():
 
     meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'dlr', 'brzone', 'cyclat']
 
+    real_valued = lambda target: target.replace("_", "_real_")
     for rank, target, return_t in target_and_return:
         for M1 in meshes:
             xs = validargs[M1]
             nxs = len(xs)
             yield M1, [return_t]*nxs, rank, target, xs
+            if M1 == 'imtime': yield M1, [return_t]*nxs, rank, real_valued(target), xs
+
+            # Product Mesh Wrappings
             for M2 in meshes:
                 if sum([M1 in ['brzone', 'cyclat'], M2 in ['brzone', 'cyclat']]) == 1:
                     ys = validargs[M2]
                     nys = len(ys)
-                    ret_lst = [return_t]*nxs*nys + [f"gf<{M1}, {target}>"]*nys + [f"gf<{M2}, {target}>"]*nxs
                     arg_lst = [(x, y) for x in xs for y in ys] + [('all_t', y) for y in ys] + [(x, 'all_t') for x in xs]
+                    ret_lst = [return_t]*nxs*nys + [f"gf<{M1}, {target}>"]*nys + [f"gf<{M2}, {target}>"]*nxs
                     yield 'prod<%s,%s>'%(M1,M2), ret_lst, rank, target, arg_lst
+                    if 'imtime' in [M1, M2]:
+                        ret_lst = [return_t]*nxs*nys + [f"gf<{M1}, {real_valued(target)}>"]*nys + [f"gf<{M2}, {real_valued(target)}>"]*nxs
+                        yield 'prod<%s,%s>'%(M1,M2), ret_lst, rank, real_valued(target), arg_lst
 
 
 # Fixme
@@ -100,17 +107,18 @@ namespace triqs {
 }
 """)
 
-for var, return_t, R, target_t, point_t in all_calls():
-    c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
-    c_py_trans = C_py_transcript[var]
-    # print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
+for mesh, return_t, R, target_t, point_t in all_calls():
+    c_type = "gf_proxy<gf_view<%s,%s>>"%(mesh, target_t)
+    c_py_trans = C_py_transcript[mesh]
+    RE = "_R" if "_real_" in target_t else ""
+    # print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R,RE)
     c = class_(
-            py_type = "CallProxy%s_%s"%(c_py_trans,R),
+            py_type = "CallProxy%s_%s%s"%(c_py_trans,R,RE),
             c_type = c_type,
             c_type_absolute = "triqs::gfs::" + c_type,
             export = False
             )
-    c.add_constructor("(gf_view<%s,%s> g)"%(var, target_t), doc = "")
+    c.add_constructor("(gf_view<%s,%s> g)"%(mesh, target_t), doc = "")
     for P, Ret in zip(point_t, return_t) :
         if not isinstance(P, tuple) :
           c.add_call(signature = "%s call(%s x)"%(Ret, P), calling_pattern = "auto result = self_c.template call<%s>(x)"%(Ret), doc = "")
@@ -121,27 +129,6 @@ for var, return_t, R, target_t, point_t in all_calls():
             c.add_call(signature =sig,  calling_pattern = "auto result = self_c.template call<%s>(%s)"%(Ret,  ','.join(xs2)), doc = "")
     m.add_class (c)
 
-    # FIX FIRST THE call and wrap of real_valued
-#     target_t = target_t.replace("_value", "_real_value")
-    # c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
-    # c = class_(
-            # py_type = "CallProxy%s_%s_R"%(C_py_transcript[var],R),
-            # c_type = c_type,
-            # c_type_absolute = "triqs::gfs::" + c_type
-           # )
-    # c.add_constructor("(gf_view<%s,%s> g)"%(var, target_t), doc = "")
-    # c.add_call(signature = "%s call(%s x)"%(return_t, point_t), doc = "")
-    # m.add_class (c)
-
-
-# TESTING ONLY
-# m.add_function("std::vector<dcomplex> call_vec(gf_view<imfreq, matrix_valued> g)",
-               # calling_pattern =""" auto result = std::vector<dcomplex> (100000);
-                                    # for (int i =0; i < 100000; ++i) result[i] = g(i)(0,0);
-                                # """)
-# m.add_function("std::vector<dcomplex> call_s(gf_view<imfreq, matrix_valued> g)",
-               # calling_pattern =""" auto result = g(2)(0,0);
-                                # """)
 # #------------------------------------------------------------
 
 # matrix valued target
@@ -157,12 +144,9 @@ m.add_function("void _gf_invert_data_in_place(array_view <dcomplex, 3> a)", doc 
 for M in ['imfreq', 'refreq'] :
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x += y")
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
-    #m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
 
     m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x -= y")
     m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
-    #m.add_function("void _isub_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
-
     # is it useful ?
     #m.add_function("gf<imfreq> _imul_R_g_matrix (gf_view<{M}, matrix_valued> x, matrix<std::complex<double>> y)", calling_pattern = "x = x * y")
     #m.add_function("gf<imfreq> _imul_L_g_matrix (matrix<std::complex<double>> y, gf_view<{M}, matrix_valued> x)", calling_pattern = "x = y * x")
