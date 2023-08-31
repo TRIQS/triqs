@@ -58,8 +58,12 @@ class MatsubaraFreq:
     def real(self):
         return 0.0
 
+    @property
+    def value(self):
+        return complex(self)
+
     def __abs__(self):
-        return abs(self.__complex__())
+        return abs(complex(self))
 
     def __add__(self, other):
         if isinstance(other, MatsubaraFreq):
