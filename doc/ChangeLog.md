@@ -5,6 +5,222 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 3.2.0
+
+TRIQS Version 3.2.0 is a release that
+* Introduces three Discrete Lehmann Representation (DLR) Mesh types
+* Adds conversion routines between DLR and existing Mesh types
+* Allows using symmetries for C++ Green function initialization and symmetrization
+* Extends the overloads for existing Python wrappings of various Gf related functions
+* Extends the Green function evaluation in C++ and Python
+* Makes all C++ Green function meshes consistent with a C++20 Mesh Concept
+* Raises compiler requirements to clang15+ and gcc12+
+* Fixes several library issues
+
+We thank all contributors: John Bonini, Kacper Cybiński, Philipp Dumitrescu, Olivier Gingras, Thomas Hahn, Alexander Hampel, Collins Kariuki, Dominik Kiese, Igor Krivenko, Harry LaBollita, Rémi Lacroix, Henri Menke, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell, Jie Xiong
+
+Find below an itemized list of changes in this release.
+
+### Porting Script
+
+TRIQS 3.2.0 introduces interface changes (summarized below) that require adjustments in TRIQS-based applications.
+For convenient porting, we have updated our [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3)
+that you can download and run in the top-level directory of your respository.
+
+### API Changes
+* Remove previously deprecated GfIndices class
+* Remove domains from meshes in C++ and Python, directly expose mesh parameters
+* In k_space_path, always return ticks as third argument
+* Remove 'note' member from BlockGf and Block2Gf
+* Rename extract_mesh<N> to get_mesh<N> and use it for simplification
+* Hamiltonian factory functions now take n_orb instead of orb_names
+* In mesh::brzone and mesh::cyclat take dims instead of periodization matrix
+* Rename U_matrix to U_matrix_slater
+* Remove previously deprecated lattice tools API
+
+### General
+* Allow for symbolic printing of TBLattice objects using sympy expressions (#898)
+* Generalize Python 'inverse' function to allow for inversion of non-lazy / non-gf objects
+* Add complex_t as member type to gf and view types
+* Optimize interpolate_on_segment function, only check boundaries in Debug mode
+* Add free function is_op_hermitian to check on hermiticity of operators
+* Add support for c2py
+* Deprecate oplotr and oploti #477
+* Remove obsolete boost serialization
+* In triqs::stat add global count to accumulator
+* Add benchmark for GfInterpolation and ClosestMeshPoint access
+* Update 3.1 easybuild script with sha256 of release tarball
+* General library simplifications and cleanup
+* Regenerate GPL copyright headers for C++ and Python files
+* Fix all gcc and clang compiler warnings
+* Run clang-format on all source files
+
+### Gf
+* Add C++ gf_sym_grp class to use symmetries for (parallelized) gf initialization and symmetrization
+* Gf evaluation in Python and C++ can now take most arguments valid to [...]
+* Add Python Gf Evaluation for more target types
+* Add Python Gf Evaluation for more MeshProduct combinations: (k,iw), (iw,k), etc.
+* Allow Idx in Gf Python Evaluation
+* Allow for parallelized initialization
+* Allow tau evaluation for legendre Green functions
+* Use Mesh concept in gf and gf_view
+* Extend make_gf_from_fourier wrappings to include more real-time Fourier transforms
+* Add complex_t as member type to gf and view types
+* Add test checking all BlockGf constructors
+* Extend gf_expr and gf_unary_m_expr to include regular_t member type
+* Extend set_from_pade python functions to scalar_valued, tensor_valued<N>
+* Wrap tensor_valued<1> Version of various Green function related functions
+* Add MemoryGf concept and use for various simplifications
+* Add gf::operator[](index_t) overload for arity==1 meshes
+* Added __array_priority__ to Gf, BlockGf, Block2Gf so rmul takes priority over ndarrays mul
+* Allow use of @ operator for Gf matrix multiplication in Python
+* In python allow linear interpolation of real-value Gtau + test
+* Test: Store block_gf to file in python and read in C++
+* Use nda::diagonal in implementation of density functions
+* Add deprecation warnings and mesh type check in deprecated classes GfImFreq, GfImTime, ...
+* Printing a Gf/BlockGf in python now yields the same as repr(G), no longer 'name'
+
+### Meshes
+* Add MatsubaraFreq class in Python in correspondance to C++
+* Expose mesh parameters (beta, statistic,...) through member functions
+* Add Mesh, MeshPoint and MeshWithValues concept
+* Evaluate calls in brzone and cyclat now execute index modulo
+* Move interpolation routines out of meshes
+* Add parameter dependent mesh_hash to meshes in Python and C++
+* Default construct all mesh types to zero size
+* Use mesh_hash to check validity in gf accessors
+* Micro optimize closest_mesh_pt
+* Remove cluster_mesh, make mesh::brzone and mesh::cyclat standalone
+* Allow passing a window (pair of float) to mesh::imfreq/refreq and MeshImFreq/MeshReFreq
+* In mesh::brzone rename variable n_l to n_k
+* Use n_iw over n_pts in mesh::imfreq
+* Add proper ostream print overload for mesh::retime
+* Add t_min and t_max functions to mesh::retime
+* Add proper ostream print overload for mesh::refreq, add omega_min() member function
+
+### DLR
+* Add dlr mesh types in C++: dlr, dlr_imtime, dlr_imfreq
+* Add dlr mesh types in Python: MeshDLR, MeshDLRImTime, MeshDLRImFreq
+* Add plot protocol for MeshDLRImTime and MeshDLRImFreq
+* Free dlr functions to allow for multi-variable meshes
+* Extend support for new meshes in relevant Python Descriptors
+* Extend density function + test
+* Make flatironinstitute/cppdlr a dependency
+
+### Lattice
+* Update SuperLattice after removal of deprecated TBLattice API
+* Remove deprecated functionality in TBLattice and TightBinding
+* Add LatticePoint class and conversion to/from bravais_lattice::point_t
+* Use Euclidian distance in brzone closest_mesh_pt + tests
+
+### det_manip
+* Avoid ASAN false positive in complete_refill
+* Address issue #868, ksi matrix should be constrained to current insertion size
+* Iterate on implementation of rank-k updates in det_manip
+* Allow for rank-k insertions / removals
+* Added swap_row and swap_coli
+
+### mc_generic
+* Implement higher-rank updates in mc_generic + tests
+* Expose mc_generic.run function in the public interface
+* Review PR for reporting measurements in ETA status messages
+* Remove file impl_tools.hpp and use concept checks to replace its template functions
+* Allow negative n_cycles in mc_generic: run until callback or signal stop #679
+* Allow reporting of measurements during accumulation
+
+### MPI
+* Use mpi poll barrier in python to reduce CPU (#845)
+* Add cray-mpich support in mpi layer
+* For unrecognized mpi environments, force MPI_INIT using FORCE_MPI_INIT envvar
+* Improvements to triqs.utility.mpi.all_reduce
+
+### Fixes
+* Allow name_block_generator as only argument to BlockGf constructor (#620)
+* Generalize CallProxyNone for multiple arguments and throw proper exception Fix #846
+* Assert dimensions of Sigma to match hopping (#859)
+* In U_matrix_slater support wannier90, QE, and Vasp basis (#860)
+* Make result of trace_rho_op real if operator and rho are hermitian (#871)
+* Fix bug in is_convertible of block2_gf (#872)
+* Fix Issue #881
+* Fix example.py after gf_struct changes (#907)
+* Fix arithmetic inplace operations for block2_gf
+* Fix bug in oplot, propagate options to all plots in a figure
+* Fix bug in oplot for legendre Gfs
+* Fix histogram plotting via oplot
+* Fix bug in gf mesh and shape constructor
+* Fix issue with fit_hermitian call signature in fit_hermitian_tail implementation
+* Fix issue in TB_from_pythTB function
+* Fix Super Lattice Orbital_Names not being of type string
+* Fix bug in gf_expr where scalar_wrap captured it's value by reference
+* Fix many_body_operator_real cpp2py is_convertible check
+* Fix density function for MeshReFreq Gf
+* Fix numpy imports in test/python/base/brillouin_zone.py
+* No longer use deprecated numpy types np.int etc.
+* Add missing import in h_int_kanamori implementation
+* Correct issue in mesh imfreq print message
+* Avoid use of static pyref as lifetime may extend beyond interpreter
+* In mesh/bases/linear.hpp implement all mesh_point operations with perfect forwarding
+* Properly forward arguments in matsubara frequency operations
+* Protect brzone::mesh_point_t::value function against race conditions
+
+### doc
+* Introduce new TRIQS logo and add files to git repository
+* Change mesh documentation to use statistic keyword over S
+* Add simple build script for triqs + apps (#891)
+* Various doc improvements in mesh implementations
+* Various doc improvements in brillouin_zone and bravais_lattice
+* Improve BlockGf documentation
+* Requirements: Update Boost minimum version.
+* Add GMP to the list of requirements
+* Improve Documentation of AtomDiag function
+* Replace apt-key add in commands to add debian repository
+* Update Ubuntu prerequisites install instructions, include also python3-clang
+* Simplify brew osx instructions
+* Bump Compiler and cmake version requirements, allow IntelLLVM >= 2023.1.0
+* Add/improve documentation for various wrapped meshe-types and lattice_tools classes
+* Update Changelog for 3.1.1
+* Simplify calls to plot directive
+* Update sphinxext.numpydoc.plot_directive, adjust default plot options
+* Adjust documentation examples to library changes and cleanup
+* Update osx install instructions to account for change in brew prefix
+* Slightly extend description of SOM on applications page
+* In 'UserGuide' section use TRIQS Python tutorial series over previous code samples
+* Add doc string to AtomDiag python-function and classes
+* Add documentation to wrapped class TightBinding and slightly adjust C++ doc
+* In Ubuntu install instructions  include 22.04, remove 18.04, mention and new packages
+* Include list of requirements in toctree for build-from-source prerequisites
+* Fix Ubuntu install instructions with proper openmpi include dir
+* Fix include path for openmpi header files
+* Fix singularity commands in install.rst
+* Fix filenames in various literalincludes for doc/userguide/c++
+* Fix include issue in documentation/manual/mpi
+
+### cmake
+* Require OpenMP as a library dependency through nda
+* Update dependencies to latest versions and release branches
+* Bump Version numbers for dependencies itertools/mpi/h5/nda/cppdlr
+* Update Findsanitizer.cmake to include TSAN and MSAN and minor fixes
+* Bump triqs version to 3.2
+* Bump cmake requirement to 3.20
+* Update compiler version checks
+* Add target for compiler warnings
+* Disable c++20 compat warnings
+* Clone cppdlr dependency through public git repo
+* Include fmt 9.1.0 as dependency and install it
+* Fix issue in extract_flags.cmake where generator expressions where not properly removed from flags
+* Compile benchmarks with google-bench when -DBuild_Benchs=ON is used
+* General cmake cleanup
+
+### jenkins
+* Update Dockerfiles for linux builds to use gcc12 / clang15
+* Install pandoc into Dockerfile.ubuntu-clang
+* Use sphinx<6 in doc build environments
+* Specify LAPACK_ROOT for osx builds
+* Update osx build to use gcc 13
+* Bump timeout limit to 2 hours
+* Fix CC CXX environment variables in Dockerfile.ubuntu-gcc
+
+
 ## Version 3.1.1
 
 TRIQS Version 3.1.1 is a patch-release that improves/adds documentation for
