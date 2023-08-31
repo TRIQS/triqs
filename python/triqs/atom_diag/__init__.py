@@ -39,7 +39,8 @@ def AtomDiag(*args, **kwargs):
     else:
         return AtomDiagReal(*args, **kwargs)
 
-AtomDiag.__doc__ = AtomDiagReal.__doc__.replace(" (Real)", "")
+AtomDiag.__doc__ = AtomDiagReal.__doc__.replace("Lightweight exact diagonalization solver (Real)",
+                                                "Create and return an exact diagonalization solver.\nDepending on the type of h returns :py:class:`AtomDiagReal <triqs.atom_diag.atom_diag.AtomDiagReal>` or :py:class:`AtomDiagComplex <triqs.atom_diag.atom_diag.AtomDiagComplex>`")
 
 __all__ = ['AtomDiag','AtomDiagReal','AtomDiagComplex',
            'partition_function','atomic_density_matrix','trace_rho_op','act',
