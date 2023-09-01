@@ -169,6 +169,7 @@ that you can download and run in the top-level directory of your repository.
 * Add simple build script for triqs + apps (#891)
 * Various doc improvements in mesh implementations
 * Various doc improvements in brillouin_zone and bravais_lattice
+* Adjust singularity section to use apptainer instead
 * Improve BlockGf documentation
 * Requirements: Update Boost minimum version.
 * Add GMP to the list of requirements

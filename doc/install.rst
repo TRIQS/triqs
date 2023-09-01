@@ -93,26 +93,26 @@ systems. Once docker is installed, just pull the latest image with::
 
 and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
 
-.. _triqs_singularity:
+.. _triqs_apptainer:
 
-Singularity
------------
+Apptainer
+---------
 
-The virtualization software `singularity <https://www.sylabs.io/guides/latest/user-guide/>`_ allows for easy set-up on cluster machines.
-Ask your cluster administator to install the singularity software. The TRIQS setup is then as simple as::
+The virtualization software `apptainer <https://apptainer.org/docs/user/latest/>`_ allows for easy set-up on cluster machines.
+Ask your cluster administator to install the apptainer software. The TRIQS setup is then as simple as::
 
-        singularity pull docker://flatironinstitute/triqs
+        apptainer pull docker://flatironinstitute/triqs
 
 which will generate an image file `triqs_latest.sif`. You can then execute commands inside this image file, e.g.::
 
-        singularity exec triqs_latest.sif python3 -c "from triqs.gf import *"
+        apptainer exec triqs_latest.sif python3 -c "from triqs.gf import *"
 
-In order to run your code in parallel you will need to use Open MPI version 4.0.3 to match the version of the singularity image.
+In order to run your code in parallel you will need to use Open MPI version 4.0.3 to match the version of the apptainer image.
 You can then run any command in parallel, e.g.::
 
-        mpirun -np 2 singularity exec triqs_latest.sif python3 -c "from triqs.utility import mpi; print(mpi.rank)"
+        mpirun -np 2 apptainer exec triqs_latest.sif python3 -c "from triqs.utility import mpi; print(mpi.rank)"
 
-For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
+For more information on the use of apptainer in conjunction with docker images please refer to the `documentation <https://apptainer.org/docs/user/latest/docker_and_oci.html>`_.
 
 .. _triqs_binder:
 
