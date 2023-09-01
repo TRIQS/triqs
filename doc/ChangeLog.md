@@ -25,7 +25,7 @@ Find below an itemized list of changes in this release.
 
 TRIQS 3.2.0 introduces interface changes (summarized below) that require adjustments in TRIQS-based applications.
 For convenient porting, we have updated our [porting script](https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs3)
-that you can download and run in the top-level directory of your respository.
+that you can download and run in the top-level directory of your repository.
 
 ### API Changes
 * Remove previously deprecated GfIndices class
@@ -35,7 +35,7 @@ that you can download and run in the top-level directory of your respository.
 * Rename extract_mesh<N> to get_mesh<N> and use it for simplification
 * Hamiltonian factory functions now take n_orb instead of orb_names
 * In mesh::brzone and mesh::cyclat take dims instead of periodization matrix
-* Rename U_matrix to U_matrix_slater
+* Rename python module U_matrix to U_matrix_slater, to avoid namespace collision
 * Remove previously deprecated lattice tools API
 
 ### General
@@ -64,14 +64,14 @@ that you can download and run in the top-level directory of your respository.
 * Allow for parallelized initialization
 * Allow tau evaluation for legendre Green functions
 * Use Mesh concept in gf and gf_view
-* Extend make_gf_from_fourier wrappings to include more real-time Fourier transforms
+* Extend `make_gf_from_fourier` wrappings to include more real-time Fourier transforms
 * Add complex_t as member type to gf and view types
 * Add test checking all BlockGf constructors
 * Extend gf_expr and gf_unary_m_expr to include regular_t member type
-* Extend set_from_pade python functions to scalar_valued, tensor_valued<N>
-* Wrap tensor_valued<1> Version of various Green function related functions
+* Extend `set_from_pade` python functions to scalar_valued, tensor_valued<N>
+* Wrap tensor_valued<1> version of various Green function related functions
 * Add MemoryGf concept and use for various simplifications
-* Add gf::operator[](index_t) overload for arity==1 meshes
+* Add gf::operator[](index_t) overload for parity==1 meshes
 * Added __array_priority__ to Gf, BlockGf, Block2Gf so rmul takes priority over ndarrays mul
 * Allow use of @ operator for Gf matrix multiplication in Python
 * In python allow linear interpolation of real-value Gtau + test
@@ -81,7 +81,7 @@ that you can download and run in the top-level directory of your respository.
 * Printing a Gf/BlockGf in python now yields the same as repr(G), no longer 'name'
 
 ### Meshes
-* Add MatsubaraFreq class in Python in correspondance to C++
+* Add MatsubaraFreq class in Python in correspondence to C++
 * Expose mesh parameters (beta, statistic,...) through member functions
 * Add Mesh, MeshPoint and MeshWithValues concept
 * Evaluate calls in brzone and cyclat now execute index modulo
@@ -111,7 +111,7 @@ that you can download and run in the top-level directory of your respository.
 * Update SuperLattice after removal of deprecated TBLattice API
 * Remove deprecated functionality in TBLattice and TightBinding
 * Add LatticePoint class and conversion to/from bravais_lattice::point_t
-* Use Euclidian distance in brzone closest_mesh_pt + tests
+* Use Euclidean distance in brzone closest_mesh_pt + tests
 
 ### det_manip
 * Avoid ASAN false positive in complete_refill
@@ -138,7 +138,7 @@ that you can download and run in the top-level directory of your respository.
 * Allow name_block_generator as only argument to BlockGf constructor (#620)
 * Generalize CallProxyNone for multiple arguments and throw proper exception Fix #846
 * Assert dimensions of Sigma to match hopping (#859)
-* In U_matrix_slater support wannier90, QE, and Vasp basis (#860)
+* In `U_matrix_slater` support wannier90, QE, and Vasp basis (#860)
 * Make result of trace_rho_op real if operator and rho are hermitian (#871)
 * Fix bug in is_convertible of block2_gf (#872)
 * Fix Issue #881
@@ -148,7 +148,7 @@ that you can download and run in the top-level directory of your respository.
 * Fix bug in oplot for legendre Gfs
 * Fix histogram plotting via oplot
 * Fix bug in gf mesh and shape constructor
-* Fix issue with fit_hermitian call signature in fit_hermitian_tail implementation
+* Fix issue with `fit_hermitian` call signature in fit_hermitian_tail implementation
 * Fix issue in TB_from_pythTB function
 * Fix Super Lattice Orbital_Names not being of type string
 * Fix bug in gf_expr where scalar_wrap captured it's value by reference
@@ -160,7 +160,7 @@ that you can download and run in the top-level directory of your respository.
 * Correct issue in mesh imfreq print message
 * Avoid use of static pyref as lifetime may extend beyond interpreter
 * In mesh/bases/linear.hpp implement all mesh_point operations with perfect forwarding
-* Properly forward arguments in matsubara frequency operations
+* Properly forward arguments in Matsubara frequency operations
 * Protect brzone::mesh_point_t::value function against race conditions
 
 ### doc
@@ -177,8 +177,7 @@ that you can download and run in the top-level directory of your respository.
 * Update Ubuntu prerequisites install instructions, include also python3-clang
 * Simplify brew osx instructions
 * Bump Compiler and cmake version requirements, allow IntelLLVM >= 2023.1.0
-* Add/improve documentation for various wrapped meshe-types and lattice_tools classes
-* Update Changelog for 3.1.1
+* Add/improve documentation for various wrapped mesh-types and lattice_tools classes
 * Simplify calls to plot directive
 * Update sphinxext.numpydoc.plot_directive, adjust default plot options
 * Adjust documentation examples to library changes and cleanup
@@ -200,8 +199,6 @@ that you can download and run in the top-level directory of your respository.
 * Update dependencies to latest versions and release branches
 * Bump Version numbers for dependencies itertools/mpi/h5/nda/cppdlr
 * Update Findsanitizer.cmake to include TSAN and MSAN and minor fixes
-* Bump triqs version to 3.2
-* Bump cmake requirement to 3.20
 * Update compiler version checks
 * Add target for compiler warnings
 * Disable c++20 compat warnings
