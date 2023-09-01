@@ -193,6 +193,7 @@ class Block2Gf:
     @classmethod
     def __factory_from_dict__(cls, name, d):
         block_names1, block_names2 = tuple(d.pop('block_names1')), tuple(d.pop('block_names2'))
+        d.pop('note','')
         expected_keys = ["%s_%s" % bn for bn in product(block_names1, block_names2)]
         assert sorted(expected_keys) == sorted(d.keys()), "Reload mismatch: the indices and the group names do not corresponds"
         res = cls(block_names1, block_names2, lambda bn1, bn2: d["%s_%s"%(bn1,bn2)], make_copies=False, name=name)
