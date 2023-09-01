@@ -35,7 +35,7 @@ that you can download and run in the top-level directory of your repository.
 * Rename extract_mesh<N> to get_mesh<N> and use it for simplification
 * Hamiltonian factory functions now take n_orb instead of orb_names
 * In mesh::brzone and mesh::cyclat take dims instead of periodization matrix
-* Rename python module U_matrix to U_matrix_slater, to avoid namespace collision
+* Rename function U_matrix to U_matrix_slater
 * Remove previously deprecated lattice tools API
 
 ### General
@@ -71,7 +71,7 @@ that you can download and run in the top-level directory of your repository.
 * Extend `set_from_pade` python functions to scalar_valued, tensor_valued<N>
 * Wrap tensor_valued<1> version of various Green function related functions
 * Add MemoryGf concept and use for various simplifications
-* Add gf::operator[](index_t) overload for parity==1 meshes
+* Add gf::operator[](index_t) overload for non-product meshes
 * Added __array_priority__ to Gf, BlockGf, Block2Gf so rmul takes priority over ndarrays mul
 * Allow use of @ operator for Gf matrix multiplication in Python
 * In python allow linear interpolation of real-value Gtau + test
@@ -200,6 +200,7 @@ that you can download and run in the top-level directory of your repository.
 * Update dependencies to latest versions and release branches
 * Bump Version numbers for dependencies itertools/mpi/h5/nda/cppdlr
 * Update Findsanitizer.cmake to include TSAN and MSAN and minor fixes
+* Bump cmake requirement to 3.20
 * Update compiler version checks
 * Add target for compiler warnings
 * Disable c++20 compat warnings
