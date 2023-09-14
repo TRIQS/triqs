@@ -25,6 +25,7 @@
 #include <string>
 #include <assert.h>
 #include <type_traits>
+#include <cstdint>
 
 namespace triqs {
   namespace mc_tools {
