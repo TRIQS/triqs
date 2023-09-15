@@ -1,0 +1,37 @@
+FROM intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04
+ARG LLVM=15
+
+RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
+      wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      g++-12 \
+      git \
+      vim \
+      lldb-${LLVM} \
+      hdf5-tools \
+      libboost-dev \
+      libclang-${LLVM}-dev \
+      libc++-${LLVM}-dev \
+      libc++abi-${LLVM}-dev \
+      libfftw3-dev \
+      libgmp-dev \
+      libhdf5-dev \
+      libopenmpi-dev \
+      openmpi-bin \
+      openmpi-common \
+      openmpi-doc \
+      python3-clang-${LLVM} \
+      python3-dev \
+      python3-mako \
+      python3-matplotlib \
+      python3-mpi4py \
+      python3-numpy \
+      python3-pip \
+      python3-scipy
+
+RUN pip install cmake
+
+ENV PYTHON_VERSION=3.10 \
+    CC=icx CXX=icpx CXXFLAGS="-stdlib=libc++" \
+    BLA_VENDOR=Intel10_64_dyn \
+    MKL_INTERFACE_LAYER=GNU,LP64
