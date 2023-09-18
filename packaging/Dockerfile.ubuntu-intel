@@ -28,6 +28,4 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
 RUN pip install cmake
 
 ENV PYTHON_VERSION=3.10 \
-    CC=icx CXX=icpx CXXFLAGS="-stdlib=libc++" \
-    BLA_VENDOR=Intel10_64_dyn \
-    MKL_INTERFACE_LAYER=GNU,LP64
+    CC=icx CXX=icpx CXXFLAGS="-stdlib=libc++"
