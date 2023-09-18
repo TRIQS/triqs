@@ -16,10 +16,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libfftw3-dev \
       libgmp-dev \
       libhdf5-dev \
-      libopenmpi-dev \
-      openmpi-bin \
-      openmpi-common \
-      openmpi-doc \
       python3-clang-${LLVM} \
       python3-dev \
       python3-mako \
