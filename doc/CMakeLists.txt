@@ -75,12 +75,11 @@ endforeach()
 # --------------------------------------------------------
 
 add_custom_target(docs_tutorial_notebooks)
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials)
-  add_custom_command(
-    TARGET docs_tutorial_notebooks
-    COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch unstable_executed https://github.com/triqs/tutorials ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials
-  )
-endif()
+add_custom_command(
+  TARGET docs_tutorial_notebooks
+  COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials &&
+  ${GIT_EXECUTABLE} clone --depth 1 --branch unstable_executed https://github.com/triqs/tutorials ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials
+)
 
 # ---------------------------------
 # Top Sphinx target
