@@ -37,11 +37,12 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-numpy \
       python3-pip \
       python3-scipy \
-      python3-sphinx \
-      python3-nbsphinx \
-      python3-ipython \
-      python3-sphinx-rtd-theme && \
-      pip3 install myst-parser linkify-it-py
+      python3-ipython && \
+      #python3-sphinx \
+      #python3-nbsphinx \
+      #python3-sphinx-rtd-theme && \
+      pip3 install myst-parser linkify-it-py && \
+      pip3 install sphinx nbsphinx sphinx-rtd-theme
 
 ENV PYTHON_VERSION=3.10 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
