@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       #python3-nbsphinx \
       #python3-sphinx-rtd-theme && \
       pip3 install myst-parser linkify-it-py && \
-      pip3 install sphinx==5.3.0 nbsphinx sphinx-rtd-theme
+      pip3 install sphinx nbsphinx sphinx-rtd-theme
 
 ENV PYTHON_VERSION=3.10 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
