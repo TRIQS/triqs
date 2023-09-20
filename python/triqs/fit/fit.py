@@ -48,7 +48,7 @@ class Fit:
 
         """
         self.function, self.fname, p00 = fitter
-        assert len(ins.getargspec(self.function)[0])== len(p00) + 1, "error in number of parameters"
+        assert len(ins.getfullargspec(self.function)[0])== len(p00) + 1, "error in number of parameters"
         assert len(y_array) == len(x_array)
         assert len(y_array) > len (p00)
         errfunc = lambda x :  np.abs ( self.function(x_array,*x)  - y_array[:])

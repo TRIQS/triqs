@@ -115,7 +115,7 @@ class SumkDiscrete:
         # case 2) Sigma is a function returning a BlockGf
         else:
             assert callable(Sigma), "If Sigma is not a BlockGf it must be a function"
-            Sigma_Nargs = len(inspect.getargspec(Sigma)[0])
+            Sigma_Nargs = len(inspect.getfullargspec(Sigma)[0])
             assert Sigma_Nargs <= 2, "Sigma must be a function of k or of k and epsilon"
             if Sigma_Nargs == 1:
                 model = Sigma(self.bz_points[0])

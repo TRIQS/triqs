@@ -101,7 +101,7 @@ class HilbertTransform:
         # case 2) Sigma is a function returning a Gf
         else:
             assert callable(Sigma), "If Sigma is not a Gf it must be a function"
-            assert len(inspect.getargspec(Sigma)[0]) == 1, "Sigma must be a function of a single variable"
+            assert len(inspect.getfullargspec(Sigma)[0]) == 1, "Sigma must be a function of a single variable"
             model = Sigma(self.dos.eps[0])
             Sigma_fnt = True
 
