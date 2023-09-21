@@ -4,5 +4,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURREN
 
 add_python_test(atom_diag)
 add_python_test(issue819)
+add_python_test(atom_diag_constructors)
 
 add_python_test(atom_diag_bcast MPI_NUMPROC 4)
