@@ -37,7 +37,7 @@ def AtomDiag(*args, **kwargs):
     if any(abs(term[-1].imag) > 0 for term in h):
         return AtomDiagComplex(*args, **kwargs)
     else:
-        return AtomDiagReal(*args, **kwargs)
+        return AtomDiagReal(h.real, *args[1:], **{k: v for k, v in kwargs.items() if k != 'h'})
 
 AtomDiag.__doc__ = AtomDiagReal.__doc__.replace("Lightweight exact diagonalization solver (Real)",
                                                 "Create and return an exact diagonalization solver.\nDepending on the type of h returns :py:class:`AtomDiagReal <triqs.atom_diag.atom_diag.AtomDiagReal>` or :py:class:`AtomDiagComplex <triqs.atom_diag.atom_diag.AtomDiagComplex>`")
