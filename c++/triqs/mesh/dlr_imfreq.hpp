@@ -61,7 +61,9 @@ namespace triqs::mesh {
     private:
     dlr_imfreq(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
        : dlr_imfreq(beta, statistic, w_max, eps,
-                    dlr_ops{dlr_freq, {w_max * beta, dlr_freq}, {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic)}}) {}
+                    dlr_ops{dlr_freq,
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), /*symmetrize = */ true},
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), /*symmetrize = */ true}}) {}
 
     dlr_imfreq(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
        : _beta(beta),
