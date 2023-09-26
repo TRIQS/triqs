@@ -62,14 +62,14 @@ namespace triqs::mesh {
      * @param eps Representation accuracy
      */
     dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps)
-       : dlr_imtime(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps)) {}
+       : dlr_imtime(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM)) {}
 
     private:
     dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
        : dlr_imtime(beta, statistic, w_max, eps,
                     dlr_ops{dlr_freq,
-                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), /*symmetrize = */ true},
-                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), /*symmetrize = */ true}}) {}
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM},
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM}}) {}
 
     dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
        : _beta(beta),
