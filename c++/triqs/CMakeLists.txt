@@ -31,8 +31,8 @@ target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:triqs_warnings>)
 option(CHECK_MEMORY "Turn on memory check" OFF)
 target_compile_definitions(triqs
   PUBLIC
-    $<$<CONFIG:Debug>:TRIQS_DEBUG>
-    $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+    $<$<CONFIG:Debug,RelWithDebInfo>:TRIQS_DEBUG>
+    $<$<CONFIG:Debug,RelWithDebInfo>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
     $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_DEBUG_COUNT_MEMORY>
     $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_CHECK_WEAK_REFS>
 )
