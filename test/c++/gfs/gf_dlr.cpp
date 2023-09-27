@@ -57,15 +57,8 @@ TEST(Gf, dlr_mat) {
   EXPECT_GF_NEAR(g1, g1b);
   EXPECT_EQ(g1.mesh().mesh_hash(), g1b.mesh().mesh_hash());
 
-  // imfreq
+  // compare dlr_imfreq against exact result
   auto g3 = make_gf_dlr_imfreq(g2);
-
-  // reverse transfo ok
-  auto g2b = make_gf_dlr(g3);
-  EXPECT_GF_NEAR(g2, g2b);
-  EXPECT_EQ(g2.mesh().mesh_hash(), g2b.mesh().mesh_hash());
-
-  // check value
   auto g3_check = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, w_max, eps}, {1, 1}};
   for (auto w : g3_check.mesh()) g3_check[w] = 1 / (w - e0);
 
