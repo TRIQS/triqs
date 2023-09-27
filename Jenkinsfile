@@ -37,9 +37,8 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       if (platform == documentationPlatform)
         args = '-DBuild_Documentation=1 -DMATHJAX_PATH=https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2'
       else if (platform == "sanitize")
-        args = '-DASAN=ON -DUBSAN=ON'
-      def uid = sh(returnStdout: true, script: "id -u").trim()
-      def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} .")
+        args = '-DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
+      def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {
           sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
