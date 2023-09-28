@@ -57,6 +57,12 @@ namespace triqs::mesh {
     /**
      * Construct a DLR coefficient mesh
      *
+     * The mesh-point for a given linear_index `i` can be otained
+     * through `m[i]` and for an index `n` through `m(n)`
+     *
+     * The associated Green function allows for evaluation on
+     * both arbitrary Matsubara frequencies and tau-points.
+     *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
      * @param w_max DLR energy cutoff, same as Lambda / beta

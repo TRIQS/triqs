@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Simons Foundation
-// Copyright (c) 2023 Hugo Strand
+// Copyright (c) 2023 Hugo U.R. Strand
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Alexander Hampel, Olivier Parcollet, Hugo Strand, Nils Wentzell
+// Authors: Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
 #pragma once
 #include "utils.hpp"
@@ -49,6 +49,13 @@ namespace triqs::mesh {
 
     /**
      * Construct a DLR mesh in imaginary times
+     *
+     * The mesh-point for a given linear_index `i` can be otained
+     * through `m[i]` and for an index `n` through `m(n)`
+     *
+     * The associated Green function does not allow for evaluation on
+     * arbitrary tau-points. For this use the Green function
+     * on the associated dlr_mesh.
      *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
