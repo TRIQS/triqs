@@ -126,7 +126,7 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
         n_iw : int [default=1025]
             Number of positive Matsubara frequencies
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
@@ -197,7 +197,7 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
         n_tau : int
             Number of mesh-points
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
@@ -235,7 +235,7 @@ m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
         eps : float
             DLR epsilon accuracy
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",

@@ -39,6 +39,7 @@ namespace triqs::mesh {
     statistic_enum _statistic           = Fermion;
     double _w_max                       = 0.0;
     double _eps                         = 1e-10;
+    bool _symmetrize                    = false;
     uint64_t _mesh_hash                 = 0;
     std::shared_ptr<const dlr_ops> _dlr = {};
 
@@ -53,22 +54,27 @@ namespace triqs::mesh {
      * @param statistic, Fermion or Boson
      * @param w_max DLR energy cutoff, same as Lambda / beta
      * @param eps Representation accuracy
+     * @param symmetrize Experimental! Whether to choose the time-points symmetrically
+     *            around beta/2. For fermionic/bosonic statistic enforces even/odd dlr-rank
+     *            and number of tau-points [default = false]
      */
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps)
-       : dlr_imtime(beta, statistic, w_max, eps, cppdlr::build_dlr_rf(w_max * beta, eps, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM)) {}
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
+       : dlr_imtime(beta, statistic, w_max, eps, symmetrize,
+                    cppdlr::build_dlr_rf(w_max * beta, eps, static_cast<cppdlr::statistic_t>(statistic), symmetrize)) {}
 
     private:
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, nda::vector<double> const &dlr_freq)
-       : dlr_imtime(beta, statistic, w_max, eps,
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
+       : dlr_imtime(beta, statistic, w_max, eps, symmetrize,
                     dlr_ops{dlr_freq,
-                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM},
-                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), cppdlr::SYM}}) {}
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize},
+                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
 
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, dlr_ops dlr)
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, dlr_ops dlr)
        : _beta(beta),
          _statistic(statistic),
          _w_max(w_max),
          _eps(eps),
+         _symmetrize(symmetrize),
          _mesh_hash(hash(beta, w_max, eps, sum(dlr.imt.get_itnodes()))),
          _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
@@ -77,7 +83,8 @@ namespace triqs::mesh {
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr> M>
-    explicit dlr_imtime(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _dlr(m._dlr) {
+    explicit dlr_imtime(M const &m)
+       : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _symmetrize(m._symmetrize), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imtime>)
         _mesh_hash = m._mesh_hash;
       else
@@ -219,6 +226,7 @@ namespace triqs::mesh {
       h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
       h5::write(gr, "w_max", m._w_max);
       h5::write(gr, "eps", m._eps);
+      h5::write(gr, "symmetrize", m._symmetrize);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
       h5::write(gr, "dlr_if", m.dlr_if());
@@ -229,14 +237,15 @@ namespace triqs::mesh {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
 
-      auto beta      = h5::read<double>(gr, "beta");
-      auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto w_max     = h5::read<double>(gr, "w_max");
-      auto eps       = h5::read<double>(gr, "eps");
-      auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
-      auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
-      auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_imtime(beta, statistic, w_max, eps, {_dlr_freq, _dlr_it, _dlr_if});
+      auto beta       = h5::read<double>(gr, "beta");
+      auto statistic  = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+      auto w_max      = h5::read<double>(gr, "w_max");
+      auto eps        = h5::read<double>(gr, "eps");
+      auto symmetrize = h5::read<bool>(gr, "symmetrize");
+      auto _dlr_freq  = h5::read<nda::vector<double>>(gr, "dlr_freq");
+      auto _dlr_it    = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
+      auto _dlr_if    = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
+      m               = dlr_imtime(beta, statistic, w_max, eps, symmetrize, {_dlr_freq, _dlr_it, _dlr_if});
     }
   };
 
