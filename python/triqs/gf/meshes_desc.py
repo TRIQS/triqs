@@ -134,6 +134,10 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
             DLR energy cutoff, same as Lambda / beta
         eps: float
             Representation accuracy
+        symmetrize: bool [default = false]
+            Experimental! Whether to choose the frequencies symmetrically
+            around 0. For fermionic/bosonic statistic enforces even/odd dlr-rank
+            and number of frequencies
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
@@ -211,6 +215,10 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
             DLR energy cutoff, same as Lambda / beta
         eps: float
             Representation accuracy
+        symmetrize: bool [default = false]
+            Experimental! Whether to choose the time-points symmetrically
+            around beta/2. For fermionic/bosonic statistic enforces even/odd dlr-rank
+            and number of tau-points
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
@@ -255,6 +263,10 @@ m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
             DLR energy cutoff, same as Lambda / beta
         eps: float
             Representation accuracy
+        symmetrize: bool [default = false]
+            Experimental! Whether to choose the time-points and frequencies
+            of the associated MeshDLRImTime and MeshDLRImFreq symmetrically.
+            For fermionic/bosonic statistic enforces even/odd dlr-rank [default = false]
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
