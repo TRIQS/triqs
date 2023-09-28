@@ -115,7 +115,14 @@ module.add_class(m)
 ########################
 
 m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
-        doc="""Mesh of DLR Matsubara frequencies
+        doc =  """Mesh of DLR imaginary times
+
+        The MeshPoint for a given linear_index `i` can be otained
+        through `m[i]` and for an index `n` through `m(n)`
+
+        The associated Green function does not allow for evaluation on
+        arbitrary Matsubara frequencies. For this use the Green function
+        on the associated MeshDLR.
 
         Parameters
         ----------
@@ -123,8 +130,10 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
             Inverse temperature
         statistic : str
             Statistic, 'Fermion' or 'Boson'
-        n_iw : int [default=1025]
-            Number of positive Matsubara frequencies
+        w_max: float
+            DLR energy cutoff, same as Lambda / beta
+        eps: float
+            Representation accuracy
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
 m.add_property(name = "beta",
@@ -142,7 +151,7 @@ m.add_property(name = "w_max",
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
-               doc = "DLR epsilon accuracy"))
+               doc = "Representation accuracy"))
 
 module.add_class(m)
 
@@ -185,8 +194,12 @@ module.add_class(m)
 m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
         doc =  """Mesh of DLR imaginary times
 
-        Mesh-points are evenly distributed in the interval [0,beta]
-        including points at both edges.
+        The MeshPoint for a given linear_index `i` can be otained
+        through `m[i]` and for an index `n` through `m(n)`
+
+        The associated Green function does not allow for evaluation on
+        arbitrary tau-points. For this use the Green function
+        on the associated MeshDLR
 
         Parameters
         ----------
@@ -194,8 +207,10 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
             Inverse temperature
         statistic : str
             Statistic, 'Fermion' or 'Boson'
-        n_tau : int
-            Number of mesh-points
+        w_max: float
+            DLR energy cutoff, same as Lambda / beta
+        eps: float
+            Representation accuracy
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
 m.add_property(name = "beta",
@@ -213,7 +228,7 @@ m.add_property(name = "w_max",
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
-               doc = "DLR epsilon accuracy"))
+               doc = "Representation accuracy"))
 
 module.add_class(m)
 
@@ -224,16 +239,22 @@ module.add_class(m)
 m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
         doc =  """Mesh of DLR coefficients
 
+        The MeshPoint for a given linear_index `i` can be otained
+        through `m[i]` and for an index `n` through `m(n)`
+
+        The associated Green function allows for evaluation on
+        both arbitrary Matsubara frequencies and tau-points.
+
         Parameters
         ----------
         beta : float
             Inverse temperature
         statistic : str
             Statistic, 'Fermion' or 'Boson'
-        w_max : float
-            DLR energy cutoff
-        eps : float
-            DLR epsilon accuracy
+        w_max: float
+            DLR energy cutoff, same as Lambda / beta
+        eps: float
+            Representation accuracy
         """)
 m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
 m.add_property(name = "beta",
@@ -251,7 +272,7 @@ m.add_property(name = "w_max",
 m.add_property(name = "eps",
                getter = cfunction(calling_pattern="double result = self_c.eps()",
                signature = "double()",
-               doc = "DLR epsilon accuracy"))
+               doc = "Representation accuracy"))
 
 module.add_class(m)
 

@@ -50,6 +50,13 @@ namespace triqs::mesh {
     /**
      * Construct a DLR mesh in Matsubara frequencies
      *
+     * The mesh-point for a given linear_index `i` can be otained
+     * through `m[i]` and for an index `n` through `m(n)`
+     *
+     * The associated Green function does not allow for evaluation on
+     * arbitrary Matsubara frequencies. For this use the Green function
+     * on the associated dlr_mesh.
+     *
      * @param beta Inverse temperature
      * @param statistic, Fermion or Boson
      * @param w_max DLR energy cutoff, same as Lambda / beta
