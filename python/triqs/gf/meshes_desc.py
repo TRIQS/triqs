@@ -135,7 +135,7 @@ m = make_mesh( py_type = "MeshDLRImFreq", c_tag = "dlr_imfreq",
         eps: float
             Representation accuracy
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
@@ -212,7 +212,7 @@ m = make_mesh(py_type = "MeshDLRImTime", c_tag = "dlr_imtime",
         eps: float
             Representation accuracy
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
@@ -256,7 +256,7 @@ m = make_mesh(py_type = "MeshDLR", c_tag = "dlr",
         eps: float
             Representation accuracy
         """)
-m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps)")
+m.add_constructor(signature = "(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
