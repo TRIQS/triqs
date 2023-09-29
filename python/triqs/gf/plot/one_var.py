@@ -132,7 +132,7 @@ def legendre(self, opt_dict):
               - name: str
                      name of the gf for the label and legend
     """
-    return plot_base.plot_base( self, opt_dict,  r'$l_n$', lambda x : r'%s$(l_n)$'%x, list(self.mesh.values()))
+    return plot_base.plot_base( self, opt_dict,  r'$l_n$', lambda x : r'%s$(l_n)$'%x, list(range(len(self.mesh))))
 
 #----------------------------------------------------------------
 
