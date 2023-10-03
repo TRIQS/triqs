@@ -30,6 +30,7 @@ from . import meshes
 from . import plot 
 from . import gf_fnt, wrapped_aux
 from .mesh_point import MeshPoint
+from .matsubara_freq import MatsubaraFreq
 from operator import mul
 
 # list of all the meshes
@@ -68,7 +69,7 @@ class AddMethod(type):
 
 class Idx:
     def __init__(self, *x):
-        self.idx = x[0] if len(x)==1 else x
+        self.index = x[0] if len(x)==1 else x
 
 class Gf(metaclass=AddMethod):
     r""" TRIQS Greens function container class
@@ -281,7 +282,9 @@ class Gf(metaclass=AddMethod):
             assert x.mesh_hash == m.mesh_hash, "Green function Mesh and MeshPoint have incompatible hash"
             return x.data_index
         elif isinstance(x, Idx):
-            return m.to_data_index(x.idx)
+            return m.to_data_index(x.index)
+        elif isinstance(x, MatsubaraFreq):
+            return m.to_data_index(x)
         else:
             return x
     
@@ -293,21 +296,21 @@ class Gf(metaclass=AddMethod):
         if key == self._full_slice:
             return self
 
-        # Only one argument. Must be a mesh point, idx or slicing rank1 target space
+            # Only one argument. Must be either one of (MeshPoint, Idx, MatsubaraFreq) or slicing rank1 target space
         if not isinstance(key, tuple):
-            if isinstance(key, (Idx, MeshPoint)):
+            if isinstance(key, (Idx, MeshPoint, MatsubaraFreq)):
                 return self.data[self._to_data_index(key, self._mesh)]
             else: key = (key,)
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
-        if all(isinstance(x, (MeshPoint, Idx)) for x in key):
+        if all(isinstance(x, (MeshPoint, Idx, MatsubaraFreq)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
             return self.data[tuple(self._to_data_index(x,m) for x,m in zip(key,self._mesh._mlist))]
 
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
-        elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
+        elif any(isinstance(x, (MeshPoint, Idx, MatsubaraFreq)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [[ ]]. Expected %s, got %s"%(self.rank, len(key))
-            assert all(isinstance(x, (MeshPoint, Idx, slice)) for x in key), "Invalid accessor of Greens function, please combine only MeshPoints, Idx and slice"
+            assert all(isinstance(x, (MeshPoint, Idx, MatsubaraFreq, slice)) for x in key), "Invalid accessor of Greens function, please combine only MeshPoints, Idx and slice"
             assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
             mlist = self._mesh._mlist 
             for x in key:
@@ -316,7 +319,7 @@ class Gf(metaclass=AddMethod):
             k = tuple(self._to_data_index(x,m) for x,m in zip(key,mlist)) + self._target_rank * (slice(0, None),)
             dat = self._data[k]
             # list of the remaining lists
-            mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), zip(key, mlist))]
+            mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx, MatsubaraFreq)), zip(key, mlist))]
             assert len(mlist) > 0, "Internal error" 
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
             sing = None 
@@ -351,11 +354,11 @@ class Gf(metaclass=AddMethod):
     def __setitem__(self, key, val):
 
         # Only one argument and not a slice. Must be a mesh point, Idx
-        if isinstance(key, (MeshPoint, Idx)):
+        if isinstance(key, (MeshPoint, Idx, MatsubaraFreq)):
             self.data[self._to_data_index(key, self._mesh)] = val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
-        elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx)) for x in key):
+        elif isinstance(key, tuple) and all(isinstance(x, (MeshPoint, Idx, MatsubaraFreq)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
             self.data[tuple(self._to_data_index(x,m) for x,m in zip(key,self._mesh._mlist))] = val
 
@@ -410,9 +413,11 @@ class Gf(metaclass=AddMethod):
         assert self._c_proxy, " no proxy"
         def filt(x):
             if isinstance(x, MeshPoint):
-                return x.value
-            if isinstance(x, Idx):
-                return x.idx
+                if x.value is not None:
+                    return x.value
+                return x.index
+            elif isinstance(x, Idx):
+                return x.index
             return x
         return self._c_proxy(*[filt(x) for x in args])
 

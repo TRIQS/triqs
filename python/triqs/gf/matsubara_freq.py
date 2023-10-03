@@ -51,6 +51,10 @@ class MatsubaraFreq:
         return 1j * (2*self.n + self.is_fermion) * math.pi / self.beta
 
     @property
+    def index(self):
+        return self.n
+
+    @property
     def imag(self):
         return complex(self).imag
 

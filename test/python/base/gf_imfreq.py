@@ -28,17 +28,28 @@ beta =10
 def matsu(n) : 
    return (2*n+1)*pi/beta * 1j
 
-g = GfImFreq(indices = [1,2], beta = beta, n_points = 100)
+g = GfImFreq(beta = beta, n_points = 100, target_shape = [])
 g << inverse(iOmega_n + 2.0) 
 
-X = np.array([ g.mesh(n).imag  for n in range(3)])
-Y = np.array([ g(n)[0,0]            for n in range(3)])
+idx_lst = list(range(3))
+iw_lst  = [MatsubaraFreq(n, beta) for n in idx_lst]
 
-X_r = np.array([ matsu(n).imag   for n in range(3)])
-Y_r = np.array([ 1/(matsu(n) +2) for n in range(3)])
+X1 = np.array([ g.mesh(n).imag  for n in idx_lst])
+X2 = np.array([ matsu(n).imag   for n in idx_lst])
+X3 = np.array([ iw.imag         for iw in iw_lst])
 
-assert_arrays_are_close(X, X_r) 
-assert_arrays_are_close(Y, Y_r) 
+assert_arrays_are_close(X1, X2)
+assert_arrays_are_close(X2, X3)
 
+Y1 = np.array([ g[Idx(n)]        for n in idx_lst])
+Y2 = np.array([ g(n)             for n in idx_lst])
+Y3 = np.array([ 1/(matsu(n) + 2) for n in idx_lst])
+Y4 = np.array([ g[iw]            for iw in iw_lst])
+Y5 = np.array([ g(iw)            for iw in iw_lst])
+Y6 = np.array([ 1/(iw + 2)       for iw in iw_lst])
 
-
+assert_arrays_are_close(Y1, Y2)
+assert_arrays_are_close(Y2, Y3)
+assert_arrays_are_close(Y3, Y4)
+assert_arrays_are_close(Y4, Y5)
+assert_arrays_are_close(Y5, Y6)

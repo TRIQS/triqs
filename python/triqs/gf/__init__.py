@@ -53,6 +53,7 @@ import warnings
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions',
             'MeshPoint','MeshValueGenerator',
+            'MatsubaraFreq',
             'Idx', 'Gf', 'MeshProduct',
             'GfImFreq', 'MeshImFreq',
             'GfImTime', 'MeshImTime',
