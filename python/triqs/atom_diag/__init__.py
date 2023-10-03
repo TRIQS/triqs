@@ -20,6 +20,7 @@
 
 
 from triqs.operators import Operator
+from itertools import chain
 from .atom_diag import AtomDiagReal, AtomDiagComplex
 from .atom_diag import partition_function, atomic_density_matrix, trace_rho_op, act
 from .atom_diag import quantum_number_eigenvalues, quantum_number_eigenvalues_checked
@@ -34,10 +35,13 @@ def AtomDiag(*args, **kwargs):
     if not isinstance(h, Operator):
         raise RuntimeError("The Hamiltonian must be an Operator object!")
 
-    if any(abs(term[-1].imag) > 0 for term in h):
-        return AtomDiagComplex(*args, **kwargs)
-    else:
-        return AtomDiagReal(h.real, *args[1:], **{k: v for k, v in kwargs.items() if k != 'h'})
+    if all(x.imag.is_zero() for x in chain(args, kwargs.keys()) if isinstance(x, Operator)):
+        op_to_real = lambda x: x.real if isinstance(x, Operator) else x
+        args_r = [op_to_real(x) for x in args]
+        kwargs_r = {k: op_to_real(v) for k,v in kwargs.items()}
+        return AtomDiagReal(*args_r, **kwargs_r)
+
+    return AtomDiagComplex(*args, **kwargs)
 
 AtomDiag.__doc__ = AtomDiagReal.__doc__.replace("Lightweight exact diagonalization solver (Real)",
                                                 "Create and return an exact diagonalization solver.\nDepending on the type of h returns :py:class:`AtomDiagReal <triqs.atom_diag.atom_diag.AtomDiagReal>` or :py:class:`AtomDiagComplex <triqs.atom_diag.atom_diag.AtomDiagComplex>`")
