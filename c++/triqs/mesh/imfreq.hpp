@@ -163,6 +163,9 @@ namespace triqs::mesh {
     /// The particle statistic: Fermion or Boson
     [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
 
+    /// Number of positive Matsubara frequencies
+    [[nodiscard]] long n_iw() const noexcept { return _n_iw; }
+
     /// The Hash for the mesh configuration
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 

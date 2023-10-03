@@ -100,13 +100,19 @@ m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
 m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {})""")
+
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.beta()",
                signature = "double()",
                doc = "Inverse temperature"))
+
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
                doc = "Statistic")
+
+m.add_property(name = "n_iw",
+               getter = cfunction(calling_pattern="long result = self_c.n_iw()", signature = "long()"),
+               doc = "Number of positive Matsubara frequencies")
 
 module.add_class(m)
 
