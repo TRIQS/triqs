@@ -96,6 +96,7 @@ m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq",
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_iw=1025)")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 m.add_constructor(signature = "(double beta, statistic_enum statistic, int n_iw)")
+m.add_method(f"imfreq::data_index_t to_data_index(matsubara_freq iw)", doc = "Function to convert a Matsubara frequency to a data index")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
