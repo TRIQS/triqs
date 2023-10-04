@@ -38,6 +38,7 @@ add_python_test(hdf5_meshBZ)
 add_python_test(issue460)
 add_python_test(issue437)
 add_python_test(issue649)
+add_python_test(issue913)
 add_python_test(bug_tight_binding)
 add_python_test(bug_bcast_mesh)
 
