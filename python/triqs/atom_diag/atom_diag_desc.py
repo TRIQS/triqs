@@ -84,7 +84,7 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
     c.add_constructor("(many_body_operator h, fundamental_operator_set fops, int n_min, int n_max)",
                       doc = "Reduce a given Hamiltonian to a block diagonal form, and diagonalize subspaces with particle numbers from n_min to n_max")
 
-    c.add_constructor("(many_body_operator h, many_body_operator hyb, fundamental_operator_set fops)",
+    c.add_constructor("(many_body_operator h, fundamental_operator_set fops, many_body_operator hyb)",
                       doc = "Reduce a given Hamiltonian to a block-diagonal form and respect the block structure defined by the operator hyb")
 
     c.add_constructor("(many_body_operator h, fundamental_operator_set fops, std::vector<%s::many_body_op_t> qn_vector)" % c_type,

@@ -43,7 +43,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, many_body_op_t const &hyb, fundamental_operator_set const &fops))
+    ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, fundamental_operator_set const &fops, many_body_op_t const &hyb))
        : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {
       atom_diag_worker<Complex>{this}.autopartition(hyb);
       fill_first_eigenstate_of_subspace();
