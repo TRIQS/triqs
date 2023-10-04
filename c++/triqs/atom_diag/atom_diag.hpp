@@ -140,7 +140,7 @@ namespace triqs {
        */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
 
-      atom_diag(many_body_op_t const &h, many_body_op_t const &hyb, fundamental_operator_set const &fops);
+      atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, many_body_op_t const &hyb);
 
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
 
@@ -156,6 +156,8 @@ namespace triqs {
        * @param qn_vector Vector of quantum number operators.
        */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::vector<many_body_op_t> const &qn_vector);
+      atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::initializer_list<many_body_op_t> const &init_lst)
+         : atom_diag(h, fops, std::vector<many_body_op_t>{init_lst}){};
 
       /// The Hamiltonian used at construction
       many_body_op_t const &get_h_atomic() const { return h_atomic; }

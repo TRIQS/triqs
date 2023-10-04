@@ -152,7 +152,7 @@ TEST(atom_diag_real, Autopartition2) {
   EXPECT_EQ(16, ad.get_full_hilbert_space_dim());
 
   std::printf("\n\n-----------------\n ad with hyb\n-----------------\n");
-  auto ad_hyb = atom_diag_real(h, hyb_effecive, fops);
+  auto ad_hyb = atom_diag_real(h, fops, hyb_effecive);
   print_atom_diag(ad_hyb);
 
   EXPECT_EQ(ad_hyb.n_subspaces(), 5);
