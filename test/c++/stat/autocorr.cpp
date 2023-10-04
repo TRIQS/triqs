@@ -96,14 +96,14 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
 
 // test used in the Python test.
 
-nda::array<double, 1> f(int N, int seed) {
+nda::array<double, 1> f(int N, int rng_seed) {
   int n_log_bins = 20;
   accumulator<double> AA(0, n_log_bins);
 
   // the number series
   double correlation_length = 100;
   double f                  = exp(-1. / correlation_length);
-  std::mt19937 gen(seed);
+  std::mt19937 gen(rng_seed);
   std::normal_distribution<double> distr;
 
   // produce the number and fill AA

@@ -208,10 +208,10 @@ namespace triqs::mesh::details {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format_as_string(gr, format_expected, true);
 
-      auto a = h5::read<value_t>(gr, "min");
-      auto b = h5::read<value_t>(gr, "max");
-      auto L = h5::read<long>(gr, "size");
-      *this  = linear(a, b, L);
+      auto a  = h5::read<value_t>(gr, "min");
+      auto b  = h5::read<value_t>(gr, "max");
+      auto sz = h5::read<long>(gr, "size");
+      *this   = linear(a, b, sz);
     }
 
     public:

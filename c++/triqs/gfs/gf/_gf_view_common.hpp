@@ -106,12 +106,11 @@ static decltype(auto) _subscript_impl(Self &&self, Arg &&...arg)
     else {
       // mesh is a tuple of meshes
       auto new_mesh = detail::filter_mesh<detail::compute_position<n_all>(mesh_filter)>(self.mesh());
-      using mesh_t  = decltype(new_mesh);
       using self_t  = std::remove_reference_t<Self>;
       if constexpr (self_t::is_const or std::is_const_v<self_t>)
-        return gf_const_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data};
+        return gf_const_view<decltype(new_mesh), typename self_t::target_t>{std::move(new_mesh), new_data};
       else
-        return gf_view<mesh_t, typename self_t::target_t>{std::move(new_mesh), new_data};
+        return gf_view<decltype(new_mesh), typename self_t::target_t>{std::move(new_mesh), new_data};
     }
   }
 }

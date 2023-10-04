@@ -86,16 +86,16 @@ struct test {
           break;
         case 2: {
           long k = 2 + RNG(6);
-          std::vector<double> x(k);
-          std::vector<long> w(k);
+          std::vector<double> x_vec(k);
+          std::vector<long> w_vec(k);
           for (auto m : itertools::range(k)) {
-            x.at(m) = RNG(10.0);
-            w.at(m) = RNG(s + m);
+            x_vec.at(m) = RNG(10.0);
+            w_vec.at(m) = RNG(s + m);
           }
-          std::sort(w.begin(), w.end());
-          if (std::unique(w.begin(), w.end()) == w.end()) {
+          std::sort(w_vec.begin(), w_vec.end());
+          if (std::unique(w_vec.begin(), w_vec.end()) == w_vec.end()) {
             std::cout << " Insert" << k << std::endl;
-            detratio = D.try_insert_k(w, w, x, x);
+            detratio = D.try_insert_k(w_vec, w_vec, x_vec, x_vec);
           }
           break;
         }
@@ -103,10 +103,10 @@ struct test {
           long k = 2 + RNG(6);
           std::cout << " Remove" << k << std::endl;
           if (D.size() >= 2) {
-            std::vector<long> w(k);
-            for (auto m : itertools::range(k)) { w.at(m) = RNG(s); }
-            std::sort(w.begin(), w.end());
-            if (std::unique(w.begin(), w.end()) == w.end()) detratio = D.try_remove_k(w, w);
+            std::vector<long> w_vec(k);
+            for (auto m : itertools::range(k)) { w_vec.at(m) = RNG(s); }
+            std::sort(w_vec.begin(), w_vec.end());
+            if (std::unique(w_vec.begin(), w_vec.end()) == w_vec.end()) detratio = D.try_remove_k(w_vec, w_vec);
           }
           break;
         }

@@ -331,7 +331,7 @@ namespace triqs {
         auto remap_connection = [&](matrix<long> &connection) {
           auto c2 = connection;
           for (int n = 0; n < first_dim(connection); ++n)
-            for (int i = 0; i < second_dim(connection); ++i) connection(n, remap[i]) = (c2(n, i) == -1 ? -1 : remap[c2(n, i)]);
+            for (int j = 0; j < second_dim(connection); ++j) connection(n, remap[j]) = (c2(n, j) == -1 ? -1 : remap[c2(n, j)]);
         };
         remap_connection(hdiag->creation_connection);
         remap_connection(hdiag->annihilation_connection);
@@ -350,10 +350,10 @@ namespace triqs {
 
         // Compute the matrices of c, c dagger in the diagonalization base of H_loc
         // first a lambda, since it is almost the same code for c and cdag
-        auto make_c_mat = [&](int n, matrix<long> const &connection, many_body_op_t const &op) {
+        auto make_c_mat = [&](int m, matrix<long> const &connection, many_body_op_t const &op) {
           std::vector<matrix_t> cmat(second_dim(connection));
           for (int B = 0; B < second_dim(connection); ++B) {
-            auto Bp = connection(n, B);
+            auto Bp = connection(m, B);
             if (Bp == -1) continue;
             cmat[B] = make_op_matrix(op, B, Bp);
           }

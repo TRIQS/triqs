@@ -269,8 +269,8 @@ namespace triqs {
             // prepare an unnormalized product
             monomial_t product_m;
             product_m.reserve(m.first.size() + op_m.first.size());
-            for (auto const &op : m.first) product_m.push_back(op);
-            for (auto const &op : op_m.first) product_m.push_back(op);
+            for (auto const &tmp_op : m.first) product_m.push_back(tmp_op);
+            for (auto const &tmp_op : op_m.first) product_m.push_back(tmp_op);
             // std::copy(m.first.begin(), m.first.end(), std::back_inserter(product_m));
             // std::copy(op_m.first.begin(), op_m.first.end(), std::back_inserter(product_m));
             normalize_and_insert(product_m, m.second * op_m.second, tmp_map);

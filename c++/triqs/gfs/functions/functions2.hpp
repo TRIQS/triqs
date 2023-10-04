@@ -229,7 +229,7 @@ namespace triqs::gfs {
   bool is_gf_real(G const &g, double tolerance = 1.e-13)
     requires(is_block_gf_v<G>)
   {
-    return std::all_of(g.begin(), g.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
+    return std::all_of(g.begin(), g.end(), [&](auto &gf) { return is_gf_real(gf, tolerance); });
   }
 
   /// Takes the real part of g without check, and returns a new gf with a real target
