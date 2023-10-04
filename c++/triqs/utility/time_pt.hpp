@@ -74,8 +74,8 @@ namespace triqs {
           return time_pt(((a.n + b.n) + 1) % Nmax, a.beta);
       }
       inline friend time_pt operator-(time_pt const &a, time_pt const &b) {
-        uint64_t n = (a.n >= b.n ? (a.n - b.n) % Nmax : Nmax - (b.n - a.n));
-        return time_pt(n, a.beta);
+        uint64_t res = (a.n >= b.n ? (a.n - b.n) % Nmax : Nmax - (b.n - a.n));
+        return time_pt(res, a.beta);
       }
 
       /// unary -

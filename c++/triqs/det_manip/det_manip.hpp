@@ -128,11 +128,11 @@ namespace triqs {
         vector_type MB, MC, B, C;
         // ksi = newdet/det
         value_type ksi;
-        void resize(long N) {
-          MB.resize(N);
-          MC.resize(N);
-          B.resize(N);
-          C.resize(N);
+        void resize(long new_N) {
+          MB.resize(new_N);
+          MC.resize(new_N);
+          B.resize(new_N);
+          C.resize(new_N);
         }
       };
 
@@ -143,24 +143,24 @@ namespace triqs {
         // MB = A^(-1)*B,
         // MC = C*A^(-1)
         matrix_type MB, MC, B, C, ksi;
-        void resize(long N, long k) {
-          if (k < 2) return;
-          x.resize(k);
-          y.resize(k);
-          i.resize(k);
-          j.resize(k);
-          ireal.resize(k);
-          jreal.resize(k);
-          MB.resize(N, k);
-          MC.resize(k, N);
-          B.resize(N, k);
-          C.resize(k, N);
-          ksi.resize(k, k);
+        void resize(long new_N, long new_k) {
+          if (new_k < 2) return;
+          x.resize(new_k);
+          y.resize(new_k);
+          i.resize(new_k);
+          j.resize(new_k);
+          ireal.resize(new_k);
+          jreal.resize(new_k);
+          MB.resize(new_N, new_k);
+          MC.resize(new_k, new_N);
+          B.resize(new_N, new_k);
+          C.resize(new_k, new_N);
+          ksi.resize(new_k, new_k);
         }
-        value_type det_ksi(long k) const {
-          if (k == 2) {
+        value_type det_ksi(long tmp_k) const {
+          if (tmp_k == 2) {
             return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
-          } else if (k == 3) {
+          } else if (tmp_k == 3) {
             return                                 // Rule of Sarrus
                ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
                ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
@@ -169,7 +169,7 @@ namespace triqs {
                ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
                ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
           } else {
-            auto Rk = range(k);
+            auto Rk = range(tmp_k);
             return nda::determinant(ksi(Rk, Rk));
           };
         }
@@ -179,10 +179,10 @@ namespace triqs {
         std::vector<x_type> x_values;
         std::vector<y_type> y_values;
         matrix_type M;
-        void reserve(long N) {
-          x_values.reserve(N);
-          y_values.reserve(N);
-          M.resize(N, N);
+        void reserve(long new_N) {
+          x_values.reserve(new_N);
+          y_values.reserve(new_N);
+          M.resize(new_N, new_N);
         }
       };
 
@@ -426,10 +426,10 @@ namespace triqs {
         return res;
       }
 
-      // Given a lambda f : x,y,M, it calls f(x_i,y_j,M_ji) for all i,j
+      // Given a lambda fn : x,y,M, it calls fn(x_i,y_j,M_ji) for all i,j
       // Order of iteration is NOT fixed, it is optimised (for memory traversal)
-      template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &f) {
-        nda::for_each(std::array{d.N, d.N}, [&f, &d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
+      template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &fn) {
+        nda::for_each(std::array{d.N, d.N}, [&fn, &d](int i, int j) { return fn(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
       }
 
       // ------------------------- OPERATIONS -----------------------------------------------
@@ -970,7 +970,7 @@ namespace triqs {
         w1.x     = x;
 
         // Compute the col B.
-        for (long i = 0; i < N; i++) w1.MB(i) = f(w1.x, y_values[i]) - f(x_values[w1.ireal], y_values[i]);
+        for (long idx = 0; idx < N; idx++) w1.MB(idx) = f(w1.x, y_values[idx]) - f(x_values[w1.ireal], y_values[idx]);
         range RN(N);
         //w1.MC(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
         blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.MB(RN), 0.0, w1.MC(RN));
@@ -1020,9 +1020,9 @@ namespace triqs {
         w1.y     = y;
 
         // Compute the col B.
-        for (long i = 0; i < N; i++) { // MC :  delta_x, MB : delta_y
-          w1.MC(i) = f(x_values[i], y) - f(x_values[i], y_values[w1.jreal]);
-          w1.MB(i) = f(x, y_values[i]) - f(x_values[w1.ireal], y_values[i]);
+        for (long idx = 0; idx < N; idx++) { // MC :  delta_x, MB : delta_y
+          w1.MC(idx) = f(x_values[idx], y) - f(x_values[idx], y_values[w1.jreal]);
+          w1.MB(idx) = f(x, y_values[idx]) - f(x_values[w1.ireal], y_values[idx]);
         }
         w1.MC(w1.ireal) = f(x, y) - f(x_values[w1.ireal], y_values[w1.jreal]);
         w1.MB(w1.jreal) = 0;
@@ -1145,7 +1145,7 @@ namespace triqs {
 
       //------------------------------------------------------------------------------------------
       private:
-      void _regenerate_with_check(bool do_check, double precision_warning, double precision_error) {
+      void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
         if (N == 0) {
           det  = 1;
           sign = 1;
@@ -1165,8 +1165,8 @@ namespace triqs {
           const bool relative = true;
           double r            = max_element(abs(res - mat_inv(RN, RN)));
           double r2           = max_element(abs(res + mat_inv(RN, RN)));
-          bool err            = !(r < (relative ? precision_error * r2 : precision_error));
-          bool war            = !(r < (relative ? precision_warning * r2 : precision_warning));
+          bool err            = !(r < (relative ? prec_error * r2 : prec_error));
+          bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
           if (err || war) {
             std::cerr << "matrix  = " << matrix() << std::endl;
             std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
@@ -1176,8 +1176,7 @@ namespace triqs {
                       << "check "
                       << "N = " << N << "  "
                       << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                      << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? precision_warning * r2 : precision_warning) << " "
-                      << std::endl;
+                      << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
           if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
         }
 

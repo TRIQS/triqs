@@ -126,7 +126,7 @@ namespace triqs::mesh {
 
     /// The data_index is the tuple of the data_index of the components
     data_index_t to_data_index(index_t const &index) const {
-      auto l = [](auto const &m, auto const &index) { return m.to_data_index(index); };
+      auto l = [](auto const &m, auto const &idx) { return m.to_data_index(idx); };
       return triqs::tuple::map_on_zip(l, *this, index);
     }
 
@@ -182,7 +182,7 @@ namespace triqs::mesh {
     friend void h5_write(h5::group fg, std::string subgroup_name, prod const &m) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m);
-      auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
+      auto l = [gr](int N, auto const &me) { h5_write(gr, "MeshComponent" + std::to_string(N), me); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 
@@ -190,7 +190,7 @@ namespace triqs::mesh {
     friend void h5_read(h5::group fg, std::string subgroup_name, prod &m) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
-      auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
+      auto l = [gr](int N, auto &me) { h5_read(gr, "MeshComponent" + std::to_string(N), me); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 

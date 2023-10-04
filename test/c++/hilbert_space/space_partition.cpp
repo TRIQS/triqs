@@ -105,7 +105,7 @@ TEST(space_partition, Phase1) {
   // Calculated classification of states
   // sets are used to neglect order of subspaces and of states within a subspace
   std::vector<std::set<int>> v_cl(SP.n_subspaces());
-  foreach (SP, [&v_cl](int st, int spn) { v_cl[spn].insert(st); })
+  foreach (SP, [&v_cl](int s, int spn) { v_cl[spn].insert(s); })
     ;
   std::set<std::set<int>> cl{v_cl.cbegin(), v_cl.cend()};
 
@@ -359,7 +359,7 @@ TEST(space_partition, Phase2) {
 
   // Calculated classification of states
   std::vector<std::set<int>> v_cl(SP.n_subspaces());
-  foreach (SP, [&v_cl](int st, int spn) { v_cl[spn].insert(st); })
+  foreach (SP, [&v_cl](int s, int spn) { v_cl[spn].insert(s); })
     ;
   std::set<std::set<int>> cl{v_cl.cbegin(), v_cl.cend()};
 

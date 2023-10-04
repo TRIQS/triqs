@@ -128,11 +128,11 @@ namespace triqs::mesh {
 
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string const &subgroup_name, matsubara_freq_domain &d) {
-      h5::group gr          = fg.open_group(subgroup_name);
-      std::string statistic = " ";
+      h5::group gr      = fg.open_group(subgroup_name);
+      std::string stats = " ";
       h5_read(gr, "beta", d.beta);
-      h5_read(gr, "statistic", statistic);
-      d.statistic = statistic == "F" ? Fermion : Boson;
+      h5_read(gr, "statistic", stats);
+      d.statistic = stats == "F" ? Fermion : Boson;
     }
 
     friend std::ostream &operator<<(std::ostream &sout, matsubara_freq_domain const &d) {
@@ -173,11 +173,11 @@ namespace triqs::mesh {
     /// Read from HDF5
     friend void h5_read(h5::group fg, std::string const &subgroup_name, matsubara_time_domain &d) {
       h5::group gr = fg.open_group(subgroup_name);
-      double beta;
-      std::string statistic{};
-      h5_read(gr, "beta", beta);
-      h5_read(gr, "statistic", statistic);
-      d = matsubara_time_domain(beta, (statistic == "F" ? Fermion : Boson));
+      double b;
+      std::string stats{};
+      h5_read(gr, "beta", b);
+      h5_read(gr, "statistic", stats);
+      d = matsubara_time_domain(b, (stats == "F" ? Fermion : Boson));
     }
 
     friend std::ostream &operator<<(std::ostream &sout, matsubara_time_domain const &d) {

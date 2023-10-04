@@ -213,8 +213,8 @@ namespace triqs {
 
         for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
           auto M = all_terms[i];
-          foreach (st, [M, &target_st, hs, args...](int i, typename StateType::value_type amplitude) {
-            fock_state_t f2 = hs.get_fock_state(i);
+          foreach (st, [M, &target_st, hs, args...](int j, typename StateType::value_type amplitude) {
+            fock_state_t f2 = hs.get_fock_state(j);
             if ((f2 & M.d_mask) != M.d_mask) return;
             f2 &= ~M.d_mask;
             if (((f2 ^ M.dag_mask) & M.dag_mask) != M.dag_mask) return;

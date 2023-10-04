@@ -56,11 +56,11 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   auto Gt1_exact = Gt1;
   Gt1_exact()    = 0.0;
   double s       = (statistic == Fermion ? -1 : 1);
-  auto one_pole  = [&](double E, auto &&t) {
-    if (E > 0)
-      return -exp(-E * t) / (1 - s * exp(-E * beta));
+  auto one_pole  = [&](double En, auto &&t) {
+    if (En > 0)
+      return -exp(-En * t) / (1 - s * exp(-En * beta));
     else
-      return s * exp(E * (beta - t)) / (1 - s * exp(E * beta));
+      return s * exp(En * (beta - t)) / (1 - s * exp(En * beta));
   };
   for (auto t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2 * E, t) - 4.5 * one_pole(1.25 * E, t); }
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);

@@ -60,7 +60,7 @@ TEST(Stat, Jack1) {
   }
 
   auto [x, d, xj, xn] = jackknife_mpi(
-     world, [](auto &&a, auto &&b) { return a / b; }, a, b);
+     world, [](auto &&val1, auto &&val2) { return val1 / val2; }, a, b);
 
   // redo the manual computation
   std::vector<double> A(Nsample, 0), B(Nsample, 0);
@@ -119,7 +119,7 @@ TEST(Stat, Jack1) {
   // for a linear function, the two average must be the same
 
   auto [av1, avv, av3, av2] = jackknife_mpi(
-     world, [](auto &&x) { return x; }, a);
+     world, [](auto &&val) { return val; }, a);
   EXPECT_NEAR(av1, av2, precision);
 }
 
@@ -173,7 +173,7 @@ TEST(Binned, array) {
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  auto a_b = [](auto const &a, auto const &b) { return a / b; };
+  auto a_b = [](auto const &val1, auto const &val2) { return val1 / val2; };
   //
   auto [x1, d1, xj1, xn1] = jackknife_mpi(world, a_b, b1, c1);
   auto [x2, d2, xj2, xn2] = jackknife_mpi(world, a_b, b2, c2);

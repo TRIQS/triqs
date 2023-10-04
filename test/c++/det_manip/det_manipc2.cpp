@@ -106,20 +106,20 @@ struct test {
         case 2: {
           long k = 2 + RNG(6);
           std::cerr << " Insert" << k << std::endl;
-          std::vector<double> x(k);
-          std::vector<double> y(k);
-          std::vector<long> i(k);
-          std::vector<long> j(k);
+          std::vector<double> x_vec(k);
+          std::vector<double> y_vec(k);
+          std::vector<long> i_vec(k);
+          std::vector<long> j_vec(k);
           for (auto m : itertools::range(k)) {
-            x.at(m) = RNG(10.0);
-            y.at(m) = RNG(10.0);
-            i.at(m) = RNG(s + m);
-            j.at(m) = RNG(s + m);
+            x_vec.at(m) = RNG(10.0);
+            y_vec.at(m) = RNG(10.0);
+            i_vec.at(m) = RNG(s + m);
+            j_vec.at(m) = RNG(s + m);
           }
-          std::sort(i.begin(), i.end());
-          std::sort(j.begin(), j.end());
-          if (std::unique(i.begin(), i.end()) == i.end() && std::unique(j.begin(), j.end()) == j.end()) {
-            detratio = D.try_insert_k(i, j, x, y);
+          std::sort(i_vec.begin(), i_vec.end());
+          std::sort(j_vec.begin(), j_vec.end());
+          if (std::unique(i_vec.begin(), i_vec.end()) == i_vec.end() && std::unique(j_vec.begin(), j_vec.end()) == j_vec.end()) {
+            detratio = D.try_insert_k(i_vec, j_vec, x_vec, y_vec);
           } else
             do_something = false;
           break;
@@ -128,16 +128,16 @@ struct test {
           long k = 2 + RNG(6);
           std::cerr << " Remove" << k << std::endl;
           if (D.size() >= k) {
-            std::vector<long> i(k);
-            std::vector<long> j(k);
+            std::vector<long> i_vec(k);
+            std::vector<long> j_vec(k);
             for (auto m : itertools::range(k)) {
-              i.at(m) = RNG(s);
-              j.at(m) = RNG(s);
+              i_vec.at(m) = RNG(s);
+              j_vec.at(m) = RNG(s);
             }
-            std::sort(i.begin(), i.end());
-            std::sort(j.begin(), j.end());
-            if (std::unique(i.begin(), i.end()) == i.end() && std::unique(j.begin(), j.end()) == j.end()) {
-              detratio = D.try_remove_k(i, j);
+            std::sort(i_vec.begin(), i_vec.end());
+            std::sort(j_vec.begin(), j_vec.end());
+            if (std::unique(i_vec.begin(), i_vec.end()) == i_vec.end() && std::unique(j_vec.begin(), j_vec.end()) == j_vec.end()) {
+              detratio = D.try_remove_k(i_vec, j_vec);
             } else
               do_something = false;
           }

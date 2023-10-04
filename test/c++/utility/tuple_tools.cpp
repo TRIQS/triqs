@@ -111,8 +111,8 @@ int main(int argc, char **argv) {
     };
 #ifdef __cpp_generic_lambdas
     auto _name = [fl](auto... is) {
-      auto t = std::make_tuple(is...);
-      return triqs::tuple::fold(fl, t, std::string{});
+      auto t3 = std::make_tuple(is...);
+      return triqs::tuple::fold(fl, t3, std::string{});
     };
     auto r = _name(1, 2, 3);
 #else
@@ -139,22 +139,22 @@ int main(int argc, char **argv) {
 
   { // filter
     std::cout << "  ----- filter ----" << std::endl;
-    auto t = std::make_tuple(0, 1, 2, 3, 4, "=5");
-    std::cout << "filter " << t << triqs::tuple::filter<0, 2, 3>(t) << std::endl;
-    std::cout << "filter " << t << triqs::tuple::filter<1, 3, 5>(t) << std::endl;
+    auto t3 = std::make_tuple(0, 1, 2, 3, 4, "=5");
+    std::cout << "filter " << t3 << triqs::tuple::filter<0, 2, 3>(t3) << std::endl;
+    std::cout << "filter " << t3 << triqs::tuple::filter<1, 3, 5>(t3) << std::endl;
 
-    std::cout << "filter out " << t << triqs::tuple::filter_out<0, 2, 3>(t) << std::endl;
-    std::cout << "filter out " << t << triqs::tuple::filter_out<1, 3, 5>(t) << std::endl;
+    std::cout << "filter out " << t3 << triqs::tuple::filter_out<0, 2, 3>(t3) << std::endl;
+    std::cout << "filter out " << t3 << triqs::tuple::filter_out<1, 3, 5>(t3) << std::endl;
 
-    auto t2 = std::make_tuple(0, 1);
-    std::cout << "filter out " << t2 << triqs::tuple::filter_out<0>(t2) << std::endl;
+    auto t4 = std::make_tuple(0, 1);
+    std::cout << "filter out " << t4 << triqs::tuple::filter_out<0>(t4) << std::endl;
   }
 
   { // replace
     std::cout << "  ----- filter ----" << std::endl;
-    auto t = std::make_tuple(0, 1, 2, 3, 4, "=5");
-    auto s = std::string{"--"};
-    std::cout << "replace 0,2,3" << t << triqs::tuple::replace<0, 2, 3>(t, s) << std::endl;
-    std::cout << "replace 1,3,5" << t << triqs::tuple::replace<1, 3, 5>(t, s) << std::endl;
+    auto t3 = std::make_tuple(0, 1, 2, 3, 4, "=5");
+    auto s  = std::string{"--"};
+    std::cout << "replace 0,2,3" << t3 << triqs::tuple::replace<0, 2, 3>(t3, s) << std::endl;
+    std::cout << "replace 1,3,5" << t3 << triqs::tuple::replace<1, 3, 5>(t3, s) << std::endl;
   }
 }
