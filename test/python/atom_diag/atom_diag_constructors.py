@@ -15,7 +15,7 @@ def get_param_list(h, fops, qn_vector, hyb):
             ( [h], {'fops':fops, 'qn_vector':qn_vector} ),
             ( [], {'h':h, 'fops':fops, 'qn_vector':qn_vector} ),
             ( [h, fops], {'n_min':1, 'n_max':1} ),
-            ( [h, hyb, fops], {} ),
+            ( [h, fops, hyb], {} ),
     ]
 
 class test_atom_diag_constructors(unittest.TestCase):
