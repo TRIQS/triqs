@@ -67,18 +67,24 @@ For full functionality of the C++2Py Tool, please install clang and the libclang
 Anaconda
 --------
 
-We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`_ distribution. The packages are provided through the `conda-forge <https://conda-forge.org/>`_ repositories. After `installing conda <https://docs.conda.io/en/latest/miniconda.html>`_ you can install TRIQS with::
+We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`_ distribution. The packages are provided through the `conda-forge <https://conda-forge.org/>`_ repositories. After `installing conda <https://docs.conda.io/en/latest/miniconda.html>`_ we recommend to first create a specific `Anaconda environment<https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_ to avoid conflicts with other packages::
+
+        conda create -n triqs
+        conda activate triqs
+
+You can then install TRIQS with::
 
         conda install -c conda-forge triqs
 
 See also `github.com/conda-forge/triqs-feedstock <https://github.com/conda-forge/triqs-feedstock/>`_.
-We further provide packages for `triqs_cthyb <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_, `triqs_dft_tools <https://github.com/conda-forge/triqs_dft_tools-feedstock/>`_
-and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
+We further provide packages for `triqs_cthyb <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_, `triqs_dft_tools <https://github.com/conda-forge/triqs_dft_tools-feedstock/>`_ and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
 
 In case you encounter troubles resolving the dependencies, you can try using `mamba <https://github.com/mamba-org/mamba>`_ instead of `conda`::
 
         conda install -c conda-forge mamba
         mamba install -c conda-forge triqs
+
+.. note:: We do not recommend using Anaconda for the development of TRIQS applications. Please use the :ref:`compilation from source <triqs_compilation>` instead.
 
 .. _triqs_docker:
 
