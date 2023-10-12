@@ -222,12 +222,10 @@ namespace triqs::gfs {
 
       for (auto const &[bl, bl_size] : itertools::enumerate(bl_sizes)) {
         _block_names.push_back(std::to_string(bl));
-        std::vector<std::string> idx_str_lst;
-        for (int idx = 0; idx < bl_size; idx++) idx_str_lst.push_back(std::to_string(idx));
         if constexpr (Target::rank == 0)
           _glist.emplace_back(m);
         else
-          _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
+          _glist.emplace_back(m, make_shape(bl_size, bl_size));
       }
     }
 
