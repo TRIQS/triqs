@@ -45,6 +45,11 @@ def all_calls():
 
     real_valued = lambda target: target.replace("_", "_real_")
     for rank, target, return_t in target_and_return:
+        xs = validargs['dlr']
+        nxs = len(xs)
+        yield 'prod<dlr,dlr>', [return_t]*nxs, rank, target, [(x,x) for x in xs]
+        yield 'prod<dlr,dlr,dlr>', [return_t]*nxs, rank, target, [(x,x,x) for x in xs]
+
         for M1 in meshes:
             xs = validargs[M1]
             nxs = len(xs)
@@ -92,6 +97,8 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'prod<refreq,cyclat>': 'ReFreq_x_CycLat',
                    'prod<retime,cyclat>': 'ReTime_x_CycLat',
                    'prod<dlr,cyclat>'   : 'DLR_x_CycLat',
+                   'prod<dlr,dlr>'      : 'DLR_x_DLR',
+                   'prod<dlr,dlr,dlr>'  : 'DLR_x_DLR_x_DLR'
                    }
 
 m.add_preamble("""
