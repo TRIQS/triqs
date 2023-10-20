@@ -136,6 +136,14 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
         # dlr_imfreq <-> dlr
         m.add_function(f"{gf_type}<dlr, {Target}> make_gf_dlr({gf_view_type}<dlr_imfreq, {Target}> g_iw)", doc="""Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation""")
         m.add_function(f"{gf_type}<dlr_imfreq, {Target}> make_gf_dlr_imfreq({gf_view_type}<dlr, {Target}> g_dlr)", doc="""Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation""")
+    
+        # dlr_imfreq <-> dlr (2D)
+        m.add_function(f"{gf_type}<prod<dlr, dlr>, {Target}> make_gf_dlr({gf_view_type}<prod<dlr_imfreq, dlr_imfreq>, {Target}> g_iw)", calling_pattern = "auto result = make_gf_dlr<0, 1>(g_iw)", doc="""Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation""")
+        m.add_function(f"{gf_type}<prod<dlr_imfreq, dlr_imfreq>, {Target}> make_gf_dlr_imfreq({gf_view_type}<prod<dlr, dlr>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imfreq<0, 1>(g_dlr)", doc="""Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation""")
+
+        # dlr_imfreq <-> dlr (3D)
+        m.add_function(f"{gf_type}<prod<dlr, dlr, dlr>, {Target}> make_gf_dlr({gf_view_type}<prod<dlr_imfreq, dlr_imfreq, dlr_imfreq>, {Target}> g_iw)", calling_pattern = "auto result = make_gf_dlr<0, 1, 2>(g_iw)", doc="""Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation""")
+        m.add_function(f"{gf_type}<prod<dlr_imfreq, dlr_imfreq, dlr_imfreq>, {Target}> make_gf_dlr_imfreq({gf_view_type}<prod<dlr, dlr, dlr>, {Target}> g_dlr)", calling_pattern = "auto result = make_gf_dlr_imfreq<0, 1, 2>(g_dlr)", doc="""Transform a DLR coefficient Green's function to it's DLR Matsubara frequency representation""")
 
         # imtime <-> dlr
         m.add_function(f"{gf_type}<dlr, {Target}> fit_gf_dlr({gf_view_type}<imtime, {Target}> g_tau, double w_max, double eps)", doc="""Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation""")
