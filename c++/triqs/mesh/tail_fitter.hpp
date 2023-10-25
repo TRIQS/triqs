@@ -165,7 +165,7 @@ namespace triqs::mesh {
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
         lss[n_fixed_moments].reset();
         // Ensure that |m.w_max()|^(1-N) > 10^{-16}
-        long n_max = std::min<long>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.w_max())));
+        long n_max = std::min(static_cast<long>(max_order), static_cast<long>(1. + 16. / std::log10(1 + std::abs(m.w_max()))));
         // We use at least two times as many data-points as we have moments to fit
         n_max = std::min(n_max, _vander.extent(0) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {

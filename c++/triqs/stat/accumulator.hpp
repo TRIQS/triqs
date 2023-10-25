@@ -214,7 +214,7 @@ namespace triqs::stat {
             auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
             T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
             auto k            = count / bin_capacity;
-            Qk[n + 1] += ((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
+            Qk[n + 1] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
             Mk[n + 1] += x_m / k;
             acc_count[n] = 0;
             acc[n]       = 0;
@@ -224,7 +224,7 @@ namespace triqs::stat {
         // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
         auto k = count;
         T x_m  = (x - Mk[0]);
-        Qk[0] += ((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
+        Qk[0] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
         Mk[0] += x_m / k;
 
         return *this;

@@ -37,7 +37,7 @@ namespace triqs {
       long prev_index   = 0;
       long norm         = 0;
       for (auto const &tau : old_m) {
-        long index = std::round(double(tau) / new_m.delta());
+        long index = std::lround(double(tau) / new_m.delta());
         if (index == prev_index) {
           norm++;
         } else {

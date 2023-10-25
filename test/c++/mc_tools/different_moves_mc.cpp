@@ -119,7 +119,7 @@ bool test_mc(bool recover_from_exception) {
   std::string Random_Name = "";
   int Random_Seed         = 374982 + world.rank() * 273894;
   int Verbosity           = (world.rank() == 0 ? 3 : 0);
-  int xmax                = floor(4 * sqrt(Length_Cycle)); // typical length of a walk
+  int xmax                = static_cast<int>(floor(4 * sqrt(Length_Cycle))); // typical length of a walk
   double pl = 2.5, pr = 1;                                 //non normalized probabilities for proposing a left or right move
 
   if (world.rank() == 0) {
