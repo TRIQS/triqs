@@ -185,7 +185,7 @@ target_compile_options(triqs_warnings
   INTERFACE
     # -Wall
     # -Wextra
-    # -Wfloat-conversion
+    -Wfloat-conversion
     # -Wpedantic
     -Wno-sign-compare
     $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>

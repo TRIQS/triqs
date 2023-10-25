@@ -351,7 +351,7 @@ namespace triqs::mesh {
     };
 
     friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
-      long i   = std::floor(vi);
+      long i   = static_cast<long>(std::floor(vi));
       double w = vi - double(i);
       return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
     }

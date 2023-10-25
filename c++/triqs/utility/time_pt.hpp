@@ -165,7 +165,7 @@ namespace triqs {
       /// ??
       time_pt make_time_pt(double x) const {
         EXPECTS(0 <= x && x <= beta);
-        uint64_t n = static_cast<double>(time_pt::Nmax) * std::min(1.0, (x / beta));
+        uint64_t n = static_cast<uint64_t>(static_cast<double>(time_pt::Nmax) * std::min(1.0, (x / beta)));
         return time_pt(n, beta);
       }
     };
