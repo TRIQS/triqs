@@ -238,11 +238,12 @@ namespace triqs {
       /**
        * Init Green's function from its representative data using symmetries
        * @param g A Green's function
-       * @param vec Vector of data values for the representatives elements of each symmetry class
+       * @param vec Vector or vector view of data values for the representatives elements of each symmetry class
       */
-      void init_from_representative_data(G &g, std::vector<value_t> const &vec) const {
+      template <typename V>
+      void init_from_representative_data(G &g, V const &vec) const {
         data_sym_grp.init_from_representative_data(g.data(), vec);
-      }
+      };
 
       /**
        * Default constructor for sym_grp class
