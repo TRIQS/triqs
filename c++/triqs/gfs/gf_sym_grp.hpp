@@ -227,6 +227,24 @@ namespace triqs {
       [[nodiscard]] long num_classes() const { return data_sym_grp.num_classes(); }
 
       /**
+       * Reduce Green's function to its representative data using symmetries
+       * @param g A Green's function
+       * @return Vector of data values for the representatives elements of each symmetry class
+      */
+      [[nodiscard]] std::vector<value_t> get_representative_data(G const &g) const {
+        return data_sym_grp.get_representative_data(g.data());
+      }
+
+      /**
+       * Init Green's function from its representative data using symmetries
+       * @param g A Green's function
+       * @param vec Vector of data values for the representatives elements of each symmetry class
+      */
+      void init_from_representative_data(G &g, std::vector<value_t> const &vec) const {
+        data_sym_grp.init_from_representative_data(g.data(), vec);
+      }
+
+      /**
        * Default constructor for sym_grp class
        */
       sym_grp() = default;

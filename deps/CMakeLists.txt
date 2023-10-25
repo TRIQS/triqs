@@ -111,7 +111,7 @@ external_dependency(h5
 external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.2
-  GIT_TAG 1.2.x
+  GIT_TAG DEV_SBE
 ) 
 
 # -- cppdlr --

@@ -50,6 +50,11 @@ TEST(GfSymGrp, ScalarNoProduct) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 TEST(GfSymGrp, ScalarProduct) {
@@ -91,6 +96,11 @@ TEST(GfSymGrp, ScalarProduct) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 TEST(GfSymGrp, TensorNoProduct) {
@@ -130,6 +140,11 @@ TEST(GfSymGrp, TensorNoProduct) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 TEST(GfSymGrp, TensorProduct) {
@@ -177,6 +192,11 @@ TEST(GfSymGrp, TensorProduct) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 TEST(GfSymGrp, MomentumNoFrequency) {
@@ -211,6 +231,11 @@ TEST(GfSymGrp, MomentumNoFrequency) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 TEST(GfSymGrp, MomentumFrequencyOmp) {
@@ -262,6 +287,11 @@ TEST(GfSymGrp, MomentumFrequencyOmp) {
   // test symmetrization
   auto const &[max_diff, max_mesh_index, max_target_index] = grp.symmetrize(G);
   EXPECT_NEAR(max_diff, 0.0, 1E-15);
+
+  // test transformation to and initialization from representative data
+  auto const vec = grp.get_representative_data(G); 
+  grp.init_from_representative_data(Gp, vec);
+  EXPECT_GF_NEAR(G, Gp);
 }
 
 MAKE_MAIN;
