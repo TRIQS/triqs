@@ -67,10 +67,10 @@ struct test {
       std::cerr << " i = " << i << " size = " << D.size() << std::endl;
       // choose a move
       size_t s = D.size();
-      size_t w, w1;
+      size_t w;
       det_old  = D.determinant();
       detratio = 1;
-      double x, x1;
+      double x;
 
       switch (RNG((i > 10 ? 4 : 1))) {
         case 0:

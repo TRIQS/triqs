@@ -31,7 +31,6 @@ constexpr triqs::clef::placeholder<1> iwp_;
 constexpr triqs::clef::placeholder<2> tau_;
 constexpr triqs::clef::placeholder<3> taup_;
 
-constexpr auto _ = all_t{}; // NOLINT
 using std::exp;
 
 auto onefermion(auto tau, double eps, double beta) { return -exp(-eps * tau) / (1 + exp(-beta * eps)); }
@@ -425,7 +424,6 @@ TEST(Gf, DLR_mesh_point_mismatch) {
   double beta2 = 2 * beta;
   double w_max = 5.0;
   double eps   = 1e-10;
-  double omega = 1.337;
 
   auto gw  = gf<dlr_imfreq, scalar_valued>{{beta, Fermion, w_max, eps}};
   auto gw2 = gf<dlr_imfreq, scalar_valued>{{beta2, Fermion, w_max, eps}};

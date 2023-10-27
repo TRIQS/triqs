@@ -45,7 +45,6 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
   accumulator<double> AA(0.0, n_log_bins); // no linear bins
 
   {
-    long c = 0;
     std::mt19937 gen(seed);
     std::normal_distribution<double> distr;
     for (long i = 1; i <= N; ++i) {
@@ -55,7 +54,6 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
   }
 
   // manual check
-  long c = 0;
   std::vector<double> bins(n_log_bins, 0);
   for (int b = 0; b < 10; ++b) {
     int B         = (1 << b);
@@ -64,7 +62,6 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     double sum_xi = 0, sum_xi2 = 0;
     std::mt19937 gen(seed);
     std::normal_distribution<double> distr;
-    c = 0;
     for (long i = 1; i <= N; ++i) {
       auto x = distr(gen);
       acc += x;

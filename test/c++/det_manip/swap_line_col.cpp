@@ -41,7 +41,7 @@ struct fun {
 };
 
 using d_t              = triqs::det_manip::det_manip<fun>;
-const double precision = 1.e-6;
+// const double precision = 1.e-6;
 const int seed         = 23432;
 
 TEST(DetManip, SwapRow) {

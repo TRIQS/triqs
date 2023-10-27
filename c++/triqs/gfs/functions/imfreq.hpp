@@ -230,7 +230,6 @@ namespace triqs::gfs {
     requires(is_gf_v<G> or is_block_gf_v<G>)
   {
     if constexpr (is_gf_v<G>) {
-      using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
       static_assert(std::is_same_v<mesh_t, mesh::imfreq>, "make_real_in_tau requires an imfreq Green function");
 

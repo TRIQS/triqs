@@ -88,7 +88,7 @@ TEST(BlockGfCartesian, OutOfBounds) {
   g_2w(om_, nu_) << 1 / (om_ + nu_) * 1 / om_;
   auto g_w = gf<imfreq, matrix_valued>{{beta, Fermion, 10}, {1, 1}}; //longer than g
   auto W0  = matsubara_freq(0, beta, Boson);
-  for (auto om : g_w.mesh()) { auto x = g_2w(om, W0)(0, 0, 0); }
+  for (auto om : g_w.mesh()) { [[maybe_unused]] auto x = g_2w(om, W0)(0, 0, 0); }
 }
 TEST(BlockGfCartesian, VectorConstruction) {
   double beta = 1;
@@ -122,8 +122,8 @@ TEST(BlockGf, H5_RW_Evaluator) {
   EXPECT_GF_NEAR(G[0], G2[0]);
   EXPECT_GF_NEAR(g, g2);
 
-  auto w0  = matsubara_freq(0, beta, Fermion);
-  auto W0  = matsubara_freq(0, beta, Boson);
+  [[maybe_unused]] auto w0  = matsubara_freq(0, beta, Fermion);
+  [[maybe_unused]] auto W0  = matsubara_freq(0, beta, Boson);
   auto W10 = matsubara_freq(10, beta, Boson);
   EXPECT_ARRAY_NEAR(G[0](W10), G2[0](W10));
   EXPECT_ARRAY_NEAR(g(W10), g2(W10));

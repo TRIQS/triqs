@@ -24,9 +24,6 @@ using namespace nda;
 
 TEST(real_in_tau, symmetrize_and_check) {
 
-  triqs::clef::placeholder<0> iw_;
-  triqs::clef::placeholder<1> i_;
-  triqs::clef::placeholder<2> j_;
   double beta = 1;
 
   // ============ Test with hermitian Gf

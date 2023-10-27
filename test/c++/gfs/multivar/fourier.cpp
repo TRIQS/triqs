@@ -30,8 +30,6 @@ template <int TARGET_RANK> void test_fourier() {
   int N_iW    = 4;
   int N_k     = 4;
 
-  double E = 1;
-
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
   auto BZ        = brillouin_zone{BL};
   auto k_mesh    = mesh::brzone(BZ, N_k);

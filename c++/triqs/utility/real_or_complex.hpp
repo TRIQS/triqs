@@ -39,7 +39,7 @@ namespace triqs {
       public:
       real_or_complex() : _x(0) {}
       real_or_complex(double x) : _x(x) {}
-      real_or_complex(std::complex<double> x) : _x(std::move(x)), _is_real(false) {}
+      real_or_complex(std::complex<double> x) : _is_real(false), _x(std::move(x)) {}
 
       bool is_real() const { return _is_real; }
 

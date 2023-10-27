@@ -183,7 +183,7 @@ endif()
 add_library(triqs_warnings INTERFACE)
 target_compile_options(triqs_warnings
   INTERFACE
-    # -Wall
+    -Wall
     # -Wextra
     -Wfloat-conversion
     # -Wpedantic

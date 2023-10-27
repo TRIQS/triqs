@@ -75,7 +75,7 @@ namespace triqs::gfs {
     for (auto w : w_mesh)
       gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.index(), _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
 
-    return std::move(gw);
+    return gw;
   }
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
@@ -127,7 +127,7 @@ namespace triqs::gfs {
     const double corr = 1.0 / (t_mesh.delta() * L);
     for (auto t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
 
-    return std::move(gt);
+    return gt;
   }
 
 } // namespace triqs::gfs

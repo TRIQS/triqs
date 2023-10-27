@@ -134,7 +134,6 @@ namespace triqs::gfs {
   /// Zero temperature density from integration on the real frequency axis
   nda::matrix<dcomplex> density(gf_const_view<refreq> g) {
 
-    auto N      = g.mesh().size();
     double wmin = g.mesh().w_min();
     double dw   = g.mesh().delta();
 

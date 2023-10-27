@@ -31,8 +31,6 @@ TEST(GfLegendre, Mesh) {
   auto const n_tau = 5;
   auto tmesh       = mesh::imtime(beta, Fermion, n_tau);
 
-  triqs::clef::placeholder<0> l_;
-
   auto g = gf<legendre, scalar_valued>{mesh_l};
   g()    = 0.0;
   g[0]   = 1;

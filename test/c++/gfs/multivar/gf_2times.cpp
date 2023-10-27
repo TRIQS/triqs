@@ -25,9 +25,6 @@ TEST(Gf, TwoTimes) {
   auto G  = gf<prod<retime, retime>>{{m, m}, {2, 2}};
   auto gg = gf<retime>{{m}, {2, 2}};
 
-  triqs::clef::placeholder<0> t_;
-  triqs::clef::placeholder<1> tp_;
-
   double beta   = 1;
   int n_im_freq = 100;
 

@@ -47,7 +47,7 @@ namespace triqs::stat {
 
       lin_binning() = default;
 
-      lin_binning(T const &data_instance, long max_n_bins, long bin_capacity) : bin_capacity(bin_capacity), max_n_bins(max_n_bins) {
+      lin_binning(T const &data_instance, long max_n_bins, long bin_capacity) : max_n_bins(max_n_bins), bin_capacity(bin_capacity) {
         if (max_n_bins == 0) return;
         T data_instance_local = data_instance;
         data_instance_local   = 0;

@@ -372,7 +372,6 @@ TEST(Stat, Accumulator_LinBinOnly) {
 }
 
 TEST(Stat, Accumulator_LogBinOnly) {
-  mpi::communicator c;
   int n_log_bins_max = 3, lin_bin_capacity = 1, n_lin_bins_max = 0;
   accumulator<double> my_acc{0.0, n_log_bins_max, n_lin_bins_max, lin_bin_capacity};
   std::vector<double> data = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
@@ -419,7 +418,6 @@ TEST(Stat, Accumulator_Off) {
 // *****************************************************************************
 
 TEST(Stat, Accumulator_LogBinErrors) {
-  mpi::communicator c;
   int n_log_bins_max = 3, lin_bin_capacity = 1, n_lin_bins_max = 3;
   accumulator<double> my_acc{0.0, n_log_bins_max, n_lin_bins_max, lin_bin_capacity};
   std::vector<double> data = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};

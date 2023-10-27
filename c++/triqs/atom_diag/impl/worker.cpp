@@ -129,7 +129,6 @@ namespace triqs {
     ATOM_DIAG_WORKER_METHOD(void, partition_with_qn(std::vector<many_body_op_t> const &qn_vector)) {
 
       fundamental_operator_set const &fops = hdiag->get_fops();
-      many_body_op_t const &h              = hdiag->get_h_atomic();
       class hilbert_space const &full_hs   = hdiag->full_hs;
 
       // Define a more tolerant comparison between vectors for the quantum numbers

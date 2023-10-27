@@ -163,7 +163,7 @@ namespace triqs::gfs {
     auto g1 = make_gf_from_fourier<N1>(gin(), std::forward<M1>(m1));
     auto g2 = make_gf_from_fourier<N2>(g1(), std::forward<M2>(m2));
 
-    return std::move(g2);
+    return g2;
   }
 
   template <int N1, int N2, int N3, typename M1, typename M2, typename M3, typename... Vs, typename T>
@@ -173,11 +173,11 @@ namespace triqs::gfs {
     auto g1 = make_gf_from_fourier<N1, N2>(gin(), std::forward<M1>(m1), std::forward<M2>(m2));
     auto g2 = make_gf_from_fourier<N3>(g1(), std::forward<M3>(m3));
 
-    return std::move(g2);
+    return g2;
   }
 
   template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin) {
-    return std::move(make_gf_from_fourier<Ns...>(gin(), make_adjoint_mesh(std::get<Ns>(gin.mesh()))...));
+    return make_gf_from_fourier<Ns...>(gin(), make_adjoint_mesh(std::get<Ns>(gin.mesh()))...);
   }
 
   /* *-----------------------------------------------------------------------------------------------------
