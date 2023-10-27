@@ -159,7 +159,6 @@ namespace triqs {
       std::vector<std::vector<quantum_number_t>> result;
 
       for (int sp = 0; sp < atom.n_subspaces(); ++sp) {
-        auto dim = atom.get_subspace_dim(sp);
         for (auto const &x : op) {
           auto b_m = atom.get_matrix_element_of_monomial(x.monomial, sp);
           if (b_m.first == -1) continue;

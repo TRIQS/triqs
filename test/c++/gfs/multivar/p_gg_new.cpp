@@ -32,7 +32,6 @@ static_assert(nda::get_algebra<nda::expr_unary<'-', nda::basic_array<std::comple
 gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   placeholder<0> r_;
   placeholder<1> tau_;
-  placeholder<2> k_;
 
   auto [k_mesh, w_mesh] = G_k_w.mesh();
   double beta           = w_mesh.beta();

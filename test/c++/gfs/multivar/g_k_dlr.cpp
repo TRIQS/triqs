@@ -19,9 +19,7 @@
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::clef;
 using namespace triqs::lattice;
-using triqs::clef::placeholder;
 
-constexpr auto _ = all_t{}; // NOLINT
 using std::exp;
 
 double eps_k(auto const &k) { return -2 * (cos(k[0]) + cos(k[1])); }

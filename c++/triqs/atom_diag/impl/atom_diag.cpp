@@ -118,15 +118,14 @@ namespace triqs {
 
         // The initializer for i_index is needed here because of the Core Language Defect #2313.
         // https://stackoverflow.com/a/46115028
-        foreach (final_st, [&, i_index = i_index, j_count = 0](fock_state_t j, scalar_t x) mutable {
-          assert(++j_count == 1);
+        foreach (final_st, [&, i_idx = i_index](fock_state_t j, scalar_t x) mutable {
           for (auto const &sp : sub_hilbert_spaces) {
             if (sp.has_state(j)) {
               Bp = sp.get_index();
 
               if (m.empty()) { m = matrix_t::zeros({get_subspace_dim(Bp), get_subspace_dim(B)}); }
 
-              m(sp.get_state_index(j), i_index) = x;
+              m(sp.get_state_index(j), i_idx) = x;
               break;
             }
           }
@@ -173,7 +172,7 @@ namespace triqs {
                   "If you used the function prior to release 3.1.0 of TRIQS the result was incorrect.";
         }
       }
-      return std::move(op_mat);
+      return op_mat;
     }
 
 #undef ATOM_DIAG_METHOD

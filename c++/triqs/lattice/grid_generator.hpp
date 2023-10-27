@@ -30,7 +30,7 @@ namespace triqs {
   * Generate the point in a cuboid as an array<double,1> const &
   */
     class grid_generator : public itertools::iterator_facade<grid_generator, v_t const, std::forward_iterator_tag> {
-      friend class itertools::iterator_facade<grid_generator, v_t const, std::forward_iterator_tag>;
+      friend struct itertools::iterator_facade<grid_generator, v_t const, std::forward_iterator_tag>;
       int dim, nkpts, nx, ny, nz, N_X, N_Y, N_Z, index_;
       double step_x, step_y, step_z;
       bool at_end;

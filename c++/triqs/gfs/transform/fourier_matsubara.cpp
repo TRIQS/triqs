@@ -182,7 +182,7 @@ namespace triqs::gfs {
     auto corr = -0.5 * fact * (gt[0] + m1 + (is_fermion ? 1 : -1) * gt[L]);
     for (auto iw : iw_mesh) gw[iw] = _gout((iw.n + L) % L, _) + corr + a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3);
 
-    return std::move(gw);
+    return gw;
   }
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
@@ -267,7 +267,7 @@ namespace triqs::gfs {
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);
 
-    return std::move(gt);
+    return gt;
   }
 
 } // namespace triqs::gfs

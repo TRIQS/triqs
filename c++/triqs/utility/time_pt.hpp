@@ -56,7 +56,7 @@ namespace triqs {
       }
 
       public:
-      time_pt(uint64_t n_, double beta_) : beta(beta_), n(n_), val(beta_ * (static_cast<double>(n_) / static_cast<double>(Nmax))) {}
+      time_pt(uint64_t n_, double beta_) : n(n_), beta(beta_), val(beta_ * (static_cast<double>(n_) / static_cast<double>(Nmax))) {}
 
       /// Forbidden
       time_pt &operator=(double v) = delete;
@@ -103,7 +103,7 @@ namespace triqs {
 
       private:
       uint64_t n;
-      double val, beta;
+      double beta, val;
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, time_pt const &g) {

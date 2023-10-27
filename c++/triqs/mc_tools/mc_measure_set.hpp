@@ -26,6 +26,7 @@
 #include <functional>
 #include <map>
 #include <cassert>
+#include <iomanip>
 
 namespace triqs {
   namespace mc_tools {
@@ -63,14 +64,17 @@ namespace triqs {
           if constexpr (requires { p->report(); }) {
             return p->report();
           } else {
+            (void)p; // suppress clang -Wunused-lambda-capture warning
             TRIQS_RUNTIME_ERROR << "This measure does not implement the report function";
           }
         };
         h5_r = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_read(g, name, *p); }) h5_read(g, name, *p);
+          else (void)p; // suppress clang -Wunused-lambda-capture warning
         };
         h5_w = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_write(g, name, *p); }) h5_write(g, name, *p);
+          else (void)p; // suppress clang -Wunused-lambda-capture warning
         };
       }
 

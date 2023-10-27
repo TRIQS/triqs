@@ -182,13 +182,11 @@ namespace triqs {
 
       // bin the eigenvalues according to their energy
       int ind;
-      double totalweight(0.0);
       dos() = 0.0;
       for (int j = 0; j < nk; j++) {
         ind = int((energ(j) - epsmin) / deps);
         if (ind == int(neps)) ind--;
         dos(ind) += weight(j);
-        totalweight += weight(j);
       }
       dos /= deps; // Normalize the DOS
       return {std::move(epsilon), std::move(dos)};

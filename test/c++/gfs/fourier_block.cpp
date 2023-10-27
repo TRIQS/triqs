@@ -75,7 +75,7 @@ template <int TARGET_RANK> void test_fourier() {
   std::vector<std::vector<gf<imfreq, target_t>>> giw_vecvec;
   std::vector<std::vector<gf<imtime, target_t>>> gtau_vecvec;
 
-  for (double E : E_vec) {
+  for ([[maybe_unused]] double E : E_vec) {
     giw_vecvec.push_back(giw_vec);
     gtau_vecvec.push_back(gtau_vec);
   }

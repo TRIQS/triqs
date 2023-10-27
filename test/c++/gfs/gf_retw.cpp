@@ -28,7 +28,6 @@ TEST(Gf, Real) {
   double t0        = 0.3352 * tmax;
   double w0        = 0.3352 * wmax;
   int N            = 1000;
-  double precision = 10e-12;
 
   auto Gw   = gf<refreq>{{-wmax, wmax, N}, {2, 2}};
   auto Gt   = gf<retime>{{0, tmax, N}, {2, 2}};

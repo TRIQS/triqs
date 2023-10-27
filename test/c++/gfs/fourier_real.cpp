@@ -26,8 +26,6 @@ double theta(double x) { return x > 0 ? 1.0 : (x < 0 ? 0.0 : 0.5); };
 // Generic Fourier test function for different ranks
 template <int TARGET_RANK> void test_fourier() {
   double precision = 1e-4;
-  triqs::clef::placeholder<0> w_;
-  triqs::clef::placeholder<1> t_;
   double w_max = 40;
   int Nw       = 1001;
   double E     = 1;

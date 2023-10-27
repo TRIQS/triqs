@@ -88,10 +88,10 @@ struct test {
       //std::cerr  << D.matrix() <<std::endl;
       // choose a move
       size_t s = D.size();
-      size_t i0, j0, i1, j1;
+      size_t i0, j0;
       det_old  = D.determinant();
       detratio = 1;
-      double x, y, x1, y1;
+      double x, y;
       bool do_something = true;
 
       switch (RNG((s > 10 ? 7 : 1))) {

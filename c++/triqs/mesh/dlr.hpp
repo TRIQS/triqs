@@ -91,8 +91,8 @@ namespace triqs::mesh {
          _mesh_hash(hash(beta, statistic, w_max, eps, sum(dlr.freq))),
          _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
 
-    friend class dlr_imtime;
-    friend class dlr_imfreq;
+    friend struct dlr_imtime;
+    friend struct dlr_imfreq;
 
     public:
     template <any_of<dlr_imtime, dlr_imfreq, dlr> M>

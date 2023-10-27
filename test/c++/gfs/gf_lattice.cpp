@@ -25,7 +25,6 @@ using idx_t = std::array<long, 3>;
 using k_t   = std::array<double, 3>;
 
 TEST(Gfs, cyclat) {
-  double beta = 1;
   triqs::clef::placeholder<0> r_;
 
   auto bl  = bravais_lattice{nda::eye<double>(2)};
@@ -43,7 +42,6 @@ TEST(Gfs, cyclat) {
 }
 
 TEST(Gfs, brillouin_zone) {
-  double beta = 1;
   int n_k     = 50;
 
   auto bl = bravais_lattice{nda::eye<double>(2)};
@@ -88,7 +86,6 @@ TEST(Gfs, brillouin_zone) {
 // ----------------------------------------------------
 
 TEST(Gfs, brillouin_zoneMatrix) {
-  double beta = 1;
   int n_k     = 50;
 
   auto bl = bravais_lattice{nda::eye<double>(2)};
@@ -132,7 +129,6 @@ TEST(Gfs, brillouin_zoneMatrix) {
 // ----------------------------------------------------
 
 TEST(Gfs, brillouin_zone_triangular) {
-  double beta = 1;
   int n_k     = 50;
 
   // Tilted Triangular Lattice

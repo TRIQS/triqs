@@ -53,7 +53,7 @@ namespace triqs::gfs {
     // ---------------  Constructors --------------------
 
     struct impl_tag {};
-    template <typename G> block_gf_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+    template <typename G> block_gf_view(impl_tag, G &&x) : name(x.name), _block_names(x.block_names()), _glist(factory<data_t>(x.data())) {}
 
     public:
     /// Copy constructor

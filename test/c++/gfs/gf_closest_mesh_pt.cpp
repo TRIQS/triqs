@@ -21,7 +21,6 @@
 using namespace triqs::lattice;
 
 TEST(ClosestMeshPoint, ReTime) {
-  double beta = 1;
   double tmax = 1;
   int N       = 12;
 

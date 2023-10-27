@@ -87,7 +87,7 @@ TEST(atom_diag, op_matrix) {
 
     EXPECT_EQ(op.n_blocks(), 4);
     for (auto b : range(op.n_blocks())) {
-      if (op.connection(b) != -1) EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}}));
+      if (op.connection(b) != -1) { EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}})); }
     }
   }
 
@@ -100,7 +100,7 @@ TEST(atom_diag, op_matrix) {
 
     EXPECT_EQ(op.n_blocks(), 4);
     for (auto b : range(op.n_blocks())) {
-      if (op.connection(b) != -1) EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}}));
+      if (op.connection(b) != -1) { EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}})); }
     }
   }
 }

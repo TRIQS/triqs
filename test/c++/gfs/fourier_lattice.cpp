@@ -24,7 +24,6 @@
 template <int TARGET_RANK> void test_fourier() {
   double precision = 10e-9;
   triqs::clef::placeholder<0> r_;
-  double beta = 1;
   int N_k     = 2;
 
   std::array<long, TARGET_RANK> shape{};

@@ -18,6 +18,7 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
+#include <h5/h5.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <mpi/mpi.hpp>
@@ -72,12 +73,15 @@ namespace triqs {
         reject_             = [p]() { p->reject(); };
         collect_statistics_ = [p](mpi::communicator c) {
           if constexpr (requires { p->collect_statistics(c); }) p->collect_statistics(c);
+          else (void)p; // suppress clang -Wunused-lambda-capture warning
         };
         h5_r = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_read(g, name, *p); }) h5_read(g, name, *p);
+          else (void)p; // suppress clang -Wunused-lambda-capture warning
         };
         h5_w = [p](h5::group g, std::string const &name) {
           if constexpr (requires { h5_write(g, name, *p); }) h5_write(g, name, *p);
+          else (void)p; // suppress clang -Wunused-lambda-capture warning
         };
         NProposed        = 0;
         Naccepted        = 0;

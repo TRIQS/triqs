@@ -106,7 +106,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
   // Now lets do multiple fourier transforms
-  for (int i : range(10)) {
+  for ([[maybe_unused]] int i : range(10)) {
     Gt1()  = fourier(Gw1b);
     Gw1b() = fourier(Gt1);
   }
@@ -125,7 +125,6 @@ TEST(FourierMatsubara, BosonTensor4) { test_fourier<4>(Boson); }
 
 ///check Fourier on positive-only freqs fails
 TEST(Gfs, FourierMatsubaraAllFreq) {
-  double precision = 10e-9;
   triqs::clef::placeholder<0> iw_;
   double beta = 1;
   int N_iw    = 10000;

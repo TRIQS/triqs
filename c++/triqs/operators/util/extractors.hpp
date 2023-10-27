@@ -287,7 +287,7 @@ namespace triqs::operators::utils {
       scalar_t const &coef = term.coef;
 
       if (m.size() == 2 and m[0].dagger and not m[1].dagger and m[0].indices[0] == m[1].indices[0] and m[0].indices.size() == 2
-          or m[1].indices.size() == 2) {
+          and m[1].indices.size() == 2) {
         auto bl_name = std::get<std::string>(m[0].indices[0]);
         auto op1_idx = std::get<long>(m[0].indices[1]);
         auto op2_idx = std::get<long>(m[1].indices[1]);

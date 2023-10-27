@@ -149,7 +149,7 @@ namespace triqs::hilbert_space {
     struct _cdress {
       indices_t const &index;
       int linear_index;
-      _cdress(_enum_iterator _it) : linear_index(std::get<0>(*_it)), index(std::get<1>(*_it)) {}
+      _cdress(_enum_iterator _it) : index(std::get<1>(*_it)), linear_index(std::get<0>(*_it)) {}
     };
 
     public:

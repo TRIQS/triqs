@@ -25,7 +25,7 @@
 
 namespace triqs::mesh {
 
-  class imfreq;
+  struct imfreq;
 
   using nda::array_const_view;
 
@@ -117,14 +117,14 @@ namespace triqs::mesh {
       double idx1 = m.first_index();
       double idx2 = m.last_index() - n_pts_in_fit_range;
 
-      for (int n : range(n_tail)) {
+      for ([[maybe_unused]] int n : range(n_tail)) {
         idx_vec.push_back(long(idx1));
         idx_vec.push_back(long(idx2));
         idx1 += step;
         idx2 += step;
       }
 
-      return std::move(idx_vec);
+      return idx_vec;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ namespace triqs::mesh {
       if (normalize) {
         double z      = 1.0;
         double om_max = std::abs(m.w_max());
-        for (int i : range(n_fixed_moments)) z *= om_max;
+        for ([[maybe_unused]] int i : range(n_fixed_moments)) z *= om_max;
         for (int i : range(a_mat.extent(0))) {
           a_mat(i, range::all) *= z;
           z *= om_max;
