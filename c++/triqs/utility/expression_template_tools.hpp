@@ -47,19 +47,19 @@ namespace triqs {
     // The basic operations put in a template....
     template <typename Tag> struct operation;
     template <> struct operation<tags::plus> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) + std::forward<R>(r));
+      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) + std::forward<R>(r))
       static const char name = '+';
     };
     template <> struct operation<tags::minus> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) - std::forward<R>(r));
+      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) - std::forward<R>(r))
       static const char name = '-';
     };
     template <> struct operation<tags::multiplies> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) * std::forward<R>(r));
+      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) * std::forward<R>(r))
       static const char name = '*';
     };
     template <> struct operation<tags::divides> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) / std::forward<R>(r));
+      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) / std::forward<R>(r))
       static const char name = '/';
     };
 

@@ -205,7 +205,7 @@ namespace triqs {
   */
       template <typename w_max> friend void foreach (space_partition &SP, w_max L) {
         for (idx_t n = 0; n < SP.tmp_state.size(); ++n) L(n, SP.lookup_basis_state(n));
-      };
+      }
 
       /// Find what invariant subspace a given Fock state belongs to
       /**

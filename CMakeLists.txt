@@ -186,7 +186,7 @@ target_compile_options(triqs_warnings
     -Wall
     -Wextra
     -Wfloat-conversion
-    # -Wpedantic
+    -Wpedantic
     -Wno-sign-compare
     $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
     $<$<CXX_COMPILER_ID:GNU>:-Wshadow=local>
