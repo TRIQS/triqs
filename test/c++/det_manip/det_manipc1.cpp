@@ -156,4 +156,4 @@ struct test {
   }
 };
 
-int main(int argc, char **argv) { test().run(); }
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) { test().run(); }

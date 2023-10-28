@@ -49,7 +49,7 @@ int main() {
     auto mp2 = mp;
     std::get<0>(mp2);
     //std::apply([](auto const &x, auto const &y) { return x; }, mp);
-    std::apply([](auto const &x, auto const &y) { return x; }, mp2);
+    std::apply([](auto const &x, [[maybe_unused]] auto const &y) { return x; }, mp2);
   }
   //Gp1(iw_, inu_) << Gp(iw_, inu_)(0, 0);
 }

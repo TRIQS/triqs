@@ -184,7 +184,7 @@ add_library(triqs_warnings INTERFACE)
 target_compile_options(triqs_warnings
   INTERFACE
     -Wall
-    # -Wextra
+    -Wextra
     -Wfloat-conversion
     # -Wpedantic
     -Wno-sign-compare

@@ -50,7 +50,7 @@ namespace triqs {
   namespace tuple {}
 } // namespace triqs
 
-int main(int argc, char **argv) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
   auto t  = std::make_tuple(1, 2.3, 4.3, 8);
   auto t2 = std::make_tuple(1, 2, 3, 4);

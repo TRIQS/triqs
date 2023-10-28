@@ -162,13 +162,13 @@ namespace triqs {
       }
 
       private:
-      template <typename StateType> StateType get_target_st(StateType const &st, std::true_type use_map) const {
+      template <typename StateType> StateType get_target_st(StateType const &st, [[maybe_unused]] std::true_type use_map) const {
         auto n = hilbert_map[st.get_hilbert().get_index()];
         if (n == -1) return StateType{};
         return StateType{(*sub_spaces)[n]};
       }
 
-      template <typename StateType> StateType get_target_st(StateType const &st, std::false_type use_map) const {
+      template <typename StateType> StateType get_target_st(StateType const &st, [[maybe_unused]] std::false_type use_map) const {
         return StateType(st.get_hilbert());
       }
 

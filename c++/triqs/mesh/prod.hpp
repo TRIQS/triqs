@@ -60,7 +60,7 @@ namespace triqs::mesh {
   };
 
   //
-  template <typename P, typename C> auto make_mesh_range_prod(P const *m, C const &m_components, uint64_t mhash) {
+  template <typename P, typename C> auto make_mesh_range_prod([[maybe_unused]] P const *m, C const &m_components, [[maybe_unused]] uint64_t mhash) {
     auto f             = [](auto &&...x) { return itertools::product(x...); };
     auto to_mesh_point = [](auto &&n_mp) { return typename P::mesh_point_t{n_mp}; };
     return itertools::transform(std::apply(f, m_components), to_mesh_point);
