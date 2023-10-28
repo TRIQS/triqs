@@ -88,12 +88,12 @@ namespace triqs {
     // Imaginary part
     //
     template <typename T> // Integral types
-    std::enable_if_t<std::is_integral<T>::value, T> imag(T const &x) {
+    std::enable_if_t<std::is_integral<T>::value, T> imag([[maybe_unused]] T const &x) {
       return T{};
     }
 
     template <typename T> // Floating-point types
-    std::enable_if_t<std::is_floating_point<T>::value, T> imag(T const &x) {
+    std::enable_if_t<std::is_floating_point<T>::value, T> imag([[maybe_unused]] T const &x) {
       return T{};
     }
 

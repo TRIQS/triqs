@@ -24,7 +24,7 @@
 using triqs::utility::time_pt;
 using triqs::utility::time_segment;
 
-int main(int argc, char **argv) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
   time_segment seg(10);
 

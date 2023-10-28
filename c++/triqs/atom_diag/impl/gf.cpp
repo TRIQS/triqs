@@ -127,7 +127,7 @@ namespace triqs {
     // -----------------------------------------------------------------
 
     /// In debug mode, check that Lehmann representation object is compatible with gf_struct
-    template <bool Complex, typename T> inline void check_lehmann_struct(gf_lehmann_t<Complex> const &lehmann, block_gf_view<T> g) {
+    template <bool Complex, typename T> inline void check_lehmann_struct([[maybe_unused]] gf_lehmann_t<Complex> const &lehmann, [[maybe_unused]] block_gf_view<T> g) {
 #ifndef NDEBUG
       assert(lehmann.size() == g.size());
       int bl = 0;

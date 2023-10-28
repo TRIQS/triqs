@@ -59,7 +59,7 @@ namespace triqs::mesh {
     /// The value of the index
     [[nodiscard]] auto index() const {
       // check the mesh hash if we have 2 meshes.
-      if constexpr (requires { l.mesh_hash(); }) EXPECTS(l.mesh_hash() == r.mesh_hash());
+      if constexpr (requires { l.mesh_hash(); }) { EXPECTS(l.mesh_hash() == r.mesh_hash()) };
       if constexpr (OP == '+')
         return l.index() + r.index();
       else if constexpr (OP == '-')

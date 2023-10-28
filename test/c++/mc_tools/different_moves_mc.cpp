@@ -88,14 +88,14 @@ struct compute_histo {
   mpi::communicator world;
   long tot; //number of pointsregistered inthe histogram
   compute_histo(configuration &config_, nda::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
-  void accumulate(double sign) {
+  void accumulate([[maybe_unused]] double sign) {
     if (config->x + xmax >= 0 && config->x - xmax < 0) {
       H(floor((config->x + xmax))) += 1;
       tot += 1;
     }
     config->x = 0; // the walker returns to zero.
   }
-  void collect_results(mpi::communicator c) {
+  void collect_results([[maybe_unused]] mpi::communicator c) {
     H /= tot;
     if (world.rank() == 0) {
       h5::file file("histo.h5", 'w');

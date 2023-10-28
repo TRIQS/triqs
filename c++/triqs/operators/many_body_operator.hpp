@@ -67,7 +67,7 @@ namespace triqs {
       }
       bool operator==(canonical_ops_t const &b) const { return (*this <=> b) == 0; }
 
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &dagger &indices; }
+      template <class Archive> void serialize(Archive &ar, [[maybe_unused]] const unsigned int version) { ar &dagger &indices; }
     };
 
     std::ostream &operator<<(std::ostream &os, canonical_ops_t const &op);

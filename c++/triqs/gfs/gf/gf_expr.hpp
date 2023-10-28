@@ -36,8 +36,8 @@ namespace triqs {
         S s;
         template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
         no_mesh_t mesh() const { return {}; } // Fake for combine_mesh
-        template <typename... Keys> S operator[](Keys &&...keys) const { return s; }
-        template <typename... Args> inline S operator()(Args &&...args) const { return s; }
+        template <typename... Keys> S operator[]([[maybe_unused]] Keys &&...keys) const { return s; }
+        template <typename... Args> inline S operator()([[maybe_unused]] Args &&...args) const { return s; }
         friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
       };
 
