@@ -53,7 +53,7 @@ namespace triqs::mesh {
       dcomplex z = 1;
       long N     = A.extent(0);
       for (int n = 0; n < N; ++n, z /= om) res += A(n, nda::ellipsis()) * z;
-      return std::move(res);
+      return res;
     };
 
     if constexpr (R > 1) {

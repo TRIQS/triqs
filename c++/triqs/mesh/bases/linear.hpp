@@ -100,10 +100,10 @@ namespace triqs::mesh::details {
   {                                                                                                                                                  \
     return std::forward<T>(x) OP mp.value();                                                                                                         \
   }
-      IMPL_OP(+);
-      IMPL_OP(-);
-      IMPL_OP(*);
-      IMPL_OP(/);
+      IMPL_OP(+)
+      IMPL_OP(-)
+      IMPL_OP(*)
+      IMPL_OP(/)
 #undef IMPL_OP
     };
 

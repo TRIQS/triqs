@@ -202,7 +202,7 @@ namespace triqs::gfs {
 
   template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {
     invert_in_place(g());
-    return std::move(g);
+    return g;
   }
 
   template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf{g}); }

@@ -211,7 +211,7 @@ namespace triqs {
         };
 
         return hp;
-      };
+      }
 
       public:
       /**
