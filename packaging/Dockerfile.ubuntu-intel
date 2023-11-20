@@ -1,6 +1,10 @@
 FROM intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04
 ARG LLVM=15
 
+# Fix broken gpg keyfile
+RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+    | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null
+
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
       wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
