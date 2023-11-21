@@ -73,13 +73,13 @@ namespace triqs::mesh {
      */
     dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
        : dlr(beta, statistic, w_max, eps, symmetrize,
-             cppdlr::build_dlr_rf(w_max * beta, eps, static_cast<cppdlr::statistic_t>(statistic), symmetrize)) {}
+             cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
 
     private:
     dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
        : dlr(beta, statistic, w_max, eps, symmetrize,
              dlr_ops{dlr_freq,
-                     {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize},
+                     {w_max * beta, dlr_freq, symmetrize},
                      {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
 
     dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, dlr_ops dlr)
