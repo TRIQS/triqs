@@ -226,12 +226,11 @@ def fit_legendre(g_t, order=10):
         return map_block(lambda g_bl: fit_legendre(g_bl, order), g_t)
 
     assert isinstance(g_t, Gf) and isinstance(g_t.mesh, MeshImTime), "fit_legendre expects imaginary-time Green function objects"
-    assert len(g_t.target_shape) == 2, "fit_legendre currently only implemented for matrix_valued Green functions"
 
     # -- flatten the data to 2D N_tau x (N_orb * N_orb)
 
     shape = g_t.data.shape
-    fshape = [shape[0], np.prod(shape[1:])]
+    fshape = [shape[0], int(np.prod(shape[1:]))]
 
     # -- extend data accounting for hermiticity
 
@@ -240,14 +239,11 @@ def fit_legendre(g_t, order=10):
     # Rescale to the interval (-1,1)
     x = 2. * tau / mesh.beta - 1.
 
-    data = g_t.data.reshape(fshape)
-    data_herm = np.transpose(g_t.data, axes=(0, 2, 1)).conjugate().reshape(fshape)
-
     # -- Separated real valued linear system, with twice the number of RHS terms
 
-    data_re = 0.5 * (data + data_herm).real
-    data_im = 0.5 * (data + data_herm).imag
-    data_ext = np.hstack((data_re, data_im))
+    g_t_herm = make_hermitian(g_t)
+    data = g_t_herm.data.reshape(fshape)
+    data_ext = np.hstack((data.real, data.imag))
 
     c_l_ext = leg.legfit(x, data_ext, order - 1)
     c_l_re, c_l_im = np.split(c_l_ext, 2, axis=-1)

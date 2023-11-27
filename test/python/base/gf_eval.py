@@ -18,6 +18,7 @@
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 from triqs.gf import *
+from triqs.gf.tools import fit_legendre
 from numpy import *
 
 def are_close(a,b):
@@ -38,6 +39,9 @@ g_tau_real = g_tau.real
 
 assert are_close(g_tau(1.), -0.5)
 assert are_close(g_tau_real(1.), -0.5)
+
+g_l = fit_legendre(g_tau)
+assert (are_close(g_l(0.5), -0.5))
 
 g_w = GfReFreq(indices=[0], window=[0.,1.], n_points = 1000)
 g_w << Omega+0.1

@@ -28,6 +28,7 @@ def all_calls():
         'imtime' : ['long', 'double'],
         'refreq' : ['long', 'double'],
         'retime' : ['long', 'double'],
+        'legendre' : ['long', 'double'],
         'dlr'    : ['long', 'double', 'matsubara_freq'],
         'brzone' : ['std::array<long,3>', 'std::array<double, 3>'],
         'cyclat' : ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
@@ -41,7 +42,7 @@ def all_calls():
         [ 4, 'tensor_valued<4>', 'array<dcomplex, 4>']
         ]
 
-    meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'dlr', 'brzone', 'cyclat']
+    meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'legendre', 'dlr', 'brzone', 'cyclat']
 
     real_valued = lambda target: target.replace("_", "_real_")
     for rank, target, return_t in target_and_return:
@@ -69,6 +70,7 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
                    'retime' : 'ReTime',
+                   'legendre' : 'Legendre',
                    'dlr'    : 'DLR',
                    'brzone' : 'BrZone',
                    'cyclat' : 'CycLat',
@@ -76,22 +78,26 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'prod<brzone,imtime>': 'BrZone_x_ImTime',
                    'prod<brzone,refreq>': 'BrZone_x_ReFreq',
                    'prod<brzone,retime>': 'BrZone_x_ReTime',
+                   'prod<brzone,legendre>'   : 'BrZone_x_Legendre',
                    'prod<brzone,dlr>'   : 'BrZone_x_DLR',
                    'prod<cyclat,imfreq>': 'CycLat_x_ImFreq',
                    'prod<cyclat,imtime>': 'CycLat_x_ImTime',
                    'prod<cyclat,refreq>': 'CycLat_x_ReFreq',
                    'prod<cyclat,retime>': 'CycLat_x_ReTime',
+                   'prod<cyclat,legendre>'   : 'CycLat_x_Legendre',
                    'prod<cyclat,dlr>'   : 'CycLat_x_DLR',
                    'prod<imfreq,brzone>': 'ImFreq_x_BrZone',
                    'prod<imtime,brzone>': 'ImTime_x_BrZone',
                    'prod<refreq,brzone>': 'ReFreq_x_BrZone',
                    'prod<retime,brzone>': 'ReTime_x_BrZone',
                    'prod<dlr,brzone>'   : 'DLR_x_BrZone',
+                   'prod<legendre,brzone>'   : 'Legendre_x_BrZone',
                    'prod<imfreq,cyclat>': 'ImFreq_x_CycLat',
                    'prod<imtime,cyclat>': 'ImTime_x_CycLat',
                    'prod<refreq,cyclat>': 'ReFreq_x_CycLat',
                    'prod<retime,cyclat>': 'ReTime_x_CycLat',
                    'prod<dlr,cyclat>'   : 'DLR_x_CycLat',
+                   'prod<legendre,cyclat>'   : 'Legendre_x_CycLat',
                    }
 
 m.add_preamble("""
