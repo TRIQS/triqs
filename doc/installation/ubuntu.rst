@@ -12,8 +12,8 @@ TRIQS 3.2 has been tested on the Ubuntu LTS version 22.04. Earlier versions are 
 Install the following packages which are necessary to build TRIQS and use it::
 
   sudo apt-get install cmake g++-12 gfortran git hdf5-tools \
-       libblas-dev libboost-dev libfftw3-dev libgfortran5 \
-       libgmp-dev libhdf5-dev liblapack-dev libopenmpi-dev \
+       libopenblas-dev libboost-dev libfftw3-dev libgfortran5 \
+       libgmp-dev libhdf5-dev libopenmpi-dev \
        python3-dev python3-mako python3-matplotlib \
        python3-mpi4py python3-numpy python3-scipy
 

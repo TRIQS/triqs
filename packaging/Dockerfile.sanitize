@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       vim \
       lldb-${LLVM} \
       hdf5-tools \
-      libblas-dev \
       libboost-dev \
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
@@ -22,7 +21,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libgfortran5 \
       libgmp-dev \
       libhdf5-dev \
-      liblapack-dev \
+      libopenblas-dev \
       libopenmpi-dev \
       openmpi-bin \
       openmpi-common \

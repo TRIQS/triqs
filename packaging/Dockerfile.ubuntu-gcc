@@ -8,13 +8,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       vim \
       lldb-13 \
       hdf5-tools \
-      libblas-dev \
       libboost-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
       libhdf5-dev \
-      liblapack-dev \
+      libopenblas-dev \
       libopenmpi-dev \
       openmpi-bin \
       openmpi-common \
