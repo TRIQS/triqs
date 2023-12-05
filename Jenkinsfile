@@ -79,15 +79,15 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
           "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "LD_LIBRARY_PATH=$hdf5/lib",
-          "OMP_NUM_THREADS=2",
           "LAPACK_ROOT=${env.BREW}/opt/openblas",
           "PYTHONPATH=$installDir/lib/python3.9/site-packages",
-          "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs"]) {
+          "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
+          "OMP_NUM_THREADS=2"]) {
         deleteDir()
         sh "python3 -m venv $venv"
         sh "DYLD_LIBRARY_PATH=\$BREW/lib pip3 install -U -r $srcDir/requirements.txt"
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DBuild_Deps=Always"
-        sh "make -j2"
+        sh "make -j2 || make -j1 VERBOSE=1"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
