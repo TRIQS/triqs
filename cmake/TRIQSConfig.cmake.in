@@ -55,6 +55,9 @@ if(NOT IMPORTED_ALWAYS_GLOBAL)
   set_property(GLOBAL PROPERTY IMPORTED_ALWAYS_GLOBAL TRUE)
 endif()
 
+# Find libraries for which we use imported targets
+find_package(Boost 1.70 REQUIRED)
+
 # Find the target dependencies
 function(find_dep)
   get_property(${ARGV0}_FOUND GLOBAL PROPERTY ${ARGV0}_FOUND)
