@@ -79,16 +79,8 @@ target_link_libraries(triqs PUBLIC nda::nda_c)
 # ---------------------------------
 
 message(STATUS "-------- Boost detection -------------")
-
-set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost 1.53 REQUIRED COMPONENTS)
-message(STATUS "Boost include dir: ${Boost_INCLUDE_DIRS}")
-
-add_library(boost INTERFACE)
-target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
-
-target_link_libraries(triqs PUBLIC boost)
-install(TARGETS boost EXPORT triqs-dependencies)
+find_package(Boost 1.70 REQUIRED)
+target_link_libraries(triqs PUBLIC Boost::headers)
 
 # ---------------------------------
 # GMP
