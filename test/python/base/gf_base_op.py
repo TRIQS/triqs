@@ -29,6 +29,10 @@ import unittest
 def max_abs(a) :
     return np.amax(np.abs(a))
 
+def onefermion(tau, eps, beta):
+    from math import exp
+    return -exp(-eps * tau) / (1 + exp(-beta * eps));
+
 class test_Gf_Base_Op(unittest.TestCase):
 
     def setUp(self):
@@ -57,6 +61,10 @@ class test_Gf_Base_Op(unittest.TestCase):
         # Arithmetic operations
         G2 = G.copy()
         G2 << G * G + 1.5 * G
+
+        G2 += G
+        G2['b'] += np.eye(G['a'].data.shape[0])
+        G2['a'] -= 1.3-1.0j
 
         # inverse:
         G << inverse(G)
@@ -143,6 +151,25 @@ class test_Gf_Base_Op(unittest.TestCase):
 
         check_pickle(G)
         check_pickle(gt)
+
+        # some basic checks for MeshImTime
+        tau_mesh = MeshImTime(beta=self.beta, S = "Fermion", n_tau = 1000)
+
+        ga_tau = Gf(mesh=tau_mesh, target_shape=(2,2), name = "a1Block")
+        gb_tau = Gf(mesh=tau_mesh, target_shape=(2,2), name = "b1Block")
+
+        G_tau = BlockGf(name_list = ('a','b'), block_list = (ga_tau,gb_tau), make_copies = False)
+        for block, g in G_tau:
+            for tau in g.mesh:
+                g[tau] = onefermion(tau, 1.413, 1e-10)
+
+        # Arithmetic operations
+        G2_tau = G_tau.copy()
+        G2_tau << 1.5 * G_tau
+
+        G2_tau += G_tau
+        G2_tau['b'] += np.eye(G_tau['b'].target_shape[0])
+        G2_tau['a'] -= 1.3-1.0j
 
     def test_Mat_Prod(self):
 

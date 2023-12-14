@@ -33,15 +33,15 @@ def onefermion(tau, eps, beta):
 
 class test_dlr_mesh(unittest.TestCase):
 
-        
+
     def test_dlr_meshes(self):
 
         beta, eps, w_max = 1.337, 1e-9, 100.
 
         MeshTypes = [MeshDLRImTime, MeshDLRImFreq, MeshDLR]
-        
+
         for MeshType in MeshTypes:
-            
+
             m = MeshType(beta, 'Fermion', w_max, eps)
 
             assert( m.beta == beta )
@@ -50,7 +50,7 @@ class test_dlr_mesh(unittest.TestCase):
             assert( m.w_max == w_max )
 
             mps = np.array([ p.value for p in m ])
-        
+
             assert( len(mps) == len(m) )
 
 
@@ -63,7 +63,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         g_w = Gf(mesh=wmesh, target_shape=[])
         g_w << inverse(iOmega_n - e)
-        
+
         g_w_2 = Gf(mesh=wmesh, target_shape=[])
         for w in wmesh:
             g_w_2[w] = 1/(w - e)
@@ -95,7 +95,7 @@ class test_dlr_mesh(unittest.TestCase):
 
         Bg_w_new = make_gf_dlr_imfreq(Bg_c)
         assert_block_gfs_are_close(Bg_w, Bg_w_new)
-    
+
     def test_dlr_gfs_density(self):
 
         e = 1.42
@@ -123,7 +123,7 @@ class test_dlr_mesh(unittest.TestCase):
         m = MeshDLR(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
-        
+
         g = Gf(mesh=m, target_shape=[])
         g.data[:] = np.random.randn(len(m))
 
@@ -133,14 +133,14 @@ class test_dlr_mesh(unittest.TestCase):
             ref = np.sum(g.data / ( complex(iw) - rf/beta ) )
             np.testing.assert_almost_equal(g(iw), ref)
 
-    
+
     def test_dlr_gfs_imtime_interp(self):
 
         beta, eps, w_max = 1.337, 1e-12, 10.
         m = MeshDLR(beta, 'Fermion', w_max, eps)
 
         rf = np.array([ p.value for p in m ])
-        
+
         g = Gf(mesh=m, target_shape=[])
         g.data[:] = np.random.randn(len(m))
 
@@ -176,7 +176,29 @@ class test_dlr_mesh(unittest.TestCase):
     def test_dlr_bug_segfault(self):
         dlr_iw_mesh = MeshDLRImFreq(beta=5.0, statistic='Fermion', w_max=1.0, eps=1e-15)
 
+    def test_dlr_basic_op(self):
+        beta, eps, w_max = 46.2, 1e-12, 10.
+        m = MeshDLRImFreq(beta, 'Fermion', w_max, eps)
+
+        # scalar gf test
+        g = Gf(mesh=m, target_shape=[])
+        print(g)
+        g += 4.
+        g = g*2
+
+        for iwn in g.mesh:
+            assert g[iwn] == 8.
+
+        # array gf test
+        g = Gf(mesh=m, target_shape=[2,2])
+        g +=4.
+        g += np.array([[0.,-1.],[0.,0.]])
+        g -= np.eye(2)
+
+        for iwn in g.mesh:
+            assert np.allclose(g[iwn],np.array([[3.,-1.],[0.,3.]]))
+
 if __name__ == '__main__':
-    unittest.main()        
-    
+    unittest.main()
+
 

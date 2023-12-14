@@ -213,5 +213,43 @@ namespace triqs {
     DEFINE_OPERATOR(/=, /);
 
 #undef DEFINE_OPERATOR
+
+    // Python specific operator and definitions
+
+    // first some basic functionality
+    template <typename A> nda::matrix<nda::get_value_t<A>> make_matrix(A const &a) { return a; }
+
+    template <typename A> void _gf_invert_data_in_place(A &a) {
+      auto mesh_lengths = nda::stdutil::mpop<2>(a.indexmap().lengths());
+      nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+    }
+
+    // definitions of operators for scalar / matrix with all triqs Gf mesh types
+    // loop over mesh and apply operatations
+    // +=, -= with a matrix
+    template <Mesh M, nda::MemoryMatrix Mat>
+    inline void operator+=(gf_view<M> g, Mat const &mat) {
+      for (auto mp: g.mesh()) g[mp] += mat;
+    }
+
+    template <Mesh M, nda::MemoryMatrix Mat>
+    inline void operator-=(gf_view<M> g, Mat const &mat) {
+      for (auto mp: g.mesh()) g[mp] -= mat;
+    }
+
+    // addition of a scalar to a matrix Gf
+    template <Mesh M>
+    inline void operator+=(gf_view<M> g, dcomplex a) { g += make_regular(a * nda::eye<double>(g.target_shape()[0])); }
+
+    template <Mesh M>
+    inline void operator-=(gf_view<M> g, dcomplex a) { g -= make_regular(a * nda::eye<double>(g.target_shape()[0])); }
+
+    // Same for scalar valued
+    template <Mesh M>
+    inline void operator+=(gf_view<M, scalar_valued> g, dcomplex a) { g.data() += a; }
+
+    template <Mesh M>
+    inline void operator-=(gf_view<M, scalar_valued> g, dcomplex a) { g.data() -= a; }
+
   } // namespace gfs
 } // namespace triqs
