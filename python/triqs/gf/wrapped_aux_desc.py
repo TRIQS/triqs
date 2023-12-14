@@ -13,7 +13,7 @@ m.add_include("<cpp2py/converters/vector.hpp>")
 m.add_include("<cpp2py/converters/std_array.hpp>")
 m.add_include("<triqs/cpp2py_converters.hpp>")
 
-m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
+m.add_include("<triqs/gfs/gf/gf_expr.hpp>")
 m.add_using("namespace triqs::arrays")
 m.add_using("namespace triqs::gfs")
 m.add_preamble("""
@@ -72,6 +72,8 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'retime' : 'ReTime',
                    'legendre' : 'Legendre',
                    'dlr'    : 'DLR',
+                   'dlr_imtime' : 'DLRImTime',
+                   'dlr_imfreq' : 'DLRImFreq',
                    'brzone' : 'BrZone',
                    'cyclat' : 'CycLat',
                    'prod<brzone,imfreq>': 'BrZone_x_ImFreq',
@@ -146,8 +148,8 @@ for TY in ['double', 'dcomplex'] :
 # invert auxiliary tool
 m.add_function("void _gf_invert_data_in_place(array_view <dcomplex, 3> a)", doc = "Aux function for inversion")
 
-# For legacy Python code : authorize g + Matrix
-for M in ['imfreq', 'refreq'] :
+# For legacy Python code : authorize g + Matrix functions, which are defined in legacy_for_python_api.hpp
+for M in ['imfreq', 'imtime', 'refreq', 'retime', 'brzone', 'cyclat', 'legendre', 'dlr', 'dlr_imfreq', 'dlr_imtime']:
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x += y")
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
 

@@ -8,7 +8,7 @@ m.add_imports("triqs.gf.meshes")
 
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
-m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
+m.add_include("<triqs/gfs/gf/gf_expr.hpp>")
 
 m.add_include("<cpp2py/converters/pair.hpp>")
 m.add_include("<cpp2py/converters/vector.hpp>")
