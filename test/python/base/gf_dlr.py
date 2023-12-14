@@ -116,6 +116,11 @@ class test_dlr_mesh(unittest.TestCase):
         for block, den in Bgw.density().items():
             np.testing.assert_almost_equal(den, ref)
 
+        # g_w and g_t test
+        np.testing.assert_almost_equal(g_w.density(), ref)
+        g_t = make_gf_dlr_imtime(g_c)
+        np.testing.assert_almost_equal(g_t.density(), ref)
+
 
     def test_dlr_gfs_imfreq_interp(self):
 
@@ -182,7 +187,6 @@ class test_dlr_mesh(unittest.TestCase):
 
         # scalar gf test
         g = Gf(mesh=m, target_shape=[])
-        print(g)
         g += 4.
         g = g*2
 
