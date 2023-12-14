@@ -43,8 +43,8 @@ namespace triqs {
 
     /**
      * @brief Computes the density $$- G(\tau = \beta) $$
-     * 
-     * @param g The Green function 
+     *
+     * @param g The Green function
      * @return auto A tensor/matrix or a scalar, depending on the target
      */
     auto density(MemoryGf<mesh::dlr> auto const &g) {
@@ -59,14 +59,10 @@ namespace triqs {
     }
 
     auto density(MemoryGf<mesh::dlr_imtime> auto const &g) {
-      // FIXME : workaround for static_assert(false). Fix on clang >= 17
-      static_assert(sizeof(g) == 0, "density(gf<dlr_imtime, ...>) is not supported. Use a gf<dlr, ...>.");
-      return 0;
+      return density(make_gf_dlr(g));
     }
     auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) {
-      // FIXME : workaround for static_assert(false). Fix on clang >= 17
-      static_assert(sizeof(g) == 0, "density(gf<dlr_imfreq, ...>) is not supported. Use a gf<dlr, ...>.");
-      return 0;
+      return density(make_gf_dlr(g));
     }
 
     //-------------------------------------------------------

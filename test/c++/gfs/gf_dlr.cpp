@@ -16,6 +16,7 @@
 //
 // Authors: Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
+#include "triqs/gfs/functions/dlr.hpp"
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <triqs/test_tools/gfs.hpp>
@@ -454,8 +455,15 @@ TEST(Gf, DLR_density) {
   // Density from dlr is efficient (by design)
   // only requires interpolation at \tau=\beta ( n = -G(\beta) )
   auto gc = make_gf_dlr(gt);
-  auto n  = triqs::gfs::density(gc);
-  EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(beta * omega)), 1.e-9);
+  auto nc  = triqs::gfs::density(gc);
+  EXPECT_COMPLEX_NEAR(nc, 1 / (1 + std::exp(beta * omega)), 1.e-9);
+
+  auto nt  = triqs::gfs::density(gt);
+  EXPECT_COMPLEX_NEAR(nt, 1 / (1 + std::exp(beta * omega)), 1.e-9);
+
+  auto gw = make_gf_dlr_imfreq(gc);
+  auto nw  = triqs::gfs::density(gw);
+  EXPECT_COMPLEX_NEAR(nw, 1 / (1 + std::exp(beta * omega)), 1.e-9);
 }
 // ----------------------------------------------------------------
 // Same with matrix

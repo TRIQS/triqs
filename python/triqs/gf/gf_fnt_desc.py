@@ -56,8 +56,15 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)"
 m.add_function("matrix<dcomplex> density(gf_view<triqs::gfs::legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<triqs::gfs::legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
+# DLR coeff
 m.add_function("matrix<dcomplex> density(gf_view<dlr, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<dlr, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+# DLR ImFreq
+m.add_function("matrix<dcomplex> density(gf_view<dlr_imfreq, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<dlr_imfreq, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+# DLR ImTime
+m.add_function("matrix<dcomplex> density(gf_view<dlr_imtime, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<dlr_imtime, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
 # ---------------------- miscellaneous --------------------
 for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
