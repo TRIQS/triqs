@@ -1,21 +1,19 @@
-FROM ubuntu:focal
-ARG RELEASE=focal
+FROM ubuntu:22.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       cmake \
-      g++-10 \
+      g++-12 \
       gfortran \
       git \
       vim \
-      lldb-10 \
+      lldb-13 \
       hdf5-tools \
-      libblas-dev \
       libboost-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
       libhdf5-dev \
-      liblapack-dev \
+      libopenblas-dev \
       libopenmpi-dev \
       openmpi-bin \
       openmpi-common \
@@ -28,5 +26,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.8 \
-    CC=gcc-10 CXX=g++-10
+ENV PYTHON_VERSION=3.10 \
+    CC=gcc-12 CXX=g++-12

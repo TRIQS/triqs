@@ -1,6 +1,5 @@
-FROM ubuntu:jammy
-ARG RELEASE=jammy
-ARG LLVM=14
+FROM ubuntu:22.04
+ARG LLVM=15
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
@@ -8,13 +7,12 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
-      g++ \
+      g++-12 \
       gfortran \
       git \
       vim \
       lldb-${LLVM} \
       hdf5-tools \
-      libblas-dev \
       libboost-dev \
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
@@ -24,11 +22,12 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libgfortran5 \
       libgmp-dev \
       libhdf5-dev \
-      liblapack-dev \
+      libopenblas-dev \
       libopenmpi-dev \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
+      pandoc \
       python3-clang-${LLVM} \
       python3-dev \
       python3-mako \
