@@ -28,6 +28,19 @@ techniques.
 
 TRIQS is free software distributed under the GPL license.
 
+
+TRIQS Community Meeting 2024
+----------------------------
+
+It is our pleasure to announce the TRIQS Meeting 2024.
+
+The TRIQS meetings aim to bring together developers and users of the TRIQS ecosystem.
+The event will feature talks on new developments in both the TRIQS core libraries and applications,
+presentations on scientific projects involving TRIQS, as well as focused group discussions on future development directions.
+
+Click `here <https://github.com/TRIQS/triqs/discussions/930>`_ for details and registration.
+
+
 TRIQS applications
 -----------------------
 
