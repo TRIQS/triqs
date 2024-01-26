@@ -354,15 +354,21 @@ def spherical_to_cubic(l, convention='triqs'):
 
     size = 2*l+1
     T = np.zeros((size,size),dtype=complex)
-    if convention in ['wien2k', 'wannier90', 'qe'] and l != 2:
-        raise ValueError("spherical_to_cubic: [wien2k, wannier90, qe] convention implemented only for l=2")
+    if convention in ['wien2k', 'wannier90', 'qe'] and l == 3:
+        raise ValueError("spherical_to_cubic: [wien2k, wannier90, qe] convention implemented only for l=0,1,2")
     if l == 0:
         cubic_names = ("s")
     elif l == 1:
-        cubic_names = ("x","y","z")
-        T[0,0] = 1.0/sqrt(2);   T[0,2] = -1.0/sqrt(2)
-        T[1,0] = 1j/sqrt(2);    T[1,2] = 1j/sqrt(2)
-        T[2,1] = 1.0
+        if convention == 'wannier90' or convention == 'qe':
+            cubic_names = ("z","x","y")
+            T[1,0] = 1.0/sqrt(2);   T[1,2] = -1.0/sqrt(2)
+            T[2,0] = 1j/sqrt(2);    T[2,2] = 1j/sqrt(2)
+            T[0,1] = 1.0
+        elif convention == 'triqs' or convention == 'vasp' or convention == 'wien2k':
+            cubic_names = ("x","y","z")
+            T[0,0] = 1.0/sqrt(2);   T[0,2] = -1.0/sqrt(2)
+            T[1,0] = 1j/sqrt(2);    T[1,2] = 1j/sqrt(2)
+            T[2,1] = 1.0
     elif l == 2:
         if convention == 'wien2k':
             # projectors created in Wien2k are defined in the complex spherical
@@ -398,7 +404,7 @@ def spherical_to_cubic(l, convention='triqs'):
         T[6,0] = 1j/sqrt(2);   T[6,6] = 1j/sqrt(2)
     else: raise ValueError("spherical_to_cubic: implemented only for l=0,1,2,3")
 
-    return np.matrix(T)
+    return T
 
 def cubic_names(l):
     r"""
