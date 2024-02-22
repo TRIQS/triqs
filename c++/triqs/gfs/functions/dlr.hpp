@@ -86,7 +86,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return fit_gf_dlr(gfl, w_max, eps); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, mesh::imtime>, "Mesh must be imtime");
+      static_assert(std::is_same_v<M, mesh::imtime>, "Input mesh must be imtime");
       auto tvals    = nda::array_adapter(std::array{g.mesh().size()}, [&](auto i) { return g.mesh()[i].value() / g.mesh().beta(); });
       auto mesh     = dlr{g.mesh().beta(), g.mesh().statistic(), w_max, eps};
       auto result   = gf{mesh, g.target_shape()};
@@ -106,7 +106,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_dlr_imtime(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, mesh::dlr>, "Mesh must be imtime");
+      static_assert(std::is_same_v<M, mesh::dlr>, "Input mesh must be dlr");
       auto result   = gf{dlr_imtime{g.mesh()}, g.target_shape()};
       result.data() = g.mesh().dlr_it().coefs2vals(g.data());
       return result;
@@ -124,7 +124,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_dlr_imfreq(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, mesh::dlr>, "Mesh must be imtime");
+      static_assert(std::is_same_v<M, mesh::dlr>, "Input mesh must be dlr");
       auto result   = gf{dlr_imfreq{g.mesh()}, g.target_shape()};
       auto beta     = result.mesh().beta();
       result.data() = beta * g.mesh().dlr_if().coefs2vals(g.data());
@@ -143,7 +143,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imtime(gfl, n_tau); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, dlr>, "Mesh must be dlr");
+      static_assert(std::is_same_v<M, dlr>, "Input mesh must be dlr");
       auto result = gf{mesh::imtime{g.mesh().beta(), g.mesh().statistic(), n_tau}, g.target_shape()};
       for (auto tau : result.mesh()) result[tau] = g(tau.value());
       return result;
@@ -161,7 +161,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imfreq(gfl, n_iw); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, dlr>, "Mesh must be dlr");
+      static_assert(std::is_same_v<M, dlr>, "Input mesh must be dlr");
       auto result = gf{mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), n_iw}, g.target_shape()};
       for (auto w : result.mesh()) result[w] = g(w.value());
       return result;
