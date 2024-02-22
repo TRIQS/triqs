@@ -161,7 +161,7 @@ namespace triqs::mesh {
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->freq.size() : 0); }
+    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->imt.get_itnodes().size() : 0); }
 
     // -------------------- index checks and conversions -------------------
 

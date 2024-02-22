@@ -162,7 +162,7 @@ namespace triqs::mesh {
     }
 
     /// The total number of points in the mesh
-    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->freq.size() : 0); }
+    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->imf.get_ifnodes().size() : 0); }
 
     // -------------------- index checks and conversions -------------------
 
