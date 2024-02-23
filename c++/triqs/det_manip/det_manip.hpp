@@ -483,7 +483,7 @@ namespace triqs {
         TRIQS_ASSERT(last_try == NoTry);
         TRIQS_ASSERT(0 <= i and i <= N);
         TRIQS_ASSERT(0 <= j and j <= N);
-        reserve(N);
+        reserve(N + 1);
         last_try = Insert;
         w1.i     = i;
         w1.j     = j;
@@ -519,7 +519,7 @@ namespace triqs {
         TRIQS_ASSERT(last_try == NoTry);
         TRIQS_ASSERT(0 <= i and i <= N);
         TRIQS_ASSERT(0 <= j and j <= N);
-        reserve(N);
+        reserve(N + 1);
         last_try = Insert;
         w1.i     = i;
         w1.j     = j;
