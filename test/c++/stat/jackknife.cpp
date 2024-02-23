@@ -18,7 +18,7 @@
 // Authors: Philipp D, Olivier Parcollet, Nils Wentzell
 
 #include <cmath>
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_DEBUG
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/stat/accumulator.hpp>

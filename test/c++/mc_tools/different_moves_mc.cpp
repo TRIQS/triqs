@@ -26,7 +26,7 @@
 //  - params.h5
 // A python notebook is associated to this example, with the comparison to the theoretical gaussian histogram.
 
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_DEBUG
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>

@@ -17,7 +17,7 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_DEBUG
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace triqs::gfs;
