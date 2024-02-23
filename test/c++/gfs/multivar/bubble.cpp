@@ -17,7 +17,7 @@
 //
 // Authors: Thomas Ayral, Michel Ferrero, Hartmut Hafermann, Olivier Parcollet, Nils Wentzell
 
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+//#define NDA_DEBUG
 #include <triqs/test_tools/gfs.hpp>
 #include <nda/clef/sum.hpp>
 

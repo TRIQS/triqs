@@ -32,7 +32,7 @@ option(CHECK_MEMORY "Turn on memory check" OFF)
 target_compile_definitions(triqs
   PUBLIC
     $<$<CONFIG:Debug>:TRIQS_DEBUG>
-    $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+    $<$<CONFIG:Debug>:NDA_DEBUG>
     $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_DEBUG_COUNT_MEMORY>
     $<$<BOOL:${CHECK_MEMORY}>:TRIQS_ARRAYS_CHECK_WEAK_REFS>
 )

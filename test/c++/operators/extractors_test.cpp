@@ -20,7 +20,7 @@
 
 #include <triqs/test_tools/arrays.hpp>
 
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_DEBUG
 #include <vector>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/operators/util/extractors.hpp>
