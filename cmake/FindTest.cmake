@@ -51,11 +51,11 @@ function(add_python_test)
   endif()
 
   foreach(NP ${ARG_MPI_NUMPROC})
-    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${CPP2PY_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
     set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT ${testenv})
   endforeach()
 
-  add_test(${testname} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+  add_test(${testname} ${CPP2PY_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
   set_property(TEST ${testname} PROPERTY ENVIRONMENT ${testenv})
 
 endfunction(add_python_test)

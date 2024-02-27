@@ -1,4 +1,4 @@
-#!@PYTHON_EXECUTABLE@
+#!@CPP2PY_PYTHON_EXECUTABLE@
 
 cxxflags = "@CMAKE_CXXFLAGS@ @triqs_CXXFLAGS@ @python_and_numpy_CXXFLAGS@"
 ldflags = "@triqs_LDFLAGS@ @python_and_numpy_LDFLAGS@ -L@CMAKE_INSTALL_PREFIX@/lib -ltriqs -lcpp2py"
