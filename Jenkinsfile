@@ -82,6 +82,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "LAPACK_ROOT=${env.BREW}/opt/openblas",
           "PYTHONPATH=$installDir/lib/python3.9/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
+          "VIRTUAL_ENV=$venv",
           "OMP_NUM_THREADS=2"]) {
         deleteDir()
         sh "python3 -m venv $venv"
