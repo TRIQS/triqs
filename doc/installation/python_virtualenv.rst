@@ -5,51 +5,54 @@ Python Virtual Environments
 ===========================
 
 On some machines, a few of the necessary Python dependencies of TRIQS may be missing or outdated
-(as e.g. on old distributions and computing clusters).
+(as e.g. on old distributions and computing clusters) or you might not be able to use the system's
+Python installation.
 
-While the cleanest solution would be to update or install the corresponding packages within the 
-system, this is not always possible. In those cases, a Python virtual environment set up in your
-home directory is a clean an a simple solution.
-
-This is achieved via a Python package called `virtualenv. <https://virtualenv.pypa.io/en/stable>`_
+In those cases, a Python virtual environment set up in your home directory is a clean and simple solution.
 
 .. note:: This works as long as the other dependencies of the packages on e.g. C++ libraries are satisfied.
 
 Usage
 -----
 
-We present a below a few basic instructions for using the Python virtualenv package.
-For more information please refer to the official `user guide. <https://virtualenv.pypa.io/en/stable/userguide/>`_
+We present below a few basic instructions for using Python's ``venv`` package.
+For more information please refer to the official `documentation. <https://docs.python.org/3/library/venv.html>`_
 
-* As a first step, install the virtualenv package, or ask your system manager to do so. On Ubuntu, run::
+* As of verison 3.3, Python comes with a built-in virtual environment package, called ``venv``. Although it should
+  be included in the basic Python installation, on some systems you might need to install it separately. For example
+  on Ubuntu, run::
 
-    sudo apt-get install python-virtualenv
+    sudo apt-get install python3-venv
 
-* To create a new isolated Python virtual environment in your home directory, do e.g.::
+* As a first step, create a directory for your virtual environments in your home path, e.g.::
 
-    virtualenv $HOME/.my_python --system-site-packages
+    mkdir $HOME/.venv
 
-  You can then use it by loading it into your shell :ref:`environment <environment_vars>` via::
+* To make a new isolated Python virtual environment called ``my_python``, do::
 
-    source $HOME/.my_python/bin/activate
+    python3 -m venv $HOME/.venv/my_python
 
-  To confirm that you are now using your own Python virtual environment, running the command::
+* You can then use it by loading it into your shell :ref:`environment <environment_vars>` via::
+
+    source $HOME/.venv/my_python/bin/activate
+
+* Confirm that your own Python virtual environment is activated by running the command::
   
     which python
 
-  should return::
+  which should return::
 
-    path_to_your_home/.my_python/bin/python
-
-* To make this your default Python setup, just add the line::
-
-    source $HOME/.my_python/bin/activate
-
-  to your ``$HOME/.bash_profile``
+    path_to_your_home/.venv/my_python/bin/python
 
 * To install or upgrade any Python package for this local Python environment, run::
 
     pip install --upgrade package_name
+
+* If you want to make this your default Python setup, just add the line::
+
+    source $HOME/.venv/my_python/bin/activate
+
+  to your ``$HOME/.bash_profile``
 
 Compiling a package from source
 -------------------------------

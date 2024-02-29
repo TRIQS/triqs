@@ -37,7 +37,7 @@ We are looking for a more robust solution to this OS X installation mess; **help
 Installation of the dependencies
 --------------------------------
 
-The following installation instructions are for Mac OS X 10.14.3 (Mojave) and should be executed on the terminal.
+The following installation instructions are for Mac OS X 10.14.3 (Mojave) or later and should be executed on the terminal.
 They may work (possibly with some modifications) for earlier versions of OS X.
 
 1. Install the XCode Command Line Tools: ::
@@ -64,19 +64,21 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install openblas
      brew install python
 
-4. Install the required python packages: ::
+4. Create a :ref:`Python virtual environment <python_virtualenv>` and make sure it is activated.
 
-    pip3 install --user --upgrade matplotlib
-    pip3 install --user --upgrade mako
-    pip3 install --user --upgrade numpy
-    pip3 install --user --upgrade scipy
-    pip3 install --user --upgrade mpi4py
+5. Install the required python packages into your virtual environment: ::
 
-5. We recommend using the clang compiler by default. The following command will install llvm together with the most recent clang compiler ::
+    pip install --user --upgrade matplotlib
+    pip install --user --upgrade mako
+    pip install --user --upgrade numpy
+    pip install --user --upgrade scipy
+    pip install --user --upgrade mpi4py
+
+6. We recommend using the clang compiler by default. The following command will install llvm together with the most recent clang compiler ::
 
      brew install llvm
 
-   As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>` and we set clang as the default compiler ::
+7. As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>` and we set clang as the default compiler ::
 
      export PATH=$(brew --prefix)/opt/llvm/bin:$PATH
      export LIBRARY_PATH=$(brew --prefix)/opt/llvm/lib:$LIBRARY_PATH

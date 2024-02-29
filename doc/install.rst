@@ -67,7 +67,7 @@ For full functionality of the C++2Py Tool, please install clang and the libclang
 Anaconda
 --------
 
-We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`_ distribution. The packages are provided through the `conda-forge <https://conda-forge.org/>`_ repositories. After `installing conda <https://docs.conda.io/en/latest/miniconda.html>`_ we recommend to first create a specific `Anaconda environment<https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_ to avoid conflicts with other packages::
+We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`_ distribution. The packages are provided through the `conda-forge <https://conda-forge.org/>`_ repositories. After `installing conda <https://docs.conda.io/en/latest/miniconda.html>`_ we recommend to first create a specific `Anaconda environment <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_ to avoid conflicts with other packages::
 
         conda create -n triqs
         conda activate triqs
@@ -193,17 +193,18 @@ We provide hereafter the build instructions in the form of a documented bash scr
 You can adapt INSTALL_PREFIX, NCORES for your local settings.
 Note that, contrary to previous versions of TRIQS,
 the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake configuration.
+If you are using a :ref:`Python virtual environment<python_virtualenv>`, make sure that it is activated. 
 
 
 .. literalinclude:: install.sh
    :language: bash
 
-To install TRIQS together with several of its :ref:`applications<applications>` we also provide a bash script that
+To install TRIQS together with several of its :ref:`applications<applications>` we provide a bash script that
 automatizes the build and test process :download:`build_triqs.sh <installation/build_triqs.sh>`. The script
 can be edited to customize the compilation of TRIQS and its applications using both environment variables
 and cmake configuration options. The script assumes that all dependencies / required libraries are already
-installed. Executing the script via `bash build_triqs.sh` will generate a `build_x.log` containing the
-command-line build output and a `build_x_test.log` containing the test output. 
+installed. Executing the script via `bash build_triqs.sh` will generate a `build_x.log` containing the command-line 
+build output and a `build_x_test.log` containing the test output. 
 
 .. note:: Caution: The compilation of TRIQS, even if run in serial mode, can temporarily
           use up to 4 Gigabytes of RAM. The restrictions on the Login-Nodes of certain
