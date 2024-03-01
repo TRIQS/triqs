@@ -1,4 +1,4 @@
-FROM intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04
+FROM intel/oneapi-hpckit:2024.0.1-devel-ubuntu22.04
 ARG LLVM=15
 
 # Fix broken gpg keyfile
