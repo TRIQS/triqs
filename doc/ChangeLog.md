@@ -5,6 +5,47 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 3.2.1
+
+TRIQS Version 3.2.1 is a patch-release that includes a
+number of bug fixes and improvements to the documentation:
+* Fix Memory Error in det_manip try_insert function
+* Restore oplot functionality for MeshLegendre Green functions
+* Ubuntu 24.04 install instructions + Packages
+* Recommend use of Python virtualenvs on OSX
+
+We thank all contributors: Thomas Hahn, Alexander Hampel, Dylan Simon, Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### General
+* Remove use of deprecated unittest.assertEquals
+* Bug Fix: Insufficient reserved memory in det_manip try_insert function
+* jenkins: make builduid configurable and dynamic
+* Fix block_gf constructor from mesh and list of block sizes
+* Restore oplot functionality for MeshLegendre Green functions
+* missing cstdint include, see issue #915
+
+### doc
+* Improve DLR documentation in both C++ and Python
+* Update install instructions for osx and venvs
+* Update conda install instructions with custom environment commands and note for developers
+* Add Nevanlinna to application section on TRIQS Website
+* Add Ubuntu 24.04 (noble) to supported distributions
+* Remove Ubuntu 20.04 from supported distributions
+* Add OpenMP to list of build requirements
+* Convert README into markdown and add conda badge
+* Install gpg-agent in Ubuntu install instructions
+* Fix issue in layout.html #912
+
+### jenkins
+* Synchronize ubuntu build environments with unstable
+* Update Dockerfile and Jenkinsfile to include relevant changes of unstable branch
+
+### cmake
+* Use Boost imported target and bump version requirement to 1.70
+
+
 ## Version 3.2.0
 
 TRIQS Version 3.2.0 is a release that
