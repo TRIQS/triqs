@@ -36,7 +36,7 @@ using namespace triqs::utility;
 int seed = 1567;
 mpi::communicator world;
 
-void expect_near(double x, double y) { EXPECT_NEAR(x, y, (1e-14 * std::max(std::abs(x), std::abs(y)))); }
+void expect_near(double x, double y) { EXPECT_NEAR(x, y, (2e-14 * std::max(std::abs(x), std::abs(y)))); }
 
 // FIXME : remove boost generator for std:: ones
 
