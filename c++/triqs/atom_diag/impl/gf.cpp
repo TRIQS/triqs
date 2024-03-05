@@ -132,7 +132,7 @@ namespace triqs {
       assert(lehmann.size() == g.size());
       int bl = 0;
       for (auto const &block : g) {
-        //assert(block.target_shape() == lehmann[bl].shape());
+        assert(block.target_shape() == lehmann[bl].shape());
         ++bl;
       }
 #endif

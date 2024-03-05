@@ -15,7 +15,10 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+#ifndef NDA_DEBUG
 #define NDA_DEBUG
+#endif
+
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::clef;
 using namespace triqs::lattice;

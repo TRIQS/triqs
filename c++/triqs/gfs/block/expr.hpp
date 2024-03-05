@@ -36,8 +36,8 @@ namespace triqs {
         int size1() const { return -1; }
         int size2() const { return -1; }
         template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
-        template <typename... Keys> S operator[]([[maybe_unused]] Keys &&...keys) const { return s; }
-        template <typename... Args> inline S operator()([[maybe_unused]] Args &&...args) const { return s; }
+        template <typename... Keys> S operator[](Keys &&...) const { return s; }
+        template <typename... Args> inline S operator()(Args &&...) const { return s; }
         friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
       };
 

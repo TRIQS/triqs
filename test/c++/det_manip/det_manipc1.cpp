@@ -103,10 +103,8 @@ struct test {
         case 2: {
           long k = 2 + RNG(6);
           std::cerr << " Insert" << k << std::endl;
-          std::vector<double> x_vec(k);
-          std::vector<double> y_vec(k);
-          std::vector<long> i_vec(k);
-          std::vector<long> j_vec(k);
+          std::vector<double> x_vec(k), y_vec(k);
+          std::vector<long> i_vec(k), j_vec(k);
           for (auto m : itertools::range(k)) {
             x_vec.at(m) = RNG(10.0);
             y_vec.at(m) = RNG(10.0);
@@ -125,8 +123,7 @@ struct test {
           long k = 2 + RNG(6);
           std::cerr << " Remove" << k << std::endl;
           if (D.size() >= k) {
-            std::vector<long> i_vec(k);
-            std::vector<long> j_vec(k);
+            std::vector<long> i_vec(k), j_vec(k);
             for (auto m : itertools::range(k)) {
               i_vec.at(m) = RNG(s);
               j_vec.at(m) = RNG(s);
@@ -156,4 +153,4 @@ struct test {
   }
 };
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) { test().run(); }
+int main(int, char **) { test().run(); }

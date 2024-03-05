@@ -26,7 +26,10 @@
 //  - params.h5
 // A python notebook is associated to this example, with the comparison to the theoretical gaussian histogram.
 
+#ifndef NDA_DEBUG
 #define NDA_DEBUG
+#endif
+
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
@@ -88,14 +91,15 @@ struct compute_histo {
   mpi::communicator world;
   long tot; //number of pointsregistered inthe histogram
   compute_histo(configuration &config_, nda::array<double, 1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
-  void accumulate([[maybe_unused]] double sign) {
-    if (config->x + xmax >= 0 && config->x - xmax < 0) {
-      H(floor((config->x + xmax))) += 1;
+  void accumulate(double) {
+    auto x = config->x;
+    if (x + xmax >= 0 && x - xmax < 0) {
+      H(lround(floor((x + xmax)))) += 1;
       tot += 1;
     }
     config->x = 0; // the walker returns to zero.
   }
-  void collect_results([[maybe_unused]] mpi::communicator c) {
+  void collect_results(mpi::communicator) {
     H /= tot;
     if (world.rank() == 0) {
       h5::file file("histo.h5", 'w');

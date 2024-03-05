@@ -17,7 +17,10 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+#ifndef TRIQS_DEBUG
 #define TRIQS_DEBUG
+#endif
+
 #include <triqs/test_tools/gfs.hpp>
 
 // ----------------------------------------------------------

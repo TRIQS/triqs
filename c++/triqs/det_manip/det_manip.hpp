@@ -34,6 +34,80 @@ namespace triqs {
 
     namespace blas = nda::blas;
 
+    // ================ Work Data Types =====================
+
+    // For single-row/column operations
+    template <typename x_type, typename y_type, typename value_type> struct work_data_type1 {
+      x_type x;
+      y_type y;
+      long i, j, ireal, jreal;
+      // MB = A^(-1)*B,
+      // MC = C*A^(-1)
+      nda::vector<value_type> MB, MC, B, C;
+      // ksi = newdet/det
+      value_type ksi;
+      void resize(long N) {
+        MB.resize(N);
+        MC.resize(N);
+        B.resize(N);
+        C.resize(N);
+      }
+    };
+
+    // For multiple-row/column operations
+    template <typename x_type, typename y_type, typename value_type> struct work_data_typek {
+      std::vector<x_type> x;
+      std::vector<y_type> y;
+      std::vector<long> i, j, ireal, jreal;
+      // MB = A^(-1)*B,
+      // MC = C*A^(-1)
+      nda::matrix<value_type> MB, MC, B, C, ksi;
+      void resize(long N, long k) {
+        if (k < 2) return;
+        x.resize(k);
+        y.resize(k);
+        i.resize(k);
+        j.resize(k);
+        ireal.resize(k);
+        jreal.resize(k);
+        MB.resize(N, k);
+        MC.resize(k, N);
+        B.resize(N, k);
+        C.resize(k, N);
+        ksi.resize(k, k);
+      }
+      value_type det_ksi(long k) const {
+        if (k == 2) {
+          return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
+        } else if (k == 3) {
+          return                                 // Rule of Sarrus
+             ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
+             ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
+             ksi(0, 2) * ksi(1, 0) * ksi(2, 1) - //
+             ksi(2, 0) * ksi(1, 1) * ksi(0, 2) - //
+             ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
+             ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
+        } else {
+          auto Rk = range(k);
+          return nda::determinant(ksi(Rk, Rk));
+        };
+      }
+    };
+
+    // For refill operations
+    template <typename x_type, typename y_type, typename value_type> struct work_data_type_refill {
+      std::vector<x_type> x_values;
+      std::vector<y_type> y_values;
+      nda::matrix<value_type> M;
+      void reserve(long N) {
+        x_values.reserve(N);
+        y_values.reserve(N);
+        M.resize(N, N);
+      }
+    };
+
+    // ================ det_manip implementation =====================
+
     /**
      * @brief Standard matrix/det manipulations used in several QMC.
      */
@@ -50,10 +124,7 @@ namespace triqs {
       static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
                     "det_manip : the function must return a floating number or a complex number");
 
-      using vector_type            = nda::vector<value_type>;
-      using matrix_type            = nda::matrix<value_type>;
-      using matrix_view_type       = nda::matrix_view<value_type>;
-      using matrix_const_view_type = nda::matrix_const_view<value_type>;
+      using matrix_type = nda::matrix<value_type>;
 
       protected: // the data
       FunctionType f;
@@ -118,77 +189,9 @@ namespace triqs {
       }
 
       private:
-      // temporary work data, not saved, serialized, etc....
-      struct work_data_type1 {
-        x_type x;
-        y_type y;
-        long i, j, ireal, jreal;
-        // MB = A^(-1)*B,
-        // MC = C*A^(-1)
-        vector_type MB, MC, B, C;
-        // ksi = newdet/det
-        value_type ksi;
-        void resize(long new_N) {
-          MB.resize(new_N);
-          MC.resize(new_N);
-          B.resize(new_N);
-          C.resize(new_N);
-        }
-      };
-
-      struct work_data_typek {
-        std::vector<x_type> x;
-        std::vector<y_type> y;
-        std::vector<long> i, j, ireal, jreal;
-        // MB = A^(-1)*B,
-        // MC = C*A^(-1)
-        matrix_type MB, MC, B, C, ksi;
-        void resize(long new_N, long new_k) {
-          if (new_k < 2) return;
-          x.resize(new_k);
-          y.resize(new_k);
-          i.resize(new_k);
-          j.resize(new_k);
-          ireal.resize(new_k);
-          jreal.resize(new_k);
-          MB.resize(new_N, new_k);
-          MC.resize(new_k, new_N);
-          B.resize(new_N, new_k);
-          C.resize(new_k, new_N);
-          ksi.resize(new_k, new_k);
-        }
-        value_type det_ksi(long tmp_k) const {
-          if (tmp_k == 2) {
-            return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
-          } else if (tmp_k == 3) {
-            return                                 // Rule of Sarrus
-               ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
-               ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
-               ksi(0, 2) * ksi(1, 0) * ksi(2, 1) - //
-               ksi(2, 0) * ksi(1, 1) * ksi(0, 2) - //
-               ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
-               ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
-          } else {
-            auto Rk = range(tmp_k);
-            return nda::determinant(ksi(Rk, Rk));
-          };
-        }
-      };
-
-      struct work_data_type_refill {
-        std::vector<x_type> x_values;
-        std::vector<y_type> y_values;
-        matrix_type M;
-        void reserve(long new_N) {
-          x_values.reserve(new_N);
-          y_values.reserve(new_N);
-          M.resize(new_N, new_N);
-        }
-      };
-
-      work_data_type1 w1;
-      work_data_typek wk;
-      work_data_type_refill w_refill;
+      work_data_type1<x_type, y_type, value_type> w1;
+      work_data_typek<x_type, y_type, value_type> wk;
+      work_data_type_refill<x_type, y_type, value_type> w_refill;
       det_type newdet;
       int newsign;
 
@@ -416,7 +419,7 @@ namespace triqs {
        * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER.
        * See doc of get_x_internal_order.
        */
-      matrix_const_view_type inverse_matrix_internal_order() const { return mat_inv(range(N), range(N)); }
+      nda::matrix_const_view<value_type> inverse_matrix_internal_order() const { return mat_inv(range(N), range(N)); }
 
       /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
       matrix_type matrix() const {

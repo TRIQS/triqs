@@ -173,7 +173,7 @@ friend void h5_read(h5::group fg, std::string const &subgroup_name, this_t &g) {
 //----------------------------- print  -----------------------------
 
 /// IO
-friend std::ostream &operator<<(std::ostream &out, [[maybe_unused]] this_t const &x) { return out << "this_t"; }
+friend std::ostream &operator<<(std::ostream &out, this_t const &) { return out << "this_t"; }
 
 //----------------------------- MPI  -----------------------------
 

@@ -226,10 +226,10 @@ namespace triqs::gfs {
     return max_element(abs(imag(g.data()))) <= tolerance;
   }
   template <typename G>
-  bool is_gf_real(G const &g, double tolerance = 1.e-13)
+  bool is_gf_real(G const &bg, double tolerance = 1.e-13)
     requires(is_block_gf_v<G>)
   {
-    return std::all_of(g.begin(), g.end(), [&](auto &gf) { return is_gf_real(gf, tolerance); });
+    return std::all_of(bg.begin(), bg.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
   }
 
   /// Takes the real part of g without check, and returns a new gf with a real target

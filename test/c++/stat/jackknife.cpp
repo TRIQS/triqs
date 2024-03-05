@@ -17,8 +17,11 @@
 //
 // Authors: Philipp D, Olivier Parcollet, Nils Wentzell
 
-#include <cmath>
+#ifndef NDA_DEBUG
 #define NDA_DEBUG
+#endif
+
+#include <cmath>
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/stat/accumulator.hpp>
