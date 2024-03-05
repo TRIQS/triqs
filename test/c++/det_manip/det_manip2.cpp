@@ -122,4 +122,4 @@ struct test {
   }
 };
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) { test().run(); }
+int main(int, char **) { test().run(); }

@@ -60,7 +60,7 @@ namespace triqs::mesh {
   };
 
   //
-  template <typename P, typename C> auto make_mesh_range_prod([[maybe_unused]] P const *m, C const &m_components, [[maybe_unused]] uint64_t mhash) {
+  template <typename P, typename C> auto make_mesh_range_prod(P const *, C const &m_components, uint64_t) {
     auto f             = [](auto &&...x) { return itertools::product(x...); };
     auto to_mesh_point = [](auto &&n_mp) { return typename P::mesh_point_t{n_mp}; };
     return itertools::transform(std::apply(f, m_components), to_mesh_point);
@@ -182,7 +182,7 @@ namespace triqs::mesh {
     friend void h5_write(h5::group fg, std::string subgroup_name, prod const &m) {
       h5::group gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, m);
-      auto l = [gr](int N, auto const &me) { h5_write(gr, "MeshComponent" + std::to_string(N), me); };
+      auto l = [gr](int N, auto const &mc) { h5_write(gr, "MeshComponent" + std::to_string(N), mc); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 
@@ -190,7 +190,7 @@ namespace triqs::mesh {
     friend void h5_read(h5::group fg, std::string subgroup_name, prod &m) {
       h5::group gr = fg.open_group(subgroup_name);
       assert_hdf5_format(gr, m, true);
-      auto l = [gr](int N, auto &me) { h5_read(gr, "MeshComponent" + std::to_string(N), me); };
+      auto l = [gr](int N, auto &mc) { h5_read(gr, "MeshComponent" + std::to_string(N), mc); };
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 

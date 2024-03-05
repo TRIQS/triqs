@@ -26,7 +26,7 @@ using triqs::utility::time_segment;
 
 void print_me(double x) { std::cout << " print " << x << std::endl; }
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+int main(int, char **) {
   time_segment ts(40);
   time_pt zero = ts.get_lower_pt();
   time_pt beta = ts.get_upper_pt();

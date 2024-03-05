@@ -49,12 +49,12 @@ namespace triqs::gfs {
   // Some work that may be necessary after the read (for backward compatibility e.g.)
   // Default : do nothing
   template <typename M, typename T> struct gf_h5_after_read {
-    template <typename G> static void invoke([[maybe_unused]] h5::group gr, [[maybe_unused]] G &g) {}
+    template <typename G> static void invoke(h5::group, G &) {}
   };
 
   // After reading from h5, is the function is for freq >0, unfold it to the full mesh
   template <typename T> struct gf_h5_after_read<mesh::imfreq, T> {
-    template <typename G> static void invoke([[maybe_unused]] h5::group gr, G &g) {
+    template <typename G> static void invoke(h5::group, G &g) {
       if (g.mesh().positive_only()) g = make_gf_from_real_gf(make_const_view(g));
     }
   };

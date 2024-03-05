@@ -162,14 +162,14 @@ namespace triqs {
       }
 
       private:
-      template <typename StateType> StateType get_target_st(StateType const &st, [[maybe_unused]] std::true_type use_map) const {
-        auto n = hilbert_map[st.get_hilbert().get_index()];
-        if (n == -1) return StateType{};
-        return StateType{(*sub_spaces)[n]};
-      }
-
-      template <typename StateType> StateType get_target_st(StateType const &st, [[maybe_unused]] std::false_type use_map) const {
-        return StateType(st.get_hilbert());
+      template <typename StateType> StateType get_target_st(StateType const &st) const {
+        if constexpr (UseMap) {
+          auto n = hilbert_map[st.get_hilbert().get_index()];
+          if (n == -1) return StateType{};
+          return StateType{(*sub_spaces)[n]};
+        } else {
+          return StateType(st.get_hilbert());
+        }
       }
 
       static bool parity_number_of_bits(uint64_t v) {
@@ -206,7 +206,7 @@ namespace triqs {
   */
       template <typename StateType, typename... Args> StateType operator()(StateType const &st, Args &&...args) const {
 
-        StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
+        StateType target_st = get_target_st(st);
         auto const &hs      = st.get_hilbert();
 
         using amplitude_t = typename StateType::value_type;

@@ -109,6 +109,12 @@ namespace triqs {
   */
       int size() const { return hs_p->size(); }
 
+      /// Number of non-vanishing amplitudes in the state
+      /**
+   @return Number of non-vanishing amplitudes
+  */
+      int nterms() const { return ampli.size(); }
+
       /// Access to individual amplitudes
       /**
    @param i index of the requested amplitude

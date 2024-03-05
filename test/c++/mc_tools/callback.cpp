@@ -14,7 +14,9 @@
 //
 // Authors: Nils Wentzell
 
+#ifndef NDA_DEBUG
 #define NDA_DEBUG
+#endif
 
 #include <triqs/test_tools/gfs.hpp>
 

@@ -288,7 +288,7 @@ namespace triqs::gfs {
     public:
     //----------------------------- print  -----------------------------
 
-    friend std::ostream &operator<<(std::ostream &out, [[maybe_unused]] block_gf const &x) { return out << "block_gf"; }
+    friend std::ostream &operator<<(std::ostream &out, block_gf const &) { return out << "block_gf"; }
 
     // Common code for gf, gf_view, gf_const_view
 #include "./_block_gf_view_common.hpp"

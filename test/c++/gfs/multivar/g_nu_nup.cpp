@@ -122,8 +122,6 @@ TEST(BlockGf, H5_RW_Evaluator) {
   EXPECT_GF_NEAR(G[0], G2[0]);
   EXPECT_GF_NEAR(g, g2);
 
-  [[maybe_unused]] auto w0  = matsubara_freq(0, beta, Fermion);
-  [[maybe_unused]] auto W0  = matsubara_freq(0, beta, Boson);
   auto W10 = matsubara_freq(10, beta, Boson);
   EXPECT_ARRAY_NEAR(G[0](W10), G2[0](W10));
   EXPECT_ARRAY_NEAR(g(W10), g2(W10));

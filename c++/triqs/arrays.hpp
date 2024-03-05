@@ -22,7 +22,7 @@
 // for python code generator, we need to know what to include...
 #define TRIQS_INCLUDED_ARRAYS
 
-#include <assert.h>
+#include <cassert>
 
 #include <complex>
 #include <h5/h5.hpp>

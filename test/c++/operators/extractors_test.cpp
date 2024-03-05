@@ -18,9 +18,11 @@
 //
 // Authors: Thomas Ayral, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
-#include <triqs/test_tools/arrays.hpp>
-
+#ifndef NDA_DEBUG
 #define NDA_DEBUG
+#endif
+
+#include <triqs/test_tools/arrays.hpp>
 #include <vector>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/operators/util/extractors.hpp>

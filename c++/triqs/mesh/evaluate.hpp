@@ -70,13 +70,13 @@ namespace triqs::mesh { // NOLINT
   } // namespace detail
 
   // evaluate on a mesh index just pass through
-  template <Mesh M> FORCEINLINE auto evaluate([[maybe_unused]] M const &m, auto const &f, typename M::index_t const &index) { return f(index); }
+  template <Mesh M> FORCEINLINE auto evaluate(M const &, auto const &f, typename M::index_t const &index) { return f(index); }
 
   // evaluate on a closest_mesh_point : pass through, like an index.
-  template <typename T> FORCEINLINE auto evaluate([[maybe_unused]] Mesh auto const &m, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }
+  template <typename T> FORCEINLINE auto evaluate(Mesh auto const &, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }
 
   // all_t : pass through, like a (range of) index
-  FORCEINLINE auto evaluate([[maybe_unused]] Mesh auto const &m, auto const &f, all_t) { return f(all_t{}); }
+  FORCEINLINE auto evaluate(Mesh auto const &, auto const &f, all_t) { return f(all_t{}); }
 
   // evaluate on a mesh point. Use its value if its available, else pass through
   template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::mesh_point_t const &mp) {

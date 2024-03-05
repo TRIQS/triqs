@@ -189,7 +189,7 @@ namespace triqs {
 
     // Implementation tools
     // _for_each_impl (f, x0, x1, ..., xn) calls f(x0); f(x1); ... f(xn); IN THIS ORDER
-    template <typename F> void _for_each_impl([[maybe_unused]] F &&f) {}
+    template <typename F> void _for_each_impl(F &&) {}
 
     template <typename F, typename T0, typename... T> void _for_each_impl(F &&f, T0 &&x0, T &&...x) {
       f(std::forward<T0>(x0));
@@ -197,7 +197,7 @@ namespace triqs {
     }
 
     // _for_each_apply_impl (f, t0, t1, ..., tn) calls apply(f,x0); apply(f,t1); ... apply(f,tn);
-    template <typename F> void _for_each_apply_impl([[maybe_unused]] F &&f) {}
+    template <typename F> void _for_each_apply_impl(F &&) {}
 
     template <typename F, typename T0, typename... T> void _for_each_apply_impl(F &&f, T0 &&t0, T &&...t) {
       triqs::tuple::apply(f, std::forward<T0>(t0));
@@ -276,7 +276,7 @@ namespace triqs {
     template <int pos, typename F, typename T, typename R> decltype(auto) fold_impl(_int<pos>, F &&f, T &&t, R &&r) {
       return fold_impl(_int<pos - 1>(), std::forward<F>(f), std::forward<T>(t), f(std::get<_get_seq_len<T>() - 1 - pos>(t), std::forward<R>(r)));
     }
-    template <typename F, typename T, typename R> R fold_impl(_int<-1>, [[maybe_unused]] F &&f, [[maybe_unused]] T &&t, R &&r) { return std::forward<R>(r); }
+    template <typename F, typename T, typename R> R fold_impl(_int<-1>, F &&, T &&, R &&r) { return std::forward<R>(r); }
 
     template <typename F, typename T, typename R> decltype(auto) fold(F &&f, T &&t, R &&r) {
       return fold_impl(_int<_get_seq_len<T>() - 1>(), std::forward<F>(f), std::forward<T>(t), std::forward<R>(r));
@@ -295,7 +295,7 @@ namespace triqs {
                        f(std::get<n>(t0), std::get<n>(t1), std::forward<R>(r)));
     }
 
-    template <typename F, typename T0, typename T1, typename R> R fold_impl(_int<-1>, [[maybe_unused]] F &&f, [[maybe_unused]] T0 &&t0, [[maybe_unused]] T1 &&t1, R &&r) { return std::forward<R>(r); }
+    template <typename F, typename T0, typename T1, typename R> R fold_impl(_int<-1>, F &&, T0 &&, T1 &&, R &&r) { return std::forward<R>(r); }
 
     template <typename F, typename T0, typename T1, typename R> decltype(auto) fold(F &&f, T0 &&t0, T1 &&t1, R &&r) {
       return fold_impl(_int<_get_seq_len<T0>() - 1>(), std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1), std::forward<R>(r));
@@ -305,8 +305,8 @@ namespace triqs {
   * replace<int ... I>(t,r)
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are replaced by r
   */
-    template <int I, typename T, typename R> R _get_rpl([[maybe_unused]] T &&x, R &&r, _int<I>) { return std::forward<R>(r); }
-    template <int I, typename T, typename R> T _get_rpl(T &&x, [[maybe_unused]] R &&r, ...) { return std::forward<T>(x); }
+    template <int I, typename T, typename R> R _get_rpl(T &&, R &&r, _int<I>) { return std::forward<R>(r); }
+    template <int I, typename T, typename R> T _get_rpl(T &&x, R &&, ...) { return std::forward<T>(x); }
 
     template <size_t... Is, typename Tu, typename R, typename AllIndices>
     auto _replace_impl(Tu &&tu, R &&r, AllIndices _, std::index_sequence<Is...>) {
