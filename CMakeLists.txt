@@ -150,12 +150,12 @@ configure_file(./cmake/git_hash.cpp.in c++/triqs/git_hash.cpp @ONLY)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_MACOSX_RPATH 1) # new for cmake 3.x
+  set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+  set(CMAKE_MACOSX_RPATH 1)
 else()
- set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_SKIP_BUILD_RPATH FALSE)
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+  set(CMAKE_SKIP_BUILD_RPATH FALSE)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 endif()
 
 # ---------------------------------
@@ -272,8 +272,8 @@ message( STATUS "-------- Making TRIQSConfig.cmake -------------")
 
 configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
-install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
-install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
+install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 
 #------------------------
 # Test macros
