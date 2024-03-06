@@ -33,14 +33,13 @@ namespace triqs {
     // this is Eq. 8 of our paper
     array<dcomplex, 3> get_tail(gf_const_view<legendre> gl, int order) {
 
-      auto _  = ellipsis{};
       auto sh = gl.data().shape();
       sh[0]   = order;
       array<dcomplex, 3> t{sh};
       t() = 0.0;
 
       for (int p = 0; p < order; p++)
-        for (auto l : gl.mesh()) t(p, _) += (triqs::utility::legendre_t(l.index(), p) / std::pow(gl.mesh().beta(), p)) * gl[l];
+        for (auto l : gl.mesh()) t(p, ellipsis{}) += (triqs::utility::legendre_t(l.index(), p) / std::pow(gl.mesh().beta(), p)) * gl[l];
 
       return t;
     }
@@ -59,8 +58,7 @@ namespace triqs {
       corr() = 0;
       for (auto l : gl.mesh()) corr += t(l.index()) * gl[l];
 
-      auto _ = nda::range::all;
-      for (auto l : gl.mesh()) gl.data()(l.index(), _, _) += (disc - corr) * t(l.index()) / norm;
+      for (auto l : gl.mesh()) gl.data()(l.index(), range::all, range::all) += (disc - corr) * t(l.index()) / norm;
     }
 
   } // namespace gfs

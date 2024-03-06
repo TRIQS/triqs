@@ -44,10 +44,9 @@ namespace triqs {
       // First complete the basis. Add some tests for safety
       nda::vector<double> ux(3), uy(3), uz(3);
       double delta;
-      auto _ = range::all;
       switch (ndim_) {
         case 1:
-          ux    = units_(0, _);
+          ux    = units_(0, range::all);
           uz()  = 0;
           uz(1) = 1;
           uz    = uz - dot(uz, ux) * ux;
@@ -60,23 +59,23 @@ namespace triqs {
           uz /= sqrt(dot(uz, uz));
           uy           = cross_product(uz, ux);
           uy           = uy / sqrt(dot(uy, uy)); // uy cannot be 0
-          units_(1, _) = uz;
-          units_(2, _) = uy;
+          units_(1, range::all) = uz;
+          units_(2, range::all) = uy;
           break;
         case 2:
           uy()  = 0;
           uy(2) = 1;
-          uy    = cross_product(units_(0, _), units_(1, _));
+          uy    = cross_product(units_(0, range::all), units_(1, range::all));
           delta = sqrt(dot(uy, uy));
           using std::abs;
           if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : the 2 vectors of unit are not independent : " << units__;
-          units_(2, _) = uy / delta;
+          units_(2, range::all) = uy / delta;
           break;
         case 3:
           using std::abs;
-          ux    = units_(0, _);
-          uy    = units_(1, _);
-          uz    = units_(2, _);
+          ux    = units_(0, range::all);
+          uy    = units_(1, range::all);
+          uz    = units_(2, range::all);
           delta = dot(cross_product(ux, uy), uz);
           if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << units__;
           break;
@@ -89,8 +88,8 @@ namespace triqs {
     void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl) {
       auto gr = fg.create_group(subgroup_name);
       write_hdf5_format(gr, bl);
-      auto _ = range(bl.ndim());
-      h5::write(gr, "units", bl.units_(_, _));
+      auto rndim = range(bl.ndim());
+      h5::write(gr, "units", bl.units_(rndim, rndim));
       h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
       h5::write(gr, "atom_orb_name", bl.atom_orb_name);
     }

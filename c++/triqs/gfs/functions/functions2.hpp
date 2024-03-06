@@ -197,7 +197,7 @@ namespace triqs::gfs {
   template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
     auto &a           = g.data();
     auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
-    nda::for_each(mesh_lengths, [&a, _ = nda::range::all](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., _, _))); });
+    nda::for_each(mesh_lengths, [&a](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., range::all, range::all))); });
   }
 
   template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {

@@ -19,6 +19,8 @@
 // Authors: Thomas Ayral, Philipp Dumitrescu, Dominik Kiese, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #pragma once
+
+#include <mutex>
 #include "utils.hpp"
 #include <triqs/lattice/brillouin_zone.hpp>
 #include <nda/linalg.hpp>
