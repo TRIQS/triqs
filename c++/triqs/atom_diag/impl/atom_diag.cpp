@@ -118,7 +118,7 @@ namespace triqs {
 
         // The initializer for i_index is needed here because of the Core Language Defect #2313.
         // https://stackoverflow.com/a/46115028
-        EXPECTS(final_st.nterms() == 1);
+        EXPECTS(final_st.nterms() <= 1);
         foreach (final_st, [&, i_idx = i_index](fock_state_t j, scalar_t x) {
           for (auto const &sp : sub_hilbert_spaces) {
             if (sp.has_state(j)) {
