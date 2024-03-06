@@ -38,11 +38,11 @@ log=build_$(date +%Y%m%d%H%M).log
 testlog="$(pwd)/${log/.log/_test.log}"
 
 # choose triqs + app to be installed
-packages="triqs dft_tools cthyb tprf maxent hubbardI hartree_fock solid_dmft"
+packages=(triqs dft_tools cthyb tprf maxent hubbardI hartree_fock solid_dmft)
 
 # build loop
 (
-    for pkg in ${packages} ; do 
+    for pkg in "${packages[@]}" ; do
         cd ${BUILDDIR}
         git clone -b unstable --depth 1 https://github.com/TRIQS/$pkg $pkg.src
         # fetch latest changes
