@@ -37,12 +37,12 @@ namespace triqs::gfs {
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
-    auto _ = nda::ellipsis{};
-    if (is_boson) new_data(L - 1, _) = dat(0, _);
+    auto ___ = nda::ellipsis{};
+    if (is_boson) new_data(L - 1, ___) = dat(0, ___);
     int L1 = (is_boson ? L - 1 : L);
     for (int u = is_boson; u < L; ++u) {
-      new_data(L1 + u, _)    = dat(u, _);
-      new_data(L - 1 - u, _) = conj(dat(u, _));
+      new_data(L1 + u, ___)    = dat(u, ___);
+      new_data(L - 1 - u, ___) = conj(dat(u, ___));
     }
     return {mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), L}, std::move(new_data)};
   }
