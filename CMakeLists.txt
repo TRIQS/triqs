@@ -143,6 +143,12 @@ message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
 # Compile a small file with the hash
 configure_file(./cmake/git_hash.cpp.in c++/triqs/git_hash.cpp @ONLY)
 
+#---------------------------------------------------------------------
+# Define GNU standard installation directories
+#---------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
 # ---------------------------------
 # RPATH setting
 # ---------------------------------
@@ -201,12 +207,6 @@ target_compile_options(triqs_warnings
     $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c++20-compat>
     $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>
 )
-
-#---------------------------------------------------------------------
-# Define GNU standard installation directories
-#---------------------------------------------------------------------
-
-include(GNUInstallDirs)
 
 #---------------------------------------------------------------------
 # External Dependencies (nda, h5, itertools, gtest, ...)
