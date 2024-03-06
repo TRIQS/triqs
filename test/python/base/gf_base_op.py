@@ -63,7 +63,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         G2 << G * G + 1.5 * G
 
         G2 += G
-        G2['b'] += np.eye(G['a'].data.shape[0])
+        G2['b'] += np.eye(G['a'].target_shape[0])
         G2['a'] -= 1.3-1.0j
 
         # inverse:
