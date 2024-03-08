@@ -13,7 +13,7 @@ ENV SRC=/src \
     INSTALL=/usr/local \
     PYTHONPATH=/usr/local/lib/python$PYTHON_VERSION/site-packages \
     CMAKE_PREFIX_PATH=/usr/lib/cmake/$APPNAME \
-    OMP_NUM_THREADS=4
+    OMP_NUM_THREADS=1
 
 # Hacky patch for matplotlib sphinx bug (https://github.com/matplotlib/matplotlib/pull/12456?)
 RUN ln -s /src /home/src
