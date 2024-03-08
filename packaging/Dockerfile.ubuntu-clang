@@ -1,13 +1,13 @@
-FROM ubuntu:22.04
-ARG LLVM=15
+FROM ubuntu:24.04
+ARG LLVM=17
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
-      wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
+      #wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
-      g++-12 \
+      g++ \
       gfortran \
       git \
       vim \
@@ -37,13 +37,13 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-numpydoc \
       python3-pip \
       python3-scipy \
-      python3-ipython && \
-      #python3-sphinx \
-      #python3-nbsphinx \
-      #python3-sphinx-rtd-theme && \
-      pip3 install myst-parser linkify-it-py && \
-      pip3 install sphinx nbsphinx sphinx-rtd-theme
+      python3-ipython \
+      python3-sphinx \
+      python3-sphinx-rtd-theme \
+      python3-nbsphinx \
+      python3-myst-parser \
+      python3-linkify-it
 
-ENV PYTHON_VERSION=3.10 \
+ENV PYTHON_VERSION=3.12 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}

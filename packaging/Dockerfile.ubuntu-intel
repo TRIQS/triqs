@@ -1,5 +1,5 @@
 FROM intel/oneapi-hpckit:2024.0.1-devel-ubuntu22.04
-ARG LLVM=15
+ARG LLVM=18
 
 # Fix broken gpg keyfile
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \

@@ -1,12 +1,12 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       cmake \
-      g++-12 \
+      g++ \
       gfortran \
       git \
       vim \
-      lldb-13 \
+      lldb \
       hdf5-tools \
       libboost-dev \
       libfftw3-dev \
@@ -26,5 +26,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.10 \
-    CC=gcc-12 CXX=g++-12
+ENV PYTHON_VERSION=3.12 \
+    CC=gcc CXX=g++

@@ -1,13 +1,13 @@
-FROM --platform=linux/amd64 ubuntu:23.04
+FROM --platform=linux/amd64 ubuntu:24.04
 ARG LLVM=17
 ARG NTHREAD=10
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
-      wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
+      #wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
-      g++-12 \
+      g++ \
       gfortran \
       git \
       vim \
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.11 \
+ENV PYTHON_VERSION=3.12 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} \
     LLVM_ROOT=/usr/lib/llvm-${LLVM}
 
@@ -55,53 +55,55 @@ ENV CXXFLAGS="$MSAN_FLAGS -Wno-unused-command-line-argument $CUSTOM_LIBCXX_FLAGS
     MSAN_SYMBOLIZER_PATH=${LLVM_ROOT}/bin/llvm-symbolizer
 
 # Static zlib using fPIC to be linked into hdf5
-ADD https://www.zlib.net/zlib-1.3.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/zlib-1.3.tar.gz && cd zlib-1.3 && \
+ADD https://www.zlib.net/zlib-1.3.1.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/zlib-1.3.1.tar.gz && cd zlib-1.3.1 && \
       CFLAGS="-fPIC $CFLAGS" ./configure --prefix=/opt/zlib && make -j${NTHREAD} && make install && \
       cd /tmp #&& rm -rf /tmp/zlib*
 
 # HDF5
-ADD https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/hdf5-1_14_2.tar.gz && chmod 1777 . && \
+ADD https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_3.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/hdf5-1_14_3.tar.gz && chmod 1777 . && \
       mkdir build && cd build && \
-      cmake /tmp/hdf5-hdf5-1_14_2 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+      cmake /tmp/hdf5-hdf5-1_14_3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
                                                -DHDF5_ENABLE_Z_LIB_SUPPORT=ON -DZLIB_LIBRARY=/opt/zlib/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=/opt/zlib/include && \
       make -j${NTHREAD} && make install && \
-      cd /tmp #&& rm -rf /tmp/hdf5-* /tmp/build
+      cd /tmp && rm -rf /tmp/hdf5-* /tmp/build
 ENV HDF5_ROOT=/opt/hdf5
 
 # libevent
 ADD https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz /tmp/
 RUN cd /tmp && tar xf /tmp/libevent-2.1.12-stable.tar.gz && cd libevent-2.1.12-stable && \
       ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
-      cd /tmp #&& rm -rf /tmp/libevent*
+      cd /tmp && rm -rf /tmp/libevent*
 
 # hwloc
-ADD https://download.open-mpi.org/release/hwloc/v2.9/hwloc-2.9.3.tar.bz2 /tmp/
+ADD https://download.open-mpi.org/release/hwloc/v2.10/hwloc-2.10.0.tar.bz2 /tmp/
 COPY packaging/hwloc.patch /tmp/
-RUN cd /tmp && tar xf /tmp/hwloc-2.9.3.tar.bz2 && cd hwloc-2.9.3 && patch -p0 -i /tmp/hwloc.patch && \
+RUN cd /tmp && tar xf /tmp/hwloc-2.10.0.tar.bz2 && cd hwloc-2.10.0 && patch -p0 -i /tmp/hwloc.patch && \
       ./configure --prefix=/opt/openmpi --enable-shared && make -j${NTHREAD} && make install && \
-      cd /tmp #&& rm -rf /tmp/hwloc*
+      cd /tmp && rm -rf /tmp/hwloc*
 
 # OpenMPI
-ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.5.tar.bz2 /tmp/
-RUN cd /tmp && tar xf /tmp/openmpi-4.1.5.tar.bz2 && cd openmpi-4.1.5 && \
-      ./configure --verbose --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
-      cd /tmp #&& rm -rf /tmp/openmpi-4.1.5*
+ADD https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.2.tar.bz2 /tmp/
+RUN cd /tmp && tar xf /tmp/openmpi-5.0.2.tar.bz2 && cd openmpi-5.0.2 && \
+      ./configure --prefix=/opt/openmpi --enable-shared --disable-mpi-fortran --disable-pty-support --with-hwloc=/opt/openmpi --with-libevent=/opt/openmpi && make -j${NTHREAD} && make install && \
+      cd /tmp && rm -rf /tmp/openmpi-5.0.2*
 ENV MPI_HOME=/opt/openmpi \
     MPICC=/opt/openmpi/bin/mpicc
 
 # Use libflame to provide blas / lapack
 RUN git clone https://github.com/Wentzell/libflame /tmp/libflame && cd /tmp/libflame && \
       ./configure --prefix=/opt/libflame --enable-lapack2flame --enable-builtin-blas --build=x86_64-unknown-linux-gnu && make -j${NTHREAD} && make install && \
-      cd /tmp #&& rm -rf /tmp/libflame
+      cd /tmp && rm -rf /tmp/libflame
 
 RUN useradd -m build
 
 ENV SRC=/src \
     BUILD=/home/build \
     INSTALL=/usr/local \
-    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs
+    PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs \
+    OPENBLAS_NUM_THREADS=1
 
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
