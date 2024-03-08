@@ -85,6 +85,7 @@ external_dependency(fmt
   GIT_REPO https://github.com/fmtlib/fmt
   GIT_TAG 10.1.1
 )
+target_compile_options(fmt PRIVATE $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>)
 
 # -- itertools --
 external_dependency(itertools
