@@ -2,9 +2,6 @@
 FROM flatironinstitute/triqs:base
 ARG APPNAME=triqs
 
-COPY requirements.txt /src/$APPNAME/requirements.txt
-RUN pip3 install -r /src/$APPNAME/requirements.txt
-
 ARG BUILDUID=983
 RUN useradd -u $BUILDUID -m build
 
