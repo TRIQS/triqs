@@ -88,7 +88,7 @@ class test_lattice_tight_binding(unittest.TestCase):
         
         # testing numerical output
         tbl_numerical = (TB_to_sympy(tbl, analytical = False, precision = 3)).tolist()
-        self.assertEquals(tbl_numerical,
+        self.assertEqual(tbl_numerical,
                           [[2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(2.0*kx + 1.0*ky)], 
                            [2.0*cos(2.0*kx + 1.0*ky), 2.0*cos(1.0*kx + 2.0*ky) + 2.0*cos(2.0*kx + 1.0*ky)]]
                           )
