@@ -44,7 +44,7 @@ Ubuntu Debian packages
 We provide Debian packages for the Ubuntu LTS Version 22.04 (jammy).
 They are hosted in a **TRIQS 3 specific** repository that can be added with::
 
-        sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl
+        sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https gpg-agent curl
         source /etc/lsb-release
         curl -L https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
         sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/ /"
