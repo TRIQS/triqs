@@ -73,7 +73,7 @@ class SemiCircular (Base):
     (Only works in combination with frequency Green's functions.)
     """
     def __init__ (self, half_bandwidth, chem_potential=0.):
-        """:param half_bandwidth: :math:`D`, the half bandwidth of the
+        r""":param half_bandwidth: :math:`D`, the half bandwidth of the
 semicircular density of states
         :param chem_potential: :math:`\mu`, the chemical potential of the    |
 semicircular density of states, corresponds to minus the center of the

@@ -266,7 +266,7 @@ def fit_legendre(g_t, order=10):
 
 
 def make_delta(V, eps, mesh, block_names=None):
-    """
+    r"""
     Create a hybridization function from given hoppings and bath energies
     as
     .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{j=1}^{Nb} V_{kj} S V_{jl}^* .
@@ -325,7 +325,7 @@ def make_delta(V, eps, mesh, block_names=None):
 
 def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
                     cmplx=False, method='BFGS'):
-    """
+    r"""
     Discretize a given hybridization function using Nb bath sites.
 
     The discretized hybridization is constructed as
