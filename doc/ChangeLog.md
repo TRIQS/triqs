@@ -25,6 +25,7 @@ Find below an itemized list of changes in this release.
 * Fix block_gf constructor from mesh and list of block sizes
 * Restore oplot functionality for MeshLegendre Green functions
 * missing cstdint include, see issue #915
+* add l=1 support for function spherical_to_cubic
 
 ### doc
 * Improve DLR documentation in both C++ and Python
@@ -33,6 +34,7 @@ Find below an itemized list of changes in this release.
 * Add Nevanlinna to application section on TRIQS Website
 * Add Ubuntu 24.04 (noble) to supported distributions
 * Remove Ubuntu 20.04 from supported distributions
+* fix doc string of k_space_path
 * Add OpenMP to list of build requirements
 * Convert README into markdown and add conda badge
 * Install gpg-agent in Ubuntu install instructions
