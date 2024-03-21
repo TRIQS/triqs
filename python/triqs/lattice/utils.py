@@ -37,8 +37,6 @@ def k_space_path(segments, num=101, bz=None, relative_coordinates=True):
        When a Brillouin Zone is passed, calculate distance in absolute units
     relative_coordinates : bool, optional
         Return k-vectors in reciprocal units. (Default `True`)
-    return_ticks : bool, optional
-        Return the vector with tick marks. (Default `False`)
 
     Returns
     -------
@@ -71,7 +69,8 @@ def k_space_path(segments, num=101, bz=None, relative_coordinates=True):
 
         cur_dist = dist[-1]
 
-    if not relative_coordinates: kvecs = kvecs_abs
+    if not relative_coordinates:
+        kvecs = kvecs_abs
     return np.vstack(kvecs), dist, np.concatenate(([0], dist[num-1::num]))
 
 
@@ -261,9 +260,9 @@ def TB_from_pythTB(ptb):
 
 def TB_to_sympy(TBL, analytical = True, precision = 6):
     r"""
-    returns the analytical form of the momentum space hamiltonian of the tight-binding model 
+    returns the analytical form of the momentum space hamiltonian of the tight-binding model
     from a tight-binding lattice object by utilizing Fourier series
-    
+
     Parameters
     ----------
     TBL: triqs TBLattice object
@@ -274,7 +273,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
         specifies the number of digits in the floating point amplitudes. The default value is 6 but the user
         can decrease it to help recognize similar hopping amplitudes, particularly for symmetrical hoppings
         across the crystal lattice
-    
+
     Returns
     -------
     Hk: NumPy array
@@ -287,7 +286,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     """
 
     import sympy as sp
-    
+
     # imaginary number
     I = sp.I
 
@@ -309,7 +308,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     # raises error for when the dimensions of the tb object is neither 2D nor 3D
     else:
         raise ValueError("This format of the tight-binding model is not implemented for this function.")
-   
+
     # number of orbitals involved in the unit cell
     num_orb = TBL.n_orbitals
 
@@ -318,7 +317,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
     # number of cells involved in the hopping of electrons in each direction
     num_cells_x, num_cells_y, num_cells_z = [2 * max_coord + 1 for max_coord in [max_x, max_y, max_z]]
-    
+
     # real-space Hamiltonian
     Hrij = np.zeros((num_cells_x, num_cells_y, num_cells_z, num_orb, num_orb), dtype = sp.exp)
 
@@ -340,7 +339,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
     # summation over all real space axes
     Hk = np.sum(Hrij * Hexp, axis = (0, 1, 2))
-    
+
     # rewriting exponential terms in Hamiltonian expression in terms of cosine
     for i, j in itp(range(num_orb), repeat = 2):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
@@ -351,7 +350,7 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
 
         Args:
             matrix (NumPy array): The input NumPy array containing SymPy elements
-        
+
         Returns:
             bool: True if the matrix array contains a complex exponential element, False otherwise.
 
@@ -362,32 +361,32 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
                 if element.is_complex and element.has(sp.exp):
                     return True
         return False
-    
+
     def _is_hermitian_sympy(matrix):
         """
         Checks if a NumPy array containing SymPy elements is hermitian
 
         Args:
             matrix (NumPy array): The input NumPy array containing SymPy elements
-        
+
         Returns:
             bool: True if the matrix is a hermitian, False otherwise
 
         """
-        
+
         n = matrix.shape[0]
         for i in range(n):
             for j in range(n):
                 if matrix[i, j] != matrix[j, i].conjugate():
                     return False
         return True
-    
+
     # performing the check on the analytical Hamiltonian
     if not _is_hermitian_sympy(Hk): warnings.warn("The resulting Hamiltonian is not hermitian.")
-    if _has_complex_exponential_sympy(Hk): warnings.warn("""Your expression has a complex exponential. 
-                                                                    Choosing a different unit cell could make 
+    if _has_complex_exponential_sympy(Hk): warnings.warn("""Your expression has a complex exponential.
+                                                                    Choosing a different unit cell could make
                                                                     your Hamiltonian expression real.""")
-    
+
     if analytical: return Hk
 
     # dealing with the numerical Hamiltonian
@@ -401,15 +400,15 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
     # dot product between unit vectors and momentum vector
     k_vec = sp.symbols("kx ky kz", real = True)
     a1k_n, a2k_n, a3k_n = TBL_units_prec.dot(k_vec)
-    
+
     # substitute numerical unit vectors into H_k
     Hk_numerical = Hk_numerical.subs([(a1k, a1k_n), (a2k, a2k_n), (a3k, a3k_n)])
 
     Hk_numerical = np.array(Hk_numerical)
 
     if not _is_hermitian_sympy(Hk_numerical): warnings.warn("The resulting Hamiltonian is not hermitian.")
-    if _has_complex_exponential_sympy(Hk_numerical): warnings.warn("""Your expression has a complex exponential. 
-                                                                            Choosing a different unit cell could make 
+    if _has_complex_exponential_sympy(Hk_numerical): warnings.warn("""Your expression has a complex exponential.
+                                                                            Choosing a different unit cell could make
                                                                             your Hamiltonian expression real.""")
     return Hk_numerical
-    
+
