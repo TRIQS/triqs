@@ -214,15 +214,14 @@ namespace triqs {
 
 #undef DEFINE_OPERATOR
 
-    // Python specific operator and definitions
-
-    // first some basic functionality
-    template <typename A> nda::matrix<nda::get_value_t<A>> make_matrix(A const &a) { return a; }
+    // In-place matrix inversion
 
     template <typename A> void _gf_invert_data_in_place(A &a) {
       auto mesh_lengths = nda::stdutil::mpop<2>(a.indexmap().lengths());
       nda::for_each(mesh_lengths, [&a](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., range::all, range::all))); });
     }
+
+    // Python specific operator and definitions
 
     // definitions of operators for scalar / matrix with all triqs Gf mesh types
     // loop over mesh and apply operatations

@@ -27,7 +27,7 @@ using namespace triqs::lattice;
 using triqs::clef::placeholder;
 
 template <typename Function, typename Mesh> auto sum_gf(Function const &f, Mesh const &m) {
-  auto res = make_matrix(0 * f(*(m.begin())));
+  auto res = make_regular(0 * f(*(m.begin())));
   for (auto const &x : m) //
     res = res + f(x);
   return res;

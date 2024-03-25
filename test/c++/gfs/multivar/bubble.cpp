@@ -28,9 +28,7 @@ using namespace triqs::lattice;
 using two_var_gf = gf<prod<imfreq, imfreq>, scalar_valued>;
 two_var_gf invert_as_matrix(two_var_gf const &g) {
   auto res = g;
-  //  auto mat = make_matrix_view(group_indices_view(g.data(), {0}, {1}));
-  auto mat                     = make_matrix_view(g.data());
-  make_matrix_view(res.data()) = inverse(mat);
+  res.data() = inverse(make_matrix_view(g.data()));
   return res;
 }
 
