@@ -775,10 +775,16 @@ class Gf(metaclass=AddMethod):
             data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data.
             If flatten_y is True and dim is (1, 1, *) it returns a 1d numpy array.
         """
-        
-        X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) \
-            else [x for x in self.mesh]
-        
+
+        if isinstance(self.mesh, meshes.MeshReFreq):
+            X = np.linspace(self.mesh.w_min, self.mesh.w_max, len(self.mesh))
+        elif isinstance(self.mesh, meshes.MeshImFreq):
+            X = np.linspace(self.mesh(self.mesh.first_index()).imag, self.mesh(self.mesh.last_index()).imag, len(self.mesh))
+        elif isinstance(self.mesh, meshes.MeshImTime):
+            X = np.linspace(0, self.mesh.beta, len(self.mesh))
+        else:
+            raise AttributeError('input mesh must be either MeshReFreq, MeshImFreq, or MeshImTime')
+
         X, data = np.array(X), self.data
         if x_window:
             # the slice due to clip option x_window
