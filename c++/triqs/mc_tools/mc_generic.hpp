@@ -276,7 +276,7 @@ namespace triqs::mc_tools {
             ++config_id;
           }
           if (after_cycle_duty) { after_cycle_duty(); }
-          if (calibrate_moves) AllMoves.calibrate();
+          if (calibrate_moves) AllMoves.calibrate(c);
           if (do_measure) {
             nmeasures++;
             for (auto &x : AllMeasuresAux) x();
