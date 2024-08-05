@@ -240,7 +240,8 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int run(int64_t n_cycles, int64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{}) {
+    int run(int64_t n_cycles, int64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{},
+            bool calibrate_moves = false) {
       EXPECTS(length_cycle > 0);
 
       AllMoves.clear_statistics();
@@ -275,6 +276,7 @@ namespace triqs::mc_tools {
             ++config_id;
           }
           if (after_cycle_duty) { after_cycle_duty(); }
+          if (calibrate_moves) AllMoves.calibrate();
           if (do_measure) {
             nmeasures++;
             for (auto &x : AllMeasuresAux) x();
