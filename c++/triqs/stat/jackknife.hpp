@@ -21,7 +21,6 @@
 #include <functional>
 #include <numeric>
 #include <type_traits>
-#include <triqs/arrays.hpp>
 // #include <triqs/arrays/math_functions.hpp>
 #include <mpi/vector.hpp>
 
@@ -63,13 +62,20 @@ namespace triqs::stat {
 
     //----------------------------------------------------------------
 
+    // OP : only jackknifed_t<V> ?!
+    // Constraint : f(ja[0]...)
     // implementation of jacknife.
     // mpi iif the c pointer is not null. If null the computation is on this node only.
-    template <typename F, typename... Jacknifed> auto jackknife_impl(mpi::communicator *c, F &&f, Jacknifed const &...ja) {
+
+    template <typename F, typename... Jacknifed>
+    auto jackknife_impl(mpi::communicator *c, F &&f, Jacknifed const &...ja)
+      requires requires { f(ja[0]...); }
+    {
 
       // N is the size of the series, it should be all equal and !=0
       std::array<long, sizeof...(Jacknifed)> dims{long(ja.original_series.size())...};
       long N = dims[0];
+      // OP : ?SHOULD MOVE UP
       if (N == 0) TRIQS_RUNTIME_ERROR << "No data !";
       if (not((ja.original_series.size() == N) and ...)) TRIQS_RUNTIME_ERROR << " Jackknife : size mismatch";
 
