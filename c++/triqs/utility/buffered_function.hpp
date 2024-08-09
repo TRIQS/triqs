@@ -38,6 +38,12 @@ namespace triqs {
       /// Default constructor : no function bufferized. () will throw in this state
       buffered_function() = default;
 
+
+      buffered_function(buffered_function &&) = default;
+      buffered_function(buffered_function const &x)= delete;
+      buffered_function operator=(buffered_function &&) = default;
+      buffered_function operator=(buffered_function const &) = delete;
+
       /** Constructor
    *
    * @tparam Function : type of the function to bufferize

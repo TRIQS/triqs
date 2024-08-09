@@ -54,7 +54,7 @@ namespace triqs {
       random_generator() : random_generator("mt19937", 198) {}
 
       ///
-      random_generator(random_generator const &p);
+      random_generator(random_generator const &p) = delete;
 
       random_generator(random_generator &&) = default;
 
