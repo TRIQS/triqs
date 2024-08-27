@@ -146,42 +146,26 @@ namespace triqs {
           tmp_state(i) = amplitude_t(0.);
         }
 
-        // 'Zigzag' traversal algorithm
-        while (!Cd_connections.empty()) {
+        // Merge all 'out' subspaces corresponding to the same 'in' subspace
+        // in 'conn'.
+        auto merge_conn_targets = [this](auto const& conn) {
+          if(conn.empty()) return;
 
-          // Take one C^+ - connection
-          // C^+|lower_subspace> = |upper_subspace>
-          idx_t lower_subspace, upper_subspace;
-          std::tie(lower_subspace, upper_subspace) = *std::begin(Cd_connections);
-
-          // - Reveals all subspaces reachable from lower_subspace by application of
-          //   a 'zigzag' product C^+ C C^+ C C^+ ... of any length.
-          // - Removes all visited connections from Cd_connections/C_connections.
-          // - Merges lower_subspace with all subspaces generated from lower_subspace by application of (C C^+)^(2*n).
-          // - Merges upper_subspace with all subspaces generated from upper_subspace by application of (C^+ C)^(2*n).
-          std::function<void(idx_t, bool)> zigzag_traversal = [this, lower_subspace, upper_subspace, &Cd_connections, &C_connections,
-                                                               &zigzag_traversal](idx_t i_subspace, // find all connections starting from i_subspace
-                                                                                  bool upwards      // if true, C^+ connection, otherwise C connection
-                                                              ) {
-            std::multimap<idx_t, idx_t>::iterator it;
-            while ((it = (upwards ? Cd_connections : C_connections).find(i_subspace)) != (upwards ? Cd_connections : C_connections).end()) {
-
-              auto f_subspace = it->second;
-              (upwards ? Cd_connections : C_connections).erase(it);
-
-              if (upwards)
-                subspaces.link(f_subspace, upper_subspace);
-              else
-                subspaces.link(f_subspace, lower_subspace);
-
-              // Recursively apply to all found f_subspace's with a 'flipped' direction
-              zigzag_traversal(f_subspace, !upwards);
+          auto conn_it = conn.cbegin();
+          idx_t i_subspace = conn_it->first;
+          idx_t f_subspace = conn_it->second;
+          ++conn_it;
+          for(; conn_it != conn.cend(); ++conn_it) {
+            if(conn_it->first == i_subspace) {
+              subspaces.link(f_subspace, conn_it->second);
+            } else {
+              std::tie(i_subspace, f_subspace) = *conn_it;
             }
-          };
+          }
+        };
 
-          // Apply to all C^+ connections starting from lower_subspace
-          zigzag_traversal(lower_subspace, true);
-        }
+        merge_conn_targets(Cd_connections);
+        merge_conn_targets(C_connections);
 
         _update_index();
 
