@@ -263,14 +263,14 @@ namespace triqs::mc_tools {
         try {
           // Metropolis loop. Switch here for HeatBath, etc...
           for (int64_t k = 1; (k <= length_cycle); k++) {
-            if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
+            if ((k % 10 == 0) and (triqs::signal_handler::received())) throw triqs::signal_handler::exception{};
             double r = AllMoves.attempt();
             if (RandomGenerator() < std::min(1.0, r)) {
-              if (debug) std::cerr << " Move accepted " << std::endl;
+              if constexpr (debug) std::cerr << " Move accepted " << std::endl;
               sign *= AllMoves.accept();
-              if (debug) std::cerr << " New sign = " << sign << std::endl;
+              if constexpr (debug) std::cerr << " New sign = " << sign << std::endl;
             } else {
-              if (debug) std::cerr << " Move rejected " << std::endl;
+              if constexpr (debug) std::cerr << " Move rejected " << std::endl;
               AllMoves.reject();
             }
             ++config_id;
@@ -296,7 +296,7 @@ namespace triqs::mc_tools {
 
         // recompute fraction done
         done_percent = int64_t(floor(((NC + 1) * 100.0) / n_cycles));
-        if (timer_run > next_info_time || done_percent == 100) {
+        if (timer_run > next_info_time || done_percent >= 100) {
           if (infinite) {
             report(3) << utility::timestamp() << " cycle " << NC << std::endl;
           } else {
