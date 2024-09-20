@@ -1,5 +1,5 @@
 FROM ubuntu:24.04
-ARG LLVM=17
+ARG LLVM=18
 
 # This platform includes dependencies for building docs
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
