@@ -43,6 +43,10 @@ namespace triqs::stat {
       std::vector<T> bins;     // Bins with accumulated data (stores means)
       long count = 0;          // Total number of elements added to accumulator: Information only
 
+      // Callback function after compressing bins
+      using callback_t    = std::function<void(std::vector<T> const &)>;
+      callback_t callback = {};
+
       // static std::string hdf5_format() { return "linear_bins"; }
 
       lin_binning() = default;
@@ -55,6 +59,12 @@ namespace triqs::stat {
         bins.emplace_back(std::move(data_instance_local));
       }
 
+      // Optional constructor setting the callback function
+      lin_binning(T const &data_instance, long max_n_bins, long bin_capacity, callback_t const &callback)
+         : lin_binning(data_instance, max_n_bins, bin_capacity) {
+        this->callback = callback;
+      }
+
       [[nodiscard]] long n_bins() const { return bins.size(); }
 
       template <typename U> lin_binning<T> &operator<<(U &&x) {
@@ -62,7 +72,8 @@ namespace triqs::stat {
         if (max_n_bins == 0) return *this;
         // Check if all bins are full and compress if needed
         if (max_n_bins > 1 && n_bins() == max_n_bins && last_bin_count == bin_capacity) {
-          compress(2); // Adjusts bin_capacity & last_bin_count
+          compress(2);                  // Adjusts bin_capacity & last_bin_count
+          if (callback) callback(bins); // Callback if defined
         }
         // Check if current bin full: push new bin or add data to current bin
         if (last_bin_count == bin_capacity && max_n_bins != 1) {
@@ -163,7 +174,7 @@ namespace triqs::stat {
           acc_count.push_back(0);
         }
         // Multiply to ensure element can be element-wise multiplied [FIXME with concepts]
-        Qk.emplace_back(make_real(data_instance_local * data_instance_local));
+        Qk.emplace_back(make_real(nda::hadamard(nda::conj(data_instance_local), data_instance_local)));
         Mk.emplace_back(std::move(data_instance_local));
       }
 
@@ -214,7 +225,7 @@ namespace triqs::stat {
             auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
             T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
             auto k            = count / bin_capacity;
-            Qk[n + 1] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
+            Qk[n + 1] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(nda::hadamard(conj(x_m), x_m));
             Mk[n + 1] += x_m / k;
             acc_count[n] = 0;
             acc[n]       = 0;
@@ -224,7 +235,7 @@ namespace triqs::stat {
         // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
         auto k = count;
         T x_m  = (x - Mk[0]);
-        Qk[0] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(conj(x_m) * x_m);
+        Qk[0] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(nda::hadamard(conj(x_m), x_m));
         Mk[0] += x_m / k;
 
         return *this;
@@ -292,6 +303,7 @@ namespace triqs::stat {
     long count = 0;
     details::log_binning<T> log_bins;
     details::lin_binning<T> lin_bins;
+    std::vector<get_real_t<T>> auto_corr_times; // will be filled by the default callback if n_log_bins > 0
 
     // HDF5
     friend void h5_write(h5::group g, std::string const &name, accumulator<T> const &l) {
@@ -312,6 +324,7 @@ namespace triqs::stat {
     [[nodiscard]] static std::string hdf5_format() { return "accumulator"; }
 
     accumulator() = default;
+    auto const &auto_correlation_times() const { return auto_corr_times; }
 
     ///
     /// @tparam T
@@ -344,9 +357,39 @@ namespace triqs::stat {
     ///
     /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
     ///
-    accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
+    accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1,
+                std::function<void(std::vector<T> const & /* lin_bins */)> callback = {})
        : log_bins{data_instance, n_log_bins_max}, //
-         lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity} {}
+         lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity, callback} {
+
+      // enable default if callback has not been defined and log binning is active (such that Qk[0] and Mk[0] are available)
+      if ((!callback) && (n_log_bins_max > 0)) {
+        callback = [&](std::vector<T> const &bins) {
+          using var_t = get_real_t<T>;
+
+          // mean and variance of the whole time series
+          T data_mean          = log_bins.Mk[0];
+          var_t var_no_binning = log_bins.Qk[0] / log_bins.count;
+
+          // variance of the binned data
+          T delta                = bins[0] - data_mean;
+          var_t var_with_binning = make_real(nda::hadamard(nda::conj(delta), delta));
+
+          for (auto i : range(1, bins.size())) {
+            delta = bins[i] - data_mean;
+            var_with_binning += make_real(nda::hadamard(nda::conj(delta), delta));
+          }
+
+          var_with_binning /= bins.size();
+
+          // estimate the autocorrelation time
+          auto_corr_times.emplace_back(0.5 * (lin_bins.bin_capacity * var_with_binning / var_no_binning - var_no_binning / var_no_binning));
+        };
+
+        // pass default to lin_bins
+        lin_bins.callback = callback;
+      }
+    }
 
     /// Returns the maximum number of bins the logarithmic part of the accumulator can hold.
     /// @brief Max. number of bins in the logarithmic accumulator
@@ -509,7 +552,9 @@ namespace triqs::stat {
   /// @brief Convert log bin errors in auto-correlation times
   template <typename T> auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) {
     // Last part is simply 1.0, but could be an array
-    return 0.5 * ((error_with_binning * error_with_binning) / (error_no_binning * error_no_binning) - error_no_binning / error_no_binning);
+    return 0.5
+       * (nda::hadamard(error_with_binning, error_with_binning) / nda::hadamard(error_no_binning, error_no_binning)
+          - error_no_binning / error_no_binning);
   }
 
 } // namespace triqs::stat

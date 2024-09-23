@@ -52,36 +52,36 @@ namespace triqs::stat {
     return M;
   }
 
-  /// Calculate arithmetic mean and standard error [REF] of data in an iterable container.
+  /// Calculate arithmetic mean and statistical error [REF] of data in an iterable container.
   /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj [REF] .
   /// @param data Container with data
-  /// @return std::pair with [mean, standard error]; types are deduced from first element of :param:`data`
+  /// @return std::pair with [mean, statistical error]; types are deduced from first element of :param:`data`
   /// @example triqs/stat/mean_err_1.cpp
-  /// @brief Calculate mean and standard error
+  /// @brief Calculate mean and statistical error
   template <typename V> auto mean_and_err(V const &data) {
     // ENSURE(data.size() > 0);
     long length    = data.size();
     auto mean_calc = mean(data);
     auto err_calc  = make_real(mean_calc);
-    err_calc       = 0;
-    for (auto const &x : data) { err_calc += nda::real(nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1))); }
+    err_calc       = 0; 
+    for (auto const &x : data) { err_calc += nda::real(nda::hadamard(nda::conj(x - mean_calc), x - mean_calc) / (length * (length - 1))); }
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
   }
 
-  /// Calculate arithmetic mean and standard error [REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
+  /// Calculate arithmetic mean and statistical error [REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
   /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj [REF], be MPI reducable.
   /// @param data Container with data
-  /// @return std::pair with [mean, standard error]; types are deduced from first element of :param:`data`
+  /// @return std::pair with [mean, statistical error]; types are deduced from first element of :param:`data`
   /// @example triqs/stat/mean_err_2.cpp
-  /// @brief Calculate mean and standard error (MPI Version)
+  /// @brief Calculate mean and statistical error (MPI Version)
   template <typename V> auto mean_and_err_mpi(mpi::communicator c, V const &data) {
     // ENSURE(data.size() > 0);
     long length    = mpi::all_reduce(data.size(), c);
     auto mean_calc = mean_mpi(c, data);
     auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
-    for (auto const &x : data) { err_calc += nda::real(nda::conj(x - mean_calc) * (x - mean_calc) / (length * (length - 1))); }
+    for (auto const &x : data) { err_calc += nda::real(nda::hadamard(nda::conj(x - mean_calc), x - mean_calc) / (length * (length - 1))); }
     mpi::all_reduce_in_place(err_calc, c);
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
