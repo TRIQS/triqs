@@ -18,33 +18,57 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include <functional>
+
+#include <concepts>
 #include <memory>
-#include <map>
 
-namespace triqs {
-  namespace mc_tools {
+namespace triqs::mc_tools {
 
-    // mini concept checking : does T have void operator()() ?
-    template <typename T, typename Enable = void> struct is_callable : std::false_type {};
-    template <typename T> struct is_callable<T, decltype(std::declval<T>()())> : std::true_type {};
-
-    //--------------------------------------------------------------------
-
-    class measure_aux {
-
-      std::shared_ptr<void> impl_;
-      std::function<void()> call_;
-
-      public:
-      template <typename MeasureAuxType> measure_aux(std::shared_ptr<MeasureAuxType> p) {
-        static_assert(is_callable<MeasureAuxType>::value, "This measure_aux is not callable");
-        impl_ = p;
-        call_ = [p]() mutable { (*p)(); }; // without the mutable, the operator () of the lambda is const, hence p ...
-      }
-
-      void operator()() { call_(); }
+  /**
+   * @brief Type erasure class for auxiliary MC measures.
+   *
+   * @details It takes any type that is callable and erases its type.
+   *
+   * Any auxiliary MC measure must define the following method:
+   * - `void operator()()`: Performs an auxiliary measurement.
+   *
+   * @note The object is passed and stored as a shared pointer. That means it can be used and shared among multiple
+   * measures.
+   */
+  class measure_aux {
+    private:
+    // Auxiliary MC measure concept defines the interface for auxiliary MC measures.
+    struct measure_aux_concept {
+      virtual ~measure_aux_concept() = default;
+      virtual void call()            = 0;
     };
 
-  } // namespace mc_tools
-} // namespace triqs
+    // Auxiliary MC measure model implements the auxiliary MC measure concept by calling the appropriate methods of the
+    // type earased object.
+    template <typename T>
+      requires std::invocable<T>
+    struct measure_aux_model : public measure_aux_concept {
+      std::shared_ptr<T> ptr_;
+      measure_aux_model(std::shared_ptr<T> const &m_ptr) : ptr_{m_ptr} {}
+      virtual void call() override { return (*ptr_)(); }
+    };
+
+    public:
+    /**
+     * @brief Constructor takes an object that is callable and erases its type.
+     *
+     * @tparam T Original type of the auxiliary MC measure object.
+     * @param m_ptr Shared pointer to the auxiliary MC measure object.
+     */
+    template <typename T>
+      requires std::invocable<T>
+    measure_aux(std::shared_ptr<T> const &m_ptr) : ptr_{std::make_unique<measure_aux_model<T>>(m_ptr)} {}
+
+    /// Function call operator performs the auxiliary measurement.
+    void operator()() { ptr_->call(); }
+
+    private:
+    std::unique_ptr<measure_aux_concept> ptr_;
+  };
+
+} // namespace triqs::mc_tools
