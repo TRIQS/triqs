@@ -19,429 +19,294 @@
 // Authors: Michel Ferrero, Henri Menke, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, Thomas Ayral
 
 #pragma once
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/first_include.hpp>
-#include <cmath>
-#include <memory>
-#include <triqs/utility/timer.hpp>
-#include <triqs/utility/timestamp.hpp>
-#include <triqs/utility/report_stream.hpp>
-#include <triqs/utility/signal_handler.hpp>
-#include <triqs/utility/macros.hpp>
-#include <h5/h5.hpp>
-#include <mpi/mpi.hpp>
-#include <mpi/monitor.hpp>
+
+#include "./concepts.hpp"
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
 #include "./random_generator.hpp"
+#include "../utility/report_stream.hpp"
+#include "../utility/timer.hpp"
+#include "../utility/timestamp.hpp"
+
+#include <h5/h5.hpp>
+
+#include <functional>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace triqs::mc_tools {
 
   /**
-  * \brief Generic Monte Carlo class.
-  *
-  * TBR
-  * @include triqs/mc_tools.hpp
-  */
-  template <typename MCSignType> class mc_generic {
-
-#ifdef TRIQS_MCTOOLS_DEBUG
-    static constexpr bool debug = true;
-#else
-    static constexpr bool debug = false;
-#endif
-
+   * @brief Generic Monte Carlo class.
+   *
+   * @details This class provides a generic Monte Carlo simulation framework. It allows to register MC moves and
+   * measures that fulfill the triqs::mc_tools::MCMove and triqs::mc_tools::MCMeasure concepts, respectively.
+   * Additionally, one can register auxiliary measures that are callable objects (see triqs::mc_tools::measure_aux).
+   *
+   * Most MC simulations consist of two phases:
+   * - warmup phase: No measurements are done during this phase. It is used to equilibrate the underlying Markov chain
+   * and to optionally calibrate the MC moves.
+   * - accumulation phase: This phase is used to accumulate measurements. The Markov chain is assumed to be already
+   * warmed up such that it generates MC configurations distrubuted according to the desired probability distribution.
+   *
+   * Both phases follow the same overall procedure:
+   * ```
+   * while not stop_flag do
+   *   for i in 1..cycle_length do
+   *     perform a Metropolis accept/reject step to update MC configuration;
+   *   end
+   *   perform after-cycle duties, e.g. measurements, calibration, etc.;
+   *   update stop_flag;
+   * end
+   * ```
+   *
+   * As you can see, a cycle consists of `cycle_length` MC steps each of which does a single Metropolis accept/reject
+   * step. The after-cycle duties depend on the phase of the simulation and on input parameters. For example, in the
+   * accumulation phase, measurements are performed after each cycle, while in the warmup phase, moves might be
+   * calibrated to optimize the sampling procedure.
+   *
+   * The simulation stops when one of the following conditions is met:
+   * - The number of requested cycles is done (if the specified number is < 1, the simulation runs indefinitely).
+   * - A user provided callback function returns true.
+   * - A signal is caught by the triqs::utility::signal_handler.
+   * - An exception is caught.
+   *
+   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   */
+  template <DoubleOrComplex MCSignType> class mc_generic {
     public:
     /**
-    * Constructor
-    *
-    * @param random_name           Name of the random generator (cf doc).
-    * @param random_seed           Seed for the random generator
-    * @param verbosity             Verbosity level. 0 : None, ... TBA
-    * @param rethrow_exception     Whether to throw an exception on each node when an exception occurs on one of them.
-    *                              When set to false use MPI_Abort instead
-    */
-    mc_generic(std::string random_name, int random_seed, int verbosity, bool rethrow_exception = true)
-       : RandomGenerator(random_name, random_seed),
-         AllMoves(RandomGenerator),
-         AllMeasures(),
-         AllMeasuresAux(),
-         report(&std::cout, verbosity),
-         rethrow_exception(rethrow_exception) {}
-
-    /**
-   * Register a move
-   *
-   * If the move m is an rvalue, it is moved into the mc_generic, otherwise is copied into it.
-   *
-   * @tparam MoveType                Type of the move. Must model Move concept
-   * @param m                        The move. Must model Move concept.
-   * @param name                     Name of the move
-   * @param proposition_probability  Probability that the move will be proposed. Precondition : >0
-   *                                 NB it but does not need to be normalized.
-   *                                 Normalization is automatically done with all the added moves before starting the run.
-   */
-    template <typename MoveType> void add_move(MoveType &&m, std::string name, double proposition_probability = 1.0) {
-      static_assert(!std::is_pointer<MoveType>::value, "add_move in mc_generic takes ONLY values !");
-      AllMoves.add(std::forward<MoveType>(m), name, proposition_probability);
-    }
-
-    /**
-   * Register a measure
-   *
-   * If the measure m is an rvalue, it is moved into the mc_generic, otherwise is copied into it.
-   *
-   * @param M                        The measure. Must model Measure concept
-   * @param name                     Name of the measure
-   *
-   */
-    template <typename MeasureType>
-    typename measure_set<MCSignType>::measure_itr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true,
-                                                                bool report_measure = false) {
-      static_assert(!std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
-      return AllMeasures.insert(std::forward<MeasureType>(m), name, enable_timer, report_measure);
-    }
-
-    /**
-   * Register a common part for several measure [EXPERIMENTAL: API WILL CHANGE]
-   */
-    template <typename MeasureAuxType> void add_measure_aux(std::shared_ptr<MeasureAuxType> p) { AllMeasuresAux.emplace_back(p); }
-
-    /**
-   * Deregister a measure
-   *
-   * @param m      The measure. Must be the return value of add_measure
-   *
-   */
-    void rm_measure(typename measure_set<MCSignType>::measure_itr_t const &m) { AllMeasures.remove(m); }
-
-    /**
-     * Clear all registered measurements
+     * @brief Construct a generic Monte Carlo class.
+     *
+     * @param rng_name Name of the RNG to be used (see triqs::mc_tools::random_generator).
+     * @param rng_seed Seed for the RNG.
+     * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
+     * @param propagate_exception Should we propagate an exception to all MPI ranks or abort immediately?
      */
-    void clear_measures() { AllMeasures.clear(); }
+    mc_generic(const std::string &rng_name, int rng_seed, int verbosity_lvl, bool propagate_exception = true)
+       : rng_(rng_name, rng_seed),
+         moves_(rng_),
+         report_(&std::cout, verbosity_lvl),
+         propagate_exception_(propagate_exception) {}
 
     /**
-   * Sets a function called after each cycle
-   * @param f The function be called.
-   */
-    void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty = f; }
-
-    int warmup(int64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{}) {
-      report(3) << "\nWarming up ..." << std::endl;
-      auto status  = run(n_warmup_cycles, length_cycle, stop_callback, false, c);
-      timer_warmup = timer_run;
-      return status;
-    }
-
-    /**
-     * Warmup the Monte-Carlo configuration
+     * @brief Register a new MC move.
      *
-     * @param n_warmup_cycles         Number of QMC cycles in the warmup
-     * @param length_cycle            Number of QMC move attempts in one cycle
-     * @param stop_callback           A callback function () -> bool. It is called after each cycle
-     *                                to and the computation stops when it returns true.
-     *                                Typically used to set up the time limit, cf doc.
-     * @param sign_init               The sign of the initial configuration's weight [optional]
-     *
-     * @return
-     *
-     *    =  =============================================
-     *    0  if the computation has run until the end
-     *    1  if it has been stopped by stop_callback
-     *    2  if it has been stopped by receiving a signal
-     *    =  =============================================
-     *
+     * @tparam T triqs::mc_tools::MCMove type.
+     * @param m MC move to register.
+     * @param name Name of the move.
+     * @param weight Weight of the move which is proportional to its proposal probability (>= 0).
      */
-    int warmup(int64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init,
-               mpi::communicator c = mpi::communicator{}) {
-      sign = sign_init;
-      return warmup(n_warmup_cycles, length_cycle, stop_callback, c);
-    }
+    template <typename T> void add_move(T &&m, std::string name, double weight = 1.0) { moves_.add(std::forward<T>(m), name, weight); }
 
     /**
-     * Accumulate/Measure
+     * @brief Register a new MC measure.
      *
-     * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
-     *                                If negative, the accumulation is done until the stop_callback returns true or signal is received.
-     * @param length_cycle            Number of QMC move attempts in one cycle
-     * @param stop_callback
-     *
-     *        Callback function () -> bool. It is called after each cycle
-     *        to and the computation stops when it returns true.
-     *        Typically used to set up the time limit, cf doc.
-     *
-     * @return
-     *
-     *    =  =============================================
-     *    0  if the computation has run until the end
-     *    1  if it has been stopped by stop_callback
-     *    2  if it has been stopped by receiving a signal
-     *    =  =============================================
-     *
+     * @tparam T triqs::mc_tools::MCMeasure type.
+     * @param m MC measure to register.
+     * @param name Name of the measure.
+     * @param enable_timer Enable the timer in the measure::accumulate and measure::collect_results methods.
+     * @param enable_report Enable the measure::report method.
+     * @return Iterator to the registered measure.
      */
-    int accumulate(int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
-                   mpi::communicator c = mpi::communicator{}) {
-      report(3) << "\nAccumulating ..." << std::endl;
-      auto status        = run(n_accumulation_cycles, length_cycle, stop_callback, true, c);
-      timer_accumulation = timer_run;
-      return status;
-    }
-
-    int warmup_and_accumulate(int64_t n_warmup_cycles, int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
-                              mpi::communicator c = mpi::communicator{}) {
-      int status = warmup(n_warmup_cycles, length_cycle, stop_callback, c);
-      if (status == 0) status = accumulate(n_accumulation_cycles, length_cycle, stop_callback, c);
-      return status;
+    template <typename T> auto add_measure(T &&m, std::string name, bool enable_timer = true, bool enable_report = false) {
+      return measures_.insert(std::forward<T>(m), name, enable_timer, enable_report);
     }
 
     /**
-     * Warmup the Monte-Carlo configuration and accumulate/measure
+     * @brief Register a new auxiliary MC measure.
      *
-     * @param n_warmup_cycles         Number of QMC cycles in the warmup
-     * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
-     *                                If negative, the accumulation is done until the stop_callback returns true or signal is received.
-     * @param length_cycle            Number of QMC move attempts in one cycle
-     * @param stop_callback           A callback function () -> bool. It is called after each cycle
-     *                                to and the computation stops when it returns true.
-     *                                Typically used to set up the time limit, cf doc.
-     * @param sign_init               The sign of the initial configuration's weight [optional]
-     *
-     * @return
-     *    =  =============================================
-     *    0  if the computation has run until the end
-     *    1  if it has been stopped by stop_callback
-     *    2  if it has been stopped by receiving a signal
-     *    =  =============================================
-     *
+     * @tparam T Type of the auxiliary measure.
+     * @param m_ptr Shared pointer to the auxiliary MC measure to register.
      */
-    int warmup_and_accumulate(int64_t n_warmup_cycles, int64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback,
-                              MCSignType sign_init, mpi::communicator c = mpi::communicator{}) {
-      sign = sign_init; // init the sign
-      return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback, c);
-    }
+    template <typename T> void add_measure_aux(std::shared_ptr<T> const &m_ptr) { measures_aux_.emplace_back(m_ptr); }
 
     /**
-     * Generic function to run the Monte-Carlo. Used by both warmup and accumulate.
-     *
-     * @param n_cycles         Number of QMC cycles
-     *                         If negative, the accumulation is done until the stop_callback returns true or signal is received.
-     * @param length_cycle     Number of QMC move attempts in one cycle
-     * @param stop_callback    A callback function () -> bool. It is called after each cycle
-     *                         to and the computation stops when it returns true.
-     *                         Typically used to set up the time limit, cf doc.
-     * @param do_measure       Whether or not to accumulate for each measurement
-     * @param c                The mpi communicator [optional]. If not provided use the default-constructed one.
-     *
-     * @return
-     *    =  =============================================
-     *    0  if the computation has run until the end
-     *    1  if it has been stopped by stop_callback
-     *    2  if it has been stopped by receiving a signal
-     *    =  =============================================
-     *
+     * @brief Remove a registered MC measure.
+     * @param it Iterator to the measure to remove.
      */
-    int run(int64_t n_cycles, int64_t length_cycle, std::function<bool()> stop_callback, bool do_measure, mpi::communicator c = mpi::communicator{}) {
-      EXPECTS(length_cycle > 0);
+    void rm_measure(typename measure_set<MCSignType>::measure_itr_t const &it) { measures_.remove(it); }
 
-      AllMoves.clear_statistics();
-
-      timer_run = {};
-      timer_run.start();
-      if (n_cycles == 0) return 0;
-      triqs::signal_handler::start();
-      done_percent = 0;
-      nmeasures    = 0;
-      bool stop_it = false, finished = false, infinite = (n_cycles < 0);
-      int NC                = 0;
-      double next_info_time = 0.1;
-
-      std::unique_ptr<mpi::monitor> node_monitor;
-      if (rethrow_exception and mpi::has_env) node_monitor = std::make_unique<mpi::monitor>(c);
-
-      for (; !stop_it; ++NC) { // do NOT reinit NC to 0
-        try {
-          // Metropolis loop. Switch here for HeatBath, etc...
-          for (int64_t k = 1; (k <= length_cycle); k++) {
-            if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
-            double r = AllMoves.attempt();
-            if (RandomGenerator() < std::min(1.0, r)) {
-              if (debug) std::cerr << " Move accepted " << std::endl;
-              sign *= AllMoves.accept();
-              if (debug) std::cerr << " New sign = " << sign << std::endl;
-            } else {
-              if (debug) std::cerr << " Move rejected " << std::endl;
-              AllMoves.reject();
-            }
-            ++config_id;
-          }
-          if (after_cycle_duty) { after_cycle_duty(); }
-          if (do_measure) {
-            nmeasures++;
-            for (auto &x : AllMeasuresAux) x();
-            AllMeasures.accumulate(sign);
-          }
-        } catch (triqs::signal_handler::exception const &) {
-          std::cerr << "mc_generic: Signal caught on node " << c.rank() << "\n" << std::endl;
-          // current cycle interrupted, stop calculation below
-        } catch (std::exception const &err) {
-          // log the error and node number
-          std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
-          if (mpi::has_env) {
-            if (rethrow_exception)
-              node_monitor->report_local_event();
-            else
-              c.abort(2);
-          } else {
-            throw;
-          }
-        }
-
-        // recompute fraction done
-        done_percent = int64_t(floor(((NC + 1) * 100.0) / n_cycles));
-        if (timer_run > next_info_time || done_percent == 100) {
-          if (infinite) {
-            report(3) << utility::timestamp() << " cycle " << NC << std::endl;
-          } else {
-            report(3) << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
-                      << " ETA " << estimate_time_left(n_cycles, NC, timer_run) << " cycle " << NC << " of " << n_cycles << std::endl;
-          }
-          if (do_measure) report(3) << AllMeasures.report();
-          next_info_time = 1.25 * timer_run + 2.0; // Increase time interval non-linearly
-        }
-        finished = NC + 1 >= n_cycles and not infinite;
-        stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
-
-        // Stop if an emergency occurred on any node
-        if (node_monitor) stop_it |= node_monitor->event_on_any_rank();
-
-      } // end main NC loop
-
-      current_cycle_number += NC;
-      timer_run.stop();
-
-      int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
-      triqs::signal_handler::stop();
-
-      if (node_monitor) {
-        node_monitor->finalize_communications();
-        if (node_monitor->event_on_any_rank()) TRIQS_RUNTIME_ERROR << "mc_generic stops because the calculation raised an exception on one node";
-      }
-
-      // final reporting
-      if (status == 1) report << "mc_generic stops because of stop_callback" << std::endl;
-      if (status == 2) report << "mc_generic stops because of a signal" << std::endl;
-
-      report(3) << "\n" << std::endl;
-
-      return status;
-    }
-
-    /// Reduce the results of the measures, and reports some statistics
-    void collect_results(mpi::communicator const &c) {
-      report(3) << "[Rank " << c.rank() << "] Collect results: Waiting for all mpi-threads to finish accumulating...\n";
-      AllMeasures.collect_results(c);
-      AllMoves.collect_statistics(c);
-      int64_t nmeasures_tot = mpi::reduce(nmeasures, c);
-
-      report(3) << "[Rank " << c.rank() << "] Timings for all measures:\n" << AllMeasures.get_timings();
-      report(3) << "[Rank " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
-      report(3) << "[Rank " << c.rank() << "] Warmup lasted: " << get_warmup_time() << " seconds [" << get_warmup_time_HHMMSS() << "]\n";
-      report(3) << "[Rank " << c.rank() << "] Simulation lasted: " << get_accumulation_time() << " seconds [" << get_accumulation_time_HHMMSS()
-                << "]\n";
-      report(3) << "[Rank " << c.rank() << "] Number of measures: " << nmeasures << std::endl;
-      if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
-    }
+    /// Remove all registered measures.
+    void clear_measures() { measures_.clear(); }
 
     /**
-   * The acceptance rates of all move
-   *
-   * @return map : name_of_the_move -> acceptance rate of this move
-   */
-    std::map<std::string, double> get_acceptance_rates() const { return AllMoves.get_acceptance_rates(); }
+     * @brief Set the callback function to be called after each cycle.
+     * @param f Callback function.
+     */
+    void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty_ = f; }
 
     /**
-   *  The current percents done
-   */
-    int64_t get_percent() const { return done_percent; }
+     * @brief Run a generic MC simulation.
+     *
+     * @param ncycles Number of MC cycles to run (< 1 to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
+     * @param enable_measures Enable measurements at the end of each cycle (false during warmup phase).
+     * @param c MPI communicator.
+     * @param enable_calibration Enable calibration of the moves after each cycle (false during accumulation phase).
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int run(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, bool enable_measures,
+            mpi::communicator c = mpi::communicator{}, bool enable_calibration = false);
 
     /**
-   * An access to the random number generator
-   */
-    random_generator &get_rng() { return RandomGenerator; }
+     * @brief Run the warumup phase of the MC simulation.
+     *
+     * @param ncycles Number of warumup cycles to run (< 1 to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
+     * @param initial_sign Sign of the initial MC configuration.
+     * @param c MPI communicator.
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int warmup(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, MCSignType initial_sign,
+               mpi::communicator c = mpi::communicator{});
+
+    /// The same as warmup(std::int64_t, std::int64_t, std::function<bool()>, MCSignType, mpi::communicator) but without
+    /// specifying the initial sign.
+    int warmup(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{});
 
     /**
-   * The current cycle number
-   */
-    int get_current_cycle_number() const { return current_cycle_number; }
+     * @brief Run the accumulation phase of the MC simulation.
+     *
+     * @param ncycles Number of accumulation cycles to run (< 1 to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
+     * @param initial_sign Sign of the initial MC configuration.
+     * @param c MPI communicator.
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int accumulate(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, mpi::communicator c = mpi::communicator{});
 
     /**
-   * The current number of the visited configuration. Updated after each accept/reject.
-   */
-    int get_config_id() const { return config_id; }
+     * @brief Run the warumup and accumulation phases of the MC simulation.
+     *
+     * @param ncycles_warmup Number of warumup cycles to run (< 1 to run indefinitely).
+     * @param ncycles_acc Number of accumulation cycles to run (< 1 to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
+     * @param initial_sign Sign of the initial MC configuration.
+     * @param c MPI communicator.
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int warmup_and_accumulate(std::int64_t ncycles_warmup, std::int64_t ncycles_acc, std::int64_t cycle_length, std::function<bool()> stop_callback,
+                              MCSignType initial_sign, mpi::communicator c = mpi::communicator{});
+
+    /// The same as warmup_and_accumulate(std::int64_t, std::int64_t, std::int64_t, std::function<bool()>, MCSignType,
+    /// mpi::communicator) but without specifying the initial sign.
+    int warmup_and_accumulate(std::int64_t ncycles_warmup, std::int64_t ncycles_acc, std::int64_t cycle_length, std::function<bool()> stop_callback,
+                              mpi::communicator c = mpi::communicator{});
 
     /**
-   * The duration of the last run in seconds
-   */
-    double get_duration() const { return get_total_time(); }
+     * @brief Collect results from multiple MPI processes.
+     * @param c MPI communicator.
+     */
+    void collect_results(mpi::communicator const &c);
+
+    /// Get the acceptance rates of all MC moves (see move_set::get_acceptance_rates).
+    [[nodiscard]] std::map<std::string, double> get_acceptance_rates() const { return moves_.get_acceptance_rates(); }
+
+    /// Get the percentage of the requested number of cycles done.
+    [[nodiscard]] double get_percent() const { return percentage_done_; }
+
+    /// Get a reference to the random number generator.
+    random_generator &get_rng() { return rng_; }
+
+    /// Get the number of cycles done.
+    [[nodiscard]] int get_current_cycle_number() const { return ncycles_done_; }
+
+    /// Get the ID of the current MC configuration.
+    [[nodiscard]] int get_config_id() const { return config_id_; }
+
+    /// Get the total time, i.e. the sum of the warmup and accumulation times, in seconds.
+    [[nodiscard]] double get_duration() const { return get_total_time(); }
+
+    /// Get the number of measurements done.
+    [[nodiscard]] int get_nmeasures() const { return nmeasures_done_; }
+
+    /// Get the total time, i.e. the sum of the warmup and accumulation times, in seconds.
+    [[nodiscard]] double get_total_time() const { return get_warmup_time() + get_accumulation_time(); }
+
+    /// Get the time spent in the warmup phase in seconds.
+    [[nodiscard]] double get_warmup_time() const { return static_cast<double>(warmup_timer_); }
+
+    /// Get the time spent in the warmup phase in hours, minutes, and seconds.
+    [[nodiscard]] auto get_warmup_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(warmup_timer_); }
+
+    /// Get the time spent in the accumulation phase in seconds.
+    [[nodiscard]] double get_accumulation_time() const { return static_cast<double>(acc_timer_); }
+
+    /// Get the time spent in the accumulation phase in hours, minutes and seconds.
+    [[nodiscard]] std::string get_accumulation_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(acc_timer_); }
 
     /**
-   * The total time of the last run in seconds
-   */
-    double get_total_time() const { return get_warmup_time() + get_accumulation_time(); }
-
-    /**
-   * The time spent on warmup in seconds
-   */
-    double get_warmup_time() const { return double(timer_warmup); }
-
-    /**
-   * The time spent on warmup in hours, minutes, and seconds
-   */
-    auto get_warmup_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(timer_warmup); }
-
-    /**
-   * The time spent on accumulation in seconds
-   */
-    double get_accumulation_time() const { return double(timer_accumulation); }
-
-    /**
-   * The time spent on warmup in hours, minutes, and seconds
-   */
-    auto get_accumulation_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(timer_accumulation); }
-
-    /// HDF5 interface
+     * @brief Write the MC simulation object to HDF5.
+     *
+     * @details It writes the registered moves and measures as well as the number of cycles and measures that have been
+     * done and the sign of the current configuration.
+     *
+     * @param g h5::group to be written to.
+     * @param name Name of the subgroup.
+     * @param mc MC simulation object to be written.
+     */
     friend void h5_write(h5::group g, std::string const &name, mc_generic const &mc) {
       auto gr = g.create_group(name);
-      h5_write(gr, "moves", mc.AllMoves);
-      h5_write(gr, "measures", mc.AllMeasures);
-      h5_write(gr, "number_cycle_done", mc.current_cycle_number);
-      h5_write(gr, "number_measure_done", mc.nmeasures);
-      h5_write(gr, "sign", mc.sign);
+      h5_write(gr, "moves", mc.moves_);
+      h5_write(gr, "measures", mc.measures_);
+      h5_write(gr, "number_cycle_done", mc.ncycles_done_);
+      h5_write(gr, "number_measure_done", mc.nmeasures_done_);
+      h5_write(gr, "sign", mc.sign_);
     }
 
-    /// HDF5 interface
+    /**
+     * @brief Read the MC simulation object from HDF5.
+     *
+     * @details It reads the registered moves and measures as well as the number of cycles and measures that have been
+     * done and the sign of the last configuration.
+     *
+     * @param g h5::group to be read from.
+     * @param name Name of the subgroup.
+     * @param mc MC simulation object to be read into.
+     */
     friend void h5_read(h5::group g, std::string const &name, mc_generic &mc) {
       auto gr = g.open_group(name);
-      h5_read(gr, "moves", mc.AllMoves);
-      h5_read(gr, "measures", mc.AllMeasures);
-      h5_read(gr, "number_cycle_done", mc.current_cycle_number);
-      h5_read(gr, "number_measure_done", mc.nmeasures);
-      h5_read(gr, "sign", mc.sign);
+      h5_read(gr, "moves", mc.moves_);
+      h5_read(gr, "measures", mc.measures_);
+      h5_read(gr, "number_cycle_done", mc.ncycles_done_);
+      h5_read(gr, "number_measure_done", mc.nmeasures_done_);
+      h5_read(gr, "sign", mc.sign_);
     }
 
     private:
-    random_generator RandomGenerator;
-    move_set<MCSignType> AllMoves;
-    measure_set<MCSignType> AllMeasures;
-    std::vector<measure_aux> AllMeasuresAux;
-    utility::report_stream report;
-    int64_t nmeasures, current_cycle_number = 0;
-    utility::timer timer_run, timer_accumulation, timer_warmup;
-    std::function<void()> after_cycle_duty;
-    MCSignType sign        = 1;
-    int64_t done_percent   = 0;
-    int64_t config_id      = 0;
-    bool rethrow_exception = true;
+    random_generator rng_;
+    move_set<MCSignType> moves_;
+    measure_set<MCSignType> measures_;
+    std::vector<measure_aux> measures_aux_;
+    utility::report_stream report_;
+    utility::timer run_timer_;
+    utility::timer acc_timer_;
+    utility::timer warmup_timer_;
+    MCSignType sign_{1};
+    std::int64_t nmeasures_done_{0};
+    std::int64_t ncycles_done_{0};
+    std::int64_t percentage_done_{0};
+    std::int64_t config_id_{0};
+    std::function<void()> after_cycle_duty_{nullptr};
+    bool propagate_exception_{true};
   };
+
+  // Explicit template instantiation declarations.
+  extern template class mc_generic<double>;
+  extern template class mc_generic<std::complex<double>>;
+
 } // namespace triqs::mc_tools
