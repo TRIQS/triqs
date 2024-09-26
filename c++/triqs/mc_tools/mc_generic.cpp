@@ -30,7 +30,7 @@
 #include <mpi/vector.hpp>
 #include <nda/macros.hpp>
 
-#include <cmath>
+#include <algorithm>
 #include <complex>
 #include <cstdint>
 #include <functional>
@@ -111,12 +111,12 @@ namespace triqs::mc_tools {
       }
 
       // recompute fraction done
-      percentage_done_ = std::int64_t(std::floor(((cycle_counter + 1) * 100.0) / params.ncycles));
+      percentage_done_ = (cycle_counter + 1) * 100.0 / params.ncycles;
       if (run_timer_ > next_info || percentage_done_ >= 100) {
         if (inf_cycles) {
           report_(3) << fmt::format("[Rank {}] {} cycle {}\n", rank, utility::timestamp(), cycle_counter);
         } else {
-          report_(3) << fmt::format("[Rank {}] {} {}% done, ETA {}, cycle {} of {}\n", rank, utility::timestamp(), percentage_done_,
+          report_(3) << fmt::format("[Rank {}] {} {:.2f}% done, ETA {}, cycle {} of {}\n", rank, utility::timestamp(), percentage_done_,
                                     utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter, params.ncycles);
         }
         if (params.enable_measures) report_(3) << measures_.report();

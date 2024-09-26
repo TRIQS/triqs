@@ -360,7 +360,7 @@ namespace triqs::mc_tools {
     MCSignType sign_{1};
     std::int64_t nmeasures_done_{0};
     std::int64_t ncycles_done_{0};
-    std::int64_t percentage_done_{0};
+    double percentage_done_{0};
     std::int64_t config_id_{0};
   };
 
