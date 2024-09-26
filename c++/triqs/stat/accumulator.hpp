@@ -174,7 +174,7 @@ namespace triqs::stat {
           acc_count.push_back(0);
         }
         // Multiply to ensure element can be element-wise multiplied [FIXME with concepts]
-        Qk.emplace_back(make_real(nda::hadamard(nda::conj(data_instance_local), data_instance_local)));
+        Qk.emplace_back(abs_square(data_instance_local));
         Mk.emplace_back(std::move(data_instance_local));
       }
 
@@ -225,7 +225,7 @@ namespace triqs::stat {
             auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
             T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
             auto k            = count / bin_capacity;
-            Qk[n + 1] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(nda::hadamard(conj(x_m), x_m));
+            Qk[n + 1] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * abs_square(x_m);
             Mk[n + 1] += x_m / k;
             acc_count[n] = 0;
             acc[n]       = 0;
@@ -235,7 +235,7 @@ namespace triqs::stat {
         // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
         auto k = count;
         T x_m  = (x - Mk[0]);
-        Qk[0] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * make_real(nda::hadamard(conj(x_m), x_m));
+        Qk[0] += static_cast<nda::get_value_t<Q_t>>((k - 1) / double(k)) * abs_square(x_m);
         Mk[0] += x_m / k;
 
         return *this;
@@ -365,22 +365,13 @@ namespace triqs::stat {
       // enable default if callback has not been defined and log binning is active (such that Qk[0] and Mk[0] are available)
       if ((!callback) && (n_log_bins_max > 0)) {
         callback = [&](std::vector<T> const &bins) {
-          using var_t = get_real_t<T>;
-
           // mean and variance of the whole time series
-          T data_mean          = log_bins.Mk[0];
-          var_t var_no_binning = log_bins.Qk[0] / log_bins.count;
+          auto mean           = log_bins.Mk[0];
+          auto var_no_binning = log_bins.Qk[0] / log_bins.count;
 
           // variance of the binned data
-          T delta                = bins[0] - data_mean;
-          var_t var_with_binning = make_real(nda::hadamard(nda::conj(delta), delta));
-
-          for (auto i : range(1, bins.size())) {
-            delta = bins[i] - data_mean;
-            var_with_binning += make_real(nda::hadamard(nda::conj(delta), delta));
-          }
-
-          var_with_binning /= bins.size();
+          auto deltas           = nda::vector_view<const T>(bins) - nda::vector<T>(bins.size(), mean);
+          auto var_with_binning = sum(nda::map(abs_square<T>)(deltas)) / bins.size();
 
           // estimate the autocorrelation time
           auto_corr_times.emplace_back(0.5 * (lin_bins.bin_capacity * var_with_binning / var_no_binning - var_no_binning / var_no_binning));
@@ -552,9 +543,7 @@ namespace triqs::stat {
   /// @brief Convert log bin errors in auto-correlation times
   template <typename T> auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) {
     // Last part is simply 1.0, but could be an array
-    return 0.5
-       * (nda::hadamard(error_with_binning, error_with_binning) / nda::hadamard(error_no_binning, error_no_binning)
-          - error_no_binning / error_no_binning);
+    return 0.5 * (abs_square(error_with_binning) / abs_square(error_no_binning) - error_no_binning / error_no_binning);
   }
 
 } // namespace triqs::stat

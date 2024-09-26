@@ -52,6 +52,11 @@ namespace triqs::stat {
     return M;
   }
 
+  /// Calculate the (elementwise) absolute square of an array/scalar.
+  /// @param x Input array/scalar
+  /// @return Absolute square of the input x
+  auto abs_square(auto const &x) { return make_real(nda::hadamard(nda::conj(x), x)); }
+
   /// Calculate arithmetic mean and statistical error [REF] of data in an iterable container.
   /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj [REF] .
   /// @param data Container with data
@@ -63,8 +68,8 @@ namespace triqs::stat {
     long length    = data.size();
     auto mean_calc = mean(data);
     auto err_calc  = make_real(mean_calc);
-    err_calc       = 0; 
-    for (auto const &x : data) { err_calc += nda::real(nda::hadamard(nda::conj(x - mean_calc), x - mean_calc) / (length * (length - 1))); }
+    err_calc       = 0;
+    for (auto const &x : data) { err_calc += abs_square(x - mean_calc) / (length * (length - 1)); }
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
   }
@@ -81,7 +86,7 @@ namespace triqs::stat {
     auto mean_calc = mean_mpi(c, data);
     auto err_calc  = make_real(mean_calc);
     err_calc       = 0;
-    for (auto const &x : data) { err_calc += nda::real(nda::hadamard(nda::conj(x - mean_calc), x - mean_calc) / (length * (length - 1))); }
+    for (auto const &x : data) { err_calc += abs_square(x - mean_calc) / (length * (length - 1)); }
     mpi::all_reduce_in_place(err_calc, c);
     err_calc = std::sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
