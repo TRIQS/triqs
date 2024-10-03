@@ -72,8 +72,8 @@ namespace triqs::stat {
         if (max_n_bins == 0) return *this;
         // Check if all bins are full and compress if needed
         if (max_n_bins > 1 && n_bins() == max_n_bins && last_bin_count == bin_capacity) {
-          compress(2);                  // Adjusts bin_capacity & last_bin_count
           if (callback) callback(bins); // Callback if defined
+          compress(2);                  // Adjusts bin_capacity & last_bin_count
         }
         // Check if current bin full: push new bin or add data to current bin
         if (last_bin_count == bin_capacity && max_n_bins != 1) {
