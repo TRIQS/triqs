@@ -167,7 +167,7 @@ namespace triqs::stat {
     /// Returns the maximum number of bins the logarithmic part of the accumulator can hold.
     /// @brief Max. number of bins in the logarithmic accumulator
     /// @return Maximum number of bins
-    [[nodiscard]] int n_log_bins_max() const { return log_bins.max_n_bins; }
+    [[nodiscard]] int n_log_bins_max() const { return log_bins.max_n_bins(); }
 
     /// Returns the number of bins currently in the logarithmic part of the accumulator
     /// When the accumulator is active (n_log_bins_max != 0), there is always at least one zeroed bin even if no data has been passed to the accumulator.
@@ -216,23 +216,9 @@ namespace triqs::stat {
     /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of \f$2^n\f$. The return type is deduced from nda::real(T), where T is the type defining the accumulator.
     /// @brief Get standard errors of log binned data
     [[nodiscard]] auto log_bin_errors() const {
-      auto res1 = log_bins.Qk;
-      std::vector<long> count_vec{};
-
-      if (res1.size() == 0) return std::make_pair(res1, count_vec);
-      count_vec.reserve(res1.size());
-
-      for (int n = 0; n < res1.size(); ++n) {
-        long count_n = (log_bins.count >> n); // == count / 2^n (rounded down)
-        if (count_n <= 1) {
-          res1[n] = 0;
-        } else {
-          using std::sqrt;
-          res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
-        }
-        count_vec.emplace_back(count_n);
-      }
-      return std::make_pair(res1, count_vec);
+      auto [m, e, t, ct] = log_bins.mean_errors_and_taus();
+      if (e.size() > 0 && ct.back() < 2) e.back() = 0.0;
+      return std::make_pair(e, ct);
     }
 
     /// Returns the standard errors for data with different power-of-two capacity, reduced from data over all MPI threads. The final answer is reduced only to the zero MPI thread (not all reduce).
@@ -241,61 +227,9 @@ namespace triqs::stat {
     /// @brief Get standard errors of log binned data (MPI Version)
     ///
     [[nodiscard]] auto log_bin_errors_all_reduce(mpi::communicator c) const {
-      std::vector<get_real_t<T>> result_vec{};
-      std::vector<long> count_vec{};
-
-      // M_k, Q_k can be different lengths on different mpi threads.
-      long n_log_bins_i                   = n_log_bins();
-      std::vector<long> n_log_bins_vec    = mpi::all_gather(std::vector<long>{n_log_bins_i}, c);
-      auto [min_n_bins_it, max_n_bins_it] = std::minmax_element(n_log_bins_vec.crbegin(), n_log_bins_vec.crend());
-      long max_n_bins                     = *max_n_bins_it;
-      long min_n_bins                     = *min_n_bins_it;
-
-      int max_n_bins_rank = c.size() - 1 - std::distance(n_log_bins_vec.crbegin(), max_n_bins_it);
-
-      if (c.rank() == max_n_bins_rank) {
-        result_vec.reserve(max_n_bins);
-        count_vec.reserve(max_n_bins);
-      }
-
-      for (int n = 0; n < min_n_bins; n++) {
-        auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c, max_n_bins_rank);
-        if (c.rank() == max_n_bins_rank) {
-          result_vec.emplace_back(std::move(Qn));
-          count_vec.emplace_back(std::move(count_n));
-        }
-      }
-
-      for (auto n = min_n_bins; n < max_n_bins; n++) {
-        int split_color           = (n < n_log_bins_i) ? 0 : MPI_UNDEFINED;
-        int split_key             = (c.rank() == max_n_bins_rank) ? 0 : 1 + c.rank();
-        mpi::communicator c_split = c.split(split_color, split_key);
-
-        if (split_color == 0) {
-          auto [Mn, Qn, count_n] = details::mpi_reduce_MQ(log_bins.Mk[n], log_bins.Qk[n], (log_bins.count >> n), c_split, 0);
-          if (c.rank() == max_n_bins_rank) {
-            result_vec.emplace_back(std::move(Qn));
-            count_vec.emplace_back(std::move(count_n));
-          }
-        }
-      }
-
-      if (c.rank() == max_n_bins_rank) {
-        for (int n = 0; n < max_n_bins; n++) {
-          if (count_vec[n] <= 1) {
-            result_vec[n] = 0;
-          } else {
-            using std::sqrt;
-            result_vec[n] = sqrt(result_vec[n] / (count_vec[n] * (count_vec[n] - 1)));
-          }
-        }
-      }
-
-      // FIXME: Option not to bcast to all
-      mpi::broadcast(result_vec, c, max_n_bins_rank);
-      mpi::broadcast(count_vec, c, max_n_bins_rank);
-
-      return std::make_pair(result_vec, count_vec);
+      auto [m, e, t, ct] = log_bins.mean_errors_and_taus(c);
+      if (e.size() > 0 && ct.back() < 2) e.back() = 0.0;
+      return std::make_pair(e, ct);
     }
 
     /// Returns the total number of data points that were put into the accumulator
