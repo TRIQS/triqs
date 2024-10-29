@@ -19,11 +19,12 @@
 
 #pragma once
 
-#include <triqs/stat/accumulator.hpp>
 #include <triqs/stat/histograms.hpp>
 #include <triqs/stat/jackknife.hpp>
-#include <triqs/stat/utils.hpp>
+#include <triqs/stat/lin_binning.hpp>
+#include <triqs/stat/log_binning.hpp>
 #include <triqs/stat/mean_error.hpp>
+#include <triqs/stat/utils.hpp>
 
 #ifdef C2PY_INCLUDED
 #include <triqs/stat/histograms.wrap.hxx>
