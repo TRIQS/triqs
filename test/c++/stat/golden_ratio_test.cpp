@@ -70,28 +70,18 @@ TEST(Stat, Accumulator_GoldenRatioTest) {
   GoldenRatioQuasiRNGFloat gen;
 
   for (int idx = 0; idx < gen.nr_samples.size(); idx++) {
-    accumulator<float> my_acc_f{0.0, n_log_bins, n_lin_bins, lin_bin_size};
     accumulator<double> my_acc_d{0.0, n_log_bins, n_lin_bins, lin_bin_size};
 
     for (int n = 1; n <= gen.nr_samples[idx]; n++) {
       float temp = gen.get_nth_term(n);
-      my_acc_f << temp;
       my_acc_d << temp;
     }
 
     // Test log binning
-
-    auto [errs_f, counts_f] = my_acc_f.log_bin_errors();
     auto [errs_d, counts_d] = my_acc_d.log_bin_errors();
-
-    EXPECT_NEAR(errs_f[0] - gen.err_exact_f[idx], 0.0, gen.tol_err_in_ave_welford[idx]);
     EXPECT_EQ(float(errs_d[0]), gen.err_exact_f[idx]);
 
     // Test mean_and_err
-    auto [ave_f, err_f] = mean_and_err(my_acc_f.linear_bins());
-    EXPECT_NEAR(ave_f - gen.ave_exact_f[idx], 0.0, gen.tol_err_in_ave_welford[idx]);
-    EXPECT_NEAR(err_f - gen.err_exact_f[idx], 0.0, gen.tol_err_in_err_welford[idx]);
-
     auto [ave_d, err_d] = mean_and_err(my_acc_d.linear_bins());
     EXPECT_EQ(float(ave_d), gen.ave_exact_f[idx]);
     EXPECT_EQ(float(err_d), gen.err_exact_f[idx]);

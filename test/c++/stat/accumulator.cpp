@@ -25,7 +25,6 @@
 #include <typeinfo>
 
 using namespace triqs::stat;
-using namespace triqs::stat::details;
 
 using nda::conj;
 
