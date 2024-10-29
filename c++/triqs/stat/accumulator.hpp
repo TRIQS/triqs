@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "./make_real.hpp"
+#include "./utils.hpp"
 #include "mean_error.hpp"
 #include <mpi/mpi.hpp>
 #include <mpi/vector.hpp>
@@ -533,17 +533,5 @@ namespace triqs::stat {
     /// @example triqs/stat/acc_compress_manual.cpp
     void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   };
-
-  /// Compute estimates for the auto-correlation times \f$\tau\f$ log-binned standard errors.
-  /// @tparam T regular type which defines element-wise multiplication and division.
-  /// @param error_with_binning standard error of measurement with binning \f$\Delta_n\f$
-  /// @param error_no_binning standard error of measurement with without binning \f$\Delta_0\f$
-  /// @return Estimate of the auto-correlation time \f$\tau\f$, using
-  /// \f[\tau = \frac{1}{2}\left[\left(\frac{\Delta_n}{\Delta_0}\right)^2 - 1\right]\f]
-  /// @brief Convert log bin errors in auto-correlation times
-  template <typename T> auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) {
-    // Last part is simply 1.0, but could be an array
-    return 0.5 * (abs_square(error_with_binning) / abs_square(error_no_binning) - error_no_binning / error_no_binning);
-  }
 
 } // namespace triqs::stat

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "./make_real.hpp"
+#include "./utils.hpp"
 #include <itertools/itertools.hpp>
 #include <mpi/vector.hpp>
 #include <triqs/arrays.hpp>
@@ -51,11 +51,6 @@ namespace triqs::stat {
     mpi::all_reduce_in_place(M, c); //M = mpi::all_reduce(M, c, 0);
     return M;
   }
-
-  /// Calculate the (elementwise) absolute square of an array/scalar.
-  /// @param x Input array/scalar
-  /// @return Absolute square of the input x
-  auto abs_square(auto const &x) { return make_real(nda::hadamard(nda::conj(x), x)); }
 
   /// Calculate arithmetic mean and statistical error [REF] of data in an iterable container.
   /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj [REF] .
