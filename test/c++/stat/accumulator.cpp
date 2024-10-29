@@ -232,104 +232,104 @@ TEST(Stat, Details_LinBins_AdvanceAndCompress_OddNrBins) {
 using logbin_d = log_binning<double>;
 
 TEST(Stat, Details_LogBins_InitTest_Float) {
-  log_binning<float> bins{0.0, -1};
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, float>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, float>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, float>, "EE");
-  EXPECT_EQ(bins.max_n_bins, -1);
+  log_binning<double> bins{0.0, -1};
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.mean_bins().at(0))>, double>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.var_bins().at(0))>, double>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.bare_bins().at(0))>, double>, "EE");
+  EXPECT_EQ(bins.max_n_bins(), -1);
   EXPECT_EQ(bins.n_bins(), 1);
-  EXPECT_EQ(bins.Mk.at(0), 0.0);
-  EXPECT_EQ(bins.Qk.at(0), 0.0);
-  EXPECT_EQ(bins.acc.at(0), 0.0);
-  EXPECT_EQ(bins.acc_count.at(0), 0);
+  EXPECT_EQ(bins.mean_bins().at(0), 0.0);
+  EXPECT_EQ(bins.var_bins().at(0), 0.0);
+  EXPECT_EQ(bins.bare_bins().at(0), 0.0);
+  EXPECT_EQ(bins.bare_counts().at(0), 0);
 }
 
 TEST(Stat, Details_LogBins_InitTest_FloatComplex) {
-  log_binning<std::complex<float>> bins{0.0, -1};
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, std::complex<float>>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, float>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, std::complex<float>>, "EE");
-  EXPECT_EQ(bins.max_n_bins, -1);
+  log_binning<std::complex<double>> bins{0.0, -1};
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.mean_bins().at(0))>, std::complex<double>>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.var_bins().at(0))>, double>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.bare_bins().at(0))>, std::complex<double>>, "EE");
+  EXPECT_EQ(bins.max_n_bins(), -1);
   EXPECT_EQ(bins.n_bins(), 1);
-  EXPECT_EQ(bins.Mk.at(0), std::complex<float>(0.0, 0.0));
-  EXPECT_EQ(bins.Qk.at(0), 0.0);
-  EXPECT_EQ(bins.acc.at(0), std::complex<float>(0.0, 0.0));
-  EXPECT_EQ(bins.acc_count.at(0), 0);
+  EXPECT_EQ(bins.mean_bins().at(0), std::complex<double>(0.0, 0.0));
+  EXPECT_EQ(bins.var_bins().at(0), 0.0);
+  EXPECT_EQ(bins.bare_bins().at(0), std::complex<double>(0.0, 0.0));
+  EXPECT_EQ(bins.bare_counts().at(0), 0);
 }
 
 TEST(Stat, Details_LogBins_InitTestArray) {
   typedef nda::array<std::complex<double>, 2> cdouble_array_2d;
   auto a = cdouble_array_2d{{0., 0., 0.}, {0., 0., 0.}};
   log_binning<cdouble_array_2d> bins{a, -1};
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, cdouble_array_2d>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, nda::array<double, 2>>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, cdouble_array_2d>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc_count.at(0))>, int>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.mean_bins().at(0))>, cdouble_array_2d>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.var_bins().at(0))>, nda::array<double, 2>>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.bare_bins().at(0))>, cdouble_array_2d>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.bare_counts().at(0))>, int>, "EE");
   EXPECT_EQ(bins.n_bins(), 1);
-  EXPECT_ARRAY_EQ(bins.Mk.at(0), a);
-  EXPECT_ARRAY_EQ(bins.Qk.at(0), nda::real(a));
-  EXPECT_ARRAY_EQ(bins.acc.at(0), a);
+  EXPECT_ARRAY_EQ(bins.mean_bins().at(0), a);
+  EXPECT_ARRAY_EQ(bins.var_bins().at(0), nda::real(a));
+  EXPECT_ARRAY_EQ(bins.bare_bins().at(0), a);
 }
 
 TEST(Stat, Details_LogBins_InitTest_OneBin) {
-  log_binning<std::complex<float>> bins{0.0, 1};
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, std::complex<float>>, "EE");
-  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, float>, "EE");
-  EXPECT_EQ(bins.max_n_bins, 1);
-  EXPECT_EQ(bins.Mk.size(), 1);
-  EXPECT_EQ(bins.Mk.at(0), std::complex<float>(0.0, 0.0));
-  EXPECT_EQ(bins.Qk.size(), 1);
-  EXPECT_EQ(bins.Qk.at(0), 0.0);
-  EXPECT_EQ(bins.acc.size(), 0);
-  EXPECT_EQ(bins.acc_count.size(), 0);
+  log_binning<std::complex<double>> bins{0.0, 1};
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.mean_bins().at(0))>, std::complex<double>>, "EE");
+  static_assert(std::is_same_v<std::remove_cvref_t<decltype(bins.var_bins().at(0))>, double>, "EE");
+  EXPECT_EQ(bins.max_n_bins(), 1);
+  EXPECT_EQ(bins.mean_bins().size(), 1);
+  EXPECT_EQ(bins.mean_bins().at(0), std::complex<double>(0.0, 0.0));
+  EXPECT_EQ(bins.var_bins().size(), 1);
+  EXPECT_EQ(bins.var_bins().at(0), 0.0);
+  EXPECT_EQ(bins.bare_bins().size(), 0);
+  EXPECT_EQ(bins.bare_counts().size(), 0);
 }
 
 // *******
 template <typename T> void CheckLogBinSize(log_binning<T> bins, long n_size) {
-  EXPECT_EQ(bins.Mk.size(), n_size);
-  EXPECT_EQ(bins.Qk.size(), n_size);
-  EXPECT_EQ(bins.acc.size(), n_size);
-  EXPECT_EQ(bins.acc_count.size(), n_size);
+  EXPECT_EQ(bins.mean_bins().size(), n_size);
+  EXPECT_EQ(bins.var_bins().size(), n_size);
+  EXPECT_EQ(bins.bare_bins().size(), n_size);
+  EXPECT_EQ(bins.bare_counts().size(), n_size);
 }
 
 TEST(Stat, Details_LogBins_AddDataComplex) {
   using namespace std::complex_literals;
 
   log_binning<std::complex<double>> bins{0.0, 3};
-  EXPECT_EQ(bins.Mk, vec_c({0.0 * 1i}));
-  EXPECT_EQ(bins.Qk, vec_d({0.0}));
-  EXPECT_EQ(bins.acc, vec_c({0.0 * 1i}));
-  EXPECT_EQ(bins.acc_count, vec_i({0}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({0.0 * 1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({0.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({0.0 * 1i}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({0}));
 
   bins << 1i;
-  EXPECT_EQ(bins.Mk, vec_c({1i}));
-  EXPECT_EQ(bins.Qk, vec_d({0.0}));
-  EXPECT_EQ(bins.acc, vec_c({1i}));
-  EXPECT_EQ(bins.acc_count, vec_i({1}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({0.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({1i}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({1}));
 
   bins << 2 * 1i;
-  EXPECT_EQ(bins.Mk, vec_c({1.5 * 1i, 1.5 * 1i}));
-  EXPECT_EQ(bins.Qk, vec_d({0.5, 0.0}));
-  EXPECT_EQ(bins.acc, vec_c({0 * 1i, 3 * 1i}));
-  EXPECT_EQ(bins.acc_count, vec_i({0, 1}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({1.5 * 1i, 1.5 * 1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({0.5, 0.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({0 * 1i, 3 * 1i}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({0, 1}));
 
   bins << 3 * 1i;
-  EXPECT_EQ(bins.Mk, vec_c({2.0 * 1i, 1.5 * 1i}));
-  EXPECT_EQ(bins.Qk, vec_d({2.0, 0.0}));
-  EXPECT_EQ(bins.acc, vec_c({3 * 1i, 3 * 1i}));
-  EXPECT_EQ(bins.acc_count, vec_i({1, 1}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({2.0 * 1i, 1.5 * 1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({2.0, 0.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({3 * 1i, 3 * 1i}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({1, 1}));
 
   bins << 4 * 1i;
-  EXPECT_EQ(bins.Mk, vec_c({2.5 * 1i, 2.5 * 1i, 2.5 * 1i}));
-  EXPECT_EQ(bins.Qk, vec_d({5.0, 2.0, 0.0}));
-  EXPECT_EQ(bins.acc, vec_c({0.0, 0.0}));
-  EXPECT_EQ(bins.acc_count, vec_i({0, 0}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({2.5 * 1i, 2.5 * 1i, 2.5 * 1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({5.0, 2.0, 0.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({0.0, 0.0}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({0, 0}));
 
   bins << 5 * 1i << 6 * 1i << 7 * 1i << 8 * 1i;
-  EXPECT_EQ(bins.Mk, vec_c({4.5 * 1i, 4.5 * 1i, 4.5 * 1i}));
-  EXPECT_EQ(bins.Qk, vec_d({42.0, 20.0, 8.0}));
-  EXPECT_EQ(bins.acc, vec_c({0.0, 0.0}));
-  EXPECT_EQ(bins.acc_count, vec_i({0, 0}));
+  EXPECT_EQ(bins.mean_bins(), vec_c({4.5 * 1i, 4.5 * 1i, 4.5 * 1i}));
+  EXPECT_EQ(bins.var_bins(), vec_d({42.0, 20.0, 8.0}));
+  EXPECT_EQ(bins.bare_bins(), vec_c({0.0, 0.0}));
+  EXPECT_EQ(bins.bare_counts(), vec_i({0, 0}));
 }
 
 // *****************************************************************************

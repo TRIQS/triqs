@@ -46,20 +46,20 @@ TEST(Stat, ReduceSingleMQ) {
     if (c.size() * i / N == c.rank()) { logbin_i << x; }
   }
 
-  auto [M, Q, count_k] = details::mpi_reduce_MQ(logbin_i.Mk.at(0), logbin_i.Qk.at(0), logbin_i.count, c);
+  auto [M, Q, count_k] = details::mpi_reduce_MQ(logbin_i.mean_bins().at(0), logbin_i.var_bins().at(0), logbin_i.count(), c);
 
   if (c.rank() == 0) {
-    EXPECT_NEAR(M, logbin_all.Mk.at(0), logbin_all.Mk.at(0) * std::numeric_limits<double>::epsilon() * 20);
-    EXPECT_NEAR(Q, logbin_all.Qk.at(0), logbin_all.Qk.at(0) * std::numeric_limits<double>::epsilon() * 20);
-    EXPECT_EQ(count_k, logbin_all.count);
+    EXPECT_NEAR(M, logbin_all.mean_bins().at(0), logbin_all.mean_bins().at(0) * std::numeric_limits<double>::epsilon() * 20);
+    EXPECT_NEAR(Q, logbin_all.var_bins().at(0), logbin_all.var_bins().at(0) * std::numeric_limits<double>::epsilon() * 20);
+    EXPECT_EQ(count_k, logbin_all.count());
   }
 
-  auto [Mk1, Qk1, count_k1] = details::mpi_reduce_MQ(logbin_i.Mk.at(1), logbin_i.Qk.at(1), logbin_i.count >> 1, c);
+  auto [Mk1, Qk1, count_k1] = details::mpi_reduce_MQ(logbin_i.mean_bins().at(1), logbin_i.var_bins().at(1), logbin_i.count() >> 1, c);
 
   if (c.rank() == 0) {
-    EXPECT_NEAR(Mk1, logbin_all.Mk.at(1), logbin_all.Mk.at(1) * std::numeric_limits<double>::epsilon() * 20);
-    EXPECT_NEAR(Qk1, logbin_all.Qk.at(1), logbin_all.Qk.at(1) * std::numeric_limits<double>::epsilon() * 20);
-    EXPECT_EQ(count_k1, logbin_all.count / 2);
+    EXPECT_NEAR(Mk1, logbin_all.mean_bins().at(1), logbin_all.mean_bins().at(1) * std::numeric_limits<double>::epsilon() * 20);
+    EXPECT_NEAR(Qk1, logbin_all.var_bins().at(1), logbin_all.var_bins().at(1) * std::numeric_limits<double>::epsilon() * 20);
+    EXPECT_EQ(count_k1, logbin_all.count() / 2);
   }
 }
 
