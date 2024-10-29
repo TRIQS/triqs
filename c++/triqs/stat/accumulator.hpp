@@ -98,7 +98,9 @@ namespace triqs::stat {
     long count = 0;
     log_binning<T> log_bins;
     lin_binning<T> lin_bins;
-    std::vector<get_real_t<T>> auto_corr_times; // will be filled by the default callback if n_log_bins > 0
+    std::vector<T> cb_means;
+    std::vector<get_real_t<T>> cb_errors;
+    std::vector<get_real_t<T>> cb_taus; // will be filled by the default callback if n_log_bins > 0
 
     // HDF5
     friend void h5_write(h5::group g, std::string const &name, accumulator<T> const &l) {
@@ -119,7 +121,7 @@ namespace triqs::stat {
     [[nodiscard]] static std::string hdf5_format() { return "accumulator"; }
 
     accumulator() = default;
-    auto const &auto_correlation_times() const { return auto_corr_times; }
+    auto const &auto_correlation_times() const { return cb_taus; }
 
     ///
     /// @tparam T
@@ -153,29 +155,14 @@ namespace triqs::stat {
     /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
     ///
     accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1,
-                std::function<void(std::vector<T> const & /* lin_bins */)> callback = {})
+                std::function<void(lin_binning<T> const & /* lin_bins */)> callback = {})
        : log_bins{data_instance, n_log_bins_max}, //
-         lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity, callback} {
-
-      // enable default if callback has not been defined and log binning is active (such that Qk[0] and Mk[0] are available)
-      if ((!callback) && (n_log_bins_max > 0)) {
-        callback = [&](std::vector<T> const &bins) {
-          // mean and variance of the whole time series
-          auto mean           = log_bins.Mk[0];
-          auto var_no_binning = log_bins.Qk[0] / log_bins.count;
-
-          // variance of the binned data
-          auto deltas           = nda::vector_view<const T>(bins) - nda::vector<T>(bins.size(), mean);
-          auto var_with_binning = sum(nda::map(abs_square<T>)(deltas)) / bins.size();
-
-          // estimate the autocorrelation time
-          auto_corr_times.emplace_back(0.5 * (lin_bins.bin_capacity * var_with_binning / var_no_binning - var_no_binning / var_no_binning));
-        };
-
-        // pass default to lin_bins
-        lin_bins.callback = callback;
-      }
-    }
+         lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity, (callback ? callback : [this](lin_binning<T> const &lb) {
+                    auto [m, e, t] = lb.mean_error_and_tau();
+                    cb_means.push_back(m);
+                    cb_errors.push_back(e);
+                    cb_taus.push_back(t);
+                  })} {}
 
     /// Returns the maximum number of bins the logarithmic part of the accumulator can hold.
     /// @brief Max. number of bins in the logarithmic accumulator
@@ -192,7 +179,7 @@ namespace triqs::stat {
     /// Returns the maximum number of bins the linear part of the accumulator can hold.
     /// @brief Max. number of bins in the linear accumulator
     /// @return Maximum number of bins
-    [[nodiscard]] int n_lin_bins_max() const { return lin_bins.max_n_bins; }
+    [[nodiscard]] int n_lin_bins_max() const { return lin_bins.max_n_bins(); }
 
     /// Returns the number of bins currently in the linear part of the accumulator.
     /// When the accumulator is active (n_lin_bins_max != 0), there is always at least one zeroed bin even if no data has been passed to the accumulator.
@@ -208,7 +195,7 @@ namespace triqs::stat {
     ///
     /// @brief Capacity of a linear bin
     /// @return Bin capacity
-    [[nodiscard]] int lin_bin_capacity() const { return lin_bins.bin_capacity; }
+    [[nodiscard]] int lin_bin_capacity() const { return lin_bins.bin_capacity(); }
 
     /// Input a measurement into the accumulator. This measurement is then added to the linear and logarithmic binning parts, unless a part as been turned off (lin_bin_size = 0 or log_bin_size = 0).
     ///
@@ -320,7 +307,7 @@ namespace triqs::stat {
     /// @brief Returns data stored from linear binning
     /// @return Vector with the data of type T, which defines the accumulator
     /// @example triqs/stat/acc_linear_bins.cpp
-    [[nodiscard]] std::vector<T> const &linear_bins() const { return lin_bins.bins; }
+    [[nodiscard]] std::vector<T> const &linear_bins() const { return lin_bins.bins(); }
 
     /// Increases the capacity of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new capacity.
     /// @brief Increases linear bin capacity and compresses data within
