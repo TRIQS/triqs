@@ -63,8 +63,7 @@ TEST(Stat, Jack1) {
     }
   }
 
-  auto [x, d, xj, xn] = jackknife_mpi(
-     world, [](auto &&val1, auto &&val2) { return val1 / val2; }, a, b);
+  auto [x, d, xj, xn] = jackknife_mpi(world, [](auto &&val1, auto &&val2) { return val1 / val2; }, a.linear_bins(), b.linear_bins());
 
   // redo the manual computation
   std::vector<double> A(Nsample, 0), B(Nsample, 0);
@@ -90,13 +89,11 @@ TEST(Stat, Jack1) {
 
   auto Ba = a.linear_bins();
   auto Bb = b.linear_bins();
-  triqs::stat::details::jackknifed_t<std::vector<double>> JJ{Ba, world};
 
   auto N = Nsample;
 
   double precision = 1.e-13;
   for (long i = 0; i < N; ++i) { EXPECT_NEAR(Ba[i], A[i], precision); }
-  for (long i = 0; i < N; ++i) { EXPECT_NEAR(JJ[i], jack_a[i], precision); }
 
   //
   double X = 0, Xn = 0, D = 0;
@@ -122,8 +119,7 @@ TEST(Stat, Jack1) {
 
   // for a linear function, the two average must be the same
 
-  auto [av1, avv, av3, av2] = jackknife_mpi(
-     world, [](auto &&val) { return val; }, a);
+  auto [av1, avv, av3, av2] = jackknife_mpi(world, [](auto &&val) { return val; }, a.linear_bins());
   EXPECT_NEAR(av1, av2, precision);
 }
 
@@ -179,10 +175,10 @@ TEST(Binned, array) {
 
   auto a_b = [](auto const &val1, auto const &val2) { return val1 / val2; };
   //
-  auto [x1, d1, xj1, xn1] = jackknife_mpi(world, a_b, b1, c1);
-  auto [x2, d2, xj2, xn2] = jackknife_mpi(world, a_b, b2, c2);
+  auto [x1, d1, xj1, xn1] = jackknife_mpi(world, a_b, b1.linear_bins(), c1.linear_bins());
+  auto [x2, d2, xj2, xn2] = jackknife_mpi(world, a_b, b2.linear_bins(), c2.linear_bins());
 
-  auto [x, xd, xj, xn] = jackknife_mpi(world, a_b, b, c);
+  auto [x, xd, xj, xn] = jackknife_mpi(world, a_b, b.linear_bins(), c.linear_bins());
 
   //std::cerr << x1 << std::endl;
   //std::cerr << xn1 << std::endl;
