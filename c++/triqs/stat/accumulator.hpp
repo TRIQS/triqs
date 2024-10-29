@@ -261,6 +261,24 @@ namespace triqs::stat {
       h5_read(gr, "acc_count", l.acc_count);
     }
 
+    template <typename T> auto mpi_reduce_MQ(const T &Mi, const get_real_t<T> &Qi, const long &count_i, mpi::communicator c, int root = 0) {
+      using nda::conj;
+      using nda::real;
+
+      long count_total  = mpi::all_reduce(count_i, c);
+      double count_frac = double(count_i) / count_total;
+
+      T M = Mi * count_frac;
+      mpi::all_reduce_in_place(M, c);
+
+      T diff          = Mi - M;
+      get_real_t<T> Q = Qi + count_i * make_real(conj(diff) * diff);
+
+      mpi::reduce_in_place(Q, c, root);
+
+      return std::make_tuple(M, Q, count_total);
+    }
+
   } // namespace details
 
   /// The class takes in measurements during a Monte Carlo simulation and serves a dual purpose:
