@@ -21,11 +21,11 @@ set(TEST_MPI_NUMPROC 4)
 add_cpp_test(stat_jackknife)
 
 set(TEST_MPI_NUMPROC 2)
-add_cpp_test(mpi_histogram)
+add_cpp_test(stat_histograms_mpi)
 set(TEST_MPI_NUMPROC 3)
-add_cpp_test(mpi_histogram)
+add_cpp_test(stat_histograms_mpi)
 set(TEST_MPI_NUMPROC 4)
-add_cpp_test(mpi_histogram)
+add_cpp_test(stat_histograms_mpi)
 
 
 set(TEST_MPI_NUMPROC 2)
