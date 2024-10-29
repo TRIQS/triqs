@@ -19,207 +19,286 @@
 // Authors: Philipp Dumitrescu, Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #pragma once
+
+#include "../arrays.hpp"
+#include "../utility/exceptions.hpp"
+
 #include <h5/h5.hpp>
-#include <triqs/utility/macros.hpp>
-#include <triqs/arrays.hpp>
 #include <nda/mpi.hpp>
-#include <ostream>
+#include <nda/nda.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <iosfwd>
+#include <string>
+#include <utility>
 
 namespace triqs::stat {
 
-  /// This class serves to sample a continuous random variable, and to 'bin' it.
-  /// It divides a given range of real values into a series of equal intervals,
-  /// and counts amounts of samples falling into each interval.
-  /// The histogram keeps track of the total number of the sampled values, as well
-  /// as of the lost samples that lie outside the chosen range.
-  ///
-  /// @brief Statistical histogram
+  /**
+   * @brief Class representing a histogram on a given interval.
+   *
+   * @details The histogram is defined on the interval \f$ [a, b] \f$ with the following values for the center of its
+   * bins:
+   * \f[
+   *   g_n = a + n h = a + n \frac{b - a}{N - 1} \; .
+   * \f]
+   * Here, \f$ N \f$ is the number of bins in the histogram, \f$ h \f$ is the bin size and \f$ n = 0, 1, \ldots, N - 1
+   * \f$ is the index of the bin.
+   *
+   * That means that each bin is of the same size \f$ h \f$, except for the first and last bin, which have a size of
+   * \f$ h / 2 \f$.
+   *
+   * When a value is added to the histogram, it first determines into which bin the value falls and then increases the
+   * count of that bin. If the value is outside of the interval, it is discarded. Additionally, the histogram keeps
+   * track of the total number of data points as well as the number of lost points that fall outside of the interval.
+   */
   class histogram {
-
-    double a, b;                        // start and end of mesh
-    long n_bins;                        // number of points on the mesh (for double only)
-    unsigned long long _n_data_pts = 0; // number of data points
-    unsigned long long _n_lost_pts = 0; // number of discarded points
-    nda::vector<double> _data;          // histogram data
-    double _step;                       // number of bins per unit length
-
-    void _init(); // initialize _step
-
-    inline friend histogram pdf(histogram const &h); // probability distribution function = normalized histogram
-    inline friend histogram cdf(histogram const &h); // cumulative distribution function = normalized histogram integrated
-
     public:
-    /// Constructs a histogram over :math:`[a; b]` range with bin length equal to 1.
-    ///
-    /// @param a Left end of the sampling range
-    /// @param b Right end of the sampling range
-    histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(nda::vector<double>::zeros({n_bins})) { _init(); }
-
-    /// Constructs a histogram over :math:`[a; b]` range with a given number of bins.
-    ///
-    /// @param a Left end of the sampling range
-    /// @param b Right end of the sampling range
-    /// @param n_bins Number of bins
-    histogram(double a, double b, long n_bins) : a(a), b(b), n_bins(n_bins), _data(nda::vector<double>::zeros({n_bins})) { _init(); }
-
-    /// Default constructor
+    /// Default constructor.
     histogram() = default;
 
-    /// Bins a real value into the histogram.
-    /// A sampled value :math:`x` falls into the :math:`n`-th bin if :math:`x\in[nh-h/2;nh+h/2[`,
-    /// where :math:`h` is the bin length, :math:`h = (b - a) / (n_\mathrm{bins} - 1)`.
-    /// This convention implies that the first (:math:`n = 0`) and the last (:math:`n = n_\mathrm{bins} - 1`)
-    /// bins are effectively two times shorter that others. Sample is discarded if :math:`x\notin[a; b]`.
-    ///
-    /// @param x Sampled value
-    /// @return Reference to `*this`, so that it is possible to chain `operator<<` calls
-    /// @brief Bin a real value into the histogram
+    /**
+     * @brief Construct a histogram on the interval \f$ [a, b] \f$ with a bin size of 1, except for the first and last
+     * bins, which have a size of 0.5.
+     *
+     * @details The histogram will have a total of \f$ N = b - a + 1 \f$ bins.
+     *
+     * If \f$ a \geq b \f$, an exception is thrown.
+     *
+     * @param a Lower bound of the interval.
+     * @param b Upper bound of the interval.
+     */
+    histogram(int a, int b);
+
+    /**
+     * @brief Construct a histogram on the interval \f$ [a, b] \f$ with the given number \f$ N \f$ of bins.
+     *
+     * @details The bin size is set to \f$ h = (b - a) / (N - 1) \f$. The first and last bins have a size of \f$ h / 2
+     * \f$.
+     *
+     * If \f$ a \geq b \f$ or if the number of bins is smaller than 2, an exception is thrown.
+     *
+     * @param a Lower bound of the interval.
+     * @param b Upper bound of the interval.
+     * @param nbins Number of bins.
+     */
+    histogram(double a, double b, std::size_t nbins);
+
+    /**
+     * @brief Add a data point to the histogram.
+     *
+     * @details The data point \f$ x \f$ falls into the bin \f$ n = \lfloor \frac{x - a}{h} + 0.5 \rfloor.
+     *
+     * If \f$ x \notin [a, b] \f$, the data point is not added to the histogram but instead the number of lost points is
+     * increased.
+     *
+     * @param x Data point to be added to the histogram.
+     * @return Reference to `this` object.
+     */
     histogram &operator<<(double x);
 
-    /// Get position of bin's center
-    /// @param n Bin index
-    /// @return Position of the center, :math:`n (b - a) / (n_\mathrm{bins} - 1)`
-    /// @brief Get position of bin's center
-    double mesh_point(int n) const { return a + n / _step; }
+    /// Reset the histogram to its initial state, i.e. with no data points added to it.
+    void clear() {
+      n_lost_pts_ = 0;
+      n_data_pts_ = 0;
+      data_()     = 0.0;
+    }
 
-    /// Get number of histogram bins
-    /// @return Number of bins
-    /// @brief Get number of histogram bins
-    size_t size() const { return _data.size(); }
+    /**
+     * @brief Get the position of the center of the n<sup>th</sup> bin.
+     *
+     * @param n Index of the bin.
+     * @return Position of the n<sup>th</sup> bin center, i.e. \f$ a + n h \f$.
+     */
+    auto mesh_point(int n) const { return a_ + n * binsize_; }
 
-    /// Get boundaries of the histogram
-    /// @return Pair of histogram boundaries, `(a,b)`
-    /// @brief Get boundaries of the histogram
-    C2PY_PROPERTY_GET(limits) std::pair<double, double> limits() const { return {a, b}; }
+    /**
+     * @brief Get number of bins in the histogram.
+     * @return Size of the data vector.
+     */
+    auto size() const { return data_.size(); }
 
-    /// Read-only access to the data storage
-    /// @return Constant reference to the histogram data array
-    /// @brief Read-only access to the data storage
-    C2PY_PROPERTY_GET(data) nda::vector<double> const &data() const { return _data; }
+    /**
+     * @brief Get the domain on which the histogram is defined.
+     * @return `std::pair` containing the lower and upper bounds of the histogram.
+     */
+    C2PY_PROPERTY_GET(limits) auto limits() const { return std::pair{a_, b_}; }
 
-    /// Get number of accumulated samples
-    /// @return Number of accumulated data points
-    /// @brief Get number of accumulated samples
-    C2PY_PROPERTY_GET(n_data_pts) unsigned long long n_data_pts() const { return _n_data_pts; }
+    /**
+     * @brief Get the data stored in the histogram.
+     * @return `nda::vector<double>` containing the count of data points in each bin.
+     */
+    C2PY_PROPERTY_GET(data) auto const &data() const { return data_; }
 
-    /// Get number of discarded samples
-    /// @return Number of discarded data points
-    /// @brief Get number of discarded samples
-    C2PY_PROPERTY_GET(n_lost_pts) unsigned long long n_lost_pts() const { return _n_lost_pts; }
+    /**
+     * @brief Get the number of data points that have been added to the histogram.
+     * @return Number of accumulated data points.
+     */
+    C2PY_PROPERTY_GET(n_data_pts) auto n_data_pts() const { return n_data_pts_; }
 
-    /// Compute the sum of two histograms over the same range, and with equal numbers of bins.
-    /// This operator will throw if histograms to be added up are incompatible.
-    /// Summation is also performed on the numbers of accumulated and discarded points.
-    ///
-    /// @param h1 First histogram to add up
-    /// @param h2 Second histogram to add up
-    /// @return Sum of histograms
-    /// @brief Addition of histograms
+    /**
+     * @brief Get the number of data point that fell outside of the interval and were discarded.
+     * @return Number of discarded data points.
+     */
+    C2PY_PROPERTY_GET(n_lost_pts) auto n_lost_pts() const { return n_lost_pts_; }
+
+    /**
+     * @brief Add two histograms together.
+     *
+     * @details It simply adds the data vector, the number of accumulated data points and the number of discarded data
+     * points together.
+     *
+     * It throws an expception, if the domains or the number of bins of the two histograms are not equal.
+     *
+     * @param h1 Left-hand side histogram operand.
+     * @param h2 Right-hand side histogram operand.
+     * @return Sum of the two histograms.
+     */
     friend histogram operator+(histogram h1, histogram const &h2);
 
-    /// Resets all data values and the total counts of accumulated and discarded points.
-    /// @brief Reset all histogram values to 0
-    void clear() {
-      _n_lost_pts = 0;
-      _n_data_pts = 0;
-      _data()     = 0.0;
-    }
+    /**
+     * @brief Equal-to operator for histograms.
+     * @return True, if their domains, data vectors, number of accumulated and discarded data points and bin sizes are
+     * equal. False otherwise.
+     */
+    bool operator==(histogram const &h) const;
 
-    /// MPI-broadcast histogram
-    /// @param h Histogram to be broadcast
-    /// @param c MPI communicator object
-    /// @param root MPI root rank for broadcast operation
-    /// @brief MPI-broadcast histogram
+    /// Not-equal-to operator for histograms (see operator==(histogram const &)).
+    inline bool operator!=(histogram const &h) const { return not(*this == h); }
+
+    /**
+     * @brief Implementation of an MPI broadcast for triqs::stat::histogram.
+     *
+     * @param h Histogram to be broadcasted.
+     * @param c MPI communicator object.
+     * @param root Rank of the root process.
+     */
     C2PY_IGNORE friend void mpi_broadcast(histogram &h, mpi::communicator c = {}, int root = 0) {
-      mpi::broadcast(h.a, c, root);
-      mpi::broadcast(h.b, c, root);
-      mpi::broadcast(h._data, c, root);
-      mpi::broadcast(h._n_data_pts, c, root);
-      mpi::broadcast(h._n_lost_pts, c, root);
-      if (c.rank() != root) {
-        h.n_bins = h._data.size();
-        h._init();
-      }
+      mpi::broadcast(h.a_, c, root);
+      mpi::broadcast(h.b_, c, root);
+      mpi::broadcast(h.data_, c, root);
+      mpi::broadcast(h.n_data_pts_, c, root);
+      mpi::broadcast(h.n_lost_pts_, c, root);
+      if (c.rank() != root) h.initialize();
     }
 
-    /// MPI-reduce histogram.
-    /// The only supported reduction operation is MPI_SUM, which is equivalent to `operator+()`.
-    /// @param h Histogram subject to reduction
-    /// @param c MPI communicator object
-    /// @param root MPI root rank for MPI reduction
-    /// @param all Send reduction result to all ranks in `c`?
-    /// @param op Reduction operation, must be MPI_SUM
-    /// @return Reduction result; valid only on MPI rank 0 if `all = false`
-    /// @brief MPI-reduce histogram
+    /**
+     * @brief Implementation of an MPI reduce for triqs::stat::histogram.
+     *
+     * @details The reduction does the same as the operator+(histogram, histogram const &).
+     *
+     * @param h Histogram to be reduced.
+     * @param c MPI communicator object.
+     * @param root Rank of the root process.
+     * @param all Should all processes receive the result of the reduction.
+     * @param op MPI reduction operation (only `MPI_SUM` is allowed).
+     * @return Reduced histogram.
+     */
     C2PY_IGNORE friend histogram mpi_reduce(histogram const &h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       TRIQS_ASSERT(op == MPI_SUM);
-      histogram h2(h.a, h.b, h.n_bins);
-      h2._data       = mpi::reduce(h._data, c, root, all, MPI_SUM);
-      h2._n_data_pts = mpi::reduce(h._n_data_pts, c, root, all, MPI_SUM);
-      h2._n_lost_pts = mpi::reduce(h._n_lost_pts, c, root, all, MPI_SUM);
+      histogram h2(h.a_, h.b_, h.size());
+      h2.data_       = mpi::reduce(h.data_, c, root, all, MPI_SUM);
+      h2.n_data_pts_ = mpi::reduce(h.n_data_pts_, c, root, all, MPI_SUM);
+      h2.n_lost_pts_ = mpi::reduce(h.n_lost_pts_, c, root, all, MPI_SUM);
       return h2;
     }
 
-    // HDF5 interface
-
-    /// Get HDF5 format name
-    /// @return HDF5 format name
-    /// @brief Get HDF5 format name
+    /**
+     * @brief Get the HDF5 format tag for the histogram type.
+     * @return `std::string` containing the format tag.
+     */
     [[nodiscard]] static std::string hdf5_format() { return "Histogram"; }
 
-    /// Write histogram to HDF5
-    /// @param g Enclosing HDF5 group
-    /// @param name Dataset name for histogram data
-    /// @param h Histogram to be written
-    /// @brief Write histogram to HDF5
+    /**
+     * @brief Write a triqs::stat::histogram to HDF5.
+     *
+     * @param g h5::group in which the dataset is created.
+     * @param name Name of the dataset to which the histogram will be written.
+     * @param h Histogram to be written.
+     */
     friend void h5_write(h5::group g, std::string const &name, histogram const &h);
 
-    /// Read histogram from HDF5
-    /// @param g Enclosing HDF5 group
-    /// @param name Dataset name with histogram data
-    /// @param h Histogram to read data into
-    /// @brief Read histogram form HDF5
+    /**
+     * @brief Read a triqs::stat::histogram from HDF5.
+     *
+     * @param g h5::group containing the dataset.
+     * @param name Name of the dataset from which the histogram will be read.
+     * @param h Histogram to be read into.
+     */
     friend void h5_read(h5::group g, std::string const &name, histogram &h);
 
-    /// Comparison operator
     /**
-    @param h Histogram to be compared
-    @return True iff both Histograms are equal, else False
-   */
-    bool operator==(histogram const &h) const;
-    inline bool operator!=(histogram const &h) const { return not(*this == h); }
-
-    /// Output stream insertion
-    /// @param os Reference to an output stream
-    /// @param h Histogram to be inserted
-    /// @return Reference to the same output stream
-    /// @brief Output stream insertion
+     * @brief Write a histogram to a `std::ostream`.
+     *
+     * @param os `std::ostream` to which the histogram will be written.
+     * @param h Histogram to be written.
+     * @return Reference to the same `std::ostream`.
+     */
     friend std::ostream &operator<<(std::ostream &os, histogram const &h);
 
-    void serialize(auto &ar) const { ar & a & b & n_bins & _n_data_pts & _n_lost_pts & _data & _step; }
-    void deserialize(auto &ar) { ar & a & b & n_bins & _n_data_pts & _n_lost_pts & _data & _step; }
+    /**
+     * @brief Serialize the histogram to an archive.
+     * @param ar Archive to which the histogram is serialized.
+     */
+    void serialize(auto &ar) const { ar & a_ & b_ & n_data_pts_ & n_lost_pts_ & data_ & binsize_; }
+
+    /**
+     * @brief Deserialize the histogram from an archive.
+     * @param ar Archive from which the histogram is deserialized.
+     */
+    void deserialize(auto &ar) { ar & a_ & b_ & n_data_pts_ & n_lost_pts_ & data_ & binsize_; }
+
+    // Friend declarations.
+    inline friend histogram pdf(histogram const &h);
+    inline friend histogram cdf(histogram const &h);
+
+    private:
+    // Initialize the histogram by checking the interval and setting the bin size.
+    void initialize();
+
+    private:
+    double a_{0.0};
+    double b_{0.0};
+    double binsize_{0.0};
+    std::uint64_t n_data_pts_{0};
+    std::uint64_t n_lost_pts_{0};
+    nda::vector<double> data_{};
   };
 
-  //-------------------------------------------------------------------------------
-
-  /// Normalise histogram to get probability density function (PDF)
-  /// @param h Histogram to be normalized
-  /// @return Probability density function
-  /// @brief Get histogram probability density function (PDF)
+  /**
+   * @brief Normalize a histogram.
+   *
+   * @details It simply divides each bin count by the total number of data points (including the lost points).
+   *
+   * @note This does not return the PDF of the underlying continuous distribution but rather the discrete probabilities
+   * that a data point falls into a certain bin.
+   *
+   * @param h Histogram to be normalized.
+   * @return Normalized histogram.
+   */
   inline histogram pdf(histogram const &h) {
     auto pdf = h;
-    pdf._data /= double(h.n_data_pts());
+    pdf.data_ /= double(h.n_data_pts());
     return pdf;
   }
 
-  /// Integrate and normalise histogram to get cumulative distribution function (CDF)
-  /// @param h Histogram to be integrated and normalized
-  /// @return Cumulative distribution function
-  /// @brief Get histogram cumulative distribution function (CDF)
+  /**
+   * @brief Normalize and integrate a histogram.
+   *
+   * @details It simply performs partial summation of the bin counts and then divides by the total number of data
+   * points (including the lost points).
+   *
+   * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
+   * probabilities from triqs::stat::pdf.
+   *
+   * @param h Histogram to be normalized and integrated.
+   * @return Normalized and integrated histogram.
+   */
   inline histogram cdf(histogram const &h) {
     auto cdf = h;
-    for (int i = 1; i < h.size(); ++i) cdf._data[i] += cdf._data[i - 1];
-    cdf._data /= double(h.n_data_pts());
+    for (int i = 1; i < h.size(); ++i) cdf.data_[i] += cdf.data_[i - 1];
+    cdf.data_ /= double(h.n_data_pts());
     return cdf;
   }
 

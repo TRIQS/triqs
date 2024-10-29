@@ -27,36 +27,45 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::stat::histogram;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.stat.histograms.Histogram";
-static const auto _c2py_init_0 =
-   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0, int, int>("a", "b"),
-                           c2py::c_constructor<_c2py_cls_0, double, double, long>("a", "b", "n_bins"), c2py::c_constructor<_c2py_cls_0>()};
+static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(), c2py::c_constructor<_c2py_cls_0, int, int>("a", "b"),
+                                                         c2py::c_constructor<_c2py_cls_0, double, double, unsigned long>("a", "b", "nbins")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
-[1] Constructs a histogram over :math:`[a; b]` range with bin length equal to 1.
+[1] Default constructor.
 
 ------
 
-[2] Constructs a histogram over :math:`[a; b]` range with a given number of bins.
+[2] Construct a histogram on the interval :math:`[a, b]` with a bin size of 1, except for the first and last
+bins, which have a size of 0.5.
+
+The histogram will have a total of :math:`N = b - a + 1` bins.
+
+If :math:`a \geq b`, an exception is thrown.
 
 ------
 
-[3] Default constructor
+[3] Construct a histogram on the interval :math:`[a, b]` with the given number :math:`N` of bins.
+
+The bin size is set to :math:`h = (b - a) / (N - 1)`. The first and last bins have a size of :math:`h / 2`
+.
+
+If :math:`a \geq b` or if the number of bins is smaller than 2, an exception is thrown.
 
 ------
 
 Parameters
 ----------
 a : {par_0}
-   Left end of the sampling range
+   Lower bound of the interval.
 b : {par_1}
-   Right end of the sampling range
-n_bins : {par_2}
-   Number of bins
+   Upper bound of the interval.
+nbins : {par_2}
+   Number of bins.
 )DOC",
                                                                     {{c2py::python_typename<int>(), c2py::python_typename<double>()},
                                                                      {c2py::python_typename<int>(), c2py::python_typename<double>()},
-                                                                     {c2py::python_typename<long>()}});
+                                                                     {c2py::python_typename<unsigned long>()}});
 // clear
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.clear(); }, "self")};
 
@@ -65,24 +74,32 @@ static auto const _c2py_fun_1 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self, int n) -> decltype(auto) { return self.mesh_point(n); }, "self", "n")};
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
-Reset all histogram values to 0
-
-Resets all data values and the total counts of accumulated and discarded points.
+Reset the histogram to its initial state, i.e. with no data points added to it.
 )DOC");
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-Get position of bin's center
+Get the position of the center of the n
 
-Get position of bin's center
+.. raw:: html
+
+   <sup>th</sup>
+
+bin.
 
 Parameters
 ----------
 n : {par_0}
-   Bin index
+   Index of the bin.
 
 Returns
 -------
 {ret_0}
-   Position of the center, :math:`n (b - a) / (n_{bins} - 1)`
+   Position of the n
+
+   .. raw:: html
+
+      <sup>th</sup>
+
+   bin center, i.e. :math:`a + n h`.
 )DOC",
                                                 {{c2py::python_typename<int>()}}, {c2py::python_typename<double>()});
 
@@ -97,18 +114,10 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_0 = R"DOC(Read-only access to the data storage
-
-Read-only access to the data storage)DOC";
-static constexpr auto prop_doc_1 = R"DOC(Get boundaries of the histogram
-
-Get boundaries of the histogram)DOC";
-static constexpr auto prop_doc_2 = R"DOC(Get number of accumulated samples
-
-Get number of accumulated samples)DOC";
-static constexpr auto prop_doc_3 = R"DOC(Get number of discarded samples
-
-Get number of discarded samples)DOC";
+static constexpr auto prop_doc_0 = R"DOC(Get the data stored in the histogram.)DOC";
+static constexpr auto prop_doc_1 = R"DOC(Get the domain on which the histogram is defined.)DOC";
+static constexpr auto prop_doc_2 = R"DOC(Get the number of data points that have been added to the histogram.)DOC";
+static constexpr auto prop_doc_3 = R"DOC(Get the number of data point that fell outside of the interval and were discarded.)DOC";
 
 // ----- Member and property table ----
 
@@ -130,13 +139,24 @@ template <> struct c2py::arithmetic<_c2py_cls_0, c2py::OpName::LShift> : std::tu
 template <> constexpr PyNumberMethods *c2py::tp_as_number<_c2py_cls_0> = &c2py::tp_as_number_impl<_c2py_cls_0>;
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Statistical histogram
+const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Class representing a histogram on a given interval.
 
-This class serves to sample a continuous random variable, and to 'bin' it.
-It divides a given range of real values into a series of equal intervals,
-and counts amounts of samples falling into each interval.
-The histogram keeps track of the total number of the sampled values, as well
-as of the lost samples that lie outside the chosen range.)DOC"
+The histogram is defined on the interval :math:`[a, b]` with the following values for the center of its
+bins:
+
+.. math::
+
+   g_n = a + n h = a + n \frac{b - a}{N - 1} \; .
+
+Here, :math:`N` is the number of bins in the histogram, :math:`h` is the bin size and :math:`n = 0, 1, \ldots, N - 1`
+is the index of the bin.
+
+That means that each bin is of the same size :math:`h`, except for the first and last bin, which have a size of
+:math:`h / 2`.
+
+When a value is added to the histogram, it first determines into which bin the value falls and then increases the
+count of that bin. If the value is outside of the interval, it is discarded. Additionally, the histogram keeps
+track of the total number of data points as well as the number of lost points that fall outside of the interval.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 
 // ==================== module functions ====================
@@ -149,36 +169,45 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cfun([](const triq
 
 static const auto _c2py_doc_2 =
    _c2py_fun_2.doc(R"DOC(
-Get histogram cumulative distribution function (CDF)
+Normalize and integrate a histogram.
 
-Integrate and normalise histogram to get cumulative distribution function (CDF)
+It simply performs partial summation of the bin counts and then divides by the total number of data
+points (including the lost points).
+
+This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
+probabilities from triqs::stat::pdf.
 
 Parameters
 ----------
 h : {par_0}
-   Histogram to be integrated and normalized
+   Histogram to be normalized and integrated.
 
 Returns
 -------
 {ret_0}
-   Cumulative distribution function
+   Normalized and integrated histogram.
 )DOC",
                    {{c2py::python_typename<const triqs::stat::histogram &>()}}, {c2py::python_typename<triqs::stat::histogram>()});
 static const auto _c2py_doc_3 =
    _c2py_fun_3.doc(R"DOC(
-Get histogram probability density function (PDF)
+Normalize a histogram.
 
-Normalise histogram to get probability density function (PDF)
+It simply divides each bin count by the total number of data points (including the lost points).
+
+.. note::
+
+   This does not return the PDF of the underlying continuous distribution but rather the discrete probabilities
+   that a data point falls into a certain bin.
 
 Parameters
 ----------
 h : {par_0}
-   Histogram to be normalized
+   Histogram to be normalized.
 
 Returns
 -------
 {ret_0}
-   Probability density function
+   Normalized histogram.
 )DOC",
                    {{c2py::python_typename<const triqs::stat::histogram &>()}}, {c2py::python_typename<triqs::stat::histogram>()});
 //--------------------- module function table  -----------------------------
