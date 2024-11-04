@@ -26,7 +26,7 @@
 #include <numeric>
 #include <cmath>
 #include <triqs/arrays.hpp>
-#include <triqs/utility/function_arg_ret_type.hpp>
+#include <triqs/utility/callable_traits.hpp>
 #include <nda/linalg/det_and_inverse.hpp>
 
 namespace triqs {
@@ -113,12 +113,12 @@ namespace triqs {
      */
     template <typename FunctionType> class det_manip {
       private:
-      using f_tr = utility::function_arg_ret_type<FunctionType>;
+      using f_tr = utility::callable_traits<FunctionType>;
       static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
 
       public:
-      using x_type     = typename f_tr::template decay_arg<0>::type;
-      using y_type     = typename f_tr::template decay_arg<1>::type;
+      using x_type     = typename f_tr::template decay_arg_t<0>;
+      using y_type     = typename f_tr::template decay_arg_t<1>;
       using value_type = typename f_tr::result_type;
       using det_type   = value_type;
       static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
@@ -293,7 +293,7 @@ namespace triqs {
         det       = 1;
       }
 
-      /** 
+      /**
        * @brief Constructor.
        *
        * @param F         The function (NB : a copy is made of the F object in this class).
@@ -476,7 +476,7 @@ namespace triqs {
        *
        * This routine does NOT make any modification. It has to be completed with complete_operation().
        *
-       * @param i 
+       * @param i
        * @param j
        * @category Operations
        */
