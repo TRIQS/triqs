@@ -36,7 +36,7 @@ add_custom_target(docs_cpp2rst)
 extract_flags(triqs BUILD_INTERFACE)
 separate_arguments(triqs_CXXFLAGS)
 add_custom_command(
-  TARGET docs_cpp2rst
+  TARGET docs_cpp2rst POST_BUILD
   COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
   COMMAND
     PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH}
@@ -63,7 +63,7 @@ foreach(example ${ExampleList})
   add_executable(${bin} EXCLUDE_FROM_ALL ${example})
   set_property(TARGET ${bin} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
   target_link_libraries(${bin} triqs triqs_warnings)
-  add_custom_command(TARGET ${bin}
+  add_custom_command(TARGET ${bin} POST_BUILD
    COMMAND ${bin} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output
    WORKING_DIRECTORY ${d}
   )
@@ -76,7 +76,7 @@ endforeach()
 
 add_custom_target(docs_tutorial_notebooks)
 add_custom_command(
-  TARGET docs_tutorial_notebooks
+  TARGET docs_tutorial_notebooks POST_BUILD
   COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials &&
   ${GIT_EXECUTABLE} clone --depth 1 --branch unstable_executed https://github.com/triqs/tutorials ${CMAKE_CURRENT_SOURCE_DIR}/userguide/python/tutorials
 )
@@ -89,7 +89,7 @@ find_package(Sphinx)
 # Sphinx has internal caching, always run it
 add_custom_target(docs_sphinx ALL)
 add_custom_command(
-  TARGET docs_sphinx
+  TARGET docs_sphinx POST_BUILD
   COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${h5_BINARY_DIR}/python:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j auto -b html ${CMAKE_CURRENT_SOURCE_DIR} html
 )
 
