@@ -19,6 +19,7 @@
 // Authors: Michel Ferrero, Henri Menke, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, Thomas Ayral
 
 #pragma once
+#include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/first_include.hpp>
 #include <cmath>
 #include <memory>
