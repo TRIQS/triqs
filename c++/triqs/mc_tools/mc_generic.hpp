@@ -114,6 +114,9 @@ namespace triqs::mc_tools {
 
       /// Should we calibrate the moves during the simulation? Usually false during the accumulation phase.
       bool enable_calibration = false;
+
+      /// Time interval (in seconds) after which the simulation checks for exceptions on other nodes.
+      double check_exception_interval = 1;
     };
 
     /**
