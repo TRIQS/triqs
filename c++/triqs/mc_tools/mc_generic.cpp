@@ -99,10 +99,10 @@ namespace triqs::mc_tools {
         }
       } catch (triqs::signal_handler::exception const &) {
         // current cycle is interrupted, simulation is stopped below
-        std::cerr << "mc_generic::run: Signal caught on node " << rank << "\n" << std::endl;
+        std::cerr << fmt::format("[Rank {}] Signal caught in mc_generic::run: Stopping the simulation.\n", rank);
       } catch (std::exception const &err) {
         // log the exception and node number, either abort or report to other nodes
-        std::cerr << "mc_generic::run: Exception occured on node " << rank << "\n" << err.what() << std::endl;
+        std::cerr << fmt::format("[Rank {}] Error int mc_generic::run: Exception occured:\n{}\n", rank, err.what());
         if (params.propagate_exception) {
           exception_monitor->report_local_event();
           break;
@@ -115,31 +115,28 @@ namespace triqs::mc_tools {
       percentage_done_ = cycle_counter * 100.0 / params.ncycles;
       double runtime   = run_timer_;
 
-      // print simulation info
+      // is it time to print simulation info
       if (runtime > next_print_info) {
-        // increase time interval non-linearly
+        // increase time interval non-linearly until next print and print info
         next_print_info = 1.25 * runtime + 2.0;
-        if (percentage_done_ < 0) {
-          report_(3) << fmt::format("[Rank {}] {} cycle {}\n", rank, utility::timestamp(), cycle_counter);
-        } else {
-          report_(3) << fmt::format("[Rank {}] {} {:.2f}% done, ETA {}, cycle {} of {}\n", rank, utility::timestamp(), percentage_done_,
-                                    utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter, params.ncycles);
-        }
-        if (params.enable_measures) report_(3) << measures_.report();
+        print_sim_info(params, cycle_counter);
       }
 
-      // check for exceptions on other ranks
+      // is it time to check for exceptions on other ranks
       if (exception_monitor && runtime > next_check_except) {
+        // increase time until next check and check other ranks
         next_check_except += params.check_exception_interval;
         stop_flag |= exception_monitor->event_on_any_rank();
       }
 
-      // check if we have done all requested cycles
+      // have we done all requested cycles
       if (percentage_done_ >= 100) {
         if (cycle_monitor) {
-          // if continue_after_ncycles_done == true, report to other ranks and check if they are done as well
+          // if continue_after_ncycles_done == true, report to other ranks
           cycle_monitor->report_local_event();
+          // is it time to check if the other ranks are finished as well
           if (runtime > next_check_cycles) {
+            // increase time until next check and check other ranks
             next_check_cycles += params.check_cycles_interval;
             stop_flag |= cycle_monitor->event_on_all_ranks();
           }
@@ -157,7 +154,11 @@ namespace triqs::mc_tools {
     run_timer_.stop();
 
     // update statistics
-    ncycles_done_ += (cycle_counter - 1);
+    --cycle_counter;
+    ncycles_done_ += cycle_counter;
+
+    // print final simulation info
+    print_sim_info(params, cycle_counter);
 
     // stop signal handler
     int status = (percentage_done_ >= 100 ? 0 : (triqs::signal_handler::received() ? 2 : 1));
@@ -167,13 +168,13 @@ namespace triqs::mc_tools {
     if (exception_monitor) {
       exception_monitor->finalize_communications();
       if (exception_monitor->event_on_any_rank())
-        throw std::runtime_error("MC simulation stopped because an exception occurred on one of the MPI ranks");
+        throw std::runtime_error(fmt::format("[Rank {}] MC simulation stopped because an exception occurred on one of the MPI ranks", rank));
     }
     if (cycle_monitor) cycle_monitor->finalize_communications();
 
     // final reports
-    if (status == 1) report_ << fmt::format("MC simulation stopped because stop_callback() returned true\n");
-    if (status == 2) report_ << fmt::format("MC simulation stopped because a signal has been received\n");
+    if (status == 1) report_ << fmt::format("[Rank {}] MC simulation stopped because stop_callback() returned true\n", rank);
+    if (status == 2) report_ << fmt::format("[Rank {}] MC simulation stopped because a signal has been received\n", rank);
 
     return status;
   }
@@ -267,6 +268,23 @@ namespace triqs::mc_tools {
       more_info += fmt::format("Total cycles (measures) / second: {:.2e}\n", tot_nmeasures / tot_duration);
       report_(2) << more_info;
     }
+  }
+
+  template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::print_sim_info(run_param_t const &params, std::int64_t cycle_counter) {
+    // current simulation parameters
+    auto const rank           = params.comm.rank();
+    double const runtime      = run_timer_;
+    auto const cycles_per_sec = cycle_counter / runtime;
+
+    // do the printing
+    if (percentage_done_ < 0) {
+      report_(3) << fmt::format("[Rank {}] {} cycle {}, {:.2e} cycles/sec\n", rank, utility::timestamp(), cycle_counter, cycles_per_sec);
+    } else {
+      report_(3) << fmt::format("[Rank {}] {} {:>6.2f}% done, ETA {}, cycle {} of {}, {:.2e} cycles/sec\n", rank, utility::timestamp(),
+                                percentage_done_, utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter,
+                                params.ncycles, cycles_per_sec);
+    }
+    if (params.enable_measures) report_(3) << measures_.report();
   }
 
   // Explicit template instantiations.
