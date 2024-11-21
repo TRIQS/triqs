@@ -81,22 +81,11 @@ namespace triqs::mc_tools {
         for (std::int64_t i = 0; i < params.cycle_length; i++) {
           if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
           // Metropolis step
-          double r = moves_.attempt();
-          if (rng_() < std::min(1.0, r)) {
-            sign_ *= moves_.accept();
-          } else {
-            moves_.reject();
-          }
+          metropolis_step();
           ++config_id_;
         }
         // after cycle duties
-        params.after_cycle_duty();
-        if (params.enable_calibration) moves_.calibrate(params.comm);
-        if (params.enable_measures) {
-          nmeasures_done_++;
-          for (auto &m : measures_aux_) m();
-          measures_.accumulate(sign_);
-        }
+        after_cycle_duties(params);
       } catch (triqs::signal_handler::exception const &) {
         // current cycle is interrupted, simulation is stopped below
         std::cerr << fmt::format("[Rank {}] Signal caught in mc_generic::run: Stopping the simulation.\n", rank);
@@ -285,6 +274,25 @@ namespace triqs::mc_tools {
                                 params.ncycles, cycles_per_sec);
     }
     if (params.enable_measures) report_(3) << measures_.report();
+  }
+
+  template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::metropolis_step() {
+    double r = moves_.attempt();
+    if (rng_() < std::min(1.0, r)) {
+      sign_ *= moves_.accept();
+    } else {
+      moves_.reject();
+    }
+  }
+
+  template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::after_cycle_duties(run_param_t const &params) {
+    params.after_cycle_duty();
+    if (params.enable_calibration) moves_.calibrate(params.comm);
+    if (params.enable_measures) {
+      nmeasures_done_++;
+      for (auto &m : measures_aux_) m();
+      measures_.accumulate(sign_);
+    }
   }
 
   // Explicit template instantiations.
