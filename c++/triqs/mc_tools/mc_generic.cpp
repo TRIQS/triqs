@@ -61,6 +61,8 @@ namespace triqs::mc_tools {
     // start MPI monitors
     std::unique_ptr<mpi::monitor> exception_monitor;
     if (params.propagate_exception and mpi::has_env) exception_monitor = std::make_unique<mpi::monitor>(params.comm);
+    std::unique_ptr<mpi::monitor> cycle_monitor;
+    if (params.continue_after_ncycles_done and mpi::has_env) cycle_monitor = std::make_unique<mpi::monitor>(params.comm);
 
     // prepare the simulation parameters and statistics
     auto const rank            = params.comm.rank();
@@ -68,13 +70,14 @@ namespace triqs::mc_tools {
     std::int64_t cycle_counter = 1;
     double next_print_info     = 0.1;
     double next_check_except   = params.check_exception_interval;
+    double next_check_cycles   = params.check_cycles_interval;
     percentage_done_           = stop_flag ? 100 : 0;
     nmeasures_done_            = 0;
 
     // run simulation
     for (; !stop_flag; ++cycle_counter) {
       try {
-        // do length_cycle MC steps / cycle
+        // do cycle_length MC steps / cycle
         for (std::int64_t i = 0; i < params.cycle_length; i++) {
           if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
           // Metropolis step
@@ -98,7 +101,7 @@ namespace triqs::mc_tools {
         // current cycle is interrupted, simulation is stopped below
         std::cerr << "mc_generic::run: Signal caught on node " << rank << "\n" << std::endl;
       } catch (std::exception const &err) {
-        // log the error and node number
+        // log the exception and node number, either abort or report to other nodes
         std::cerr << "mc_generic::run: Exception occured on node " << rank << "\n" << err.what() << std::endl;
         if (params.propagate_exception) {
           exception_monitor->report_local_event();
@@ -113,7 +116,7 @@ namespace triqs::mc_tools {
       double runtime   = run_timer_;
 
       // print simulation info
-      if (runtime > next_print_info || percentage_done_ >= 100) {
+      if (runtime > next_print_info) {
         // increase time interval non-linearly
         next_print_info = 1.25 * runtime + 2.0;
         if (percentage_done_ < 0) {
@@ -127,12 +130,27 @@ namespace triqs::mc_tools {
 
       // check for exceptions on other ranks
       if (exception_monitor && runtime > next_check_except) {
-        stop_flag = exception_monitor->event_on_any_rank();
         next_check_except += params.check_exception_interval;
+        stop_flag |= exception_monitor->event_on_any_rank();
+      }
+
+      // check if we have done all requested cycles
+      if (percentage_done_ >= 100) {
+        if (cycle_monitor) {
+          // if continue_after_ncycles_done == true, report to other ranks and check if they are done as well
+          cycle_monitor->report_local_event();
+          if (runtime > next_check_cycles) {
+            next_check_cycles += params.check_cycles_interval;
+            stop_flag |= cycle_monitor->event_on_all_ranks();
+          }
+        } else {
+          // if continue_after_ncycles_done == false, stop the simulation
+          stop_flag = true;
+        }
       }
 
       // update stop flag
-      stop_flag |= (params.stop_callback() || triqs::signal_handler::received() || percentage_done_ >= 100);
+      stop_flag |= (params.stop_callback() || triqs::signal_handler::received());
     }
 
     // stop timer
@@ -145,12 +163,13 @@ namespace triqs::mc_tools {
     int status = (percentage_done_ >= 100 ? 0 : (triqs::signal_handler::received() ? 2 : 1));
     triqs::signal_handler::stop();
 
-    // stop exception monitor
+    // stop MPI monitors
     if (exception_monitor) {
       exception_monitor->finalize_communications();
       if (exception_monitor->event_on_any_rank())
         throw std::runtime_error("MC simulation stopped because an exception occurred on one of the MPI ranks");
     }
+    if (cycle_monitor) cycle_monitor->finalize_communications();
 
     // final reports
     if (status == 1) report_ << fmt::format("MC simulation stopped because stop_callback() returned true\n");
