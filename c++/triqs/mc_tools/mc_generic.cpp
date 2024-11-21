@@ -55,9 +55,6 @@ namespace triqs::mc_tools {
     run_timer_ = {};
     run_timer_.start();
 
-    // early return if no cycles
-    if (params.ncycles == 0) return 0;
-
     // start signal handler
     triqs::signal_handler::start();
 
@@ -66,21 +63,19 @@ namespace triqs::mc_tools {
     if (params.propagate_exception and mpi::has_env) exception_monitor = std::make_unique<mpi::monitor>(params.comm);
 
     // prepare the simulation parameters and statistics
-    percentage_done_           = 0;
-    nmeasures_done_            = 0;
-    bool stop_sim              = false;
-    bool finished_cycles       = false;
-    bool inf_cycles            = params.ncycles < 0;
-    std::int64_t cycle_counter = 0;
-    double next_info           = 0.1;
     auto const rank            = params.comm.rank();
+    bool stop_flag             = params.ncycles == 0;
+    std::int64_t cycle_counter = 1;
+    double next_info           = 0.1;
+    percentage_done_           = stop_flag ? 100 : 0;
+    nmeasures_done_            = 0;
 
     // run simulation
-    for (; !stop_sim; ++cycle_counter) {
+    for (; !stop_flag; ++cycle_counter) {
       try {
         // do length_cycle MC steps / cycle
-        for (std::int64_t i = 1; i <= params.cycle_length; i++) {
-          if ((i % 10 == 0) and (triqs::signal_handler::received())) throw triqs::signal_handler::exception{};
+        for (std::int64_t i = 0; i < params.cycle_length; i++) {
+          if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
           // Metropolis step
           double r = moves_.attempt();
           if (rng_() < std::min(1.0, r)) {
@@ -111,9 +106,9 @@ namespace triqs::mc_tools {
       }
 
       // recompute fraction done
-      percentage_done_ = (cycle_counter + 1) * 100.0 / params.ncycles;
+      percentage_done_ = cycle_counter * 100.0 / params.ncycles;
       if (run_timer_ > next_info || percentage_done_ >= 100) {
-        if (inf_cycles) {
+        if (percentage_done_ < 0) {
           report_(3) << fmt::format("[Rank {}] {} cycle {}\n", rank, utility::timestamp(), cycle_counter);
         } else {
           report_(3) << fmt::format("[Rank {}] {} {:.2f}% done, ETA {}, cycle {} of {}\n", rank, utility::timestamp(), percentage_done_,
@@ -124,20 +119,21 @@ namespace triqs::mc_tools {
         next_info = 1.25 * run_timer_ + 2.0;
 
         // stop if an emergeny occured on any node
-        if (exception_monitor) stop_sim = exception_monitor->event_on_any_rank();
+        if (exception_monitor) stop_flag = exception_monitor->event_on_any_rank();
       }
-      finished_cycles = cycle_counter + 1 >= params.ncycles and not inf_cycles;
-      stop_sim |= (params.stop_callback() || triqs::signal_handler::received() || finished_cycles);
+
+      // update stop flag
+      stop_flag |= (params.stop_callback() || triqs::signal_handler::received() || percentage_done_ >= 100);
     }
 
     // stop timer
     run_timer_.stop();
 
     // update statistics
-    ncycles_done_ += cycle_counter;
+    ncycles_done_ += (cycle_counter - 1);
 
     // stop signal handler
-    int status = (finished_cycles ? 0 : (triqs::signal_handler::received() ? 2 : 1));
+    int status = (percentage_done_ >= 100 ? 0 : (triqs::signal_handler::received() ? 2 : 1));
     triqs::signal_handler::stop();
 
     // stop exception monitor
