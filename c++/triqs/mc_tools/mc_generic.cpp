@@ -66,7 +66,8 @@ namespace triqs::mc_tools {
     auto const rank            = params.comm.rank();
     bool stop_flag             = params.ncycles == 0;
     std::int64_t cycle_counter = 1;
-    double next_info           = 0.1;
+    double next_print_info     = 0.1;
+    double next_check_except   = params.check_exception_interval;
     percentage_done_           = stop_flag ? 100 : 0;
     nmeasures_done_            = 0;
 
@@ -99,15 +100,22 @@ namespace triqs::mc_tools {
       } catch (std::exception const &err) {
         // log the error and node number
         std::cerr << "mc_generic::run: Exception occured on node " << rank << "\n" << err.what() << std::endl;
-        if (params.propagate_exception)
+        if (params.propagate_exception) {
           exception_monitor->report_local_event();
-        else
+          break;
+        } else {
           params.comm.abort(2);
+        }
       }
 
-      // recompute fraction done
+      // recompute fraction done and runtime so far
       percentage_done_ = cycle_counter * 100.0 / params.ncycles;
-      if (run_timer_ > next_info || percentage_done_ >= 100) {
+      double runtime   = run_timer_;
+
+      // print simulation info
+      if (runtime > next_print_info || percentage_done_ >= 100) {
+        // increase time interval non-linearly
+        next_print_info = 1.25 * runtime + 2.0;
         if (percentage_done_ < 0) {
           report_(3) << fmt::format("[Rank {}] {} cycle {}\n", rank, utility::timestamp(), cycle_counter);
         } else {
@@ -115,11 +123,12 @@ namespace triqs::mc_tools {
                                     utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter, params.ncycles);
         }
         if (params.enable_measures) report_(3) << measures_.report();
-        // increase time interval non-linearly
-        next_info = 1.25 * run_timer_ + 2.0;
+      }
 
-        // stop if an emergeny occured on any node
-        if (exception_monitor) stop_flag = exception_monitor->event_on_any_rank();
+      // check for exceptions on other ranks
+      if (exception_monitor && runtime > next_check_except) {
+        stop_flag = exception_monitor->event_on_any_rank();
+        next_check_except += params.check_exception_interval;
       }
 
       // update stop flag
