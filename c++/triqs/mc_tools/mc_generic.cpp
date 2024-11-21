@@ -247,10 +247,9 @@ namespace triqs::mc_tools {
     info += fmt::format("[Rank {}] Measurement durations:\n{}", c.rank(), measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
     info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
 
-    // gather all output strings on rank 0 to print in order
-    auto all_infos_vec = mpi::gather(std::vector<char>{info.begin(), info.end()}, c);
+    // gather all output string on rank 0 to print in order
+    auto all_infos = mpi::gather(info, c);
     if (c.rank() == 0) {
-      std::string all_infos{all_infos_vec.begin(), all_infos_vec.end()};
       report_(3) << all_infos;
       std::string more_info{"\n"};
       more_info += fmt::format("Total number of measures: {}\n", tot_nmeasures);
