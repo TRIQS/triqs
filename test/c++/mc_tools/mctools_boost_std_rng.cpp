@@ -18,28 +18,19 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #include <triqs/test_tools/arrays.hpp>
-#include <triqs/mc_tools/MersenneRNG.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real.hpp>
+#include <boost/random/variate_generator.hpp>
 
 #include <random>
 #include <vector>
 
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/lagged_fibonacci.hpp>
-#include <boost/random/ranlux.hpp>
-#include <boost/random/variate_generator.hpp>
+// Test that std::mt19937 and boost::random::mt19937 produce the same numbers.
+// Conclusion: The std and boost generator give the same numbers.
+TEST(TRIQSMCTools, BoostVsStdMersenneTwister) {
+  int const seed = 1352;
 
-// This test that std::random and boost::random are the same for MT and uniform distribution
-// Conclusion : the std and boost generator give the same numbers.
-// However the uniform_real_distrib differ. Anyway, this is not guaranteed to be implementation dep.
-// by the std.
-TEST(Random, Mersenne) {
-
-  int seed = 1352;
-
-  std::mt19937 gen(seed);
-
-  // Testing the generator itself
+  // expected random numbers
   std::vector<long> result = {869874994,  3205046262, 2119020267, 2669095628, 275633191,  335224535,  1399249061, 4059871834, 1506360241, 2646120513,
                               932791869,  1038906848, 391582322,  2962159196, 1246635690, 589901067,  1065559423, 91395844,   4212208358, 3609786960,
                               2429350836, 614673344,  566349528,  3453660734, 1803951428, 2872537556, 2290263138, 303337700,  1592633174, 918874404,
@@ -51,26 +42,22 @@ TEST(Random, Mersenne) {
                               2588561942, 3364937223, 3236324186, 2508746520, 1305720758, 3713056371, 4291396099, 4172364413, 1255934297, 2575364421,
                               157096516,  567018849,  1964661445, 3336536577, 162680414,  997947546,  2422402185, 234663097,  1843361535, 1752705663};
 
-  for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], gen());
+  // std
+  std::mt19937 gen_std(seed);
+  for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], gen_std());
 
-  // our Mersenne code is different
-  // triqs::mc_tools::RandomGenerators::RandMT RAN(seed);
-  // for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], RAN.randomMT());
-
-  boost::mt19937 gb(seed);
-  for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], gb());
+  // boost
+  boost::mt19937 gen_boost(seed);
+  for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], gen_boost());
 }
 
 #ifdef RANDOM_TEST_UNIFORM
-TEST(Random, MersenneUniform) {
+// Test that std::uniform_real_distribution and boost::random::uniform_real_distribution produce the same numbers.
+// Conclusion: This is not the case. However, this is not guaranteed to be implementation independent by the std.
+TEST(TRIQSMCTools, BoostVsStdUniformDistribution) {
+  int const seed = 1352;
 
-  int seed = 1352;
-
-  std::mt19937 gen(seed);
-  std::mt19937 gen2(seed);
-  std::uniform_real_distribution<double> generator;
-
-  // Testing the uniform distribution of the std lib
+  // expected numbers
   std::vector<double> result = {
      0.746232984169,   0.6214472531558, 0.07805054426756, 0.9452625723383,  0.6160979423092,  0.2418893501668,  0.6896814322311, 0.1373470451893,
      0.02127975324357, 0.8404690215785, 0.1431147904521,  0.80411805169,    0.6688147681812,  0.07062631205964, 0.2139421190067, 0.0518924846002,
@@ -86,29 +73,15 @@ TEST(Random, MersenneUniform) {
      0.7805296694581,  0.660779124941,  0.7750959913801,  0.0938933767948,  0.6609784932051,  0.6148894861399,  0.4792942971708, 0.6545062197143,
      0.6110897641314,  0.3611626664627, 0.2771070578171,  0.5601750233273};
 
-  //std::cout<< std::setprecision(13);
-  for (int i = 0; i < 100; ++i)
-    //std::cout  << ", "<<generator(gen);
-    EXPECT_NEAR(result[i], generator(gen), 1.e-12);
+  // std
+  std::mt19937 gen_std(seed);
+  std::uniform_real_distribution<double> uni_std;
+  for (int i = 0; i < 100; ++i) EXPECT_NEAR(result[i], uni_std(gen_std), 1.e-12);
 
   // boost
-  boost::uniform_real<> dis;
-  boost::variate_generator<boost::mt19937, boost::uniform_real<>> gb(boost::mt19937(seed), dis);
-
-  // the std uniform distrib takes one number over 2 ?!
-  gb();
-  gen2();
-  std::cout << std::setprecision(13);
-  for (int i = 0; i < 100; ++i, gb(), gen2()) {
-    double x = gb();
-    std::cout << result[i] - x << " " << x << "  " << x - double(gen2()) / (double(gen2.max()) + 1) << std::endl;
-    //EXPECT_NEAR(result[i], gb(), 1.e-12);
-  }
-
-  std::cout << "min " << gen.min() << " max " << gen.max() << std::endl;
-
-  //triqs::mc_tools::RandomGenerators::RandMT RAN(seed);
-  //for (int i = 0; i < 100; ++i) EXPECT_EQ(result[i], RAN());
+  boost::uniform_real<> uni_boost;
+  boost::variate_generator<boost::mt19937, boost::uniform_real<>> vg_boost(boost::mt19937(seed), uni_boost);
+  for (int i = 0; i < 100; ++i) EXPECT_NEAR(result[i], vg_boost(), 1.e-12);
 }
 #endif
 
