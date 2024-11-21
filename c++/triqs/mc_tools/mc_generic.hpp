@@ -79,20 +79,52 @@ namespace triqs::mc_tools {
    * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
    */
   template <DoubleOrComplex MCSignType> class mc_generic {
+    private:
+    // Value to indicate that the initial sign of the user-provided parameters should not be used.
+    static constexpr MCSignType default_initial_sign = std::numeric_limits<double>::infinity();
+
     public:
+    /// User-provided MC simulation parameters for the run() method.
+    struct run_param_t {
+      /// Number of MC cycles to run (< 1 to run indefinitely).
+      std::int64_t ncycles = -1;
+
+      /// Number of MC steps/moves per cycle.
+      std::int64_t cycle_length = 1;
+
+      /// Optional callback function that returns a boolean value indicating if we should stop the simulation. Executed
+      /// at the end of each cycle.
+      std::function<bool()> stop_callback = []() { return false; };
+
+      /// The sign of the MC weight is initialized to this value before the simulation starts (if it is !=
+      /// default_initial_sign).
+      MCSignType initial_sign = default_initial_sign;
+
+      /// MPI communicator.
+      mpi::communicator comm = mpi::communicator{};
+
+      /// Callback function that is executed after each cycle.
+      std::function<void()> after_cycle_duty = []() {};
+
+      /// Should we propagate exceptions to all MPI ranks or abort the simulation immediately?
+      bool propagate_exception = true;
+
+      /// Should we take measurements during the simulation? Usually false during the warmup phase.
+      bool enable_measures = true;
+
+      /// Should we calibrate the moves during the simulation? Usually false during the accumulation phase.
+      bool enable_calibration = false;
+    };
+
     /**
      * @brief Construct a generic Monte Carlo class.
      *
      * @param rng_name Name of the RNG to be used (see triqs::mc_tools::random_generator).
      * @param rng_seed Seed for the RNG.
      * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
-     * @param propagate_exception Should we propagate an exception to all MPI ranks or abort immediately?
      */
-    mc_generic(const std::string &rng_name, int rng_seed, int verbosity_lvl, bool propagate_exception = true)
-       : rng_(rng_name, rng_seed),
-         moves_(rng_),
-         report_(&std::cout, verbosity_lvl),
-         propagate_exception_(propagate_exception) {}
+    mc_generic(const std::string &rng_name, int rng_seed, int verbosity_lvl)
+       : rng_(rng_name, rng_seed), moves_(rng_), report_(&std::cout, verbosity_lvl) {}
 
     /**
      * @brief Register a new MC move.
@@ -136,10 +168,36 @@ namespace triqs::mc_tools {
     void clear_measures() { measures_.clear(); }
 
     /**
-     * @brief Set the callback function to be called after each cycle.
-     * @param f Callback function.
+     * @brief Run a generic MC simulation.
+     *
+     * @param params User-provided MC simulation parameters (see run_param_t).
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
      */
-    void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty_ = f; }
+    int run(run_param_t const &params);
+
+    /**
+     * @brief Run the warumup phase of the MC simulation.
+     *
+     * @details Measurements are always disabled, even if the `enable_measures` parameter is set to true.
+     *
+     * @param params User-provided MC simulation parameters (see run_param_t).
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int warmup(run_param_t const &params);
+
+    /**
+     * @brief Run the accumulations phase of the MC simulation.
+     *
+     * @details Measurements are always enabled and calibration is always disabled, even if the corresponding parameters
+     * are set to true.
+     *
+     * @param params User-provided MC simulation parameters (see run_param_t).
+     * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
+     * returned true, 2 if it has been stopped due to a signal.
+     */
+    int accumulate(run_param_t const &params);
 
     /**
      * @brief Run a generic MC simulation.
@@ -212,6 +270,9 @@ namespace triqs::mc_tools {
      * @param c MPI communicator.
      */
     void collect_results(mpi::communicator const &c);
+
+    /// Get the default run parameters.
+    [[nodiscard]] auto get_run_params() const { return run_param_t{}; }
 
     /// Get the acceptance rates of all MC moves (see move_set::get_acceptance_rates).
     [[nodiscard]] std::map<std::string, double> get_acceptance_rates() const { return moves_.get_acceptance_rates(); }
@@ -301,8 +362,6 @@ namespace triqs::mc_tools {
     std::int64_t ncycles_done_{0};
     std::int64_t percentage_done_{0};
     std::int64_t config_id_{0};
-    std::function<void()> after_cycle_duty_{nullptr};
-    bool propagate_exception_{true};
   };
 
   // Explicit template instantiation declarations.
