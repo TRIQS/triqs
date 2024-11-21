@@ -136,7 +136,7 @@ bool test_mc(bool recover_from_exception) {
   }
 
   // construct a Monte Carlo loop
-  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity, recover_from_exception);
+  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity);
 
   // construct configuration
   configuration config;

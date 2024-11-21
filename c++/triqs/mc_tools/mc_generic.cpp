@@ -40,10 +40,13 @@
 
 namespace triqs::mc_tools {
 
-  template <DoubleOrComplex MCSignType>
-  int mc_generic<MCSignType>::run(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, bool enable_measures,
-                                  mpi::communicator c, bool enable_calibration) {
-    EXPECTS(cycle_length > 0);
+  template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::run(run_param_t const &params) {
+    EXPECTS(params.cycle_length > 0);
+    EXPECTS(params.stop_callback);
+    EXPECTS(params.after_cycle_duty);
+
+    // set the initial sign if specified
+    if (params.initial_sign != default_initial_sign) sign_ = params.initial_sign;
 
     // reset move statistics
     moves_.clear_statistics();
@@ -53,30 +56,30 @@ namespace triqs::mc_tools {
     run_timer_.start();
 
     // early return if no cycles
-    if (ncycles == 0) return 0;
+    if (params.ncycles == 0) return 0;
 
     // start signal handler
     triqs::signal_handler::start();
 
-    // start exception monitor
+    // start MPI monitors
     std::unique_ptr<mpi::monitor> exception_monitor;
-    if (propagate_exception_ and mpi::has_env) exception_monitor = std::make_unique<mpi::monitor>(c);
+    if (params.propagate_exception and mpi::has_env) exception_monitor = std::make_unique<mpi::monitor>(params.comm);
 
     // prepare the simulation parameters and statistics
     percentage_done_           = 0;
     nmeasures_done_            = 0;
     bool stop_sim              = false;
     bool finished_cycles       = false;
-    bool inf_cycles            = ncycles < 0;
+    bool inf_cycles            = params.ncycles < 0;
     std::int64_t cycle_counter = 0;
     double next_info           = 0.1;
-    const auto rank            = c.rank();
+    auto const rank            = params.comm.rank();
 
     // run simulation
     for (; !stop_sim; ++cycle_counter) {
       try {
         // do length_cycle MC steps / cycle
-        for (std::int64_t i = 1; i <= cycle_length; i++) {
+        for (std::int64_t i = 1; i <= params.cycle_length; i++) {
           if ((i % 10 == 0) and (triqs::signal_handler::received())) throw triqs::signal_handler::exception{};
           // Metropolis step
           double r = moves_.attempt();
@@ -88,9 +91,9 @@ namespace triqs::mc_tools {
           ++config_id_;
         }
         // after cycle duties
-        if (after_cycle_duty_) { after_cycle_duty_(); }
-        if (enable_calibration) moves_.calibrate(c);
-        if (enable_measures) {
+        params.after_cycle_duty();
+        if (params.enable_calibration) moves_.calibrate(params.comm);
+        if (params.enable_measures) {
           nmeasures_done_++;
           for (auto &m : measures_aux_) m();
           measures_.accumulate(sign_);
@@ -101,30 +104,30 @@ namespace triqs::mc_tools {
       } catch (std::exception const &err) {
         // log the error and node number
         std::cerr << "mc_generic::run: Exception occured on node " << rank << "\n" << err.what() << std::endl;
-        if (propagate_exception_)
+        if (params.propagate_exception)
           exception_monitor->report_local_event();
         else
-          c.abort(2);
+          params.comm.abort(2);
       }
 
       // recompute fraction done
-      percentage_done_ = std::int64_t(std::floor(((cycle_counter + 1) * 100.0) / ncycles));
+      percentage_done_ = std::int64_t(std::floor(((cycle_counter + 1) * 100.0) / params.ncycles));
       if (run_timer_ > next_info || percentage_done_ >= 100) {
         if (inf_cycles) {
           report_(3) << fmt::format("[Rank {}] {} cycle {}\n", rank, utility::timestamp(), cycle_counter);
         } else {
           report_(3) << fmt::format("[Rank {}] {} {}% done, ETA {}, cycle {} of {}\n", rank, utility::timestamp(), percentage_done_,
-                                    utility::estimate_time_left(ncycles, cycle_counter, run_timer_), cycle_counter, ncycles);
+                                    utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter, params.ncycles);
         }
-        if (enable_measures) report_(3) << measures_.report();
+        if (params.enable_measures) report_(3) << measures_.report();
         // increase time interval non-linearly
         next_info = 1.25 * run_timer_ + 2.0;
 
         // stop if an emergeny occured on any node
         if (exception_monitor) stop_sim = exception_monitor->event_on_any_rank();
       }
-      finished_cycles = cycle_counter + 1 >= ncycles and not inf_cycles;
-      stop_sim |= (stop_callback() || triqs::signal_handler::received() || finished_cycles);
+      finished_cycles = cycle_counter + 1 >= params.ncycles and not inf_cycles;
+      stop_sim |= (params.stop_callback() || triqs::signal_handler::received() || finished_cycles);
     }
 
     // stop timer
@@ -151,42 +154,65 @@ namespace triqs::mc_tools {
     return status;
   }
 
+  template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::warmup(run_param_t const &params) {
+    report_(3) << fmt::format("[Rank {}] Performing warum up phase...\n", params.comm.rank());
+    auto p            = params;
+    p.enable_measures = false;
+    auto status       = run(p);
+    warmup_timer_     = run_timer_;
+    return status;
+  }
+
+  template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::accumulate(run_param_t const &params) {
+    report_(3) << fmt::format("[Rank {}] Performing accumulation phase...\n", params.comm.rank());
+    auto p               = params;
+    p.enable_measures    = true;
+    p.enable_calibration = false;
+    auto status          = run(p);
+    acc_timer_           = run_timer_;
+    return status;
+  }
+
+  template <DoubleOrComplex MCSignType>
+  int mc_generic<MCSignType>::run(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, bool enable_measures,
+                                  mpi::communicator c, bool enable_calibration) {
+    return run({.ncycles            = ncycles,
+                .cycle_length       = cycle_length,
+                .stop_callback      = stop_callback,
+                .comm               = c,
+                .enable_measures    = enable_measures,
+                .enable_calibration = enable_calibration});
+  }
+
   template <DoubleOrComplex MCSignType>
   int mc_generic<MCSignType>::warmup(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, MCSignType initial_sign,
                                      mpi::communicator c) {
-    sign_ = initial_sign;
-    return warmup(ncycles, cycle_length, stop_callback, c);
+    return warmup({.ncycles = ncycles, .cycle_length = cycle_length, .stop_callback = stop_callback, .initial_sign = initial_sign, .comm = c});
   }
 
   template <DoubleOrComplex MCSignType>
   int mc_generic<MCSignType>::warmup(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, mpi::communicator c) {
-    report_(3) << fmt::format("[Rank {}] Performing warum up phase...\n", c.rank());
-    auto status   = run(ncycles, cycle_length, stop_callback, false, c);
-    warmup_timer_ = run_timer_;
-    return status;
+    return warmup({.ncycles = ncycles, .cycle_length = cycle_length, .stop_callback = stop_callback, .comm = c});
   }
 
   template <DoubleOrComplex MCSignType>
   int mc_generic<MCSignType>::accumulate(std::int64_t ncycles, std::int64_t cycle_length, std::function<bool()> stop_callback, mpi::communicator c) {
-    report_(3) << fmt::format("[Rank {}] Performing accumulation phase...\n", c.rank());
-    auto status = run(ncycles, cycle_length, stop_callback, true, c);
-    acc_timer_  = run_timer_;
-    return status;
+    return accumulate({.ncycles = ncycles, .cycle_length = cycle_length, .stop_callback = stop_callback, .comm = c});
   }
 
   template <DoubleOrComplex MCSignType>
   int mc_generic<MCSignType>::warmup_and_accumulate(std::int64_t ncycles_warmup, std::int64_t ncycles_acc, std::int64_t cycle_length,
                                                     std::function<bool()> stop_callback, MCSignType initial_sign, mpi::communicator c) {
-    sign_ = initial_sign;
-    return warmup_and_accumulate(ncycles_warmup, ncycles_acc, cycle_length, stop_callback, c);
+    auto status =
+       warmup({.ncycles = ncycles_warmup, .cycle_length = cycle_length, .stop_callback = stop_callback, .initial_sign = initial_sign, .comm = c});
+    if (status == 0) status = accumulate({.ncycles = ncycles_acc, .cycle_length = cycle_length, .stop_callback = stop_callback, .comm = c});
+    return status;
   }
 
   template <DoubleOrComplex MCSignType>
   int mc_generic<MCSignType>::warmup_and_accumulate(std::int64_t ncycles_warmup, std::int64_t ncycles_acc, std::int64_t cycle_length,
                                                     std::function<bool()> stop_callback, mpi::communicator c) {
-    auto status = warmup(ncycles_warmup, cycle_length, stop_callback, c);
-    if (status == 0) status = accumulate(ncycles_acc, cycle_length, stop_callback, c);
-    return status;
+    return warmup_and_accumulate(ncycles_warmup, ncycles_acc, cycle_length, stop_callback, default_initial_sign, c);
   }
 
   template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::collect_results(mpi::communicator const &c) {
@@ -203,18 +229,18 @@ namespace triqs::mc_tools {
     info += fmt::format("[Rank {}] Warmup duration: {:.4f} seconds [{}]\n", c.rank(), get_warmup_time(), get_warmup_time_HHMMSS());
     info += fmt::format("[Rank {}] Simulation duration: {:.4f} seconds [{}]\n", c.rank(), get_accumulation_time(), get_accumulation_time_HHMMSS());
     info += fmt::format("[Rank {}] Number of measures: {}\n", c.rank(), nmeasures_done_);
-    info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2f}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
+    info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
     info += fmt::format("[Rank {}] Measurement durations:\n{}", c.rank(), measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
     info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
 
-    // gather all output string on rank 0 to print in order
+    // gather all output strings on rank 0 to print in order
     auto all_infos_vec = mpi::gather(std::vector<char>{info.begin(), info.end()}, c);
     if (c.rank() == 0) {
       std::string all_infos{all_infos_vec.begin(), all_infos_vec.end()};
       report_(3) << all_infos;
       std::string more_info{"\n"};
       more_info += fmt::format("Total number of measures: {}\n", tot_nmeasures);
-      more_info += fmt::format("Total cycles (measures) / second: {:.2f}\n", tot_nmeasures / tot_duration);
+      more_info += fmt::format("Total cycles (measures) / second: {:.2e}\n", tot_nmeasures / tot_duration);
       report_(2) << more_info;
     }
   }
