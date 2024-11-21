@@ -362,6 +362,12 @@ namespace triqs::mc_tools {
     // Print simulation info.
     void print_sim_info(run_param_t const &params, std::int64_t cycle_counter);
 
+    // Do a single Metropolis accept/reject step.
+    void metropolis_step();
+
+    // Perform after cycle duties.
+    void after_cycle_duties(run_param_t const &params);
+
     private:
     random_generator rng_;
     move_set<MCSignType> moves_;
