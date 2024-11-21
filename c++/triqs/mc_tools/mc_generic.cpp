@@ -78,7 +78,7 @@ namespace triqs::mc_tools {
     for (; !stop_flag; ++cycle_counter) {
       try {
         // do cycle_length MC steps / cycle
-        for (std::int64_t i = 0; i < params.cycle_length; i++) {
+        for (std::int64_t i = 0; i < params.cycle_length; ++i) {
           if (triqs::signal_handler::received()) throw triqs::signal_handler::exception{};
           // Metropolis step
           metropolis_step();
@@ -92,7 +92,7 @@ namespace triqs::mc_tools {
       } catch (std::exception const &err) {
         // log the exception and node number, either abort or report to other nodes
         std::cerr << fmt::format("[Rank {}] Error int mc_generic::run: Exception occured:\n{}\n", rank, err.what());
-        if (params.propagate_exception) {
+        if (exception_monitor) {
           exception_monitor->report_local_event();
           break;
         } else {
@@ -101,7 +101,7 @@ namespace triqs::mc_tools {
       }
 
       // recompute fraction done and runtime so far
-      percentage_done_ = cycle_counter * 100.0 / params.ncycles;
+      percentage_done_ = static_cast<double>(cycle_counter) * 100.0 / params.ncycles;
       double runtime   = run_timer_;
 
       // is it time to print simulation info
@@ -247,7 +247,7 @@ namespace triqs::mc_tools {
     info += fmt::format("[Rank {}] Measurement durations:\n{}", c.rank(), measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
     info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
 
-    // gather all output string on rank 0 to print in order
+    // gather all output strings on rank 0 to print in order
     auto all_infos = mpi::gather(info, c);
     if (c.rank() == 0) {
       report_(3) << all_infos;
@@ -262,7 +262,7 @@ namespace triqs::mc_tools {
     // current simulation parameters
     auto const rank           = params.comm.rank();
     double const runtime      = run_timer_;
-    auto const cycles_per_sec = cycle_counter / runtime;
+    auto const cycles_per_sec = static_cast<double>(cycle_counter) / runtime;
 
     // do the printing
     if (percentage_done_ < 0) {
@@ -288,7 +288,7 @@ namespace triqs::mc_tools {
     params.after_cycle_duty();
     if (params.enable_calibration) moves_.calibrate(params.comm);
     if (params.enable_measures) {
-      nmeasures_done_++;
+      ++nmeasures_done_;
       for (auto &m : measures_aux_) m();
       measures_.accumulate(sign_);
     }
