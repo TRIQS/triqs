@@ -359,6 +359,10 @@ namespace triqs::mc_tools {
     }
 
     private:
+    // Print simulation info.
+    void print_sim_info(run_param_t const &params, std::int64_t cycle_counter);
+
+    private:
     random_generator rng_;
     move_set<MCSignType> moves_;
     measure_set<MCSignType> measures_;
