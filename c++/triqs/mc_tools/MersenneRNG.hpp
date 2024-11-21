@@ -20,12 +20,11 @@
 #ifndef MERSENNE_RNG_H
 #define MERSENNE_RNG_H
 
-#include <iostream>
 #include <cstdlib>
-#include <cstdio>
 #include <float.h>
-
-//#include <gsl/gsl_rng.h>
+#include <iostream>
+#include <iterator>
+#include <stdexcept>
 
 namespace triqs::mc_tools::RandomGenerators {
 
@@ -219,6 +218,29 @@ namespace triqs::mc_tools::RandomGenerators {
     //  inline double operator()() {
     //    return ((double)(randomMT())/0xFFFFFFFFU);
     //   }
+
+    // Same interface as boost::variate_generator.
+    [[nodiscard]] RandMT &engine() { return *this; }
+    [[nodiscard]] RandMT const &engine() const { return *this; }
+
+    // Write a textual representation of a RandMT object to `std::ostream`.
+    friend std::ostream &operator<<(std::ostream &os, const RandMT &rng) {
+      for (uint32 i = 0; i < std::size(rng.state); ++i) os << rng.state[i] << ' ';
+      long distance = rng.next - rng.state; // NOLINT
+      os << distance << ' ' << rng.left << ' ' << rng.initseed << ' ' << rng.seed_save;
+      if (!os) throw std::runtime_error("Error writing a triqs::mc_tools::RandomGenerators::RandMT to ostream.");
+      return os;
+    }
+
+    // Read a textual representation of a RandMT object from `std::istream`.
+    friend std::istream &operator>>(std::istream &is, RandMT &rng) {
+      for (uint32 i = 0; i < std::size(rng.state); ++i) { is >> rng.state[i] >> std::ws; }
+      long distance = 0;
+      is >> distance >> std::ws >> rng.left >> std::ws >> rng.initseed >> std::ws >> rng.seed_save;
+      rng.next = rng.state + distance; // NOLINT
+      if (!is) throw std::runtime_error("Error reading a triqs::mc_tools::RandomGenerators::RandMT from istream.");
+      return is;
+    };
   };
 
 } // namespace triqs::mc_tools::RandomGenerators

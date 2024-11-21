@@ -17,7 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-#include "MersenneRNG.hpp"
+#include "./MersenneRNG.hpp"
+
+#ifdef DEBUG
+#include <iostream>
+#endif // DEBUG
 
 namespace triqs::mc_tools::RandomGenerators {
 
@@ -30,4 +34,5 @@ namespace triqs::mc_tools::RandomGenerators {
     return ((double)(randomMT()) / 0xFFFFFFFFU);
 #endif
   }
+
 } // namespace triqs::mc_tools::RandomGenerators
