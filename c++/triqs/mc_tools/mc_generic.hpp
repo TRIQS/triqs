@@ -115,8 +115,15 @@ namespace triqs::mc_tools {
       /// Should we calibrate the moves during the simulation? Usually false during the accumulation phase.
       bool enable_calibration = false;
 
+      /// Should we continue the simulation on the current rank after the given number of cycles is done and wait for
+      /// all other ranks to finish as well or should we stop immediately?
+      bool continue_after_ncycles_done = false;
+
       /// Time interval (in seconds) after which the simulation checks for exceptions on other nodes.
       double check_exception_interval = 1;
+
+      /// Time interval (in seconds) after which the simulation checks if all other nodes have finished their cycles.
+      double check_cycles_interval = 1;
     };
 
     /**
