@@ -191,116 +191,164 @@ namespace triqs::det_manip {
       y_.clear();
     }
 
-    /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
-    double get_singular_threshold() const { return singular_threshold_; }
+    /**
+     * @brief Set the threshold being used when testing for a singular matrix (default: -1).
+     *
+     * @details The threshold \f$ \epsilon \f$ determines when a matrix \f$ M \f$ is considered singular. A matrix is
+     * considered to be singular if \f$ |\det(M)| < \epsilon \f$.
+     *
+     * If \f$ \epsilon \f$ is negative, it simply checks if the determinant is not `std::isnormal`.
+     *
+     * @param eps Threshold value.
+     */
+    void set_singular_threshold(double eps) { singular_threshold_ = eps; }
 
-    /// Sets the number below which abs(det) is considered 0. Cf get_is_singular_threshold
-    void set_singular_threshold(double threshold) { singular_threshold_ = threshold; }
+    /**
+     * @brief Set the number of operations before a consistency check is performed (default: 100).
+     * @param nops Number of operations.
+     */
+    void set_n_operations_before_check(uint64_t nops) { nops_before_check_ = nops; }
 
-    /// Gets the number of operations done before a check in the dets.
-    double get_n_operations_before_check() const { return nops_before_check_; }
+    /**
+     * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
+     *
+     * @details In case we compare two matrices \f$ A \f$ and \f$ B \f$, a warning is printed when \f$ 2 \lVert A - B
+     * \rVert >= \epsilon \lVert A \rVert + \lVert B \rVert \f$, where \f$ \lVert \cdot \rVert \f$ is the max norm.
+     *
+     * In case we compare two scalar values \f$ a \f$ and \f$ b \f$, a warning is printed when \f$ 2 |a - b| >= \epsilon
+     * (|a| + |b|) \f$.
+     *
+     * @param eps Threshold value.
+     */
+    void set_precision_warning(double eps) { precision_warning_ = eps; }
 
-    /// Sets the number of operations done before a check in the dets.
-    void set_n_operations_before_check(uint64_t n) { nops_before_check_ = n; }
+    /**
+     * @brief Set the precision threshold that determines when to throw an exception (default: 1e-5).
+     * @details See set_precision_warning for details.
+     * @param eps Threshold value.
+     */
+    void set_precision_error(double eps) { precision_error_ = eps; }
 
-    /// Get the bound for warning messages in the singular tests
-    double get_precision_warning() const { return precision_warning_; }
+    /// Get the current size of the matrix.
+    [[nodiscard]] auto size() const { return n_; }
 
-    /// Set the bound for warning messages in the singular tests
-    void set_precision_warning(double threshold) { precision_warning_ = threshold; }
+    /**
+     * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
+     * original matrix \f$ F^{(n)} \f$.
+     *
+     * @param i Argument index.
+     * @return Argument value \f$ x_i \f$.
+     */
+    [[nodiscard]] auto const &get_x(long i) const {
+      EXPECTS(0 <= i and i < size());
+      return x_[row_perm_[i]];
+    }
 
-    /// Get the bound for throwing error in the singular tests
-    double get_precision_error() const { return precision_error_; }
+    /**
+     * @brief Get the matrix builder argument \f$ y_j \f$ that determines the elements of the j<sup>th</sup> column in
+     * the original matrix \f$ F^{(n)} \f$.
+     *
+     * @param j Argument index.
+     * @return Argument value \f$ y_j \f$.
+     */
+    [[nodiscard]] auto const &get_y(long j) const {
+      EXPECTS(0 <= j and j < size());
+      return y_[col_perm_[j]];
+    }
 
-    /// Set the bound for throwing error in the singular tests
-    void set_precision_error(double threshold) { precision_error_ = threshold; }
-
-    //----------------------- READ ACCESS TO DATA ----------------------------------
-
-    /// Current size of the matrix
-    long size() const { return n_; }
-
-    /// Returns the i-th values of x
-    x_type const &get_x(long i) const { return x_[row_perm_[i]]; }
-
-    /// Returns the j-th values of y
-    y_type const &get_y(long j) const { return y_[col_perm_[j]]; }
-
-    /// Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines
-    std::vector<x_type> get_x() const {
+    /// Get a vector with all matrix builder arguments \f$ \mathbf{x} \f$.
+    [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
       res.reserve(n_);
-      for (int i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
+      for (auto i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
-    /// Returns a vector with all y_values. Warning : this is slow, since it creates a new copy, and reorders the cols
-    std::vector<y_type> get_y() const {
+    /// Get a vector with all matrix builder arguments \f$ \mathbf{y} \f$.
+    [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
       res.reserve(n_);
-      for (int i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
+      for (auto i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
     /**
-       * Advanced: Returns the vector of x_values using the INTERNAL STORAGE ORDER,
-       * which differs by some permutation from the one given by the user.
-       * Useful for some performance-critical loops.
-       * To be used together with other *_internal_order functions.
-       */
-    std::vector<x_type> const &get_x_internal_order() const { return x_; }
+     * @brief Get the matrix builder arguments \f$ \mathbf{x} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @return `std::vector` containing the arguments \f$ x_i \f$.
+     */
+    [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
 
     /**
-       * Advanced: Returns the vector of y_values using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    std::vector<y_type> const &get_y_internal_order() const { return y_; }
+     * @brief Get the matrix builder arguments \f$ \mathbf{y} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @return `std::vector` containing the arguments \f$ y_j \f$.
+     */
+    [[nodiscard]] auto const &get_y_internal_order() const { return y_; }
 
-    /// Returns the function f
-    F const &get_function() const { return f_; }
+    /// Get the derminant of the original matrix \f$ F^{(n)} \f$.
+    [[nodiscard]] auto determinant() const { return sign_ * det_; }
 
-    /** det M of the current state of the matrix.  */
-    value_type determinant() {
-      if (is_singular()) regenerate();
-      return sign_ * det_;
+    /**
+     * @brief Get an element of the inverse matrix.
+     *
+     * @details The inverse matrix is given by
+     * \f[
+     *   [F^{(n)}]^{-1} = (P^{(n)}_r G^{(n)} P^{(n)}_c)^{-1} = [P^{(n)}_c]^T [G^{(n)}]^{-1} [P^{(n)}_r]^T \; .
+     * \f]
+     *
+     * @param i Row index.
+     * @param j Column index.
+     * @return The matrix element \f$ [F^{(n)}]^{-1}_{ij} \f$.
+     */
+    [[nodiscard]] auto inverse_matrix(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(col_perm_[i], row_perm_[j]);
     }
 
-    /** Returns M^{-1}(i,j) */
-    // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
-    value_type inverse_matrix(int i, int j) const { return M_(col_perm_[i], row_perm_[j]); }
-
-    /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
-    matrix_type inverse_matrix() const {
-      matrix_type res(n_, n_);
-      for (long i = 0; i < n_; i++)
-        for (long j = 0; j < n_; j++) res(i, j) = inverse_matrix(i, j);
+    /// Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$. See inverse_matrix(int, int) for details.
+    [[nodiscard]] auto inverse_matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = this->inverse_matrix(i, j); });
       return res;
     }
 
     /**
-       * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    value_type inverse_matrix_internal_order(int i, int j) const { return M_(i, j); }
+     * @brief Get an element of the matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
+     *
+     * @param i Row index.
+     * @param j Column index.
+     * @return The matrix element \f$ M^{(n)}_{ij} \f$.
+     */
+    [[nodiscard]] auto inverse_matrix_internal_order(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(i, j);
+    }
 
-    /**
-       * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    nda::matrix_const_view<value_type> inverse_matrix_internal_order() const { return M_(range(n_), range(n_)); }
+    /// Get the full inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
+    [[nodiscard]] auto inverse_matrix_internal_order() const {
+      return nda::matrix_const_view<value_type>{M_(nda::range(size()), nda::range(size()))};
+    }
 
-    /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
-    matrix_type matrix() const {
-      matrix_type res(n_, n_);
-      for (long i = 0; i < n_; i++)
-        for (long j = 0; j < n_; j++) res(i, j) = f_(get_x(i), get_y(j));
+    /// Get the original matrix \f$ F^{(n)} \f$.
+    [[nodiscard]] auto matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = f_(get_x(i), get_y(j)); });
       return res;
     }
 
-    // Given a lambda fn : x,y,M, it calls fn(x_i,y_j,M_ji) for all i,j
-    // Order of iteration is NOT fixed, it is optimised (for memory traversal)
-    template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &fn) {
-      nda::for_each(std::array{d.n_, d.n_}, [&fn, &d](int i, int j) { return fn(d.x_[i], d.y_[j], d.M_(j, i)); });
+    /**
+     * @brief For each implementation for triqs::det_manip::det_manip objects.
+     *
+     * @details It loops over all elements of the matrix \f$ M^{(n)} \f$ and calls the given callable object for each
+     * element together with the corresponding arguments \f$ x_i \f$ and \f$ y_j \f$.
+     *
+     * @tparam L Callable type.
+     * @param dm triqs::det_manip::det_manip object.
+     * @param fn Callable object that takes three arguments: \f$ x_i \f$, \f$ y_j \f$, and \f$ M_{ji} \f$.
+     */
+    friend void foreach (det_manip const &dm, auto const &fn) {
+      nda::for_each(std::array{dm.size(), dm.size()}, [&fn, &dm](auto i, auto j) { return fn(dm.x_[i], dm.y_[j], dm.M_(j, i)); });
     }
 
     // ------------------------- OPERATIONS -----------------------------------------------
