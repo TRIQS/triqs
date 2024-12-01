@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "./utils.hpp"
 #include "./work_data.hpp"
 #include <triqs/utility/first_include.hpp>
 #include <vector>
@@ -40,25 +41,24 @@ namespace triqs::det_manip {
   /**
      * @brief Standard matrix/det manipulations used in several QMC.
      */
-  template <typename FunctionType> class det_manip {
-    private:
-    using f_tr = utility::callable_traits<FunctionType>;
-    static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
-
+  template <MatrixBuilder F> class det_manip {
     public:
-    using x_type     = typename f_tr::template decay_arg_t<0>;
-    using y_type     = typename f_tr::template decay_arg_t<1>;
-    using value_type = typename f_tr::result_type;
-    using det_type   = value_type;
-    static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
-                  "det_manip : the function must return a floating number or a complex number");
+    /// Type of the first argument that the triqs::det_manip::MatrixBuilder takes.
+    using x_type = detail::get_xarg_t<F>;
 
+    /// Type of the second argument that the triqs::det_manip::MatrixBuilder takes.
+    using y_type = detail::get_yarg_t<F>;
+
+    /// Type of the result that the triqs::det_manip::MatrixBuilder returns.
+    using value_type = detail::get_result_t<F>;
+
+    /// Type of the matrix.
     using matrix_type = nda::matrix<value_type>;
 
     protected: // the data
-    FunctionType f;
+    F f;
 
-    det_type det;
+    value_type det;
     long Nmax{0}, N;
     long kmax{1}, k;
     enum {
@@ -121,7 +121,7 @@ namespace triqs::det_manip {
     detail::work_data_type1<x_type, y_type, value_type> w1;
     detail::work_data_typek<x_type, y_type, value_type> wk;
     detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
-    det_type newdet;
+    value_type newdet;
     int newsign;
 
     public:
@@ -187,7 +187,7 @@ namespace triqs::det_manip {
        *                  Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
        *                  if it happens too often.
        */
-    det_manip(FunctionType F, long init_size) : f(std::move(F)), Nmax(0), N(0) {
+    det_manip(F f, long init_size) : f(std::move(f)), Nmax(0), N(0) {
       reserve(init_size);
       mat_inv() = 0;
       det       = 1;
@@ -201,7 +201,7 @@ namespace triqs::det_manip {
        * @param X, Y : container for X,Y.
        */
     template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)), Nmax(0) {
+    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(f)), Nmax(0) {
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
       N = X.size();
       if (N == 0) {
@@ -277,10 +277,10 @@ namespace triqs::det_manip {
     std::vector<y_type> const &get_y_internal_order() const { return y_values; }
 
     /// Returns the function f
-    FunctionType const &get_function() const { return f; }
+    F const &get_function() const { return f; }
 
     /** det M of the current state of the matrix.  */
-    det_type determinant() {
+    value_type determinant() {
       if (is_singular()) regenerate();
       return sign * det;
     }
