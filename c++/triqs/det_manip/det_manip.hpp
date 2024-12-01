@@ -31,6 +31,7 @@
 #include <triqs/utility/callable_traits.hpp>
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
+#include <fmt/ranges.h>
 
 namespace triqs::det_manip {
 
@@ -1134,7 +1135,7 @@ namespace triqs::det_manip {
       det_  = newdet_;
       sign_ = newsign_;
       ++nops_;
-      if (nops_ > nops_before_check_) check_mat_inv();
+      if (nops_ > nops_before_check_) regenerate_and_check();
       last_try_ = try_tag::NoTry;
     }
 
@@ -1209,7 +1210,76 @@ namespace triqs::det_manip {
       return r;
     }
 
-    void regenerate() { _regenerate_with_check(false, 0, 0); }
+    /**
+     * @brief Regenerate the inverse matrix, determinant and sign and check the consistency of the current
+     * values/objects.
+     *
+     * @details It uses the matrix builder to regenerate the matrix \f$ G^{(n)} \f$. Then it calculates its inverse
+     * \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with 
+     * `nda::linalg::det`. The sign \f$ s^{(n)} \f$ associated with the permutation matrices is also recalculated.
+     *
+     * If the stored objects are not consistent with the regenerated ones, a warning is emitted or an exception is
+     * thrown.
+     *
+     * See also set_precision_warning, set_precision_error and set_singular_threshold.
+     */
+    void regenerate_and_check() {
+      nops_ = 0;
+
+      // lambda to write a complex or real number to a string
+      auto str = [](auto x) {
+        if constexpr (std::same_as<std::decay_t<decltype(x)>, std::complex<double>>)
+          return fmt::format("({},{})", std::real(x), std::imag(x));
+        else
+          return fmt::format("{}", x);
+      };
+
+      // early return if the matrix is empty
+      if (size() == 0) {
+        // empty matrices always have its determinant and sign set to exactly 1
+        if (std::abs(det_ - 1) > 1e-14)
+          TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Determinant of empty matrix: {} != 1\n", str(det_));
+        if (sign_ != 1) TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Sign of empty matrix: {} != 1\n", sign_);
+        return;
+      }
+
+      // regenerate G and its determinant
+      auto mat = matrix_type{size(), size()};
+      nda::for_each(mat.shape(), [this, &mat](auto i, auto j) { mat(i, j) = f_(x_[i], y_[j]); });
+      auto const det_G = nda::linalg::det(mat);
+
+      // check G and compare determinants
+      if (is_singular(det_G))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Matrix G is singular: det(G) = {}\n", str(det_G));
+      auto const det_diff = detail::rel_diff(det_, det_G);
+      if (det_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      if (det_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      det_ = det_G;
+
+      // check the inverse matrix
+      nda::linalg::inv_in_place(mat);
+      auto M_v            = M_(nda::range(size()), nda::range(size()));
+      auto const mat_diff = detail::rel_diff(mat, M_v);
+      if (mat_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      if (mat_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      M_v = mat;
+
+      // regenerate and check the sign of the permutation matrices
+      double exp_sign = 1.0;
+      auto P          = nda::matrix<double>::zeros(size(), size());
+      for (int i = 0; i < size(); i++) P(i, row_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      P() = 0.0;
+      for (int i = 0; i < size(); i++) P(i, col_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      if ((exp_sign > 0) != (sign_ > 0))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent signs: {} != {}\n", sign_, exp_sign);
+      sign_ = (exp_sign > 0 ? 1 : -1);
+    }
 
     /// Write into HDF5
     friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
@@ -1266,61 +1336,10 @@ namespace triqs::det_manip {
       }
     }
 
-    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
-      if (n_ == 0) {
-        det_  = 1;
-        sign_ = 1;
-        return;
-      }
-
-      range RN(n_);
-      matrix_type res(n_, n_);
-      for (int i = 0; i < n_; i++)
-        for (int j = 0; j < n_; j++) res(i, j) = f_(x_[i], y_[j]);
-      det_ = nda::linalg::det(res);
-
-      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = nda::linalg::inv(res);
-
-      if (do_check) { // check that mat_inv is close to res
-        const bool relative = true;
-        double r            = max_element(abs(res - M_(RN, RN)));
-        double r2           = max_element(abs(res + M_(RN, RN)));
-        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
-        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
-        if (err || war) {
-          std::cerr << "matrix  = " << matrix() << std::endl;
-          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-        }
-        if (war)
-          std::cerr << "Warning : det_manip deviation above warning threshold "
-                    << "check "
-                    << "N = " << n_ << "  "
-                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
-        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
-      }
-
-      // since we have the proper inverse, replace the matrix and the det
-      M_(RN, RN) = res;
-      nops_      = 0;
-
-      // find the sign (there must be a better way...)
-      double s = 1.0;
-      nda::matrix<double> m(n_, n_);
-      m() = 0.0;
-      for (int i = 0; i < n_; i++) m(i, row_perm_[i]) = 1;
-      s *= nda::linalg::det(m);
-      m() = 0.0;
-      for (int i = 0; i < n_; i++) m(i, col_perm_[i]) = 1;
-      s *= nda::linalg::det(m);
-      sign_ = (s > 0 ? 1 : -1);
+    // Check if the given determinant is considered to be singular.
+    [[nodiscard]] bool is_singular(value_type det) const {
+      return (singular_threshold_ < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold_));
     }
-
-    void check_mat_inv() { _regenerate_with_check(true, precision_warning_, precision_error_); }
-
-    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
-    bool is_singular() const { return (singular_threshold_ < 0 ? not std::isnormal(std::abs(det_)) : (std::abs(det_) < singular_threshold_)); }
 
     private:
     // matrix builder: G_{ij} = f_(x_[i], y_[j]) or F_{ij} = f_(x_[row_perm_[i]], y_[col_perm_[j]])
