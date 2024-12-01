@@ -55,130 +55,7 @@ namespace triqs::det_manip {
     /// Type of the matrix.
     using matrix_type = nda::matrix<value_type>;
 
-    protected: // the data
-    F f;
-
-    value_type det;
-    long Nmax{0}, N;
-    long kmax{1}, k;
-    enum {
-      NoTry,
-      Insert,
-      Remove,
-      ChangeCol,
-      ChangeRow,
-      ChangeRowCol,
-      InsertK,
-      RemoveK,
-      Refill
-    } last_try = NoTry; // keep in memory the last operation not completed
-    std::vector<long> row_num, col_num;
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    int sign = 1;
-    matrix_type mat_inv;
-    uint64_t n_opts                  = 0;   // count the number of operation
-    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
-    double singular_threshold = -1;    // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
-    double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
-    double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
-
-    /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
-      auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "N", g.N);
-      h5_write(gr, "mat_inv", g.mat_inv);
-      h5_write(gr, "det", g.det);
-      h5_write(gr, "sign", g.sign);
-      h5_write(gr, "row_num", g.row_num);
-      h5_write(gr, "col_num", g.col_num);
-      h5_write(gr, "x_values", g.x_values);
-      h5_write(gr, "y_values", g.y_values);
-      h5_write(gr, "n_opts", g.n_opts);
-      h5_write(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_write(gr, "singular_threshold", g.singular_threshold);
-    }
-
-    /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
-      auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "N", g.N);
-      h5_read(gr, "mat_inv", g.mat_inv);
-      g.Nmax     = first_dim(g.mat_inv); // restore Nmax
-      g.last_try = NoTry;
-      h5_read(gr, "det", g.det);
-      h5_read(gr, "sign", g.sign);
-      h5_read(gr, "row_num", g.row_num);
-      h5_read(gr, "col_num", g.col_num);
-      h5_read(gr, "x_values", g.x_values);
-      h5_read(gr, "y_values", g.y_values);
-      h5_read(gr, "n_opts", g.n_opts);
-      h5_read(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_read(gr, "singular_threshold", g.singular_threshold);
-    }
-
-    private:
-    detail::work_data_type1<x_type, y_type, value_type> w1;
-    detail::work_data_typek<x_type, y_type, value_type> wk;
-    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
-    value_type newdet;
-    int newsign;
-
     public:
-    /**
-       * Like for std::vector, reserve memory for a bigger size.
-       * Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
-       * between a try_XXX and a complete_operation
-       *
-       * @param new_N The new size of the reserved memory
-       */
-    void reserve(long new_N, long new_k = 1) {
-      if (new_k > kmax) {
-        kmax = new_k;
-        if (new_N <= Nmax) wk.resize(Nmax, kmax);
-      }
-      if (new_N > Nmax) {
-        Nmax = 2 * new_N;
-
-        matrix_type mcpy(mat_inv);
-        mat_inv.resize(Nmax, Nmax);
-        auto Rcpy           = range(mcpy.extent(0));
-        mat_inv(Rcpy, Rcpy) = mcpy;
-
-        row_num.reserve(Nmax);
-        col_num.reserve(Nmax);
-        x_values.reserve(Nmax);
-        y_values.reserve(Nmax);
-
-        w1.resize(Nmax);
-        wk.resize(Nmax, kmax);
-      }
-    }
-
-    /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
-    double get_singular_threshold() const { return singular_threshold; }
-
-    /// Sets the number below which abs(det) is considered 0. Cf get_is_singular_threshold
-    void set_singular_threshold(double threshold) { singular_threshold = threshold; }
-
-    /// Gets the number of operations done before a check in the dets.
-    double get_n_operations_before_check() const { return n_opts_max_before_check; }
-
-    /// Sets the number of operations done before a check in the dets.
-    void set_n_operations_before_check(uint64_t n) { n_opts_max_before_check = n; }
-
-    /// Get the bound for warning messages in the singular tests
-    double get_precision_warning() const { return precision_warning; }
-
-    /// Set the bound for warning messages in the singular tests
-    void set_precision_warning(double threshold) { precision_warning = threshold; }
-
-    /// Get the bound for throwing error in the singular tests
-    double get_precision_error() const { return precision_error; }
-
-    /// Set the bound for throwing error in the singular tests
-    void set_precision_error(double threshold) { precision_error = threshold; }
-
     /**
        * @brief Constructor.
        *
@@ -222,6 +99,35 @@ namespace triqs::det_manip {
       det             = nda::linalg::det(mat_inv(RN, RN));
       mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
     }
+    /**
+       * Like for std::vector, reserve memory for a bigger size.
+       * Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
+       * between a try_XXX and a complete_operation
+       *
+       * @param new_N The new size of the reserved memory
+       */
+    void reserve(long new_N, long new_k = 1) {
+      if (new_k > kmax) {
+        kmax = new_k;
+        if (new_N <= Nmax) wk.resize(Nmax, kmax);
+      }
+      if (new_N > Nmax) {
+        Nmax = 2 * new_N;
+
+        matrix_type mcpy(mat_inv);
+        mat_inv.resize(Nmax, Nmax);
+        auto Rcpy           = range(mcpy.extent(0));
+        mat_inv(Rcpy, Rcpy) = mcpy;
+
+        row_num.reserve(Nmax);
+        col_num.reserve(Nmax);
+        x_values.reserve(Nmax);
+        y_values.reserve(Nmax);
+
+        w1.resize(Nmax);
+        wk.resize(Nmax, kmax);
+      }
+    }
 
     /// Put to size 0 : like a vector
     void clear() {
@@ -234,6 +140,30 @@ namespace triqs::det_manip {
       x_values.clear();
       y_values.clear();
     }
+
+    /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
+    double get_singular_threshold() const { return singular_threshold; }
+
+    /// Sets the number below which abs(det) is considered 0. Cf get_is_singular_threshold
+    void set_singular_threshold(double threshold) { singular_threshold = threshold; }
+
+    /// Gets the number of operations done before a check in the dets.
+    double get_n_operations_before_check() const { return n_opts_max_before_check; }
+
+    /// Sets the number of operations done before a check in the dets.
+    void set_n_operations_before_check(uint64_t n) { n_opts_max_before_check = n; }
+
+    /// Get the bound for warning messages in the singular tests
+    double get_precision_warning() const { return precision_warning; }
+
+    /// Set the bound for warning messages in the singular tests
+    void set_precision_warning(double threshold) { precision_warning = threshold; }
+
+    /// Get the bound for throwing error in the singular tests
+    double get_precision_error() const { return precision_error; }
+
+    /// Set the bound for throwing error in the singular tests
+    void set_precision_error(double threshold) { precision_error = threshold; }
 
     //----------------------- READ ACCESS TO DATA ----------------------------------
 
@@ -344,6 +274,56 @@ namespace triqs::det_manip {
       if (i == j) return;
       std::swap(col_num[i], col_num[j]);
       sign = -sign;
+    }
+
+    ///
+    enum RollDirection { None, Up, Down, Left, Right };
+
+    /**
+       * "Cyclic Rolling" of the determinant.
+       *
+       * Right : Move the Nth col to the first col cyclically.
+       * Left  : Move the first col to the Nth, cyclically.
+       * Up    : Move the first row to the Nth, cyclically.
+       * Down  : Move the Nth row to the first row cyclically.
+       *
+       * Returns -1 is the roll changes the sign of the det, 1 otherwise
+       * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
+       * WHY is it like this ???? : try_roll : return det +1/-1.
+       */
+    int roll_matrix(RollDirection roll) {
+      long tmp;
+      const long NN = N;
+      switch (roll) {
+        case (None): return 1;
+        case (Down):
+          tmp = row_num[N - 1];
+          for (long i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
+          row_num[0] = tmp;
+          break;
+        case (Up):
+          tmp = row_num[0];
+          for (long i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
+          row_num[N - 1] = tmp;
+          break;
+        case (Right):
+          tmp = col_num[N - 1];
+          for (long i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
+          col_num[0] = tmp;
+          break;
+        case (Left):
+          tmp = col_num[0];
+          for (long i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
+          col_num[N - 1] = tmp;
+          break;
+        default: assert(0);
+      }
+      // signature of the cycle of order N : (-1)^(N-1)
+      if ((N - 1) % 2 == 1) {
+        sign *= -1;
+        return -1;
+      }
+      return 1;
     }
 
     /**
@@ -1034,68 +1014,6 @@ namespace triqs::det_manip {
       mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
     }
 
-    //------------------------------------------------------------------------------------------
-    private:
-    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
-      if (N == 0) {
-        det  = 1;
-        sign = 1;
-        return;
-      }
-
-      range RN(N);
-      matrix_type res(N, N);
-      for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
-      det = nda::linalg::det(res);
-
-      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = nda::linalg::inv(res);
-
-      if (do_check) { // check that mat_inv is close to res
-        const bool relative = true;
-        double r            = max_element(abs(res - mat_inv(RN, RN)));
-        double r2           = max_element(abs(res + mat_inv(RN, RN)));
-        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
-        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
-        if (err || war) {
-          std::cerr << "matrix  = " << matrix() << std::endl;
-          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-        }
-        if (war)
-          std::cerr << "Warning : det_manip deviation above warning threshold "
-                    << "check "
-                    << "N = " << N << "  "
-                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
-        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
-      }
-
-      // since we have the proper inverse, replace the matrix and the det
-      mat_inv(RN, RN) = res;
-      n_opts          = 0;
-
-      // find the sign (there must be a better way...)
-      double s = 1.0;
-      nda::matrix<double> m(N, N);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      sign = (s > 0 ? 1 : -1);
-    }
-
-    void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
-
-    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
-    bool is_singular() const { return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)); }
-
-    //------------------------------------------------------------------------------------------
-    public:
-    void regenerate() { _regenerate_with_check(false, 0, 0); }
-
     public:
     /**
        *  Finish the move of the last try_xxx called.
@@ -1193,54 +1111,131 @@ namespace triqs::det_manip {
       return r;
     }
 
-    ///
-    enum RollDirection { None, Up, Down, Left, Right };
+    void regenerate() { _regenerate_with_check(false, 0, 0); }
 
-    /**
-       * "Cyclic Rolling" of the determinant.
-       *
-       * Right : Move the Nth col to the first col cyclically.
-       * Left  : Move the first col to the Nth, cyclically.
-       * Up    : Move the first row to the Nth, cyclically.
-       * Down  : Move the Nth row to the first row cyclically.
-       *
-       * Returns -1 is the roll changes the sign of the det, 1 otherwise
-       * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
-       * WHY is it like this ???? : try_roll : return det +1/-1.
-       */
-    int roll_matrix(RollDirection roll) {
-      long tmp;
-      const long NN = N;
-      switch (roll) {
-        case (None): return 1;
-        case (Down):
-          tmp = row_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
-          row_num[0] = tmp;
-          break;
-        case (Up):
-          tmp = row_num[0];
-          for (long i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
-          row_num[N - 1] = tmp;
-          break;
-        case (Right):
-          tmp = col_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
-          col_num[0] = tmp;
-          break;
-        case (Left):
-          tmp = col_num[0];
-          for (long i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
-          col_num[N - 1] = tmp;
-          break;
-        default: assert(0);
-      }
-      // signature of the cycle of order N : (-1)^(N-1)
-      if ((N - 1) % 2 == 1) {
-        sign *= -1;
-        return -1;
-      }
-      return 1;
+    /// Write into HDF5
+    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
+      auto gr = fg.create_group(subgroup_name);
+      h5_write(gr, "N", g.N);
+      h5_write(gr, "mat_inv", g.mat_inv);
+      h5_write(gr, "det", g.det);
+      h5_write(gr, "sign", g.sign);
+      h5_write(gr, "row_num", g.row_num);
+      h5_write(gr, "col_num", g.col_num);
+      h5_write(gr, "x_values", g.x_values);
+      h5_write(gr, "y_values", g.y_values);
+      h5_write(gr, "n_opts", g.n_opts);
+      h5_write(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
+      h5_write(gr, "singular_threshold", g.singular_threshold);
     }
+
+    /// Read from HDF5
+    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
+      auto gr = fg.open_group(subgroup_name);
+      h5_read(gr, "N", g.N);
+      h5_read(gr, "mat_inv", g.mat_inv);
+      g.Nmax     = first_dim(g.mat_inv); // restore Nmax
+      g.last_try = NoTry;
+      h5_read(gr, "det", g.det);
+      h5_read(gr, "sign", g.sign);
+      h5_read(gr, "row_num", g.row_num);
+      h5_read(gr, "col_num", g.col_num);
+      h5_read(gr, "x_values", g.x_values);
+      h5_read(gr, "y_values", g.y_values);
+      h5_read(gr, "n_opts", g.n_opts);
+      h5_read(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
+      h5_read(gr, "singular_threshold", g.singular_threshold);
+    }
+
+    private:
+    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
+      if (N == 0) {
+        det  = 1;
+        sign = 1;
+        return;
+      }
+
+      range RN(N);
+      matrix_type res(N, N);
+      for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
+      det = nda::linalg::det(res);
+
+      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
+      res = nda::linalg::inv(res);
+
+      if (do_check) { // check that mat_inv is close to res
+        const bool relative = true;
+        double r            = max_element(abs(res - mat_inv(RN, RN)));
+        double r2           = max_element(abs(res + mat_inv(RN, RN)));
+        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
+        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
+        if (err || war) {
+          std::cerr << "matrix  = " << matrix() << std::endl;
+          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
+        }
+        if (war)
+          std::cerr << "Warning : det_manip deviation above warning threshold "
+                    << "check "
+                    << "N = " << N << "  "
+                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
+                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
+        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+      }
+
+      // since we have the proper inverse, replace the matrix and the det
+      mat_inv(RN, RN) = res;
+      n_opts          = 0;
+
+      // find the sign (there must be a better way...)
+      double s = 1.0;
+      nda::matrix<double> m(N, N);
+      m() = 0.0;
+      for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
+      s *= nda::linalg::det(m);
+      m() = 0.0;
+      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
+      s *= nda::linalg::det(m);
+      sign = (s > 0 ? 1 : -1);
+    }
+
+    void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
+
+    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
+    bool is_singular() const { return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)); }
+
+    private:
+    F f;
+
+    value_type det;
+    long Nmax{0}, N;
+    long kmax{1}, k;
+    enum {
+      NoTry,
+      Insert,
+      Remove,
+      ChangeCol,
+      ChangeRow,
+      ChangeRowCol,
+      InsertK,
+      RemoveK,
+      Refill
+    } last_try = NoTry; // keep in memory the last operation not completed
+    std::vector<long> row_num, col_num;
+    std::vector<x_type> x_values;
+    std::vector<y_type> y_values;
+    int sign = 1;
+    matrix_type mat_inv;
+    uint64_t n_opts                  = 0;   // count the number of operation
+    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
+    double singular_threshold = -1;    // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+    double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
+    double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
+
+    detail::work_data_type1<x_type, y_type, value_type> w1;
+    detail::work_data_typek<x_type, y_type, value_type> wk;
+    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
+    value_type newdet;
+    int newsign;
   };
 } // namespace triqs::det_manip
