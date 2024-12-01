@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "./work_data.hpp"
 #include <triqs/utility/first_include.hpp>
 #include <vector>
 #include <iterator>
@@ -33,78 +34,6 @@
 namespace triqs::det_manip {
 
   namespace blas = nda::blas;
-
-  // ================ Work Data Types =====================
-
-  // For single-row/column operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type1 {
-    x_type x;
-    y_type y;
-    long i, j, ireal, jreal;
-    // MB = A^(-1)*B,
-    // MC = C*A^(-1)
-    nda::vector<value_type> MB, MC, B, C;
-    // ksi = newdet/det
-    value_type ksi;
-    void resize(long N) {
-      MB.resize(N);
-      MC.resize(N);
-      B.resize(N);
-      C.resize(N);
-    }
-  };
-
-  // For multiple-row/column operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_typek {
-    std::vector<x_type> x;
-    std::vector<y_type> y;
-    std::vector<long> i, j, ireal, jreal;
-    // MB = A^(-1)*B,
-    // MC = C*A^(-1)
-    nda::matrix<value_type> MB, MC, B, C, ksi;
-    void resize(long N, long k) {
-      if (k < 2) return;
-      x.resize(k);
-      y.resize(k);
-      i.resize(k);
-      j.resize(k);
-      ireal.resize(k);
-      jreal.resize(k);
-      MB.resize(N, k);
-      MC.resize(k, N);
-      B.resize(N, k);
-      C.resize(k, N);
-      ksi.resize(k, k);
-    }
-    value_type det_ksi(long k) const {
-      if (k == 2) {
-        return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
-      } else if (k == 3) {
-        return                                 // Rule of Sarrus
-           ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
-           ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
-           ksi(0, 2) * ksi(1, 0) * ksi(2, 1) - //
-           ksi(2, 0) * ksi(1, 1) * ksi(0, 2) - //
-           ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
-           ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
-      } else {
-        auto Rk = range(k);
-        return nda::linalg::det(ksi(Rk, Rk));
-      };
-    }
-  };
-
-  // For refill operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type_refill {
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    nda::matrix<value_type> M;
-    void reserve(long N) {
-      x_values.reserve(N);
-      y_values.reserve(N);
-      M.resize(N, N);
-    }
-  };
 
   // ================ det_manip implementation =====================
 
@@ -189,9 +118,9 @@ namespace triqs::det_manip {
     }
 
     private:
-    work_data_type1<x_type, y_type, value_type> w1;
-    work_data_typek<x_type, y_type, value_type> wk;
-    work_data_type_refill<x_type, y_type, value_type> w_refill;
+    detail::work_data_type1<x_type, y_type, value_type> w1;
+    detail::work_data_typek<x_type, y_type, value_type> wk;
+    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
     det_type newdet;
     int newsign;
 
