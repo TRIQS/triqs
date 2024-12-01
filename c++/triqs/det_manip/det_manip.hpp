@@ -104,67 +104,70 @@ namespace triqs::det_manip {
 
     public:
     /**
-       * @brief Constructor.
-       *
-       * @param F         The function (NB : a copy is made of the F object in this class).
-       * @param init_size The maximum size of the matrix before a resize (like reserve in std::vector).
-       *                  Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
-       *                  if it happens too often.
-       */
-    det_manip(F f, long init_size) : f_(std::move(f)), ncap_(0), n_(0) {
-      reserve(init_size);
-      M_() = 0;
-      det_ = 1;
-    }
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and an initial capacity for the data
+     * storages.
+     *
+     * @param f triqs::det_manip::MatrixBuilder object.
+     * @param ncap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     * @param kcap Initial capacity for the maximum number of rows and columns that can be added or removed in a single
+     * operation.
+     */
+    det_manip(F f, long ncap, long kcap = 1) : f_(std::move(f)) { reserve(ncap, kcap); }
 
     /**
-       * @brief Constructor.
-       *
-       * @param F         The function (NB : a copy is made of the F object in this class).
-       * @tparam ArgumentContainer
-       * @param X, Y : container for X,Y.
-       */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f_(std::move(f)), ncap_(0) {
-      if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
-      n_ = X.size();
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and two ranges containing the
+     * arguments for the matrix builder.
+     *
+     * @tparam X triqs::det_manip::MatrixBuilderXRange.
+     * @tparam Y triqs::det_manip::MatrixBuilderYRange.
+     * @param f triqs::det_manip::MatrixBuilder object.
+     * @param x_rg Range containing the first arguments.
+     * @param y_rg Range containing the second arguments.
+     */
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    det_manip(F f, X &&x_rg, Y &&y_rg) : f_(std::move(f)), n_(std::ranges::size(x_rg)) { // NOLINT (ranges need not be forwarded)
+      // check input sizes
+      if (n_ != std::ranges::size(y_rg)) TRIQS_RUNTIME_ERROR << "Error in det_manip::det_manip: Argument ranges have different sizes";
+
+      // early return if the argument ranges are empty
       if (n_ == 0) {
-        det_ = 1;
         reserve(30);
         return;
       }
-      reserve(n_);
-      std::copy(X.begin(), X.end(), std::back_inserter(x_));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(y_));
-      M_() = 0;
-      for (long i = 0; i < n_; ++i) {
-        row_perm_.push_back(i);
-        col_perm_.push_back(i);
-        for (long j = 0; j < n_; ++j) M_(i, j) = f(x_[i], y_[j]);
-      }
-      range RN(n_);
-      det_       = nda::linalg::det(M_(RN, RN));
-      M_(RN, RN) = nda::linalg::inv(M_(RN, RN));
-    }
-    /**
-       * Like for std::vector, reserve memory for a bigger size.
-       * Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
-       * between a try_XXX and a complete_operation
-       *
-       * @param new_N The new size of the reserved memory
-       */
-    void reserve(long new_N, long new_k = 1) {
-      if (new_k > kcap_) {
-        kcap_ = new_k;
-        if (new_N <= ncap_) wk_.resize(ncap_, kcap_);
-      }
-      if (new_N > ncap_) {
-        ncap_ = 2 * new_N;
 
-        matrix_type mcpy(M_);
+      // reserve memory and fill the data storages
+      reserve(n_ * 2);
+      set_xy(x_rg, y_rg);
+
+      // determinant and inverse matrix
+      auto M_v = M_(nda::range(size()), nda::range(size()));
+      nda::for_each(M_v.shape(), [this, &M_v](auto i, auto j) { M_v(i, j) = f_(x_[i], y_[j]); });
+      det_ = nda::linalg::det(M_v);
+      M_v  = nda::linalg::inv(M_v);
+    }
+
+    /**
+     * @brief Reserve memory and resize the data storages.
+     *
+     * @details It only reserves/resizes if the current capacities are smaller than the new capacities.
+     *
+     * @param new_ncap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     * @param new_kcap New capacity for the maximum number of rows and columns that can be added or removed in a single
+     * operation.
+     */
+    void reserve(long new_ncap, long new_kcap = 1) {
+      if (new_kcap > kcap_) {
+        kcap_ = new_kcap;
+        if (new_ncap <= ncap_) wk_.resize(ncap_, kcap_);
+      }
+      if (new_ncap > ncap_) {
+        ncap_ = 2 * new_ncap;
+
+        matrix_type M_copy(M_);
         M_.resize(ncap_, ncap_);
-        auto Rcpy      = range(mcpy.extent(0));
-        M_(Rcpy, Rcpy) = mcpy;
+        auto rg    = nda::range(M_copy.extent(0));
+        M_(rg, rg) = M_copy;
 
         row_perm_.reserve(ncap_);
         col_perm_.reserve(ncap_);
@@ -176,7 +179,7 @@ namespace triqs::det_manip {
       }
     }
 
-    /// Put to size 0 : like a vector
+    /// Clear the data storages and set the size to zero.
     void clear() {
       n_        = 0;
       sign_     = 1;
@@ -1197,6 +1200,23 @@ namespace triqs::det_manip {
     private:
     // Enumerate the different operations supported by the det_manip class that have a try - complete step.
     enum class try_tag { NoTry, Insert, Remove, ChangeCol, ChangeRow, ChangeRowCol, InsertK, RemoveK, Refill };
+
+    // Set the matrix builder arguments to the given ranges and reset the permutation vectors.
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    void set_xy(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
+      x_.clear();
+      y_.clear();
+      row_perm_.clear();
+      col_perm_.clear();
+      for (long i = 0; auto const &[x, y] : std::views::zip(x_rg, y_rg)) {
+        x_.push_back(x);
+        y_.push_back(y);
+        row_perm_.push_back(i);
+        col_perm_.push_back(i);
+        ++i;
+      }
+    }
 
     void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
       if (n_ == 0) {
