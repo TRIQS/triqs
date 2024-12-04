@@ -22,17 +22,21 @@
 
 #include "./utils.hpp"
 #include "./work_data.hpp"
-#include <triqs/utility/first_include.hpp>
-#include <vector>
-#include <iterator>
-#include <numeric>
-#include <cmath>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/callable_traits.hpp>
-#include <nda/linalg/det.hpp>
-#include <nda/linalg/inv.hpp>
+#include "../utility/exceptions.hpp"
+
+#include <fmt/base.h>
+#include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <utility>
+#include <h5/h5.hpp>
+#include <nda/h5.hpp>
+#include <nda/nda.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <ranges>
+#include <vector>
 
 namespace triqs::det_manip {
 
@@ -265,7 +269,7 @@ namespace triqs::det_manip {
     [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
       res.reserve(n_);
-      for (auto i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
+      for (auto i : nda::range(n_)) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
@@ -273,7 +277,7 @@ namespace triqs::det_manip {
     [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
       res.reserve(n_);
-      for (auto i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
+      for (auto i : nda::range(n_)) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
@@ -1026,96 +1030,132 @@ namespace triqs::det_manip {
 
     public:
     /**
-       * Consider the change the column j and the corresponding y.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one column in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The column to be changed is at position \f$ j \f$ in the original matrix \f$ F^{(n)} \f$. The new
+     * elements of the columns are determined by the given argument \f$ y \f$ as well as the
+     * triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current arguments \f$ \mathbf{x} \f$.
+     *
+     * Let \f$ j_p \f$ be the position of the column in the matrix \f$ G^{(n)} \f$. We can write the new matrix as
+     * \f[
+     *   \widetilde{G}^{(n)} = G^{(n)} + \mathbf{u} \mathbf{v}^T \; ,
+     * \f]
+     * where \f$ u_i = f(x_i, y) - f(x_i, y_{j_p}) \f$ and \f$ \mathbf{v} = \mathbf{e}_{j_p} \f$ is a cartesian basis
+     * vector.
+     *
+     * The new inverse matrix \f$ \widetilde{M}^{(n)} \f$ is then given by the Sherman-Morrison formula
+     * \f[
+     *   \widetilde{M}^{(n)} = M^{(n)} - \frac{M^{(n)} \mathbf{u} \mathbf{v}^T M^{(n)}}{1 + \mathbf{v}^T M^{(n)}
+     *   \mathbf{u}} \; ,
+     * \f]
+     * and the new determinant by the matrix determinant lemma
+     * \f[
+     *   \det(\widetilde{G}^{(n)}) = \det(G^{(n)}) \left( 1 + \mathbf{v}^T M^{(n)} \mathbf{u} \right) = \det(G^{(n)})
+     *   \xi \; .
+     * \f]
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(\widetilde{F}^{(n)})}{\det(F^{(n)})} =  \left( 1 + \mathbf{v}^T M^{(n)} \mathbf{u} \right) \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param y Argument to the matrix builder that determines the new elements of the column.
+     * @return Determinant ratio \f$ det(\widetilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     */
     value_type try_change_col(long j, y_type const &y) {
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= j and j < n_);
-      w1_.j     = j;
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= j and j < size());
+      std::tie(wcol_.j, wcol_.jp, wcol_.y) = std::make_tuple(j, col_perm_[j], y);
+
+      // set the try tag
       last_try_ = try_tag::ChangeCol;
-      w1_.jreal = col_perm_[j];
-      w1_.y     = y;
 
-      // Compute the col B.
-      for (long i = 0; i < n_; i++) w1_.MC(i) = f_(x_[i], w1_.y) - f_(x_[i], y_[w1_.jreal]);
-      range RN(n_);
-      //w1.MB(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, M_(RN, RN), w1_.MC(RN), 0.0, w1_.MB(RN));
+      // reserve memory for the working data
+      if (size() > wcol_.capacity()) wcol_.reserve(2 * size());
 
-      // compute the newdet
-      w1_.ksi  = (1 + w1_.MB(w1_.jreal));
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
+      // calculate the vector u, the product M u and the factor xi = 1 + v^T M u = 1 + (M u)_{j_p}
+      auto rg = nda::range(size());
+      for (auto i : rg) wcol_.u(i) = f_(x_[i], wcol_.y) - f_(x_[i], y_[wcol_.jp]);
+      nda::blas::gemv(1.0, M_(rg, rg), wcol_.u(rg), 0.0, wcol_.Mu(rg));
+      wcol_.xi = 1 + wcol_.Mu(wcol_.jp);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wcol_.xi;
       newsign_ = sign_;
 
-      return ksi; // newsign/sign is unity
+      return wcol_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change column operation.
     void complete_change_col() {
-      range RN(n_);
-      y_[w1_.jreal] = w1_.y;
+      // change the matrix builder argument
+      y_[wcol_.jp] = wcol_.y;
 
-      // modifying M : Mij += w1.ksi Bi Mnj
-      // using Shermann Morrison formula.
-      // implemented in 2 times : first Bn=0 so that Mnj is not modified ! and then change Mnj
-      // Cf notes : simply multiply by -w1.ksi
-      w1_.ksi           = -1 / w1_.ksi;
-      w1_.MB(w1_.jreal) = 0;
-      //mat_inv(R,R) += w1.ksi * w1.MB(R) * mat_inv(w1.jreal,R)); // OPTIMIZE BELOW
-      blas::ger(w1_.ksi, w1_.MB(RN), M_(w1_.jreal, RN), M_(RN, RN));
-      M_(w1_.jreal, RN) *= -w1_.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg       = nda::range(size());
+      wcol_.vTM(rg) = M_(wcol_.jp, rg);
+      nda::blas::ger(-1 / wcol_.xi, wcol_.Mu(rg), wcol_.vTM(rg), M_(rg, rg));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
-       * Consider the change the row i and the corresponding x.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one row in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The row to be changed is at position \f$ i \f$ in the original matrix \f$ F^{(n)} \f$. The new
+     * elements of the row are determined by the given argument \f$ x \f$ as well as the
+     * triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current arguments \f$ \mathbf{y} \f$.
+     *
+     * We follow the same procedure as in try_change_col, except that we use \f$ v_i = f(x, y_j) - f(x_{i_p}, y_j) \f$
+     * and \f$ \mathbf{u} = \mathbf{e}_{i_p} \f$ is a cartesian basis vector.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param x Argument to the matrix builder that determines the new elements of the row.
+     * @return Determinant ratio \f$ det(\tilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     */
     value_type try_change_row(long i, x_type const &x) {
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(i < n_);
-      w1_.i     = i;
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      std::tie(wrow_.i, wrow_.ip, wrow_.x) = std::make_tuple(i, row_perm_[i], x);
+
+      // set the try tag
       last_try_ = try_tag::ChangeRow;
-      w1_.ireal = row_perm_[i];
-      w1_.x     = x;
 
-      // Compute the col B.
-      for (long idx = 0; idx < n_; idx++) w1_.MB(idx) = f_(w1_.x, y_[idx]) - f_(x_[w1_.ireal], y_[idx]);
-      range RN(n_);
-      //w1.MC(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(M_(RN, RN)), w1_.MB(RN), 0.0, w1_.MC(RN));
+      // reserve memory for the working data
+      if (size() > wrow_.capacity()) wrow_.reserve(2 * size());
 
-      // compute the newdet
-      w1_.ksi  = (1 + w1_.MC(w1_.ireal));
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
+      // calculate the vector v^T, the product v^T M and the factor xi = 1 + v^T M u = 1 + (v^T M)_{i_p}
+      auto rg = nda::range(size());
+      for (auto j : rg) wrow_.vT(j) = f_(wrow_.x, y_[j]) - f_(x_[wrow_.ip], y_[j]);
+      nda::blas::gemv(1.0, nda::transpose(M_(rg, rg)), wrow_.vT(rg), 0.0, wrow_.vTM(rg));
+      wrow_.xi = 1 + wrow_.vTM(wrow_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrow_.xi;
       newsign_ = sign_;
-      return ksi; // newsign/sign is unity
+
+      return wrow_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change row operation.
     void complete_change_row() {
-      range RN(n_);
-      x_[w1_.ireal] = w1_.x;
+      // change the matrix builder argument
+      x_[wrow_.ip] = wrow_.x;
 
-      // modifying M : M ij += w1.ksi Min Cj
-      // using Shermann Morrison formula.
-      // impl. Cf case 3
-      w1_.ksi           = -1 / w1_.ksi;
-      w1_.MC(w1_.ireal) = 0;
-      //mat_inv(R,R) += w1.ksi * mat_inv(R,w1.ireal) * w1.MC(R);
-      blas::ger(w1_.ksi, M_(RN, w1_.ireal), w1_.MC(RN), M_(RN, RN));
-      M_(RN, w1_.ireal) *= -w1_.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg      = nda::range(size());
+      wrow_.Mu(rg) = M_(rg, wrow_.ip);
+      nda::blas::ger(-1 / wrow_.xi, wrow_.Mu(rg), wrow_.vTM(rg), M_(rg, rg));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
        * Consider the change the row i and column j and the corresponding x and y
@@ -1144,7 +1184,7 @@ namespace triqs::det_manip {
       w1_.MC(w1_.ireal) = f_(x, y) - f_(x_[w1_.ireal], y_[w1_.jreal]);
       w1_.MB(w1_.jreal) = 0;
 
-      range RN(n_);
+      nda::range RN(n_);
       // C : X, B : Y
       //w1.C(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
       blas::gemv(1.0, M_(RN, RN), w1_.MC(RN), 0.0, w1_.C(RN));
@@ -1165,7 +1205,7 @@ namespace triqs::det_manip {
     //------------------------------------------------------------------------------------------
     private:
     void complete_change_col_row() {
-      range RN(n_);
+      nda::range RN(n_);
       x_[w1_.ireal] = w1_.x;
       y_[w1_.jreal] = w1_.y;
 
@@ -1227,7 +1267,7 @@ namespace triqs::det_manip {
 
       for (long i = 0; i < s; ++i)
         for (long j = 0; j < s; ++j) wref_.M(i, j) = f_(wref_.x_values[i], wref_.y_values[j]);
-      range R(s);
+      nda::range R(s);
       newdet_  = nda::linalg::det(wref_.M(R, R));
       newsign_ = 1;
 
@@ -1256,7 +1296,7 @@ namespace triqs::det_manip {
       std::iota(row_perm_.begin(), row_perm_.end(), 0);
       std::iota(col_perm_.begin(), col_perm_.end(), 0);
 
-      range RN(n_);
+      nda::range RN(n_);
       M_(RN, RN) = nda::linalg::inv(wref_.M(RN, RN));
     }
 
@@ -1509,6 +1549,8 @@ namespace triqs::det_manip {
     detail::work_data_insert_k<x_type, y_type, value_type> winsk_;
     detail::work_data_remove<value_type> wrem_;
     detail::work_data_remove_k<value_type> wremk_;
+    detail::work_data_change_col<y_type, value_type> wcol_;
+    detail::work_data_change_row<x_type, value_type> wrow_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;
     detail::work_data_type_refill<x_type, y_type, value_type> wref_;

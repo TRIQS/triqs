@@ -205,6 +205,68 @@ namespace triqs::det_manip::detail {
     }
   };
 
+  // Data storage for temporary data used in the det_manip class when changing the elements of a column.
+  //
+  // - y: MatrixBuilder arguments for the new column.
+  // - j: Position of the column in the original matrix F that is being changed.
+  // - jp: Position of the column in the matrix G.
+  // - u: Vector used in the Sherman-Morrison formula containing the difference between the new and the old column.
+  // - Mu: Product of the current inverse matrix M and the vector u.
+  // - vTM: Product of the vector v^T with the current inverse matrix M, i.e. the jp-th row of the matrix M.
+  // - xi: Factor appearing in the matrix determinant lemma, i.e. xi = (1 + v^T M u).
+  template <typename Y, typename T> struct work_data_change_col {
+    Y y;
+    long j;
+    long jp;
+    nda::vector<T> u;
+    nda::vector<T> Mu;
+    nda::vector<T> vTM;
+    T xi;
+
+    // Get current capacity of the data storages.
+    auto capacity() const { return u.size(); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        u.resize(cap);
+        Mu.resize(cap);
+        vTM.resize(cap);
+      }
+    }
+  };
+
+  // Data storage for temporary data used in the det_manip class when changing the elements of a row.
+  //
+  // - x: MatrixBuilder arguments for the new row.
+  // - i: Position of the row in the original matrix F that is being changed.
+  // - ip: Position of the row in the matrix G.
+  // - vT: Vector used in the Sherman-Morrison formula containing the difference between the new and the old row.
+  // - vTM: Product of the vector v^T with the current inverse matrix M.
+  // - Mu: Product of the current inverse matrix M and the vector u, i.e. the ip-th column of the matrix M.
+  // - xi: Factor appearing in the matrix determinant lemma, i.e. xi = (1 + v^T M u).
+  template <typename X, typename T> struct work_data_change_row {
+    X x;
+    long i;
+    long ip;
+    nda::vector<T> vT;
+    nda::vector<T> vTM;
+    nda::vector<T> Mu;
+    T xi;
+
+    // Get current capacity of the data storages.
+    auto capacity() const { return vT.size(); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        vT.resize(cap);
+        vTM.resize(cap);
+        Mu.resize(cap);
+      }
+    }
+  };
+
   // Calculate the determinant of the matrix M(nda::range(k), nda::range(k)).
   template <typename T> T determinant(nda::matrix<T> const &M, long k) {
     switch (k) {
