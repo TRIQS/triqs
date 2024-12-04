@@ -98,4 +98,55 @@ namespace triqs::det_manip::detail {
     }
   };
 
+  // Data storage for temporary data used in the det_manip class when removing 1 row and column.
+  //
+  // - i and j: Positions of the row and column in the original matrix F.
+  // - ip and jp: Positions of the row and column in the matrix G.
+  // - S: Diagonal element of \widetilde{M}^{(n)}.
+  template <typename T> struct work_data_remove {
+    long i;
+    long j;
+    long ip;
+    long jp;
+    T S;
+  };
+
+  // Data storage for temporary data used in the det_manip class when removing k rows and columns.
+  //
+  // - i and j: Positions of the rows and columns in the original matrix F.
+  // - ip and jp: Positions of the rows and columns in the matrix G.
+  // - S: Block matrix of \widetilde{M}^{(n)}.
+  template <typename T> struct work_data_remove_k {
+    std::vector<long> i;
+    std::vector<long> j;
+    std::vector<long> ip;
+    std::vector<long> jp;
+    nda::matrix<T> S;
+
+    // Get current capacity of the data storages.
+    auto capacity() const { return S.shape()[0]; }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        ip.resize(cap);
+        jp.resize(cap);
+        S.resize(cap, cap);
+      }
+    }
+  };
+
+  // Calculate the determinant of the matrix M(nda::range(k), nda::range(k)).
+  template <typename T> T determinant(nda::matrix<T> const &M, long k) {
+    switch (k) {
+      case 0: return 1;
+      case 1: return M(0, 0);
+      case 2: return M(0, 0) * M(1, 1) - M(1, 0) * M(0, 1);
+      case 3:
+        return M(0, 0) * M(1, 1) * M(2, 2) + M(0, 1) * M(1, 2) * M(2, 0) + M(0, 2) * M(1, 0) * M(2, 1) - M(2, 0) * M(1, 1) * M(0, 2)
+           - M(2, 1) * M(1, 2) * M(0, 0) - M(2, 2) * M(1, 0) * M(0, 1);
+      default: return nda::determinant(M(nda::range(k), nda::range(k)));
+    }
+  }
+
 } // namespace triqs::det_manip::detail

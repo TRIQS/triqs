@@ -32,6 +32,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <fmt/ranges.h>
+#include <utility>
 
 namespace triqs::det_manip {
 
@@ -698,185 +699,309 @@ namespace triqs::det_manip {
     void complete_insert2() { complete_insert_k(); }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
-       * Consider the removal the colj0 and row i0 from the matrix.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to remove one row and column.
+     *
+     * @details The row to be removed is at position \f$ \mathbf{i} \f$ and the column at position \f$ \mathbf{j} \f$ in
+     * the original matrix \f$ F^{(n)} \f$.
+     *
+     * This is a special case of try_remove_k() with \f$ k = 1 \f$.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Position of the column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ det(F^{(n-1)}) / det(F^{(n)}) \f$.
+     */
     value_type try_remove(long i, long j) {
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < n_);
-      TRIQS_ASSERT(0 <= j and j < n_);
-      w1_.i     = i;
-      w1_.j     = j;
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(i >= 0 and i < n_);
+      EXPECTS(j >= 0 and j < n_);
+      std::tie(wrem_.i, wrem_.j, wrem_.ip, wrem_.jp) = std::make_tuple(i, j, row_perm_[i], col_perm_[j]);
+
+      // set the try tag
       last_try_ = try_tag::Remove;
-      w1_.jreal = col_perm_[w1_.j];
-      w1_.ireal = row_perm_[w1_.i];
-      // compute the newdet
-      // first we resolve the w1.ireal,w1.jreal, with the permutation of the Minv, then we pick up what
-      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
-      w1_.ksi  = M_(w1_.jreal, w1_.ireal);
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
-      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
-      return ksi * (newsign_ * sign_); // sign is unity, hence 1/sign == sign
+
+      // calculate the signs associated with P1, P2, P3 and P4
+      int s_p1p2 = (wrem_.ip == n_ - 1 ? 1 : -1);
+      s_p1p2     = (wrem_.jp == n_ - 1 ? s_p1p2 : -s_p1p2);
+      int s_p3p4 = ((i + j) % 2 == 0 ? 1 : -1);
+
+      // set the diagonal element S
+      wrem_.S = M_(wrem_.jp, wrem_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrem_.S * s_p1p2;
+      newsign_ = sign_ * s_p1p2 * s_p3p4;
+
+      return wrem_.S * s_p3p4;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the remove operation.
     void complete_remove() {
+      // early return if the resulting matrix is empty
       if (n_ == 1) {
         clear();
         return;
       }
 
-      // Move rows and cols to be removed to the end.
-      // Adjust the x_values and y_values vector accordingly and
-      // swap the associated row_num and col_num elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(n_);
-      if (w1_.ireal != n_ - 1) {
-        deep_swap(M_(RN, w1_.ireal), M_(RN, n_ - 1));
-        x_[w1_.ireal] = x_[n_ - 1];
-        auto iitr     = std::find(row_perm_.begin(), row_perm_.end(), w1_.ireal);
-        auto titr     = std::find(row_perm_.begin(), row_perm_.end(), n_ - 1);
-        std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the row and column to be removed with the last row and column
+      auto rg_n = nda::range{n_};
+      if (wrem_.ip != n_ - 1) {
+        // for M, we have to apply P1^T to the columns
+        deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, n_ - 1));
+        // update the x arguments and the row permutation vector
+        x_[wrem_.ip] = x_[n_ - 1];
+        auto it1     = std::ranges::find(row_perm_, wrem_.ip);
+        auto it2     = std::ranges::find(row_perm_, n_ - 1);
+        std::swap(*it1, *it2);
       }
-      if (w1_.jreal != n_ - 1) {
-        deep_swap(M_(w1_.jreal, RN), M_(n_ - 1, RN));
-        y_[w1_.jreal] = y_[n_ - 1];
-        auto jitr     = std::find(col_perm_.begin(), col_perm_.end(), w1_.jreal);
-        auto titr     = std::find(col_perm_.begin(), col_perm_.end(), n_ - 1);
-        std::swap(*jitr, *titr);
+      if (wrem_.jp != n_ - 1) {
+        // for M, we have to apply P2^T to the rows
+        deep_swap(M_(wrem_.jp, rg_n), M_(n_ - 1, rg_n));
+        // update the y arguments and the column permutation vector
+        y_[wrem_.jp] = y_[n_ - 1];
+        auto it1     = std::ranges::find(col_perm_, wrem_.jp);
+        auto it2     = std::ranges::find(col_perm_, n_ - 1);
+        std::swap(*it1, *it2);
       }
-      n_--;
-      RN = range(n_);
 
-      auto it1 [[maybe_unused]] = std::remove(row_perm_.begin(), row_perm_.end(), n_);
-      auto it2 [[maybe_unused]] = std::remove(col_perm_.begin(), col_perm_.end(), n_);
+      // update the size of the matrix
+      --n_;
+      rg_n = nda::range{n_};
 
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      std::ignore = std::ranges::remove(row_perm_, n_);
+      std::ignore = std::ranges::remove(col_perm_, n_);
       row_perm_.pop_back();
       col_perm_.pop_back();
       x_.pop_back();
       y_.pop_back();
 
-      // M <- a - d^-1 b c with BLAS
-      w1_.ksi = -1 / M_(n_, n_);
+      // calculate -S^{-1}
+      auto mS_inv = -1 / wrem_.S;
       ASSERT(std::isfinite(std::abs(w1_.ksi)));
 
-      //mat_inv(RN,RN) += w1.ksi, * mat_inv(RN,N) * mat_inv(N,RN);
-      blas::ger(w1_.ksi, M_(RN, n_), M_(n_, RN), M_(RN, RN));
+      // solve P = \widetilde{M}^{(n-1)} + \widetilde{M}^{(n-1)} B S C \widetilde{M}^{(n-1)} for \widetilde{M}^{(n-1)}
+      // by using the fact that we know -\widetilde{M}^{(n-1)} B S, -S C \widetilde{M}^{(n-1)} and S^{-1}
+      blas::ger(mS_inv, M_(rg_n, n_), M_(n_, rg_n), M_(rg_n, rg_n));
     }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
-       * Double Removal operation of cols j0,j1 and rows i0,i1
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to remove \f$ k \f$ rows and columns.
+     *
+     * @details The rows to be removed are specified in the tuple \f$ \mathbf{i} \f$ and the columns in the tuple
+     * \f$ \mathbf{j} \f$. The positions are given w.r.t. the original matrix \f$ F^{(n)} \f$. The corresponding
+     * positions in the matrix \f$ G^{(n)} \f$ are denoted by \f$ \mathbf{i}_p \f$ and \f$ \mathbf{j}_p \f$,
+     * respectively.
+     *
+     * Since we are working with \f$ G^{(n)} \f$, we are free to first move the rows and columns to the bottom and to
+     * the right of the matrix and use the update formulas presented in triqs::det_manip::det_manip.
+     *
+     * More specifically, we introduce the matrix
+     * \f[
+     *   \widetilde{G}^{(n)} = P_1 G^{(n)} P_2 =  \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & D \end{bmatrix} \; ,
+     * \f]
+     * where \f$ P_1 \f$ and \f$ P_2 \f$ are permutation matrices that swap the rows and columns to be removed
+     * (contained in the matrices \f$ B \f$, \f$ C \f$ and \f$ D \f$) with the bottom rows and the right most columns of
+     * the matrix. \f$ \widetilde{G}^{(n-k)} \f$ is the resulting matrix after the remove operation.
+     *
+     * We use the following order for the rows and columns to be removed:
+     * - The first row (column) in C (B) corresponds to the row (column) with the smallest index in the matrix \f$
+     * F^{(n)} \f$.
+     * - The second row (column) in C (B) corresponds to the row (column) with the second smallest index in the matrix
+     * \f$ F^{(n)} \f$.
+     * - And so on.
+     *
+     * The original matrix can be written as
+     * \f[
+     *   F^{(n)} = P^{(n)}_r G^{(n)} P^{(n)}_c = P^{(n)}_r P_1^{-1} [P_1 G^{(n)} P_2] P_2^{-1} P^{(n)}_c =
+     *   \widetilde{P}^{(n)}_r \widetilde{G}^{(n)} \widetilde{P}^{(n)}_c =
+     *   P_3 \begin{bmatrix} P^{(n-k)}_r & 0 \\ 0 & I \end{bmatrix} \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & D
+     *   \end{bmatrix} \begin{bmatrix} P^{(n-k)}_c & 0 \\ 0 & I \end{bmatrix} P_4 \; ,
+     * \f]
+     * where \f$ P_3 \f$ and \f$ P_4 \f$ are permutation matrices that move the rows and columns in \f$ B \f$, \f$ C \f$
+     * and \f$ D \f$ back to their original positions in the matrix \f$ F^{(n)} \f$.
+     *
+     * We can therefore write the determinant of the resulting matrix \f $ \widetilde{G}^{(n-k)} \f$ in terms of the
+     * determinant of the current matrix \f$ G^{(n)} \f$
+     * \f[
+     *   \det(\widetilde{G}^{(n-k)}) = \det(\widetilde{G}^{(n)}) \det(S) = \det(P_1) \det(G^{(n)}) \det(P_2) \det(S)
+     *   \; ,
+     * \f]
+     * and the new sign \f$ \widetilde{s}^{(n-k)} \f$ in terms of the current sign \f$ s^{(n)} \f$:
+     * \f[
+     *   \widetilde{s}^{(n-k)} = \det(\widetilde{P}^{(n-k)}_r) \det(\widetilde{P}^{(n-k)}_c) =
+     *   \det(P_3) \det(\widetilde{P}^{(n)}_r) \det(\widetilde{P}^{(n)}_c) \det(P_4) =
+     *   \det(P_3) \det(P^{(n)}_r) \det(P_1) \det(P_2) \det(P^{(n)}_c) \det(P_4) =
+     *   s^{(n)} \det(P_1) \det(P_2) \det(P_3) \det(P_4) \; .
+     * \f]
+     * Here, we used the fact that \f$ \det(P) = \det(P^{-1}) \f$ for a permutation matrix \f$ P \f$.
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(F^{(n-k)})}{\det(F^{(n)})} = \frac{\det(\widetilde{G}^{(n-k)}) \widetilde{s}^{(n-k)}}{
+     *   \det(G^{(n)}) s^{(n)}} = \det(S) \det(P_3) \det(P_4) \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Positions of the rows to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Positions of the columns to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ det(F^{(n-k)}) / det(F^{(n)}) \f$.
+     */
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
+      // check input argument sizes
+      k_ = static_cast<long>(i.size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(k_ > 0 && k_ <= n_);
+      EXPECTS(j.size() == k_);
 
-      std::sort(i.begin(), i.end());
-      std::sort(j.begin(), j.end());
+      // sort and check input arguments
+      std::ranges::sort(i);
+      std::ranges::sort(j);
+      EXPECTS(std::ranges::adjacent_find(i) == i.end() && i.front() >= 0 && i.back() < n_);
+      EXPECTS(std::ranges::adjacent_find(j) == j.end() && j.front() >= 0 && j.back() < n_);
 
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(n_ >= 2);
-      TRIQS_ASSERT(i.size() == j.size());
-
-      k_ = i.size();
-      reserve(n_ - k_, k_);
+      // set the try tag
       last_try_ = try_tag::RemoveK;
 
-      // check inputs
-      for (int l = 0; l < k_ - 1; ++l) {
-        TRIQS_ASSERT(i[l] != i[l + 1] and 0 <= i[l] and i[l] < n_);
-        TRIQS_ASSERT(j[l] != j[l + 1] and 0 <= j[l] and j[l] < n_);
-      }
+      // reserve memory for the working data
+      wremk_.reserve(k_);
 
+      // move input arguments to the working data and get the corresponding row/column positions in the matrix G
+      wremk_.i = std::move(i);
+      wremk_.j = std::move(j);
       for (long l = 0; l < k_; ++l) {
-        wk_.i[l]     = i[l];
-        wk_.j[l]     = j[l];
-        wk_.ireal[l] = row_perm_[wk_.i[l]];
-        wk_.jreal[l] = col_perm_[wk_.j[l]];
+        wremk_.ip[l] = row_perm_[wremk_.i[l]];
+        wremk_.jp[l] = col_perm_[wremk_.j[l]];
       }
 
-      // compute the newdet
-      for (long l1 = 0; l1 < k_; ++l1) {
-        for (long l2 = 0; l2 < k_; ++l2) { wk_.ksi(l1, l2) = M_(wk_.jreal[l1], wk_.ireal[l2]); }
-      }
-      auto det_ksi = wk_.det_ksi(k_);
-      newdet_      = det_ * det_ksi;
+      // compute the signs of the permutations P1, P2, P3, P4 and set the matrix S
+      int s_p1p2   = 1;
       long idx_sum = 0;
-      for (long l = 0; l < k_; ++l) { idx_sum += wk_.i[l] + wk_.j[l]; }
-      newsign_ = (idx_sum % 2 == 0 ? sign_ : -sign_);
+      long target  = n_ - k_;
+      for (long l = 0; l < k_; ++l) {
+        // the combined sign of P3 and P4 is simply (-1)^{\sum i_k + j_k}
+        idx_sum += wremk_.i[l] + wremk_.j[l];
 
-      return det_ksi * (newsign_ * sign_); // sign is unity, hence 1/sign == sign
+        // check if the current position of the row in G is where we want it
+        if (wremk_.ip[l] != target) {
+          // if not, P1 has to swap it with the corresponding row
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the row is swapped with another row that we want to remove
+          auto it = std::find(wremk_.ip.begin() + l + 1, wremk_.ip.begin() + k_, target);
+          if (it != wremk_.ip.begin() + k_) {
+            std::swap(wremk_.ip[l], *it);
+          } else {
+            wremk_.ip[l] = target;
+          }
+        }
+
+        // check if the current position of the column in G is where we want it
+        if (wremk_.jp[l] != target) {
+          // if not, P2 has to swap it with the corresponding column
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the column is swapped with another column that we want to remove
+          auto it = std::find(wremk_.jp.begin() + l + 1, wremk_.jp.begin() + k_, target);
+          if (it != wremk_.jp.begin() + k_) {
+            std::swap(wremk_.jp[l], *it);
+          } else {
+            wremk_.jp[l] = target;
+          }
+        }
+        ++target;
+
+        // set the elements of the matrix S
+        for (long m = 0; m < k_; ++m) { wremk_.S(l, m) = M_(col_perm_[wremk_.j[l]], row_perm_[wremk_.i[m]]); }
+      }
+      int s_p3p4 = (idx_sum % 2 == 0 ? 1 : -1);
+
+      // compute the new determinant and sign
+      auto det_S = detail::determinant(wremk_.S, k_);
+      newdet_    = det_ * det_S * s_p1p2;
+      newsign_   = sign_ * s_p1p2 * s_p3p4;
+
+      return det_S * s_p3p4;
     }
+
+    /**
+     * @brief Try to remove two rows and two columns.
+     *
+     * @details The rows to be removed are specified by the indices \f$ i_0 \f$ and \f$ i_1 \f$, and the columns by the
+     * indices \f$ j_0 \f$ and \f$ j_1 \f$. The positions are given w.r.t. the original matrix \f$ F^{(n)} \f$.
+     *
+     * It simply calls the more general try_remove_k().
+     *
+     * @param i0 Position of the first row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param i1 Position of the second row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j0 Position of the first column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j1 Position of the second column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ det(F^{(n-2)}) / det(F^{(n)}) \f$.
+     */
     value_type try_remove2(long i0, long i1, long j0, long j1) { return try_remove_k({i0, i1}, {j0, j1}); }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the remove_k operation.
     void complete_remove_k() {
+      // early return if the resulting matrix is empty
       if (n_ == k_) {
         clear();
         return;
-      } // put the sign to 1 also .... Change complete_remove...
+      }
 
-      std::vector<long> ireal = wk_.ireal;
-      std::vector<long> jreal = wk_.jreal;
-      std::sort(ireal.begin(), ireal.begin() + k_);
-      std::sort(jreal.begin(), jreal.begin() + k_);
-
-      // Move rows and cols to be removed to the end, starting from the right.
-      // Adjust the x_values and y_values vector accordingly and
-      // swap the associated row_num and col_num elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(n_);
-      for (long m = k_ - 1, target = n_ - 1; m >= 0; --m, --target) {
-        if (ireal[m] != target) {
-          deep_swap(M_(RN, ireal[m]), M_(RN, target));
-          x_[ireal[m]] = x_[target];
-          auto iitr    = std::find(row_perm_.begin(), row_perm_.end(), ireal[m]);
-          auto titr    = std::find(row_perm_.begin(), row_perm_.end(), target);
-          std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the rows and columns accordingly
+      auto rg_n = nda::range{n_};
+      for (long m = 0, target = n_ - k_; m < k_; ++m, ++target) {
+        if (row_perm_[wremk_.i[m]] != target) {
+          // for M, we have to apply P1^T to the columns
+          deep_swap(M_(rg_n, row_perm_[wremk_.i[m]]), M_(rg_n, target));
+          // update the x arguments and the row permutation vector
+          x_[row_perm_[wremk_.i[m]]] = x_[target];
+          auto it1                   = std::ranges::find(row_perm_, row_perm_[wremk_.i[m]]);
+          auto it2                   = std::ranges::find(row_perm_, target);
+          std::swap(*it1, *it2);
         }
-        if (jreal[m] != target) {
-          deep_swap(M_(jreal[m], RN), M_(target, RN));
-          y_[jreal[m]] = y_[target];
-          auto jitr    = std::find(col_perm_.begin(), col_perm_.end(), jreal[m]);
-          auto titr    = std::find(col_perm_.begin(), col_perm_.end(), target);
+        if (col_perm_[wremk_.j[m]] != target) {
+          // for M, we have to apply P2^T to the rows
+          deep_swap(M_(col_perm_[wremk_.j[m]], rg_n), M_(target, rg_n));
+          // update the y arguments and the column permutation vector
+          y_[col_perm_[wremk_.j[m]]] = y_[target];
+          auto jitr                  = std::ranges::find(col_perm_, col_perm_[wremk_.j[m]]);
+          auto titr                  = std::ranges::find(col_perm_, target);
           std::swap(*jitr, *titr);
         }
       }
+
+      // update the size of the matrix
       n_ -= k_;
-      RN = range(n_);
+      rg_n = nda::range{n_};
 
-      // Clean up removed elements from row_num and col_num
-      auto gtN = [&](auto i) { return i >= n_; };
-
-      auto it1 [[maybe_unused]] = std::remove_if(row_perm_.begin(), row_perm_.end(), gtN);
-      auto it2 [[maybe_unused]] = std::remove_if(col_perm_.begin(), col_perm_.end(), gtN);
-
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      auto ge_n   = [this](auto i) { return i >= n_; };
+      std::ignore = std::ranges::remove_if(row_perm_, ge_n);
+      std::ignore = std::ranges::remove_if(col_perm_, ge_n);
       row_perm_.resize(n_);
       col_perm_.resize(n_);
       x_.resize(n_);
       y_.resize(n_);
 
-      // M <- a - d^-1 b c with BLAS
-      range Rl(n_, n_ + k_), Rk(k_);
-      wk_.ksi(Rk, Rk) = nda::linalg::inv(M_(Rl, Rl));
+      // calculate S^{-1}
+      auto rg_k    = nda::range{k_};
+      auto rg_n_nk = nda::range{n_, n_ + k_};
+      nda::linalg::inv_in_place(wremk_.S(rg_k, rg_k));
 
-      // write explicitely the second product on ksi for speed ?
-      //mat_inv(RN,RN) -= mat_inv(RN,Rl) * (wk.ksi * mat_inv(Rl,RN)); // OPTIMIZE BELOW
-      blas::gemm(-1.0, M_(RN, Rl), wk_.ksi(Rk, Rk) * M_(Rl, RN), 1.0, M_(RN, RN));
+      // solve P = \widetilde{M}^{(n-k)} + \widetilde{M}^{(n-k)} B S C \widetilde{M}^{(n-k)} for \widetilde{M}^{(n-k)}
+      // by using the fact that we know -\widetilde{M}^{(n-k)} B S, -S C \widetilde{M}^{(n-k)} and S^{-1}
+      blas::gemm(-1.0, M_(rg_n, rg_n_nk), wremk_.S(rg_k, rg_k) * M_(rg_n_nk, rg_n), 1.0, M_(rg_n, rg_n));
     }
+
+    // Complete the remove2 operation.
     void complete_remove2() { complete_remove_k(); }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
        * Consider the change the column j and the corresponding y.
@@ -1358,6 +1483,8 @@ namespace triqs::det_manip {
     int sign_{1};
 
     // working data for the try-complete operations
+    detail::work_data_remove<value_type> wrem_;
+    detail::work_data_remove_k<value_type> wremk_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;
     detail::work_data_type_refill<x_type, y_type, value_type> wref_;
