@@ -356,24 +356,41 @@ namespace triqs::det_manip {
       nda::for_each(std::array{dm.size(), dm.size()}, [&fn, &dm](auto i, auto j) { return fn(dm.x_[i], dm.y_[j], dm.M_(j, i)); });
     }
 
-    // ------------------------- OPERATIONS -----------------------------------------------
-
-    /** Simply swap two lines
-         NB very quick, we just change the permutation table internally
-	 This operation is so simple that it has no try, complete.
-       */
+    /**
+     * @brief Swap two rows.
+     *
+     * @details It simply performs the transposition in the row permutation vector and changes the sign \f$ s^{(n)} \f$
+     * associated with the permutation matrices.
+     *
+     * Since we are only changing the matrix \f$ P^{(n)}_r \f$, the matrix \f$ G^{(n)} \f$ and its determinant remain
+     * unchanged.
+     *
+     * @param i Index of the first row to swap.
+     * @param j Index of the second row to swap.
+     */
     void swap_row(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       if (i == j) return;
       std::swap(row_perm_[i], row_perm_[j]);
       sign_ = -sign_;
-      // we do not need to change the det, or the matrix, just the permutation
     }
 
-    /** Simply swap two lines and cols.
-         NB very quick, we just change the permutation table internally
-	 This operation is so simple that it has no try, complete.
-       */
+    /**
+     * @brief Swap two columns.
+     *
+     * @details It simply performs the transposition in the column permutation vector and changes the sign \f$ s^{(n)}
+     * \f$ associated with the permutation matrices.
+     *
+     * Since we are only changing the matrix \f$ P^{(n)}_c \f$, the matrix \f$ G^{(n)} \f$ and its determinant remain
+     * unchanged.
+     *
+     * @param i Index of the first column to swap.
+     * @param j Index of the second column to swap.
+     */
     void swap_col(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       if (i == j) return;
       std::swap(col_perm_[i], col_perm_[j]);
       sign_ = -sign_;
