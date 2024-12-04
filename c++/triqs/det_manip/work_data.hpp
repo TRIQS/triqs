@@ -267,6 +267,31 @@ namespace triqs::det_manip::detail {
     }
   };
 
+  // Data storage for temporary data used in the det_manip class when refilling the full matrix.
+  //
+  // - x and y: New MatrixBuilder arguments.
+  // - G: New matrix G built from the new arguments.
+  template <typename X, typename Y, typename T> struct work_data_refill {
+    std::vector<X> x;
+    std::vector<Y> y;
+    nda::matrix<T> G;
+
+    // Get current capacity of the data storages.
+    auto capacity() const { return G.shape()[0]; }
+
+    // Get the size of new matrix G.
+    auto size() const { return x.size(); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        x.reserve(cap);
+        y.reserve(cap);
+        G.resize(cap, cap);
+      }
+    }
+  };
+
   // Calculate the determinant of the matrix M(nda::range(k), nda::range(k)).
   template <typename T> T determinant(nda::matrix<T> const &M, long k) {
     switch (k) {
