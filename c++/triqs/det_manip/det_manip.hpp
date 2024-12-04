@@ -396,51 +396,48 @@ namespace triqs::det_manip {
       sign_ = -sign_;
     }
 
-    ///
+    /**
+     * @brief Direction of the roll operation.
+     *
+     * @details It specifies the direction of the circular shift performed on either the rows or columns of the matrix
+     * \f$ F^{(n)} \f$. The following directions are supported:
+     *
+     * - `None`: No roll operation is performed.
+     * - `Up`: Roll the rows up.
+     * - `Down`: Roll the rows down.
+     * - `Left`: Roll the columns to the left.
+     * - `Right`: Roll the columns to the right.
+     */
     enum RollDirection { None, Up, Down, Left, Right };
 
     /**
-       * "Cyclic Rolling" of the determinant.
-       *
-       * Right : Move the Nth col to the first col cyclically.
-       * Left  : Move the first col to the Nth, cyclically.
-       * Up    : Move the first row to the Nth, cyclically.
-       * Down  : Move the Nth row to the first row cyclically.
-       *
-       * Returns -1 is the roll changes the sign of the det, 1 otherwise
-       * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
-       * WHY is it like this ???? : try_roll : return det +1/-1.
-       */
-    int roll_matrix(RollDirection roll) {
-      long tmp;
-      const long NN = n_;
-      switch (roll) {
+     * @brief Perform a circular shift permutation on the rows or columns of the matrix \f$ F^{(n)} \f$.
+     *
+     * @details See RollDirection for the supported directions.
+     *
+     * A circular shift permutation of a finite set is equivalent to \f$ N \f$ transpositions, where \f$ N \f$ is the
+     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{N-1} \f$.
+     *
+     * @param dir Direction of the roll operation.
+     * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
+     */
+    int roll_matrix(RollDirection dir) {
+      // early return for matrices of size 0 or 1
+      if (size() < 2) return 1;
+
+      // perform the circular shift permutation
+      switch (dir) {
         case (None): return 1;
-        case (Down):
-          tmp = row_perm_[n_ - 1];
-          for (long i = NN - 2; i >= 0; i--) row_perm_[i + 1] = row_perm_[i];
-          row_perm_[0] = tmp;
-          break;
-        case (Up):
-          tmp = row_perm_[0];
-          for (long i = 0; i < n_ - 1; i++) row_perm_[i] = row_perm_[i + 1];
-          row_perm_[n_ - 1] = tmp;
-          break;
-        case (Right):
-          tmp = col_perm_[n_ - 1];
-          for (long i = NN - 2; i >= 0; i--) col_perm_[i + 1] = col_perm_[i];
-          col_perm_[0] = tmp;
-          break;
-        case (Left):
-          tmp = col_perm_[0];
-          for (long i = 0; i < n_ - 1; i++) col_perm_[i] = col_perm_[i + 1];
-          col_perm_[n_ - 1] = tmp;
-          break;
-        default: assert(0);
+        case (Down): std::ranges::rotate(row_perm_, row_perm_.end() - 1); break;
+        case (Up): std::ranges::rotate(row_perm_, row_perm_.begin() + 1); break;
+        case (Right): std::ranges::rotate(col_perm_, col_perm_.end() - 1); break;
+        case (Left): std::ranges::rotate(col_perm_, col_perm_.begin() + 1); break;
+        default: TRIQS_RUNTIME_ERROR << "Error in det_manip::roll_matrix: Invalid roll direction";
       }
-      // signature of the cycle of order N : (-1)^(N-1)
-      if ((n_ - 1) % 2 == 1) {
-        sign_ *= -1;
+
+      // update the sign and return the sign change
+      if ((size() - 1) % 2 == 1) {
+        sign_ = -sign_;
         return -1;
       }
       return 1;
