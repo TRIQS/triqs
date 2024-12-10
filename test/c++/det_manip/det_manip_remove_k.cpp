@@ -58,6 +58,8 @@ template <typename T> void test_remove_k(int k) {
       // generate random remove positions
       std::ranges::sample(std::views::iota(0, n), row_idxs.begin(), k, gen);
       std::ranges::sample(std::views::iota(0, n), col_idxs.begin(), k, gen);
+      std::ranges::sort(row_idxs);
+      std::ranges::sort(col_idxs);
 
       // remove matrix builder arguments
       std::vector<double> x_exp = dm_base.get_x();

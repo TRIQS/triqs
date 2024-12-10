@@ -56,6 +56,8 @@ template <typename T> void test_insert(int k) {
       // generate random insert positions
       std::ranges::sample(std::views::iota(0, n + k), row_idxs.begin(), k, gen);
       std::ranges::sample(std::views::iota(0, n + k), col_idxs.begin(), k, gen);
+      std::ranges::sort(row_idxs);
+      std::ranges::sort(col_idxs);
 
       // insert matrix builder arguments
       std::vector<double> x_exp = x_base;
