@@ -1603,8 +1603,6 @@ namespace triqs::det_manip {
     detail::work_data_change_row<x_type, value_type> wrow_;
     detail::work_data_change_col_row<x_type, y_type, value_type> wrc_;
     detail::work_data_refill<x_type, y_type, value_type> wref_;
-    detail::work_data_type1<x_type, y_type, value_type> w1_;
-    detail::work_data_typek<x_type, y_type, value_type> wk_;
     value_type newdet_{1};
     int newsign_{1};
 
