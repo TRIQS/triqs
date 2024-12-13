@@ -1351,9 +1351,18 @@ namespace triqs::det_manip {
 
     public:
     /**
-       *  Finish the move of the last try_xxx called.
-       *  Throws if no try_xxx has been done or if the last operation was complete_operation.
-       */
+     * @brief Complete the last try-operation.
+     *
+     * @details It completes the last try-operation by calling the correct completion function depending on the try tag
+     * set in the last try function call.
+     *
+     * If the number of operations exceeds the threshold set in the triqs::det_manip::param_type object, the inverse
+     * matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign \f$ s^{(n)} \f$ are regenerated using
+     * the matrix builder (see regenerate_and_check()).
+     *
+     * A possible warning is emitted or an exception is thrown if the current objects are not consistent with the
+     * regenerated ones.
+     */
     void complete_operation() {
       switch (last_try_) {
         case (try_tag::Insert): complete_insert(); break;
@@ -1364,8 +1373,7 @@ namespace triqs::det_manip {
         case (try_tag::InsertK): complete_insert_k(); break;
         case (try_tag::RemoveK): complete_remove_k(); break;
         case (try_tag::Refill): complete_refill(); break;
-        case (try_tag::NoTry): return; break;
-        default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
+        default: return;
       }
 
       det_  = newdet_;
@@ -1375,71 +1383,66 @@ namespace triqs::det_manip {
       last_try_ = try_tag::NoTry;
     }
 
-    /**
-       *  Reject the previous try_xxx called.
-       *  All try_xxx have to be either accepted (complete_operation) or rejected.
-       */
+    /// Reject the last try-operation.
     void reject_last_try() { last_try_ = try_tag::NoTry; }
 
-    // ----------------- A few short cuts   -----------------
-
-    public:
-    /// Insert (try_insert + complete)
+    /// Wrapper for try_insert() followed by a complete_operation() call. Returns the determinant ratio.
     value_type insert(long i, long j, x_type const &x, y_type const &y) {
       auto r = try_insert(i, j, x, y);
       complete_operation();
       return r;
     }
 
-    /// Insert_at_end (try_insert + complete)
+    /// Same as insert() but with `i` and `j` set to size().
     value_type insert_at_end(x_type const &x, y_type const &y) { return insert(size(), size(), x, y); }
 
-    /// Insert2 (try_insert2 + complete)
+    /// Wrapper for try_insert2() followed by a complete_operation() call. Returns the determinant ratio.
     value_type insert2(long i0, long i1, long j0, long j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
       complete_operation();
       return r;
     }
 
-    /// Insert2_at_end (try_insert2 + complete)
+    /// Same as insert2() but with `i0` and j0` set to size() and `i1` and `j1` set to size() + 1.
     value_type insert2_at_end(x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       return insert2(size(), size() + 1, size(), size() + 1, x0, x1, y0, y1);
     }
 
-    /// Remove (try_remove + complete)
+    /// Wrapper for try_remove() followed by a complete_operation() call. Returns the determinant ratio.
     value_type remove(long i, long j) {
       auto r = try_remove(i, j);
       complete_operation();
       return r;
     }
 
-    /// Remove_at_end (try_remove + complete)
+    /// Same as remove() but with `i` and `j` set to size() - 1.
     value_type remove_at_end() { return remove(size() - 1, size() - 1); }
 
-    /// Remove2 (try_remove2 + complete)
+    /// Wrapper for try_remove2() followed by a complete_operation() call. Returns the determinant ratio.
     value_type remove2(long i0, long i1, long j0, long j1) {
       auto r = try_remove2(i0, i1, j0, j1);
       complete_operation();
       return r;
     }
 
-    /// Remove2_at_end (try_remove2 + complete)
+    /// Same as remove2() but with `i0` and `j0` set to size() - 1 and `i1` and `j1` set to size() - 2.
     value_type remove2_at_end() { return remove2(size() - 1, size() - 2, size() - 1, size() - 2); }
 
-    /// change_col (try_change_col + complete)
+    /// Wrapper for try_change_col() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_col(long j, y_type const &y) {
       auto r = try_change_col(j, y);
       complete_operation();
       return r;
     }
 
-    /// change_row (try_change_row + complete)
+    /// Wrapper for try_change_row() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_row(long i, x_type const &x) {
       auto r = try_change_row(i, x);
       complete_operation();
       return r;
     }
 
+    /// Wrapper for try_change_col_row() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_one_row_and_one_col(long i, long j, x_type const &x, y_type const &y) {
       auto r = try_change_col_row(i, j, x, y);
       complete_operation();
@@ -1517,39 +1520,55 @@ namespace triqs::det_manip {
       sign_ = (exp_sign > 0 ? 1 : -1);
     }
 
-    /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
-      auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "mat_inv", g.M_);
-      h5_write(gr, "det", g.det_);
-      h5_write(gr, "sign", g.sign_);
-      h5_write(gr, "row_num", g.row_perm_);
-      h5_write(gr, "col_num", g.col_perm_);
-      h5_write(gr, "x_values", g.x_);
-      h5_write(gr, "y_values", g.y_);
-      h5_write(gr, "n_opts", g.nops_);
-      h5_write(gr, "n_opts_max_before_check", g.nops_before_check_);
-      h5_write(gr, "singular_threshold", g.singular_threshold_);
+    /**
+     * @brief Write a triqs::det_manip::det_manip object to HDF5.
+     *
+     * @param g h5::group containing the subgroup to be written to.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be written.
+     */
+    friend void h5_write(h5::group g, std::string name, det_manip const &dm) {
+      auto gr = g.create_group(name);
+      h5::write(gr, "x", dm.x_);
+      h5::write(gr, "y", dm.y_);
+      h5::write(gr, "M", dm.M_);
+      h5::write(gr, "det", dm.det_);
+      h5::write(gr, "row_perm", dm.row_perm_);
+      h5::write(gr, "col_perm", dm.col_perm_);
+      h5::write(gr, "sign", dm.sign_);
+      h5::write(gr, "nops_before_check", dm.nops_before_check_);
+      h5::write(gr, "singular_threshold", dm.singular_threshold_);
+      h5::write(gr, "precision_warning", dm.precision_warning_);
+      h5::write(gr, "precision_error", dm.precision_error_);
+      h5::write(gr, "nops", dm.nops_);
     }
 
-    /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
-      auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "mat_inv", g.M_);
-      h5_read(gr, "det", g.det_);
-      h5_read(gr, "sign", g.sign_);
-      h5_read(gr, "row_num", g.row_perm_);
-      h5_read(gr, "col_num", g.col_perm_);
-      h5_read(gr, "x_values", g.x_);
-      h5_read(gr, "y_values", g.y_);
-      h5_read(gr, "n_opts", g.nops_);
-      h5_read(gr, "n_opts_max_before_check", g.nops_before_check_);
-      h5_read(gr, "singular_threshold", g.singular_threshold_);
-      g.x_.reserve(g.capacity());
-      g.y_.reserve(g.capacity());
-      g.row_perm_.reserve(g.capacity());
-      g.col_perm_.reserve(g.capacity());
-      g.last_try_ = try_tag::NoTry;
+    /**
+     * @brief Read a triqs::det_manip::det_manip object from HDF5.
+     *
+     * @param g h5::group containing the subgroup to be read from.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string name, det_manip &dm) {
+      auto gr = g.open_group(name);
+      h5::read(gr, "x", dm.x_);
+      h5::read(gr, "y", dm.y_);
+      h5::read(gr, "M", dm.M_);
+      h5::read(gr, "det", dm.det_);
+      h5::read(gr, "row_perm", dm.row_perm_);
+      h5::read(gr, "col_perm", dm.col_perm_);
+      h5::read(gr, "sign", dm.sign_);
+      h5::read(gr, "nops_before_check", dm.nops_before_check_);
+      h5::read(gr, "singular_threshold", dm.singular_threshold_);
+      h5::read(gr, "precision_warning", dm.precision_warning_);
+      h5::read(gr, "precision_error", dm.precision_error_);
+      h5::read(gr, "nops", dm.nops_);
+      dm.x_.reserve(dm.capacity());
+      dm.y_.reserve(dm.capacity());
+      dm.row_perm_.reserve(dm.capacity());
+      dm.col_perm_.reserve(dm.capacity());
+      dm.last_try_ = try_tag::NoTry;
     }
 
     private:
@@ -1616,4 +1635,5 @@ namespace triqs::det_manip {
     try_tag last_try_{try_tag::NoTry};
     std::uint64_t nops_{0};
   };
+
 } // namespace triqs::det_manip
