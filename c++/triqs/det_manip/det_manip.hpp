@@ -745,6 +745,13 @@ namespace triqs::det_manip {
       // set the try tag
       last_try_ = try_tag::Remove;
 
+      // early return if new matrix is empty
+      if (size() == 1) {
+        newdet_  = 1;
+        newsign_ = 1;
+        return 1 / (sign_ * det_);
+      }
+
       // calculate the signs associated with P1, P2, P3 and P4
       int s_p1p2 = (wrem_.ip == size() - 1 ? 1 : -1);
       s_p1p2     = (wrem_.jp == size() - 1 ? s_p1p2 : -s_p1p2);
@@ -901,6 +908,13 @@ namespace triqs::det_manip {
       for (long l = 0; l < k; ++l) {
         wremk_.ip[l] = row_perm_[wremk_.i[l]];
         wremk_.jp[l] = col_perm_[wremk_.j[l]];
+      }
+
+      // early return if new matrix is empty
+      if (size() == k) {
+        newdet_  = 1;
+        newsign_ = 1;
+        return 1 / (sign_ * det_);
       }
 
       // compute the signs of the permutations P1, P2, P3, P4 and set the matrix S

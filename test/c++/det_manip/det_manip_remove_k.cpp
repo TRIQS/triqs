@@ -21,26 +21,26 @@
 #include <triqs/det_manip/utils.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/ranges.h>
 #include <nda/nda.hpp>
 
 #include <algorithm>
 #include <complex>
+#include <numeric>
 #include <random>
 #include <vector>
 
 // Test the remove_k operation of det_manip.
 template <typename T> void test_remove_k(int k) {
-  std::mt19937 gen(23432);
-  std::uniform_real_distribution<> dis(0.0, 10.0);
+  auto builder = builder3<T>{};
+  auto gen     = std::mt19937{42};
 
   // loop over matrix sizes
-  for (int n = k; n < 9; ++n) {
-    // generate base det_manip object and its matrix builder arguments
-    std::vector<double> x_base(n), y_base(n);
-    std::ranges::generate(x_base, [&] { return dis(gen); });
-    std::ranges::generate(y_base, [&] { return dis(gen); });
-    auto dm_base = triqs::det_manip::det_manip{builder1<T>{}, x_base, y_base};
+  for (int n = k; n < 10; ++n) {
+    // generate base det_manip object
+    std::vector<int> x_base(n), y_base(n);
+    std::iota(x_base.begin(), x_base.end(), 0);
+    y_base       = x_base;
+    auto dm_base = triqs::det_manip::det_manip{builder, x_base, y_base};
 
     // perform some random swap operations
     auto int_dist = std::uniform_int_distribution<>{0, n - 1};
@@ -62,15 +62,15 @@ template <typename T> void test_remove_k(int k) {
       std::ranges::sort(col_idxs);
 
       // remove matrix builder arguments
-      std::vector<double> x_exp = dm_base.get_x();
-      std::vector<double> y_exp = dm_base.get_y();
+      auto x_exp = dm_base.get_x();
+      auto y_exp = dm_base.get_y();
       for (int j = 0; j < k; ++j) {
         x_exp.erase(x_exp.begin() + row_idxs[j] - j);
         y_exp.erase(y_exp.begin() + col_idxs[j] - j);
       }
 
       // construct expected det_manip object
-      auto dm_exp        = triqs::det_manip::det_manip{builder1<T>{}, x_exp, y_exp};
+      auto dm_exp        = triqs::det_manip::det_manip{builder, x_exp, y_exp};
       auto const det_exp = dm_exp.determinant();
 
       // try remove_k operation
@@ -82,21 +82,21 @@ template <typename T> void test_remove_k(int k) {
 
       // check results
       using triqs::det_manip::detail::rel_diff;
-      EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-6);
-      EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-6);
-      EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-6);
-      EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-6);
+      EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-8);
+      EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-8);
+      EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-8);
+      EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-8);
       EXPECT_NO_THROW(dm.regenerate_and_check());
     }
   }
 }
 
 TEST(TRIQSDetManip, RemoveKDouble) {
-  for (int i = 1; i < 3; ++i) test_remove_k<double>(i);
+  for (int i = 1; i < 5; ++i) test_remove_k<double>(i);
 }
 
 TEST(TRIQSDetManip, RemoveKComplex) {
-  for (int i = 1; i < 3; ++i) test_remove_k<std::complex<double>>(i);
+  for (int i = 1; i < 5; ++i) test_remove_k<std::complex<double>>(i);
 }
 
 MAKE_MAIN;

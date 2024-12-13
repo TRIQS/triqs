@@ -22,15 +22,14 @@
 
 #include <nda/nda.hpp>
 
-#include <algorithm>
 #include <complex>
-#include <random>
+#include <numeric>
 #include <vector>
 
 // Rotate x- or y-vector depending on the roll direction.
-template <typename D> void rotate_vec(std::vector<double> &x, std::vector<double> &y, typename D::RollDirection dir) {
+template <typename D> void rotate_vec(std::vector<int> &x, std::vector<int> &y, typename D::RollDirection dir) {
   auto const size = static_cast<long>(x.size());
-  double tmp      = 0.0;
+  int tmp         = 0;
   switch (dir) {
     case (D::RollDirection::None): return;
     case (D::RollDirection::Down):
@@ -59,16 +58,16 @@ template <typename D> void rotate_vec(std::vector<double> &x, std::vector<double
 
 // Test the roll matrix operation of det_manip.
 template <typename T> void test_roll() {
-  using dm_type = triqs::det_manip::det_manip<builder1<T>>;
-  std::mt19937 gen(23432);
-  std::uniform_real_distribution<> dis(0.0, 10.0);
+  using dm_type = triqs::det_manip::det_manip<builder3<T>>;
+  auto builder  = builder3<T>{};
 
   // loop over matrix sizes
-  for (int n = 2; n < 3; ++n) {
-    std::vector<double> x_args(n), y_args(n);
-    std::ranges::generate(x_args, [&] { return dis(gen); });
-    std::ranges::generate(y_args, [&] { return dis(gen); });
-    auto dm = triqs::det_manip::det_manip{builder1<T>{}, x_args, y_args};
+  for (int n = 2; n < 10; ++n) {
+    // generate det_manip object
+    std::vector<int> x(n), y(n);
+    std::iota(x.begin(), x.end(), 0);
+    y       = x;
+    auto dm = triqs::det_manip::det_manip{builder, x, y};
     auto M  = dm.matrix();
 
     // loop over roll directions
@@ -76,18 +75,18 @@ template <typename T> void test_roll() {
       // loop over the number of rows/columns
       for (int i = 0; i < n; ++i) {
         // generate expected det_manip object
-        rotate_vec<dm_type>(x_args, y_args, dir);
-        auto dm_exp = dm_type{builder1<T>{}, x_args, y_args};
+        rotate_vec<dm_type>(x, y, dir);
+        auto dm_exp = dm_type{builder, x, y};
 
         // roll operation
         dm.roll_matrix(dir);
 
         // check results
-        EXPECT_ARRAY_NEAR(dm.matrix(), dm_exp.matrix(), 1.e-13);
-        EXPECT_COMPLEX_NEAR(dm.determinant(), dm_exp.determinant(), 1.e-13);
+        EXPECT_ARRAY_NEAR(dm.matrix(), dm_exp.matrix(), 1.e-10);
+        EXPECT_COMPLEX_NEAR(dm.determinant(), dm_exp.determinant(), 1.e-10);
         EXPECT_NO_THROW(dm.regenerate_and_check());
       }
-      EXPECT_ARRAY_NEAR(dm.matrix(), M, 1.e-13);
+      EXPECT_ARRAY_NEAR(dm.matrix(), M, 1.e-10);
     }
   }
 }

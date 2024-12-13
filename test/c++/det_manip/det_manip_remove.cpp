@@ -23,36 +23,34 @@
 #include <fmt/ranges.h>
 #include <nda/nda.hpp>
 
-#include <algorithm>
 #include <complex>
-#include <random>
+#include <numeric>
 #include <vector>
 
 // Test the remove operation of det_manip.
 template <typename T> void test_remove() {
-  std::mt19937 gen(23432);
-  std::uniform_real_distribution<> dis(0.0, 10.0);
+  auto builder = builder3<T>{};
 
   // loop over matrix sizes
   for (int n = 1; n < 5; ++n) {
-    // generate base det_manip object and its matrix builder arguments
-    std::vector<double> x_base(n), y_base(n);
-    std::ranges::generate(x_base, [&] { return dis(gen); });
-    std::ranges::generate(y_base, [&] { return dis(gen); });
-    auto dm_base        = triqs::det_manip::det_manip{builder1<T>{}, x_base, y_base};
+    // generate base det_manip object
+    std::vector<int> x_base(n), y_base(n);
+    std::iota(x_base.begin(), x_base.end(), 0);
+    y_base       = x_base;
+    auto dm_base = triqs::det_manip::det_manip{builder, x_base, y_base};
     auto const det_base = dm_base.determinant();
 
     // loop over remove positions
     for (int i = 0; i < n; ++i) {
       for (int j = 1; j < n; ++j) {
         // remove matrix builder arguments
-        std::vector<double> x_exp = x_base;
-        std::vector<double> y_exp = y_base;
+        auto x_exp = x_base;
+        auto y_exp = y_base;
         x_exp.erase(x_exp.begin() + i);
         y_exp.erase(y_exp.begin() + j);
 
         // construct expected det_manip object
-        auto dm_exp        = triqs::det_manip::det_manip{builder1<T>{}, x_exp, y_exp};
+        auto dm_exp        = triqs::det_manip::det_manip{builder, x_exp, y_exp};
         auto const det_exp = dm_exp.determinant();
 
         // try remove operation
@@ -64,10 +62,10 @@ template <typename T> void test_remove() {
 
         // check results
         using triqs::det_manip::detail::rel_diff;
-        EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-6);
-        EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-6);
-        EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-6);
-        EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-6);
+        EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-8);
+        EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-8);
+        EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-8);
+        EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-8);
         EXPECT_NO_THROW(dm.regenerate_and_check());
       }
     }
