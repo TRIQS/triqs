@@ -29,12 +29,12 @@
 #include <vector>
 
 // Test the change row/column operation of det_manip.
-template <typename T, bool do_row> void test_change() {
+template <typename T> void test_change() {
   std::mt19937 gen(23432);
   std::uniform_real_distribution<> dis(0.0, 10.0);
 
   // loop over matrix sizes
-  for (int n = 1; n < 2; ++n) {
+  for (int n = 1; n < 9; ++n) {
     // generate base det_manip object
     std::vector<double> x_args(n), y_args(n);
     std::ranges::generate(x_args, [&] { return dis(gen); });
@@ -42,45 +42,39 @@ template <typename T, bool do_row> void test_change() {
     auto dm_base        = triqs::det_manip::det_manip{builder1<T>{}, x_args, y_args};
     auto const det_base = dm_base.determinant();
 
-    // loop over all rows/columns
+    // loop over all rows and columns
     for (int i = 0; i < n; ++i) {
-      // generate new argument, construct expected det_manip object and perform change operation
-      auto dm_exp = dm_base;
-      auto dm     = dm_base;
-      T ratio;
-      if constexpr (do_row) {
-        auto x_new = x_args;
-        x_new[i]   = dis(gen);
-        dm_exp     = triqs::det_manip::det_manip{builder1<T>{}, x_new, y_args};
-        ratio      = dm.try_change_row(i, x_new[i]);
-      } else {
-        auto y_new = y_args;
-        y_new[i]   = dis(gen);
-        dm_exp     = triqs::det_manip::det_manip{builder1<T>{}, x_args, y_new};
-        ratio      = dm.try_change_col(i, y_new[i]);
-      }
-      auto const det_exp = dm_exp.determinant();
-      dm.complete_operation();
+      for (int j = 0; j < n; ++j) {
+        // generate new argument and construct expected det_manip objec
+        auto x_new         = x_args;
+        x_new[i]           = dis(gen);
+        auto y_new         = y_args;
+        y_new[j]           = dis(gen);
+        auto dm_exp        = dm_base;
+        dm_exp             = triqs::det_manip::det_manip{builder1<T>{}, x_new, y_new};
+        auto const det_exp = dm_exp.determinant();
 
-      // check results
-      using triqs::det_manip::detail::rel_diff;
-      EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-6);
-      EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-6);
-      EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-6);
-      EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-6);
-      EXPECT_EQ(dm.get_x_internal_order(), dm_exp.get_x_internal_order());
-      EXPECT_EQ(dm.get_y_internal_order(), dm_exp.get_y_internal_order());
-      EXPECT_NO_THROW(dm.regenerate_and_check());
+        // perform operation
+        auto dm          = dm_base;
+        auto const ratio = dm.try_change_col_row(i, j, x_new[i], y_new[j]);
+        dm.complete_operation();
+
+        // check results
+        using triqs::det_manip::detail::rel_diff;
+        EXPECT_LT(rel_diff(ratio, dm_exp.determinant() / det_base), 1.e-6);
+        EXPECT_LT(rel_diff(dm.matrix(), dm_exp.matrix()), 1.e-6);
+        EXPECT_LT(rel_diff(dm.inverse_matrix(), dm_exp.inverse_matrix()), 1.e-6);
+        EXPECT_LT(rel_diff(dm.determinant(), det_exp), 1.e-6);
+        EXPECT_EQ(dm.get_x_internal_order(), dm_exp.get_x_internal_order());
+        EXPECT_EQ(dm.get_y_internal_order(), dm_exp.get_y_internal_order());
+        EXPECT_NO_THROW(dm.regenerate_and_check());
+      }
     }
   }
 }
 
-TEST(TRIQSDetManip, ChangeColumnDouble) { test_change<double, false>(); }
+TEST(TRIQSDetManip, ChangeRowAndColumnDouble) { test_change<double>(); }
 
-TEST(TRIQSDetManip, ChangeColumnComplex) { test_change<std::complex<double>, false>(); }
-
-TEST(TRIQSDetManip, ChangeRowDouble) { test_change<double, true>(); }
-
-TEST(TRIQSDetManip, ChangeRowComplex) { test_change<std::complex<double>, true>(); }
+TEST(TRIQSDetManip, ChangeRowAndColumnComplex) { test_change<std::complex<double>>(); }
 
 MAKE_MAIN;

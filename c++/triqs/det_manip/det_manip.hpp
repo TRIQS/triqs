@@ -808,7 +808,7 @@ namespace triqs::det_manip {
 
       // calculate -S^{-1}
       auto mS_inv = -1 / wrem_.S;
-      ASSERT(std::isfinite(std::abs(w1_.ksi)));
+      ASSERT(std::isfinite(std::abs(mS_inv)));
 
       // solve P = \widetilde{M}^{(n-1)} + \widetilde{M}^{(n-1)} B S C \widetilde{M}^{(n-1)} for \widetilde{M}^{(n-1)}
       // by using the fact that we know -\widetilde{M}^{(n-1)} B S, -S C \widetilde{M}^{(n-1)} and S^{-1}
@@ -1158,79 +1158,123 @@ namespace triqs::det_manip {
 
     public:
     /**
-       * Consider the change the row i and column j and the corresponding x and y
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one column and one row in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The row and column to be changed are at positions \f$ i \f$ and \f$ j \f$ in the original matrix
+     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given arguments
+     * \f$ x \f$ and \f$ y \f$ as well as the triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current
+     * arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
+     *
+     * Let \f$ i_p \f$ \f$ j_p \f$ be the positions of the row and the column in the matrix \f$ G^{(n)} \f$. We can
+     * write the new matrix as
+     * \f[
+     *   \widetilde{G}^{(n)} = G^{(n)} + \mathbf{r} \mathbf{s}^T + \mathbf{u} \mathbf{v}^T \; ,
+     * \f]
+     * where
+     * - \f$ \mathbf{r} = \mathbf{e}_{i_p} \f$,
+     * - \f$ s_k = f(x, y_k) - f(x_{i_p}, y_k) \f$ except for \f$ s_{j_p} = f(x, y) - f(x_{i_p}, y_{j_p}) \f$,
+     * - \f$ u_l = f(x_l, y) - f(x_l, y_{j_p}) \f$ except for \f$ u_{i_p} = 0 \f$, and
+     * - \f$ \mathbf{v} = \mathbf{e}_{j_p} \f$.
+     *
+     * By using the matrix determinant lemma twice and once the Sherman-Morrison formula, we find for the new
+     * determinant
+     * \f[
+     *   \det(\widetilde{G}^{(n)}) = \det(G^{(n)}) \left[ (1 + \mathbf{s}^T M^{(n)} \mathbf{r}) (1 + \mathbf{v}^T
+     *   M^{(n)} \mathbf{u}) - M^{(n)}_{j_p i_p} \mathbf{s}^T M^{(n)} \mathbf{u} \right] =
+     *   \det(G^{(n)}) \left[ (1 + \alpha)(1 + \beta) - M^{(n)}_{j_p i_p} \gamma \right] =
+     *   \det(G^{(n)}) \xi \; .
+     * \f]
+     *
+     * The new inverse matrix \f$ \widetilde{M}^{(n)} \f$ can be obtained by applying the Sherman-Morrison formula
+     * twice:
+     * \f[
+     *   \widetilde{M}^{(n)} = H^{-1} - \frac{H^{-1} \mathbf{u} \mathbf{v}^T H^{-1}}{1 + \mathbf{v}^T H^{-1}
+     *   \mathbf{u}} \; ,
+     * \f]
+     * where
+     * \f[
+     *   H^{-1} = M^{(n)} - \frac{M^{(n)} \mathbf{r} \mathbf{s}^T M^{(n)}}{1 + \mathbf{s}^T M^{(n)} \mathbf{r}} \; .
+     * \f]
+     * After some algebra, we find for its elements
+     * \f[
+     *   \widetilde{M}^{(n)}_{ab} = M^{(n)}_{ab} - \frac{(1 + \alpha) (M^{(n)} \mathbf{u})_a M^{(n)}_{j_p b}}{\xi} +
+     *   \frac{M^{(n)}_{j_p i_p} (M^{(n)} \mathbf{u})_a (\mathbf{s}^T M^{(n)})_b}{\xi} +
+     *   \frac{\gamma M^{(n)}_{a i_p} M^{(n)}_{j_p b}}{\xi} -
+     *   \frac{(1 + \beta) (\mathbf{s}^T M^{(n)})_b M^{(n)}_{a i_p}}{\xi}
+     *   \; .
+     * \f]
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(\widetilde{F}^{(n)})}{\det(F^{(n)})} = \xi \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param x Argument to the matrix builder that determines the new elements of the row.
+     * @param y Argument to the matrix builder that determines the new elements of the column.
+     * @return Determinant ratio \f$ det(\widetilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     */
     value_type try_change_col_row(long i, long j, x_type const &x, y_type const &y) {
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < n_);
-      TRIQS_ASSERT(0 <= j and j < n_);
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      std::tie(wrc_.i, wrc_.j, wrc_.ip, wrc_.jp, wrc_.x, wrc_.y) = std::make_tuple(i, j, row_perm_[i], col_perm_[j], x, y);
 
+      // set the try tag
       last_try_ = try_tag::ChangeRowCol;
-      w1_.i     = i;
-      w1_.j     = j;
-      w1_.ireal = row_perm_[i];
-      w1_.jreal = col_perm_[j];
-      w1_.x     = x;
-      w1_.y     = y;
 
-      // Compute the col B.
-      for (long idx = 0; idx < n_; idx++) { // MC :  delta_x, MB : delta_y
-        w1_.MC(idx) = f_(x_[idx], y) - f_(x_[idx], y_[w1_.jreal]);
-        w1_.MB(idx) = f_(x, y_[idx]) - f_(x_[w1_.ireal], y_[idx]);
+      // reserve memory for the working data
+      if (size() > wrc_.capacity()) wrc_.reserve(2 * size());
+
+      // calculate the vectors s^T and u
+      for (long k = 0; k < n_; ++k) {
+        wrc_.sT(k) = f_(x, y_[k]) - f_(x_[wrc_.ip], y_[k]);
+        wrc_.u(k)  = f_(x_[k], y) - f_(x_[k], y_[wrc_.jp]);
       }
-      w1_.MC(w1_.ireal) = f_(x, y) - f_(x_[w1_.ireal], y_[w1_.jreal]);
-      w1_.MB(w1_.jreal) = 0;
+      wrc_.sT(wrc_.jp) = f_(x, y) - f_(x_[wrc_.ip], y_[wrc_.jp]);
+      wrc_.u(wrc_.ip)  = 0;
 
-      nda::range RN(n_);
-      // C : X, B : Y
-      //w1.C(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, M_(RN, RN), w1_.MC(RN), 0.0, w1_.C(RN));
-      //w1.B(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(M_(RN, RN)), w1_.MB(RN), 0.0, w1_.B(RN));
+      // calculate the products s^T M, M u and gamma = s^T M u
+      auto rg = nda::range(n_);
+      blas::gemv(1.0, M_(rg, rg), wrc_.u(rg), 0.0, wrc_.Mu(rg));
+      blas::gemv(1.0, transpose(M_(rg, rg)), wrc_.sT(rg), 0.0, wrc_.sTM(rg));
+      wrc_.gamma = nda::blas::dot(wrc_.sT(rg), wrc_.Mu(rg));
 
-      // compute the det_ratio
-      auto Xn        = w1_.C(w1_.jreal);
-      auto Yn        = w1_.B(w1_.ireal);
-      auto Z         = nda::blas::dot(w1_.MB(RN), w1_.C(RN));
-      auto Mnn       = M_(w1_.jreal, w1_.ireal);
-      auto det_ratio = (1 + Xn) * (1 + Yn) - Mnn * Z;
-      w1_.ksi        = det_ratio;
-      newdet_        = det_ * det_ratio;
-      newsign_       = sign_;
-      return det_ratio; // newsign/sign is unity
+      // calculate the new determinant and sign
+      auto const alpha = wrc_.sTM(wrc_.ip);
+      auto const beta  = wrc_.Mu(wrc_.jp);
+      wrc_.xi          = (1 + alpha) * (1 + beta) - M_(wrc_.jp, wrc_.ip) * wrc_.gamma;
+      newdet_          = det_ * wrc_.xi;
+      newsign_         = sign_;
+
+      return wrc_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change row and column operation.
     void complete_change_col_row() {
-      nda::range RN(n_);
-      x_[w1_.ireal] = w1_.x;
-      y_[w1_.jreal] = w1_.y;
+      // change the matrix builder arguments
+      x_[wrc_.ip] = wrc_.x;
+      y_[wrc_.jp] = wrc_.y;
 
-      // FIXME : Use blas for this ? Is it better
-      auto Xn  = w1_.C(w1_.jreal);
-      auto Yn  = w1_.B(w1_.ireal);
-      auto Mnn = M_(w1_.jreal, w1_.ireal);
-
-      auto D     = w1_.ksi;       // get back
-      auto a     = -(1 + Yn) / D; // D in the notes
-      auto b     = -(1 + Xn) / D;
-      auto Z     = nda::blas::dot(w1_.MB(RN), w1_.C(RN));
-      Z          = Z / D;
-      Mnn        = Mnn / D;
-      w1_.MB(RN) = M_(w1_.jreal, RN); // Mnj
-      w1_.MC(RN) = M_(RN, w1_.ireal); // Min
-
-      for (long i = 0; i < n_; ++i)
-        for (long j = 0; j < n_; ++j) {
-          auto Xi  = w1_.C(i);
-          auto Yj  = w1_.B(j);
-          auto Mnj = w1_.MB(j);
-          auto Min = w1_.MC(i);
-          M_(i, j) += a * Xi * Mnj + b * Min * Yj + Mnn * Xi * Yj + Z * Min * Mnj;
+      // set the elements of the new inverse matrix
+      auto rg              = nda::range(n_);
+      auto const alpha_fac = (1 + wrc_.sTM(wrc_.ip)) / wrc_.xi;
+      auto const beta_fac  = (1 + wrc_.Mu(wrc_.jp)) / wrc_.xi;
+      auto const gamma_fac = wrc_.gamma / wrc_.xi;
+      auto const M_fac     = M_(wrc_.jp, wrc_.ip) / wrc_.xi;
+      wrc_.mT_jp(rg)       = M_(wrc_.jp, rg);
+      wrc_.m_ip(rg)        = M_(rg, wrc_.ip);
+      for (long a = 0; a < n_; ++a) {
+        for (long b = 0; b < n_; ++b) {
+          M_(a, b) = M_(a, b) - alpha_fac * wrc_.Mu(a) * wrc_.mT_jp(b) + M_fac * wrc_.Mu(a) * wrc_.sTM(b) + gamma_fac * wrc_.m_ip(a) * wrc_.mT_jp(b)
+             - beta_fac * wrc_.sTM(b) * wrc_.m_ip(a);
         }
+      }
     }
 
     public:
@@ -1559,6 +1603,7 @@ namespace triqs::det_manip {
     detail::work_data_remove_k<value_type> wremk_;
     detail::work_data_change_col<y_type, value_type> wcol_;
     detail::work_data_change_row<x_type, value_type> wrow_;
+    detail::work_data_change_col_row<x_type, y_type, value_type> wrc_;
     detail::work_data_refill<x_type, y_type, value_type> wref_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;

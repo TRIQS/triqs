@@ -267,6 +267,50 @@ namespace triqs::det_manip::detail {
     }
   };
 
+  // Data storage for temporary data used in the det_manip class when changing the elements of a row and column.
+  //
+  // - x and y: MatrixBuilder argument for the new row/column.
+  // - i and j: Position of the row/column in the original matrix F that is being changed.
+  // - ip and jp: Position of the row/column in the matrix G.
+  // - sT: Vector used in the Sherman-Morrison formula containing the difference between the new and the old row.
+  // - u: Vector used in the Sherman-Morrison formula containing the difference between the new and the old column.
+  // - sTM: Product of the vector s^T with the current inverse matrix M.
+  // - Mu: Product of the current inverse matrix M and the vector u.
+  // - mT_jp and m_ip: jp-th row and ip-th column of the matrix M.
+  // - gamma: Scalar s^T M u.
+  // - xi: Factor appearing in the matrix determinant lemma, i.e. xi = (1 + alpha)(1 + beta) - M_{jp ip} gamma.
+  template <typename X, typename Y, typename T> struct work_data_change_col_row {
+    X x;
+    Y y;
+    long i;
+    long j;
+    long ip;
+    long jp;
+    nda::vector<T> sT;
+    nda::vector<T> u;
+    nda::vector<T> sTM;
+    nda::vector<T> Mu;
+    nda::vector<T> mT_jp;
+    nda::vector<T> m_ip;
+    T gamma;
+    T xi;
+
+    // Get current capacity of the data storages.
+    auto capacity() const { return sT.size(); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        sT.resize(cap);
+        u.resize(cap);
+        sTM.resize(cap);
+        Mu.resize(cap);
+        mT_jp.resize(cap);
+        m_ip.resize(cap);
+      }
+    }
+  };
+
   // Data storage for temporary data used in the det_manip class when refilling the full matrix.
   //
   // - x and y: New MatrixBuilder arguments.
