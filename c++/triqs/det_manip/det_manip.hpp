@@ -18,6 +18,11 @@
 //
 // Authors: Michel Ferrero, JaksaVucicevic, Igor Krivenko, Henri Menke, Laura Messio, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the triqs::det_manip::det_manip class to manipulate determinants efficiently.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -53,54 +58,28 @@ namespace triqs::det_manip {
   namespace blas = nda::blas;
 
   /**
-   * @brief Efficient manipulation of determinants and ratios of determinants for CTQMC solvers.
+   * @ingroup detmanip
+   * @brief Manipulate determinants and ratios of determinants for CTQMC solvers.
    *
-   * @details The weight of a MC configuration in CTQMC solvers is often given in terms of the determinant of one or
-   * more matrices such that the acceptance probability is a ratio of these determinants. It is therefore important to
-   * be able to efficiently compute these determinants and ratios of determinants.
+   * @details The code and the following documentation uses the notation introduced in @ref detmanip.
    *
-   * Let \f$ F^{(n)} \f$ be the \f$ n \times n \f$ matrix that we are interested in. We assume that the elements of the
-   * matrix can be written as \f$ F^{(n)}_{ij} = f(x_i, y_j) \f$, where \f$ f \f$ is a triqs::det_manip::MatrixBuilder
-   * object and \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$ are vectors of size \f$ n \f$ that contain the arguments for
-   * \f$ f \f$ and therefore determine the contents of the matrix.
+   * The determinant \f$ \det(F^{(n)}) \f$ or the underlying matrix \f$ F^{(n)} \f$ is manipulated by performing
+   * operations. Most of those operations are split into a `try` and a `complete` function. While the `try` functions
+   * only produce intermediate results that are necessary to calculate the ratio of the new to the old determinant, the
+   * `complete` functions actually perform the operation and update the matrix and the determinant.
    *
-   * In the following, we will not work directly with the matrix \f$ F^{(n)} \f$ but with \f$ G^{(n)} \f$ which has its
-   * rows and columns permuted w.r.t. \f$ F^{(n)} \f$, i.e. \f$ F^{(n)} = P^{(n)}_r G^{(n)} P^{(n)}_c \f$. \f$ P^{(n)}_r
-   * \f$ and \f$ P^{(n)}_c \f$ are permutation matrices that permute the rows and columns of \f$ G^{(n)} \f$ to restore
-   * the original matrix. This gives us more flexibility when adding, removing, or modifying rows and columns.
-   *
-   * Suppose we know the matrix \f$ G^{(n)} \f$ and its determinant \f$ \det(G^{(n)}) \f$ and that we want to add \f$ k
-   * \f$ new rows and columns to the matrix. We can write the resulting matrix as
-   * \f[
-   *   G^{(n+k)} = \begin{bmatrix} G^{(n)} & B \\ C & D \end{bmatrix} =
-   *   \begin{bmatrix} [M^{(n)}]^{-1} & B \\ C & D \end{bmatrix} =
-   *   [M^{(n+k)}]^{-1} \; .
-   * \f]
-   * Here, we have introduced the inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$ and the matrices \f$ B \f$, \f$ C \f$,
-   * and \f$ D \f$ which are of size \f$ n \times k \f$, \f$ k \times n \f$, and \f$ k \times k \f$, respectively. They
-   * contain the elements of the new rows and columns.
-   *
-   * By making use of the block structure of the matrix (see also </a href="https://en.wikipedia.org/wiki/Block_matrix">
-   * Wikipedia</a>), the inverse matrix takes the form
-   * \f[
-   *   M^{(n+k)} = \begin{bmatrix} M^{(n)} + M^{(n)} B (D - C M^{(n)} B)^{-1} C M^{(n)} & -M^{(n)} B (D - C M^{(n)}
-   *   B)^{-1} \\ -(D - C M^{(n)} B)^{-1} C M^{(n)} & (D - C M^{(n)} B)^{-1} \end{bmatrix} =
-   *   \begin{bmatrix} P & Q \\ R & S \end{bmatrix}  \; ,
-   * \f]
-   * and its determinant can be computed as
-   * \f[
-   *   \det(G^{(n+k)}) = \det(G^{(n)}) \det(D - C M^{(n)} B) = \det(G^{(n)}) \det(S^{-1}) \; .
-   * \f]
-   * Here, \f$ P \f$, \f$ Q \f$, \f$ R \f$, and \f$ S \f$ are matrices of size \f$ n \times n \f$, \f$ n \times k \f$,
-   * \f$ k \times n \f$, and \f$ k \times k \f$, respectively.
-   *
-   * The original matrix \f$ F^{(n)} \f$ and its determinant can be obtained with \f$ F^{(n)} = P^{(n)}_r G^{(n)}
-   * P^{(n)}_c \f$ and \f$ \det(F^{(n)}) = \det(P^{(n)}_r) \det(G^{(n)}) det(P^{(n)}_c) = s^{(n)} \det(G^{(n)}) \f$,
-   * where \f$ s^{(n)} = \det(P^{(n)}_r) det(P^{(n)}_c) = \pm 1 \f$ is a sign associated with the permutation matrices.
-   *
-   * So by keeping track of the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and two additional
-   * permutation matrices that specify how the rows and columns have been permuted w.r.t. the original matrix, we can
-   * add, remove, or modify (a few) rows and columns fairly efficiently.
+   * The following operations are supported:
+   * - Swap two rows (see swap_row()).
+   * - Swap two columns (see swap_col()).
+   * - Circular shift of rows or columns (see roll_matrix()).
+   * - Insert one row and column (see try_insert()).
+   * - Insert \f$ k \f$ rows and columns (see try_insert_k() and try_insert2()).
+   * - Remove one row and column (see try_remove()).
+   * - Remove \f$ k \f$ rows and columns (see try_remove_k() and try_remove2()).
+   * - Change one column (see try_change_col()).
+   * - Change one row (see try_change_row()).
+   * - Change one row and column (see try_change_col_row()).
+   * - Build a completely new matrix (see try_refill()).
    *
    * @tparam F triqs::det_manip::MatrixBuilder.
    */
@@ -112,7 +91,7 @@ namespace triqs::det_manip {
     /// Type of the second argument that the triqs::det_manip::MatrixBuilder takes.
     using y_type = detail::get_yarg_t<F>;
 
-    /// Type of the result that the triqs::det_manip::MatrixBuilder returns.
+    /// Value type of the matrix, i.e. the return type of the triqs::det_manip::MatrixBuilder.
     using value_type = detail::get_result_t<F>;
 
     /// Type of the matrix.
@@ -165,8 +144,8 @@ namespace triqs::det_manip {
     /**
      * @brief Reserve memory and resize the data storages.
      *
-     * @details It only reserves/resizes if the current capacities are smaller than the new capacities. It does not
-     * reserve memory for the working data.
+     * @details It only reserves/resizes if the current capacity is smaller than the new capacity. It does not reserve
+     * memory for the working data (this is done in the `try` functions if necessary).
      *
      * @param cap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
@@ -228,7 +207,7 @@ namespace triqs::det_manip {
 
     /**
      * @brief Set the precision threshold that determines when to throw an exception (default: 1e-5).
-     * @details See set_precision_warning for details.
+     * @details See set_precision_warning() for details.
      * @param eps Threshold value.
      */
     void set_precision_error(double eps) { precision_error_ = eps; }
@@ -240,8 +219,8 @@ namespace triqs::det_manip {
     [[nodiscard]] auto capacity() const { return M_.shape()[0]; }
 
     /**
-     * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
-     * original matrix \f$ F^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ x_i \f$ that determines the elements of the
+     * i<sup>th</sup> row in the original matrix \f$ F^{(n)} \f$.
      *
      * @param i Argument index.
      * @return Argument value \f$ x_i \f$.
@@ -252,8 +231,8 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get the matrix builder argument \f$ y_j \f$ that determines the elements of the j<sup>th</sup> column in
-     * the original matrix \f$ F^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ y_j \f$ that determines the elements of the
+     * j<sup>th</sup> column in the original matrix \f$ F^{(n)} \f$.
      *
      * @param j Argument index.
      * @return Argument value \f$ y_j \f$.
@@ -263,7 +242,7 @@ namespace triqs::det_manip {
       return y_[col_perm_[j]];
     }
 
-    /// Get a vector with all matrix builder arguments \f$ \mathbf{x} \f$.
+    /// Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$.
     [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
       res.reserve(size());
@@ -271,7 +250,7 @@ namespace triqs::det_manip {
       return res;
     }
 
-    /// Get a vector with all matrix builder arguments \f$ \mathbf{y} \f$.
+    /// Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$.
     [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
       res.reserve(size());
@@ -280,13 +259,17 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get the matrix builder arguments \f$ \mathbf{x} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
+     *
      * @return `std::vector` containing the arguments \f$ x_i \f$.
      */
     [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
 
     /**
-     * @brief Get the matrix builder arguments \f$ \mathbf{y} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
+     *
      * @return `std::vector` containing the arguments \f$ y_j \f$.
      */
     [[nodiscard]] auto const &get_y_internal_order() const { return y_; }
@@ -399,7 +382,7 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Direction of the roll operation.
+     * @brief Direction of the roll_matrix() operation.
      *
      * @details It specifies the direction of the circular shift performed on either the rows or columns of the matrix
      * \f$ F^{(n)} \f$. The following directions are supported:
@@ -418,7 +401,7 @@ namespace triqs::det_manip {
      * @details See RollDirection for the supported directions.
      *
      * A circular shift permutation of a finite set is equivalent to \f$ N \f$ transpositions, where \f$ N \f$ is the
-     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{N-1} \f$.
+     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{n-1} \f$.
      *
      * @param dir Direction of the roll operation.
      * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
@@ -448,9 +431,9 @@ namespace triqs::det_manip {
     /**
      * @brief Try to insert one row and column.
      *
-     * @details The row is inserted at position \f$ i \f$ the column at position \f$ j \f$ in the original matrix
-     * \f$ F^{(n)} \f$. Their elements are determined by the given arguments \f$ x \f$ and \f$ y \f$ as well as the
-     * triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current arguments.
+     * @details The row is inserted at position \f$ i \f$ and the column at position \f$ j \f$ in the original matrix
+     * \f$ F^{(n)} \f$. Their elements are determined by the given triqs::det_manip::MatrixBuilder arguments \f$ x \f$
+     * and \f$ y \f$.
      *
      * This is a special case of try_insert_k() with \f$ k = 1 \f$.
      *
@@ -460,7 +443,7 @@ namespace triqs::det_manip {
      * @param j Position of the column to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the elements of the new row.
      * @param y Argument to the matrix builder that determines the elements of the new column.
-     * @return Determinant ratio \f$ det(F^{(n+1)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
      */
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
@@ -547,25 +530,24 @@ namespace triqs::det_manip {
      *
      * @details The positions of the new rows and columns in the original matrix \f$ F^{(n+k)} \f$ are specified in the
      * tuples \f$ \mathbf{i} \f$ and \f$ \mathbf{j} \f$, respectively. Their elements are determined by the given
-     * arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$ as well as the triqs::det_manip::MatrixBuilder object \f$ f
-     * \f$ together with the current arguments.
+     * triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
      *
      * Since we are working with \f$ G^{(n)} \f$, we are free to insert the rows and columns at the bottom and right of
-     * the matrix and use the update formulas presented in triqs::det_manip::det_manip.
+     * the matrix and use the update formulas presented in @ref detmanip.
      *
      * We use the following order for the rows and columns to be inserted:
-     * - The first row (column) in C (B) corresponds to the row (column) with the smallest index in the matrix \f$
-     * F^{(n)} \f$.
-     * - The second row (column) in C (B) corresponds to the row (column) with the second smallest index in the matrix
-     * \f$ F^{(n)} \f$.
+     * - The first row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the smallest index in the
+     * matrix \f$ F^{(n)} \f$.
+     * - The second row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the second smallest index
+     * in the matrix \f$ F^{(n)} \f$.
      * - And so on.
      *
-     * The expression for the new determinant can be found at triqs::det_manip::det_manip and the new sign associated
-     * with the permutation matrices can be written as
+     * The expression for the new determinant \f$ \det(G^{(n+k)}) \f$ can be found at @ref detmanip and the new sign
+     * associated with the permutation matrices can be written as
      * \f[
      *   s^{(n+k)} = \det(P^{(n)}_r) \det(P^{(n)}_c) \det(P1) \det(P2) = s^{(n)} \det(P1) \det(P2) \; ,
      * \f]
-     * where \f$ P1 \f$ and \f$ P2 \f$ are the permutation matrices that move the inserted rows and columns to their
+     * where \f$ P1 \f$ and \f$ P2 \f$ are permutation matrices that move the inserted rows and columns to their
      * respective positions in the original matrix \f$ F^{(n)} \f$.
      *
      * The function returns the ratio
@@ -581,7 +563,7 @@ namespace triqs::det_manip {
      * @param j Positions of the columns to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param x Arguments to the matrix builder that determines the elements of the new rows.
      * @param y Arguments to the matrix builder that determines the elements of the new columns.
-     * @return Determinant ratio \f$ det(F^{(n+k)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(F^{(n+k)}) / \det(F^{(n)}) \f$.
      */
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
       // check input argument sizes
@@ -652,8 +634,7 @@ namespace triqs::det_manip {
      *
      * @details The rows are inserted at the positions \f$ i_0 \f$ and \f$ i_1 \f$ and the columns at the positions
      * \f$ j_0 \f$ and \f$ j_1 \f$ in the original matrix \f$ F^{(n)} \f$. Their elements are determined by the given
-     * arguments \f$ x_0 \f$, \f$ x_1 \f$, \f$ y_0 \f$ and \f$ y_1 \f$ as well as the triqs::det_manip::MatrixBuilder
-     * object \f$ f \f$ together with the current arguments.
+     * triqs::det_manip::MatrixBuilder arguments \f$ x_0 \f$, \f$ x_1 \f$, \f$ y_0 \f$ and \f$ y_1 \f$.
      *
      * It simply calls the more general try_insert_k().
      *
@@ -663,11 +644,11 @@ namespace triqs::det_manip {
      * @param i1 Position of the second row to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param j0 Position of the first column to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param j1 Position of the second column to be inserted in the original matrix \f$ F^{(n)} \f$.
-     * @param x_0 Argument to the matrix builder that determines the elements of the first new row.
-     * @param x_1 Argument to the matrix builder that determines the elements of the second new row.
-     * @param y_0 Argument to the matrix builder that determines the elements of the first new column.
-     * @param y_1 Argument to the matrix builder that determines the elements of the second new column.
-     * @return Determinant ratio \f$ det(F^{(n+2)}) / det(F^{(n)}) \f$.
+     * @param x0 Argument to the matrix builder that determines the elements of the first new row.
+     * @param x1 Argument to the matrix builder that determines the elements of the second new row.
+     * @param y0 Argument to the matrix builder that determines the elements of the first new column.
+     * @param y1 Argument to the matrix builder that determines the elements of the second new column.
+     * @return Determinant ratio \f$ \det(F^{(n+2)}) / \det(F^{(n)}) \f$.
      */
     value_type try_insert2(long i0, long i1, long j0, long j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       return try_insert_k({i0, i1}, {j0, j1}, {x0, x1}, {y0, y1});
@@ -734,7 +715,7 @@ namespace triqs::det_manip {
      *
      * @param i Position of the row to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j Position of the column to be removed in the original matrix \f$ F^{(n)} \f$.
-     * @return Determinant ratio \f$ det(F^{(n-1)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-1)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove(long i, long j) {
       // check input arguments and copy them to the working data
@@ -830,7 +811,7 @@ namespace triqs::det_manip {
      * respectively.
      *
      * Since we are working with \f$ G^{(n)} \f$, we are free to first move the rows and columns to the bottom and to
-     * the right of the matrix and use the update formulas presented in triqs::det_manip::det_manip.
+     * the right of the matrix and use the update formulas presented in @ref detmanip.
      *
      * More specifically, we introduce the matrix
      * \f[
@@ -841,10 +822,10 @@ namespace triqs::det_manip {
      * the matrix. \f$ \widetilde{G}^{(n-k)} \f$ is the resulting matrix after the remove operation.
      *
      * We use the following order for the rows and columns to be removed:
-     * - The first row (column) in C (B) corresponds to the row (column) with the smallest index in the matrix \f$
-     * F^{(n)} \f$.
-     * - The second row (column) in C (B) corresponds to the row (column) with the second smallest index in the matrix
-     * \f$ F^{(n)} \f$.
+     * - The first row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the smallest index in the
+     * matrix \f$ F^{(n)} \f$.
+     * - The second row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the second smallest index
+     * in the matrix \f$ F^{(n)} \f$.
      * - And so on.
      *
      * The original matrix can be written as
@@ -857,7 +838,7 @@ namespace triqs::det_manip {
      * where \f$ P_3 \f$ and \f$ P_4 \f$ are permutation matrices that move the rows and columns in \f$ B \f$, \f$ C \f$
      * and \f$ D \f$ back to their original positions in the matrix \f$ F^{(n)} \f$.
      *
-     * We can therefore write the determinant of the resulting matrix \f $ \widetilde{G}^{(n-k)} \f$ in terms of the
+     * We can therefore write the determinant of the resulting matrix \f$ \widetilde{G}^{(n-k)} \f$ in terms of the
      * determinant of the current matrix \f$ G^{(n)} \f$
      * \f[
      *   \det(\widetilde{G}^{(n-k)}) = \det(\widetilde{G}^{(n)}) \det(S) = \det(P_1) \det(G^{(n)}) \det(P_2) \det(S)
@@ -865,10 +846,12 @@ namespace triqs::det_manip {
      * \f]
      * and the new sign \f$ \widetilde{s}^{(n-k)} \f$ in terms of the current sign \f$ s^{(n)} \f$:
      * \f[
-     *   \widetilde{s}^{(n-k)} = \det(\widetilde{P}^{(n-k)}_r) \det(\widetilde{P}^{(n-k)}_c) =
-     *   \det(P_3) \det(\widetilde{P}^{(n)}_r) \det(\widetilde{P}^{(n)}_c) \det(P_4) =
-     *   \det(P_3) \det(P^{(n)}_r) \det(P_1) \det(P_2) \det(P^{(n)}_c) \det(P_4) =
+     *   \begin{split}
+     *   \widetilde{s}^{(n-k)} &= \det(\widetilde{P}^{(n-k)}_r) \det(\widetilde{P}^{(n-k)}_c) =
+     *   \det(P_3) \det(\widetilde{P}^{(n)}_r) \det(\widetilde{P}^{(n)}_c) \det(P_4) \\
+     *   &= \det(P_3) \det(P^{(n)}_r) \det(P_1) \det(P_2) \det(P^{(n)}_c) \det(P_4) =
      *   s^{(n)} \det(P_1) \det(P_2) \det(P_3) \det(P_4) \; .
+     *   \end{split}
      * \f]
      * Here, we used the fact that \f$ \det(P) = \det(P^{-1}) \f$ for a permutation matrix \f$ P \f$.
      *
@@ -882,7 +865,7 @@ namespace triqs::det_manip {
      *
      * @param i Positions of the rows to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j Positions of the columns to be removed in the original matrix \f$ F^{(n)} \f$.
-     * @return Determinant ratio \f$ det(F^{(n-k)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-k)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
       // check input argument sizes
@@ -978,7 +961,7 @@ namespace triqs::det_manip {
      * @param i1 Position of the second row to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j0 Position of the first column to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j1 Position of the second column to be removed in the original matrix \f$ F^{(n)} \f$.
-     * @return Determinant ratio \f$ det(F^{(n-2)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-2)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove2(long i0, long i1, long j0, long j1) { return try_remove_k({i0, i1}, {j0, j1}); }
 
@@ -1046,8 +1029,7 @@ namespace triqs::det_manip {
      * @brief Try to change one column in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The column to be changed is at position \f$ j \f$ in the original matrix \f$ F^{(n)} \f$. The new
-     * elements of the columns are determined by the given argument \f$ y \f$ as well as the
-     * triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current arguments \f$ \mathbf{x} \f$.
+     * elements of the columns are determined by the given triqs::det_manip::MatrixBuilder argument \f$ y \f$.
      *
      * Let \f$ j_p \f$ be the position of the column in the matrix \f$ G^{(n)} \f$. We can write the new matrix as
      * \f[
@@ -1076,7 +1058,7 @@ namespace triqs::det_manip {
      *
      * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param y Argument to the matrix builder that determines the new elements of the column.
-     * @return Determinant ratio \f$ det(\widetilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
      */
     value_type try_change_col(long j, y_type const &y) {
       // check input arguments and copy them to the working data
@@ -1120,17 +1102,16 @@ namespace triqs::det_manip {
      * @brief Try to change one row in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The row to be changed is at position \f$ i \f$ in the original matrix \f$ F^{(n)} \f$. The new
-     * elements of the row are determined by the given argument \f$ x \f$ as well as the
-     * triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current arguments \f$ \mathbf{y} \f$.
+     * elements of the row are determined by the given triqs::det_manip::MatrixBuilder argument \f$ x \f$.
      *
-     * We follow the same procedure as in try_change_col, except that we use \f$ v_i = f(x, y_j) - f(x_{i_p}, y_j) \f$
+     * We follow the same procedure as in try_change_col(), except that we use \f$ v_i = f(x, y_j) - f(x_{i_p}, y_j) \f$
      * and \f$ \mathbf{u} = \mathbf{e}_{i_p} \f$ is a cartesian basis vector.
      *
      * @warning This routine does not make any modification. It has to be completed with complete_operation().
      *
      * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the new elements of the row.
-     * @return Determinant ratio \f$ det(\tilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
      */
     value_type try_change_row(long i, x_type const &x) {
       // check input arguments and copy them to the working data
@@ -1174,11 +1155,10 @@ namespace triqs::det_manip {
      * @brief Try to change one column and one row in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The row and column to be changed are at positions \f$ i \f$ and \f$ j \f$ in the original matrix
-     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given arguments
-     * \f$ x \f$ and \f$ y \f$ as well as the triqs::det_manip::MatrixBuilder object \f$ f \f$ together with the current
-     * arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
+     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given
+     * triqs::det_manip::MatrixBuilder arguments \f$ x \f$ and \f$ y \f$.
      *
-     * Let \f$ i_p \f$ \f$ j_p \f$ be the positions of the row and the column in the matrix \f$ G^{(n)} \f$. We can
+     * Let \f$ i_p \f$ and \f$ j_p \f$ be the positions of the row and the column in the matrix \f$ G^{(n)} \f$. We can
      * write the new matrix as
      * \f[
      *   \widetilde{G}^{(n)} = G^{(n)} + \mathbf{r} \mathbf{s}^T + \mathbf{u} \mathbf{v}^T \; ,
@@ -1228,7 +1208,7 @@ namespace triqs::det_manip {
      * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the new elements of the row.
      * @param y Argument to the matrix builder that determines the new elements of the column.
-     * @return Determinant ratio \f$ det(\widetilde{F}^{(n)}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
      */
     value_type try_change_col_row(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
@@ -1294,8 +1274,8 @@ namespace triqs::det_manip {
     /**
      * @brief Try to fill the original matrix \f$ F^{(n)} \f$ with new elements.
      *
-     * @details This function tries to build a completely new matrix \f$ tilde{F}^{(\tilde{n})} \f$ using the given
-     * triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
+     * @details This function tries to build a completely new matrix \f$ \widetilde{F}^{(\widetilde{n})} \f$ using the
+     * given triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
      *
      * The function returns the ratio
      * \f[
@@ -1308,7 +1288,7 @@ namespace triqs::det_manip {
      * @tparam Y triqs::det_manip::MatrixBuilderYRange.
      * @param x_rg Range containing the first matrix builder arguments.
      * @param y_rg Range containing the second matrix builder arguments.
-     * @return Determinant ratio \f$ \det(tilde{F}^{(\tilde{n})}) / det(F^{(n)}) \f$.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(\widetilde{n})}) / \det(F^{(n)}) \f$.
      */
     template <typename X, typename Y>
       requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
@@ -1371,7 +1351,7 @@ namespace triqs::det_manip {
      * @details It completes the last try-operation by calling the correct completion function depending on the try tag
      * set in the last try function call.
      *
-     * If the number of operations exceeds the threshold set in the triqs::det_manip::param_type object, the inverse
+     * If the number of operations exceeds a certain threshold (see set_n_operations_before_check()), the inverse
      * matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign \f$ s^{(n)} \f$ are regenerated using
      * the matrix builder (see regenerate_and_check()).
      *
@@ -1468,14 +1448,14 @@ namespace triqs::det_manip {
      * @brief Regenerate the inverse matrix, determinant and sign and check the consistency of the current
      * values/objects.
      *
-     * @details It uses the matrix builder to regenerate the matrix \f$ G^{(n)} \f$. Then it calculates its inverse
-     * \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with 
+     * @details It uses the triqs::det_manip::MatrixBuilder to regenerate the matrix \f$ G^{(n)} \f$. Then it calculates
+     * its inverse \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with
      * `nda::linalg::det`. The sign \f$ s^{(n)} \f$ associated with the permutation matrices is also recalculated.
      *
      * If the stored objects are not consistent with the regenerated ones, a warning is emitted or an exception is
      * thrown.
      *
-     * See also set_precision_warning, set_precision_error and set_singular_threshold.
+     * See also set_precision_warning(), set_precision_error() and set_singular_threshold().
      */
     void regenerate_and_check() {
       nops_ = 0;
@@ -1538,7 +1518,7 @@ namespace triqs::det_manip {
     /**
      * @brief Write a triqs::det_manip::det_manip object to HDF5.
      *
-     * @param g h5::group containing the subgroup to be written to.
+     * @param g `h5::group` containing the subgroup to be written to.
      * @param name Name of the subgroup.
      * @param dm Manipulator object to be written.
      */
@@ -1561,7 +1541,7 @@ namespace triqs::det_manip {
     /**
      * @brief Read a triqs::det_manip::det_manip object from HDF5.
      *
-     * @param g h5::group containing the subgroup to be read from.
+     * @param g `h5::group` containing the subgroup to be read from.
      * @param name Name of the subgroup.
      * @param dm Manipulator object to be read into.
      */

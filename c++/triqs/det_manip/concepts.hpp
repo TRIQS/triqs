@@ -32,6 +32,11 @@
 namespace triqs::det_manip {
 
   /**
+   * @addtogroup detmanip
+   * @{
+   */
+
+  /**
    * @brief Matrix builder concept.
    *
    * @details A matrix builder is a callable object that takes two arguments and returns either a `std::floating_point`
@@ -69,5 +74,7 @@ namespace triqs::det_manip {
   template <typename R, typename F>
   concept MatrixBuilderYRange = MatrixBuilder<F> && std::ranges::input_range<R> && std::ranges::sized_range<R>
      && requires(F f, R &&rg, detail::get_xarg_t<F> const &x) { f(x, *std::ranges::begin(rg)); };
+
+  /** @} */
 
 } // namespace triqs::det_manip
