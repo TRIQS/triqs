@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "./concepts.hpp"
 #include "./utils.hpp"
 #include "./work_data.hpp"
 #include "../utility/exceptions.hpp"
