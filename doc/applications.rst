@@ -45,8 +45,19 @@ For publications based on results produced with this application please cite `Co
 
 *Homepage:* `<https://triqs.github.io/cthyb/>`_
 
+**Segment Picture Hybridization-expansion solver**
+--------------------------------------------------
+
+The segment picture hybridization-expansion solver can solve quantum impurity models
+with local Hamiltonians that commute with the impurity density operators.
+When applicable, this algorithm is more efficient than the vanilla hybridization-expansion.
+In addition to a static local Hamiltonian, dynamic density-density and spin-spin interactions
+can be included.
+
+*Homepage:* `<https://triqs.github.io/ctseg/>`_
+
 **Hubbard I solver**
--------------------------------
+--------------------
 
 This solver gives the Hubbard I solution of a quantum impurity problem,
 i.e. it solves the atomic limit. This simple approximation allows for
@@ -55,7 +66,7 @@ very quick answers even for large multiband systems.
 *Homepage:* `<https://triqs.github.io/hubbardI/>`_
 
 **Hartree Fock solver**
--------------------------------
+-----------------------
 
 This solver calculates the self-consistent Hartree or Hartree Fock approximation for
 a given quantum impurity or lattice problem. It uses gradient descent to solve the
@@ -71,7 +82,6 @@ The TRIQS-based python application pyed implements exact diagonalization for fin
 together with calculations of several response functions in imagianary time.
 
 *Homepage*: `<https://github.com/hugostrand/pyed/>`_
-
 
 **Interface to the pomerol exact diagonalization solver (external)**
 --------------------------------------------------------------------
@@ -165,7 +175,6 @@ continuation method proposed by Andrey S. Mishchenko.
 A detailed description of the method can be found `here <http://www.cond-mat.de/events/correl12/manuscripts/mishchenko.pdf>`_.
 It also supports the Stochastic Optimization with Consistent Constraints extensions proposed by Olga Goulko et al in
 `Phys. Rev. B 95, 014102 (2017) <https://doi.org/10.1103/PhysRevB.95.014102>`_.
-
 
 For publications based on results produced with this application please cite `Comput. Phys. Commun. 239, 166 (2019) <https://www.sciencedirect.com/science/article/pii/S0010465519300402?via%3Dihub>`_
 
