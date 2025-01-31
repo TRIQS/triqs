@@ -140,6 +140,17 @@ continuation and calculate spectral functions.
 
 *Homepage:* `<https://triqs.github.io/solid_dmft/>`_
 
+**MagInt - ab initio inter-site exchange in correlated insulators**
+-------------------------------------------------------------------
+MagInt is an external TRIQS application for calculating inter-site exchange interactions in
+correlated insulators. It uses a force-theorem approach based on the Hubbard-I approximation
+to electronic self-energy. MagInt is applied as a postprocessing tool on top of converged 
+DFT+Hubbard-I calculations. It uses DFTTools and its own implementation of Hubbard-I.
+MagInt includes interfaces to Wien2k and VASP (experimental).
+
+*Homepage* `<https://github.com/MagInteract/MagInt>`_
+
+
 
 .. _analytic_continuation:
 
