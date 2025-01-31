@@ -16,11 +16,11 @@ from pathlib import Path
 # - priority: lower number means less dependencies on other repos
 # - url: URL of the repository for cloning
 # - clone_args: arguments passed to the git clone command, e.g. "-b unstable"
-# - soft_links: dictionary of repositories that should be soft linked to the deps folder
+# - deps: list of repositories that should be soft linked to the deps folder
 # - cmake_args: additional arguments passed to the cmake command
 # - no_tests: do not run tests after building
 repos = {
-    "gtest": {
+    "GTest": {
         "priority": 0,
         "url": "https://github.com/google/googletest",
         "clone_args": "-b main --depth 1"
@@ -30,7 +30,7 @@ repos = {
         "url": "https://github.com/fmtlib/fmt",
         "clone_args": "-b 10.2.1 --depth 1"
     },
-    "cpp2py": {
+    "Cpp2Py": {
         "priority": 0,
         "url": "https://github.com/TRIQS/cpp2py.git",
         "clone_args": "-b unstable --depth 1"
@@ -38,83 +38,47 @@ repos = {
     "itertools": {
         "priority": 1,
         "url": "https://github.com/TRIQS/itertools.git",
-        "soft_links": {
-            "gtest": "GTest"
-        }
+        "deps": ["GTest"]
     },
     "h5": {
         "priority": 1,
         "url": "https://github.com/TRIQS/h5.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py"
-        }
+        "deps": ["GTest", "Cpp2Py"]
     },
     "mpi": {
         "priority": 2,
         "url": "https://github.com/TRIQS/mpi.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "itertools": "itertools"
-        }
+        "deps": ["GTest", "itertools"]
     },
     "nda": {
         "priority": 3,
         "url": "https://github.com/TRIQS/nda.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py",
-            "itertools": "itertools",
-            "mpi": "mpi",
-            "h5": "h5"
-        }
+        "deps": ["GTest", "Cpp2Py", "itertools", "mpi", "h5"]
     },
     "cppdlr": {
         "priority": 4,
         "url": "https://github.com/flatironinstitute/cppdlr.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "nda": "nda",
-            "fmt": "fmt"
-        }
+        "deps": ["GTest", "nda", "fmt"]
     },
     "triqs": {
         "priority": 5,
         "url": "https://github.com/TRIQS/triqs.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py",
-            "itertools": "itertools",
-            "mpi": "mpi",
-            "h5": "h5",
-            "nda": "nda",
-            "fmt": "fmt",
-            "cppdlr": "cppdlr"
-        }
+        "deps": ["GTest", "Cpp2Py", "itertools", "mpi", "h5", "nda", "fmt", "cppdlr"]
     },
     "cthyb": {
         "priority": 6,
         "url": "https://github.com/TRIQS/cthyb.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py"
-        }
+        "deps": ["GTest", "Cpp2Py"]
     },
     "dft_tools": {
         "priority": 6,
         "url": "https://github.com/TRIQS/dft_tools.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py"
-        }
+        "deps": ["GTest", "Cpp2Py"]
     },
     "tprf": {
         "priority": 6,
         "url": "https://github.com/TRIQS/tprf.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py"
-        }
+        "deps": ["GTest", "Cpp2Py"]
     },
     "maxent": {
         "priority": 6,
@@ -123,10 +87,7 @@ repos = {
     "hubbardI": {
         "priority": 6,
         "url": "https://github.com/TRIQS/hubbardI.git",
-        "soft_links": {
-            "gtest": "GTest",
-            "cpp2py": "Cpp2Py"
-        }
+        "deps": ["GTest", "Cpp2Py"]
     },
     "hartree_fock": {
         "priority": 6,
@@ -202,10 +163,10 @@ def clone_repos(args, repos):
                 raise ValueError(f"Repository {name} not found in the repository information.")
 
             # add missing dependencies
-            for dep in repos[name].get("soft_links", {}).keys():
-                if dep not in args.clone:
-                    print(f"Adding missing {name} dependency: {dep}")
-                    args.clone.append(dep)
+            for dep_name in repos[name].get("deps", []):
+                if dep_name not in args.clone:
+                    print(f"Adding missing {name} dependency: {dep_name}")
+                    args.clone.append(dep_name)
 
     # sort repos by priority
     args.clone.sort(key=lambda x: repos[x]["priority"])
@@ -230,16 +191,15 @@ def clone_repos(args, repos):
             print(f"Repository {name} already exists --> skipping")
 
         # create soft links for dependencies
-        soft_links = repo_info.get("soft_links", {})
         deps_path = repo_path / "deps"
-        for dep_name, ln_name in soft_links.items():
-            dst = deps_path / ln_name
+        for dep_name in repo_info.get("deps", []):
+            dst = deps_path / dep_name
             src = Path(args.dir + "/" + dep_name + ".src")
             if not dst.is_symlink() and src.exists():
-                print(f"Creating soft link {ln_name} for {name}")
+                print(f"Creating soft link {dep_name} for {name}")
                 os.symlink(os.path.relpath(src, deps_path), dst)
             else:
-                print(f"Soft link {ln_name} for {name} already exists --> skipping")
+                print(f"Soft link {dep_name} for {name} already exists --> skipping")
         print('-' * 25)
 
 
@@ -316,10 +276,10 @@ def build_and_install(args, repos):
                 raise ValueError(f"Repository {name} not found in the repository information.")
 
             # filter out dependencies that will be installed by another repo with higher priority
-            for dep in repos[name].get("soft_links", {}).keys():
-                if dep in args.install:
-                    print(f"Repository {dep} will be installed by {name} automatically --> removing")
-                    args.install = [x for x in args.install if x != dep]
+            for dep_name in repos[name].get("deps", []):
+                if dep_name in args.install:
+                    print(f"Repository {dep_name} will be installed by {name} automatically --> removing")
+                    args.install = [x for x in args.install if x != dep_name]
 
     # sort repos by priority
     args.install.sort(key=lambda x: repos[x]["priority"])
