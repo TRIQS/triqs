@@ -15,22 +15,22 @@ from pathlib import Path
 #
 # the following keys are supported:
 # - url: URL of the repository for cloning
-# - clone_args: arguments passed to the git clone command, e.g. "-b unstable"
+# - git_tag: git tag or branch passed to the git clone command as "-b GIT_TAG"
 # - deps: list of repositories that should be soft linked to the deps folder
 # - cmake_args: additional arguments passed to the cmake command
 # - no_tests: do not run tests after building
 core_repos = {
     "GTest": {
         "url": "https://github.com/google/googletest",
-        "clone_args": "-b main --depth 1"
+        "git_tag": "main"
     },
     "fmt": {
         "url": "https://github.com/fmtlib/fmt",
-        "clone_args": "-b 10.2.1 --depth 1"
+        "git_tag": "10.2.1"
     },
     "Cpp2Py": {
         "url": "https://github.com/TRIQS/cpp2py.git",
-        "clone_args": "-b unstable --depth 1"
+        "git_tag": "unstable"
     },
     "itertools": {
         "url": "https://github.com/TRIQS/itertools.git",
@@ -92,7 +92,7 @@ app_repos = {
 all_repos = {**core_repos, **app_repos}
 
 
-def clone_repo(name):
+def clone_repo(name, clone_args="--depth 1"):
     """
     Clone the given repository and its dependencies recursively and create soft links for the dependencies.
 
@@ -100,6 +100,8 @@ def clone_repo(name):
     ----------
     name : str
         Name of the repository to clone.
+    clone_args : str
+        Additional arguments to pass to the git clone command.
 
     Raises
     ------
@@ -119,13 +121,14 @@ def clone_repo(name):
     # get repo information from the dictionary
     repo_info = all_repos[name]
     url = repo_info["url"]
-    clone_args = repo_info.get("clone_args", args.clone_args)
+    git_tag = repo_info.get("git_tag", "")
     repo_dir = args.dir + "/" + name + ".src"
     repo_path = Path(repo_dir)
 
     # clone the repo if hasn't been cloned yet
     if not repo_path.exists():
-        subprocess.run(["git", "clone"] + clone_args.split() + [url, repo_dir], check=True)
+        tag_args = f"-b {git_tag}" if git_tag else ""
+        subprocess.run(["git", "clone"] + tag_args.split() + clone_args.split() + [url, repo_dir], check=True)
     else:
         print(f"Repository {name} already exists --> skipping")
 
@@ -136,7 +139,7 @@ def clone_repo(name):
         deps_path = repo_path / "deps"
         for dep_name in deps:
             # clone the dependency
-            clone_repo(dep_name)
+            clone_repo(dep_name, clone_args)
 
             # create a soft link in the deps folder
             dst = deps_path / dep_name
@@ -172,7 +175,6 @@ parser = argparse.ArgumentParser(description="Clone, archive and install TRIQS r
 parser.add_argument("-d", "--dir", default="triqs_repositories", help="directory containing (the cloned) repositories (default: ./triqs_repositories)")
 parser.add_argument("-a", "--archive", action="store_true", help="archive the repository directory DIR (default: False)")
 parser.add_argument("-c", "--clone", nargs="*", help="clone all or only specific repositories into DIR")
-parser.add_argument("--clone-args", default="--depth 1", help="default arguments to pass to the git clone command (default: '--depth 1')")
 parser.add_argument("-i", "--install", nargs="*", help="build and install all or only specific repositories")
 parser.add_argument("--install-prefix", help="CMake install prefix (default: DIR/install)")
 parser.add_argument("--cmake-args", default="", help="additional arguments to pass to the cmake command (default: '')")
