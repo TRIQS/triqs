@@ -92,7 +92,7 @@ app_repos = {
 all_repos = {**core_repos, **app_repos}
 
 
-def clone_repo(name, clone_args="--depth 1"):
+def clone_repo(name, clone_dir, clone_args="--depth 1"):
     """
     Clone the given repository and its dependencies recursively and create soft links for the dependencies.
 
@@ -122,7 +122,7 @@ def clone_repo(name, clone_args="--depth 1"):
     repo_info = all_repos[name]
     url = repo_info["url"]
     git_tag = repo_info.get("git_tag", "")
-    repo_dir = args.dir + "/" + name + ".src"
+    repo_dir = clone_dir + "/" + name + ".src"
     repo_path = Path(repo_dir)
 
     # clone the repo if hasn't been cloned yet
@@ -139,11 +139,11 @@ def clone_repo(name, clone_args="--depth 1"):
         deps_path = repo_path / "deps"
         for dep_name in deps:
             # clone the dependency
-            clone_repo(dep_name, clone_args)
+            clone_repo(dep_name, clone_dir, clone_args)
 
             # create a soft link in the deps folder
             dst = deps_path / dep_name
-            src = Path(args.dir + "/" + dep_name + ".src")
+            src = Path(clone_dir + "/" + dep_name + ".src")
             if not dst.is_symlink() and src.exists():
                 print(f"Creating soft link {dep_name} for {name}")
                 os.symlink(os.path.relpath(src, deps_path), dst)
@@ -151,6 +151,7 @@ def clone_repo(name, clone_args="--depth 1"):
                 print(f"Soft link {dep_name} for {name} already exists --> skipping")
     print('-' * 25)
 
+    return
 
 # epilog for the help message
 epilog = f"""
@@ -182,6 +183,11 @@ parser.add_argument("--no-tests", action="store_true", help="do not run tests af
 parser.add_argument("-j", "--ncores", default=1, type=int, help="number of cores to use for building and installing (default: 1)")
 args = parser.parse_args()
 
+# print help if no arguments are provided
+if len(sys.argv) == 1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
+
 # clone repositories
 if args.clone is not None:
     print('=' * 25)
@@ -189,7 +195,7 @@ if args.clone is not None:
     # check repos to clone
     if not args.clone:
         # choose all repos if none are specified
-        print(f"No repositories specified to clone --> cloning all repositories")
+        print("No repositories specified to clone --> cloning all repositories")
         args.clone = [*core_repos, *app_repos]
 
     # output repos to clone
@@ -198,7 +204,7 @@ if args.clone is not None:
 
     # loop over repos to clone and clone its dependencies recursively
     for name in args.clone:
-        clone_repo(name)
+        clone_repo(name, clone_dir=args.dir)
 
 # archive the repository directory
 if args.archive:
@@ -225,7 +231,7 @@ if args.install is not None:
     # check repos to install
     if not args.install:
         # if no repos are specified, install triqs and all apps (core libs are installed by triqs automatically)
-        print(f"No repositories specified to install --> installing TRIQS and all apps (core libraries are installed by TRIQS automatically)")
+        print("No repositories specified to install --> installing TRIQS and all apps (core libraries are installed by TRIQS automatically)")
         args.install = ['triqs', *app_repos]
     else:
         print(f"User specified repositories to install: {args.install}")
@@ -247,6 +253,16 @@ if args.install is not None:
 
         # sort repos according to the order in the all_repos dictionary
         args.install.sort(key=lambda x: list(all_repos.keys()).index(x))
+
+    # check if the specified repos exists
+    directories = [d for d in os.listdir(args.dir+'/') if os.path.isdir(args.dir+'/'+d)]
+    for name in args.install:
+        if name+'.src' not in directories:
+            print(f"Repository {name} not found in the directory {args.dir} --> skipping")
+            args.install.remove(name)
+
+    if not args.install:
+        raise ValueError("No repositories to install found in the directory {args.dir}")
 
     # output repositories to install
     print(f"Installing the following repositories: {args.install}")
