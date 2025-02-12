@@ -153,153 +153,161 @@ def clone_repo(name, clone_dir, clone_args="--depth 1"):
 
     return
 
-# epilog for the help message
-epilog = f"""
-repositories:
-    core: {', '.join(core_repos.keys())}
-    apps: {', '.join(app_repos.keys())}
+def main():
 
-examples:
-    - clone and archive all repositories (core + apps):
-        python {os.path.relpath(__file__)} -c -a
+    # epilog for the help message
+    epilog = f"""
+    repositories:
+        core: {', '.join(core_repos.keys())}
+        apps: {', '.join(app_repos.keys())}
 
-    - build + install all repositories (building in parallel with 12 cores):
-        python {os.path.relpath(__file__)} -i -j 12
+    examples:
+        - clone and archive all repositories (core + apps):
+            python {os.path.relpath(__file__)} -c -a
 
-    - clone and install only triqs and cthyb (building in parallel with 12 cores):
-        python {os.path.relpath(__file__)} -c triqs cthyb -i triqs cthyb -j 12
-"""
+        - build + install all repositories (building in parallel with 12 cores):
+            python {os.path.relpath(__file__)} -i -j 12
 
-# parse command line arguments
-parser = argparse.ArgumentParser(description="Clone, archive and install TRIQS related repositories", epilog=epilog,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter, allow_abbrev=False)
-parser.add_argument("-d", "--dir", default="triqs_repositories", help="directory containing (the cloned) repositories (default: ./triqs_repositories)")
-parser.add_argument("-a", "--archive", action="store_true", help="archive the repository directory DIR (default: False)")
-parser.add_argument("-c", "--clone", nargs="*", help="clone all or only specific repositories into DIR")
-parser.add_argument("-i", "--install", nargs="*", help="build and install all or only specific repositories")
-parser.add_argument("--install-prefix", help="CMake install prefix (default: DIR/install)")
-parser.add_argument("--cmake-args", default="", help="additional arguments to pass to the cmake command (default: '')")
-parser.add_argument("--no-tests", action="store_true", help="do not run tests after building (default: False)")
-parser.add_argument("-j", "--ncores", default=1, type=int, help="number of cores to use for building and installing (default: 1)")
-args = parser.parse_args()
+        - clone and install only triqs and cthyb (building in parallel with 12 cores):
+            python {os.path.relpath(__file__)} -c triqs cthyb -i triqs cthyb -j 12
+    """
 
-# print help if no arguments are provided
-if len(sys.argv) == 1:
-    parser.print_help(sys.stderr)
-    sys.exit(1)
+    # parse command line arguments
+    parser = argparse.ArgumentParser(description="Clone, archive and install TRIQS related repositories", epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter, allow_abbrev=False)
+    parser.add_argument("-d", "--dir", default="triqs_repositories", help="directory containing (the cloned) repositories (default: ./triqs_repositories)")
+    parser.add_argument("-a", "--archive", action="store_true", help="archive the repository directory DIR (default: False)")
+    parser.add_argument("-c", "--clone", nargs="*", help="clone all or only specific repositories into DIR")
+    parser.add_argument("-i", "--install", nargs="*", help="build and install all or only specific repositories")
+    parser.add_argument("--install-prefix", help="CMake install prefix (default: DIR/install)")
+    parser.add_argument("--cmake-args", default="", help="additional arguments to pass to the cmake command (default: '')")
+    parser.add_argument("--no-tests", action="store_true", help="do not run tests after building (default: False)")
+    parser.add_argument("-j", "--ncores", default=1, type=int, help="number of cores to use for building and installing (default: 1)")
+    args = parser.parse_args()
 
-# clone repositories
-if args.clone is not None:
-    print('=' * 25)
+    # print help if no arguments are provided
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
-    # check repos to clone
-    if not args.clone:
-        # choose all repos if none are specified
-        print("No repositories specified to clone --> cloning all repositories")
-        args.clone = [*core_repos, *app_repos]
+    # clone repositories
+    if args.clone is not None:
+        print('=' * 25)
 
-    # output repos to clone
-    print(f"Cloning the following repositories: {args.clone}")
-    print('=' * 25)
+        # check repos to clone
+        if not args.clone:
+            # choose all repos if none are specified
+            print("No repositories specified to clone --> cloning all repositories")
+            args.clone = [*core_repos, *app_repos]
 
-    # loop over repos to clone and clone its dependencies recursively
-    for name in args.clone:
-        clone_repo(name, clone_dir=args.dir)
+        # output repos to clone
+        print(f"Cloning the following repositories: {args.clone}")
+        print('=' * 25)
 
-# archive the repository directory
-if args.archive:
-    print('=' * 25)
+        # loop over repos to clone and clone its dependencies recursively
+        for name in args.clone:
+            clone_repo(name, clone_dir=args.dir)
 
-    # check if the specified directory exists
-    repo_dir = Path(args.dir)
-    if not repo_dir.exists():
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(repo_dir))
-    print(f"Archiving the directory: {str(repo_dir.absolute())}")
+    # archive the repository directory
+    if args.archive:
+        print('=' * 25)
 
-    # copy the script into the repo directory
-    script_path = Path(__file__).resolve()
-    shutil.copy(script_path, repo_dir)
+        # check if the specified directory exists
+        repo_dir = Path(args.dir)
+        if not repo_dir.exists():
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(repo_dir))
+        print(f"Archiving the directory: {str(repo_dir.absolute())}")
 
-    # create the tar.gz archive
-    with tarfile.open(repo_dir.name + ".tar.gz", "w:gz") as tar:
-        tar.add(repo_dir)
+        # copy the script into the repo directory
+        script_path = Path(__file__).resolve()
+        shutil.copy(script_path, repo_dir)
 
-# build and install repositories
-if args.install is not None:
-    print('=' * 25)
+        # create the tar.gz archive
+        with tarfile.open(repo_dir.name + ".tar.gz", "w:gz") as tar:
+            tar.add(repo_dir)
 
-    # check repos to install
-    if not args.install:
-        # if no repos are specified, install triqs and all apps (core libs are installed by triqs automatically)
-        print("No repositories specified to install --> installing TRIQS and all apps (core libraries are installed by TRIQS automatically)")
-        args.install = ['triqs', *app_repos]
-    else:
-        print(f"User specified repositories to install: {args.install}")
+    # build and install repositories
+    if args.install is not None:
+        print('=' * 25)
 
-        # remove duplicate repos
-        args.install = list(set(args.install))
+        # check repos to install
+        if not args.install:
+            # if no repos are specified, install triqs and all apps (core libs are installed by triqs automatically)
+            print("No repositories specified to install --> installing TRIQS and all apps (core libraries are installed by TRIQS automatically)")
+            args.install = ['triqs', *app_repos]
+        else:
+            print(f"User specified repositories to install: {args.install}")
 
-        # loop over remaining repos
+            # remove duplicate repos
+            args.install = list(set(args.install))
+
+            # loop over remaining repos
+            for name in args.install:
+                # check if the repo is in the repo information
+                if name not in all_repos:
+                    raise ValueError(f"Repository {name} not found in the repository information.")
+
+                # filter out dependencies that will be installed by another repo with higher priority
+                for dep_name in all_repos[name].get("deps", []):
+                    if dep_name in args.install:
+                        print(f"Repository {dep_name} will be installed by {name} automatically --> removing")
+                        args.install = [x for x in args.install if x != dep_name]
+
+            # sort repos according to the order in the all_repos dictionary
+            args.install.sort(key=lambda x: list(all_repos.keys()).index(x))
+
+        # check if the specified repos exists
+        directories = [d for d in os.listdir(args.dir+'/') if os.path.isdir(args.dir+'/'+d)]
         for name in args.install:
-            # check if the repo is in the repo information
-            if name not in all_repos:
-                raise ValueError(f"Repository {name} not found in the repository information.")
+            if name+'.src' not in directories:
+                print(f"Repository {name} not found in the directory {args.dir} --> skipping")
+                args.install.remove(name)
 
-            # filter out dependencies that will be installed by another repo with higher priority
-            for dep_name in all_repos[name].get("deps", []):
-                if dep_name in args.install:
-                    print(f"Repository {dep_name} will be installed by {name} automatically --> removing")
-                    args.install = [x for x in args.install if x != dep_name]
+        if not args.install:
+            raise ValueError("No repositories to install found in the directory {args.dir}")
 
-        # sort repos according to the order in the all_repos dictionary
-        args.install.sort(key=lambda x: list(all_repos.keys()).index(x))
+        # output repositories to install
+        print(f"Installing the following repositories: {args.install}")
+        print('=' * 25)
 
-    # check if the specified repos exists
-    directories = [d for d in os.listdir(args.dir+'/') if os.path.isdir(args.dir+'/'+d)]
-    for name in args.install:
-        if name+'.src' not in directories:
-            print(f"Repository {name} not found in the directory {args.dir} --> skipping")
-            args.install.remove(name)
+        # loop over repos to install
+        for name in args.install:
+            print(f"Building and installing {name}")
 
-    if not args.install:
-        raise ValueError("No repositories to install found in the directory {args.dir}")
+            # get repo information
+            repo_info = all_repos[name]
 
-    # output repositories to install
-    print(f"Installing the following repositories: {args.install}")
-    print('=' * 25)
+            # check if the src directory exists
+            repo_path = Path(args.dir + "/" + name + ".src")
+            if not repo_path.exists():
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), repo_path.name)
 
-    # loop over repos to install
-    for name in args.install:
-        print(f"Building and installing {name}")
+            # set up build and install directory
+            build_dir = Path(args.dir + "/" + name + ".build")
+            install_prefix = Path(args.dir + "/install" if args.install_prefix is None else args.install_prefix)
+            cmake_install_prefix = "-DCMAKE_INSTALL_PREFIX=" + str(install_prefix.absolute())
 
-        # get repo information
-        repo_info = all_repos[name]
+            # source triqs shell variables for apps if not already in the environment
+            if name in app_repos and "TRIQS_ROOT" not in os.environ:
+                py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
+                py_path = str((install_prefix / ("lib/python" + py_version + "/site-packages")).absolute())
+                os.environ["TRIQS_ROOT"] = str(install_prefix.absolute())
+                os.environ["PYTHONPATH"] = py_path + ":" + os.getenv("PYTHONPATH", "")
+                print(f"Setting environment variable TRIQS_ROOT to {os.environ['TRIQS_ROOT']}")
+                print(f"Setting environment variable PYTHONPATH to {os.environ['PYTHONPATH']}")
 
-        # check if the src directory exists
-        repo_path = Path(args.dir + "/" + name + ".src")
-        if not repo_path.exists():
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), repo_path.name)
+            # build, test and install
+            cmake_args = repo_info.get("cmake_args", args.cmake_args)
+            subprocess.run(["cmake", "-B", str(build_dir), str(repo_path), cmake_install_prefix] + cmake_args.split(), check=True)
+            subprocess.run(["cmake", "--build", str(build_dir), "--", "-j", str(args.ncores)], check=True)
+            if not repo_info.get("no_tests", args.no_tests):
+                subprocess.run(["ctest", "--test-dir", str(build_dir), "-j", str(args.ncores)], check=True)
+            subprocess.run(["cmake", "--install", str(build_dir)], check=True)
 
-        # set up build and install directory
-        build_dir = Path(args.dir + "/" + name + ".build")
-        install_prefix = Path(args.dir + "/install" if args.install_prefix is None else args.install_prefix)
-        cmake_install_prefix = "-DCMAKE_INSTALL_PREFIX=" + str(install_prefix.absolute())
+            print('-' * 25)
 
-        # source triqs shell variables for apps if not already in the environment
-        if name in app_repos and "TRIQS_ROOT" not in os.environ:
-            py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
-            py_path = str((install_prefix / ("lib/python" + py_version + "/site-packages")).absolute())
-            os.environ["TRIQS_ROOT"] = str(install_prefix.absolute())
-            os.environ["PYTHONPATH"] = py_path + ":" + os.getenv("PYTHONPATH", "")
-            print(f"Setting environment variable TRIQS_ROOT to {os.environ['TRIQS_ROOT']}")
-            print(f"Setting environment variable PYTHONPATH to {os.environ['PYTHONPATH']}")
+    return
 
-        # build, test and install
-        cmake_args = repo_info.get("cmake_args", args.cmake_args)
-        subprocess.run(["cmake", "-B", str(build_dir), str(repo_path), cmake_install_prefix] + cmake_args.split(), check=True)
-        subprocess.run(["cmake", "--build", str(build_dir), "--", "-j", str(args.ncores)], check=True)
-        if not repo_info.get("no_tests", args.no_tests):
-            subprocess.run(["ctest", "--test-dir", str(build_dir), "-j", str(args.ncores)], check=True)
-        subprocess.run(["cmake", "--install", str(build_dir)], check=True)
 
-        print('-' * 25)
+if __name__ == "__main__":
+    main()
