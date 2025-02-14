@@ -15,22 +15,27 @@ from pathlib import Path
 #
 # the following keys are supported:
 # - url: URL of the repository for cloning
-# - git_tag: git tag or branch passed to the git clone command as "-b GIT_TAG"
+# - default_tag: git tag or branch passed to the git clone command as "-b DEFAULT_TAG" in case the "--unstable" command
+# line option is not used
+# - unstable_tag: git tag or branch passed to the git clone command in case the "--unstable" command line option is used
+# (the priority is unstable_tag > default_tag > "unstable")
 # - deps: list of repositories that should be soft linked to the deps folder
 # - cmake_args: additional arguments passed to the cmake command
 # - no_tests: do not run tests after building
 core_repos = {
     "GTest": {
         "url": "https://github.com/google/googletest",
-        "git_tag": "main"
+        "default_tag": "main"
     },
     "fmt": {
         "url": "https://github.com/fmtlib/fmt",
-        "git_tag": "10.2.1"
+        "default_tag": "10.2.1",
+        "unstable_tag": "11.0.2"
     },
     "Cpp2Py": {
         "url": "https://github.com/TRIQS/cpp2py.git",
-        "git_tag": "unstable"
+        "default_tag": "unstable",
+        "unstable_tag": "main",
     },
     "itertools": {
         "url": "https://github.com/TRIQS/itertools.git",
@@ -50,7 +55,8 @@ core_repos = {
     },
     "cppdlr": {
         "url": "https://github.com/flatironinstitute/cppdlr.git",
-        "deps": ["GTest", "nda", "fmt"]
+        "deps": ["GTest", "nda", "fmt"],
+        "unstable_tag": "main"
     },
     "triqs": {
         "url": "https://github.com/TRIQS/triqs.git",
@@ -92,7 +98,7 @@ app_repos = {
 all_repos = {**core_repos, **app_repos}
 
 
-def clone_repo(name, clone_dir, clone_args="--depth 1"):
+def clone_repo(name, clone_dir, clone_unstable, clone_args="--depth 1"):
     """
     Clone the given repository and its dependencies recursively and create soft links for the dependencies.
 
@@ -100,6 +106,10 @@ def clone_repo(name, clone_dir, clone_args="--depth 1"):
     ----------
     name : str
         Name of the repository to clone.
+    clone_dir : str
+        Directory where the repository should be cloned.
+    clone_unstable : bool
+        Shoule the unstable branch (if available) be cloned?
     clone_args : str
         Additional arguments to pass to the git clone command.
 
@@ -121,13 +131,14 @@ def clone_repo(name, clone_dir, clone_args="--depth 1"):
     # get repo information from the dictionary
     repo_info = all_repos[name]
     url = repo_info["url"]
-    git_tag = repo_info.get("git_tag", "")
+    default_tag = repo_info.get("default_tag", "")
+    unstable_tag = repo_info.get("unstable_tag", default_tag if default_tag else "unstable")
     repo_dir = clone_dir + "/" + name + ".src"
     repo_path = Path(repo_dir)
 
     # clone the repo if hasn't been cloned yet
     if not repo_path.exists():
-        tag_args = f"-b {git_tag}" if git_tag else ""
+        tag_args = f"-b {unstable_tag}" if clone_unstable else (f"-b {default_tag}" if default_tag else "")
         subprocess.run(["git", "clone"] + tag_args.split() + clone_args.split() + [url, repo_dir], check=True)
     else:
         print(f"Repository {name} already exists --> skipping")
@@ -139,7 +150,7 @@ def clone_repo(name, clone_dir, clone_args="--depth 1"):
         deps_path = repo_path / "deps"
         for dep_name in deps:
             # clone the dependency
-            clone_repo(dep_name, clone_dir, clone_args)
+            clone_repo(dep_name, clone_dir, clone_unstable, clone_args)
 
             # create a soft link in the deps folder
             dst = deps_path / dep_name
@@ -179,6 +190,7 @@ def main():
     parser.add_argument("-a", "--archive", action="store_true", help="archive the repository directory DIR (default: False)")
     parser.add_argument("-c", "--clone", nargs="*", help="clone all or only specific repositories into DIR")
     parser.add_argument("-i", "--install", nargs="*", help="build and install all or only specific repositories")
+    parser.add_argument("--unstable", action="store_true", help="clone unstable branches when possible (default: False)")
     parser.add_argument("--install-prefix", help="CMake install prefix (default: DIR/install)")
     parser.add_argument("--cmake-args", default="", help="additional arguments to pass to the cmake command (default: '')")
     parser.add_argument("--no-tests", action="store_true", help="do not run tests after building (default: False)")
@@ -206,7 +218,7 @@ def main():
 
         # loop over repos to clone and clone its dependencies recursively
         for name in args.clone:
-            clone_repo(name, clone_dir=args.dir)
+            clone_repo(name, clone_unstable=args.unstable, clone_dir=args.dir)
 
     # archive the repository directory
     if args.archive:
