@@ -258,7 +258,7 @@ def main():
 
         # check if the specified repos exists
         directories = [d for d in os.listdir(args.dir+'/') if os.path.isdir(args.dir+'/'+d)]
-        for name in args.install:
+        for name in reversed(args.install):
             if name+'.src' not in directories:
                 print(f"Repository {name} not found in the directory {args.dir} --> skipping")
                 args.install.remove(name)
@@ -276,11 +276,7 @@ def main():
 
             # get repo information
             repo_info = all_repos[name]
-
-            # check if the src directory exists
             repo_path = Path(args.dir + "/" + name + ".src")
-            if not repo_path.exists():
-                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), repo_path.name)
 
             # set up build and install directory
             build_dir = Path(args.dir + "/" + name + ".build")
