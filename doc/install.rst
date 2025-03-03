@@ -189,6 +189,9 @@ on two standard systems:
 Installation steps
 ------------------
 
+Using the command line
+^^^^^^^^^^^^^^^^^^^^^^
+
 We provide hereafter the build instructions for the TRIQS library.
 First export `INSTALL_PREFIX` for the installation location, and `NCORES` for the number of cores to use during compilation, for example::
 
@@ -208,18 +211,54 @@ Note, that we have to provide cmake with the flag `CMAKE_INSTALL_PREFIX` to defi
 
     make -j$NCORES && ctest -j$NCORES test && make install
 
-To install TRIQS together with several of its :ref:`applications<applications>` we provide a bash script that
-automatizes the build and test process :download:`build_triqs.sh <installation/build_triqs.sh>`. The script
-can be edited to customize the compilation of TRIQS and its applications using both environment variables
-and cmake configuration options. The script assumes that all dependencies / required libraries are already
-installed. Executing the script via `bash build_triqs.sh` will generate a `build_x.log` containing the command-line
-build output and a `build_x_test.log` containing the test output.
-
 .. note:: Caution: The compilation of TRIQS, even if run in serial mode, can temporarily
           use up to 4 Gigabytes of RAM. The restrictions on the Login-Nodes of certain
           HPC Machines might not provide sufficient memory for the compilation.
           Please consider compiling within an interactive session on a Compute-Node
           or contact the admins of your HPC Machine.
+
+Using the provided Python script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install TRIQS together with several of its :ref:`applications<applications>` we provide a Python script that
+automatizes the clone, build, install and test process. It is located in the `packaging <https://github.com/TRIQS/triqs/tree/3.3.x/packaging>`_
+directory of the TRIQS repository and supports the installation of stable release branches as well as unstable
+development branches:
+
+* To get the Python script for the latest stable release, go to `<https://github.com/TRIQS/triqs/blob/3.3.x/packaging/clone_archive_and_install.py>`_
+  and click on ``Download raw file``.
+
+* To get the Python script for the unstable development branch, go to `<https://github.com/TRIQS/triqs/blob/unstable/packaging/clone_archive_and_install.py>`_
+  and click on ``Download raw file``.
+
+The script can be used in different ways. For example,
+
+* Install TRIQS and its applications locally into the default directory `./triqs_repositories/install`::
+
+    python clone_archive_and_install.py -c -i -j $NCORES
+
+  Here, ``$NCORES`` is the number of cores to use for the build process. If it is not set in your current environment,
+  you should replace it with a specific number.
+
+* Clone and archive TRIQS and all applications into a tarball `triqs_repositories.tar.gz`::
+
+    python clone_archive_and_install.py -c -a
+
+  This tarball can be used to perform an offline installation of TRIQS. Simply copy the tarball to the machine where you
+  want to do the installation and run::
+
+    tar -xzf triqs_repositories.tar.gz
+    python triqs_repositories/clone_archive_and_install.py -i -j $NCORES
+
+* Only install a specific application, e.g. `TRIQS/cthyb <https://github.com/TRIQS/cthyb>`_::
+
+    python clone_archive_and_install.py -i triqs cthyb -j $NCORES
+
+For more information, please take a look at the help message of the script::
+
+    python clone_archive_and_install.py -h
+
+.. note:: The script assumes that all dependencies / required libraries are already installed.
 
 Environment setup
 -----------------
