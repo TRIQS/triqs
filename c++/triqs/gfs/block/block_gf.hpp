@@ -117,9 +117,9 @@ namespace triqs::gfs {
     using target_t = Target;
 
     using regular_type      = block_gf<Mesh, Target, Layout, Arity>;
-    using mutable_view_type = block_gf_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, Arity>;
-    using view_type         = block_gf_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, Arity, false>;
-    using const_view_type   = block_gf_view<Mesh, Target, typename Layout::with_lowest_guarantee_t, Arity, true>;
+    using mutable_view_type = block_gf_view<Mesh, Target, Layout, Arity>;
+    using view_type         = block_gf_view<Mesh, Target, Layout, Arity, false>;
+    using const_view_type   = block_gf_view<Mesh, Target, Layout, Arity, true>;
 
     /// The associated real type
     using real_t = block_gf<Mesh, typename Target::real_t, Layout, Arity>;

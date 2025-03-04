@@ -100,13 +100,13 @@ namespace triqs::gfs {
     static constexpr bool is_view  = false;
     static constexpr bool is_const = false;
 
-    using mutable_view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t>;
+    using mutable_view_type = gf_view<M, Target, Layout>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<M, Target, typename Layout::with_lowest_guarantee_t>;
+    using const_view_type = gf_const_view<M, Target, Layout>;
 
     /// Associated (non const) view type
-    using view_type = gf_view<M, Target, typename Layout::with_lowest_guarantee_t>;
+    using view_type = gf_view<M, Target, Layout>;
 
     /// Associated regular type (gf<....>)
     using regular_type = gf<M, Target, Layout>;
