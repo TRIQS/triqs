@@ -92,6 +92,15 @@ For publications based on results produced with this application please cite `10
 
 *Homepage*: `<https://github.com/krivenko/pomerol2triqs/>`_
 
+**Interface to the EDIpack exact diagonalization solver (external)**
+--------------------------------------------------------------------
+
+TRIQS wrapper around the `EDIpack2 <https://github.com/EDIpack/EDIpack2.0>`_  massively parallel exact diagonalization solver.
+
+For publications based on results produced with this application please cite `Comput. Phys. Commun. 273, 108261 (2022) <https://doi.org/10.1016/j.cpc.2021.108261>`_
+
+*Homepage*: `<https://github.com/krivenko/edipack2triqs/>`_
+
 **Interface to the w2dynamics impurity solver**
 -----------------------------------------------
 
@@ -134,9 +143,9 @@ For publications based on results produced with this application please cite `Co
 
 solid_dmft allows to perform DFT+DMFT ''one-shot'' and charge self-consistent
 (CSC) calculations from h5 archives, created by DFTTools or VASP/Quantum Espresso
-input files for multiband systems. It takes advantage of various impurity solvers 
-available in TRIQS. Postprocessing scripts are available to perform analytic 
-continuation and calculate spectral functions. 
+input files for multiband systems. It takes advantage of various impurity solvers
+available in TRIQS. Postprocessing scripts are available to perform analytic
+continuation and calculate spectral functions.
 
 *Homepage:* `<https://triqs.github.io/solid_dmft/>`_
 
@@ -144,7 +153,7 @@ continuation and calculate spectral functions.
 -------------------------------------------------------------------
 MagInt is an external TRIQS application for calculating inter-site exchange interactions in
 correlated insulators. It uses a force-theorem approach based on the Hubbard-I approximation
-to electronic self-energy. MagInt is applied as a postprocessing tool on top of converged 
+to electronic self-energy. MagInt is applied as a postprocessing tool on top of converged
 DFT+Hubbard-I calculations. It uses DFTTools and its own implementation of Hubbard-I.
 MagInt includes interfaces to Wien2k and VASP (experimental).
 
