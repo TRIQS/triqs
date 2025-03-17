@@ -35,6 +35,26 @@ has been cited by more than 300 peer-reviewed publications.
 TRIQS is free software distributed under the GPL license.
 
 
+TRIQS School 2025
+-----------------
+
+We are excited to announce the TRIQS Summer School 2025.
+The event will take place from August 31st to September 5th near Paris, France.
+
+This Summer School aims at teaching advanced methodologies in computational condensed matter physics,
+and is targeted at students at the doctoral or master level. The program will cover the topics
+
+* Refresher in Many-Body Condensed Matter Theory
+* Dynamical mean-field theory for model and ab-initio systems
+* Monte-Carlo Methods and Continuous-time Quantum Monte-Carlo
+* Two-particle response functions and Many-Body Perturbation Theory
+
+as theoretical lectures (14h total) and through hands-on tutorials (18h total) using the TRIQS software platform.
+A poster session will be held to foster scientific discussions.
+Applications can be submitted through the `event website <https://indico.flatironinstitute.org/event/4011/>`_.
+The deadline for applications is May 5th 2025, and we will notify successful applicants within 14 days after the deadline.
+
+
 TRIQS applications
 ------------------
 
