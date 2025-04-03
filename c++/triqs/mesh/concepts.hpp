@@ -60,7 +60,7 @@ namespace triqs::mesh {
   /// corresponding to the Green function data array in memory
   template <typename M>
   concept Mesh = std::regular<M> and h5::Storable<M> and requires(M const &m) {
-    
+
     // Mesh has a mesh point
     typename M::mesh_point_t;
     requires MeshPoint<typename M::mesh_point_t>;
@@ -79,7 +79,7 @@ namespace triqs::mesh {
     // The type of the index indexing the data array
     typename M::data_index_t;
   }
-  // we now check some operations combining indices, mesh, mesh_points 
+  // we now check some operations combining indices, mesh, mesh_points
   and requires(M const &m, typename M::index_t index, typename M::data_index_t data_index, typename M::mesh_point_t mp) {
     // Validity of the index
     { m.is_index_valid(index) } -> std::same_as<bool>;
@@ -90,6 +90,9 @@ namespace triqs::mesh {
     { m.to_index(data_index) } -> std::same_as<typename M::index_t>;            // data idx -> idx
     { m.operator[](data_index) } -> std::same_as<typename M::mesh_point_t>; // data index -> mesh point
     { m.operator()(index) } -> std::same_as<typename M::mesh_point_t>;    // index -> mesh point
+
+    // Hash for easy checking of MeshPoint and Mesh compatibility
+    { m.mesh_hash() } -> std::same_as<uint64_t>;
   };
 
   // ------------- MeshWithValues -----------------

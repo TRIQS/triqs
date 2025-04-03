@@ -89,7 +89,7 @@ namespace triqs::mesh {
     // ------------------- Accessors -------------------
 
     /// The Hash for the mesh configuration
-    [[nodiscard]] size_t mesh_hash() const { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
 
     /// The total number of points in the mesh
     [[nodiscard]] long size() const { return size_; }

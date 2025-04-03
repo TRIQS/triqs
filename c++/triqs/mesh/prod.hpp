@@ -89,13 +89,18 @@ namespace triqs::mesh {
 
     prod(Ms const &...mesh)
       requires(sizeof...(Ms) > 0)
-       : m_tuple_t{mesh...} {}
+       : m_tuple_t{mesh...}, hash_((mesh.mesh_hash() + ...)) {}
 
-    template <typename... U> prod(std::tuple<U...> const &mesh_tuple) : m_tuple_t{mesh_tuple} {}
+    template <typename... U>
+    prod(std::tuple<U...> const &mesh_tuple)
+       : m_tuple_t{mesh_tuple}, hash_(std::apply([](auto &...x) { return (x.mesh_hash() + ...); }, mesh_tuple)) {}
 
     /// Mesh comparison
     bool operator==(prod const &m) const { return as_tuple() == m.as_tuple(); }
     bool operator!=(prod const &m) const = default;
+
+    /// The Hash for the mesh configuration
+    [[nodiscard]] uint64_t mesh_hash() const { return hash_; }
 
     // -------------------- size -------------------
 
