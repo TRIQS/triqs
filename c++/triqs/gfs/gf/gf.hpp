@@ -19,6 +19,9 @@
 #include "./defs.hpp"
 #include "./targets.hpp"
 
+#include <mpi/mpi.hpp>
+#include <nda/nda.hpp>
+
 namespace triqs::gfs {
 
   /*------------------------------------------------------------------------
@@ -79,6 +82,11 @@ namespace triqs::gfs {
 
   struct impl_tag {};
   struct impl_tag2 {};
+
+  // Forward declaration.
+  template <MemoryGf G> void mpi_broadcast(G &&, mpi::communicator c = {}, int root = 0);
+  template <MemoryGf G1, MemoryGf G2>
+  void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
 
   // ----------------------  gf -----------------------------------------
   /**
@@ -277,16 +285,6 @@ namespace triqs::gfs {
     } // explicit is very important here.
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
 
-    /** 
-     *  from the mpi lazy operation. Cf MPI section !
-     * 
-     *  @tparam Tag
-     *  @param l The lazy object
-     *  
-     *  NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
-     */
-    template <typename Tag> gf(mpi::lazy<Tag, gf_const_view<M, Target>> l) : gf() { operator=(l); }
-
     /// ---------------  Operator = --------------------
 
     ///
@@ -338,37 +336,9 @@ namespace triqs::gfs {
       return gv_t{mesh(), d2};
     }
 
-    //-------------  MPI operation
-
-    /**
-     * Performs MPI reduce
-     * @param l The lazy object returned by mpi::reduce
-     */
-    gf &operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<M, Target>> l) {
-      _mesh = l.rhs.mesh();
-      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-      return *this;
-    }
-
-    /**
-     * Performs MPI scatter
-     * @param l The lazy object returned by mpi::scatter
-     */
-    gf &operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<M, Target>> l) {
-      _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
-      _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
-      return *this;
-    }
-
-    /**
-     * Performs MPI gather
-     * @param l The lazy object returned by mpi::gather
-     */
-    gf &operator=(mpi::lazy<mpi::tag::gather, gf_const_view<M, Target>> l) {
-      _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
-      _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
-      return *this;
-    }
+    // Friend declaration.
+    template <MemoryGf G> friend void mpi_broadcast(G &&, mpi::communicator, int root);
+    template <MemoryGf G1, MemoryGf G2> friend void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator, int, bool, MPI_Op);
 
     // Common code for gf, gf_view, gf_const_view
 #include "./_gf_view_common.hpp"

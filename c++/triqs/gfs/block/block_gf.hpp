@@ -19,6 +19,8 @@
 
 #include "./../../utility/factory.hpp"
 #include "./gf_struct.hpp"
+#include "../gf/gf.hpp"
+#include "../gf/targets.hpp"
 
 namespace triqs::gfs {
 
@@ -81,6 +83,15 @@ namespace triqs::gfs {
 
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
+
+  // Forward declaration.
+  template <typename G>
+    requires(BlockGreenFunction_v<G>)
+  void mpi_broadcast(G &&, mpi::communicator c = {}, int root = 0);
+
+  template <typename G1, typename G2>
+    requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
+  void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
 
   // ------------- Helper Types -----------------------------
 
@@ -176,10 +187,6 @@ namespace triqs::gfs {
       *this = x;
     }
 
-    /// Construct from the mpi lazy class of the implementation class, cf mpi section
-    // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
-    template <typename Tag> block_gf(mpi::lazy<Tag, block_gf_const_view<Mesh, Target>> x) : block_gf() { operator=(x); }
-
     /// Construct from a vector of gf
     block_gf(data_t V)
       requires(Arity == 1)
@@ -250,20 +257,6 @@ namespace triqs::gfs {
     block_gf &operator=(block_gf &&rhs)      = default;
 
     /**
-     * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
-     *
-     * @param l The lazy object returned by reduce
-     */
-    block_gf &operator=(mpi::lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
-
-      _block_names = l.rhs.block_names();
-      _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-
-      return *this;
-      // reduce of vector produces a new vector of gf, so it is fine here
-    }
-
-    /**
      * Assignment operator
      *
      * @tparam RHS Type of the right hand side rhs
@@ -294,6 +287,15 @@ namespace triqs::gfs {
     //----------------------------- print  -----------------------------
 
     friend std::ostream &operator<<(std::ostream &out, block_gf const &) { return out << "block_gf"; }
+
+    // Friend declarations.
+    template <typename G>
+      requires(BlockGreenFunction_v<G>)
+    friend void mpi_broadcast(G &&, mpi::communicator c, int root);
+
+    template <typename G1, typename G2>
+      requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
+    friend void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator, int, bool, MPI_Op);
 
     // Common code for gf, gf_view, gf_const_view
 #include "./_block_gf_view_common.hpp"

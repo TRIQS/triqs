@@ -148,28 +148,6 @@ namespace triqs::gfs {
       return *this;
     }
 
-    /**
-    * Assignment operator overload specific for mpi::lazy objects (keep before general assignment)
-    * @param l The lazy object returned by reduce
-    */
-    block_gf_view &operator=(mpi::lazy<mpi::tag::reduce, const_view_type> l)
-      requires(not IsConst)
-    {
-      if (l.rhs.size() != this->size())
-        TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-      _block_names = l.rhs.block_names();
-      if constexpr (Arity == 1) {
-        for (int i = 0; i < size(); ++i) _glist[i] = mpi::reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-      } else {
-
-        for (int i = 0; i < size1(); ++i)
-          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi::reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
-      }
-      // here we need to enumerate the vector, the mpi::reduce produce a vector<gf>, NOT a gf_view,
-      // we can not overload the = of vector for better API.
-      return *this;
-    }
-
     // ---------------  Rebind --------------------
     /// Rebind
     void rebind(block_gf_view x) noexcept {

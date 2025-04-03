@@ -53,6 +53,7 @@ namespace triqs::gfs {
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
+#include "./gfs/gf/mpi.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"
