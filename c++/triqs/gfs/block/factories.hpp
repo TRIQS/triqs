@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "./block_gf.hpp"
+
 namespace triqs::gfs {
 
   // -------------------------------   Free Factories for regular type  --------------------------------------------------

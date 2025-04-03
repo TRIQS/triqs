@@ -240,35 +240,6 @@ namespace triqs::gfs {
       return gv_t{mesh(), d2};
     }
 
-    //-------------  MPI operation
-
-    /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi::reduce
-    */
-    void operator=(mpi::lazy<mpi::tag::reduce, gf_const_view<M, Target>> l) {
-      _mesh = l.rhs.mesh();
-      _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // nda:: necessary on gcc 5. why ??
-    }
-
-    /**
-     * Performs MPI scatter
-     * @param l The lazy object returned by reduce
-     */
-    void operator=(mpi::lazy<mpi::tag::scatter, gf_const_view<M, Target>> l) {
-      _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
-      _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
-    }
-
-    /**
-     * Performs MPI gather
-     * @param l The lazy object returned by mpi::reduce
-     */
-    void operator=(mpi::lazy<mpi::tag::gather, gf_const_view<M, Target>> l) {
-      _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
-      _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
-    }
-
     // Common code for gf, gf_view, gf_const_view
 #include "./_gf_view_common.hpp"
   };
