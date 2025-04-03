@@ -193,7 +193,7 @@ template <typename G> void test_reduce_in_place_into(G const &g, mpi::communicat
 
   // in place reduce view
   g_red = g;
-  mpi_reduce_into(g_red, g_red(), world, root);
+  mpi::reduce_into(g_red, g_red(), world, root);
   if (world.rank() == root) {
     check_gfs(g_red, G{world.size() * g});
   } else {

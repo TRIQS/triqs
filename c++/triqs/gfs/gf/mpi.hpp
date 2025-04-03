@@ -44,7 +44,7 @@ namespace triqs::gfs {
    * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    */
-  template <MemoryGf G> void mpi_broadcast(G &&g, mpi::communicator c, int root) { // NOLINT (temporary views are allowed)
+  template <MemoryGf G> void mpi_broadcast(G &&g, mpi::communicator c = {}, int root = 0) { // NOLINT (temporary views are allowed)
     constexpr bool is_view = std::decay_t<G>::is_view;
 
     // broadcast mesh
@@ -89,8 +89,8 @@ namespace triqs::gfs {
    * @param op MPI reduction operation.
    */
   template <MemoryGf G1, MemoryGf G2>
-  void mpi_reduce_into(G1 const &g_in, G2 &&g_out, mpi::communicator c, // NOLINT (temporary views are allowed here)
-                       int root, bool all, MPI_Op op) {
+  void mpi_reduce_into(G1 const &g_in, G2 &&g_out, mpi::communicator c = {}, // NOLINT (temporary views are allowed here)
+                       int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     constexpr bool is_view = std::decay_t<G2>::is_view;
 
     // check the meshes of the input GFs

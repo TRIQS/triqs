@@ -84,15 +84,6 @@ namespace triqs::gfs {
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
 
-  // Forward declaration.
-  template <typename G>
-    requires(BlockGreenFunction_v<G>)
-  void mpi_broadcast(G &&, mpi::communicator c = {}, int root = 0);
-
-  template <typename G1, typename G2>
-    requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
-  void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
-
   // ------------- Helper Types -----------------------------
 
   template <typename Lambda, typename T> struct lazy_transform_t {
