@@ -73,7 +73,7 @@ namespace triqs::gfs {
    */
   template <typename G>
     requires(BlockGreenFunction_v<G>)
-  void mpi_broadcast(G &&bg, mpi::communicator c, int root) { // NOLINT (temporary views are allowed)
+  void mpi_broadcast(G &&bg, mpi::communicator c = {}, int root = 0) { // NOLINT (temporary views are allowed)
     constexpr bool is_view = std::decay_t<G>::is_view;
 
     // broadcast block names
@@ -119,8 +119,8 @@ namespace triqs::gfs {
    */
   template <typename G1, typename G2>
     requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
-  void mpi_reduce_into(G1 const &bg_in, G2 &&bg_out, mpi::communicator c, int root, // NOLINT (temporary views are allowed here)
-                       bool all, MPI_Op op) {
+  void mpi_reduce_into(G1 const &bg_in, G2 &&bg_out, mpi::communicator c = {}, int root = 0, // NOLINT (temporary views are allowed here)
+                       bool all = false, MPI_Op op = MPI_SUM) {
     constexpr bool is_view = std::decay_t<G2>::is_view;
 
     // check the shape and block names of the input block GFs

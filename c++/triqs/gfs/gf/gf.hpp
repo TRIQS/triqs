@@ -83,11 +83,6 @@ namespace triqs::gfs {
   struct impl_tag {};
   struct impl_tag2 {};
 
-  // Forward declaration.
-  template <MemoryGf G> void mpi_broadcast(G &&, mpi::communicator c = {}, int root = 0);
-  template <MemoryGf G1, MemoryGf G2>
-  void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
-
   // ----------------------  gf -----------------------------------------
   /**
    * The Green function container. 
