@@ -148,24 +148,39 @@ namespace triqs {
 
         // Merge all 'out' subspaces corresponding to the same 'in' subspace
         // in 'conn'.
-        auto merge_conn_targets = [this](auto const& conn) {
-          if(conn.empty()) return;
+        auto merge_conn_targets = [this](auto const& conn) -> bool {
+          if(conn.empty()) return false;
+
+          bool subspaces_linked = false;
 
           auto conn_it = conn.cbegin();
-          idx_t i_subspace = conn_it->first;
-          idx_t f_subspace = conn_it->second;
+          idx_t i_subspace = subspaces.find_set(conn_it->first);
+          idx_t f_subspace = subspaces.find_set(conn_it->second);
           ++conn_it;
           for(; conn_it != conn.cend(); ++conn_it) {
-            if(conn_it->first == i_subspace) {
-              subspaces.link(f_subspace, conn_it->second);
+            if(subspaces.find_set(conn_it->first) == subspaces.find_set(i_subspace)) {
+              idx_t f_subspace1 = subspaces.find_set(f_subspace);
+              idx_t f_subspace2 = subspaces.find_set(conn_it->second);
+              if(f_subspace1 != f_subspace2) {
+                subspaces.link(f_subspace1, f_subspace2);
+                subspaces_linked = true;
+              }
             } else {
-              std::tie(i_subspace, f_subspace) = *conn_it;
+              i_subspace = subspaces.find_set(conn_it->first);
+              f_subspace = subspaces.find_set(conn_it->second);
             }
           }
+
+          return subspaces_linked;
         };
 
-        merge_conn_targets(Cd_connections);
-        merge_conn_targets(C_connections);
+        // Repeatedly call merge_conn_targets() until no further subspaces can
+        // be merged.
+        bool sl_Cd, sl_C;
+        do {
+          sl_Cd = merge_conn_targets(Cd_connections);
+          sl_C = merge_conn_targets(C_connections);
+        } while(sl_Cd || sl_C);
 
         _update_index();
 
