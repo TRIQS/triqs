@@ -63,16 +63,16 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install open-mpi
      brew install openblas
      brew install python
+     brew install numpy
+     brew install scipy
+     brew install mpi4py
+     brew install python-matplotlib
 
 4. Create a :ref:`Python virtual environment <python_virtualenv>` and make sure it is activated.
 
 5. Install the required python packages into your virtual environment: ::
 
-    pip install --user --upgrade matplotlib
-    pip install --user --upgrade mako
-    pip install --user --upgrade numpy
-    pip install --user --upgrade scipy
-    pip install --user --upgrade mpi4py
+    pip install --upgrade mako
 
 6. We recommend using the clang compiler by default. The following command will install llvm together with the most recent clang compiler ::
 
@@ -85,6 +85,6 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      export CC=$(brew --prefix)/opt/llvm/bin/clang
      export CXX=$(brew --prefix)/opt/llvm/bin/clang++
 
-  To make this choice permanent, add these lines to your ``$HOME/.zshrc``.
+  To make this choice permanent, add these lines to your ``$HOME/.zprofile``.
 
 You should now be set to :ref:`compile TRIQS from source <triqs_compilation>`.
