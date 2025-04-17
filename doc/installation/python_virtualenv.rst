@@ -30,11 +30,12 @@ For more information please refer to the official `documentation. <https://docs.
 
 * To make a new isolated Python virtual environment called ``my_python``, do::
 
-    python3 -m venv $HOME/.venv/my_python
+    python3 -m venv $HOME/.venv/my_python --system-site-packages
 
 * You can then use it by loading it into your shell :ref:`environment <environment_vars>` via::
 
     source $HOME/.venv/my_python/bin/activate
+    export PATH=$HOME/.venv/my_python/bin:$PATH
 
 * Confirm that your own Python virtual environment is activated by running the command::
   
@@ -48,11 +49,12 @@ For more information please refer to the official `documentation. <https://docs.
 
     pip install --upgrade package_name
 
-* If you want to make this your default Python setup, just add the line::
+* If you want to make this your default Python setup, just add the lines::
 
     source $HOME/.venv/my_python/bin/activate
+    export PATH=$HOME/.venv/my_python/bin:$PATH
 
-  to your ``$HOME/.bash_profile``
+  to your ``$HOME/.bash_profile`` for ``bash`` users or ``$HOME/.zprofile`` for ``zsh`` users.
 
 Compiling a package from source
 -------------------------------
