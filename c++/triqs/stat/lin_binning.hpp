@@ -371,7 +371,16 @@ namespace triqs::stat {
       }
 
       // gather bins
-      auto bins_gathered = mpi::all_gather(fbins, c);
+      auto nbins         = mpi::all_gather(fbins.size(), c);
+      auto bins_gathered = std::vector<value_t>(std::accumulate(nbins.begin(), nbins.end(), 0));
+      auto start         = 0;
+      for (int i = 0; i < c.size(); ++i) {
+        auto const end = start + nbins[i];
+        if (c.rank() == i) std::copy(fbins.begin(), fbins.end(), bins_gathered.begin() + start);
+        mpi::broadcast_range(std::span{bins_gathered.begin() + start, bins_gathered.begin() + end}, c, i);
+        start = end;
+      }
+
       return bins_gathered;
     }
 
