@@ -198,7 +198,7 @@ namespace triqs::stat {
     C2PY_IGNORE friend histogram mpi_reduce(histogram const &h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       TRIQS_ASSERT(op == MPI_SUM);
       histogram h2(h.a_, h.b_, h.size());
-      h2.data_       = mpi::reduce(h.data_, c, root, all, MPI_SUM);
+      mpi::reduce_into(h.data_, h2.data_, c, root, all, MPI_SUM);
       h2.n_data_pts_ = mpi::reduce(h.n_data_pts_, c, root, all, MPI_SUM);
       h2.n_lost_pts_ = mpi::reduce(h.n_lost_pts_, c, root, all, MPI_SUM);
       return h2;
@@ -298,7 +298,7 @@ namespace triqs::stat {
   inline histogram cdf(histogram const &h) {
     auto cdf = h;
     for (int i = 1; i < h.size(); ++i) cdf.data_[i] += cdf.data_[i - 1];
-    cdf.data_ /= double(h.n_data_pts());
+    cdf.data_ /= static_cast<double>(h.n_data_pts());
     return cdf;
   }
 
