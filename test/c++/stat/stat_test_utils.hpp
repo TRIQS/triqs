@@ -75,17 +75,17 @@ template <typename T> auto bin_data(std::vector<T> const &data, int n) {
   // group n data points together and calculate their mean and sum of squared deviations from the mean
   auto const nbins = data.size() / n;
   for (int i = 0; i < nbins; ++i) {
-    auto [m, v] = mean_and_err(std::span(data.data() + i * n, n));
+    auto [m, v] = mean_and_err<error_tag::sum>(std::span(data.data() + i * n, n));
     m_data.push_back(m);
-    v_data.push_back(abs_square(v) * n * (n - 1));
+    v_data.push_back(v);
   }
 
   // handle any left over data points
   auto const left_over = data.size() % n;
   if (left_over != 0) {
-    auto [m, v] = mean_and_err(std::span{data.data() + nbins * n, left_over});
+    auto [m, v] = mean_and_err<error_tag::sum>(std::span{data.data() + nbins * n, left_over});
     m_data.push_back(m);
-    v_data.push_back(abs_square(v) * left_over * (left_over - 1));
+    v_data.push_back(v);
   }
 
   return std::make_pair(m_data, v_data);

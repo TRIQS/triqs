@@ -252,11 +252,11 @@ namespace triqs::stat {
      * Only bins with at least `min_samples` effective samples are considered for error and autcorrelation time
      * esimation.
      *
-     * @param min_samples Minimum number of effective samples required.
+     * @param min_samples Minimum number of effective samples required (\f$ \geq 2 \f$).
      * @return `std::tuple` containing the overall mean, the standard errors, the integrated autocorrelation times and
      * the effective number of samples for each bin.
      */
-    [[nodiscard]] auto mean_errors_and_taus(int min_samples = 0) const {
+    [[nodiscard]] auto mean_errors_and_taus(int min_samples = 2) const {
       return calculate_mean_errors_and_taus(mean_bins_, var_bins_, effective_counts(), min_samples);
     }
 
@@ -275,11 +275,11 @@ namespace triqs::stat {
      * See also log_binning::mean_errors_and_taus.
      *
      * @param c MPI communicator.
-     * @param min_samples Minimum number of effective samples required.
+     * @param min_samples Minimum number of effective samples required (\f$ \geq 2 \f$).
      * @return `std::tuple` containing the overall mean, the standard errors, the integrated autocorrelation times and
      * the effective number of samples for each reduced bin.
      */
-    [[nodiscard]] auto mean_errors_and_taus(mpi::communicator c, int min_samples = 0) const {
+    [[nodiscard]] auto mean_errors_and_taus(mpi::communicator c, int min_samples = 2) const {
       auto [mean_red, var_red, nsamples_red] = mpi_all_reduce(c);
       return calculate_mean_errors_and_taus(mean_red, var_red, nsamples_red, min_samples);
     }
