@@ -37,12 +37,14 @@ namespace triqs::stat {
 
   histogram::histogram(int a, int b) : a_(a), b_(b), data_(nda::vector<double>::zeros(b - a + 1)) { initialize(); }
 
-  histogram::histogram(double a, double b, std::size_t nbins) : a_(a), b_(b), data_(nbins) { initialize(); }
+  histogram::histogram(double a, double b, std::size_t nbins) : a_(a), b_(b), data_(nda::vector<double>::zeros(static_cast<long>(nbins))) {
+    initialize();
+  }
 
   histogram &histogram::operator<<(double x) {
-    if (x < a_ || x > b_)
+    if (x < a_ || x > b_) {
       ++n_lost_pts_;
-    else {
+    } else {
       auto n = static_cast<int>(std::floor(((x - a_) / binsize_) + 0.5));
       ++data_[n];
       ++n_data_pts_;
