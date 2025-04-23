@@ -68,8 +68,8 @@ template <typename T> void check_bins(T const &acc, std::vector<typename T::valu
     auto const bin_size = (1 << i);
     auto [m, v]         = bin_data(data, bin_size);
     auto const nsamples = (data.size() % bin_size == 0 ? m.size() : m.size() - 1);
-    auto [mean, err]    = mean_and_err(std::span{m.data(), nsamples});
-    err                 = (nsamples < 2 ? zeroed_sample(err) : abs_square(err) * nsamples * (nsamples - 1));
+    auto [mean, err]    = mean_and_err<error_tag::sum>(std::span{m.data(), nsamples});
+    err                 = (nsamples < 2 ? zeroed_sample(err) : err);
     check_array_or_scalar(acc.mean_bins()[i], mean);
     check_array_or_scalar(acc.var_bins()[i], err);
   }
@@ -157,7 +157,7 @@ template <typename T> void test_unlimited_bins(const T &tmp) {
 
   // check sizes of calculated errors and taus
   auto [m, errs, taus, effs] = acc.mean_errors_and_taus();
-  EXPECT_EQ(errs.size(), 5);
+  EXPECT_EQ(errs.size(), 4);
   std::tie(m, errs, taus, effs) = acc.mean_errors_and_taus(5);
   EXPECT_EQ(errs.size(), 3);
   std::tie(m, errs, taus, effs) = acc.mean_errors_and_taus(30);

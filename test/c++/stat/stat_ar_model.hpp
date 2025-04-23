@@ -43,7 +43,7 @@ struct ar_model {
 
   // Constructor.
   ar_model(double phi, double sigma, int rank = 0) : phi(phi), sigma(sigma), dist(0.0, sigma) {
-    rng.seed(0x6dd9ebbab1cfad36 + 0x2544382c71ac491b * rank);
+    rng.seed(0x6dd9ebbab1cf + 0x2544382c71ac * rank);
   }
 
   // Generate a sample of the autoregressive process.
