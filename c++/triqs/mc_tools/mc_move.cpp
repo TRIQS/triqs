@@ -32,7 +32,7 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> void move<MCSignType>::collect_statistics(mpi::communicator const &c) {
     std::uint64_t nacc_tot  = mpi::all_reduce(nacc_, c);
     std::uint64_t nprop_tot = mpi::all_reduce(nprop_, c);
-    acc_rate_               = static_cast<double>(nacc_tot) / static_cast<double>(nprop_tot);
+    acc_rate_               = (nprop_tot > 0 ? static_cast<double>(nacc_tot) / static_cast<double>(nprop_tot) : 0.0);
     ptr_->collect_statistics(c);
   }
 

@@ -55,6 +55,7 @@ struct move_x {
 
 // Measure the integral.
 struct integral_1d {
+  static constexpr auto nan = std::numeric_limits<double>::quiet_NaN();
   std::reference_wrapper<mc_config> config;
   double sum_fx{0.0};
   double sum_fx_sq{0.0};
@@ -72,9 +73,17 @@ struct integral_1d {
     auto count_red     = static_cast<double>(mpi::reduce(count, c));
     if (c.rank() == 0) {
       auto ba   = config.get().b - config.get().a;
-      auto mean = sum_fx_red / count_red * ba;
-      auto var  = (sum_fx_sq_red - sum_fx_red / count_red) / (count_red - 1) * ba * ba;
-      fmt::print("Integral =  {} +/-  {}\n", mean, std::sqrt(var / count_red));
+      auto mean = nan;
+      auto err  = nan;
+      if (count_red > 0) {
+        mean = sum_fx_red / count_red * ba;
+        err  = 0.0;
+        if (count_red > 1) {
+          auto var = (sum_fx_sq_red - sum_fx_red / count_red) / (count_red - 1) * ba * ba;
+          err      = std::sqrt(var / count_red);
+        }
+      }
+      fmt::print("Integral =  {} +/-  {}\n", mean, err);
     }
   }
 };
