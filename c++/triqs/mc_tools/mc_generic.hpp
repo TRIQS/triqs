@@ -286,10 +286,14 @@ namespace triqs::mc_tools {
         } catch (std::exception const &err) {
           // log the error and node number
           std::cerr << "mc_generic: Exception occurs on node " << c.rank() << "\n" << err.what() << std::endl;
-          if (rethrow_exception)
-            node_monitor->report_local_event();
-          else
-            c.abort(2);
+          if (mpi::has_env) {
+            if (rethrow_exception)
+              node_monitor->report_local_event();
+            else
+              c.abort(2);
+          } else {
+            throw;
+          }
         }
 
         // recompute fraction done
