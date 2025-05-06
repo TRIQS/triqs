@@ -281,6 +281,7 @@ namespace triqs::mesh {
 
   auto evaluate(dlr const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
+    EXPECTS(tau >= 0 and tau <= m.beta());
     return details::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * cppdlr::k_it(tau / m.beta(), m.dlr_freq()[l]); });
   }
 
