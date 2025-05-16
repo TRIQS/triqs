@@ -92,6 +92,11 @@ macro(extract_flags)
     endif()
   endforeach()
 
+  get_property_recursive(libdirs TARGET ${target} PROPERTY INTERFACE_LINK_DIRECTORIES)
+  foreach(dir ${libdirs})
+    set(${target}_LDFLAGS "${${target}_LDFLAGS} -L${dir}")
+  endforeach()
+
   # ==== We have to replace generator expressions explicitly ====
 
   if(ARG_BUILD_INTERFACE)
