@@ -122,6 +122,10 @@ macro(extract_flags)
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^ ]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
   string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^ ]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
 
+  # Filter out ::@ expressions
+  string(REGEX REPLACE "::@[^ ]* " "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE "::@[^ ]* " "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+
   # Filter out system directories from LDFLAGS and CXXFLAGS
   string(REGEX REPLACE " -L/usr/lib " " " ${target}_LDFLAGS "${${target}_LDFLAGS}")
   string(REGEX REPLACE " -I/usr/include " " " ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
