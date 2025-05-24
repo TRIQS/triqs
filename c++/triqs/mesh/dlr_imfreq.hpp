@@ -20,6 +20,7 @@
 #include "utils.hpp"
 #include "dlr.hpp"
 #include "domains/matsubara.hpp"
+#include "./mesh_iterator.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 
@@ -198,16 +199,10 @@ namespace triqs::mesh {
 
     // -------------------------- Range & Iteration --------------------------
 
-    private:
-    [[nodiscard]] auto r_() const {
-      return itertools::transform(nda::range(size()), [this](long i) { return (*this)[i]; });
-    }
-
-    public:
-    [[nodiscard]] auto begin() const { return r_().begin(); }
-    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
-    [[nodiscard]] auto end() const { return r_().end(); }
-    [[nodiscard]] auto cend() const { return r_().cend(); }
+    [[nodiscard]] auto begin() const { return mesh_iterator<dlr_imfreq>{.mesh_ptr = this, .data_index = 0}; }
+    [[nodiscard]] auto cbegin() const { return begin(); }
+    [[nodiscard]] auto end() const { return mesh_iterator<dlr_imfreq>{.mesh_ptr = this, .data_index = size()}; }
+    [[nodiscard]] auto cend() const { return end(); }
 
     // -------------------- print  -------------------
 

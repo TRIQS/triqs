@@ -35,6 +35,17 @@ struct my_mesh {
 // Test random access concept.
 static_assert(std::random_access_iterator<triqs::mesh::mesh_iterator<my_mesh>>);
 static_assert(std::ranges::random_access_range<my_mesh>);
+static_assert(std::ranges::random_access_range<triqs::mesh::brzone>);
+static_assert(std::ranges::random_access_range<triqs::mesh::cyclat>);
+static_assert(std::ranges::random_access_range<triqs::mesh::discrete>);
+static_assert(std::ranges::random_access_range<triqs::mesh::dlr_imtime>);
+static_assert(std::ranges::random_access_range<triqs::mesh::dlr_imfreq>);
+static_assert(std::ranges::random_access_range<triqs::mesh::dlr>);
+static_assert(std::ranges::random_access_range<triqs::mesh::imfreq>);
+static_assert(std::ranges::random_access_range<triqs::mesh::imtime>);
+static_assert(std::ranges::random_access_range<triqs::mesh::legendre>);
+static_assert(std::ranges::random_access_range<triqs::mesh::refreq>);
+static_assert(std::ranges::random_access_range<triqs::mesh::retime>);
 
 TEST(TRIQS, MeshIteratorZeroSize) {
   my_mesh mesh{0};
