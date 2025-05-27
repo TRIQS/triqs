@@ -33,8 +33,9 @@ if(NOT IMPORTED_ALWAYS_GLOBAL)
 endif()
 
 # Define External Dependency Function
-function(external_dependency)
-  cmake_parse_arguments(ARG "EXCLUDE_FROM_ALL;BUILD_ALWAYS" "VERSION;GIT_REPO;GIT_TAG" "" ${ARGN})
+function(triqs_external_dependency)
+
+  cmake_parse_arguments(ARG "EXCLUDE_FROM_ALL;BUILD_ALWAYS" "VERSION;GIT_REPO;GIT_TAG;GIT_HASH" "" ${ARGN})
 
   # -- Was dependency already found?
   get_property(${ARGV0}_FOUND GLOBAL PROPERTY ${ARGV0}_FOUND)
@@ -56,6 +57,8 @@ function(external_dependency)
 
   # -- Build package from source
   message(STATUS " =============== Configuring Dependency ${ARGV0} =============== ")
+  message(STATUS "GIT_TAG ${ARG_GIT_TAG}, GIT_HASH ${ARG_GIT_HASH}")
+
   if(ARG_EXCLUDE_FROM_ALL)
     set(subdir_opts EXCLUDE_FROM_ALL)
     set(Build_Tests OFF)
@@ -71,16 +74,26 @@ function(external_dependency)
     set(bin_dir ${CMAKE_CURRENT_BINARY_DIR}/${ARGV0})
     set(src_dir ${bin_dir}_src)
     if(NOT IS_DIRECTORY ${src_dir})
-      if(ARG_GIT_TAG)
+      if(ARG_GIT_TAG AND ARG_GIT_HASH)
+        message(STATUS "GIT_TAG and GIT_HASH")
         set(clone_opts --branch ${ARG_GIT_TAG} -c advice.detachedHead=false)
+      elseif(ARG_GIT_TAG)
+        message(STATUS "GIT_TAG only")
+        set(clone_opts --depth 1 --branch ${ARG_GIT_TAG} -c advice.detachedHead=false)
       endif()
       if(NOT GIT_EXECUTABLE)
         find_package(Git REQUIRED)
       endif()
-      execute_process(COMMAND ${GIT_EXECUTABLE} clone ${ARG_GIT_REPO} --depth 1 ${clone_opts} ${src_dir}
+      execute_process(COMMAND ${GIT_EXECUTABLE} clone ${ARG_GIT_REPO} ${clone_opts} ${src_dir}
         RESULT_VARIABLE clone_failed
         ERROR_VARIABLE clone_error
       )
+      if(ARG_GIT_HASH)
+            execute_process(COMMAND ${GIT_EXECUTABLE} -C ${src_dir} reset --quiet --hard ${ARG_GIT_HASH}
+	      RESULT_VARIABLE reset_failed
+              ERROR_VARIABLE reset_error
+            )
+      endif()
       if(clone_failed)
         message(FATAL_ERROR "Failed to clone sources for dependency ${ARGV0}.\n ${clone_error}")
       endif()

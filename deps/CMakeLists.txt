@@ -49,7 +49,7 @@ endif()
 
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)
- external_dependency(Cpp2Py
+ triqs_external_dependency(Cpp2Py
    GIT_REPO https://github.com/TRIQS/cpp2py
    VERSION 3.3
    GIT_TAG main
@@ -61,7 +61,7 @@ if(PythonSupport OR Build_Documentation)
 endif()
 
 # -- GTest --
-external_dependency(GTest
+triqs_external_dependency(GTest
   GIT_REPO https://github.com/google/googletest
   GIT_TAG main
   BUILD_ALWAYS
@@ -71,7 +71,7 @@ external_dependency(GTest
 # -- google-bench --
 if(Build_Benchs)
   set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
-  external_dependency(google-bench
+  triqs_external_dependency(google-bench
     GIT_REPO https://github.com/google/benchmark
     GIT_TAG main
     BUILD_ALWAYS
@@ -81,43 +81,48 @@ endif()
 
 # -- fmt --
 set(FMT_INSTALL ON)
-external_dependency(fmt
+triqs_external_dependency(fmt
   GIT_REPO https://github.com/fmtlib/fmt
   GIT_TAG 11.1.4
 )
 target_compile_options(fmt PRIVATE $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>)
 
 # -- itertools --
-external_dependency(itertools
+triqs_external_dependency(itertools
   GIT_REPO https://github.com/TRIQS/itertools
   VERSION 1.3
   GIT_TAG unstable
-)
-
-# -- mpi --
-external_dependency(mpi
-  GIT_REPO https://github.com/TRIQS/mpi
-  VERSION 1.3
-  GIT_TAG unstable
+  GIT_HASH 913f1ef0361e7f26c97419dc3cf8fe71d6f3ec21
 )
 
 # -- h5 --
-external_dependency(h5
+triqs_external_dependency(h5
   GIT_REPO https://github.com/TRIQS/h5
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH ea2199931e171cc1c629e41017b43152ce88a93d
+)
+
+# -- mpi --
+triqs_external_dependency(mpi
+  GIT_REPO https://github.com/TRIQS/mpi
+  VERSION 1.3
+  GIT_TAG unstable
+  GIT_HASH f0a19543450fee9d253878c66f10d6a8ba2e222e
 )
 
 # -- nda --
-external_dependency(nda
+triqs_external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH 9efdcc922ea3dcccb701fc6d4df1b6f39a492c49
 ) 
 
 # -- cppdlr --
-external_dependency(cppdlr
+triqs_external_dependency(cppdlr
   GIT_REPO https://github.com/flatironinstitute/cppdlr
   VERSION 1.1
   GIT_TAG main
+  GIT_HASH c9eba2fc0ef9546746fe75c0cb41605118a122ce
 )
