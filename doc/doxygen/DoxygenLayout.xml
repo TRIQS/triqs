@@ -113,6 +113,12 @@
           <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
         </tab>
       </tab>
+      <tab type="usergroup" url="@ref triqs-detmanip" title="Determinant manipulation">
+        <tab type="user" url="@ref triqs::det_manip::MatrixBuilder" title="det_manip::MatrixBuilder"/>
+        <tab type="user" url="@ref triqs::det_manip::MatrixBuilderXRange" title="det_manip::MatrixBuilderXRange"/>
+        <tab type="user" url="@ref triqs::det_manip::MatrixBuilderYRange" title="det_manip::MatrixBuilderYRange"/>
+        <tab type="user" url="@ref triqs::det_manip::det_manip" title="det_manip::det_manip"/>
+      </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>
     <tab type="user" url="https://triqs.github.io/triqs/latest/" title="Official TRIQS website"/>

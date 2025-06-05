@@ -32,7 +32,7 @@
 namespace triqs::det_manip {
 
   /**
-   * @addtogroup detmanip
+   * @addtogroup triqs-detmanip
    * @{
    */
 

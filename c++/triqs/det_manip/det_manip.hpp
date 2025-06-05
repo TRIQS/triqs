@@ -58,10 +58,10 @@ namespace triqs::det_manip {
   namespace blas = nda::blas;
 
   /**
-   * @ingroup detmanip
+   * @ingroup triqs-detmanip
    * @brief Manipulate determinants and ratios of determinants for CTQMC solvers.
    *
-   * @details The code and the following documentation uses the notation introduced in @ref detmanip.
+   * @details The code and the following documentation uses the notation introduced in @ref triqs-detmanip.
    *
    * The determinant \f$ \det(F^{(n)}) \f$ or the underlying matrix \f$ F^{(n)} \f$ is manipulated by performing
    * operations. Most of those operations are split into a `try` and a `complete` function. While the `try` functions
@@ -187,7 +187,8 @@ namespace triqs::det_manip {
     void set_singular_threshold(double eps) { singular_threshold_ = eps; }
 
     /**
-     * @brief Set the number of operations before a consistency check is performed (default: 100).
+     * @brief Set the number of operations before a consistency check is performed (default: 100). See 
+     * regenerate_and_check().
      * @param nops Number of operations.
      */
     void set_n_operations_before_check(std::uint64_t nops) { nops_before_check_ = nops; }
@@ -196,7 +197,8 @@ namespace triqs::det_manip {
      * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
      *
      * @details In case we compare two matrices \f$ A \f$ and \f$ B \f$, a warning is printed when \f$ 2 \lVert A - B
-     * \rVert >= \epsilon \lVert A \rVert + \lVert B \rVert \f$, where \f$ \lVert \cdot \rVert \f$ is the max norm.
+     * \rVert >= \epsilon \left( \lVert A \rVert + \lVert B \rVert \right) \f$, where \f$ \lVert \cdot \rVert \f$ is the 
+     * max norm.
      *
      * In case we compare two scalar values \f$ a \f$ and \f$ b \f$, a warning is printed when \f$ 2 |a - b| >= \epsilon
      * (|a| + |b|) \f$.
@@ -295,7 +297,7 @@ namespace triqs::det_manip {
       return M_(col_perm_[i], row_perm_[j]);
     }
 
-    /// Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$. See inverse_matrix(int, int) for details.
+    /// Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$. See inverse_matrix() for details.
     [[nodiscard]] auto inverse_matrix() const {
       matrix_type res(size(), size());
       nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = this->inverse_matrix(i, j); });
@@ -328,7 +330,7 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief For each implementation for triqs::det_manip::det_manip objects.
+     * @brief For-each implementation for triqs::det_manip::det_manip objects.
      *
      * @details It loops over all elements of the matrix \f$ M^{(n)} \f$ and calls the given callable object for each
      * element together with the corresponding arguments \f$ x_i \f$ and \f$ y_j \f$.
@@ -347,7 +349,7 @@ namespace triqs::det_manip {
      * @details It simply performs the transposition in the row permutation vector and changes the sign \f$ s^{(n)} \f$
      * associated with the permutation matrices.
      *
-     * Since we are only changing the matrix \f$ P^{(n)}_r \f$, the matrix \f$ G^{(n)} \f$ and its determinant remain
+     * Since we are only changing the matrix \f$ P^{(n)}_r \f$, the matrix \f$ G^{(n)} \f$ and its determinant remains
      * unchanged.
      *
      * @param i Index of the first row to swap.
@@ -367,7 +369,7 @@ namespace triqs::det_manip {
      * @details It simply performs the transposition in the column permutation vector and changes the sign \f$ s^{(n)}
      * \f$ associated with the permutation matrices.
      *
-     * Since we are only changing the matrix \f$ P^{(n)}_c \f$, the matrix \f$ G^{(n)} \f$ and its determinant remain
+     * Since we are only changing the matrix \f$ P^{(n)}_c \f$, the matrix \f$ G^{(n)} \f$ and its determinant remains
      * unchanged.
      *
      * @param i Index of the first column to swap.
@@ -533,7 +535,7 @@ namespace triqs::det_manip {
      * triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
      *
      * Since we are working with \f$ G^{(n)} \f$, we are free to insert the rows and columns at the bottom and right of
-     * the matrix and use the update formulas presented in @ref detmanip.
+     * the matrix and use the update formulas presented in @ref triqs-detmanip.
      *
      * We use the following order for the rows and columns to be inserted:
      * - The first row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the smallest index in the
@@ -542,8 +544,8 @@ namespace triqs::det_manip {
      * in the matrix \f$ F^{(n)} \f$.
      * - And so on.
      *
-     * The expression for the new determinant \f$ \det(G^{(n+k)}) \f$ can be found at @ref detmanip and the new sign
-     * associated with the permutation matrices can be written as
+     * The expression for the new determinant \f$ \det(G^{(n+k)}) \f$ can be found at @ref triqs-detmanip and the new 
+     * sign associated with the permutation matrices can be written as
      * \f[
      *   s^{(n+k)} = \det(P^{(n)}_r) \det(P^{(n)}_c) \det(P1) \det(P2) = s^{(n)} \det(P1) \det(P2) \; ,
      * \f]
@@ -811,7 +813,7 @@ namespace triqs::det_manip {
      * respectively.
      *
      * Since we are working with \f$ G^{(n)} \f$, we are free to first move the rows and columns to the bottom and to
-     * the right of the matrix and use the update formulas presented in @ref detmanip.
+     * the right of the matrix and use the update formulas presented in @ref triqs-detmanip.
      *
      * More specifically, we introduce the matrix
      * \f[
@@ -830,10 +832,12 @@ namespace triqs::det_manip {
      *
      * The original matrix can be written as
      * \f[
-     *   F^{(n)} = P^{(n)}_r G^{(n)} P^{(n)}_c = P^{(n)}_r P_1^{-1} [P_1 G^{(n)} P_2] P_2^{-1} P^{(n)}_c =
-     *   \widetilde{P}^{(n)}_r \widetilde{G}^{(n)} \widetilde{P}^{(n)}_c =
-     *   P_3 \begin{bmatrix} P^{(n-k)}_r & 0 \\ 0 & I \end{bmatrix} \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & D
-     *   \end{bmatrix} \begin{bmatrix} P^{(n-k)}_c & 0 \\ 0 & I \end{bmatrix} P_4 \; ,
+     *   \begin{split}
+     *   F^{(n)} &= P^{(n)}_r G^{(n)} P^{(n)}_c = P^{(n)}_r P_1^{-1} [P_1 G^{(n)} P_2] P_2^{-1} P^{(n)}_c =
+     *   \widetilde{P}^{(n)}_r \widetilde{G}^{(n)} \widetilde{P}^{(n)}_c \\
+     *   &= P_3 \begin{bmatrix} P^{(n-k)}_r & 0 \\ 0 & I \end{bmatrix} \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & 
+     *   D \end{bmatrix} \begin{bmatrix} P^{(n-k)}_c & 0 \\ 0 & I \end{bmatrix} P_4 \; ,
+     *   \end{split}
      * \f]
      * where \f$ P_3 \f$ and \f$ P_4 \f$ are permutation matrices that move the rows and columns in \f$ B \f$, \f$ C \f$
      * and \f$ D \f$ back to their original positions in the matrix \f$ F^{(n)} \f$.
@@ -1398,7 +1402,7 @@ namespace triqs::det_manip {
       return r;
     }
 
-    /// Same as insert2() but with `i0` and j0` set to size() and `i1` and `j1` set to size() + 1.
+    /// Same as insert2() but with `i0` and `j0` set to size() and `i1` and `j1` set to size() + 1.
     value_type insert2_at_end(x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       return insert2(size(), size() + 1, size(), size() + 1, x0, x1, y0, y1);
     }
