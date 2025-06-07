@@ -95,9 +95,9 @@ For publications based on results produced with this application please cite `10
 **Interface to the EDIpack exact diagonalization solver (external)**
 --------------------------------------------------------------------
 
-TRIQS wrapper around the `EDIpack2 <https://github.com/EDIpack/EDIpack2.0>`_  massively parallel exact diagonalization solver.
+TRIQS wrapper around the `EDIpack <https://github.com/EDIpack/EDIpack>`_  massively parallel exact diagonalization solver.
 
-For publications based on results produced with this application please cite `Comput. Phys. Commun. 273, 108261 (2022) <https://doi.org/10.1016/j.cpc.2021.108261>`_
+For publications based on results produced with this application please cite `arXiv:2506.01363 <https://doi.org/10.48550/arXiv.2506.01363>`_
 
 *Homepage*: `<https://github.com/krivenko/edipack2triqs/>`_
 
