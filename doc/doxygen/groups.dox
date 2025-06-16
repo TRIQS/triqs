@@ -52,6 +52,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-utils Mesh utilities
+ * @brief Various utilities used with @ref triqs-meshes.
+ */
+
+/**
  * @defgroup triqs-lattice Lattice tools
  * @brief Tools for working with Bravais lattices and Brillouin zones.
  */
