@@ -15,34 +15,92 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a discrete mesh type.
+ */
+
 #pragma once
-#include "./utils.hpp"
+
+#include "./concepts.hpp"
 #include "./mesh_iterator.hpp"
+
+#include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
+
+#include <cstdint>
+#include <iostream>
+#include <string>
 
 namespace triqs::mesh {
 
+  /**
+   * @ingroup triqs-meshes-other
+   * @brief Discrete mesh type.
+   *
+   * @details A discrete mesh satisfies the triqs::mesh::Mesh concept. It is defined by its size \f$ N \geq 0 \f$ and
+   * has the following properties:
+   *
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   * and vice versa.
+   * - There is no explicit value associated with a mesh point, i.e. it does not satisfy the
+   * triqs::mesh::MeshWithValues concept.
+   *
+   * @code
+   * #include <fmt/base.h>
+   * #include <triqs/mesh.hpp>
+   * 
+   * int main() {
+   *   // initialize a discrete mesh with 5 points
+   *   triqs::mesh::discrete m{5};
+   * 
+   *   // loop over all mesh points and print their index and data index
+   *   for (int i = 0; auto mp : m) fmt::println("mesh point #{}: index = {}, data index = {}", i++, mp.index(), mp.data_index());
+   * }
+   * @endcode
+   *
+   * Output:
+   *
+   * ```
+   * mesh point #0: index = 0, data index = 0
+   * mesh point #1: index = 1, data index = 1
+   * mesh point #2: index = 2, data index = 2
+   * mesh point #3: index = 3, data index = 3
+   * mesh point #4: index = 4, data index = 4
+   * ```
+   */
   struct discrete {
+    /// Index type.
+    using index_t = long;
 
-    using index_t      = long;
+    /// Data index type.
     using data_index_t = long;
 
-    // -------------------- Data -------------------
     private:
     long L_;
     uint64_t _mesh_hash = 0;
 
-    // -------------------- Constructors -------------------
     public:
-    discrete(long L = 0) : L_(L), _mesh_hash(L) {}
+    /**
+     * @brief Construct a discrete mesh of a given size \f$ N \geq 0 \f$.
+     * @param N Size of the mesh.
+     */
+    discrete(long N = 0) : L_(N), _mesh_hash(N) { EXPECTS(N >= 0); }
 
-    // -------------------- Comparison -------------------
-
+    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes.
     bool operator==(discrete const &) const = default;
+
+    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes.
     bool operator!=(discrete const &) const = default;
 
-    // --------------------  Mesh Point -------------------
-
+    /**
+     * @brief %Mesh point of a triqs::mesh::discrete mesh.
+     * @details It stores the index \f$ n \f$, the data index \f$ d \f$ and the hash value of the parent mesh.
+     */
     struct mesh_point_t {
+      /// Parent mesh type.
       using mesh_t = discrete;
 
       private:
@@ -51,94 +109,147 @@ namespace triqs::mesh {
       uint64_t _mesh_hash = 0;
 
       public:
+      /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
-      mesh_point_t(long index, long data_index, uint64_t mesh_hash) : _index(index), _data_index(data_index), _mesh_hash(mesh_hash) {}
 
-      /// The index of the mesh point
+      /**
+       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$ and hash value of the parent 
+       * mesh.
+       *
+       * @param n Index \f$ n \f$ of the mesh point.
+       * @param d Data index \f$ d \f$ of the mesh point.
+       * @param mhash Hash value of the parent mesh.
+       */
+      mesh_point_t(long n, long d, uint64_t mhash) : _index(n), _data_index(d), _mesh_hash(mhash) {}
+
+      /// Get the index \f$ n \f$ of the mesh point.
       [[nodiscard]] long index() const { return _index; }
 
-      /// The data index of the mesh point
+      /// Get the data index \f$ d \f$ of the mesh point.
       [[nodiscard]] long data_index() const { return _data_index; }
 
-      /// The Hash for the mesh configuration
+      /// Get the hash value of the parent mesh.
       [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
     };
 
-    // -------------------- index checks and conversions -------------------
+    /**
+     * @brief Check if an index \f$ n \f$ is valid.
+     *
+     * @param n Index \f$ n \f$ to check.
+     * @return True if \f$ 0 \leq n < N \f$, false otherwise.
+     */
+    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < L_; }
 
-    [[nodiscard]] bool is_index_valid(index_t idx) const noexcept { return 0 <= idx and idx < L_; }
-
-    // -------------------- to_data_index -------------------
-
-    [[nodiscard]] data_index_t to_data_index(index_t index) const noexcept {
-      EXPECTS(is_index_valid(index));
-      return index;
+    /**
+     * @brief Map an index \f$ n \in \{0, 1, \ldots, N-1\} \f$ to its corresponding data index \f$ d(n) \f$.
+     *
+     * @param n Index \f$ n \f$ to map.
+     * @return Data index \f$ d(n) = n \f$.
+     */
+    [[nodiscard]] data_index_t to_data_index(index_t n) const noexcept {
+      EXPECTS(is_index_valid(n));
+      return n;
     }
 
-    // -------------------- to_index -------------------
-
-    [[nodiscard]] index_t to_index(long data_index) const noexcept {
-      EXPECTS(is_index_valid(data_index));
-      return data_index;
+    /**
+     * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ n(d) \f$.
+     *
+     * @param d Data index \f$ d \f$ to map.
+     * @return Index \f$ n(d) = d \f$.
+     */
+    [[nodiscard]] index_t to_index(long d) const noexcept {
+      EXPECTS(is_index_valid(d));
+      return d;
     }
 
-    // -------------------- operator[] -------------------
+    /**
+     * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param d Data index \f$ d \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ n(d) = d \f$, data index \f$ d \f$ and hash value of the current mesh.
+     */
+    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, _mesh_hash}; }
 
-    [[nodiscard]] mesh_point_t operator[](long data_index) const {
-      auto index = to_index(data_index);
-      EXPECTS(is_index_valid(index));
-      return {index, data_index, _mesh_hash};
-    }
+    /**
+     * @brief Function call operator to access a mesh point by its index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param n Index \f$ n \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ n \f$, data index \f$ d(n) = n \f$ and hash value of the current mesh.
+     */
+    [[nodiscard]] mesh_point_t operator()(index_t n) const { return {n, to_data_index(n), _mesh_hash}; }
 
-    [[nodiscard]] mesh_point_t operator()(index_t index) const {
-      EXPECTS(is_index_valid(index));
-      auto data_index = to_data_index(index);
-      return {index, data_index, _mesh_hash};
-    }
-
-    // -------------------- Accessors -------------------
-
-    /// The Hash for the mesh configuration
+    /// Get the hash value of the mesh.
     [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
 
-    /// The total number of points in the mesh
+    /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
     [[nodiscard]] long size() const { return L_; }
 
-    // -------------------------- Range & Iteration --------------------------
-
+    /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<discrete>{.mesh_ptr = this, .data_index = 0}; }
+
+    /// Get a const iterator to the beginning of the mesh.
     [[nodiscard]] auto cbegin() const { return begin(); }
+
+    /// Get an iterator to the end of the mesh.
     [[nodiscard]] auto end() const { return mesh_iterator<discrete>{.mesh_ptr = this, .data_index = size()}; }
+
+    /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return end(); }
 
-    // -------------------- print  -------------------
+    /**
+     * @brief Write a triqs::mesh::discrete mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
+    friend std::ostream &operator<<(std::ostream &sout, discrete const &m) { return sout << "Discrete mesh of size " << m.size(); }
 
-    friend std::ostream &operator<<(std::ostream &sout, discrete const &m) { return sout << "index mesh of size " << m.size(); }
-
-    // -------------------- serialization -------------------
-
+    /**
+     * @brief Serialize the mesh to a generic archive.
+     * @param ar Archive to serialize to.
+     */
     void serialize(auto &ar) const { ar & L_ & _mesh_hash; }
+
+    /**
+     * @brief Deserialize the mesh from a generic archive.
+     * @param ar Archive to deserialize from.
+     */
     void deserialize(auto &ar) { ar & L_ & _mesh_hash; }
 
-    // -------------------- HDF5 -------------------
-
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshIndex"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, discrete const &m) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m);
-      h5_write(gr, "size", m.size());
+    /**
+     * @brief Write a triqs::mesh::discrete mesh to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be written.
+     */
+    friend void h5_write(h5::group g, std::string const &name, discrete const &m) {
+      h5::group gr = g.create_group(name);
+      h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
+      h5::write(gr, "size", m.size());
     }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, discrete &m) {
-      h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format(gr, m, true);
-      long L = h5_read<long>(gr, "size");
+    /**
+     * @brief Read a triqs::mesh::discrete mesh from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string const &name, discrete &m) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, m, true);
+      long L = h5::read<long>(gr, "size");
       m      = discrete(L);
     }
   };
 
-  // check concept
+  // Check mesh concepts.
   static_assert(Mesh<discrete>);
+  static_assert(!MeshWithValues<discrete>);
 
 } // namespace triqs::mesh

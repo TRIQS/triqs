@@ -24,6 +24,11 @@
         <tab type="usergroup" url="@ref triqs-meshes-utils" title="Mesh utilities">
           <tab type="user" url="@ref triqs::mesh::closest_mesh_point_t" title="mesh::closest_mesh_point_t"/>
         </tab>
+        <tab type="usergroup" url="@ref triqs-meshes-other" title="Other mesh types">
+          <tab type="usergroup" url="@ref triqs::mesh::discrete" title="mesh::discrete">
+            <tab type="user" url="@ref triqs::mesh::discrete::mesh_point_t" title="mesh::discrete::mesh_point_t"/>
+          </tab>
+        </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>

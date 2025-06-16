@@ -64,6 +64,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-other Other mesh types
+ * @brief Mesh types used as base classes and rarely used mesh types.
+ */
+
+/**
  * @defgroup triqs-lattice Lattice tools
  * @brief Tools for working with Bravais lattices and Brillouin zones.
  */
