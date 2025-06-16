@@ -71,44 +71,23 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4
    * ```
    */
-  struct discrete {
+  class discrete {
+    public:
     /// Index type.
     using index_t = long;
 
     /// Data index type.
     using data_index_t = long;
 
-    private:
-    long L_;
-    uint64_t _mesh_hash = 0;
-
-    public:
-    /**
-     * @brief Construct a discrete mesh of a given size \f$ N \geq 0 \f$.
-     * @param N Size of the mesh.
-     */
-    discrete(long N = 0) : L_(N), _mesh_hash(N) { EXPECTS(N >= 0); }
-
-    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes.
-    bool operator==(discrete const &) const = default;
-
-    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes.
-    bool operator!=(discrete const &) const = default;
-
     /**
      * @brief %Mesh point of a triqs::mesh::discrete mesh.
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$ and the hash value of the parent mesh.
      */
-    struct mesh_point_t {
+    class mesh_point_t {
+      public:
       /// Parent mesh type.
       using mesh_t = discrete;
 
-      private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-
-      public:
       /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
 
@@ -130,7 +109,24 @@ namespace triqs::mesh {
 
       /// Get the hash value of the parent mesh.
       [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      private:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
     };
+
+    /**
+     * @brief Construct a discrete mesh of a given size \f$ N \geq 0 \f$.
+     * @param N Size of the mesh.
+     */
+    discrete(long N = 0) : L_(N), _mesh_hash(N) { EXPECTS(N >= 0); }
+
+    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes.
+    bool operator==(discrete const &) const = default;
+
+    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes.
+    bool operator!=(discrete const &) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -246,6 +242,10 @@ namespace triqs::mesh {
       long L = h5::read<long>(gr, "size");
       m      = discrete(L);
     }
+
+    private:
+    long L_;
+    uint64_t _mesh_hash = 0;
   };
 
   // Check mesh concepts.
