@@ -1,0 +1,32 @@
+@mainpage Overview
+
+[TOC]
+
+> This is the C++ documentation of **TRIQS/TRIQS v@PROJECT_VERSION@**. The source code can be found on
+> [GitHub](https://github.com/TRIQS/triqs) and the official website at
+> [https://triqs.github.io/triqs](https://triqs.github.io/triqs).
+
+**TRIQS** (Toolbox for Research on Interacting Quantum Systems) is a scientific software library providing various
+building blocks that facilitate the implementation and developement of new tools and algorithms for the study of
+interacting quantum systems.
+
+We provide efficient implementations in C++ and expose its functionality through high-level interfaces in Python. This 
+paradigm allows our users to quickly develop new ideas and algorithms, while benefiting from the performance of a 
+compiled language.
+
+This website is generated with [Doxygen](http://www.doxygen.nl/) and focuses only on the C++ part of the library.
+
+For general information on **TRIQS** and documentation for its Python interface, we refer the reader to the [official
+website](https://triqs.github.io/triqs).
+
+@section start Where to start?
+
+The [Installation](https://triqs.github.io/triqs/latest/install.html) section tells you how to get the library and make
+it available on your system.
+
+@ref integration explains how to integrate **TRIQS** in your own C++ code.
+
+Then, you can start with the @ref examples section to get an overview of the library's features and how
+**TRIQS** can be used in practice.
+
+Furthermore, we provide a detailed reference @ref documentation to answer your questions.
