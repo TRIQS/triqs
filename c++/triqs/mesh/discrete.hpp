@@ -99,28 +99,28 @@ namespace triqs::mesh {
        * @param d Data index \f$ d \f$ of the mesh point.
        * @param mhash Hash value of the parent mesh.
        */
-      mesh_point_t(long n, long d, uint64_t mhash) : _index(n), _data_index(d), _mesh_hash(mhash) {}
+      mesh_point_t(long n, long d, uint64_t mhash) : index_(n), data_index_(d), mesh_hash_(mhash) {}
 
       /// Get the index \f$ n \f$ of the mesh point.
-      [[nodiscard]] long index() const { return _index; }
+      [[nodiscard]] long index() const { return index_; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
+      long index_         = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
     };
 
     /**
      * @brief Construct a discrete mesh of a given size \f$ N \geq 0 \f$.
      * @param N Size of the mesh.
      */
-    discrete(long N = 0) : L_(N), _mesh_hash(N) { EXPECTS(N >= 0); }
+    discrete(long N = 0) : N_(N), mesh_hash_(N) { EXPECTS(N >= 0); }
 
     /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes.
     bool operator==(discrete const &) const = default;
@@ -134,7 +134,7 @@ namespace triqs::mesh {
      * @param n Index \f$ n \f$ to check.
      * @return True if \f$ 0 \leq n < N \f$, false otherwise.
      */
-    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < L_; }
+    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < N_; }
 
     /**
      * @brief Map an index \f$ n \in \{0, 1, \ldots, N-1\} \f$ to its corresponding data index \f$ d(n) \f$.
@@ -164,7 +164,7 @@ namespace triqs::mesh {
      * @param d Data index \f$ d \f$ of the mesh point.
      * @return mesh_point_t with the index \f$ n(d) = d \f$, data index \f$ d \f$ and hash value of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, mesh_hash_}; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
@@ -172,13 +172,13 @@ namespace triqs::mesh {
      * @param n Index \f$ n \f$ of the mesh point.
      * @return mesh_point_t with the index \f$ n \f$, data index \f$ d(n) = n \f$ and hash value of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator()(index_t n) const { return {n, to_data_index(n), _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator()(index_t n) const { return {n, to_data_index(n), mesh_hash_}; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
-    [[nodiscard]] long size() const { return L_; }
+    [[nodiscard]] long size() const { return N_; }
 
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<discrete>{.mesh_ptr = this, .data_index = 0}; }
@@ -205,13 +205,13 @@ namespace triqs::mesh {
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & L_ & _mesh_hash; }
+    void serialize(auto &ar) const { ar & N_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & L_ & _mesh_hash; }
+    void deserialize(auto &ar) { ar & N_ & mesh_hash_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshIndex"; }
@@ -244,8 +244,8 @@ namespace triqs::mesh {
     }
 
     private:
-    long L_;
-    uint64_t _mesh_hash = 0;
+    long N_;
+    uint64_t mesh_hash_ = 0;
   };
 
   // Check mesh concepts.
