@@ -53,6 +53,12 @@
 
 /**
  * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-concepts Mesh concepts
+ * @brief Various concepts used with @ref triqs-meshes.
+ */
+
+/**
+ * @ingroup triqs-meshes
  * @defgroup triqs-meshes-utils Mesh utilities
  * @brief Various utilities used with @ref triqs-meshes.
  */
