@@ -89,7 +89,7 @@ namespace triqs::mesh {
     friend struct dlr;
 
     public:
-    template <AnyOf<dlr_imtime, dlr_imfreq, dlr> M>
+    template <nda::AnyOf<dlr_imtime, dlr_imfreq, dlr> M>
     explicit dlr_imtime(M const &m)
        : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _symmetrize(m._symmetrize), _dlr(m._dlr) {
       if constexpr (std::is_same_v<M, dlr_imtime>)

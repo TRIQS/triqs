@@ -31,10 +31,6 @@
 #include <ranges>
 #include <string>
 
-namespace triqs {
-  using nda::AnyOf;
-} // namespace triqs
-
 namespace triqs::mesh {
 
   /**

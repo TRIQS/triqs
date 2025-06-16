@@ -64,7 +64,7 @@ namespace triqs::gfs {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_dlr(gfl); }, g);
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(AnyOf<M, dlr_imtime, dlr_imfreq>, "Mesh must be dlr_imtime or dlr_imfreq");
+      static_assert(nda::AnyOf<M, dlr_imtime, dlr_imfreq>, "Mesh must be dlr_imtime or dlr_imfreq");
       auto result = gf{dlr{g.mesh()}, g.target_shape()};
       if constexpr (std::is_same_v<M, dlr_imtime>)
         result.data() = result.mesh().dlr_it().vals2coefs(g.data());
@@ -148,7 +148,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_imtime<N, Ns...>(gbl, n_tau); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imtime(gfl, n_tau); }, g);
-    } else if constexpr(AnyOf<M, dlr_imtime, dlr_imfreq>) {
+    } else if constexpr(nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return make_gf_imtime(make_gf_dlr(g), n_tau);
     } else { // M == dlr
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -168,7 +168,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_imfreq<N, Ns...>(gbl, n_iw); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imfreq(gfl, n_iw); }, g);
-    } else if constexpr(AnyOf<M, dlr_imtime, dlr_imfreq>) {
+    } else if constexpr(nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return make_gf_imfreq(make_gf_dlr(g), n_iw);
     } else { // M == dlr
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -184,10 +184,10 @@ namespace triqs::gfs {
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto tau_L2_norm(G const &g) {
     using M = typename G::mesh_t;
-    static_assert(AnyOf<M, dlr, dlr_imfreq, dlr_imtime>, "Input mesh must be one of dlr, dlr_imfreq, dlr_imtime");
+    static_assert(nda::AnyOf<M, dlr, dlr_imfreq, dlr_imtime>, "Input mesh must be one of dlr, dlr_imfreq, dlr_imtime");
     if constexpr (is_block_gf_v<G>) {
       return map_block_gf([&](auto const &gbl) { return tau_L2_norm(gbl); }, g);
-    } else if constexpr (AnyOf<M, dlr_imtime, dlr_imfreq>) {
+    } else if constexpr (nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return tau_L2_norm(make_gf_dlr(g));
     } else { // M == dlr
       if constexpr (G::target_rank == 0) {
