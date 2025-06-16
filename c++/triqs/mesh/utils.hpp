@@ -155,7 +155,7 @@ namespace triqs::mesh {
 
   /** @} */
 
-  namespace details {
+  namespace detail {
 
     // Apply a function to each element of a range and sum the results into a regular type.
     [[nodiscard]] auto sum_to_regular(std::ranges::forward_range auto &&rg, auto f) {
@@ -166,6 +166,6 @@ namespace triqs::mesh {
       return res;
     }
 
-  } // namespace details
+  } // namespace detail
 
 } // namespace triqs::mesh
