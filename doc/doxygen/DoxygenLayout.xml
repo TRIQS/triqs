@@ -11,6 +11,12 @@
     <tab type="usergroup" url="@ref examples" title="Examples">
     </tab>
     <tab type="usergroup" url="@ref documentation" title="API Documentation">
+      <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-lattice" title="Lattice tools">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-meshes" title="Meshes">
+      </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>
     <tab type="user" url="https://triqs.github.io/triqs/latest/" title="Official TRIQS website"/>

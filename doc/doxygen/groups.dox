@@ -1,0 +1,67 @@
+/**
+ * @defgroup triqs-meshes Meshes
+ * @brief Various meshes for @ref triqs-gfs.
+ *
+ * @details Meshes form the basis for the @ref triqs-gfs (GF) containers in the **TRIQS** library. They determine the
+ * mathematical domain of the underlying function, how it is represented, i.e. what is actually stored in memory, and
+ * how it is evaluated.
+ *
+ * Every mesh satisfies the triqs::mesh::Mesh, and optionally the triqs::mesh::MeshWithValues concept. It consists of
+ * \f$ N \f$ mesh points, where \f$ N \f$ is the size of the mesh. The mesh points themselves satisfy the
+ * triqs::mesh::MeshPoint concept and they have two indices associated with it, as well as an optional value:
+ * - The data index \f$ d \f$ is usually an integer \f$ \in \{ 0, \dots, N-1 \} \f$ (except for product meshes, for
+ * which it is a tuple of indices) and simply indexes all mesh points in the mesh. The name refers to the fact that the
+ * GF containers store a certain value/object for each mesh point in an array and the data index \f$ d \f$ is the
+ * position of the value/object in that array.
+ * - For some meshes, it is natural to associate each mesh point with another index \f$ n \f$. The meaning of the index
+ * depends on the mesh type. For example,
+ *   - for a triqs::mesh::imfreq mesh on the imaginary frequency axis, \f$ n \in \mathbb{Z} \f$ denotes the index of the
+ *   Matsubara frequency \f$ i \omega_n \f$.
+ *   - for a 3D triqs::mesh::cyclat mesh with periodic boundary conditions, \f$ n \equiv \mathbf{n} \in \mathbb{Z}^3 \f$
+ *   denotes the index of the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
+ *   - for a triqs::mesh::imtime mesh, the index is simply equal to its data index, i.e. \f$ n = d \f$.
+ * - If a mesh satisfies the triqs::mesh::MeshWithValues concept, each mesh point has an additional value. For example,
+ * the value of the mesh point with index \f$ n \f$
+ *   - of a triqs::mesh::imfreq mesh is the Matsubara frequency \f$ i \omega_n \f$.
+ *   - of a triqs::mesh::cyclat mesh is the lattice vector \f$ \mathbf{R}^{\mathbf{n}} \f$ in the standard basis.
+ *   - of a triqs::mesh::imtime mesh is an imaginary time point \f$ \tau_n \in [0, \beta] \f$.
+ *
+ * To make this more concrete, let us look at a typical example. One of the most important quantities in quantum
+ * many-body physics is the single particle GF \f$ G(\tau) \f$ defined on the imaginary time axis interval \f$ [0,
+ * \beta] \f$. For simplicity, we assume that the GF is real valued such that \f$ G : [0, \beta] \in \mathbb{R} \to
+ * \mathbb{R} \f$. The @ref triqs-gfs containers allow us to represent the same function with different meshes. For
+ * example, we can use
+ * - a triqs::mesh::imtime mesh on the imaginary time axis with \f$ N \f$ mesh points. In this case, the interval
+ * \f$ [0, \beta] \f$ is divided into \f$ N \f$ equally spaced points \f$ \tau_n = n \beta / (N - 1) \f$, where the
+ * imaginary time point \f$ \tau_n \f$ is the value of the mesh point with index \f$ n = d \in \{ 0, \dots, N-1 \} \f$.
+ * For each mesh point, the GF container stores the function value \f$ G(\tau_n) \f$ in an array of size \f$ N \f$. To
+ * evaluate the GF at an arbitrary \f$ \tau \in [0, \beta] \f$ with \f$ \tau_n \leq \tau \leq \tau_{n+1} \f$, the
+ * container uses linear interpolation between the two mesh points \f$ \tau_n \f$ and \f$ \tau_{n+1} \f$.
+ * - a triqs::mesh::legendre mesh with \f$ N \f$ mesh points. In this case, the mesh point with index \f$ n = d \in
+ * \{ 0, \dots, N-1 \} \f$ refers to the Legendre polynomial \f$ P_n(x) \f$ of degree \f$ n \f$ and has no value
+ * associated with it. The GF container stores the coefficients
+ * \f[
+ *   g_n = \sqrt{2n + 1} \int_0^\beta d\tau \, G(\tau) P_n(x(\tau)) \; ,
+ * \f]
+ * where \f$ x(\tau) = 2\tau / \beta - 1 \f$ is a linear map from \f$ [0, \beta] \f$ to \f$ [-1, 1] \f$. To evaluate
+ * the GF at an arbitrary point \f$ \tau \in [0, \beta] \f$, the container uses a truncated series expansion of \f$
+ * G(\tau) \f$ in terms of Legendre polynomials:
+ * \f[
+ *   G(\tau) \approx \sum_{n=0}^{N-1} \frac{\sqrt{2n + 1}}{\beta} g_n P_n(x(\tau)) \; .
+ * \f]
+ */
+
+/**
+ * @defgroup triqs-lattice Lattice tools
+ * @brief Tools for working with Bravais lattices and Brillouin zones.
+ */
+
+/**
+ * @defgroup triqs-gfs Green's functions
+ * @brief Generic containers for Green's functions, self energies and other important functions in quantum many-body
+ * physics.
+ *
+ * @details The @ref triqs-gfs in the **TRIQS** library are generic containers for functions which are not known
+ * analytically. As the name suggests, they are intended to be used for quantum many-body Green's functions, self
+ * energies or other correlation functions, but they can in principle be used for more general functions.
+ */
