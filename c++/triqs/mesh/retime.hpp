@@ -83,7 +83,8 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 5
    * ```
    */
-  struct retime : detail::linear<retime, double> {
+  class retime : public detail::linear<retime, double> {
+    public:
     /// %Mesh point type of a triqs::mesh::retime mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<retime, double>::mesh_point_t;
 
