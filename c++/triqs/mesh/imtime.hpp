@@ -33,7 +33,7 @@ namespace triqs::mesh {
    *
    *  @figure ../../../triqs/mesh/matsubara_imtime.png: Pictorial representation of ``imtime{beta, Fermion/Boson, 4}``.
    */
-  struct imtime : public details::linear<imtime, double> {
+  struct imtime : public detail::linear<imtime, double> {
 
     // -------------------- Data -------------------
 
@@ -81,11 +81,11 @@ namespace triqs::mesh {
     // -------------------- serialization -------------------
 
     void serialize(auto &ar) const {
-      static_cast<details::linear<imtime, double> const &>(*this).serialize(ar);
+      static_cast<detail::linear<imtime, double> const &>(*this).serialize(ar);
       ar & _beta & _statistic;
     }
     void deserialize(auto &ar) {
-      static_cast<details::linear<imtime, double> &>(*this).deserialize(ar);
+      static_cast<detail::linear<imtime, double> &>(*this).deserialize(ar);
       ar & _beta & _statistic;
     }
 

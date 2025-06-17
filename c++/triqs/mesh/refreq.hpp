@@ -23,7 +23,7 @@
 
 namespace triqs::mesh {
 
-  struct refreq : details::linear<refreq, double>, tail_fitter_handle {
+  struct refreq : detail::linear<refreq, double>, tail_fitter_handle {
 
     // -------------------- Constructors -------------------
 
@@ -53,8 +53,8 @@ namespace triqs::mesh {
 
     // -------------------- serialization -------------------
 
-    void serialize(auto &ar) const { static_cast<details::linear<refreq, double> const &>(*this).serialize(ar); }
-    void deserialize(auto &ar) { static_cast<details::linear<refreq, double> &>(*this).deserialize(ar); }
+    void serialize(auto &ar) const { static_cast<detail::linear<refreq, double> const &>(*this).serialize(ar); }
+    void deserialize(auto &ar) { static_cast<detail::linear<refreq, double> &>(*this).deserialize(ar); }
 
     // -------------------- HDF5 -------------------
 

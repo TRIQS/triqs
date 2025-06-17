@@ -38,7 +38,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace triqs::mesh::details {
+namespace triqs::mesh::detail {
 
   /**
    * @ingroup triqs-meshes-other
@@ -80,7 +80,7 @@ namespace triqs::mesh::details {
     using data_index_t = long;
 
     /**
-     * @brief %Mesh point of a triqs::mesh::details::linear mesh.
+     * @brief %Mesh point of a triqs::mesh::detail::linear mesh.
      * 
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the parent mesh and the
      * value \f$ m \f$ of the mesh point.
@@ -345,7 +345,7 @@ namespace triqs::mesh::details {
 
     public:
     /**
-     * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::details::linear mesh at a value \f$ 
+     * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::detail::linear mesh at a value \f$ 
      * x \in [a, b] \f$.
      *
      * @details We calculate
@@ -376,4 +376,4 @@ namespace triqs::mesh::details {
     size_t _mesh_hash = 0;
   };
 
-} // namespace triqs::mesh::details
+} // namespace triqs::mesh::detail

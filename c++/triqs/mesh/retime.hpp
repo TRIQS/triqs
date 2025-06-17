@@ -22,7 +22,7 @@
 
 namespace triqs::mesh {
 
-  struct retime : details::linear<retime, double> {
+  struct retime : detail::linear<retime, double> {
 
     // -------------------- Constructors -------------------
 
@@ -51,8 +51,8 @@ namespace triqs::mesh {
 
     // -------------------- serialization -------------------
 
-    void serialize(auto &ar) const { static_cast<details::linear<retime, double> const &>(*this).serialize(ar); }
-    void deserialize(auto &ar) { static_cast<details::linear<retime, double> &>(*this).deserialize(ar); }
+    void serialize(auto &ar) const { static_cast<detail::linear<retime, double> const &>(*this).serialize(ar); }
+    void deserialize(auto &ar) { static_cast<detail::linear<retime, double> &>(*this).deserialize(ar); }
 
     // -------------------- HDF5 -------------------
 
