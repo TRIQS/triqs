@@ -97,7 +97,7 @@ namespace triqs::mesh {
      * @param stat Particle statistics (see triqs::mesh::statistic_enum).
      * @param N Size of the mesh.
      */
-    imtime(double beta = 1.0, statistic_enum stat = Fermion, long N = 0) : linear(0, beta, N), _beta(beta), _statistic(stat) {}
+    imtime(double beta = 1.0, statistic_enum stat = Fermion, long N = 0) : linear(0, beta, N), beta_(beta), stat_(stat) {}
 
     /**
      * @brief Construct an imaginary time mesh on a given `triqs::mesh::matsubara_time_domain` with \f$ N \geq 0 \f$
@@ -117,16 +117,16 @@ namespace triqs::mesh {
     bool operator!=(imtime const &) const = default;
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return _beta; }
+    [[nodiscard]] double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
 
     /**
      * @brief Get the Matsubara time domain.
      * @deprecated `triqs::mesh::matsubara_time_domain` is deprecated.
      */
-    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {_beta, _statistic}; }
+    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta_, stat_}; }
 
     /**
      * @brief Serialize the mesh to a generic archive.
@@ -134,7 +134,7 @@ namespace triqs::mesh {
      */
     void serialize(auto &ar) const {
       static_cast<detail::linear<imtime, double> const &>(*this).serialize(ar);
-      ar & _beta & _statistic;
+      ar & beta_ & stat_;
     }
 
     /**
@@ -143,7 +143,7 @@ namespace triqs::mesh {
      */
     void deserialize(auto &ar) {
       static_cast<detail::linear<imtime, double> &>(*this).deserialize(ar);
-      ar & _beta & _statistic;
+      ar & beta_ & stat_;
     }
 
     /// Get the HDF5 format tag.
@@ -159,8 +159,8 @@ namespace triqs::mesh {
     friend void h5_write(h5::group g, std::string const &name, imtime const &m) {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
-      h5::write(gr, "beta", m._beta);
-      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "beta", m.beta_);
+      h5::write(gr, "statistic", (m.stat_ == Fermion ? "F" : "B"));
       h5::write(gr, "n_tau", m.N_);
     }
 
@@ -193,13 +193,13 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, imtime const &m) {
-      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary time mesh with beta = {}, statistics = {}, N = {}", m._beta, stat_cstr, m.N_);
+      auto stat_cstr = (m.stat_ == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary time mesh with beta = {}, statistics = {}, N = {}", m.beta_, stat_cstr, m.N_);
     }
 
     private:
-    double _beta;
-    statistic_enum _statistic;
+    double beta_;
+    statistic_enum stat_;
   };
 
   /**
