@@ -89,56 +89,23 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4
    * ```
    */
-  struct legendre {
+  class legendre {
+    public:
     /// Index type.
     using index_t = long;
 
     /// Data index type.
     using data_index_t = long;
 
-    private:
-    double _beta              = 1.0;
-    statistic_enum _statistic = Fermion;
-    long _max_n               = 0;
-    uint64_t _mesh_hash       = 0;
-
-    public:
-    /// Default constructor constructs an empty mesh.
-    legendre() = default;
-
-    /**
-     * @brief Construct a mesh of Legendre polynomials with degrees \f$ n = 0, 1, \ldots, N - 1 \f$ on the interval \f$ 
-     * [0, \beta] \f$ and the given particle statistics.
-     *
-     * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
-     * @param N Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
-     */
-    legendre(double beta, statistic_enum stat, long N) : _beta(beta), _statistic(stat), _max_n(N), _mesh_hash(hash(beta, stat, N)) {
-      EXPECTS(_beta > 0);
-      EXPECTS(_max_n >= 0);
-    }
-
-    /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
-    bool operator==(legendre const &) const = default;
-
-    /// Not-equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
-    bool operator!=(legendre const &) const = default;
-
     /**
      * @brief %Mesh point of a triqs::mesh::legendre mesh.
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$ and the hash value of the parent mesh.
      */
-    struct mesh_point_t {
+    class mesh_point_t {
+      public:
       /// Parent mesh type.
       using mesh_t = legendre;
 
-      private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-
-      public:
       /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
 
@@ -160,7 +127,34 @@ namespace triqs::mesh {
 
       /// Get the hash value of the parent mesh.
       [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      private:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
     };
+
+    /// Default constructor constructs an empty mesh.
+    legendre() = default;
+
+    /**
+     * @brief Construct a mesh of Legendre polynomials with degrees \f$ n = 0, 1, \ldots, N - 1 \f$ on the interval \f$ 
+     * [0, \beta] \f$ and the given particle statistics.
+     *
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
+     * @param N Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
+     */
+    legendre(double beta, statistic_enum stat, long N) : _beta(beta), _statistic(stat), _max_n(N), _mesh_hash(hash(beta, stat, N)) {
+      EXPECTS(_beta > 0);
+      EXPECTS(_max_n >= 0);
+    }
+
+    /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
+    bool operator==(legendre const &) const = default;
+
+    /// Not-equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
+    bool operator!=(legendre const &) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -297,6 +291,12 @@ namespace triqs::mesh {
 
       m = legendre(beta, statistic, max_n);
     }
+
+    private:
+    double _beta              = 1.0;
+    statistic_enum _statistic = Fermion;
+    long _max_n               = 0;
+    uint64_t _mesh_hash       = 0;
   };
 
   /**
