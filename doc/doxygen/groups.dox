@@ -53,6 +53,12 @@
 
 /**
  * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-imag Imaginary time and frequency meshes
+ * @brief %Mesh types for imaginary time and frequency domains.
+ */
+
+/**
+ * @ingroup triqs-meshes
  * @defgroup triqs-meshes-concepts Mesh concepts
  * @brief Various concepts used with @ref triqs-meshes.
  */

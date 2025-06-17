@@ -17,117 +17,208 @@
 //
 // Authors: Thomas Ayral, Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a mesh type on the imaginary time axis.
+ */
+
 #pragma once
-#include "./utils.hpp"
-#include "./domains/matsubara.hpp"
+
 #include "./bases/linear.hpp"
+#include "./domains/matsubara.hpp"
+#include "./utils.hpp"
+
+#include <fmt/format.h>
+#include <h5/h5.hpp>
+
+#include <iostream>
+#include <string>
 
 namespace triqs::mesh {
 
   /**
-   *  Imaginary-time Matsubara mesh
+   * @addtogroup triqs-meshes-imag
+   * @{
+   */
+
+  /**
+   * @brief Imaginary time mesh type.
    *
-   *  Mesh for the imaginary-time axis from $0$ to $\beta$.
+   * @details An imaginary time mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size
+   * \f$ N \geq 0 \f$, an inverse temperature \f$ \beta > 0 \f$ and its particle statistics (see 
+   * triqs::mesh::statistic_enum).
    *
-   *  The time points are defined as follows, for $n=0{\dots}N-1$: $$\tau_n=\frac{n}{N-1}\beta$$ where $N$ is the size of the mesh.
+   * It is a triqs::mesh::detail::linear mesh with \f$ N \f$ equally spaced mesh points on the interval \f$ [0, \beta] 
+   * \f$ such that
+   * - \f$ \tau(n) = n \cdot \Delta \f$ with \f$ \Delta = \frac{\beta}{N - 1} \f$ for \f$ N > 1 \f$,
+   * - \f$ \tau(0) = 0 \f$ and
+   * - \f$ \tau(N - 1) = \beta \f$.
+   * 
+   * @ref triqs-gfs containers that are based on an imaginary time mesh store the function values at the discrete time 
+   * points \f$ \tau(n) \f$, i.e. \f$ f_n = f(\tau(n)) \f$, and use linear interpolation to evaluate the function at an 
+   * arbitrary imaginary time \f$ \tau \in [0, \beta] \f$ (see triqs::mesh::evaluate(imtime const &, auto const &, 
+   * double) for details). 
    *
-   *  @figure ../../../triqs/mesh/matsubara_imtime.png: Pictorial representation of ``imtime{beta, Fermion/Boson, 4}``.
+   * @code
+   * #include <fmt/base.h>
+   * #include <triqs/mesh.hpp>
+   * 
+   * int main() {
+   *   // initialize a fermionic imaginary time mesh with 5 points and beta = 10
+   *   triqs::mesh::imtime m{10, triqs::mesh::Fermion, 5};
+   * 
+   *   // loop over all mesh points and print their index, data index and value
+   *   for (int i = 0; auto mp : m) {
+   *     fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
+   *   }
+   * }
+   * @endcode
+   *
+   * Output:
+   *
+   * ```
+   * mesh point #0: index = 0, data index = 0, value = 0
+   * mesh point #1: index = 1, data index = 1, value = 2.5
+   * mesh point #2: index = 2, data index = 2, value = 5
+   * mesh point #3: index = 3, data index = 3, value = 7.5
+   * mesh point #4: index = 4, data index = 4, value = 10
+   * ```
    */
   struct imtime : public detail::linear<imtime, double> {
-
-    // -------------------- Data -------------------
+    /// %Mesh point type of a triqs::mesh::imtime mesh (see triqs::mesh::detail::linear::mesh_point_t).
+    using mesh_point_t = detail::linear<imtime, double>::mesh_point_t;
 
     private:
     double _beta;
     statistic_enum _statistic;
 
-    // -------------------- Constructors -------------------
-
     public:
     /**
-     * Construct a Mesh of imaginary times on the interval [0,beta]
-     * including points at both edges.
+     * @brief Construct an imaginary time mesh on the interval \f$ [0, \beta] \f$ with \f$ N \geq 0 \f$ equally spaced
+     * mesh points and the given particle statistics.
      *
-     * @param beta Inverse temperature
-     * @param statistic Statistic (Fermion or Boson)
-     * @param n_tau Number of mesh-points
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
+     * @param N Size of the mesh.
      */
-    imtime(double beta = 1.0, statistic_enum statistic = Fermion, long n_tau = 0) : linear(0, beta, n_tau), _beta(beta), _statistic(statistic) {}
+    imtime(double beta = 1.0, statistic_enum stat = Fermion, long N = 0) : linear(0, beta, N), _beta(beta), _statistic(stat) {}
 
     /**
-     * Construct a Mesh of imaginary times on a Matsubara time domain
+     * @brief Construct an imaginary time mesh on a given `triqs::mesh::matsubara_time_domain` with \f$ N \geq 0 \f$
+     * equally spaced mesh points.
      *
-     * @param dom Matsubara time domain
-     * @param n_tau Number of mesh-points
+     * @deprecated Use imtime(double, statistic_enum, long) instead.
+     * 
+     * @param dom `triqs::mesh::matsubara_time_domain` object.
+     * @param N Size of the mesh.
      */
-    [[deprecated("matsubara_time_domain is deprecated")]] imtime(matsubara_time_domain d, long n_tau) : imtime(d.beta, d.statistic, n_tau) {}
+    [[deprecated("matsubara_time_domain is deprecated")]] imtime(matsubara_time_domain dom, long N) : imtime(dom.beta, dom.statistic, N) {}
 
-    // -------------------- Comparison -------------------
-
+    /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator==(imtime const &) const = default;
+
+    /// Not-equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator!=(imtime const &) const = default;
 
-    // -------------------- Accessors -------------------
-
-    /// The inverse temperature
+    /// Get the inverse temperature \f$ \beta \f$.
     [[nodiscard]] double beta() const noexcept { return _beta; }
 
-    /// The particle statistic: Fermion or Boson
+    /// Get the particle statistics.
     [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
 
-    /// The associated domain
+    /**
+     * @brief Get the Matsubara time domain.
+     * @deprecated `triqs::mesh::matsubara_time_domain` is deprecated.
+     */
     [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {_beta, _statistic}; }
 
-    // -------------------- serialization -------------------
-
+    /**
+     * @brief Serialize the mesh to a generic archive.
+     * @param ar Archive to serialize to.
+     */
     void serialize(auto &ar) const {
       static_cast<detail::linear<imtime, double> const &>(*this).serialize(ar);
       ar & _beta & _statistic;
     }
+
+    /**
+     * @brief Deserialize the mesh from a generic archive.
+     * @param ar Archive to deserialize from.
+     */
     void deserialize(auto &ar) {
       static_cast<detail::linear<imtime, double> &>(*this).deserialize(ar);
       ar & _beta & _statistic;
     }
 
-    // -------------------- HDF5 -------------------
-
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshImTime"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, imtime const &m) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m); //NOLINT
-
+    /**
+     * @brief Write a triqs::mesh::imtime mesh to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be written.
+     */
+    friend void h5_write(h5::group g, std::string const &name, imtime const &m) {
+      h5::group gr = g.create_group(name);
+      h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
       h5::write(gr, "beta", m._beta);
       h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "n_tau", m.size());
+      h5::write(gr, "n_tau", m.N_);
     }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, imtime &m) {
-      h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format(gr, m, true);
+    /**
+     * @brief Read a triqs::mesh::imtime mesh from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string const &name, imtime &m) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, m, true);
 
-      long n_tau;                                                            // NOLINT
-      if (not h5::try_read(gr, "n_tau", n_tau)) h5::read(gr, "size", n_tau); // Backward Compat
+      // for backward compatibility
+      long N = 0;
+      if (not h5::try_read(gr, "n_tau", N)) h5::read(gr, "size", N);
+      if (gr.has_key("domain")) gr = gr.open_group("domain");
 
-      if (gr.has_key("domain")) { gr = gr.open_group("domain"); } // Backward Compat
       auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-
-      m = imtime(beta, statistic, n_tau);
+      m              = imtime(beta, statistic, N);
     }
 
-    // -------------------- Print -------------------
-
+    /**
+     * @brief Write a triqs::mesh::imtime mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
     friend std::ostream &operator<<(std::ostream &sout, imtime const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary Time Mesh with beta = {}, statistic = {}, n_tau = {}", m._beta, stat_cstr, m.size());
+      return sout << fmt::format("Imaginary time mesh with beta = {}, statistics = {}, N = {}", m._beta, stat_cstr, m.N_);
     }
   };
 
-  ///
-  auto evaluate(imtime const &m, auto const &f, double x) { return m.evaluate(f, x); }
+  /**
+   * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::imtime mesh at an imaginary time
+   * point \f$ \tau \in [0, \beta] \f$.
+   *
+   * @details It simply calls the triqs::mesh::imtime::evaluate method of the mesh.
+   *
+   * @param m triqs::mesh::imtime mesh.
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_n = f(\tau(n)) \f$ at the mesh points.
+   * @param tau Imaginary time point \f$ \tau \f$ at which to interpolate the function.
+   * @return Linear interpolation of \f$ f(\tau) \f$.
+   */
+  auto evaluate(imtime const &m, auto const &f, double tau) { return m.evaluate(f, tau); }
 
-  // check concept
+  /** @} */
+
+  // Check mesh concepts.
+  static_assert(Mesh<imtime>);
   static_assert(MeshWithValues<imtime>);
 
 } // namespace triqs::mesh
