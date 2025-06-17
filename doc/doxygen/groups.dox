@@ -115,6 +115,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-tailfitting Tail fitting tools
+ * @brief Tools to fit the high- and low-frequency tails of functions defined on real or imaginary frequency meshes.
+ */
+
+/**
  * @defgroup triqs-lattice Lattice tools
  * @brief Tools for working with Bravais lattices and Brillouin zones.
  */

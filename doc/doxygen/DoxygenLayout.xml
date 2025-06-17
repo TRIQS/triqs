@@ -83,6 +83,10 @@
           <tab type="user" url="@ref triqs::mesh::refreq" title="mesh::refreq"/>
           <tab type="user" url="@ref triqs::mesh::retime" title="mesh::retime"/>
         </tab>
+        <tab type="usergroup" url="@ref triqs-meshes-tailfitting" title="Tail fitting tools">
+          <tab type="user" url="@ref triqs::mesh::tail_fitter" title="mesh::tail_fitter"/>
+          <tab type="user" url="@ref triqs::mesh::tail_fitter_handle" title="mesh::tail_fitter_handle"/>
+        </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>

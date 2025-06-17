@@ -17,43 +17,101 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides tail fitting for functions defined on frequency meshes.
+ */
+
 #pragma once
-#include <nda/nda.hpp>
+
+#include "../arrays.hpp"
+
 #include <itertools/itertools.hpp>
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <nda/lapack/gelss_worker.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <complex>
+#include <memory>
+#include <optional>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 namespace triqs::mesh {
+
+  /**
+   * @addtogroup triqs-meshes-tailfitting
+   * @{
+   */
 
   // Forward declaration.
   class imfreq;
 
-  using nda::array_const_view;
-
-  //----------------------------------------------------------------------------------------------
-  // construct the Vandermonde matrix
-  inline nda::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order) {
-    nda::matrix<dcomplex> V(pts.size(), expansion_order + 1);
-    for (auto [i, p] : itertools::enumerate(pts)) {
+  /**
+   * @brief Construct a Vandermonde matrix.
+   *
+   * @details The resulting matrix will be of size \f$ p \times (q+1) \f$, where \f$ p \f$ is the number of points
+   * \f$ z_i \f$ in the input vector and \f$ q \f$ is the expansion order.
+   *
+   * The Vandermonde matrix has the following form:
+   * \f[
+   *   V = \begin{bmatrix}
+   *   1 & z_0 & z_0^2 & \cdots & z_0^q \\
+   *   1 & z_1 & z_1^2 & \cdots & z_1^q \\
+   *   1 & z_2 & z_2^2 & \cdots & z_2^q \\
+   *   \vdots & \vdots & \vdots & \ddots & \vdots \\
+   *   1 & z_{p-1} & z_{p-1}^2 & \cdots & z_{p-1}^q
+   *   \end{bmatrix}
+   * \f]
+   *
+   * For more details see <a href="https://en.wikipedia.org/wiki/Vandermonde_matrix">Wikipedia</a>.
+   *
+   * @param z_pts `std::vector` of size \f$ p \f$ containing the points \f$ z_i \f$.
+   * @param q Expansion order \f$ q \f$.
+   * @return Vandermonde matrix \f$ V \f$.
+   */
+  inline auto vander(std::vector<dcomplex> const &z_pts, int q) {
+    nda::matrix<dcomplex> V(z_pts.size(), q + 1);
+    for (auto [i, p] : itertools::enumerate(z_pts)) {
       dcomplex z = 1;
-      for (int n = 0; n <= expansion_order; ++n) {
+      for (int n = 0; n <= q; ++n) {
         V(i, n) = z;
         z *= p;
       }
     }
     return V;
   }
-  //----------------------------------------------------------------------------------------------
 
-  // Computes sum A_n / om^n
-  // Return array<dcomplex, R -1 > if R>1 else dcomplex
-  template <int R> auto tail_eval(nda::array_const_view<dcomplex, R> A, dcomplex om) {
+  /**
+   * @brief Evaluate the tail expansion of a function \f$ f(z) \f$ at a given point \f$ z_0 \f$.
+   *
+   * @details Suppose the function to be evaluated returns an \f$ R - 1 \f$-dimensional array with shape \f$ (d_1,
+   * \dots, d_{R-1}) \f$. Then the given coefficient array \f$ A \f$ is an array of rank \f$ R \f$ with shape \f$
+   * (q + 1, d_1, \dots, d_{R-1}) \f$, where \f$ q \f$ is the expansion order.
+   *
+   * This function simply evaluates
+   * \f[
+   *   f(z_0) \approx \sum_{n=0}^{q} \frac{A_n}{z_0^n} \; ,
+   * \f]
+   * where \f$ A_n = A(n, \dots) \f$ is the \f$ R - 1 \f$ dimensional array of coefficients for the n<sup>th</sup> term 
+   * in the expansion.
+   *
+   * @tparam R Rank of the coefficient array.
+   * @param A Array \f$ A \f$ of rank \f$ R \f$ containing the coefficients of the tail expansion.
+   * @param z_0 Point \f$ z_0 \f$ at which to evaluate the tail expansion.
+   * @return Evaluated tail expansion of \f$ f(z_0) \f$ which can either be a complex number (if \f$ R = 1 \f$) or an
+   * array of complex numbers (if \f$ R > 1 \f$).
+   */
+  template <int R> auto tail_eval(nda::array_const_view<dcomplex, R> A, dcomplex z_0) {
 
     // same algo for both cases below
-    auto compute = [&A, om](auto res) { // copy, in fact rvalue
+    auto compute = [&A, z_0](auto res) { // copy, in fact rvalue
       dcomplex z = 1;
-      long N     = A.extent(0);
-      for (int n = 0; n < N; ++n, z /= om) res += A(n, nda::ellipsis()) * z;
+      long q     = A.extent(0);
+      for (int n = 0; n < q; ++n, z /= z_0) res += A(n, nda::ellipsis()) * z;
       return res;
     };
 
@@ -63,8 +121,74 @@ namespace triqs::mesh {
       return compute(dcomplex{0});
     }
   }
-  //----------------------------------------------------------------------------------------------
 
+  /**
+   * @brief Fit the high- and low-frequency tail of a function \f$ f \f$ defined on a triqs::mesh::refreq or a 
+   * triqs::mesh::imfreq frequency mesh.
+   *
+   * @details For the moment, we assume that the function \f$ f \f$ to be fitted only depends on a single frequency
+   * argument \f$ z \f$ and is matrix-valued, i.e. \f$ f(z) \in \mathbb{C}^{d_1 \times d_2} \f$. Then we can write the
+   * high- and low-frequency expansion as
+   * \f[
+   *   f(z) = \sum_{n=0}^{q} \frac{A_n}{z^n} + \mathcal{O}(z^{-q-1}) \; ,
+   * \f]
+   * where \f$ A_n \in \mathbb{C}^{d_1 \times d_2} \f$ is a matrix containing the n<sup>th</sup> order expansion 
+   * coefficients.
+   *
+   * Since the function is defined on discrete mesh points, its values can be stored in a data array \f$ D \f$ of rank 
+   * \f$ 3 \f$ with shape \f$ (N, d_1, d_2) \f$, where \f$ N \f$ is the number of points (or discrete frequencies).
+   *
+   * Let \f$ \Omega = \{ z_l, \dots, z_h \} \f$ be the total set of \f$ N \f$ mesh points, with the lowest frequency \f$
+   * z_l \f$ and the highest frequency \f$ z_h \f$. The two subranges of mesh points, \f$ \widetilde{\Omega}_l = \{ z_l,
+   * \dots, z_{l+p_r-1} \} \f$ and \f$ \widetilde{\Omega}_h = \{ z_{h-p_r+1}, \dots, z_h \} \f$, relevant for the low-
+   * and high-frequency tail fit are determined by \f$ p_r = \lfloor r N / 2 + 0.5 \rfloor \f$ with \f$ 0 < r \leq 1
+   * \f$. The actual number of frequencies used for the fitting procedure is \f$ p = \min\{ p_r, p_\text{max} \} \f$,
+   * where \f$ p_\text{max} > 0\f$ is a given maximum number of points. \f$ r \f$ and \f$ p_\text{max} \f$ are set in
+   * the constructor of the tail fitter.
+   *
+   * Once we have the \f$ p \f$ low-frequencies \f$ \Omega_l = \{ z_{l_0}, \dots, z_{l_{p-1}} \} \subseteq
+   * \widetilde{\Omega}_l \f$ and the \f$ p \f$ high-frequencies \f$ \Omega_h = \{ z_{h_0}, \dots, z_{h_{p-1}} \}
+   * \subseteq \widetilde{\Omega}_h \f$, we can write the equations for the unknown coefficients \f$ A_n \f$ as a system
+   * of linear equations
+   * \f[
+   *   \begin{bmatrix}
+   *   1 & z_{l_0} & z_{l_0}^{-2} & \cdots & z_{l_0}^{-q} \\
+   *   1 & z_{h_0} & z_{h_0}^{-2} & \cdots & z_{h_0}^{-q} \\
+   *   1 & z_{l_1} & z_{l_1}^{-2} & \cdots & z_{l_1}^{-q} \\
+   *   \vdots & \vdots & \vdots & \ddots & \vdots \\
+   *   1 & z_{h_{p-1}} & z_{h_{p-1}}^{-2} & \cdots & z_{h_{p-1}}^{-q} \\
+   *   \end{bmatrix}
+   *   \begin{bmatrix}
+   *   [A_0]_{11} & [A_0]_{12} & [A_0]_{21} & [A_0]_{22} \\
+   *   [A_1]_{11} & [A_1]_{12} & [A_1]_{21} & [A_1]_{22} \\
+   *   [A_2]_{11} & [A_2]_{12} & [A_2]_{21} & [A_2]_{22} \\
+   *   \vdots & \vdots & \vdots & \vdots \\
+   *   [A_{q-1}]_{11} & [A_{q-1}]_{12} & [A_{q-1}]_{21} & [A_{q-1}]_{22} \\
+   *   \end{bmatrix}
+   *   =
+   *   \begin{bmatrix}
+   *   [f(z_{l_0})]_{11} & [f(z_{l_0})]_{12} & [f(z_{l_0})]_{21} & [f(z_{l_0})]_{22} \\
+   *   [f(z_{h_0})]_{11} & [f(z_{h_0})]_{12} & [f(z_{h_0})]_{21} & [f(z_{h_0})]_{22} \\
+   *   [f(z_{l_1})]_{11} & [f(z_{l_1})]_{12} & [f(z_{l_1})]_{21} & [f(z_{l_1})]_{22} \\
+   *   \vdots & \vdots & \vdots & \vdots \\
+   *   [f(z_{h_{p-1}})]_{11} & [f(z_{h_{p-1}})]_{12} & [f(z_{h_{p-1}})]_{21} & [f(z_{h_{p-1}})]_{22} \\
+   *   \end{bmatrix} \; ,
+   * \f]
+   * or in a more compact form
+   * \f[
+   *  V A = B \; .
+   * \f]
+   * Here, \f$ V \f$ is the \f$ 2p \times (q+1) \f$ Vandermonde matrix (see also triqs::mesh::vander), \f$ A \f$ is the
+   * \f$ (q+1) \times (d_1 \times d_2) \f$ matrix of unknown coefficients and \f$ B \f$ is the \f$ 2p \times (d_1
+   * \times d_2) \f$ matrix of function values at the frequencies in \f$ \Omega_l \f$ and \f$ \Omega_h \f$.
+   * 
+   * @note To make the notation easier, we have assumed in the above equations that \f$ d_1 = d_2 = 2 \f$.
+   *
+   * This system of equations can then be solved with the linear least squares worker classes
+   * `nda::lapack::gelss_worker` or `nda::lapack::gelss_worker_hermitian`. Hermitian means that the coefficient matrices
+   * \f$ A_n \f$ are required to be hermitian, i,.e. \f$ [A_n]_{ij} = [A_n]_{ji}^* \f$, which enforces the symmetry \f$
+   * [f(z)]_{ij} = [f(-z)]_{ji}^* \f$ in the function values.
+   */
   class tail_fitter {
 
     static constexpr int max_order = 9;
@@ -79,31 +203,51 @@ namespace triqs::mesh {
     std::vector<long> _fit_idx_lst;
 
     public:
-    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {})
-       : _tail_fraction(tail_fraction),
-         _n_tail_max(n_tail_max),
-         _adjust_order(not expansion_order.has_value()),
-         _expansion_order(_adjust_order ? max_order : *expansion_order) {}
-    //----------------------------------------------------------------------------------------------
+    /**
+     * @brief Construct a tail fitter for a given fraction \f$ r \f$ of the mesh, the maximum number of mesh points 
+     * \f$ p_{\text{max}} \f$ to use in the fit and an optional expansion order \f$ q \f$.
+     *
+     * @param r Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
+     * @param p_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
+     * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted 
+     * automatically.
+     */
+    tail_fitter(double r, int p_max, std::optional<int> q = {})
+       : _tail_fraction(r), _n_tail_max(p_max), _adjust_order(not q.has_value()), _expansion_order(_adjust_order ? max_order : *q) {}
 
-    // number of the points in the tail for positive omega.
+    /**
+     * @brief Get the number of mesh points used in the tail fit for the given mesh.
+     *
+     * @details The number of points \f$ p \f$ depends on the size \f$ N \f$ of the underlying mesh, the fraction \f$ r
+     * \f$ of the mesh that should be considered and the maximum number of points \f$ p_\text{max} \f$ we want to use:
+     * \f[
+     *   p = \min \left\{ \left\lfloor \frac{N}{2} r + 0.5 \right\rfloor, p_\text{max} \right\} \; .
+     * \f]
+     *
+     * @tparam M Frequency mesh type (either triqs::mesh::imfreq or triqs::mesh::refreq).
+     * @param m Frequency mesh.
+     * @return Number of mesh points \f$ p \f$ to use in the fit.
+     */
     template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
 
-    // The default fraction of frequency points to consider for the tail fit
+    /// Default fraction \f$ r \f$ of the mesh to consider in the tail fit.
     static constexpr double default_tail_fraction = 0.2;
 
-    // The default upper limit for the number of frequencies to consider in the tail fit
+    /// Default maximum number of points \f$ p_\text{max} \f$ to use in the tail fit.
     static constexpr int default_n_tail_max = 30;
 
-    //----------------------------------------------------------------------------------------------
-
-    // Return the tail_fraction
+    /// Get the fraction \f$ r \f$ of the mesh to be considered for the tail fit.
     double get_tail_fraction() const { return _tail_fraction; }
 
-    //----------------------------------------------------------------------------------------------
-
-    // Return the vector of all indices that are used fit the fitting procedure
-    template <typename M> std::vector<long> get_tail_fit_indices(M const &m) {
+    /**
+     * @brief Get a vector containing the indices of all mesh points to use in the tail fit, i.e. \f$ (l_0, h_0, l_1, 
+     * h_1, \dots, l_{p-1}, h_{p-1}) \f$.
+     *
+     * @tparam M Frequency mesh type (either triqs::mesh::imfreq or triqs::mesh::refreq).
+     * @param m Frequency mesh.
+     * @return `std::vector<long>` containing the indices of the mesh points to use in the fit.
+     */
+    template <typename M> auto get_tail_fit_indices(M const &m) {
 
       // Total number of points in the fitting window
       int n_pts_in_fit_range = int(std::round(_tail_fraction * m.size() / 2));
@@ -128,8 +272,13 @@ namespace triqs::mesh {
       return idx_vec;
     }
 
-    //----------------------------------------------------------------------------------------------
-
+    /**
+     * @brief Get linear least squares workers.
+     *
+     * @tparam enforce_hermiticity Enforce hermiticity in the coefficient matrices \f$ A_n \f$.
+     * @return `std::array` of `std::unique_ptr` objects to `nda::lapack::gelss_worker` or
+     * `nda::lapack::gelss_worker_hermitian` objects.
+     */
     template <bool enforce_hermiticity = false> auto &get_lss() {
       if constexpr (enforce_hermiticity)
         return _lss_hermitian;
@@ -137,8 +286,32 @@ namespace triqs::mesh {
         return _lss;
     }
 
-    // Set up the least-squares solver for a given number of known moments.
-    template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_fixed_moments) {
+    /**
+     * @brief Set up the linear least squares workers for a given mesh and a given number \f$ n_A \f$ of known 
+     * coefficient arrays \f$ A_n \f$.
+     *
+     * @details To set up the workers, we first determine the frequencies for the tail fit with get_tail_fit_indices()
+     * and then build the Vandermonde matrix with triqs::mesh::vander. For numerical reasons, we scale the frequencies
+     * by the absolute value of the maximum frequency in the mesh such that \f$ V_{ij} = \left(|z_{\text{max}}| /
+     * z_i \right)^{j} \f$. Note that this will also scale the coefficients \f$ \tilde{A}_n = A_n / |z_{\text{max}}|^{n}
+     * \f$.
+     *
+     * The least squares workers are then initialized with the Vandermonde matrix. If the given number \f$ n_A \f$ of 
+     * known coefficient arrays is \f$ > 0 \f$, then only the \f$ 2p \times (q - n_A + 1) \f$ submatrix of \f$ V \f$ is 
+     * used. That means that only \f$ q - n_A + 1 \f$ coefficients \f$ A_n \f$ with \f$ n \geq n_A \f$ will be 
+     * calculated with the fitting procedure.
+     *
+     * Furthermore, if no expansion order \f$ q \f$ was specified during construction, this function tries to find the 
+     * largest \f$ q \f$ such that \f$ n_A \leq q \leq q_{\text{max}} = 9 \f$ and for which the smallest singular value 
+     * of the Vandermonde matrix is larger than some threshold \f$ r_{\text{cond}} = 10^{-8} \f$. If no suitable \f$ q 
+     * \f$ is found, an exception is thrown.
+     *
+     * @tparam enforce_hermiticity Enforce hermiticity in the coefficient matrices \f$ A_n \f$.
+     * @tparam M Frequency mesh type (either triqs::mesh::imfreq or triqs::mesh::refreq).
+     * @param m Frequency mesh.
+     * @param n_A Number of known coefficient arrays.
+     */
+    template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_A) {
 
       using namespace nda::lapack;
       using cache_t = std::conditional_t<enforce_hermiticity, gelss_worker_hermitian, gelss_worker<dcomplex>>;
@@ -155,54 +328,80 @@ namespace triqs::mesh {
         _vander = vander(C, _expansion_order);
       }
 
-      if (n_fixed_moments + 1 > _vander.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
+      if (n_A + 1 > _vander.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
 
-      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range::all, range(n_fixed_moments, n + 1))); };
+      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range::all, range(n_A, n + 1))); };
 
       auto &lss = get_lss<enforce_hermiticity>();
 
       if (!_adjust_order)
-        lss[n_fixed_moments] = l(_expansion_order);
+        lss[n_A] = l(_expansion_order);
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
-        lss[n_fixed_moments].reset();
+        lss[n_A].reset();
         // Ensure that |m.w_max()|^(1-N) > 10^{-16}
         long n_max = std::min(static_cast<long>(max_order), static_cast<long>(1. + 16. / std::log10(1 + std::abs(m.w_max()))));
         // We use at least two times as many data-points as we have moments to fit
         n_max = std::min(n_max, _vander.extent(0) / 2);
-        for (int n = n_max; n >= n_fixed_moments; --n) {
+        for (int n = n_max; n >= n_A; --n) {
           auto ptr = l(n);
           if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
-            lss[n_fixed_moments] = std::move(ptr);
+            lss[n_A] = std::move(ptr);
             break;
           }
         }
       }
 
-      if (!lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
+      if (!lss[n_A]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
 
-    //----------------------------------------------------------------------------------------------
-
     /**
-     * @param m mesh
-     * @param data
-     * @param n position of the omega in the data array
-     * @param normalize Finish the normalization of the tail coefficient (normally true)
-     * @param known_moments  Array of the known_moments
-     * */
-    template <int N, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
-    std::pair<nda::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
-                                                   array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
+     * @brief Perform a linear least squares fit and return the coefficients \f$ A_n \f$ of the tail expansion together 
+     * with the error of the fit.
+     *
+     * @details If the function \f$ f \f$ depends on more arguments, we first permute the indices of the given data
+     * array \f$ D \f$ such that the frequency mesh we are fitting on corresponds to the first dimension. Then we 
+     * combine all other dimensions to form a matrix of size \f$ N \times M \f$, where \f$ N \f$ is the size of the 
+     * frequency mesh and \f$ M \f$ is the product of the remaining dimensions. The same is done with the array \f$ C 
+     * \f$ containing the known coefficient arrays \f$ A_n \f$ for \f$ n < n_A \f$.
+     *
+     * Before the fit is performed, the expansion terms corresponding to the known coefficients (contained in \f$ C \f$) 
+     * are subtracted from the function values (contained in \f$ D \f$), i.e.
+     * \f[
+     *   \tilde{f}(z_i) = f(z_i) - \sum_{n=0}^{n_A-1} \tilde{A}_n \left( \frac{|z_{\text{max}}|}{z_i} \right)^n \; ,
+     * \f]
+     * where \f$ n_A \f$ is the number of known \f$ A_n \f$ and \f$ \tilde{A}_n = A_n / |z_{\text{max}}|^n \f$ (see 
+     * setup_lss() for more information).
+     *
+     * After the least squares procedure, the original coefficients \f$ A_n \f$ can be recovered from \f$ \tilde{A}_n 
+     * \f$ by setting `rescale` to true. Otherwise, the scaled coefficients \f$ \tilde{A}_n \f$ are returned.
+     *
+     * Furthermore, if `enforce_hermiticity` is set to true, the calculated coefficient matrices \f$ A_n \f$ are forced 
+     * to be hermitian. This setting only makes sense for triqs::mesh::imfreq Matsubara meshes and requires an inner 
+     * matrix dimension \f$ d \f$ to be specified, i.e. the number of rows/columns of the square matrix that \f$ f(z) 
+     * \f$ returns.
+     *
+     * @tparam P Position of the frequency mesh in case of a product mesh.
+     * @tparam enforce_hermiticity Enforce hermiticity in the coefficient matrices \f$ A_n \f$.
+     * @tparam M Frequency mesh type (either triqs::mesh::imfreq or triqs::mesh::refreq).
+     * @tparam R Rank of the data array and the array containing the known moments.
+     * @param m Frequency mesh.
+     * @param D Data array \f$ D \f$ containing the function values on the (product) mesh points.
+     * @param rescale Should we rescale the calculated coefficients \f$ \tilde{A}_n \f$ by \f$ |z_{\text{max}}|^q \f$?
+     * @param C Data array \f$ C \f$ containing the known coefficient arrays.
+     * @param d Inner matrix dimensions \f$ d \f$ (only needed if `enforce_hermiticity` is true).
+     * @return `std::pair` containing the expansion coefficients \f$ A_n/\tilde{A}_n \f$ and the error of the fit.
+     */
+    template <int P, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
+    auto fit(M const &m, nda::array_const_view<dcomplex, R> D, bool rescale, nda::array_const_view<dcomplex, R2> C, std::optional<long> d = {}) {
 
-      if (enforce_hermiticity and not inner_matrix_dim.has_value())
-        TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
+      if (enforce_hermiticity and not d.has_value()) TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
       if constexpr (enforce_hermiticity) static_assert(std::is_same_v<M, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
       if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
 
       // If not set, build least square solver for for given number of known moments
-      int n_fixed_moments = known_moments.extent(0);
-      if (n_fixed_moments > _expansion_order) return {known_moments, 0.0};
+      int n_fixed_moments = C.extent(0);
+      if (n_fixed_moments > _expansion_order) return std::pair<nda::array<std::complex<double>, R>, double>{C, 0.0};
 
       auto &lss = get_lss<enforce_hermiticity>();
       if (!bool(lss[n_fixed_moments])) setup_lss<enforce_hermiticity>(m, n_fixed_moments);
@@ -214,7 +413,7 @@ namespace triqs::mesh {
       using nda::ellipsis;
 
       // The values of the Green function. Swap relevant mesh to front
-      auto g_data_swap_idx = nda::rotate_index_view<N>(g_data);
+      auto g_data_swap_idx = nda::rotate_index_view<P>(D);
       auto const &imp      = g_data_swap_idx.indexmap();
       long ncols           = imp.size() / imp.lengths()[0];
 
@@ -232,7 +431,7 @@ namespace triqs::mesh {
       // If an array with known_moments was passed, flatten the array into a matrix
       // just like g_data. Then account for the proper shift in g_mat
       if (n_fixed_moments > 0) {
-        auto imp_km   = known_moments.indexmap();
+        auto imp_km   = C.indexmap();
         long ncols_km = imp_km.size() / imp_km.lengths()[0];
 
         if (ncols != ncols_km) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
@@ -244,9 +443,9 @@ namespace triqs::mesh {
 
         for (int order : range(n_fixed_moments)) {
           if constexpr (R == 1)
-            km_mat(order, 0) = z * known_moments(order, ellipsis());
+            km_mat(order, 0) = z * C(order, ellipsis());
           else
-            for (auto [n, x] : enumerate(known_moments(order, ellipsis()))) km_mat(order, n) = z * x;
+            for (auto [n, x] : enumerate(C(order, ellipsis()))) km_mat(order, n) = z * x;
           z /= om_max;
         }
 
@@ -254,11 +453,11 @@ namespace triqs::mesh {
         g_mat -= _vander(range::all, range(n_fixed_moments)) * km_mat;
       }
       // Call least square solver
-      auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, inner_matrix_dim); // coef + error
+      auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, d); // coef + error
 
       // === The result a_mat contains the fitted moments divided by w_max()^n
       // Here we extract the real moments
-      if (normalize) {
+      if (rescale) {
         double z      = 1.0;
         double om_max = std::abs(m.w_max());
         for ([[maybe_unused]] int i : range(n_fixed_moments)) z *= om_max;
@@ -281,48 +480,84 @@ namespace triqs::mesh {
       lg[0]    = n_moments;
       auto res = r_t(lg);
 
-      if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = known_moments;
+      if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = C;
       res(range(n_fixed_moments, n_moments), ellipsis()) = nda::array_view<dcomplex, R>{imp1, a_mat.storage()};
       //res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
 
-      return {std::move(res), epsilon};
+      return std::pair<nda::array<std::complex<double>, R>, double>{std::move(res), epsilon};
     }
 
-    //--------------------
-
-    template <int N, typename M, int R, int R2 = R>
-    std::pair<nda::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, bool normalize,
-                                                             array_const_view<dcomplex, R2> known_moments,
-                                                             std::optional<long> inner_matrix_dim = {}) {
-      return fit<N, true, M, R, R2>(m, g_data, normalize, known_moments, inner_matrix_dim);
+    /**
+     * @brief Perform a linear least squares fit and return the coefficients \f$ A_n \f$ of the tail expansion together 
+     * with the error of the fit.
+     *
+     * @details It simply calls fit() with `enforce_hermiticity` set to true.
+     * 
+     * @tparam P Position of the frequency mesh in case of a product mesh.
+     * @tparam M Frequency mesh type (either triqs::mesh::imfreq or triqs::mesh::refreq).
+     * @tparam R Rank of the data array and the array containing the known moments.
+     * @param m Frequency mesh.
+     * @param D Data array \f$ D \f$ containing the function values on the (product) mesh points.
+     * @param rescale Should we rescale the calculated coefficients \f$ \tilde{A}_n \f$ by \f$ |z_{\text{max}}|^q \f$?
+     * @param C Data array \f$ C \f$ containing the known coefficient arrays.
+     * @param d Inner matrix dimensions \f$ d \f$.
+     * @return `std::pair` containing the expansion coefficients \f$ A_n/\tilde{A}_n \f$ and the error of the fit.
+     */
+    template <int P, typename M, int R, int R2 = R>
+    auto fit_hermitian(M const &m, nda::array_const_view<dcomplex, R> D, bool rescale, nda::array_const_view<dcomplex, R2> C,
+                       std::optional<long> d = {}) {
+      return fit<P, true, M, R, R2>(m, D, rescale, C, d);
     }
   };
 
-  //----------------------------------------------------------------------------------------------
-
+  /**
+   * @brief Shared handle for tail fitting.
+   * @details It simply stores a `std::shared_ptr` to a triqs::mesh::tail_fitter object.
+   */
   struct tail_fitter_handle {
-
-    // Adjust the parameters for the tail-fitting
-    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}) const {
-      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order});
+    /**
+     * @brief Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
+     *
+     * @param r Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
+     * @param p_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
+     * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted 
+     * automatically.
+     */
+    void set_tail_fit_parameters(double r, int p_max = tail_fitter::default_n_tail_max, std::optional<int> q = {}) const {
+      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{r, p_max, q});
     }
 
-    // The tail fitter is mutable, even if the mesh is immutable to cache some data
+    /**
+     * @brief Get the triqs::mesh::tail_fitter object.
+     * 
+     * @details If the tail fitter object has not been created yet, it will be constructed with the default parameters,
+     * i.e. tail_fitter::default_tail_fraction and tail_fitter::default_n_tail_max.
+     * 
+     * @return Tail fitter object.
+     */
     tail_fitter &get_tail_fitter() const {
       if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max);
       return *_tail_fitter;
     }
 
-    // Adjust the parameters for the tail-fitting and return the fitter
-    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                                 std::optional<int> expansion_order = {}) const {
-      set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
+    /**
+     * @brief Construct a new triqs::mesh::tail_fitter object with the given parameters and return it.
+     *
+     * @param r Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
+     * @param p_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
+     * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted 
+     * automatically.
+     * @return Tail fitter object.
+     */
+    tail_fitter &get_tail_fitter(double r, int p_max = tail_fitter::default_n_tail_max, std::optional<int> q = {}) const {
+      set_tail_fit_parameters(r, p_max, q);
       return *_tail_fitter;
     }
 
     private:
     mutable std::shared_ptr<tail_fitter> _tail_fitter;
   };
+
+  /** @} */
 
 } // namespace triqs::mesh
