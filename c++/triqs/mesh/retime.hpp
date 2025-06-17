@@ -112,18 +112,6 @@ namespace triqs::mesh {
     /// Get the upper bound of the interval \f$ t_{\mathrm{max}} \f$, i.e. the value of the last mesh point.
     [[nodiscard]] double t_max() const noexcept { return b_; }
 
-    /**
-     * @brief Serialize the mesh to a generic archive.
-     * @param ar Archive to serialize to.
-     */
-    void serialize(auto &ar) const { static_cast<detail::linear<retime, double> const &>(*this).serialize(ar); }
-
-    /**
-     * @brief Deserialize the mesh from a generic archive.
-     * @param ar Archive to deserialize from.
-     */
-    void deserialize(auto &ar) { static_cast<detail::linear<retime, double> &>(*this).deserialize(ar); }
-
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshReTime"; }
 
