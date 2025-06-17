@@ -117,21 +117,21 @@ namespace triqs::mesh {
        * @param d Data index \f$ d \f$ of the mesh point.
        * @param mhash Hash value of the parent mesh.
        */
-      mesh_point_t(long n, long d, uint64_t mhash) : _index(n), _data_index(d), _mesh_hash(mhash) {}
+      mesh_point_t(long n, long d, uint64_t mhash) : index_(n), data_index_(d), mesh_hash_(mhash) {}
 
       /// Get the index \f$ n \f$ of the mesh point.
-      [[nodiscard]] long index() const { return _index; }
+      [[nodiscard]] long index() const { return index_; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
+      long index_         = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
     };
 
     /// Default constructor constructs an empty mesh.
@@ -145,9 +145,9 @@ namespace triqs::mesh {
      * @param stat Particle statistics (see triqs::mesh::statistic_enum).
      * @param N Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
      */
-    legendre(double beta, statistic_enum stat, long N) : _beta(beta), _statistic(stat), _max_n(N), _mesh_hash(hash(beta, stat, N)) {
-      EXPECTS(_beta > 0);
-      EXPECTS(_max_n >= 0);
+    legendre(double beta, statistic_enum stat, long N) : beta_(beta), stat_(stat), N_(N), mesh_hash_(hash(beta, stat, N)) {
+      EXPECTS(beta_ > 0);
+      EXPECTS(N_ >= 0);
     }
 
     /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
@@ -162,7 +162,7 @@ namespace triqs::mesh {
      * @param n Index \f$ n \f$ to check.
      * @return True if \f$ 0 \leq n < N \f$, false otherwise.
      */
-    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < _max_n; }
+    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < N_; }
 
     /**
      * @brief Map an index \f$ n \in \{0, 1, \ldots, N-1\} \f$ to its corresponding data index \f$ d(n) \f$.
@@ -192,7 +192,7 @@ namespace triqs::mesh {
      * @param d Data index \f$ d \f$ of the mesh point.
      * @return mesh_point_t with the index \f$ n(d) = d \f$, data index \f$ d \f$ and hash value of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, mesh_hash_}; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
@@ -200,19 +200,19 @@ namespace triqs::mesh {
      * @param n Index \f$ n \f$ of the mesh point.
      * @return mesh_point_t with the index \f$ n \f$, data index \f$ d(n) = n \f$ and hash value of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator()(long n) const { return {n, to_data_index(n), _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator()(long n) const { return {n, to_data_index(n), mesh_hash_}; }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return _beta; }
+    [[nodiscard]] double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] auto statistic() const noexcept { return _statistic; }
+    [[nodiscard]] auto statistic() const noexcept { return stat_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points or polynomials in the series expansion.
-    [[nodiscard]] long size() const { return _max_n; }
+    [[nodiscard]] long size() const { return N_; }
 
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<legendre>{.mesh_ptr = this, .data_index = 0}; }
@@ -234,21 +234,21 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, legendre const &m) {
-      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Legendre mesh with beta = {}, statistics = {}, N = {}", m._beta, stat_cstr, m.size());
+      auto stat_cstr = (m.stat_ == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Legendre mesh with beta = {}, statistics = {}, N = {}", m.beta_, stat_cstr, m.size());
     }
 
     /**
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & _beta & _statistic & _max_n & _mesh_hash; }
+    void serialize(auto &ar) const { ar & beta_ & stat_ & N_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & _beta & _statistic & _max_n & _mesh_hash; }
+    void deserialize(auto &ar) { ar & beta_ & stat_ & N_ & mesh_hash_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshLegendre"; }
@@ -263,9 +263,9 @@ namespace triqs::mesh {
     friend void h5_write(h5::group g, std::string const &name, legendre const &m) {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
-      h5::write(gr, "beta", m._beta);
-      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "max_n", m._max_n);
+      h5::write(gr, "beta", m.beta_);
+      h5::write(gr, "statistic", (m.stat_ == Fermion ? "F" : "B"));
+      h5::write(gr, "max_n", m.N_);
     }
 
     /**
@@ -293,10 +293,10 @@ namespace triqs::mesh {
     }
 
     private:
-    double _beta              = 1.0;
-    statistic_enum _statistic = Fermion;
-    long _max_n               = 0;
-    uint64_t _mesh_hash       = 0;
+    double beta_         = 1.0;
+    statistic_enum stat_ = Fermion;
+    long N_              = 0;
+    uint64_t mesh_hash_  = 0;
   };
 
   /**
