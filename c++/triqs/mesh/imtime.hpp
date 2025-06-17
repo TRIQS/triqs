@@ -84,15 +84,11 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 10
    * ```
    */
-  struct imtime : public detail::linear<imtime, double> {
+  class imtime : public detail::linear<imtime, double> {
+    public:
     /// %Mesh point type of a triqs::mesh::imtime mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<imtime, double>::mesh_point_t;
 
-    private:
-    double _beta;
-    statistic_enum _statistic;
-
-    public:
     /**
      * @brief Construct an imaginary time mesh on the interval \f$ [0, \beta] \f$ with \f$ N \geq 0 \f$ equally spaced
      * mesh points and the given particle statistics.
@@ -200,6 +196,10 @@ namespace triqs::mesh {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
       return sout << fmt::format("Imaginary time mesh with beta = {}, statistics = {}, N = {}", m._beta, stat_cstr, m.N_);
     }
+
+    private:
+    double _beta;
+    statistic_enum _statistic;
   };
 
   /**
