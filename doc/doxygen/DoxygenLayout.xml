@@ -16,6 +16,11 @@
       <tab type="usergroup" url="@ref triqs-lattice" title="Lattice tools">
       </tab>
       <tab type="usergroup" url="@ref triqs-meshes" title="Meshes">
+        <tab type="usergroup" url="@ref triqs-meshes-func" title="Function space meshes">
+          <tab type="usergroup" url="@ref triqs::mesh::legendre" title="mesh::legendre">
+            <tab type="user" url="@ref triqs::mesh::legendre::mesh_point_t" title="mesh::legendre::mesh_point_t"/>
+          </tab>
+        </tab>
         <tab type="usergroup" url="@ref triqs-meshes-imag" title="Imaginary time and frequency meshes">
           <tab type="user" url="@ref triqs::mesh::imtime" title="mesh::imtime"/>
         </tab>

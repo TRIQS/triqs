@@ -53,6 +53,12 @@
 
 /**
  * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-func Function space meshes
+ * @brief %Mesh types for function spaces.
+ */
+
+/**
+ * @ingroup triqs-meshes
  * @defgroup triqs-meshes-imag Imaginary time and frequency meshes
  * @brief %Mesh types for imaginary time and frequency domains.
  */
