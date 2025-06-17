@@ -70,6 +70,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-real Real time and frequency meshes
+ * @brief %Mesh types for real time and frequency domains.
+ */
+
+/**
  * @defgroup triqs-lattice Lattice tools
  * @brief Tools for working with Bravais lattices and Brillouin zones.
  */
