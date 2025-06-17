@@ -44,10 +44,10 @@ namespace triqs::mesh {
     // -------------------- Accessors -------------------
 
     /// Smallest time in the mesh
-    [[nodiscard]] double t_min() const noexcept { return xmin; }
+    [[nodiscard]] double t_min() const noexcept { return a_; }
 
     /// Largest time in the mesh
-    [[nodiscard]] double t_max() const noexcept { return xmax; }
+    [[nodiscard]] double t_max() const noexcept { return b_; }
 
     // -------------------- serialization -------------------
 
@@ -69,7 +69,7 @@ namespace triqs::mesh {
 
     ///
     friend std::ostream &operator<<(std::ostream &sout, retime const &m) {
-      return sout << fmt::format("Real Time Mesh with t_min = {}, t_max = {}, n_t = {}", m.xmin, m.xmax, m.L);
+      return sout << fmt::format("Real Time Mesh with t_min = {}, t_max = {}, n_t = {}", m.a_, m.b_, m.N_);
     }
   };
 

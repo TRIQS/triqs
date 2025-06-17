@@ -46,10 +46,10 @@ namespace triqs::mesh {
     static constexpr bool positive_only() { return false; }
 
     /// Smallest frequency in the mesh
-    double w_min() const { return xmin; }
+    double w_min() const { return a_; }
 
     /// Largest frequency in the mesh
-    double w_max() const { return xmax; }
+    double w_max() const { return b_; }
 
     // -------------------- serialization -------------------
 
@@ -67,7 +67,7 @@ namespace triqs::mesh {
     // -------------------- Print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, refreq const &m) {
-      return sout << fmt::format("Real Freq Mesh with w_min = {}, w_max = {}, n_w = {}", m.xmin, m.xmax, m.L);
+      return sout << fmt::format("Real Freq Mesh with w_min = {}, w_max = {}, n_w = {}", m.a_, m.b_, m.N_);
     }
   };
 

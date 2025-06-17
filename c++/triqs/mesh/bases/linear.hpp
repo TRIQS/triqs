@@ -105,22 +105,22 @@ namespace triqs::mesh::detail {
        * @param mhash Hash value of the parent mesh.
        * @param m Value \f$ m \f$ of the mesh point.
        */
-      mesh_point_t(long n, long d, uint64_t mhash, double m) : _index(n), _data_index(d), _mesh_hash(mhash), _value(m) {}
+      mesh_point_t(long n, long d, uint64_t mhash, double m) : index_(n), data_index_(d), mesh_hash_(mhash), value_(m) {}
 
       /// Get the index \f$ n \f$ of the mesh point.
-      [[nodiscard]] long index() const { return _index; }
+      [[nodiscard]] long index() const { return index_; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the value \f$ m \f$ of the mesh point.
-      [[nodiscard]] value_t value() const { return _value; }
+      [[nodiscard]] value_t value() const { return value_; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       /// Conversion to the value type of the parent mesh.
-      operator value_t() const { return _value; }
+      operator value_t() const { return value_; }
 
 #define IMPL_OP(OP)                                                                                                                                  \
   /** @brief Binary `OP` operation for a linear::mesh_point_t and some type `U`. */                                                                  \
@@ -138,10 +138,10 @@ namespace triqs::mesh::detail {
 #undef IMPL_OP
 
       private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-      value_t _value      = {};
+      long index_         = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
+      value_t value_      = {};
     };
 
     /**
@@ -152,12 +152,12 @@ namespace triqs::mesh::detail {
      * @param N Size of the mesh.
      */
     linear(value_t a = 0, value_t b = 1, long N = 2)
-       : L(N),
-         xmin(a),
-         xmax(b),
-         delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
-         delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
-         _mesh_hash(hash(L, xmin, xmax)) {
+       : N_(N),
+         a_(a),
+         b_(b),
+         delta_(N_ == 1 ? 0. : (b - a) / (N_ - 1)),
+         delta_inv_{delta_ == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_},
+         mesh_hash_(hash(N_, a_, b_)) {
       EXPECTS(a <= b);
     }
 
@@ -173,11 +173,11 @@ namespace triqs::mesh::detail {
      * @param n Index \f$ n \f$ to check.
      * @return True if \f$ 0 \leq n < N \f$, false otherwise.
      */
-    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < L; }
+    [[nodiscard]] bool is_index_valid(index_t n) const noexcept { return 0 <= n and n < N_; }
 
     private:
     // Check if a value is valid.
-    [[nodiscard]] bool is_value_valid(value_t m) const noexcept { return xmin <= m and m <= xmax; }
+    [[nodiscard]] bool is_value_valid(value_t m) const noexcept { return a_ <= m and m <= b_; }
 
     public:
     /**
@@ -221,7 +221,7 @@ namespace triqs::mesh::detail {
      */
     [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
-      return static_cast<index_t>((cmp.value - xmin) * delta_x_inv + 0.5);
+      return static_cast<index_t>((cmp.value - a_) * delta_inv_ + 0.5);
     }
 
     /**
@@ -252,7 +252,7 @@ namespace triqs::mesh::detail {
      */
     [[nodiscard]] mesh_point_t operator()(index_t n) const noexcept {
       EXPECTS(is_index_valid(n));
-      return {n, n, _mesh_hash, to_value(n)};
+      return {n, n, mesh_hash_, to_value(n)};
     }
 
     /**
@@ -263,29 +263,29 @@ namespace triqs::mesh::detail {
      */
     [[nodiscard]] value_t to_value(index_t n) const noexcept {
       EXPECTS(is_index_valid(n));
-      if (L == 1) return xmin;
-      double wr  = double(n) / (L - 1);
-      double res = xmin * (1 - wr) + xmax * wr;
+      if (N_ == 1) return a_;
+      double wr  = double(n) / (N_ - 1);
+      double res = a_ * (1 - wr) + b_ * wr;
       return res;
     }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
-    [[nodiscard]] long size() const noexcept { return L; }
+    [[nodiscard]] long size() const noexcept { return N_; }
 
     /// Get the step size \f$ \Delta \f$ of the mesh, i.e. the distance between two consecutive mesh points.
-    [[nodiscard]] value_t delta() const noexcept { return delta_x; }
+    [[nodiscard]] value_t delta() const noexcept { return delta_; }
 
     /// Get the inverse of the step size of the mesh, i.e. \f$ 1 / \Delta \f$.
-    [[nodiscard]] value_t delta_inv() const noexcept { return delta_x_inv; }
+    [[nodiscard]] value_t delta_inv() const noexcept { return delta_inv_; }
 
     /// Get the first index of the mesh, i.e. \f$ 0 \f$.
     [[nodiscard]] long first_index() const { return 0; }
 
     /// Get the last index of the mesh, i.e. \f$ N - 1 \f$.
-    [[nodiscard]] long last_index() const { return L - 1; }
+    [[nodiscard]] long last_index() const { return N_ - 1; }
 
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<linear<M, T>>{.mesh_ptr = this, .data_index = 0}; }
@@ -303,13 +303,13 @@ namespace triqs::mesh::detail {
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & L & xmin & xmax & delta_x & delta_x_inv & _mesh_hash; }
+    void serialize(auto &ar) const { ar & N_ & a_ & b_ & delta_ & delta_inv_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & L & xmin & xmax & delta_x & delta_x_inv & _mesh_hash; }
+    void deserialize(auto &ar) { ar & N_ & a_ & b_ & delta_ & delta_inv_ & mesh_hash_; }
 
     protected:
     /**
@@ -322,8 +322,8 @@ namespace triqs::mesh::detail {
     void h5_write_impl(h5::group g, std::string const &name, const char *format) const {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format_as_string(gr, format); // NOLINT (downcasting to base class)
-      h5::write(gr, "min", this->xmin);
-      h5::write(gr, "max", this->xmax);
+      h5::write(gr, "min", this->a_);
+      h5::write(gr, "max", this->b_);
       h5::write(gr, "size", this->size());
     }
 
@@ -362,18 +362,18 @@ namespace triqs::mesh::detail {
      */
     auto evaluate(auto const &f, double x) const {
       EXPECTS(this->is_value_valid(x) and this->size() > 1);
-      x        = std::max(x, this->xmin);
-      double a = (x - this->xmin) * this->delta_inv();
+      x        = std::max(x, this->a_);
+      double a = (x - this->a_) * this->delta_inv();
       long i   = std::min(static_cast<long>(a), this->size() - 2);
       double w = std::min(a - i, 1.0); //NOLINT
       return (1 - w) * f(i) + w * f(i + 1);
     }
 
     protected:
-    long L;
-    value_t xmin, xmax, delta_x;
-    double delta_x_inv;
-    size_t _mesh_hash = 0;
+    long N_;
+    value_t a_, b_, delta_;
+    double delta_inv_;
+    uint64_t mesh_hash_ = 0;
   };
 
 } // namespace triqs::mesh::detail
