@@ -28,6 +28,9 @@
           <tab type="usergroup" url="@ref triqs::mesh::discrete" title="mesh::discrete">
             <tab type="user" url="@ref triqs::mesh::discrete::mesh_point_t" title="mesh::discrete::mesh_point_t"/>
           </tab>
+          <tab type="usergroup" url="@ref triqs::mesh::details::linear" title="mesh::details::linear">
+            <tab type="user" url="@ref triqs::mesh::details::linear::mesh_point_t" title="mesh::details::linear::mesh_point_t"/>
+          </tab>
         </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
