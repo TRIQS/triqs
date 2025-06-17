@@ -79,36 +79,6 @@ namespace triqs::mesh::details {
     /// Data index type.
     using data_index_t = long;
 
-    protected:
-    long L;
-    value_t xmin, xmax, delta_x;
-    double delta_x_inv;
-    uint64_t _mesh_hash = 0;
-
-    /**
-     * @brief Construct a linear mesh on the interval \f$ [a, b] \f$ of a given size \f$ N \geq 0 \f$.
-     *
-     * @param a Lower bound \f$ a \f$ of the interval.
-     * @param b Upper bound \f$ b \f$ of the interval.
-     * @param N Size of the mesh.
-     */
-    linear(value_t a = 0, value_t b = 1, long N = 2)
-       : L(N),
-         xmin(a),
-         xmax(b),
-         delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
-         delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
-         _mesh_hash(hash(L, xmin, xmax)) {
-      EXPECTS(a <= b);
-    }
-
-    public:
-    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
-    bool operator==(linear const &) const = default;
-
-    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
-    bool operator!=(linear const &) const = default;
-
     /**
      * @brief %Mesh point of a triqs::mesh::details::linear mesh.
      * 
@@ -118,17 +88,11 @@ namespace triqs::mesh::details {
      * Arithmetic operations are defined for mesh points and scalars of the underlying value type. The operations are
      * performed between the value \f$ m \f$ of the mesh point and the given scalar.
      */
-    struct mesh_point_t {
+    class mesh_point_t {
+      public:
       /// Parent mesh type.
       using mesh_t = M;
 
-      public:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-      value_t _value      = {};
-
-      public:
       /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
 
@@ -172,7 +136,36 @@ namespace triqs::mesh::details {
       IMPL_OP(*)
       IMPL_OP(/)
 #undef IMPL_OP
+
+      private:
+      long _index         = 0;
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+      value_t _value      = {};
     };
+
+    /**
+     * @brief Construct a linear mesh on the interval \f$ [a, b] \f$ of a given size \f$ N \geq 0 \f$.
+     *
+     * @param a Lower bound \f$ a \f$ of the interval.
+     * @param b Upper bound \f$ b \f$ of the interval.
+     * @param N Size of the mesh.
+     */
+    linear(value_t a = 0, value_t b = 1, long N = 2)
+       : L(N),
+         xmin(a),
+         xmax(b),
+         delta_x(L == 1 ? 0. : (b - a) / (L - 1)),
+         delta_x_inv{delta_x == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_x},
+         _mesh_hash(hash(L, xmin, xmax)) {
+      EXPECTS(a <= b);
+    }
+
+    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
+    bool operator==(linear const &) const = default;
+
+    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
+    bool operator!=(linear const &) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -375,6 +368,12 @@ namespace triqs::mesh::details {
       double w = std::min(a - i, 1.0); //NOLINT
       return (1 - w) * f(i) + w * f(i + 1);
     }
+
+    protected:
+    long L;
+    value_t xmin, xmax, delta_x;
+    double delta_x_inv;
+    size_t _mesh_hash = 0;
   };
 
 } // namespace triqs::mesh::details
