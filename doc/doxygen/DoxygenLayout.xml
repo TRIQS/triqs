@@ -41,6 +41,7 @@
           </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-meshes-real" title="Real time and frequency meshes">
+          <tab type="user" url="@ref triqs::mesh::refreq" title="mesh::refreq"/>
           <tab type="user" url="@ref triqs::mesh::retime" title="mesh::retime"/>
         </tab>
       </tab>
