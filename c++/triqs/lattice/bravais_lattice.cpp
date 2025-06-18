@@ -18,99 +18,93 @@
 // Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #include "./bravais_lattice.hpp"
-#include <nda/lapack.hpp>
-#include <nda/linalg/cross_product.hpp>
+#include "../utility/exceptions.hpp"
 
-namespace triqs {
-  namespace lattice {
+#include <h5/h5.hpp>
+#include <nda/h5.hpp>
+#include <nda/nda.hpp>
 
-    const double almost_zero = 1e-10;
+#include <cmath>
+#include <string>
+#include <vector>
 
-    bravais_lattice::bravais_lattice(nda::matrix<double> const &units__, std::vector<r_t> atom_orb_pos_, std::vector<std::string> atom_orb_name_)
-       : atom_orb_pos(atom_orb_pos_) {
+namespace triqs::lattice {
 
-      atom_orb_name = atom_orb_name_.empty() ? std::vector<std::string>(atom_orb_pos.size(), "") : atom_orb_name_;
-      EXPECTS(atom_orb_pos.size() == atom_orb_name.size());
+  bravais_lattice::bravais_lattice(nda::matrix<double> const &A_T, std::vector<r_t> orb_pos, std::vector<std::string> orb_name)
+     : atom_orb_pos(orb_pos) {
+    constexpr double almost_zero = 1e-10;
+    atom_orb_name                = orb_name.empty() ? std::vector<std::string>(atom_orb_pos.size(), "") : orb_name;
+    EXPECTS(atom_orb_pos.size() == atom_orb_name.size());
 
-      using nda::blas::dot;
-      using nda::linalg::cross_product;
+    using nda::blas::dot;
+    using nda::linalg::cross_product;
 
-      ndim_ = first_dim(units__);
-      if ((ndim_ < 1) || (ndim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
-      //using itertools::range;
-      auto r       = range(ndim_);
-      units_()     = 0;
-      units_(r, r) = units__(r, r);
-      // First complete the basis. Add some tests for safety
-      nda::vector<double> ux(3), uy(3), uz(3);
-      double delta;
-      switch (ndim_) {
-        case 1:
-          ux    = units_(0, range::all);
+    ndim_ = first_dim(A_T);
+    if ((ndim_ < 1) || (ndim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
+
+    auto r       = range(ndim_);
+    units_()     = 0;
+    units_(r, r) = A_T(r, r);
+    // First complete the basis. Add some tests for safety
+    nda::vector<double> ux(3), uy(3), uz(3);
+    double delta;
+    switch (ndim_) {
+      case 1:
+        ux    = units_(0, range::all);
+        uz()  = 0;
+        uz(1) = 1;
+        uz    = uz - dot(uz, ux) * ux;
+        // no luck, ux was parallel to z, another one must work
+        if (sqrt(dot(uz, uz)) < almost_zero) {
           uz()  = 0;
-          uz(1) = 1;
+          uz(2) = 1; // 0,0,1;
           uz    = uz - dot(uz, ux) * ux;
-          // no luck, ux was parallel to z, another one must work
-          if (sqrt(dot(uz, uz)) < almost_zero) {
-            uz()  = 0;
-            uz(2) = 1; // 0,0,1;
-            uz    = uz - dot(uz, ux) * ux;
-          }
-          uz /= sqrt(dot(uz, uz));
-          uy           = cross_product(uz, ux);
-          uy           = uy / sqrt(dot(uy, uy)); // uy cannot be 0
-          units_(1, range::all) = uz;
-          units_(2, range::all) = uy;
-          break;
-        case 2:
-          uy()  = 0;
-          uy(2) = 1;
-          uy    = cross_product(units_(0, range::all), units_(1, range::all));
-          delta = sqrt(dot(uy, uy));
-          using std::abs;
-          if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : the 2 vectors of unit are not independent : " << units__;
-          units_(2, range::all) = uy / delta;
-          break;
-        case 3:
-          using std::abs;
-          ux    = units_(0, range::all);
-          uy    = units_(1, range::all);
-          uz    = units_(2, range::all);
-          delta = dot(cross_product(ux, uy), uz);
-          if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << units__;
-          break;
-      }
-      units_inv_ = nda::linalg::inv(units_);
+        }
+        uz /= sqrt(dot(uz, uz));
+        uy                    = cross_product(uz, ux);
+        uy                    = uy / sqrt(dot(uy, uy)); // uy cannot be 0
+        units_(1, range::all) = uz;
+        units_(2, range::all) = uy;
+        break;
+      case 2:
+        uy()  = 0;
+        uy(2) = 1;
+        uy    = cross_product(units_(0, range::all), units_(1, range::all));
+        delta = sqrt(dot(uy, uy));
+        using std::abs;
+        if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : the 2 vectors of unit are not independent : " << A_T;
+        units_(2, range::all) = uy / delta;
+        break;
+      case 3:
+        using std::abs;
+        ux    = units_(0, range::all);
+        uy    = units_(1, range::all);
+        uz    = units_(2, range::all);
+        delta = dot(cross_product(ux, uy), uz);
+        if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << A_T;
+        break;
     }
-    //------------------------------------------------------------------------------------
+    units_inv_ = nda::linalg::inv(units_);
+  }
 
-    /// Write into HDF5
-    void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const &bl) {
-      auto gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, bl);
-      auto rndim = range(bl.ndim());
-      h5::write(gr, "units", bl.units_(rndim, rndim));
-      h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
-      h5::write(gr, "atom_orb_name", bl.atom_orb_name);
-    }
+  void h5_write(h5::group g, std::string const &name, bravais_lattice const &bl) {
+    auto gr = g.create_group(name);
+    h5::write_hdf5_format(gr, bl); // NOLINT (downcasting to base class)
+    auto rg = nda::range(bl.ndim());
+    h5::write(gr, "units", bl.units_(rg, rg));
+    h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
+    h5::write(gr, "atom_orb_name", bl.atom_orb_name);
+  }
 
-    /// Read from HDF5
-    void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl) {
-      h5::group gr = fg.open_group(subgroup_name);
-      nda::matrix<double> units__;
-      h5::read(gr, "units", units__);
+  void h5_read(h5::group g, std::string const &name, bravais_lattice &bl) {
+    h5::group gr = g.open_group(name);
+    nda::matrix<double> A_T;
+    h5::read(gr, "units", A_T);
+    auto orb_pos = std::vector<r_t>{{0, 0, 0}};
+    h5::try_read(gr, "atom_orb_pos", orb_pos);
+    auto orb_name = std::vector<std::string>(orb_pos.size(), "");
+    h5::try_read(gr, "atom_orb_name", orb_name);
+    bl = bravais_lattice{A_T, orb_pos, orb_name};
+  }
 
-      auto atom_orb_pos = std::vector<r_t>{{0, 0, 0}};
-      h5::try_read(gr, "atom_orb_pos", atom_orb_pos);
-
-      auto atom_orb_name = std::vector<std::string>(atom_orb_pos.size(), "");
-      h5::try_read(gr, "atom_orb_name", atom_orb_name);
-
-      bl = bravais_lattice{units__, atom_orb_pos, atom_orb_name};
-    }
-
-    //------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------
-
-  } // namespace lattice
-} // namespace triqs
+} // namespace triqs::lattice
