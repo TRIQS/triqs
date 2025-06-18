@@ -17,39 +17,35 @@
 //
 // Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+#include "./bravais_lattice.hpp"
 #include "./brillouin_zone.hpp"
-#include <nda/blas.hpp>
-#include <nda/linalg/det.hpp>
-#include <nda/linalg/inv.hpp>
-#include <nda/linalg/cross_product.hpp>
-namespace triqs {
-  namespace lattice {
 
-    const double almost_zero = 1e-10;
+#include <h5/h5.hpp>
+#include <nda/nda.hpp>
 
-    brillouin_zone::brillouin_zone(bravais_lattice const &bl) : lattice_(bl), K_reciprocal(3, 3) {
-      using nda::blas::dot;
-      using nda::linalg::cross_product;
+#include <numbers>
+#include <string>
+#include <utility>
 
-      auto Units = lattice().units();
-      if (abs(nda::linalg::det(Units)) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
-      K_reciprocal     = 2 * M_PI * nda::linalg::inv(transpose(Units));
-      K_reciprocal_inv = nda::linalg::inv(K_reciprocal);
-    }
+namespace triqs::lattice {
 
-    // -------------- HDF5  --------------------------
+  brillouin_zone::brillouin_zone(bravais_lattice bl) : lattice_(std::move(bl)) {
+    using std::numbers::pi;
+    K_reciprocal     = 2 * pi * nda::linalg::inv(nda::transpose(lattice_.units()));
+    K_reciprocal_inv = 1 / (2 * pi) * nda::transpose(lattice_.units());
+  }
 
-    void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const &bz) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, bz);
-      h5_write(gr, "bravais_lattice", bz.lattice_);
-    }
+  void h5_write(h5::group g, std::string const &name, brillouin_zone const &bz) {
+    h5::group gr = g.create_group(name);
+    h5::write_hdf5_format(gr, bz); // NOLINT (downcasting to base class)
+    h5::write(gr, "bravais_lattice", bz.lattice_);
+  }
 
-    void h5_read(h5::group fg, std::string subgroup_name, brillouin_zone &bz) {
-      h5::group gr = fg.open_group(subgroup_name);
-      bravais_lattice bl;
-      h5_read(gr, "bravais_lattice", bl);
-      bz = brillouin_zone{bl};
-    }
-  } // namespace lattice
-} // namespace triqs
+  void h5_read(h5::group g, std::string const &name, brillouin_zone &bz) {
+    h5::group gr = g.open_group(name);
+    bravais_lattice bl;
+    h5::read(gr, "bravais_lattice", bl);
+    bz = brillouin_zone{bl};
+  }
+
+} // namespace triqs::lattice
