@@ -16,31 +16,110 @@
 //
 // Authors: Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a mesh type for the discrete Lehmann representation.
+ */
+
 #pragma once
-#include "utils.hpp"
-#include "domains/matsubara.hpp"
+
+#include "./matsubara_freq.hpp"
 #include "./mesh_iterator.hpp"
+#include "./utils.hpp"
+
 #include <cppdlr/cppdlr.hpp>
+#include <h5/h5.hpp>
+#include <fmt/format.h>
+#include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
+
+#include <cstdint>
+#include <iostream>
 #include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
 
 namespace triqs::mesh {
 
-  struct dlr_imtime;
-  struct dlr_imfreq;
+  // Forward declarations.
+  class dlr_imtime;
+  class dlr_imfreq;
 
+  // Struct that combines the DLR frequencies, DLR imaginary time operations and DLR Matsubara frequency operations.
   struct dlr_ops {
     nda::vector<double> freq;
     cppdlr::imtime_ops imt;
     cppdlr::imfreq_ops imf;
   };
 
+  /**
+   * @addtogroup triqs-meshes-func
+   * @{
+   */
+
+  /**
+   * @brief Discrete Lehmann representation (DLR) mesh type.
+   *
+   * @details A DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse temperature
+   * \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff \f$
+   * \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should be
+   * symmetric around \f$ \omega = 0 \f$.
+   *
+   * A DLR mesh has the following properties:
+   *
+   * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$
+   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(\tau, \omega_l) \f$
+   * or \f$ K(i\omega_n, \omega_l) \f$.
+   * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
+   * and vice versa.
+   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \omega_l \f$, where \f$ \omega_l \f$ is the l<sup>th
+   * </sup> DLR frequency.
+   *
+   * @ref triqs-gfs containers that are based on a DLR mesh store the coefficients \f$ f_l \f$ of the discrete Lehmann
+   * representation of a function \f$ f(\tau) \f$ or \f$ f(i\omega_n) \f$. To evaluate the function at an arbitrary
+   * imaginary time \f$ \tau \in [0, \beta] \f$ or at a specific Matsubara frequency \f$ i\omega_n \f$, the GF container
+   * calculates the DLR approximation of the function (see triqs::mesh::evaluate(dlr const &, auto const &, double) or
+   * triqs::mesh::evaluate(dlr const &, auto const &, matsubara_freq const &) for details).
+   *
+   * @code
+   * #include <fmt/base.h>
+   * #include <triqs/mesh.hpp>
+   *
+   * int main() {
+   *   // initialize a fermionic DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
+   *   triqs::mesh::dlr m{10, triqs::mesh::Fermion, 0.5, 1e-6};
+   *
+   *   // loop over all mesh points and print their index, data index and value
+   *   for (int i = 0; auto mp : m) {
+   *     fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
+   *   }
+   * }
+   * @endcode
+   *
+   * Output:
+   *
+   * ```
+   * mesh point #0: index = 0, data index = 0, value = -4.997323654048254
+   * mesh point #1: index = 1, data index = 1, value = -3.831753911537679
+   * mesh point #2: index = 2, data index = 2, value = -2.710662984621819
+   * mesh point #3: index = 3, data index = 3, value = -1.5985695686131243
+   * mesh point #4: index = 4, data index = 4, value = 0.0013381729758728256
+   * mesh point #5: index = 5, data index = 5, value = 2.075899665814476
+   * mesh point #6: index = 6, data index = 6, value = 3.831753911537679
+   * mesh point #7: index = 7, data index = 7, value = 4.997323654048254
+   * ```
+   */
   struct dlr {
+    /// Value type.
+    using value_t = double;
 
-    using index_t      = long;
+    /// Index type.
+    using index_t = long;
+
+    /// Data index type.
     using data_index_t = long;
-    using value_t      = double;
-
-    // -------------------- Data -------------------
 
     private:
     double _beta                        = 1.0;
@@ -51,66 +130,77 @@ namespace triqs::mesh {
     uint64_t _mesh_hash                 = 0;
     std::shared_ptr<const dlr_ops> _dlr = {};
 
-    // -------------------- Constructors -------------------
     public:
+    /// Default constructor constructs an empty mesh.
     dlr() = default;
 
     /**
-     * Construct a DLR coefficient mesh
+     * @brief Construct a DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error tolerance \f$
+     * \epsilon \f$.
      *
-     * The mesh-point for a given linear_index `i` can be otained
-     * through `m[i]` and for an index `n` through `m(n)`
+     * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
+     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
+     * `cppdlr::imfreq_ops` objects.
      *
-     * The associated Green function allows for evaluation on
-     * both arbitrary Matsubara frequencies and tau-points.
-     *
-     * @param beta Inverse temperature
-     * @param statistic, Fermion or Boson
-     * @param w_max DLR energy cutoff, same as Lambda / beta
-     * @param eps Representation accuracy
-     * @param symmetrize Experimental! Whether to choose the time-points and frequencies
-     *            of the associated dlr_imtime and dlr_imfreq symmetrically.
-     *            For fermionic/bosonic statistic enforces even/odd dlr-rank [default = false]
+     * @param b Inverse temperature \f$ \beta > 0 \f$.
+     * @param stat Particle statistics.
+     * @param wmax DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
+     * @param epsilon Error tolerance \f$ \epsilon \f$.
+     * @param sym Whether to choose the DLR frequencies symmetrically around \f$ \omega = 0 \f$.
      */
-    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
-       : dlr(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
+    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym = false)
+       : dlr(b, stat, wmax, epsilon, sym, cppdlr::build_dlr_rf(wmax * b, epsilon, sym)) {}
 
     private:
-    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
-       : dlr(beta, statistic, w_max, eps, symmetrize,
-             dlr_ops{dlr_freq,
-                     {w_max * beta, dlr_freq, symmetrize},
-                     {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
+    // Construct a DLR mesh with a given set of DLR frequencies.
+    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym, nda::vector<double> const &dlr_freq)
+       : dlr(b, stat, wmax, epsilon, sym,
+             dlr_ops{.freq = dlr_freq, .imt = {wmax * b, dlr_freq, sym}, .imf = {wmax * b, dlr_freq, static_cast<cppdlr::statistic_t>(stat), sym}}) {}
 
-    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, dlr_ops dlr)
-       : _beta(beta),
-         _statistic(statistic),
-         _w_max(w_max),
-         _eps(eps),
-         _symmetrize(symmetrize),
-         _mesh_hash(hash(beta, statistic, w_max, eps, sum(dlr.freq))),
-         _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
+    // Construct a DLR mesh with given DLR operations.
+    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym, dlr_ops ops)
+       : _beta(b),
+         _statistic(stat),
+         _w_max(wmax),
+         _eps(epsilon),
+         _symmetrize(sym),
+         _mesh_hash(hash(b, stat, wmax, epsilon, nda::sum(ops.freq))),
+         _dlr{std::make_shared<dlr_ops>(std::move(ops))} {}
 
+    // Friend declarations.
     friend struct dlr_imtime;
     friend struct dlr_imfreq;
 
     public:
+    /**
+     * @brief Construct a DLR mesh from another DLR type mesh.
+     *
+     * @tparam M triqs::mesh::dlr, triqs::mesh::dlr_imtime or triqs::mesh::dlr_imfreq type.
+     * @param m Other mesh.
+     */
     template <nda::AnyOf<dlr_imtime, dlr_imfreq, dlr> M>
     explicit dlr(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _symmetrize(m._symmetrize), _dlr(m._dlr) {
-      if constexpr (std::is_same_v<M, dlr>)
+      if constexpr (std::is_same_v<M, dlr>) {
         _mesh_hash = m._mesh_hash;
-      else
-        _mesh_hash = hash(_beta, _statistic, _w_max, _eps, sum(_dlr->freq));
+      } else {
+        _mesh_hash = hash(_beta, _statistic, _w_max, _eps, nda::sum(_dlr->freq));
+      }
     }
 
-    // -------------------- Comparisons -------------------
-
+    /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr const &m) const { return _mesh_hash == m._mesh_hash; }
+
+    /// Not-equal-to comparison operator compares the hash values.
     bool operator!=(dlr const &m) const { return !(operator==(m)); }
 
-    // -------------------- mesh_point -------------------
-
+    /**
+     * @brief %Mesh point of a triqs::mesh::dlr mesh.
+     *
+     * @details It stores the index \f$ l \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
+     * \f$ \omega_l \f$ of the mesh point.
+     */
     struct mesh_point_t {
+      /// Parent mesh type.
       using mesh_t = dlr;
 
       private:
@@ -120,104 +210,157 @@ namespace triqs::mesh {
       double _value       = {};
 
       public:
+      /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
-      mesh_point_t(long index, long data_index, uint64_t mesh_hash, double value)
-         : _index(index), _data_index(data_index), _mesh_hash(mesh_hash), _value(value) {}
 
-      /// The index of the mesh point
+      /**
+       * @brief Construct a mesh point with a given index \f$ l \f$, data index \f$ d \f$, hash value of the parent mesh
+       * and value \f$ \omega_l \f$.
+       *
+       * @param l Index \f$ l \f$ of the mesh point.
+       * @param d Data index \f$ d \f$ of the mesh point.
+       * @param mhash Hash value of the parent mesh.
+       * @param w_l Value \f$ \omega_l \f$ of the mesh point.
+       */
+      mesh_point_t(long l, long d, uint64_t mhash, double w_l) : _index(l), _data_index(d), _mesh_hash(mhash), _value(w_l) {}
+
+      /// Get the index \f$ l \f$ of the mesh point.
       [[nodiscard]] long index() const { return _index; }
 
-      /// The data index of the mesh point
+      /// Get the data index \f$ d \f$ of the mesh point.
       [[nodiscard]] long data_index() const { return _data_index; }
 
-      /// The value of the mesh point
+      /// Get the value \f$ \omega_l \f$ of the mesh point.
       [[nodiscard]] double value() const { return _value; }
 
-      /// The Hash for the mesh configuration
+      /// Get the hash value of the parent mesh.
       [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
+      /// Conversion to the value type of the parent mesh.
       operator double() const { return _value; }
     };
 
-    // -------------------- Accessors -------------------
-
-    /// The inverse temperature
+    /// Get the inverse temperature \f$ \beta \f$.
     [[nodiscard]] double beta() const noexcept { return _beta; }
 
-    /// The particle statistic: Fermion or Boson
+    /// Get the particle statistics.
     [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
 
-    /// DLR energy cutoff, w_max = Lambda / beta
+    /// Get the DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
     [[nodiscard]] double w_max() const noexcept { return _w_max; }
 
-    /// Representation accuracy
+    /// Get the DLR error tolerance \f$ \epsilon \f$.
     [[nodiscard]] double eps() const noexcept { return _eps; }
 
-    /// Symmetric grid flag
+    /// Is the mesh symmetric around \f$ \omega = 0 \f$?
     [[nodiscard]] bool symmetrize() const noexcept { return _symmetrize; }
 
-    /// The vector of DLR frequencies
+    /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
     [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
 
-    /// The imaginary time DLR operations object
+    /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
     [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
 
-    /// The Matsubara frequency DLR operations object
+    /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
     [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
-    /// The Hash for the mesh configuration
+    /// Get the hash value of the mesh.
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
-    /// The total number of points in the mesh
+    /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
     [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->freq.size() : 0); }
 
-    // -------------------- index checks and conversions -------------------
+    /**
+     * @brief Check if an index \f$ l \f$ is valid.
+     *
+     * @param l Index \f$ l \f$ to check.
+     * @return True if \f$ 0 \leq l < N \f$, false otherwise.
+     */
+    [[nodiscard]] bool is_index_valid(long l) const noexcept { return 0 <= l and l < size(); }
 
-    [[nodiscard]] bool is_index_valid(long index) const noexcept { return 0 <= index and index < size(); }
-
-    [[nodiscard]] long to_data_index(long index) const noexcept {
-      EXPECTS(is_index_valid(index));
-      return index;
+    /**
+     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding data index \f$ d(l) \f$.
+     *
+     * @param l Index \f$ l \f$ to map.
+     * @return Data index \f$ d(l) = l \f$.
+     */
+    [[nodiscard]] long to_data_index(long l) const noexcept {
+      EXPECTS(is_index_valid(l));
+      return l;
     }
 
-    [[nodiscard]] long to_index(long data_index) const noexcept {
-      EXPECTS(is_index_valid(data_index));
-      return data_index;
+    /**
+     * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ l(d) \f$.
+     *
+     * @param d Data index \f$ d \f$ to map.
+     * @return Index \f$ l(d) = d \f$.
+     */
+    [[nodiscard]] long to_index(long d) const noexcept {
+      EXPECTS(is_index_valid(d));
+      return d;
     }
 
-    // -------------------- operator [] () -------------------
+    /**
+     * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param d Data index \f$ d \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ l(d) = d \f$, data index \f$ d \f$, hash value of the current mesh and
+     * the DLR frequency \f$ \omega_l \f$ as its value.
+     */
+    [[nodiscard]] mesh_point_t operator[](long d) const { return (*this)(d); }
 
-    [[nodiscard]] mesh_point_t operator[](long data_index) const { return (*this)(data_index); }
-
-    [[nodiscard]] mesh_point_t operator()(long index) const {
-      EXPECTS(is_index_valid(index));
-      return {index, index, _mesh_hash, to_value(index)};
+    /**
+     * @brief Function call operator to access a mesh point by its index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param l Index \f$ l \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ l \f$, data index \f$ d(l) = l \f$, hash value of the current mesh and
+     * the DLR frequency \f$ \omega_l \f$ as its value.
+     */
+    [[nodiscard]] mesh_point_t operator()(long l) const {
+      EXPECTS(is_index_valid(l));
+      return {l, l, _mesh_hash, to_value(l)};
     }
 
-    // -------------------- to_value ------------------
-
-    [[nodiscard]] double to_value(long index) const noexcept {
-      EXPECTS(is_index_valid(index));
-      return (_dlr->freq)[index];
+    /**
+     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \omega_l \f$.
+     *
+     * @param l Index \f$ l \f$ to map.
+     * @return Value of the l<sup>th</sup> DLR frequency \f$ \omega_l \f$.
+     */
+    [[nodiscard]] double to_value(long l) const noexcept {
+      EXPECTS(is_index_valid(l));
+      return (_dlr->freq)[l];
     }
 
-    // -------------------------- Range & Iteration --------------------------
-
+    /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<dlr>{.mesh_ptr = this, .data_index = 0}; }
+
+    /// Get a const iterator to the beginning of the mesh.
     [[nodiscard]] auto cbegin() const { return begin(); }
+
+    /// Get an iterator to the end of the mesh.
     [[nodiscard]] auto end() const { return mesh_iterator<dlr>{.mesh_ptr = this, .data_index = size()}; }
+
+    /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return end(); }
 
-    // -------------------- print  -------------------
-
+    /**
+     * @brief Write a triqs::mesh::dlr mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
     friend std::ostream &operator<<(std::ostream &sout, dlr const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m.size(), m._beta, stat_cstr,
-                                 m._w_max, m._eps);
+      return sout << fmt::format("DLR coefficient mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}", m.size(), m._beta,
+                                 stat_cstr, m._w_max, m._eps);
     }
 
-    // -------------------- serialization -------------------
-
+    /**
+     * @brief Serialize the mesh to a generic archive.
+     * @param ar Archive to serialize to.
+     */
     void serialize(auto &ar) const {
       EXPECTS(_dlr);
       ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & _dlr->freq;
@@ -225,6 +368,10 @@ namespace triqs::mesh {
       _dlr->imf.serialize(ar);
     }
 
+    /**
+     * @brief Deserialize the mesh from a generic archive.
+     * @param ar Archive to deserialize from.
+     */
     void deserialize(auto &ar) {
       nda::vector<double> freq;
       cppdlr::imtime_ops imt;
@@ -232,18 +379,22 @@ namespace triqs::mesh {
       ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & freq;
       imt.deserialize(ar);
       imf.deserialize(ar);
-      _dlr = std::make_shared<dlr_ops>(dlr_ops{freq, imt, imf});
+      _dlr = std::make_shared<dlr_ops>(dlr_ops{.freq = freq, .imt = imt, .imf = imf});
     }
 
-    // -------------------- HDF5 -------------------
-
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshDLR"; }
 
-    /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr const &m) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m); // NOLINT
-
+    /**
+     * @brief Write a triqs::mesh::dlr mesh to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be written.
+     */
+    friend void h5_write(h5::group g, std::string const &name, dlr const &m) {
+      h5::group gr = g.create_group(name);
+      h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
       h5::write(gr, "beta", m._beta);
       h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
       h5::write(gr, "w_max", m._w_max);
@@ -254,39 +405,82 @@ namespace triqs::mesh {
       h5::write(gr, "dlr_if", m.dlr_if());
     }
 
-    /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr &m) {
-      h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format(gr, m, true);
-
-      auto beta       = h5::read<double>(gr, "beta");
-      auto statistic  = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto w_max      = h5::read<double>(gr, "w_max");
-      auto eps        = h5::read<double>(gr, "eps");
-      bool symmetrize = false;
-      h5::try_read(gr, "symmetrize", symmetrize);
-      auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
-      auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
-      auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr(beta, statistic, w_max, eps, symmetrize, {_dlr_freq, _dlr_it, _dlr_if});
+    /**
+     * @brief Read a triqs::mesh::dlr mesh from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string const &name, dlr &m) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, m, true);
+      auto b       = h5::read<double>(gr, "beta");
+      auto stat    = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+      auto wmax    = h5::read<double>(gr, "w_max");
+      auto epsilon = h5::read<double>(gr, "eps");
+      bool sym     = false;
+      h5::try_read(gr, "symmetrize", sym);
+      auto freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
+      auto imt  = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
+      auto imf  = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
+      m         = dlr(b, stat, wmax, epsilon, sym, {.freq = freq, .imt = imt, .imf = imf});
     }
   };
 
-  // -------------------- evaluation -------------------
-
+  /**
+   * @brief Evaluate the DLR approximation of a function \f$ f \f$ at a given imaginary time point \f$ \tau \in [0,
+   * \beta] \f$.
+   *
+   * @details We calculate
+   * \f[
+   *   f(\tau) \approx \sum_{l=0}^{N-1} K(\tau, \omega_l) f_l \; ,
+   * \f]
+   * where \f$ f_l \f$ are the DLR coefficients, \f$ \omega_l \f$ are the DLR frequencies and
+   * \f[
+   *   K(\tau, \omega_l) = \frac{e^{-\omega_l \tau}}{1 + e^{-\omega_l \beta}} \; ,
+   * \f]
+   * are the DLR basis functions.
+   *
+   * @param m triqs::mesh::dlr mesh.
+   * @param f Callable object \f$ f \f$ containing the DLR coefficients \f$ f_l \f$.
+   * @param tau Imaginary time point \f$ \tau \in [0, \beta] \f$ at which to approximate the function.
+   * @return DLR approximation of \f$ f(\tau) \f$.
+   */
   auto evaluate(dlr const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
     EXPECTS(tau >= 0 and tau <= m.beta());
-    return detail::sum_to_regular(range(m.size()), [&](auto &&l) { return f(l) * cppdlr::k_it(tau / m.beta(), m.dlr_freq()[l]); });
+    return detail::sum_to_regular(nda::range(m.size()), [&](auto l) { return f(l) * cppdlr::k_it(tau / m.beta(), m.dlr_freq()[l]); });
   }
 
+  /**
+   * @brief Evaluate the DLR approximation of a function \f$ f \f$ at a given Matsubara frequency \f$ i\omega_n \f$.
+   *
+   * @details We calculate
+   * \f[
+   *   f(i\omega_n) \approx \sum_{l=0}^{N-1} K(i\omega_n, \omega_l) f_l \; ,
+   * \f]
+   * where \f$ f_l \f$ are the DLR coefficients, \f$ \omega_l \f$ are the DLR frequencies and
+   * \f[
+   *   K(i\omega_n, \omega_l) = \frac{1}{i\omega_n + \omega_l} \; ,
+   * \f]
+   * are the Fourier transformed DLR basis functions.
+   *
+   * @param m triqs::mesh::dlr mesh.
+   * @param f Callable object \f$ f \f$ containing the DLR coefficients \f$ f_l \f$.
+   * @param iw Matsubara frequency \f$ i\omega_n \f$ at which to approximate the function.
+   * @return DLR approximation of \f$ f(i\omega_n) \f$.
+   */
   auto evaluate(dlr const &m, auto const &f, matsubara_freq const &iw) {
     EXPECTS(m.size() > 0);
-    return detail::sum_to_regular(
-       range(m.size()), [&](auto &&l) { return f(l) * cppdlr::k_if(iw.n, m.dlr_freq()[l], (cppdlr::statistic_t)iw.statistic) * m.beta(); });
+    return detail::sum_to_regular(nda::range(m.size()),
+                                  [&](auto l) { return f(l) * cppdlr::k_if(iw.n, m.dlr_freq()[l], (cppdlr::statistic_t)iw.statistic) * m.beta(); });
   }
 
-  // check concept
+  /** @} */
+
+  // Check mesh concepts.
+  static_assert(Mesh<dlr>);
   static_assert(MeshWithValues<dlr>);
 
 } // namespace triqs::mesh
