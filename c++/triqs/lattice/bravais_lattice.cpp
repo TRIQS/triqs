@@ -31,10 +31,10 @@
 namespace triqs::lattice {
 
   bravais_lattice::bravais_lattice(nda::matrix<double> const &A_T, std::vector<r_t> orb_pos, std::vector<std::string> orb_name)
-     : atom_orb_pos(orb_pos) {
+     : atom_orb_pos_(orb_pos) {
     constexpr double almost_zero = 1e-10;
-    atom_orb_name                = orb_name.empty() ? std::vector<std::string>(atom_orb_pos.size(), "") : orb_name;
-    EXPECTS(atom_orb_pos.size() == atom_orb_name.size());
+    atom_orb_name_                = orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size(), "") : orb_name;
+    EXPECTS(atom_orb_pos_.size() == atom_orb_name_.size());
 
     using nda::blas::dot;
     using nda::linalg::cross_product;
@@ -92,8 +92,8 @@ namespace triqs::lattice {
     h5::write_hdf5_format(gr, bl); // NOLINT (downcasting to base class)
     auto rg = nda::range(bl.ndim());
     h5::write(gr, "units", bl.units_(rg, rg));
-    h5::write(gr, "atom_orb_pos", bl.atom_orb_pos);
-    h5::write(gr, "atom_orb_name", bl.atom_orb_name);
+    h5::write(gr, "atom_orb_pos", bl.atom_orb_pos_);
+    h5::write(gr, "atom_orb_name", bl.atom_orb_name_);
   }
 
   void h5_read(h5::group g, std::string const &name, bravais_lattice &bl) {
