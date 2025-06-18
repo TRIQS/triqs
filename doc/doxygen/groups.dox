@@ -70,6 +70,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes-lattice
+ * @defgroup triqs-meshes-kexpr k-vector expressions
+ * @brief Lazy expressions for k-vectors.
+ */
+
+/**
  * @ingroup triqs-meshes-imag
  * @defgroup triqs-meshes-matsubara Matsubara frequencies
  * @brief Tools to represent and manipulate Matsubara frequencies.

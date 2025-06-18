@@ -16,66 +16,124 @@
 //
 // Authors: Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides expression templates for \f$ \mathbf{k} \f$-vectors.
+ */
+
 #pragma once
-#include "utils.hpp"
+
+#include <nda/nda.hpp>
+
+#include <cstdint>
+#include <utility>
+
 namespace triqs::mesh {
 
-  // -------------------------------------------------------------------------------------------
-  //                             unary expressions
-  // -------------------------------------------------------------------------------------------
+  /**
+   * @addtogroup triqs-meshes-kexpr
+   * @{
+   */
 
-  template <char OP, typename L> struct k_expr_unary {
-    static_assert(OP == '-', "Internal error");
+  /**
+   * @brief Unary minus \f$ \mathbf{k} \f$-vector expression.
+   *
+   * @tparam OP Operator tag.
+   * @tparam L Operand type.
+   */
+  template <char OP, typename L>
+    requires(OP == '-')
+  struct k_expr_unary {
+    // Operand to be negated.
     L l;
 
-    /// The Hash for the associated mesh configuration
+    /// Get the hash value of the mesh to which the operand belongs.
     [[nodiscard]] uint64_t mesh_hash() const { return l.mesh_hash(); };
 
-    auto value() const { return -l.value(); }
-    auto index() const { return -l.index(); }
+    /// Get the reciprocal vector \f$ -\mathbf{k} \f$ (see triqs::mesh::brzone::mesh_point_t::value()).
+    [[nodiscard]] auto value() const { return -l.value(); }
+
+    /// Get the index of the reciprocal vector \f$ -\mathbf{k} \f$ (see triqs::mesh::brzone::mesh_point_t::index()).
+    [[nodiscard]] auto index() const { return -l.index(); }
   };
 
-  // -------------------------------------------------------------------------------------------
-  //                             binary expressions
-  // -------------------------------------------------------------------------------------------
-  // OP : '+', '-', ...
-  // L is an index or an int.
+  /**
+   * @brief Binary \f$ \mathbf{k} \f$-vector expression.
+   *
+   * @tparam OP Operator tag.
+   * @tparam L Left operand type (either a scalar or a triqs::mesh::brzone::mesh_point_t).
+   * @tparam R Right operand type (a triqs::mesh::brzone::mesh_point_t).
+   */
   template <char OP, typename L, typename R> struct k_expr {
+    // Left hand side operand.
     L l;
+
+    // Right hand side operand.
     R r;
 
+    /**
+     * @brief Construct a binary \f$ \mathbf{k} \f$-vector expression with the given operands.
+     *
+     * @param l1 Left hand side operand.
+     * @param r1 Right hand side operand.
+     */
     template <typename L1, typename R1> k_expr(L1 &&l1, R1 &&r1) : l{std::forward<L1>(l1)}, r{std::forward<R1>(r1)} {}
 
-    /// The value of the k-expression
+    /**
+     * @brief Evaluate the expression template depending on the operator tag.
+     *
+     * @details The following expressions are supported:
+     * - \f$ \mathbf{k}_1 + \mathbf{k}_2 \f$: Adding two k-vectors.
+     * - \f$ \mathbf{k}_1 - \mathbf{k}_2 \f$: Subtracting two k-vectors.
+     * - \f$ c \mathbf{k} \f$: Multiplying a k-vector by a scalar \f$ c \f$.
+     *
+     * @return Evaluated expression.
+     */
     [[nodiscard]] auto value() const {
-      if constexpr (OP == '+')
-        return make_regular(l.value() + r.value());
-      else if constexpr (OP == '-')
-        return make_regular(l.value() - r.value());
-      else
-        return make_regular(l * r.value()); // last case : OP="*"
+      if constexpr (OP == '+') {
+        return nda::make_regular(l.value() + r.value());
+      } else if constexpr (OP == '-') {
+        return nda::make_regular(l.value() - r.value());
+      } else {
+        return nda::make_regular(l * r.value());
+      }
     }
 
-    /// The value of the index
+    /**
+     * @brief Get the index of the \f$ \mathbf{k} \f$-vector corresponding to the evaluated expression.
+     *
+     * @details See value() for the supported expressions.
+     *
+     * @return Index of the evaluated expression.
+     */
     [[nodiscard]] auto index() const {
-      // check the mesh hash if we have 2 meshes.
+      // check that the mesh hashes are the same
       if constexpr (requires { l.mesh_hash(); }) { EXPECTS(l.mesh_hash() == r.mesh_hash()) };
-      if constexpr (OP == '+')
+      if constexpr (OP == '+') {
         return l.index() + r.index();
-      else if constexpr (OP == '-')
+      } else if constexpr (OP == '-') {
         return l.index() - r.index();
-      else
-        return l * r.index(); // last case : OP="*"
+      } else {
+        return l * r.index();
+      }
     }
 
-    /// The Hash for the associated mesh configuration
+    /// Get the hash value of the mesh to which the right hand side operand belongs.
     [[nodiscard]] uint64_t mesh_hash() const { return r.mesh_hash(); };
   };
 
-  // -- Trait --
+  /**
+   * @brief Type trait to check if a type is a triqs::mesh::k_expr or triqs::mesh::k_expr_unary.
+   * @tparam T Type to check.
+   */
+  template <typename T> constexpr bool is_k_expr = false;
 
-  template <typename T> constexpr bool is_k_expr                                        = false;
+  // Specialization of triqs::mesh::is_k_expr for triqs::mesh::k_expr.
   template <char OP, typename L, typename R> constexpr bool is_k_expr<k_expr<OP, L, R>> = true;
-  template <char OP, typename L> constexpr bool is_k_expr<k_expr_unary<OP, L>>          = true;
+
+  // Specialization of triqs::mesh::is_k_expr for triqs::mesh::k_expr_unary.
+  template <char OP, typename L> constexpr bool is_k_expr<k_expr_unary<OP, L>> = true;
+
+  /** @} */
 
 } // namespace triqs::mesh
