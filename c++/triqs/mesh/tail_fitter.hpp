@@ -189,19 +189,13 @@ namespace triqs::mesh {
    * [f(z)]_{ij} = [f(-z)]_{ji}^* \f$ in the function values.
    */
   class tail_fitter {
-
-    static constexpr int max_order = 9;
-    const double _tail_fraction;
-    const int _n_tail_max;
-    const bool _adjust_order;
-    const int _expansion_order;
-    const double _rcond = 1e-8;
-    std::array<std::unique_ptr<const nda::lapack::gelss_worker<std::complex<double>>>, max_order + 1> _lss;
-    std::array<std::unique_ptr<const nda::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
-    nda::matrix<std::complex<double>> _vander;
-    std::vector<long> _fit_idx_lst;
-
     public:
+    /// Default fraction \f$ r \f$ of the mesh to consider in the tail fit.
+    static constexpr double default_tail_fraction = 0.2;
+
+    /// Default maximum number of points to use in the tail fit.
+    static constexpr int default_n_tail_max = 30;
+
     /**
      * @brief Construct a tail fitter for a given fraction \f$ r \f$ of the mesh, the maximum number of mesh points 
      * \f$ p_{\text{max}} \f$ to use in the fit and an optional expansion order \f$ q \f$.
@@ -230,12 +224,6 @@ namespace triqs::mesh {
     template <typename M> int n_pts_in_tail(M const &m) const {
       return std::min(static_cast<int>(std::round(_tail_fraction * m.size() / 2)), _n_tail_max);
     }
-
-    /// Default fraction \f$ r \f$ of the mesh to consider in the tail fit.
-    static constexpr double default_tail_fraction = 0.2;
-
-    /// Default maximum number of points \f$ p_\text{max} \f$ to use in the tail fit.
-    static constexpr int default_n_tail_max = 30;
 
     /// Get the fraction \f$ r \f$ of the mesh to be considered for the tail fit.
     double get_tail_fraction() const { return _tail_fraction; }
@@ -505,13 +493,26 @@ namespace triqs::mesh {
                        std::optional<long> d = {}) {
       return fit<P, true, M, R>(m, D, rescale, C, d);
     }
+
+    private:
+    static constexpr int max_order = 9;
+    const double _tail_fraction;
+    const int _n_tail_max;
+    const bool _adjust_order;
+    const int _expansion_order;
+    const double _rcond = 1e-8;
+    std::array<std::unique_ptr<const nda::lapack::gelss_worker<dcomplex>>, max_order + 1> _lss;
+    std::array<std::unique_ptr<const nda::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
+    nda::matrix<dcomplex> _vander;
+    std::vector<long> _fit_idx_lst;
   };
 
   /**
    * @brief Shared handle for tail fitting.
    * @details It simply stores a `std::shared_ptr` to a triqs::mesh::tail_fitter object.
    */
-  struct tail_fitter_handle {
+  class tail_fitter_handle {
+    public:
     /**
      * @brief Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
      *
