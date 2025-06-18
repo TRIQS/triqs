@@ -126,14 +126,55 @@ namespace triqs::mesh {
     /// Data index type.
     using data_index_t = long;
 
-    private:
-    bravais_lattice bl_       = {};
-    std::array<long, 3> dims_ = {0, 0, 0};
-    long size_                = 0;
-    long stride1 = 1, stride0 = 1;
-    nda::matrix<double> units_     = nda::eye<double>(3);
-    nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t _mesh_hash            = 0;
+    /**
+     * @brief %Mesh point of a triqs::mesh::cyclat mesh.
+     * 
+     * @details It inherits from triqs::lattice::bravais_lattice::point_t and in addition to the index \f$ \mathbf{n} 
+     * \f$, the underlying Bravais lattice and the value \f$ \mathbf{R}^{\mathbf{n}} \f$, it also stores the data index 
+     * \f$ d \f$ and the hash value of the parent mesh.
+     */
+    class mesh_point_t : public value_t {
+      public:
+      /// Parent mesh type.
+      using mesh_t = cyclat;
+
+      /// Default constructor leaves the mesh point uninitialized.
+      mesh_point_t() = default;
+
+      /**
+       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, data index \f$ d \f$, hash value of the 
+       * parent mesh and Bravais lattice to which the mesh point belongs.
+       *
+       * @param n Index \f$\mathbf{n} \f$ of the mesh point.
+       * @param d Data index \f$ d \f$ of the mesh point.
+       * @param mhash Hash value of the parent mesh.
+       * @param bl_ptr Pointer to a triqs::lattice::bravais_lattice object.
+       */
+      mesh_point_t(std::array<long, 3> const &n, long d, uint64_t mhash, bravais_lattice const *bl_ptr)
+         : value_t(n, bl_ptr), _data_index(d), _mesh_hash(mhash) {}
+
+      /// Get the data index \f$ d \f$ of the mesh point.
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// Get the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$ of the mesh point.
+      [[nodiscard]] value_t const &value() const { return *this; }
+
+      /// Get the hash value of the parent mesh.
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      /**
+       * @brief Write triqs::mesh::cyclat::mesh_point_t to a `std::ostream`.
+       *
+       * @param sout `std::ostream` object.
+       * @param mp %Mesh point to be written.
+       * @return Reference to `std::ostream` object.
+       */
+      friend std::ostream &operator<<(std::ostream &sout, mesh_point_t const &mp) { return sout << mp.value(); }
+
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+    };
 
     public:
     /**
@@ -191,85 +232,6 @@ namespace triqs::mesh {
     /// Not-equal-to comparison operator compares the hash values.
     bool operator!=(cyclat const &m) const { return !(operator==(m)); }
 
-
-    /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
-
-    /// Get the size \f$ N \f$ of the mesh, i.e. the number of unit cells in the supercell.
-    [[nodiscard]] long size() const { return size_; }
-
-    /// Get the number of unit cells in each of the three dimensions.
-    [[nodiscard]] auto const &dims() const { return dims_; }
-
-    /**
-     * @brief Get the matrix \f$ \mathbf{A}^T \f$ containing the basis vectors of the Bravais lattice in its rows (see 
-     * triqs::lattice::bravais_lattice::units()).
-     */
-    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
-
-    /// Get the underlying Bravais lattice.
-    [[nodiscard]] auto const &lattice() const noexcept { return bl_; }
-
-    /**
-     * @brief Map an arbitrary index \f$ \tilde{\mathbf{n}} \f$ to the unique index \f$ \mathbf{n} \f$ in the supercell.
-     *
-     * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ to map back to the supercell.
-     * @return Corresponding index \f$ \mathbf{n} \f$ in the supercell such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
-     * \mathbf{N} \mathbf{m} \f$.
-     */
-    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
-      return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
-    }
-
-    /**
-     * @brief %Mesh point of a triqs::mesh::cyclat mesh.
-     * 
-     * @details It inherits from triqs::lattice::bravais_lattice::point_t and in addition to the index \f$ \mathbf{n} 
-     * \f$, the underlying Bravais lattice and the value \f$ \mathbf{R}^{\mathbf{n}} \f$, it also stores the data index 
-     * \f$ d \f$ and the hash value of the parent mesh.
-     */
-    struct mesh_point_t : public value_t {
-      /// Parent mesh type.
-      using mesh_t = cyclat;
-
-      private:
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-
-      public:
-      /// Default constructor leaves the mesh point uninitialized.
-      mesh_point_t() = default;
-
-      /**
-       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, data index \f$ d \f$, hash value of the 
-       * parent mesh and Bravais lattice to which the mesh point belongs.
-       *
-       * @param n Index \f$\mathbf{n} \f$ of the mesh point.
-       * @param d Data index \f$ d \f$ of the mesh point.
-       * @param mhash Hash value of the parent mesh.
-       * @param bl_ptr Pointer to a triqs::lattice::bravais_lattice object.
-       */
-      mesh_point_t(std::array<long, 3> const &n, long d, uint64_t mhash, bravais_lattice const *bl_ptr)
-         : value_t(n, bl_ptr), _data_index(d), _mesh_hash(mhash) {}
-
-      /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
-
-      /// Get the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$ of the mesh point.
-      [[nodiscard]] value_t const &value() const { return *this; }
-
-      /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
-
-      /**
-       * @brief Write triqs::mesh::cyclat::mesh_point_t to a `std::ostream`.
-       *
-       * @param sout `std::ostream` object.
-       * @param mp %Mesh point to be written.
-       * @return Reference to `std::ostream` object.
-       */
-      friend std::ostream &operator<<(std::ostream &sout, mesh_point_t const &mp) { return sout << mp.value(); }
-    };
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a unit cell/lattice point in the
@@ -368,15 +330,33 @@ namespace triqs::mesh {
       return {n, &bl_};
     }
 
+    /// Get the number of unit cells in each of the three dimensions.
+    [[nodiscard]] auto const &dims() const { return dims_; }
+
     /**
-     * @brief Write a triqs::mesh::cyclat mesh to a `std::ostream`.
-     *
-     * @param sout `std::ostream` object.
-     * @param m %Mesh to be written.
-     * @return Reference to `std::ostream` object.
+     * @brief Get the matrix \f$ \mathbf{A}^T \f$ containing the basis vectors of the Bravais lattice in its rows (see 
+     * triqs::lattice::bravais_lattice::units()).
      */
-    friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
-      return sout << "Cyclic lattice mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- lattice: " << m.lattice();
+    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
+
+    /// Get the underlying Bravais lattice.
+    [[nodiscard]] auto const &lattice() const noexcept { return bl_; }
+
+    /// Get the hash value of the mesh.
+    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+
+    /// Get the size \f$ N \f$ of the mesh, i.e. the number of unit cells in the supercell.
+    [[nodiscard]] long size() const { return size_; }
+
+    /**
+     * @brief Map an arbitrary index \f$ \tilde{\mathbf{n}} \f$ to the unique index \f$ \mathbf{n} \f$ in the supercell.
+     *
+     * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ to map back to the supercell.
+     * @return Corresponding index \f$ \mathbf{n} \f$ in the supercell such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
+     * \mathbf{N} \mathbf{m} \f$.
+     */
+    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
+      return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
     }
 
     /// Get an iterator to the beginning of the mesh.
@@ -390,6 +370,17 @@ namespace triqs::mesh {
 
     /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return end(); }
+
+    /**
+     * @brief Write a triqs::mesh::cyclat mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
+    friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
+      return sout << "Cyclic lattice mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- lattice: " << m.lattice();
+    }
 
     /**
      * @brief Serialize the mesh to a generic archive.
@@ -450,6 +441,15 @@ namespace triqs::mesh {
 
       m = cyclat(bl, dims);
     }
+
+    private:
+    bravais_lattice bl_       = {};
+    std::array<long, 3> dims_ = {0, 0, 0};
+    long size_                = 0;
+    long stride1 = 1, stride0 = 1;
+    nda::matrix<double> units_     = nda::eye<double>(3);
+    nda::matrix<double> units_inv_ = nda::eye<double>(3);
+    uint64_t _mesh_hash            = 0;
   };
 
   /**
