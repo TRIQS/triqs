@@ -57,7 +57,11 @@ namespace triqs::mesh {
   using lattice::brillouin_zone;
 
   /**
-   * @ingroup triqs-meshes-lattice
+   * @addtogroup triqs-meshes-lattice
+   * @{
+   */
+
+  /**
    * @brief Brillouin zone mesh type.
    *
    * @details A Brillouin zone (BZ) mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by an
@@ -413,6 +417,9 @@ namespace triqs::mesh {
     /// Get the matrix \f$ \tilde{\mathbf{B}}^T \f$ containing the scaled reciprocal basis vectors in its rows.
     [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
 
+    /// Get the matrix \f$ \left( \tilde{\mathbf{B}}^T \right)^{-1} \f$.
+    [[nodiscard]] auto units_inv() const { return nda::matrix_const_view<double>{units_inv_}; }
+
     /// Get the underlying Brillouin zone.
     [[nodiscard]] auto const &bz() const noexcept { return bz_; }
 
@@ -566,62 +573,6 @@ namespace triqs::mesh {
       m = brzone(bz, dims);
     }
 
-    /**
-     * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at the given index \f$ \tilde{
-     * \mathbf{n}} \f$.
-     * 
-     * @details The index is first mapped to the first BZ using triqs::mesh::brzone::index_modulo and then it is used
-     * to access the correct function value \f$ f_{\tilde{\mathbf{n}}} = f_{\mathbf{n}} \f$.
-     *
-     * @param m triqs::mesh::brzone mesh.
-     * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
-     * \f$ at the mesh points.
-     * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ at which to evaluate the function.
-     * @return Function value \f$ f_{\mathbf{n}} \f$.
-     */
-    friend auto evaluate(brzone const &m, auto const &f, index_t const &n_tilde) { return f(m.index_modulo(n_tilde)); }
-
-    /**
-     * @brief Trilinear interpolation of a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at a given \f$ 
-     * \mathbf{k} \f$-vector or expression.
-     * 
-     * @details It first maps the \f$ \mathbf{k} \f$-vector back to the first BZ and then performs trilinear 
-     * interpolation of the function \f$ f \f$ in the volume spanned by the \f$ \mathbf{k}^{\mathbf{n}} \f$-points that
-     * enclose the mapped \f$ \mathbf{k} \f$-vector.
-     *
-     * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
-     * @param m triqs::mesh::brzone mesh.
-     * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
-     * \f$ at the mesh points.
-     * @param k \f$ \mathbf{k} \f$-vector or expression at which to evaluate the function.
-     * @return Trilinear interpolation of \f$ f(\mathbf{k}) \f$.
-     */
-    template <typename V>
-      requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)
-    friend auto evaluate(brzone const &m, auto const &f, V const &k) {
-      if constexpr (is_k_expr<V>) {
-        return evaluate(m, f, k.value());
-      } else {
-        auto v_index      = make_regular(transpose(m.units_inv_) * nda::basic_array_view{k});
-        auto g            = [&f](long x, long y, long z) { return f(typename brzone::index_t{x, y, z}); };
-        auto [d0, d1, d2] = m.dims();
-        return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_index[0], v_index[1], v_index[2]);
-      }
-    }
-
-    private:
-    // Helper struct to evaluate a function at an arbitrary k-vector.
-    struct brzone1d {
-      long dim;
-    };
-
-    // Helper function to do linear interpolation between k-points.
-    friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
-      long i   = static_cast<long>(std::floor(vi));
-      double w = vi - double(i);
-      return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
-    }
-
     private:
     brillouin_zone bz_             = {};
     std::array<long, 3> dims_      = {0, 0, 0};
@@ -632,6 +583,67 @@ namespace triqs::mesh {
     nda::matrix<double> units_inv_ = nda::eye<double>(3);
     uint64_t mesh_hash_            = 0;
   };
+
+  namespace detail {
+
+    // Helper struct to evaluate a function at an arbitrary k-vector.
+    struct brzone1d {
+      long dim;
+    };
+
+  } // namespace detail
+
+  // Helper function to do linear interpolation between k-points.
+  auto evaluate(detail::brzone1d const &m, auto const &f, double vi) {
+    long i   = static_cast<long>(std::floor(vi));
+    double w = vi - double(i);
+    return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
+  }
+
+  /**
+   * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at the given index \f$ \tilde{
+   * \mathbf{n}} \f$.
+   * 
+   * @details The index is first mapped to the first BZ using triqs::mesh::brzone::index_modulo and then it is used
+   * to access the correct function value \f$ f_{\tilde{\mathbf{n}}} = f_{\mathbf{n}} \f$.
+   *
+   * @param m triqs::mesh::brzone mesh.
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
+   * \f$ at the mesh points.
+   * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ at which to evaluate the function.
+   * @return Function value \f$ f_{\mathbf{n}} \f$.
+   */
+  auto evaluate(brzone const &m, auto const &f, brzone::index_t const &n_tilde) { return f(m.index_modulo(n_tilde)); }
+
+  /**
+   * @brief Trilinear interpolation of a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at a given \f$ 
+   * \mathbf{k} \f$-vector or expression.
+   * 
+   * @details It first maps the \f$ \mathbf{k} \f$-vector back to the first BZ and then performs trilinear 
+   * interpolation of the function \f$ f \f$ in the volume spanned by the \f$ \mathbf{k}^{\mathbf{n}} \f$-points that
+   * enclose the mapped \f$ \mathbf{k} \f$-vector.
+   *
+   * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
+   * @param m triqs::mesh::brzone mesh.
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
+   * \f$ at the mesh points.
+   * @param k \f$ \mathbf{k} \f$-vector or expression at which to evaluate the function.
+   * @return Trilinear interpolation of \f$ f(\mathbf{k}) \f$.
+   */
+  template <typename V>
+    requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)
+  auto evaluate(brzone const &m, auto const &f, V const &k) {
+    if constexpr (is_k_expr<V>) {
+      return evaluate(m, f, k.value());
+    } else {
+      auto v_index      = nda::make_regular(nda::transpose(m.units_inv()) * nda::basic_array_view{k});
+      auto g            = [&f](long x, long y, long z) { return f(typename brzone::index_t{x, y, z}); };
+      auto [d0, d1, d2] = m.dims();
+      return evaluate(std::tuple{detail::brzone1d{d0}, detail::brzone1d{d1}, detail::brzone1d{d2}}, g, v_index[0], v_index[1], v_index[2]);
+    }
+  }
+
+  /** @} */
 
   /**
    * @addtogroup triqs-meshes-kexpr
