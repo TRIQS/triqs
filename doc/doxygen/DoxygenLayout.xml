@@ -14,6 +14,9 @@
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
       </tab>
       <tab type="usergroup" url="@ref triqs-lattice" title="Lattice tools">
+        <tab type="usergroup" url="@ref triqs::lattice::bravais_lattice" title="lattice::bravais_lattice">
+          <tab type="user" url="@ref triqs::lattice::bravais_lattice::point_t" title="lattice::bravais_lattice::point_t"/>
+        </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-meshes" title="Meshes">
         <tab type="usergroup" url="@ref triqs-meshes-func" title="Function space meshes">
