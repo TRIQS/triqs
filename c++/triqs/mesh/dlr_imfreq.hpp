@@ -37,13 +37,13 @@ namespace triqs::mesh {
     // -------------------- Data -------------------
 
     private:
-    double _beta                        = 1.0;
-    statistic_enum _statistic           = Fermion;
-    double _w_max                       = 0.0;
-    double _eps                         = 1e-10;
-    bool _symmetrize                    = false;
-    uint64_t _mesh_hash                 = 0;
-    std::shared_ptr<const dlr_ops> _dlr = {};
+    double _beta                                = 1.0;
+    statistic_enum _statistic                   = Fermion;
+    double _w_max                               = 0.0;
+    double _eps                                 = 1e-10;
+    bool _symmetrize                            = false;
+    uint64_t _mesh_hash                         = 0;
+    std::shared_ptr<const detail::dlr_ops> _dlr = {};
 
     // -------------------- Constructors -------------------
     public:
@@ -73,18 +73,18 @@ namespace triqs::mesh {
     private:
     dlr_imfreq(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
        : dlr_imfreq(beta, statistic, w_max, eps, symmetrize,
-                    dlr_ops{dlr_freq,
-                            {w_max * beta, dlr_freq, symmetrize},
-                            {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
+                    detail::dlr_ops{dlr_freq,
+                                    {w_max * beta, dlr_freq, symmetrize},
+                                    {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
 
-    dlr_imfreq(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, dlr_ops dlr)
+    dlr_imfreq(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, detail::dlr_ops dlr)
        : _beta(beta),
          _statistic(statistic),
          _w_max(w_max),
          _eps(eps),
          _symmetrize(symmetrize),
          _mesh_hash(hash(beta, statistic, w_max, eps, sum(dlr.imf.get_ifnodes()))),
-         _dlr{std::make_shared<dlr_ops>(std::move(dlr))} {}
+         _dlr{std::make_shared<detail::dlr_ops>(std::move(dlr))} {}
 
     friend struct dlr_imtime;
     friend struct dlr;
@@ -228,7 +228,7 @@ namespace triqs::mesh {
       ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & freq;
       imt.deserialize(ar);
       imf.deserialize(ar);
-      _dlr = std::make_shared<dlr_ops>(dlr_ops{freq, imt, imf});
+      _dlr = std::make_shared<detail::dlr_ops>(freq, imt, imf);
     }
 
     // -------------------- HDF5 -------------------
