@@ -26,8 +26,12 @@
         </tab>
         <tab type="usergroup" url="@ref triqs-meshes-lattice" title="Lattice meshes">
           <tab type="usergroup" url="@ref triqs-meshes-kexpr" title="k-vector expressions">
+            <tab type="user" url="@ref triqs::mesh::BzMeshPoint" title="mesh::BzMeshPoint"/>
             <tab type="user" url="@ref triqs::mesh::k_expr" title="mesh::k_expr"/>
             <tab type="user" url="@ref triqs::mesh::k_expr_unary" title="mesh::k_expr_unary"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs::mesh::brzone" title="mesh::brzone">
+            <tab type="user" url="@ref triqs::mesh::brzone::mesh_point_t" title="mesh::brzone::mesh_point_t"/>
           </tab>
           <tab type="usergroup" url="@ref triqs::mesh::cyclat" title="mesh::cyclat">
             <tab type="user" url="@ref triqs::mesh::cyclat::mesh_point_t" title="mesh::cyclat::mesh_point_t"/>
