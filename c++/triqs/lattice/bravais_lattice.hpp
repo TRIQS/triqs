@@ -75,42 +75,6 @@ namespace triqs::lattice {
     using index_t = std::array<long, 3>;
 
     /**
-     * @brief Construct a Bravais Lattice with given basis vectors and positions of atomic orbitals with optional names.
-     *
-     * @details The matrix \f$ \mathbf{A}^T \f$ containing the basis vectors as its rows is required to be square. The 
-     * number of dimensions of the Bravais lattices is determined by the size of the matrix.
-     *
-     * @param A_T Matrix with the basis vectors \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ as its rows.
-     * @param orb_pos Atomic orbital positions \f$ \{ \mathbf{r}_1, \dots, \mathbf{r}_m \} \f$ in the unit cell.
-     * @param orb_name Optional names for the atomic orbitals.
-     */
-    bravais_lattice(matrix_t const &A_T, std::vector<r_t> orb_pos = std::vector<r_t>{{0, 0, 0}}, std::vector<std::string> orb_name = {});
-
-    /**
-     * @brief Construct a simple cubic lattice with lattice constant \f$ a = 1 \f$.
-     * @details The only atomic orbital is placed at the origin with no name.
-     */
-    bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
-
-    /// Check if a given vector \f$ \mathbf{r} \f$ is part of the domain.
-    [[nodiscard]] bool contains(r_t const &) const { return true; }
-
-    /// Get the number of dimensions of the Bravais lattice.
-    [[nodiscard]] int ndim() const { return ndim_; }
-
-    /// Get the matrix \f$ \mathbf{A}^T \f$ containing basis vectors as its rows.
-    [[nodiscard]] matrix_t const &units() const { return units_; }
-
-    /// Get the number of atomic orbitals in the unit cell.
-    [[nodiscard]] long n_orbitals() const { return static_cast<long>(atom_orb_pos.size()); }
-
-    /// Get a `std::vector<r_t>` containing the atomic orbital positions \f$ \{\mathbf{r}_1, \dots, \mathbf{r}_m\} \f$.
-    [[nodiscard]] auto const &orbital_positions() const { return atom_orb_pos; }
-
-    /// Get a `std::vector<std::string>` containing the orbital names.
-    [[nodiscard]] auto const &orbital_names() const { return atom_orb_name; }
-
-    /**
      * @brief Lattice point of a Bravais lattice.
      *
      * @details A lattice point is defined by an index vector, \f$ \mathbf{n} = (n_1, \dots, n_d) \f$, and the Bravais
@@ -126,12 +90,7 @@ namespace triqs::lattice {
      * @note Although the supported dimensions are 1, 2 and 3, the index vectors are always 3-dimensional, i.e. \f$
      * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored.
      */
-    struct point_t {
-      private:
-      index_t _index                   = {0, 0, 0};
-      bravais_lattice const *_bl_ptr   = nullptr;
-      mutable std::optional<r_t> _rval = {};
-
+    class point_t {
       public:
       /// Default constructor leaves the lattice point uninitialized, i.e. belonging to no Bravais lattice.
       point_t() = default;
@@ -216,7 +175,48 @@ namespace triqs::lattice {
        * @return Reference to `std::ostream` object.
        */
       friend std::ostream &operator<<(std::ostream &sout, point_t const &pt) { return sout << static_cast<r_t>(pt); }
+
+      private:
+      index_t _index                   = {0, 0, 0};
+      bravais_lattice const *_bl_ptr   = nullptr;
+      mutable std::optional<r_t> _rval = {};
     };
+
+    /**
+     * @brief Construct a simple cubic lattice with lattice constant \f$ a = 1 \f$.
+     * @details The only atomic orbital is placed at the origin with no name.
+     */
+    bravais_lattice() : bravais_lattice(nda::eye<double>(3)) {}
+
+    /**
+     * @brief Construct a Bravais Lattice with given basis vectors and positions of atomic orbitals with optional names.
+     *
+     * @details The matrix \f$ \mathbf{A}^T \f$ containing the basis vectors as its rows is required to be square. The 
+     * number of dimensions of the Bravais lattices is determined by the size of the matrix.
+     *
+     * @param A_T Matrix with the basis vectors \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ as its rows.
+     * @param orb_pos Atomic orbital positions \f$ \{ \mathbf{r}_1, \dots, \mathbf{r}_m \} \f$ in the unit cell.
+     * @param orb_name Optional names for the atomic orbitals.
+     */
+    bravais_lattice(matrix_t const &A_T, std::vector<r_t> orb_pos = std::vector<r_t>{{0, 0, 0}}, std::vector<std::string> orb_name = {});
+
+    /// Check if a given vector \f$ \mathbf{r} \f$ is part of the domain.
+    [[nodiscard]] bool contains(r_t const &) const { return true; }
+
+    /// Get the number of dimensions of the Bravais lattice.
+    [[nodiscard]] int ndim() const { return ndim_; }
+
+    /// Get the matrix \f$ \mathbf{A}^T \f$ containing basis vectors as its rows.
+    [[nodiscard]] matrix_t const &units() const { return units_; }
+
+    /// Get the number of atomic orbitals in the unit cell.
+    [[nodiscard]] long n_orbitals() const { return static_cast<long>(atom_orb_pos.size()); }
+
+    /// Get a `std::vector<r_t>` containing the atomic orbital positions \f$ \{\mathbf{r}_1, \dots, \mathbf{r}_m\} \f$.
+    [[nodiscard]] auto const &orbital_positions() const { return atom_orb_pos; }
+
+    /// Get a `std::vector<std::string>` containing the orbital names.
+    [[nodiscard]] auto const &orbital_names() const { return atom_orb_name; }
 
     /**
      * @brief Transform a vector \f$ \mathbf{v} \f$ from the lattice basis \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \}
