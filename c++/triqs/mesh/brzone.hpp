@@ -165,33 +165,33 @@ namespace triqs::mesh {
        * @param d Data index \f$ d \f$ of the mesh point.
        */
       mesh_point_t(std::array<long, 3> const &n, brzone const *m_ptr, long d)
-         : _index(n), _m_ptr(m_ptr), _data_index(d), _mesh_hash(m_ptr->mesh_hash()) {}
+         : index_(n), m_ptr_(m_ptr), data_index_(d), mesh_hash_(m_ptr->mesh_hash()) {}
 
       /// Copy constructor to handle the presence of the `std::mutex` object correctly.
       mesh_point_t(mesh_point_t const &mp)
-         : _index(mp._index), _m_ptr(mp._m_ptr), _data_index(mp._data_index), _mesh_hash(mp._mesh_hash), _value(mp._value) {}
+         : index_(mp.index_), m_ptr_(mp.m_ptr_), data_index_(mp.data_index_), mesh_hash_(mp.mesh_hash_), value_(mp.value_) {}
 
       /// Get the index \f$ \mathbf{n} \f$ of the mesh point.
-      [[nodiscard]] mesh_t::index_t index() const { return _index; }
+      [[nodiscard]] mesh_t::index_t index() const { return index_; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the reciprocal vector \f$ \mathbf{k}^\mathbf{n} \f$ corresponding to the mesh point.
       [[nodiscard]] value_t const &value() const {
-        if (_value)
-          return *_value;
+        if (value_)
+          return *value_;
         else {
-          auto guard = std::lock_guard{value_mutex};
-          if (_value)
-            return *_value;
+          auto guard = std::lock_guard{value_mutex_};
+          if (value_)
+            return *value_;
           else
-            return *(_value = _m_ptr->to_value(_index));
+            return *(value_ = m_ptr_->to_value(index_));
         }
       }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       /// Conversion to the value type of the parent mesh.
       [[nodiscard]] operator value_t() const { return value(); }
@@ -223,12 +223,12 @@ namespace triqs::mesh {
       friend std::ostream &operator<<(std::ostream &sout, mesh_point_t const &mp) { return sout << mp.value(); }
 
       private:
-      std::array<long, 3> _index            = {0, 0, 0};
-      brzone const *_m_ptr                  = nullptr;
-      long _data_index                      = 0;
-      uint64_t _mesh_hash                   = 0;
-      mutable std::optional<value_t> _value = {};
-      mutable std::mutex value_mutex        = {};
+      std::array<long, 3> index_            = {0, 0, 0};
+      brzone const *m_ptr_                  = nullptr;
+      long data_index_                      = 0;
+      uint64_t mesh_hash_                   = 0;
+      mutable std::optional<value_t> value_ = {};
+      mutable std::mutex value_mutex_       = {};
     };
 
     public:
@@ -245,11 +245,11 @@ namespace triqs::mesh {
        : bz_(bz),
          dims_(dims),
          size_(nda::stdutil::product(dims)),
-         stride1(dims_[2]),
-         stride0(dims_[1] * dims_[2]),
+         s2_(dims_[2]),
+         s1_(dims_[1] * dims_[2]),
          units_(nda::linalg::inv(1.0 * nda::diag(dims)) * bz.units()),
          units_inv_(nda::linalg::inv(units_)),
-         _mesh_hash(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {}
+         mesh_hash_(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {}
 
     /**
      * @brief Construct a Brillouin zone mesh with the given periodization matrix.
@@ -300,7 +300,7 @@ namespace triqs::mesh {
      */
     [[nodiscard]] data_index_t to_data_index(index_t const &n) const {
       EXPECTS(is_index_valid(n));
-      return n[0] * stride0 + n[1] * stride1 + n[2];
+      return n[0] * s1_ + n[1] * s2_ + n[2];
     }
 
     /**
@@ -325,7 +325,7 @@ namespace triqs::mesh {
      * back to the first BZ.
      */
     template <char OP, typename L> [[nodiscard]] data_index_t to_data_index(k_expr_unary<OP, L> const &ex) const {
-      EXPECTS(_mesh_hash == ex.mesh_hash());
+      EXPECTS(mesh_hash_ == ex.mesh_hash());
       return to_data_index(index_modulo(ex.index()));
     }
 
@@ -340,7 +340,7 @@ namespace triqs::mesh {
      * back to the first BZ.
      */
     template <char OP, typename L, typename R> [[nodiscard]] data_index_t to_data_index(k_expr<OP, L, R> const &ex) const {
-      EXPECTS(_mesh_hash == ex.mesh_hash());
+      EXPECTS(mesh_hash_ == ex.mesh_hash());
       return to_data_index(index_modulo(ex.index()));
     }
 
@@ -353,11 +353,8 @@ namespace triqs::mesh {
      */
     [[nodiscard]] index_t to_index(data_index_t d) const {
       EXPECTS(0 <= d and d < size());
-      long i0 = d / stride0;
-      long r0 = d % stride0;
-      long i1 = r0 / stride1;
-      long i2 = r0 % stride1;
-      return {i0, i1, i2};
+      long const r0 = d % s1_;
+      return {d / s1_, r0 / s2_, r0 % s2_};
     }
 
     /**
@@ -420,7 +417,7 @@ namespace triqs::mesh {
     [[nodiscard]] auto const &bz() const noexcept { return bz_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points in the first BZ.
     [[nodiscard]] long size() const { return size_; }
@@ -511,13 +508,13 @@ namespace triqs::mesh {
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & bz_ & dims_ & size_ & stride1 & stride0 & units_ & units_inv_ & _mesh_hash; }
+    void serialize(auto &ar) const { ar & bz_ & dims_ & size_ & s2_ & s1_ & units_ & units_inv_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & bz_ & dims_ & size_ & stride1 & stride0 & units_ & units_inv_ & _mesh_hash; }
+    void deserialize(auto &ar) { ar & bz_ & dims_ & size_ & s2_ & s1_ & units_ & units_inv_ & mesh_hash_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshBrillouinZone"; }
@@ -626,13 +623,14 @@ namespace triqs::mesh {
     }
 
     private:
-    brillouin_zone bz_        = {};
-    std::array<long, 3> dims_ = {0, 0, 0};
-    long size_                = 0;
-    long stride1 = 1, stride0 = 1;
+    brillouin_zone bz_             = {};
+    std::array<long, 3> dims_      = {0, 0, 0};
+    long size_                     = 0;
+    long s2_                       = 1;
+    long s1_                       = 1;
     nda::matrix<double> units_     = nda::eye<double>(3);
     nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t _mesh_hash            = 0;
+    uint64_t mesh_hash_            = 0;
   };
 
   /**
