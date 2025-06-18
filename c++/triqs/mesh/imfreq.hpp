@@ -127,7 +127,8 @@ namespace triqs::mesh {
    * mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
    * ```
    */
-  struct imfreq : public tail_fitter_handle {
+  class imfreq : public tail_fitter_handle {
+    public:
     /// Value type.
     using value_t = matsubara_freq;
 
@@ -138,6 +139,53 @@ namespace triqs::mesh {
     using data_index_t = long;
 
     /**
+     * @brief %Mesh point of a triqs::mesh::imfreq mesh.
+     * 
+     * @details It inherits from triqs::mesh::matsubara_freq and in addition to the Matsubara index \f$ n \f$, the
+     * inverse temperature \f$ \beta \f$ and the particle statistics, it also stores the data index \f$ d \f$ and the
+     * hash value of the parent mesh.
+     */
+    class mesh_point_t : public matsubara_freq {
+      public:
+      /// Parent mesh type.
+      using mesh_t = imfreq;
+
+      /// Default constructor leaves the mesh point uninitialized.
+      mesh_point_t() = default;
+
+      /**
+       * @brief Construct a mesh point with the given parameters.
+       *
+       * @details The index \f$ n \f$, the inverse temperature \f$ \beta \f$ and the particle statistics are forwarded
+       * to the constructor of triqs::mesh::matsubara_freq.
+       *
+       * @param b Inverse temperature \f$ \beta \f$.
+       * @param stat Particle statistics.
+       * @param n_idx Matsubara index \f$ n \f$ of the mesh point.
+       * @param d Data index \f$ d \f$ of the mesh point.
+       * @param mhash Hash value of the parent mesh.
+       */
+      mesh_point_t(double b, statistic_enum stat, index_t n_idx, long d, uint64_t mhash)
+         : matsubara_freq(n_idx, b, stat), _data_index(d), _mesh_hash(mhash) {}
+
+      /// Get the Matsubara index \f$ n \f$ of the mesh point.
+      [[nodiscard]] long index() const { return n; }
+
+      /// Get the data index \f$ d \f$ of the mesh point.
+      [[nodiscard]] long data_index() const { return _data_index; }
+
+      /// Get the corresponding Matsubara frequency \f$ i\omega_n \f$.
+      [[nodiscard]] matsubara_freq const &value() const { return *this; }
+
+      /// Get the hash value of the parent mesh.
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+      private:
+      long _data_index    = 0;
+      uint64_t _mesh_hash = 0;
+    };
+
+    /**
      * @brief Enum to specify which frequencies should be included in the mesh.
      *
      * @details The following options are supported:
@@ -146,16 +194,6 @@ namespace triqs::mesh {
      */
     enum class option { all_frequencies, positive_frequencies_only };
 
-    private:
-    double _beta              = 1.0;
-    statistic_enum _statistic = Fermion;
-    long _n_iw                = 0;
-    option _opt               = option::all_frequencies;
-    long _last_index          = _n_iw - 1;
-    long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
-    uint64_t _mesh_hash       = 0;
-
-    public:
     /// Default constructor constructs an empty mesh.
     imfreq() = default;
 
@@ -220,103 +258,6 @@ namespace triqs::mesh {
      * and whether all or only positive frequencies are in the mesh.
      */
     bool operator!=(imfreq const &m) const { return !(operator==(m)); }
-
-    /**
-     * @brief Get a new mesh with the same \f$ \beta \f$, particle statistics and \f$ N_{i\omega_n} \f$ but only
-     * positive frequencies.
-     */
-    imfreq get_positive_freq() const { return {_beta, _statistic, _n_iw, option::positive_frequencies_only}; }
-
-    /**
-     * @brief Map an index \f$ n \f$ to its corresponding Matsubara frequency \f$ i\omega_n \f$.
-     *
-     * @note This function does not check if the index is valid and it returns a triqs::mesh::matsubara_freq object not
-     * a mesh_point_t.
-     *
-     * @param n Matsubara index \f$ n \f$ to map.
-     * @return Matsubara frequency \f$ i\omega_n \f$.
-     */
-    matsubara_freq index_to_freq(index_t n) const { return {n, _beta, _statistic}; }
-
-    /// Get the complex value of the largest positive Matsubara frequency in the mesh.
-    std::complex<double> w_max() const { return index_to_freq(_last_index); }
-
-    /**
-     * @brief %Mesh point of a triqs::mesh::imfreq mesh.
-     * 
-     * @details It inherits from triqs::mesh::matsubara_freq and in addition to the Matsubara index \f$ n \f$, the
-     * inverse temperature \f$ \beta \f$ and the particle statistics, it also stores the data index \f$ d \f$ and the
-     * hash value of the parent mesh.
-     */
-    struct mesh_point_t : public matsubara_freq {
-      /// Parent mesh type.
-      using mesh_t = imfreq;
-
-      private:
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-
-      public:
-      /// Default constructor leaves the mesh point uninitialized.
-      mesh_point_t() = default;
-
-      /**
-       * @brief Construct a mesh point with the given parameters.
-       *
-       * @details The index \f$ n \f$, the inverse temperature \f$ \beta \f$ and the particle statistics are forwarded
-       * to the constructor of triqs::mesh::matsubara_freq.
-       *
-       * @param b Inverse temperature \f$ \beta \f$.
-       * @param stat Particle statistics.
-       * @param n_idx Matsubara index \f$ n \f$ of the mesh point
-       * @param d Data index \f$ d \f$ of the mesh point.
-       * @param mhash Hash value of the parent mesh.
-       */
-      mesh_point_t(double b, statistic_enum stat, index_t n_idx, long d, uint64_t mhash)
-         : matsubara_freq(n_idx, b, stat), _data_index(d), _mesh_hash(mhash) {}
-
-      /// Get the Matsubara index \f$ n \f$ of the mesh point.
-      [[nodiscard]] long index() const { return n; }
-
-      /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
-
-      /// Get the corresponding Matsubara frequency \f$ i\omega_n \f$.
-      [[nodiscard]] matsubara_freq const &value() const { return *this; }
-
-      /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
-    };
-
-    /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return _beta; }
-
-    /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
-
-    /// Get the number of positive Matsubara frequencies \f$ N_{i\omega_n} \f$.
-    [[nodiscard]] long n_iw() const noexcept { return _n_iw; }
-
-    /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
-
-    /**
-     * @brief Get the Matsubara frequency domain.
-     * @deprecated `triqs::mesh::matsubara_freq_domain` is deprecated.
-     */
-    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
-
-    /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points.
-    [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
-
-    /// Get the first Matsubara index, i.e. \f$ n_{\text{min}} \f$.
-    [[nodiscard]] long first_index() const { return _first_index; }
-
-    /// Get the last Matsubara index, i.e. \f$ n_{\text{max}} \f$.
-    [[nodiscard]] long last_index() const { return _last_index; }
-
-    /// Is the mesh restricted to positive Matsubara frequencies?
-    [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
 
     /**
      * @brief Check if a Matsubara index \f$ n \f$ is valid.
@@ -425,6 +366,56 @@ namespace triqs::mesh {
       return {n, _beta, _statistic};
     }
 
+    /**
+     * @brief Get a new mesh with the same \f$ \beta \f$, particle statistics and \f$ N_{i\omega_n} \f$ but only
+     * positive frequencies.
+     */
+    imfreq get_positive_freq() const { return {_beta, _statistic, _n_iw, option::positive_frequencies_only}; }
+
+    /**
+     * @brief Map an index \f$ n \f$ to its corresponding Matsubara frequency \f$ i\omega_n \f$.
+     *
+     * @note This function does not check if the index is valid and it returns a triqs::mesh::matsubara_freq object not
+     * a mesh_point_t.
+     *
+     * @param n Matsubara index \f$ n \f$ to map.
+     * @return Matsubara frequency \f$ i\omega_n \f$.
+     */
+    matsubara_freq index_to_freq(index_t n) const { return {n, _beta, _statistic}; }
+
+    /// Get the complex value of the largest positive Matsubara frequency in the mesh.
+    std::complex<double> w_max() const { return index_to_freq(_last_index); }
+
+    /// Get the inverse temperature \f$ \beta \f$.
+    [[nodiscard]] double beta() const noexcept { return _beta; }
+
+    /// Get the particle statistics.
+    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+
+    /// Get the number of positive Matsubara frequencies \f$ N_{i\omega_n} \f$.
+    [[nodiscard]] long n_iw() const noexcept { return _n_iw; }
+
+    /// Get the hash value of the mesh.
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+
+    /**
+     * @brief Get the Matsubara frequency domain.
+     * @deprecated `triqs::mesh::matsubara_freq_domain` is deprecated.
+     */
+    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
+
+    /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points.
+    [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
+
+    /// Get the first Matsubara index, i.e. \f$ n_{\text{min}} \f$.
+    [[nodiscard]] long first_index() const { return _first_index; }
+
+    /// Get the last Matsubara index, i.e. \f$ n_{\text{max}} \f$.
+    [[nodiscard]] long last_index() const { return _last_index; }
+
+    /// Is the mesh restricted to positive Matsubara frequencies?
+    [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
+    
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<imfreq>{.mesh_ptr = this, .data_index = 0}; }
 
@@ -520,6 +511,15 @@ namespace triqs::mesh {
 
     /// Return true if the Matusbara index of the given mesh point is not valid (see is_index_valid()).
     bool eval_to_zero(mesh_point_t mp) const { return eval_to_zero(mp.value()); }
+
+    private:
+    double _beta              = 1.0;
+    statistic_enum _statistic = Fermion;
+    long _n_iw                = 0;
+    option _opt               = option::all_frequencies;
+    long _last_index          = _n_iw - 1;
+    long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
+    uint64_t _mesh_hash       = 0;
   };
 
   /**

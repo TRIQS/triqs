@@ -25,7 +25,8 @@
 
 namespace triqs::mesh {
 
-  struct imfreq;
+  // Forward declaration.
+  class imfreq;
 
   using nda::array_const_view;
 
