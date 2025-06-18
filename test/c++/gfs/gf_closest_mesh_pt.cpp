@@ -70,7 +70,7 @@ TEST(ClosestMeshPoint, BrZone) {
 
     for (auto k : gk.mesh()) {
       auto k_diff = make_regular(q - nda::vector<double>{k});
-      auto dstp   = std::sqrt(nda::blas::dot(k_diff, k_diff)); // TODO: use nda::norm(k_diff, 2)
+      auto dstp   = std::sqrt(nda::blas::dot(k_diff, k_diff)); // TODO: use nda::linalg::norm(k_diff, 2)
 
       if (dstp < dst) {
         dst     = dstp;

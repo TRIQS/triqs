@@ -142,108 +142,17 @@ namespace triqs::mesh {
     /// Data index type.
     using data_index_t = long;
 
-    private:
-    brillouin_zone bz_        = {};
-    std::array<long, 3> dims_ = {0, 0, 0};
-    long size_                = 0;
-    long stride1 = 1, stride0 = 1;
-    nda::matrix<double> units_     = nda::eye<double>(3);
-    nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t _mesh_hash            = 0;
-
-    public:
-    /// Default constructor constructs an empty mesh.
-    brzone() = default;
-
-    /**
-     * @brief Construct a Brillouin zone mesh with the given number of mesh points.
-     *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying BZ.
-     * @param dims Number of mesh points along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3) \f$.
-     */
-    brzone(brillouin_zone const &bz, std::array<long, 3> const &dims)
-       : bz_(bz),
-         dims_(dims),
-         size_(nda::stdutil::product(dims)),
-         stride1(dims_[2]),
-         stride0(dims_[1] * dims_[2]),
-         units_(nda::linalg::inv(1.0 * nda::diag(dims)) * bz.units()),
-         units_inv_(nda::linalg::inv(units_)),
-         _mesh_hash(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {}
-
-    /**
-     * @brief Construct a Brillouin zone mesh with the given periodization matrix.
-     * 
-     * @note At the moment, only diagonal periodization matrices are supported. They should contain the number of mesh
-     * points along each of the three dimensions on the diagonal.
-     *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
-     * @param M \f$ 3 \times 3 \f$ periodization matrix.
-     */
-    brzone(brillouin_zone const &bz, nda::matrix<long> const &M) : brzone(bz, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
-      EXPECTS((M.shape() == std::array{3l, 3l}));
-      EXPECTS(nda::is_matrix_diagonal(M));
-    }
-
-    /**
-     * @brief Construct a Brillouin zone mesh with the same number of mesh points in each direction.
-     *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
-     * @param n Number of mesh points along each of the three dimensions.
-     */
-    brzone(brillouin_zone const &bz, long n) : brzone(bz, std::array{n, (bz.ndim() >= 2 ? n : 1l), (bz.ndim() >= 3 ? n : 1)}) {}
-
-    /// Equal-to comparison operator compares the hash values.
-    bool operator==(brzone const &m) const { return mesh_hash() == m.mesh_hash(); }
-
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(brzone const &m) const { return !(operator==(m)); }
-
-    /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
-
-    /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points in the first BZ.
-    [[nodiscard]] long size() const { return size_; }
-
-    /// Get the number of mesh points in each of the three dimensions.
-    [[nodiscard]] auto const &dims() const { return dims_; }
-
-    /// Get the matrix \f$ \tilde{\mathbf{B}}^T \f$ containing the scaled reciprocal basis vectors in its rows.
-    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
-
-    /// Get the underlying Brillouin zone.
-    [[nodiscard]] auto const &bz() const noexcept { return bz_; }
-
-    /**
-     * @brief Map an arbitrary index \f$ \tilde{\mathbf{n}} \f$ to the unique index \f$ \mathbf{n} \f$ in the first BZ.
-     *
-     * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ to map back to the first BZ.
-     * @return Corresponding index \f$ \mathbf{n} \f$ in the first BZ such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
-     * \mathbf{N} \mathbf{m} \f$.
-     */
-    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
-      return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
-    }
-
     /**
      * @brief %Mesh point of a triqs::mesh::brzone mesh.
      * 
      * @details It stores the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) \f$, a pointer to and the hash
      * value of the parent mesh, and the value \f$ \mathbf{k}^{\mathbf{n}} \f$.
      */
-    struct mesh_point_t {
+    class mesh_point_t {
+      public:
       /// Parent mesh type.
       using mesh_t = brzone;
 
-      private:
-      std::array<long, 3> _index            = {0, 0, 0};
-      brzone const *_m_ptr                  = nullptr;
-      long _data_index                      = 0;
-      uint64_t _mesh_hash                   = 0;
-      mutable std::optional<value_t> _value = {};
-      mutable std::mutex value_mutex        = {};
-
-      public:
       /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
 
@@ -312,7 +221,63 @@ namespace triqs::mesh {
        * @return Reference to `std::ostream` object.
        */
       friend std::ostream &operator<<(std::ostream &sout, mesh_point_t const &mp) { return sout << mp.value(); }
+
+      private:
+      std::array<long, 3> _index            = {0, 0, 0};
+      brzone const *_m_ptr                  = nullptr;
+      long _data_index                      = 0;
+      uint64_t _mesh_hash                   = 0;
+      mutable std::optional<value_t> _value = {};
+      mutable std::mutex value_mutex        = {};
     };
+
+    public:
+    /// Default constructor constructs an empty mesh.
+    brzone() = default;
+
+    /**
+     * @brief Construct a Brillouin zone mesh with the given number of mesh points.
+     *
+     * @param bz triqs::lattice::brillouin_zone object representing the underlying BZ.
+     * @param dims Number of mesh points along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3) \f$.
+     */
+    brzone(brillouin_zone const &bz, std::array<long, 3> const &dims)
+       : bz_(bz),
+         dims_(dims),
+         size_(nda::stdutil::product(dims)),
+         stride1(dims_[2]),
+         stride0(dims_[1] * dims_[2]),
+         units_(nda::linalg::inv(1.0 * nda::diag(dims)) * bz.units()),
+         units_inv_(nda::linalg::inv(units_)),
+         _mesh_hash(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {}
+
+    /**
+     * @brief Construct a Brillouin zone mesh with the given periodization matrix.
+     * 
+     * @note At the moment, only diagonal periodization matrices are supported. They should contain the number of mesh
+     * points along each of the three dimensions on the diagonal.
+     *
+     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
+     * @param M \f$ 3 \times 3 \f$ periodization matrix.
+     */
+    brzone(brillouin_zone const &bz, nda::matrix<long> const &M) : brzone(bz, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
+      EXPECTS((M.shape() == std::array{3l, 3l}));
+      EXPECTS(nda::is_matrix_diagonal(M));
+    }
+
+    /**
+     * @brief Construct a Brillouin zone mesh with the same number of mesh points in each direction.
+     *
+     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
+     * @param n Number of mesh points along each of the three dimensions.
+     */
+    brzone(brillouin_zone const &bz, long n) : brzone(bz, std::array{n, (bz.ndim() >= 2 ? n : 1l), (bz.ndim() >= 3 ? n : 1)}) {}
+
+    /// Equal-to comparison operator compares the hash values.
+    bool operator==(brzone const &m) const { return mesh_hash() == m.mesh_hash(); }
+
+    /// Not-equal-to comparison operator compares the hash values.
+    bool operator!=(brzone const &m) const { return !(operator==(m)); }
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a \f$ \mathbf{k}^\mathbf{n} \f$ in the
@@ -400,55 +365,6 @@ namespace triqs::mesh {
      * first BZ and return its index \f$ \mathbf{n} \f$.
      *
      * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
-     * @param k \f$ \mathbf{k} \f$-vector or expression to map.
-     * @return Index \f$ \mathbf{n} \f$ of the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the first BZ.
-     */
-    template <typename V>
-      requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
-    [[nodiscard]] index_t closest_index(V const &k) const {
-
-      if constexpr (is_k_expr<V>) {
-        return closest_index(k.value());
-      } else {
-        // calculate k in the brzone basis
-        auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
-        auto k_units = nda::transpose(units_inv_) * ks;
-        auto n       = nda::stack_vector<long, 3>(nda::floor(k_units));
-
-        // calculate position relative to neighbors in mesh
-        auto w = k_units - n;
-
-        // prepare result container and distance measure
-        auto dst = std::numeric_limits<double>::infinity();
-
-        // check flatness along mesh dimensions
-        long r1 = std::min(dims_[0], 2l);
-        long r2 = std::min(dims_[1], 2l);
-        long r3 = std::min(dims_[2], 2l);
-
-        // find nearest neighbor by comparing distances
-        nda::stack_vector<long, 3> res;
-        for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
-          auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
-          auto dstp = nda::linalg::norm(nda::transpose(units_) * (w - iv));
-
-          // update result when distance is smaller than current
-          if (dstp < dst) {
-            dst = dstp;
-            res = n + iv;
-          }
-        }
-
-        // fold back to brzone mesh (nearest neighbor could be out of bounds)
-        return index_modulo({res[0], res[1], res[2]});
-      }
-    }
-
-    /**
-     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the 
-     * first BZ and return its index \f$ \mathbf{n} \f$.
-     *
-     * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
      * @param cmp triqs::mesh::closest_mesh_point_t containing the \f$ \mathbf{k} \f$-vector or expression.
      * @return Index \f$ \mathbf{n} \f$.
      */
@@ -494,15 +410,78 @@ namespace triqs::mesh {
       return nda::transpose(units_)(nda::range::all, nda::range(bz_.ndim())) * nda::basic_array_view{n}(nda::range(bz_.ndim()));
     }
 
+    /// Get the number of mesh points in each of the three dimensions.
+    [[nodiscard]] auto const &dims() const { return dims_; }
+
+    /// Get the matrix \f$ \tilde{\mathbf{B}}^T \f$ containing the scaled reciprocal basis vectors in its rows.
+    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
+
+    /// Get the underlying Brillouin zone.
+    [[nodiscard]] auto const &bz() const noexcept { return bz_; }
+
+    /// Get the hash value of the mesh.
+    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+
+    /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points in the first BZ.
+    [[nodiscard]] long size() const { return size_; }
+
     /**
-     * @brief Write a triqs::mesh::brzone mesh to a `std::ostream`.
+     * @brief Map an arbitrary index \f$ \tilde{\mathbf{n}} \f$ to the unique index \f$ \mathbf{n} \f$ in the first BZ.
      *
-     * @param sout `std::ostream` object.
-     * @param m %Mesh to be written.
-     * @return Reference to `std::ostream` object.
+     * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ to map back to the first BZ.
+     * @return Corresponding index \f$ \mathbf{n} \f$ in the first BZ such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
+     * \mathbf{N} \mathbf{m} \f$.
      */
-    friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
-      return sout << "Brillouin zone mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- brillouin_zone: " << m.bz();
+    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
+      return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
+    }
+
+    /**
+     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the 
+     * first BZ and return its index \f$ \mathbf{n} \f$.
+     *
+     * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
+     * @param k \f$ \mathbf{k} \f$-vector or expression to map.
+     * @return Index \f$ \mathbf{n} \f$ of the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the first BZ.
+     */
+    template <typename V>
+      requires(is_k_expr<V> or std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1>)
+    [[nodiscard]] index_t closest_index(V const &k) const {
+      if constexpr (is_k_expr<V>) {
+        return closest_index(k.value());
+      } else {
+        // calculate k in the brzone basis
+        auto ks      = nda::stack_vector<double, 3>{k[0], k[1], k[2]};
+        auto k_units = nda::transpose(units_inv_) * ks;
+        auto n       = nda::stack_vector<long, 3>(nda::floor(k_units));
+
+        // calculate position relative to neighbors in mesh
+        auto w = k_units - n;
+
+        // prepare result container and distance measure
+        auto dst = std::numeric_limits<double>::infinity();
+
+        // check flatness along mesh dimensions
+        long r1 = std::min(dims_[0], 2l);
+        long r2 = std::min(dims_[1], 2l);
+        long r3 = std::min(dims_[2], 2l);
+
+        // find nearest neighbor by comparing distances
+        nda::stack_vector<long, 3> res;
+        for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
+          auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
+          auto dstp = nda::linalg::norm(nda::transpose(units_) * (w - iv));
+
+          // update result when distance is smaller than current
+          if (dstp < dst) {
+            dst = dstp;
+            res = n + iv;
+          }
+        }
+
+        // fold back to brzone mesh (nearest neighbor could be out of bounds)
+        return index_modulo({res[0], res[1], res[2]});
+      }
     }
 
     /// Get an iterator to the beginning of the mesh.
@@ -516,6 +495,17 @@ namespace triqs::mesh {
 
     /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return end(); }
+
+    /**
+     * @brief Write a triqs::mesh::brzone mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
+    friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
+      return sout << "Brillouin zone mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- brillouin_zone: " << m.bz();
+    }
 
     /**
      * @brief Serialize the mesh to a generic archive.
@@ -594,19 +584,6 @@ namespace triqs::mesh {
      */
     friend auto evaluate(brzone const &m, auto const &f, index_t const &n_tilde) { return f(m.index_modulo(n_tilde)); }
 
-    private:
-    // Helper struct to evaluate a function at an arbitrary k-vector.
-    struct brzone1d {
-      long dim;
-    };
-
-    // Helper function to do linear interpolation between k-points.
-    friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
-      long i   = static_cast<long>(std::floor(vi));
-      double w = vi - double(i);
-      return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
-    }
-
     /**
      * @brief Trilinear interpolation of a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at a given \f$ 
      * \mathbf{k} \f$-vector or expression.
@@ -625,15 +602,37 @@ namespace triqs::mesh {
     template <typename V>
       requires(std::ranges::contiguous_range<V> or nda::ArrayOfRank<V, 1> or is_k_expr<V>)
     friend auto evaluate(brzone const &m, auto const &f, V const &k) {
-      if constexpr (is_k_expr<V>)
+      if constexpr (is_k_expr<V>) {
         return evaluate(m, f, k.value());
-      else {
+      } else {
         auto v_index      = make_regular(transpose(m.units_inv_) * nda::basic_array_view{k});
         auto g            = [&f](long x, long y, long z) { return f(typename brzone::index_t{x, y, z}); };
         auto [d0, d1, d2] = m.dims();
         return evaluate(std::tuple{brzone1d{d0}, brzone1d{d1}, brzone1d{d2}}, g, v_index[0], v_index[1], v_index[2]);
       }
     }
+
+    private:
+    // Helper struct to evaluate a function at an arbitrary k-vector.
+    struct brzone1d {
+      long dim;
+    };
+
+    // Helper function to do linear interpolation between k-points.
+    friend auto evaluate(brzone1d const &m, auto const &f, double vi) {
+      long i   = static_cast<long>(std::floor(vi));
+      double w = vi - double(i);
+      return (1 - w) * f(positive_modulo(i, m.dim)) + w * f(m.dim == 1 ? 0 : positive_modulo(i + 1, m.dim));
+    }
+
+    private:
+    brillouin_zone bz_        = {};
+    std::array<long, 3> dims_ = {0, 0, 0};
+    long size_                = 0;
+    long stride1 = 1, stride0 = 1;
+    nda::matrix<double> units_     = nda::eye<double>(3);
+    nda::matrix<double> units_inv_ = nda::eye<double>(3);
+    uint64_t _mesh_hash            = 0;
   };
 
   /**
