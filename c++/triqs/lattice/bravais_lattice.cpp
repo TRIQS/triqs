@@ -31,59 +31,29 @@
 namespace triqs::lattice {
 
   bravais_lattice::bravais_lattice(nda::matrix<double> const &A_T, std::vector<r_t> orb_pos, std::vector<std::string> orb_name)
-     : atom_orb_pos_(orb_pos) {
-    constexpr double almost_zero = 1e-10;
-    atom_orb_name_                = orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size(), "") : orb_name;
+     : atom_orb_pos_(std::move(orb_pos)),
+       atom_orb_name_(orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size()) : std::move(orb_name)),
+       ndim_(static_cast<int>(first_dim(A_T))) {
+    // consistency checks
     EXPECTS(atom_orb_pos_.size() == atom_orb_name_.size());
+    if (ndim_ < 1 || ndim_ > 3) TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vector matrix has wrong size: " << A_T;
 
-    using nda::blas::dot;
-    using nda::linalg::cross_product;
+    // initialize basis vectors
+    auto rg        = nda::range(ndim_);
+    units_(rg, rg) = A_T(rg, rg);
 
-    ndim_ = first_dim(A_T);
-    if ((ndim_ < 1) || (ndim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
-
-    auto r       = range(ndim_);
-    units_()     = 0;
-    units_(r, r) = A_T(r, r);
-    // First complete the basis. Add some tests for safety
-    nda::vector<double> ux(3), uy(3), uz(3);
-    double delta;
-    switch (ndim_) {
-      case 1:
-        ux    = units_(0, range::all);
-        uz()  = 0;
-        uz(1) = 1;
-        uz    = uz - dot(uz, ux) * ux;
-        // no luck, ux was parallel to z, another one must work
-        if (sqrt(dot(uz, uz)) < almost_zero) {
-          uz()  = 0;
-          uz(2) = 1; // 0,0,1;
-          uz    = uz - dot(uz, ux) * ux;
-        }
-        uz /= sqrt(dot(uz, uz));
-        uy                    = cross_product(uz, ux);
-        uy                    = uy / sqrt(dot(uy, uy)); // uy cannot be 0
-        units_(1, range::all) = uz;
-        units_(2, range::all) = uy;
-        break;
-      case 2:
-        uy()  = 0;
-        uy(2) = 1;
-        uy    = cross_product(units_(0, range::all), units_(1, range::all));
-        delta = sqrt(dot(uy, uy));
-        using std::abs;
-        if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : the 2 vectors of unit are not independent : " << A_T;
-        units_(2, range::all) = uy / delta;
-        break;
-      case 3:
-        using std::abs;
-        ux    = units_(0, range::all);
-        uy    = units_(1, range::all);
-        uz    = units_(2, range::all);
-        delta = dot(cross_product(ux, uy), uz);
-        if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << A_T;
-        break;
+    // complete the basis for 1D and 2D
+    if (ndim_ < 3) {
+      if (ndim_ == 1) units_(1, 1) = 1;
+      units_(2, nda::range::all) = nda::linalg::cross_product(units_(0, nda::range::all), units_(1, nda::range::all));
+      units_(2, nda::range::all) /= nda::norm(units_(2, nda::range::all));
     }
+
+    // linear independence check
+    if (std::abs(nda::determinant(units_)) < 1e-10)
+      TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vectors are not linearly independent" << units_;
+
+    // compute inverse (used for basis transformations)
     units_inv_ = nda::linalg::inv(units_);
   }
 

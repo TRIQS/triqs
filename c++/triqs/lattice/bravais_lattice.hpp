@@ -33,6 +33,7 @@
 #include <array>
 #include <iostream>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -261,7 +262,9 @@ namespace triqs::lattice {
      * @brief Equal-to comparison operator.
      * @return True, if the number of dimensions, unit cell basis vectors and the atomic orbital positions are equal.
      */
-    bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && ndim_ == bl.ndim() && n_orbitals() == bl.n_orbitals(); }
+    bool operator==(bravais_lattice const &bl) const {
+      return units_ == bl.units() && ndim_ == bl.ndim() && orbital_positions() == bl.orbital_positions();
+    }
 
     /**
      * @brief Not-equal-to comparison operator.
@@ -277,7 +280,12 @@ namespace triqs::lattice {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
-      return sout << "Bravais Lattice with dimension " << bl.ndim() << ", units " << bl.units() << ", n_orbitals " << bl.n_orbitals();
+      auto str = fmt::format("Bravais Lattice in {} dimensions with {} orbitals:\n", bl.ndim(), bl.n_orbitals());
+      str += fmt::format("  Basis vectors: {}\n",
+                         std::views::transform(nda::range(bl.ndim()), [&bl](int i) { return bl.units()(i, nda::range(bl.ndim())); }));
+      str += fmt::format("  Orbital positions: {}\n", bl.orbital_positions());
+      str += fmt::format("  Orbital names: {}\n", bl.orbital_names());
+      return sout << str;
     }
 
     /**
