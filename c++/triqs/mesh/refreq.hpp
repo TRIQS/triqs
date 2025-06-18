@@ -84,7 +84,8 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 5
    * ```
    */
-  struct refreq : detail::linear<refreq, double>, tail_fitter_handle {
+  class refreq : public detail::linear<refreq, double>, public tail_fitter_handle {
+    public:
     /// %Mesh point type of a triqs::mesh::refreq mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<refreq, double>::mesh_point_t;
 
