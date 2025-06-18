@@ -64,6 +64,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-lattice Lattice meshes
+ * @brief %Mesh types for Bravais lattices and Brillouin zones.
+ */
+
+/**
  * @ingroup triqs-meshes-imag
  * @defgroup triqs-meshes-matsubara Matsubara frequencies
  * @brief Tools to represent and manipulate Matsubara frequencies.
