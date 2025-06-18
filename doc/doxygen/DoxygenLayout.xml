@@ -25,6 +25,9 @@
           </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-meshes-imag" title="Imaginary time and frequency meshes">
+          <tab type="usergroup" url="@ref triqs::mesh::dlr_imtime" title="mesh::dlr_imtime">
+            <tab type="user" url="@ref triqs::mesh::dlr_imtime::mesh_point_t" title="mesh::dlr_imtime::mesh_point_t"/>
+          </tab>
           <tab type="usergroup" url="@ref triqs::mesh::imfreq" title="mesh::imfreq">
             <tab type="user" url="@ref triqs::mesh::imfreq::mesh_point_t" title="mesh::imfreq::mesh_point_t"/>
           </tab>

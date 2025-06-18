@@ -16,24 +16,98 @@
 //
 // Authors: Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a mesh type for the discrete Lehmann representation in imaginary time.
+ */
+
 #pragma once
-#include "utils.hpp"
-#include "dlr.hpp"
+
 #include "./mesh_iterator.hpp"
+#include "./utils.hpp"
+#include "./dlr.hpp"
 
 #include <cppdlr/cppdlr.hpp>
+#include <h5/h5.hpp>
+#include <fmt/format.h>
+#include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
 
+#include <cstdint>
+#include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 
 namespace triqs::mesh {
 
+  /**
+   * @addtogroup triqs-meshes-imag
+   * @{
+   */
+
+  /**
+   * @brief Imaginary time discrete Lehmann representation (DLR) mesh type.
+   *
+   * @details An imaginary time DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse
+   * temperature \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff \f$
+   * \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should be
+   * symmetric around \f$ \tau = \beta / 2 \f$ (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
+   * for Bosons).
+   *
+   * An imaginary time DLR mesh has the following properties:
+   *
+   * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$ 
+   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(\tau, \omega_l) 
+   * \f$.
+   * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
+   * and vice versa.
+   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \tau_l \f$, where \f$ \tau_l \f$ is the l<sup>th
+   * </sup> DLR interpolation node in imaginary time space.
+   * 
+   * @ref triqs-gfs containers that are based on an imaginary time DLR mesh store the function values at the discrete 
+   * time points \f$ \tau_l \f$, i.e. \f$ f_l = f(\tau_l) \f$. In contrast to triqs::mesh::dlr and triqs::mesh::imtime, 
+   * the GF container cannot evaluate the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$ (see the
+   * deleted triqs::mesh::evaluate(dlr_imtime const &, ...)).
+   *
+   * @code
+   * #include <fmt/base.h>
+   * #include <triqs/mesh.hpp>
+   * 
+   * int main() {
+   *   // initialize a fermionic imaginary time DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
+   *   triqs::mesh::dlr_imtime m{10, triqs::mesh::Fermion, 0.5, 1e-6};
+   * 
+   *   // loop over all mesh points and print their index, data index and value
+   *   for (int i = 0; auto mp : m) {
+   *     fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
+   *   }
+   * }
+   * @endcode
+   *
+   * Output:
+   *
+   * ```
+   * mesh point #0: index = 0, data index = 0, value = 0.012031950007446723
+   * mesh point #1: index = 1, data index = 1, value = 0.6496895210536141
+   * mesh point #2: index = 2, data index = 2, value = 2.0222028313159592
+   * mesh point #3: index = 3, data index = 3, value = 5.283961182488998
+   * mesh point #4: index = 4, data index = 4, value = 7.022202831315959
+   * mesh point #5: index = 5, data index = 5, value = 8.584483769065113
+   * mesh point #6: index = 6, data index = 6, value = 9.550004964934757
+   * mesh point #7: index = 7, data index = 7, value = 9.987968049992553
+   * ```
+   */
   struct dlr_imtime {
+    /// Value type.
+    using value_t = double;
 
-    using index_t      = long;
+    /// Index type.
+    using index_t = long;
+
+    /// Data index type.
     using data_index_t = long;
-    using value_t      = double;
-
-    // -------------------- Data -------------------
 
     private:
     double _beta                                = 1.0;
@@ -44,68 +118,80 @@ namespace triqs::mesh {
     uint64_t _mesh_hash                         = 0;
     std::shared_ptr<const detail::dlr_ops> _dlr = {};
 
-    // -------------------- Constructors -------------------
     public:
+    /// Default constructor constructs an empty mesh.
     dlr_imtime() = default;
 
     /**
-     * Construct a DLR mesh in imaginary times
+     * @brief Construct an imaginary time DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error
+     * tolerance \f$ \epsilon \f$.
+     * 
+     * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
+     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
+     * `cppdlr::imfreq_ops` objects.
      *
-     * The mesh-point for a given linear_index `i` can be otained
-     * through `m[i]` and for an index `n` through `m(n)`
-     *
-     * The associated Green function does not allow for evaluation on
-     * arbitrary tau-points. For this use the Green function
-     * on the associated dlr_mesh.
-     *
-     * @param beta Inverse temperature
-     * @param statistic, Fermion or Boson
-     * @param w_max DLR energy cutoff, same as Lambda / beta
-     * @param eps Representation accuracy
-     * @param symmetrize Experimental! Whether to choose the time-points symmetrically
-     *            around beta/2. For fermionic/bosonic statistic enforces even/odd dlr-rank
-     *            and number of tau-points [default = false]
+     * @param b Inverse temperature \f$ \beta > 0 \f$.
+     * @param stat Particle statistics.
+     * @param wmax DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
+     * @param epsilon Error tolerance \f$ \epsilon \f$.
+     * @param sym Whether to choose the imaginary time points symmetrically around \f$ \tau = \beta / 2 \f$.
      */
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
-       : dlr_imtime(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
+    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym = false)
+       : dlr_imtime(b, stat, wmax, epsilon, sym, cppdlr::build_dlr_rf(wmax * b, epsilon, sym)) {}
 
     private:
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
-       : dlr_imtime(beta, statistic, w_max, eps, symmetrize,
-                    detail::dlr_ops{dlr_freq,
-                                    {w_max * beta, dlr_freq, symmetrize},
-                                    {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
+    // Construct an imaginary time DLR mesh with a given set of DLR frequencies.
+    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym, nda::vector<double> const &dlr_freq)
+       : dlr_imtime(b, stat, wmax, epsilon, sym,
+                    detail::dlr_ops{.freq = dlr_freq,
+                                    .imt  = {wmax * b, dlr_freq, sym},
+                                    .imf  = {wmax * b, dlr_freq, static_cast<cppdlr::statistic_t>(stat), sym}}) {}
 
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, detail::dlr_ops dlr)
-       : _beta(beta),
-         _statistic(statistic),
-         _w_max(w_max),
-         _eps(eps),
-         _symmetrize(symmetrize),
-         _mesh_hash(hash(beta, w_max, eps, sum(dlr.imt.get_itnodes()))),
-         _dlr{std::make_shared<detail::dlr_ops>(std::move(dlr))} {}
+    // Construct an imaginary time DLR mesh with given DLR operations.
+    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym, detail::dlr_ops ops)
+       : _beta(b),
+         _statistic(stat),
+         _w_max(wmax),
+         _eps(epsilon),
+         _symmetrize(sym),
+         _mesh_hash(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.imt.get_itnodes()))),
+         _dlr{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
 
+    // Friend declarations.
     friend struct dlr_imfreq;
     friend struct dlr;
 
     public:
-    template <nda::AnyOf<dlr_imtime, dlr_imfreq, dlr> M>
+    /**
+     * @brief Construct an imaginary frequency DLR mesh from another DLR type mesh.
+     *
+     * @tparam M triqs::mesh::dlr or triqs::mesh::dlr_imfreq type.
+     * @param m Other mesh.
+     */
+    template <nda::AnyOf<dlr_imfreq, dlr> M>
     explicit dlr_imtime(M const &m)
-       : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _symmetrize(m._symmetrize), _dlr(m._dlr) {
-      if constexpr (std::is_same_v<M, dlr_imtime>)
-        _mesh_hash = m._mesh_hash;
-      else
-        _mesh_hash = hash(_beta, _w_max, _eps, sum(_dlr->imt.get_itnodes()));
-    }
+       : _beta(m._beta),
+         _statistic(m._statistic),
+         _w_max(m._w_max),
+         _eps(m._eps),
+         _symmetrize(m._symmetrize),
+         _mesh_hash(hash(_beta, _statistic, _w_max, _eps, _symmetrize, nda::sum(m._dlr->imt.get_itnodes()))),
+         _dlr(m._dlr) {}
 
-    // -------------------- Comparisons -------------------
-
+    /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr_imtime const &m) const { return _mesh_hash == m._mesh_hash and _statistic == m._statistic; }
+
+    /// Not-equal-to comparison operator compares the hash values.
     bool operator!=(dlr_imtime const &m) const { return !(operator==(m)); }
 
-    // -------------------- mesh_point -------------------
-
+    /**
+     * @brief %Mesh point of a triqs::mesh::dlr_imtime mesh.
+     * 
+     * @details It stores the index \f$ l \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
+     * \f$ \tau_l \f$ of the mesh point.
+     */
     struct mesh_point_t {
+      /// Parent mesh type.
       using mesh_t = dlr;
 
       private:
@@ -115,110 +201,162 @@ namespace triqs::mesh {
       double _value       = {};
 
       public:
+      /// Default constructor leaves the mesh point uninitialized.
       mesh_point_t() = default;
-      mesh_point_t(long index, long data_index, uint64_t mesh_hash, double value)
-         : _index(index), _data_index(data_index), _mesh_hash(mesh_hash), _value(value) {}
 
-      /// The index of the mesh point
+      /**
+       * @brief Construct a mesh point with a given index \f$ l \f$, data index \f$ d \f$, hash value of the parent mesh
+       * and value \f$ \tau_l \f$.
+       *
+       * @param l Index \f$ l \f$ of the mesh point.
+       * @param d Data index \f$ d \f$ of the mesh point.
+       * @param mhash Hash value of the parent mesh.
+       * @param tau_l Value \f$ \tau_l \f$ of the mesh point.
+       */
+      mesh_point_t(long l, long d, uint64_t mhash, double tau_l) : _index(l), _data_index(d), _mesh_hash(mhash), _value(tau_l) {}
+
+      /// Get the index \f$ l \f$ of the mesh point.
       [[nodiscard]] long index() const { return _index; }
 
-      /// The data index of the mesh point
+      /// Get the data index \f$ d \f$ of the mesh point.
       [[nodiscard]] long data_index() const { return _data_index; }
 
-      /// The value of the mesh point
+      /// Get the value \f$ \tau_l \f$ of the mesh point.
       [[nodiscard]] double value() const { return _value; }
 
-      /// The Hash for the mesh configuration
+      /// Get the hash value of the parent mesh.
       [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
+      /// Conversion to the value type of the parent mesh.
       operator double() const { return _value; }
     };
 
-    // -------------------- Accessors -------------------
-
-    /// The inverse temperature
+    /// Get the inverse temperature \f$ \beta \f$.
     [[nodiscard]] double beta() const noexcept { return _beta; }
 
-    /// The particle statistic: Fermion or Boson
+    /// Get the particle statistics.
     [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
 
-    /// DLR energy cutoff w_max = beta*w_max
+    /// Get the DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
     [[nodiscard]] double w_max() const noexcept { return _w_max; }
 
-    /// Representation accuracy
+    /// Get the DLR error tolerance \f$ \epsilon \f$.
     [[nodiscard]] double eps() const noexcept { return _eps; }
 
-    /// Symmetric grid flag
+    /// Is the mesh symmetric around \f$ \tau = \beta / 2 \f$?
     [[nodiscard]] bool symmetrize() const noexcept { return _symmetrize; }
 
-    /// The vector of DLR frequencies
+    /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
     [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
 
-    /// The imaginary time DLR operations object
+    /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
     [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
 
-    /// The Matsubara frequency DLR operations object
+    /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
     [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
 
-    /// The Hash for the mesh configuration
+    /// Get the hash value of the mesh.
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
 
-    /// The total number of points in the mesh
+    /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
     [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->imt.get_itnodes().size() : 0); }
 
-    // -------------------- index checks and conversions -------------------
+    /**
+     * @brief Check if an index \f$ l \f$ is valid.
+     *
+     * @param l Index \f$ l \f$ to check.
+     * @return True if \f$ 0 \leq l < N \f$, false otherwise.
+     */
+    [[nodiscard]] bool is_index_valid(long l) const noexcept { return 0 <= l and l < size(); }
 
-    [[nodiscard]] bool is_index_valid(long index) const noexcept { return 0 <= index and index < size(); }
-
-    [[nodiscard]] long to_data_index(long index) const noexcept {
-      EXPECTS(is_index_valid(index));
-      return index;
+    /**
+     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding data index \f$ d(l) \f$.
+     *
+     * @param l Index \f$ l \f$ to map.
+     * @return Data index \f$ d(l) = l \f$.
+     */
+    [[nodiscard]] long to_data_index(long l) const noexcept {
+      EXPECTS(is_index_valid(l));
+      return l;
     }
 
-    // there is no to_data_index for a closest mesh point, as it does not make sense here.
-    [[nodiscard]] long
-    to_data_index(closest_mesh_point_t<double> const &cmp) const = delete; // closest_mesh_point makes no sense for a dlr_imtime mesh
+    /// Mapping of a value \f$ \tau \in [0, \beta] \f$ to the data index of the closest mesh point is deleted.
+    [[nodiscard]] long to_data_index(closest_mesh_point_t<double> const &cmp) const = delete;
 
-    [[nodiscard]] long to_index(long data_index) const noexcept {
-      EXPECTS(is_index_valid(data_index));
-      return data_index;
+    /**
+     * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ l(d) \f$.
+     *
+     * @param d Data index \f$ d \f$ to map.
+     * @return Index \f$ l(d) = d \f$.
+     */
+    [[nodiscard]] long to_index(long d) const noexcept {
+      EXPECTS(is_index_valid(d));
+      return d;
     }
 
-    // -------------------- operator [] () -------------------
+    /**
+     * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param d Data index \f$ d \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ l(d) = d \f$, data index \f$ d \f$, hash value of the current mesh and
+     * the imaginary time node \f$ \tau_l \f$ as its value.
+     */
+    [[nodiscard]] mesh_point_t operator[](long d) const { return (*this)(d); }
 
-    [[nodiscard]] mesh_point_t operator[](long data_index) const { return (*this)(data_index); }
-
-    [[nodiscard]] mesh_point_t operator()(long index) const {
-      EXPECTS(is_index_valid(index));
-      return {index, index, _mesh_hash, to_value(index)};
+    /**
+     * @brief Function call operator to access a mesh point by its index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
+     *
+     * @param l Index \f$ l \f$ of the mesh point.
+     * @return mesh_point_t with the index \f$ l \f$, data index \f$ d(l) = l \f$, hash value of the current mesh and
+     * the imaginary time node \f$ \tau_l \f$ as its value.
+     */
+    [[nodiscard]] mesh_point_t operator()(long l) const {
+      EXPECTS(is_index_valid(l));
+      return {l, l, _mesh_hash, to_value(l)};
     }
 
-    // -------------------- to_value ------------------
-
-    [[nodiscard]] double to_value(long index) const noexcept {
-      EXPECTS(is_index_valid(index));
-      auto res = _dlr->imt.get_itnodes()[index] * _beta;
+    /**
+     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \tau_l \f$.
+     *
+     * @param l Index \f$ l \f$ to map.
+     * @return Value of the l<sup>th</sup> DLR interpolation node in imaginary time space, i.e. \f$ \tau_l \f$ .
+     */
+    [[nodiscard]] double to_value(long l) const noexcept {
+      EXPECTS(is_index_valid(l));
+      auto res = _dlr->imt.get_itnodes()[l] * _beta;
       if (res < 0) res = _beta + res;
       return res;
     }
 
-    // -------------------------- Range & Iteration --------------------------
-
+    /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<dlr_imtime>{.mesh_ptr = this, .data_index = 0}; }
+
+    /// Get a const iterator to the beginning of the mesh.
     [[nodiscard]] auto cbegin() const { return begin(); }
+
+    /// Get an iterator to the end of the mesh.
     [[nodiscard]] auto end() const { return mesh_iterator<dlr_imtime>{.mesh_ptr = this, .data_index = size()}; }
+
+    /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return end(); }
 
-    // -------------------- print  -------------------
-
+    /**
+     * @brief Write a triqs::mesh::dlr_imtime mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
     friend std::ostream &operator<<(std::ostream &sout, dlr_imtime const &m) {
       auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imtime mesh of size {} with beta = {}, statistic = {}, w_max = {}, eps = {}", m.size(), m._beta, stat_cstr,
-                                 m._w_max, m._eps);
+      return sout << fmt::format("DLR imaginary time mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}", m.size(), m._beta,
+                                 stat_cstr, m._w_max, m._eps);
     }
 
-    // -------------------- serialization -------------------
-
+    /**
+     * @brief Serialize the mesh to a generic archive.
+     * @param ar Archive to serialize to.
+     */
     void serialize(auto &ar) const {
       EXPECTS(_dlr);
       ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & _dlr->freq;
@@ -226,6 +364,10 @@ namespace triqs::mesh {
       _dlr->imf.serialize(ar);
     }
 
+    /**
+     * @brief Deserialize the mesh from a generic archive.
+     * @param ar Archive to deserialize from.
+     */
     void deserialize(auto &ar) {
       nda::vector<double> freq;
       cppdlr::imtime_ops imt;
@@ -236,15 +378,19 @@ namespace triqs::mesh {
       _dlr = std::make_shared<detail::dlr_ops>(freq, imt, imf);
     }
 
-    // -------------------- HDF5 -------------------
-
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshDLRImTime"; }
 
-    /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, dlr_imtime const &m) {
-      h5::group gr = fg.create_group(subgroup_name);
-      write_hdf5_format(gr, m); //NOLINT
-
+    /**
+     * @brief Write a triqs::mesh::dlr_imtime mesh to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be written.
+     */
+    friend void h5_write(h5::group g, std::string const &name, dlr_imtime const &m) {
+      h5::group gr = g.create_group(name);
+      h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
       h5::write(gr, "beta", m._beta);
       h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
       h5::write(gr, "w_max", m._w_max);
@@ -255,27 +401,39 @@ namespace triqs::mesh {
       h5::write(gr, "dlr_if", m.dlr_if());
     }
 
-    /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, dlr_imtime &m) {
-      h5::group gr = fg.open_group(subgroup_name);
-      assert_hdf5_format(gr, m, true);
-
-      auto beta       = h5::read<double>(gr, "beta");
-      auto statistic  = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
-      auto w_max      = h5::read<double>(gr, "w_max");
-      auto eps        = h5::read<double>(gr, "eps");
-      bool symmetrize = false;
-      h5::try_read(gr, "symmetrize", symmetrize);
-      auto _dlr_freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
-      auto _dlr_it   = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
-      auto _dlr_if   = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
-      m              = dlr_imtime(beta, statistic, w_max, eps, symmetrize, {_dlr_freq, _dlr_it, _dlr_if});
+    /**
+     * @brief Read a triqs::mesh::dlr_imtime mesh from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param m %Mesh object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string const &name, dlr_imtime &m) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, m, true);
+      auto b       = h5::read<double>(gr, "beta");
+      auto stat    = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
+      auto wmax    = h5::read<double>(gr, "w_max");
+      auto epsilon = h5::read<double>(gr, "eps");
+      bool sym     = false;
+      h5::try_read(gr, "symmetrize", sym);
+      auto freq = h5::read<nda::vector<double>>(gr, "dlr_freq");
+      auto imt  = h5::read<cppdlr::imtime_ops>(gr, "dlr_it");
+      auto imf  = h5::read<cppdlr::imfreq_ops>(gr, "dlr_if");
+      m         = dlr_imtime{b, stat, wmax, epsilon, sym, {.freq = freq, .imt = imt, .imf = imf}};
     }
   };
 
+  /**
+   * @brief Evaluating a function \f$ f \f$ at a given imaginary time point \f$ \tau \in [0, \beta] \f$ is deleted for
+   * triqs::mesh::dlr_imtime meshes.
+   */
   double evaluate(dlr_imtime const &m, ...) = delete;
 
-  // check concept
+  /** @} */
+
+  // Check mesh concepts.
+  static_assert(Mesh<dlr_imtime>);
   static_assert(MeshWithValues<dlr_imtime>);
 
 } // namespace triqs::mesh
