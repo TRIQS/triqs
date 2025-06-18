@@ -93,13 +93,13 @@ namespace triqs::lattice {
     [[nodiscard]] auto ndim() const { return lattice_.ndim(); }
 
     /// Get the matrix \f$ B^T \f$ containing the reciprocal basis vectors as its rows.
-    [[nodiscard]] matrix_t const &units() const { return K_reciprocal; }
+    [[nodiscard]] matrix_t const &units() const { return k_units_; }
 
     /// Get the matrix \f$ B^T \f$ containing the reciprocal basis vectors as its rows.
-    [[nodiscard]] matrix_t const &reciprocal_matrix() const { return K_reciprocal; }
+    [[nodiscard]] matrix_t const &reciprocal_matrix() const { return k_units_; }
 
     /// Get the inverse matrix \f$ \left( B^T \right)^{-1} \f$.
-    [[nodiscard]] matrix_t const &reciprocal_matrix_inv() const { return K_reciprocal_inv; }
+    [[nodiscard]] matrix_t const &reciprocal_matrix_inv() const { return k_units_inv_; }
 
     /**
      * @brief Transform a vector \f$ \mathbf{v} \f$ from the reciprocal lattice basis \f$ \{ \mathbf{b}_1, \dots,
@@ -115,7 +115,7 @@ namespace triqs::lattice {
      * @return Vector \f$ \tilde{\mathbf{v}} \f$ in the standard basis.
      */
     template <typename K> [[nodiscard]] k_t lattice_to_real_coordinates(K const &v) const {
-      return nda::transpose(K_reciprocal)(nda::range::all, nda::range(ndim())) * nda::basic_array_view{v}(nda::range(ndim()));
+      return nda::transpose(k_units_)(nda::range::all, nda::range(ndim())) * nda::basic_array_view{v}(nda::range(ndim()));
     }
 
     /**
@@ -129,7 +129,7 @@ namespace triqs::lattice {
      * @return Vector \f$ \mathbf{v} \f$ in the lattice basis.
      */
     template <typename K> [[nodiscard]] k_t real_to_lattice_coordinates(K const &v_tilde) const {
-      return nda::transpose(K_reciprocal_inv)(nda::range::all, nda::range(ndim())) * nda::basic_array_view{v_tilde}(nda::range(ndim()));
+      return nda::transpose(k_units_inv_)(nda::range::all, nda::range(ndim())) * nda::basic_array_view{v_tilde}(nda::range(ndim()));
     }
 
     /**
@@ -162,13 +162,13 @@ namespace triqs::lattice {
      * @brief Serialize the Brillouin zone to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & lattice_ & K_reciprocal & K_reciprocal_inv; }
+    void serialize(auto &ar) const { ar & lattice_ & k_units_ & k_units_inv_; }
 
     /**
      * @brief Deserialize the Brillouin from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & lattice_ & K_reciprocal & K_reciprocal_inv; }
+    void deserialize(auto &ar) { ar & lattice_ & k_units_ & k_units_inv_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "brillouin_zone"; }
@@ -193,8 +193,8 @@ namespace triqs::lattice {
 
     private:
     bravais_lattice lattice_;
-    matrix_t K_reciprocal     = matrix_t::zeros(3, 3);
-    matrix_t K_reciprocal_inv = matrix_t::zeros(3, 3);
+    matrix_t k_units_     = matrix_t::zeros(3, 3);
+    matrix_t k_units_inv_ = matrix_t::zeros(3, 3);
   };
 
   /** @} */

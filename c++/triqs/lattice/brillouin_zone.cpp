@@ -31,8 +31,8 @@ namespace triqs::lattice {
 
   brillouin_zone::brillouin_zone(bravais_lattice bl) : lattice_(std::move(bl)) {
     using std::numbers::pi;
-    K_reciprocal     = 2 * pi * nda::linalg::inv(nda::transpose(lattice_.units()));
-    K_reciprocal_inv = 1 / (2 * pi) * nda::transpose(lattice_.units());
+    k_units_     = 2 * pi * nda::linalg::inv(nda::transpose(lattice_.units()));
+    k_units_inv_ = 1 / (2 * pi) * nda::transpose(lattice_.units());
   }
 
   void h5_write(h5::group g, std::string const &name, brillouin_zone const &bz) {
