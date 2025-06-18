@@ -205,7 +205,10 @@ namespace triqs::mesh {
      * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted
      * automatically.
      */
-    tail_fitter(double r, int p_max, std::optional<int> q = {}) : r_(r), p_max_(p_max), adjust_q_(not q.has_value()), q_(adjust_q_ ? q_max_ : *q) {}
+    tail_fitter(double r, int p_max, std::optional<int> q = {}) : r_(r), p_max_(p_max), adjust_q_(not q.has_value()), q_(adjust_q_ ? q_max_ : *q) {
+      if (r_ <= 0 or r_ > 1) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter: Fraction of mesh points must be in (0, 1]";
+      if (p_max_ <= 0) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter: Maximum number of mesh points must be > 0";
+    }
 
     /**
      * @brief Get the number of mesh points used in the tail fit for the given mesh.
@@ -247,13 +250,13 @@ namespace triqs::mesh {
       // initialize the left most and right most indices for both fitting windows
       double const step = static_cast<double>(p_r) / p;
       double left_idx   = m.first_index();
-      double right_idx  = m.last_index() - p_r;
+      double right_idx  = m.last_index();
 
       for ([[maybe_unused]] auto i : nda::range(p)) {
         idx_vec.push_back(long(left_idx));
         idx_vec.push_back(long(right_idx));
         left_idx += step;
-        right_idx += step;
+        right_idx -= step;
       }
 
       return idx_vec;
