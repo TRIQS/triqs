@@ -151,16 +151,16 @@ namespace triqs::mesh {
        * @param bl_ptr Pointer to a triqs::lattice::bravais_lattice object.
        */
       mesh_point_t(std::array<long, 3> const &n, long d, uint64_t mhash, bravais_lattice const *bl_ptr)
-         : value_t(n, bl_ptr), _data_index(d), _mesh_hash(mhash) {}
+         : value_t(n, bl_ptr), data_index_(d), mesh_hash_(mhash) {}
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$ of the mesh point.
       [[nodiscard]] value_t const &value() const { return *this; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       /**
        * @brief Write triqs::mesh::cyclat::mesh_point_t to a `std::ostream`.
@@ -172,8 +172,8 @@ namespace triqs::mesh {
       friend std::ostream &operator<<(std::ostream &sout, mesh_point_t const &mp) { return sout << mp.value(); }
 
       private:
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
     };
 
     public:
@@ -188,11 +188,11 @@ namespace triqs::mesh {
        : bl_(bl),
          dims_(dims),
          size_(nda::stdutil::product(dims)),
-         stride1(dims_[2]),
-         stride0(dims_[1] * dims_[2]),
+         s2_(dims_[2]),
+         s1_(dims_[1] * dims_[2]),
          units_(bl.units()),
          units_inv_(nda::linalg::inv(units_)),
-         _mesh_hash(hash(nda::sum(bl.units()), dims[0], dims[1], dims[2])) {}
+         mesh_hash_(hash(nda::sum(bl.units()), dims[0], dims[1], dims[2])) {}
 
     /**
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with the given periodization matrix.
@@ -232,7 +232,6 @@ namespace triqs::mesh {
     /// Not-equal-to comparison operator compares the hash values.
     bool operator!=(cyclat const &m) const { return !(operator==(m)); }
 
-
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a unit cell/lattice point in the
      * supercell.
@@ -254,7 +253,7 @@ namespace triqs::mesh {
      */
     [[nodiscard]] data_index_t to_data_index(index_t const &n) const {
       EXPECTS(is_index_valid(n));
-      return n[0] * stride0 + n[1] * stride1 + n[2];
+      return n[0] * s1_ + n[1] * s2_ + n[2];
     }
 
     /**
@@ -263,7 +262,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
      * @return Data index \f$ d(\mathbf{R}^{\mathbf{n}}) = n_3 + N_3 (n_2 + N_2 n_1) \f$.
      */
-    template <typename V> [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<V> const &cmp) const { return to_data_index(to_index(cmp)); }
+    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const { return to_data_index(to_index(cmp)); }
 
     /**
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ \mathbf{n}(d)
@@ -275,11 +274,8 @@ namespace triqs::mesh {
      */
     [[nodiscard]] index_t to_index(data_index_t d) const {
       EXPECTS(0 <= d and d < size());
-      long i0 = d / stride0;
-      long r0 = d % stride0;
-      long i1 = r0 / stride1;
-      long i2 = r0 % stride1;
-      return {i0, i1, i2};
+      long const r0 = d % s1_;
+      return {d / s1_, r0 / s2_, r0 % s2_};
     }
 
     /**
@@ -298,7 +294,7 @@ namespace triqs::mesh {
      * \rfloor, (d \mod s_1) \mod s_2 ) \f$, data index \f$ d \f$ and the hash value and underlying Bravais lattice of 
      * the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, _mesh_hash, &bl_}; }
+    [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, mesh_hash_, &bl_}; }
 
     /**
      * @brief Subscript operator to access a mesh point by a lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$
@@ -317,7 +313,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
      * (n_2 + N_2 n_1) \f$ and the hash value and underlying Bravais lattice of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator()(index_t const &n) const { return {n, to_data_index(n), _mesh_hash, &bl_}; }
+    [[nodiscard]] mesh_point_t operator()(index_t const &n) const { return {n, to_data_index(n), mesh_hash_, &bl_}; }
 
     /**
      * @brief Map an index \f$ \mathbf{n} \f$ to its corresponding lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
@@ -343,7 +339,7 @@ namespace triqs::mesh {
     [[nodiscard]] auto const &lattice() const noexcept { return bl_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of unit cells in the supercell.
     [[nodiscard]] long size() const { return size_; }
@@ -386,13 +382,13 @@ namespace triqs::mesh {
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & bl_ & dims_ & size_ & stride1 & stride0 & units_ & units_inv_ & _mesh_hash; }
+    void serialize(auto &ar) const { ar & bl_ & dims_ & size_ & s2_ & s1_ & units_ & units_inv_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & bl_ & dims_ & size_ & stride1 & stride0 & units_ & units_inv_ & _mesh_hash; }
+    void deserialize(auto &ar) { ar & bl_ & dims_ & size_ & s2_ & s1_ & units_ & units_inv_ & mesh_hash_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshCyclicLattice"; }
@@ -443,13 +439,14 @@ namespace triqs::mesh {
     }
 
     private:
-    bravais_lattice bl_       = {};
-    std::array<long, 3> dims_ = {0, 0, 0};
-    long size_                = 0;
-    long stride1 = 1, stride0 = 1;
+    bravais_lattice bl_            = {};
+    std::array<long, 3> dims_      = {0, 0, 0};
+    long size_                     = 0;
+    long s2_                       = 1;
+    long s1_                       = 1;
     nda::matrix<double> units_     = nda::eye<double>(3);
     nda::matrix<double> units_inv_ = nda::eye<double>(3);
-    uint64_t _mesh_hash            = 0;
+    uint64_t mesh_hash_            = 0;
   };
 
   /**
