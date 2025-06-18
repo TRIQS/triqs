@@ -37,7 +37,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 namespace triqs::mesh {
@@ -182,7 +181,7 @@ namespace triqs::mesh {
          _w_max(wmax),
          _eps(epsilon),
          _symmetrize(sym),
-         _mesh_hash(hash(b, stat, wmax, epsilon, nda::sum(ops.freq))),
+         _mesh_hash(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.freq))),
          _dlr{std::make_shared<dlr_ops>(std::move(ops))} {}
 
     public:
@@ -209,17 +208,18 @@ namespace triqs::mesh {
     /**
      * @brief Construct a DLR mesh from another DLR type mesh.
      *
-     * @tparam M triqs::mesh::dlr, triqs::mesh::dlr_imtime or triqs::mesh::dlr_imfreq type.
+     * @tparam M triqs::mesh::dlr_imtime or triqs::mesh::dlr_imfreq type.
      * @param m Other mesh.
      */
-    template <nda::AnyOf<dlr_imtime, dlr_imfreq, dlr> M>
-    explicit dlr(M const &m) : _beta(m._beta), _statistic(m._statistic), _w_max(m._w_max), _eps(m._eps), _symmetrize(m._symmetrize), _dlr(m._dlr) {
-      if constexpr (std::is_same_v<M, dlr>) {
-        _mesh_hash = m._mesh_hash;
-      } else {
-        _mesh_hash = hash(_beta, _statistic, _w_max, _eps, nda::sum(_dlr->freq));
-      }
-    }
+    template <nda::AnyOf<dlr_imtime, dlr_imfreq> M>
+    explicit dlr(M const &m)
+       : _beta(m._beta),
+         _statistic(m._statistic),
+         _w_max(m._w_max),
+         _eps(m._eps),
+         _symmetrize(m._symmetrize),
+         _mesh_hash(hash(_beta, _statistic, _w_max, _eps, _symmetrize, nda::sum(m._dlr->freq))),
+         _dlr(m._dlr) {}
 
     /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr const &m) const { return _mesh_hash == m._mesh_hash; }
