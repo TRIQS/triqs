@@ -63,7 +63,7 @@ namespace triqs::lattice {
    *   \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^{d} \mathbf{a}_i n_i = \mathbf{A} \mathbf{n} \; ,
    * \f]
    * where \f$ \mathbf{n} = (n_1, \dots, n_d) \in \mathbb{Z}^d \f$ is an index vector (or more formally the vector \f$
-   * \mathbf{R}^{\mathbf{n}} \f$ in the lattice basis) and \f$ \mathbf{A} = \big( \mathbf{a}_1 \cdots \mathbf{a}_d \big) 
+   * \mathbf{R}^{\mathbf{n}} \f$ in the lattice basis) and \f$ \mathbf{A} = \big( \mathbf{a}_1 \cdots \mathbf{a}_d \big)
    * \f$ is the matrix with the basis vectors as its columns.
    *
    * @note Although the supported dimensions are 1, 2 and 3, the index vectors are always 3-dimensional, i.e. \f$
@@ -80,7 +80,7 @@ namespace triqs::lattice {
      * @details A lattice point is defined by an index vector, \f$ \mathbf{n} = (n_1, \dots, n_d) \f$, and the Bravais
      * lattice it belongs to.
      *
-     * The corresponding lattice vector, \f$ \mathbf{R}^{\mathbf{n}} = (R^{\mathbf{n}}_1, \dots,  R^{\mathbf{n}}_d) \f$, 
+     * The corresponding lattice vector, \f$ \mathbf{R}^{\mathbf{n}} = (R^{\mathbf{n}}_1, \dots,  R^{\mathbf{n}}_d) \f$,
      * can be obtained with
      * \f[
      *   \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^{d} \mathbf{a}_i n_i \; ,
@@ -101,27 +101,27 @@ namespace triqs::lattice {
        * @param n Index vector \f$ \mathbf{n} \f$.
        * @param bl_ptr Pointer to the Bravais lattice.
        */
-      point_t(index_t const &n, bravais_lattice const *bl_ptr) : _index(n), _bl_ptr(bl_ptr) {}
+      point_t(index_t const &n, bravais_lattice const *bl_ptr) : index_(n), bl_ptr_(bl_ptr) {}
 
       /// Get the index vector \f$ \mathbf{n} \f$ of the lattice point.
-      [[nodiscard]] auto index() const { return _index; }
+      [[nodiscard]] auto index() const { return index_; }
 
       /// Get the underlying Bravais lattice.
-      [[nodiscard]] auto const &lattice() const { return *_bl_ptr; }
+      [[nodiscard]] auto const &lattice() const { return *bl_ptr_; }
 
       /**
        * @brief Conversion to the corresponding lattice vector \f$ \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^{d} \mathbf{a}_i
        * n_i \f$.
        */
       explicit operator r_t() const {
-        if (_rval)
-          return *_rval;
+        if (rval_)
+          return *rval_;
         else
-          return *(_rval = _bl_ptr->lattice_to_real_coordinates(_index));
+          return *(rval_ = bl_ptr_->lattice_to_real_coordinates(index_));
       }
 
       /**
-       * @brief Get the coordinate \f$ R^{\mathbf{n}}_i \f$ of the corresponding lattice vector \f$ 
+       * @brief Get the coordinate \f$ R^{\mathbf{n}}_i \f$ of the corresponding lattice vector \f$
        * \mathbf{R}^{\mathbf{n}} \f$.
        *
        * @deprecated Use operator[]() instead.
@@ -145,8 +145,8 @@ namespace triqs::lattice {
        * \mathbf{R}^{\mathbf{m}} \f$.
        */
       [[nodiscard]] point_t operator+(point_t const &pt) const {
-        EXPECTS(*_bl_ptr == *(pt._bl_ptr));
-        return {_index + pt._index, _bl_ptr};
+        EXPECTS(*bl_ptr_ == *(pt.bl_ptr_));
+        return {index_ + pt.index_, bl_ptr_};
       }
 
       /**
@@ -157,15 +157,15 @@ namespace triqs::lattice {
        * \mathbf{R}^{\mathbf{m}} \f$.
        */
       [[nodiscard]] point_t operator-(point_t const &pt) const {
-        EXPECTS(*_bl_ptr == *(pt._bl_ptr));
-        return {_index - pt._index, _bl_ptr};
+        EXPECTS(*bl_ptr_ == *(pt.bl_ptr_));
+        return {index_ - pt.index_, bl_ptr_};
       }
 
       /**
        * @brief Invert the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
        * @return Lattice point corresponding to the lattice vector \f$ -\mathbf{R}^{\mathbf{n}} \f$.
        */
-      [[nodiscard]] point_t operator-() const { return {-_index, _bl_ptr}; }
+      [[nodiscard]] point_t operator-() const { return {-index_, bl_ptr_}; }
 
       /**
        * @brief Write a lattice point to a `std::ostream`.
@@ -177,9 +177,9 @@ namespace triqs::lattice {
       friend std::ostream &operator<<(std::ostream &sout, point_t const &pt) { return sout << static_cast<r_t>(pt); }
 
       private:
-      index_t _index                   = {0, 0, 0};
-      bravais_lattice const *_bl_ptr   = nullptr;
-      mutable std::optional<r_t> _rval = {};
+      index_t index_                   = {0, 0, 0};
+      bravais_lattice const *bl_ptr_   = nullptr;
+      mutable std::optional<r_t> rval_ = {};
     };
 
     /**
@@ -191,7 +191,7 @@ namespace triqs::lattice {
     /**
      * @brief Construct a Bravais Lattice with given basis vectors and positions of atomic orbitals with optional names.
      *
-     * @details The matrix \f$ \mathbf{A}^T \f$ containing the basis vectors as its rows is required to be square. The 
+     * @details The matrix \f$ \mathbf{A}^T \f$ containing the basis vectors as its rows is required to be square. The
      * number of dimensions of the Bravais lattices is determined by the size of the matrix.
      *
      * @param A_T Matrix with the basis vectors \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ as its rows.
@@ -210,13 +210,13 @@ namespace triqs::lattice {
     [[nodiscard]] matrix_t const &units() const { return units_; }
 
     /// Get the number of atomic orbitals in the unit cell.
-    [[nodiscard]] long n_orbitals() const { return static_cast<long>(atom_orb_pos.size()); }
+    [[nodiscard]] long n_orbitals() const { return static_cast<long>(atom_orb_pos_.size()); }
 
     /// Get a `std::vector<r_t>` containing the atomic orbital positions \f$ \{\mathbf{r}_1, \dots, \mathbf{r}_m\} \f$.
-    [[nodiscard]] auto const &orbital_positions() const { return atom_orb_pos; }
+    [[nodiscard]] auto const &orbital_positions() const { return atom_orb_pos_; }
 
     /// Get a `std::vector<std::string>` containing the orbital names.
-    [[nodiscard]] auto const &orbital_names() const { return atom_orb_name; }
+    [[nodiscard]] auto const &orbital_names() const { return atom_orb_name_; }
 
     /**
      * @brief Transform a vector \f$ \mathbf{v} \f$ from the lattice basis \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \}
@@ -284,13 +284,13 @@ namespace triqs::lattice {
      * @brief Serialize the Bravais lattice to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & ndim_ & units_ & atom_orb_pos & atom_orb_name; }
+    void serialize(auto &ar) const { ar & ndim_ & units_ & atom_orb_pos_ & atom_orb_name_; }
 
     /**
      * @brief Deserialize the Bravais lattice from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & ndim_ & units_ & atom_orb_pos & atom_orb_name; }
+    void deserialize(auto &ar) { ar & ndim_ & units_ & atom_orb_pos_ & atom_orb_name_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "bravais_lattice"; }
@@ -316,8 +316,8 @@ namespace triqs::lattice {
     private:
     matrix_t units_     = matrix_t::zeros(3, 3);
     matrix_t units_inv_ = matrix_t::zeros(3, 3);
-    std::vector<r_t> atom_orb_pos;
-    std::vector<std::string> atom_orb_name;
+    std::vector<r_t> atom_orb_pos_;
+    std::vector<std::string> atom_orb_name_;
     int ndim_;
   };
 
