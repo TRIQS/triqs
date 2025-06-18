@@ -166,23 +166,23 @@ namespace triqs::mesh {
        * @param mhash Hash value of the parent mesh.
        */
       mesh_point_t(double b, statistic_enum stat, index_t n_idx, long d, uint64_t mhash)
-         : matsubara_freq(n_idx, b, stat), _data_index(d), _mesh_hash(mhash) {}
+         : matsubara_freq(n_idx, b, stat), data_index_(d), mesh_hash_(mhash) {}
 
       /// Get the Matsubara index \f$ n \f$ of the mesh point.
       [[nodiscard]] long index() const { return n; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the corresponding Matsubara frequency \f$ i\omega_n \f$.
       [[nodiscard]] matsubara_freq const &value() const { return *this; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       private:
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
     };
 
     /**
@@ -206,10 +206,10 @@ namespace triqs::mesh {
      * @param opt Whether to use all or only the positive frequencies.
      */
     imfreq(double b, statistic_enum stat, long N_iw = 1025, option opt = option::all_frequencies)
-       : _beta(b), _statistic(stat), _n_iw(N_iw), _opt(opt), _mesh_hash(hash(b, stat, N_iw, opt)) {
-      EXPECTS(_beta > 0);
-      EXPECTS(_n_iw >= 0);
-      if (opt == option::positive_frequencies_only) _first_index = 0;
+       : beta_(b), stat_(stat), N_iw_(N_iw), opt_(opt), mesh_hash_(hash(b, stat, N_iw, opt)) {
+      EXPECTS(beta_ > 0);
+      EXPECTS(N_iw_ >= 0);
+      if (opt == option::positive_frequencies_only) first_index_ = 0;
     }
 
     /**
@@ -251,7 +251,7 @@ namespace triqs::mesh {
      * @brief Equal-to comparison operator compares \f$ \beta \f$, the particle statistics, \f$ N_{i\omega_n} \f$ and
      * whether all or only positive frequencies are in the mesh.
      */
-    bool operator==(imfreq const &m) const { return (std::tie(_beta, _statistic, _n_iw, _opt) == std::tie(m._beta, m._statistic, m._n_iw, m._opt)); }
+    bool operator==(imfreq const &m) const { return (std::tie(beta_, stat_, N_iw_, opt_) == std::tie(m.beta_, m.stat_, m.N_iw_, m.opt_)); }
 
     /**
      * @brief Not-equal-to comparison operator compares \f$ \beta \f$, the particle statistics, \f$ N_{i\omega_n} \f$ 
@@ -286,7 +286,7 @@ namespace triqs::mesh {
      * @return Data index \f$ d(i\omega_n) = n - n_{\text{min}} \f$.
      */
     [[nodiscard]] data_index_t to_data_index(matsubara_freq const &iw) const noexcept {
-      EXPECTS(_beta == iw.beta and _statistic == iw.statistic);
+      EXPECTS(beta_ == iw.beta and stat_ == iw.statistic);
       return to_data_index(iw.n);
     }
 
@@ -298,7 +298,7 @@ namespace triqs::mesh {
      * @return Data index \f$ d(i\omega_n) = n - n_{\text{min}} \f$.
      */
     [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const {
-      EXPECTS(_beta == cmp.value.beta and _statistic == cmp.value.statistic);
+      EXPECTS(beta_ == cmp.value.beta and stat_ == cmp.value.statistic);
       return to_data_index(to_index(cmp));
     }
 
@@ -332,7 +332,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the Matsubara index \f$ n(d) = d + n_{\text{min}} \f$, data index \f$ d \f$ and same
      * \f$ \beta \f$, particle statistics and hash value as the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](long d) const { return {_beta, _statistic, to_index(d), d, _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator[](long d) const { return {beta_, stat_, to_index(d), d, mesh_hash_}; }
 
     /**
      * @brief Subscript operator to access a mesh point by a Matsubara frequency \f$ i\omega_n \f$ contained in a
@@ -352,7 +352,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the Matsubara index \f$ n \f$, data index \f$ d(n) = n - n_{\text{min}} \f$ and same
      * \f$ \beta \f$, particle statistics and hash value as the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator()(long n) const { return {_beta, _statistic, n, to_data_index(n), _mesh_hash}; }
+    [[nodiscard]] mesh_point_t operator()(long n) const { return {beta_, stat_, n, to_data_index(n), mesh_hash_}; }
 
     /**
      * @brief Map a Matsubara index \f$ n \in \{ n_{\text{min}}, \dots, n_{\text{max}} \} \f$ to its corresponding
@@ -363,14 +363,14 @@ namespace triqs::mesh {
      */
     [[nodiscard]] matsubara_freq to_value(index_t n) const {
       EXPECTS(is_index_valid(n));
-      return {n, _beta, _statistic};
+      return {n, beta_, stat_};
     }
 
     /**
      * @brief Get a new mesh with the same \f$ \beta \f$, particle statistics and \f$ N_{i\omega_n} \f$ but only
      * positive frequencies.
      */
-    imfreq get_positive_freq() const { return {_beta, _statistic, _n_iw, option::positive_frequencies_only}; }
+    imfreq get_positive_freq() const { return {beta_, stat_, N_iw_, option::positive_frequencies_only}; }
 
     /**
      * @brief Map an index \f$ n \f$ to its corresponding Matsubara frequency \f$ i\omega_n \f$.
@@ -381,41 +381,41 @@ namespace triqs::mesh {
      * @param n Matsubara index \f$ n \f$ to map.
      * @return Matsubara frequency \f$ i\omega_n \f$.
      */
-    matsubara_freq index_to_freq(index_t n) const { return {n, _beta, _statistic}; }
+    matsubara_freq index_to_freq(index_t n) const { return {n, beta_, stat_}; }
 
     /// Get the complex value of the largest positive Matsubara frequency in the mesh.
-    std::complex<double> w_max() const { return index_to_freq(_last_index); }
+    std::complex<double> w_max() const { return index_to_freq(last_index_); }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return _beta; }
+    [[nodiscard]] double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the number of positive Matsubara frequencies \f$ N_{i\omega_n} \f$.
-    [[nodiscard]] long n_iw() const noexcept { return _n_iw; }
+    [[nodiscard]] long n_iw() const noexcept { return N_iw_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /**
      * @brief Get the Matsubara frequency domain.
      * @deprecated `triqs::mesh::matsubara_freq_domain` is deprecated.
      */
-    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {_beta, _statistic}; }
+    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta_, stat_}; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points.
-    [[nodiscard]] long size() const noexcept { return _last_index - _first_index + 1; }
+    [[nodiscard]] long size() const noexcept { return last_index_ - first_index_ + 1; }
 
     /// Get the first Matsubara index, i.e. \f$ n_{\text{min}} \f$.
-    [[nodiscard]] long first_index() const { return _first_index; }
+    [[nodiscard]] long first_index() const { return first_index_; }
 
     /// Get the last Matsubara index, i.e. \f$ n_{\text{max}} \f$.
-    [[nodiscard]] long last_index() const { return _last_index; }
+    [[nodiscard]] long last_index() const { return last_index_; }
 
     /// Is the mesh restricted to positive Matsubara frequencies?
-    [[nodiscard]] bool positive_only() const { return _opt == option::positive_frequencies_only; }
-    
+    [[nodiscard]] bool positive_only() const { return opt_ == option::positive_frequencies_only; }
+
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<imfreq>{.mesh_ptr = this, .data_index = 0}; }
 
@@ -436,22 +436,22 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
-      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("Imaginary frequency mesh with beta = {}, statistics = {}, N_iw = {}, positive_only = {}", m._beta, stat_cstr,
-                                 m._n_iw, m.positive_only());
+      auto stat_cstr = (m.stat_ == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("Imaginary frequency mesh with beta = {}, statistics = {}, N_iw = {}, positive_only = {}", m.beta_, stat_cstr,
+                                 m.N_iw_, m.positive_only());
     }
 
     /**
      * @brief Serialize the mesh to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & _beta & _statistic & _n_iw & _opt & _last_index & _first_index & _mesh_hash; }
+    void serialize(auto &ar) const { ar & beta_ & stat_ & N_iw_ & opt_ & last_index_ & first_index_ & mesh_hash_; }
 
     /**
      * @brief Deserialize the mesh from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & _beta & _statistic & _n_iw & _opt & _last_index & _first_index & _mesh_hash; }
+    void deserialize(auto &ar) { ar & beta_ & stat_ & N_iw_ & opt_ & last_index_ & first_index_ & mesh_hash_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshImFreq"; }
@@ -466,8 +466,8 @@ namespace triqs::mesh {
     friend void h5_write(h5::group g, std::string name, imfreq const &m) {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
-      h5::write(gr, "beta", m._beta);
-      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
+      h5::write(gr, "beta", m.beta_);
+      h5::write(gr, "statistic", (m.stat_ == Fermion ? "F" : "B"));
       h5::write(gr, "size", m.size());
       h5::write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
     }
@@ -513,13 +513,13 @@ namespace triqs::mesh {
     bool eval_to_zero(mesh_point_t mp) const { return eval_to_zero(mp.value()); }
 
     private:
-    double _beta              = 1.0;
-    statistic_enum _statistic = Fermion;
-    long _n_iw                = 0;
-    option _opt               = option::all_frequencies;
-    long _last_index          = _n_iw - 1;
-    long _first_index         = -(_last_index + ((_statistic == Fermion) ? 1 : 0));
-    uint64_t _mesh_hash       = 0;
+    double beta_         = 1.0;
+    statistic_enum stat_ = Fermion;
+    long N_iw_           = 0;
+    option opt_          = option::all_frequencies;
+    long last_index_     = N_iw_ - 1;
+    long first_index_    = -(last_index_ + ((stat_ == Fermion) ? 1 : 0));
+    uint64_t mesh_hash_  = 0;
   };
 
   /**
