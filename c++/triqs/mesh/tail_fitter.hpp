@@ -73,13 +73,13 @@ namespace triqs::mesh {
    * @param q Expansion order \f$ q \f$.
    * @return Vandermonde matrix \f$ V \f$.
    */
-  inline auto vander(std::vector<dcomplex> const &z_pts, int q) {
-    nda::matrix<dcomplex> V(z_pts.size(), q + 1);
-    for (auto [i, p] : itertools::enumerate(z_pts)) {
-      dcomplex z = 1;
+  inline auto vander(std::vector<std::complex<double>> const &z_pts, int q) {
+    nda::matrix<std::complex<double>> V(z_pts.size(), q + 1);
+    for (auto [i, z_i] : itertools::enumerate(z_pts)) {
+      auto z = std::complex<double>{1};
       for (int n = 0; n <= q; ++n) {
         V(i, n) = z;
-        z *= p;
+        z *= z_i;
       }
     }
     return V;
@@ -105,20 +105,19 @@ namespace triqs::mesh {
    * @return Evaluated tail expansion of \f$ f(z_0) \f$ which can either be a complex number (if \f$ R = 1 \f$) or an
    * array of complex numbers (if \f$ R > 1 \f$).
    */
-  template <int R> auto tail_eval(nda::array_const_view<dcomplex, R> A, dcomplex z_0) {
-
-    // same algo for both cases below
-    auto compute = [&A, z_0](auto res) { // copy, in fact rvalue
-      dcomplex z = 1;
-      long q     = A.extent(0);
-      for (int n = 0; n < q; ++n, z /= z_0) res += A(n, nda::ellipsis()) * z;
+  template <int R> auto tail_eval(nda::array_const_view<std::complex<double>, R> A, std::complex<double> z_0) {
+    auto compute = [&A, z_0](auto res) {
+      auto z       = std::complex<double>{1};
+      auto const q = A.extent(0);
+      for (int n = 0; n < q; ++n, z /= z_0) res += A(n, nda::ellipsis{}) * z;
       return res;
     };
-
     if constexpr (R > 1) {
-      return compute(nda::zeros<dcomplex>(stdutil::front_pop(A.indexmap().lengths())));
+      // return an array of rank R - 1
+      return compute(nda::zeros<std::complex<double>>(nda::stdutil::front_pop(A.shape())));
     } else {
-      return compute(dcomplex{0});
+      // return a complex scalar
+      return compute(std::complex<double>{0});
     }
   }
 
@@ -197,9 +196,9 @@ namespace triqs::mesh {
     const bool _adjust_order;
     const int _expansion_order;
     const double _rcond = 1e-8;
-    std::array<std::unique_ptr<const nda::lapack::gelss_worker<dcomplex>>, max_order + 1> _lss;
+    std::array<std::unique_ptr<const nda::lapack::gelss_worker<std::complex<double>>>, max_order + 1> _lss;
     std::array<std::unique_ptr<const nda::lapack::gelss_worker_hermitian>, max_order + 1> _lss_hermitian;
-    nda::matrix<dcomplex> _vander;
+    nda::matrix<std::complex<double>> _vander;
     std::vector<long> _fit_idx_lst;
 
     public:
@@ -228,7 +227,9 @@ namespace triqs::mesh {
      * @param m Frequency mesh.
      * @return Number of mesh points \f$ p \f$ to use in the fit.
      */
-    template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
+    template <typename M> int n_pts_in_tail(M const &m) const {
+      return std::min(static_cast<int>(std::round(_tail_fraction * m.size() / 2)), _n_tail_max);
+    }
 
     /// Default fraction \f$ r \f$ of the mesh to consider in the tail fit.
     static constexpr double default_tail_fraction = 0.2;
@@ -248,25 +249,26 @@ namespace triqs::mesh {
      * @return `std::vector<long>` containing the indices of the mesh points to use in the fit.
      */
     template <typename M> auto get_tail_fit_indices(M const &m) {
+      // total number of points in the fitting window
+      auto const p_r = static_cast<int>(std::round(_tail_fraction * m.size() / 2));
 
-      // Total number of points in the fitting window
-      int n_pts_in_fit_range = int(std::round(_tail_fraction * m.size() / 2));
+      // number of points actually used for the fit
+      auto const p = n_pts_in_tail(m);
 
-      // Number of points used for the fit
-      int n_tail = n_pts_in_tail(m);
-
+      // reserve space for the indices
       std::vector<long> idx_vec;
-      idx_vec.reserve(2 * n_tail);
+      idx_vec.reserve(2ul * p);
 
-      double step = double(n_pts_in_fit_range) / n_tail;
-      double idx1 = m.first_index();
-      double idx2 = m.last_index() - n_pts_in_fit_range;
+      // initialize the left most and right most indices for both fitting windows
+      double const step = static_cast<double>(p_r) / p;
+      double left_idx   = m.first_index();
+      double right_idx  = m.last_index() - p_r;
 
-      for ([[maybe_unused]] int n : range(n_tail)) {
-        idx_vec.push_back(long(idx1));
-        idx_vec.push_back(long(idx2));
-        idx1 += step;
-        idx2 += step;
+      for ([[maybe_unused]] auto i : nda::range(p)) {
+        idx_vec.push_back(long(left_idx));
+        idx_vec.push_back(long(right_idx));
+        left_idx += step;
+        right_idx += step;
       }
 
       return idx_vec;
@@ -312,38 +314,44 @@ namespace triqs::mesh {
      * @param n_A Number of known coefficient arrays.
      */
     template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_A) {
+      // least square worker type
+      using worker_t = std::conditional_t<enforce_hermiticity, nda::lapack::gelss_worker_hermitian, nda::lapack::gelss_worker<std::complex<double>>>;
 
-      using namespace nda::lapack;
-      using cache_t = std::conditional_t<enforce_hermiticity, gelss_worker_hermitian, gelss_worker<dcomplex>>;
-
-      // Calculate the indices to fit on
+      // indices of the mesh points to use in the tail fit
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
 
-      // Set Up full Vandermonde matrix up to order expansion_order if not set
-      double om_max = std::abs(m.w_max());
+      // set up Vandermonde matrix (the points are given by z_i = |m.w_max()| / m.to_value(n))
+      double const z_max = std::abs(m.w_max());
       if (_vander.is_empty()) {
-        std::vector<dcomplex> C;
-        C.reserve(_fit_idx_lst.size());
-        for (long n : _fit_idx_lst) C.push_back(om_max / m.to_value(n));
-        _vander = vander(C, _expansion_order);
+        std::vector<std::complex<double>> z_pts;
+        z_pts.reserve(_fit_idx_lst.size());
+        for (long n : _fit_idx_lst) z_pts.push_back(z_max / m.to_value(n));
+        _vander = vander(z_pts, _expansion_order);
       }
 
-      if (n_A + 1 > _vander.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
+      // check if we have enough data points for the least square procedure (p > n_A + 1)
+      if (n_A + 1 > _vander.extent(0) / 2)
+        TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::setup_lss: Insufficient data points for least square procedure";
 
-      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range::all, range(n_A, n + 1))); };
+      // factory function for least square workers
+      auto worker_factory = [&](int n) { return std::make_unique<const worker_t>(_vander(nda::range::all, nda::range(n_A, n + 1))); };
 
+      // get the correct (hermitian vs. non-hermitian) array of least square workers
       auto &lss = get_lss<enforce_hermiticity>();
 
-      if (!_adjust_order)
-        lss[n_A] = l(_expansion_order);
-      else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
+      // set up the least square workers
+      if (!_adjust_order) {
+        // use the expansion order given in the constructor
+        lss[n_A] = worker_factory(_expansion_order);
+      } else {
+        // find the maximum expansion order such that the smallest singular value of the Vandermonde matrix is > rcond_
         lss[n_A].reset();
-        // Ensure that |m.w_max()|^(1-N) > 10^{-16}
-        long n_max = std::min(static_cast<long>(max_order), static_cast<long>(1. + 16. / std::log10(1 + std::abs(m.w_max()))));
-        // We use at least two times as many data-points as we have moments to fit
-        n_max = std::min(n_max, _vander.extent(0) / 2);
-        for (int n = n_max; n >= n_A; --n) {
-          auto ptr = l(n);
+        // ensure that |z_max|^{1-q} > 10^{-16}
+        long q_max = std::min(static_cast<long>(max_order), static_cast<long>(1. + 16. / std::log10(1 + std::abs(m.w_max()))));
+        // we try to use at least two times as many data points as we have unknown coefficients
+        q_max = std::min(q_max, _vander.extent(0) / 2);
+        for (long q = q_max; q >= n_A; --q) {
+          auto ptr = worker_factory(q);
           if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
             lss[n_A] = std::move(ptr);
             break;
@@ -351,7 +359,8 @@ namespace triqs::mesh {
         }
       }
 
-      if (!lss[n_A]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
+      // throw an exception if the Vandermonde matrix is ill-conditioned
+      if (!lss[n_A]) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::setup_lss: Ill-conditioned Vandermonde matrix";
     }
 
     /**
@@ -391,100 +400,88 @@ namespace triqs::mesh {
      * @param d Inner matrix dimensions \f$ d \f$ (only needed if `enforce_hermiticity` is true).
      * @return `std::pair` containing the expansion coefficients \f$ A_n/\tilde{A}_n \f$ and the error of the fit.
      */
-    template <int P, bool enforce_hermiticity = false, typename M, int R, int R2 = R>
-    auto fit(M const &m, nda::array_const_view<dcomplex, R> D, bool rescale, nda::array_const_view<dcomplex, R2> C, std::optional<long> d = {}) {
+    template <int P, bool enforce_hermiticity = false, typename M, int R>
+    auto fit(M const &m, nda::array_const_view<std::complex<double>, R> D, bool rescale, nda::array_const_view<std::complex<double>, R> C,
+             std::optional<long> d = {}) {
+      // compile-time and run-time checks
+      static_assert(!enforce_hermiticity || std::is_same_v<M, imfreq>);
+      if (enforce_hermiticity and not d.has_value())
+        TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Enforcing hermiticity requires an inner matrix dimension";
+      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Cannot fit on a positive_only mesh";
 
-      if (enforce_hermiticity and not d.has_value()) TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
-      if constexpr (enforce_hermiticity) static_assert(std::is_same_v<M, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
-      static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
-      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
+      // early return if the number of known coefficients is larger than the expansion order
+      int const n_A = C.extent(0);
+      if (n_A > _expansion_order) return std::pair<nda::array<std::complex<double>, R>, double>{C, 0.0};
 
-      // If not set, build least square solver for for given number of known moments
-      int n_fixed_moments = C.extent(0);
-      if (n_fixed_moments > _expansion_order) return std::pair<nda::array<std::complex<double>, R>, double>{C, 0.0};
-
+      // set up the least squares worker for the given number of known coefficients if it has not been done already
       auto &lss = get_lss<enforce_hermiticity>();
-      if (!bool(lss[n_fixed_moments])) setup_lss<enforce_hermiticity>(m, n_fixed_moments);
+      if (!lss[n_A]) setup_lss<enforce_hermiticity>(m, n_A);
 
-      // Total number of moments
-      int n_moments = lss[n_fixed_moments]->n_var() + n_fixed_moments;
+      // permute the indices of D such that the relevant frequency mesh corresponds to the first dimension
+      auto D_rot = nda::rotate_index_view<P>(D);
 
-      using itertools::enumerate;
-      using nda::ellipsis;
-
-      // The values of the Green function. Swap relevant mesh to front
-      auto g_data_swap_idx = nda::rotate_index_view<P>(D);
-      auto const &imp      = g_data_swap_idx.indexmap();
-      long ncols           = imp.size() / imp.lengths()[0];
-
-      // We flatten the data in the target space and remaining mesh into the second dim
-      nda::matrix<dcomplex> g_mat(_vander.extent(0), ncols);
-
-      // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
-      for (auto [i, n] : enumerate(_fit_idx_lst)) {
-        if constexpr (R == 1)
-          g_mat(i, 0) = g_data_swap_idx(m.to_data_index(n));
-        else
-          for (auto [j, x] : enumerate(g_data_swap_idx(m.to_data_index(n), ellipsis()))) { g_mat(i, j) = x; }
+      // flatten D in the target space and the remaining meshes into the second dimension of a new matrix
+      long const ncols = D_rot.size() / D_rot.shape()[0];
+      auto D_mat       = nda::matrix<std::complex<double>>(_vander.extent(0), ncols);
+      for (auto [i, n] : itertools::enumerate(_fit_idx_lst)) {
+        if constexpr (R == 1) {
+          D_mat(i, 0) = D_rot(m.to_data_index(n));
+        } else {
+          for (auto [j, x] : itertools::enumerate(D_rot(m.to_data_index(n), nda::ellipsis{}))) { D_mat(i, j) = x; }
+        }
       }
 
-      // If an array with known_moments was passed, flatten the array into a matrix
-      // just like g_data. Then account for the proper shift in g_mat
-      if (n_fixed_moments > 0) {
-        auto imp_km   = C.indexmap();
-        long ncols_km = imp_km.size() / imp_km.lengths()[0];
+      // flatten and prepare the array of known coefficients C
+      double const z_max = std::abs(m.w_max());
+      if (n_A > 0) {
+        // check the shape of C
+        if (ncols != C.size() / C.shape()[0])
+          TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Shape of C array incompatible with the shape of the D array";
 
-        if (ncols != ncols_km) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
-        nda::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
-
-        // We have to scale the known_moments by 1/Omega_max^n
-        double z      = 1.0;
-        double om_max = std::abs(m.w_max());
-
-        for (int order : range(n_fixed_moments)) {
-          if constexpr (R == 1)
-            km_mat(order, 0) = z * C(order, ellipsis());
-          else
-            for (auto [n, x] : enumerate(C(order, ellipsis()))) km_mat(order, n) = z * x;
-          z /= om_max;
+        // flatten C and scale its values by |z_max|^{-q}
+        double z   = 1.0;
+        auto C_mat = nda::matrix<std::complex<double>>(n_A, ncols);
+        for (long i : nda::range(n_A)) {
+          if constexpr (R == 1) {
+            C_mat(i, 0) = z * C(i, nda::ellipsis{});
+          } else {
+            for (auto [j, x] : itertools::enumerate(C(i, nda::ellipsis{}))) C_mat(i, j) = z * x;
+          }
+          z /= z_max;
         }
 
-        // Shift g_mat to account for known moment correction
-        g_mat -= _vander(range::all, range(n_fixed_moments)) * km_mat;
+        // subtract the expansion terms corresponding to the known moments from the function values
+        D_mat -= _vander(nda::range::all, nda::range(n_A)) * C_mat;
       }
-      // Call least square solver
-      auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, d); // coef + error
 
-      // === The result a_mat contains the fitted moments divided by w_max()^n
-      // Here we extract the real moments
+      // perform the least squares procedure
+      auto [A_mat, err] = (*lss[n_A])(D_mat, d);
+
+      // rescale the coefficients if requested
       if (rescale) {
-        double z      = 1.0;
-        double om_max = std::abs(m.w_max());
-        for ([[maybe_unused]] int i : range(n_fixed_moments)) z *= om_max;
-        for (int i : range(a_mat.extent(0))) {
-          a_mat(i, range::all) *= z;
-          z *= om_max;
+        double z = 1.0;
+        for ([[maybe_unused]] long i : nda::range(n_A)) z *= z_max;
+        for (long i : nda::range(A_mat.extent(0))) {
+          A_mat(i, nda::range::all) *= z;
+          z *= z_max;
         }
       }
-      // === Reinterpret the result as an R-dimensional array according to initial shape and return together with the error
 
-      using r_t = nda::array<dcomplex, R>; // return type
-      auto lg   = g_data_swap_idx.indexmap().lengths();
+      // reinterpret the result as an R-dimensional array according to the initial shape
+      auto shape = D_rot.shape();
+      shape[0]   = lss[n_A]->n_var() + n_A;
+      auto A     = nda::array<std::complex<double>, R>{shape};
 
-      // Index map for the view on the a_mat result
-      lg[0]     = n_moments - n_fixed_moments;
-      auto imp1 = typename r_t::layout_t{lg};
-      //auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
+      // add the known moments to the result
+      if (n_A) A(nda::range(n_A), nda::ellipsis{}) = C;
 
-      // Index map for the full result
-      lg[0]    = n_moments;
-      auto res = r_t(lg);
+      // add the calculated moments to the result
+      shape[0]    = lss[n_A]->n_var();
+      auto idxmap = typename nda::array<std::complex<double>, R>::layout_t{shape};
+      auto A_view = A(nda::range(n_A, A.shape()[0]), nda::ellipsis{});
+      A_view      = nda::array_view<std::complex<double>, R>{idxmap, A_mat.storage()};
 
-      if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = C;
-      res(range(n_fixed_moments, n_moments), ellipsis()) = nda::array_view<dcomplex, R>{imp1, a_mat.storage()};
-      //res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
-
-      return std::pair<nda::array<std::complex<double>, R>, double>{std::move(res), epsilon};
+      return std::pair<nda::array<std::complex<double>, R>, double>{std::move(A), err};
     }
 
     /**
@@ -503,10 +500,10 @@ namespace triqs::mesh {
      * @param d Inner matrix dimensions \f$ d \f$.
      * @return `std::pair` containing the expansion coefficients \f$ A_n/\tilde{A}_n \f$ and the error of the fit.
      */
-    template <int P, typename M, int R, int R2 = R>
-    auto fit_hermitian(M const &m, nda::array_const_view<dcomplex, R> D, bool rescale, nda::array_const_view<dcomplex, R2> C,
+    template <int P, typename M, int R>
+    auto fit_hermitian(M const &m, nda::array_const_view<std::complex<double>, R> D, bool rescale, nda::array_const_view<std::complex<double>, R> C,
                        std::optional<long> d = {}) {
-      return fit<P, true, M, R, R2>(m, D, rescale, C, d);
+      return fit<P, true, M, R>(m, D, rescale, C, d);
     }
   };
 
