@@ -133,28 +133,28 @@ namespace triqs::mesh {
        * @param mhash Hash value of the parent mesh.
        * @param tau_l Value \f$ \tau_l \f$ of the mesh point.
        */
-      mesh_point_t(long l, long d, uint64_t mhash, double tau_l) : _index(l), _data_index(d), _mesh_hash(mhash), _value(tau_l) {}
+      mesh_point_t(long l, long d, uint64_t mhash, double tau_l) : index_(l), data_index_(d), mesh_hash_(mhash), value_(tau_l) {}
 
       /// Get the index \f$ l \f$ of the mesh point.
-      [[nodiscard]] long index() const { return _index; }
+      [[nodiscard]] long index() const { return index_; }
 
       /// Get the data index \f$ d \f$ of the mesh point.
-      [[nodiscard]] long data_index() const { return _data_index; }
+      [[nodiscard]] long data_index() const { return data_index_; }
 
       /// Get the value \f$ \tau_l \f$ of the mesh point.
-      [[nodiscard]] double value() const { return _value; }
+      [[nodiscard]] double value() const { return value_; }
 
       /// Get the hash value of the parent mesh.
-      [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+      [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
       /// Conversion to the value type of the parent mesh.
-      operator double() const { return _value; }
+      operator double() const { return value_; }
 
       private:
-      long _index         = 0;
-      long _data_index    = 0;
-      uint64_t _mesh_hash = 0;
-      double _value       = {};
+      long index_         = 0;
+      long data_index_    = 0;
+      uint64_t mesh_hash_ = 0;
+      double value_       = {};
     };
 
     private:
@@ -167,13 +167,13 @@ namespace triqs::mesh {
 
     // Construct an imaginary time DLR mesh with given DLR operations.
     dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym, detail::dlr_ops ops)
-       : _beta(b),
-         _statistic(stat),
-         _w_max(wmax),
-         _eps(epsilon),
-         _symmetrize(sym),
-         _mesh_hash(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.imt.get_itnodes()))),
-         _dlr{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
+       : beta_(b),
+         stat_(stat),
+         w_max_(wmax),
+         eps_(epsilon),
+         symmetrize_(sym),
+         mesh_hash_(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.imt.get_itnodes()))),
+         dlr_{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
 
     public:
     /// Default constructor constructs an empty mesh.
@@ -204,16 +204,16 @@ namespace triqs::mesh {
      */
     template <nda::AnyOf<dlr_imfreq, dlr> M>
     explicit dlr_imtime(M const &m)
-       : _beta(m._beta),
-         _statistic(m._statistic),
-         _w_max(m._w_max),
-         _eps(m._eps),
-         _symmetrize(m._symmetrize),
-         _mesh_hash(hash(_beta, _statistic, _w_max, _eps, _symmetrize, nda::sum(m._dlr->imt.get_itnodes()))),
-         _dlr(m._dlr) {}
+       : beta_(m.beta_),
+         stat_(m.stat_),
+         w_max_(m.w_max_),
+         eps_(m.eps_),
+         symmetrize_(m.symmetrize_),
+         mesh_hash_(hash(beta_, stat_, w_max_, eps_, symmetrize_, nda::sum(m.dlr_->imt.get_itnodes()))),
+         dlr_(m.dlr_) {}
 
     /// Equal-to comparison operator compares the hash values.
-    bool operator==(dlr_imtime const &m) const { return _mesh_hash == m._mesh_hash and _statistic == m._statistic; }
+    bool operator==(dlr_imtime const &m) const { return mesh_hash_ == m.mesh_hash_ and stat_ == m.stat_; }
 
     /// Not-equal-to comparison operator compares the hash values.
     bool operator!=(dlr_imtime const &m) const { return !(operator==(m)); }
@@ -269,7 +269,7 @@ namespace triqs::mesh {
      */
     [[nodiscard]] mesh_point_t operator()(long l) const {
       EXPECTS(is_index_valid(l));
-      return {l, l, _mesh_hash, to_value(l)};
+      return {l, l, mesh_hash_, to_value(l)};
     }
 
     /**
@@ -280,41 +280,41 @@ namespace triqs::mesh {
      */
     [[nodiscard]] double to_value(long l) const noexcept {
       EXPECTS(is_index_valid(l));
-      auto res = _dlr->imt.get_itnodes()[l] * _beta;
-      if (res < 0) res = _beta + res;
+      auto res = dlr_->imt.get_itnodes()[l] * beta_;
+      if (res < 0) res = beta_ + res;
       return res;
     }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return _beta; }
+    [[nodiscard]] double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return _statistic; }
+    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
-    [[nodiscard]] double w_max() const noexcept { return _w_max; }
+    [[nodiscard]] double w_max() const noexcept { return w_max_; }
 
     /// Get the DLR error tolerance \f$ \epsilon \f$.
-    [[nodiscard]] double eps() const noexcept { return _eps; }
+    [[nodiscard]] double eps() const noexcept { return eps_; }
 
     /// Is the mesh symmetric around \f$ \tau = \beta / 2 \f$?
-    [[nodiscard]] bool symmetrize() const noexcept { return _symmetrize; }
+    [[nodiscard]] bool symmetrize() const noexcept { return symmetrize_; }
 
     /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
-    [[nodiscard]] auto const &dlr_freq() const { return _dlr->freq; }
+    [[nodiscard]] auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
-    [[nodiscard]] auto const &dlr_it() const { return _dlr->imt; }
+    [[nodiscard]] auto const &dlr_it() const { return dlr_->imt; }
 
     /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
-    [[nodiscard]] auto const &dlr_if() const { return _dlr->imf; }
+    [[nodiscard]] auto const &dlr_if() const { return dlr_->imf; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
-    [[nodiscard]] long size() const noexcept { return (_dlr ? _dlr->imt.get_itnodes().size() : 0); }
-    
+    [[nodiscard]] long size() const noexcept { return (dlr_ ? dlr_->imt.get_itnodes().size() : 0); }
+
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<dlr_imtime>{.mesh_ptr = this, .data_index = 0}; }
 
@@ -335,9 +335,9 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, dlr_imtime const &m) {
-      auto stat_cstr = (m._statistic == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imaginary time mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}", m.size(), m._beta,
-                                 stat_cstr, m._w_max, m._eps);
+      auto stat_cstr = (m.stat_ == Boson ? "Boson" : "Fermion");
+      return sout << fmt::format("DLR imaginary time mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}", m.size(), m.beta_,
+                                 stat_cstr, m.w_max_, m.eps_);
     }
 
     /**
@@ -345,10 +345,10 @@ namespace triqs::mesh {
      * @param ar Archive to serialize to.
      */
     void serialize(auto &ar) const {
-      EXPECTS(_dlr);
-      ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & _dlr->freq;
-      _dlr->imt.serialize(ar);
-      _dlr->imf.serialize(ar);
+      EXPECTS(dlr_);
+      ar & beta_ & stat_ & w_max_ & eps_ & symmetrize_ & mesh_hash_ & dlr_->freq;
+      dlr_->imt.serialize(ar);
+      dlr_->imf.serialize(ar);
     }
 
     /**
@@ -359,10 +359,10 @@ namespace triqs::mesh {
       nda::vector<double> freq;
       cppdlr::imtime_ops imt;
       cppdlr::imfreq_ops imf;
-      ar & _beta & _statistic & _w_max & _eps & _symmetrize & _mesh_hash & freq;
+      ar & beta_ & stat_ & w_max_ & eps_ & symmetrize_ & mesh_hash_ & freq;
       imt.deserialize(ar);
       imf.deserialize(ar);
-      _dlr = std::make_shared<detail::dlr_ops>(freq, imt, imf);
+      dlr_ = std::make_shared<detail::dlr_ops>(freq, imt, imf);
     }
 
     /// Get the HDF5 format tag.
@@ -378,11 +378,11 @@ namespace triqs::mesh {
     friend void h5_write(h5::group g, std::string const &name, dlr_imtime const &m) {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
-      h5::write(gr, "beta", m._beta);
-      h5::write(gr, "statistic", (m._statistic == Fermion ? "F" : "B"));
-      h5::write(gr, "w_max", m._w_max);
-      h5::write(gr, "eps", m._eps);
-      h5::write(gr, "symmetrize", m._symmetrize);
+      h5::write(gr, "beta", m.beta_);
+      h5::write(gr, "statistic", (m.stat_ == Fermion ? "F" : "B"));
+      h5::write(gr, "w_max", m.w_max_);
+      h5::write(gr, "eps", m.eps_);
+      h5::write(gr, "symmetrize", m.symmetrize_);
       h5::write(gr, "dlr_freq", m.dlr_freq());
       h5::write(gr, "dlr_it", m.dlr_it());
       h5::write(gr, "dlr_if", m.dlr_if());
@@ -411,17 +411,17 @@ namespace triqs::mesh {
     }
 
     // Friend declarations.
-    friend struct dlr_imfreq;
-    friend struct dlr;
+    friend class dlr_imfreq;
+    friend class dlr;
 
     private:
-    double _beta                                = 1.0;
-    statistic_enum _statistic                   = Fermion;
-    double _w_max                               = 0.0;
-    double _eps                                 = 1e-10;
-    bool _symmetrize                            = false;
-    uint64_t _mesh_hash                         = 0;
-    std::shared_ptr<const detail::dlr_ops> _dlr = {};
+    double beta_                                = 1.0;
+    statistic_enum stat_                        = Fermion;
+    double w_max_                               = 0.0;
+    double eps_                                 = 1e-10;
+    bool symmetrize_                            = false;
+    uint64_t mesh_hash_                         = 0;
+    std::shared_ptr<const detail::dlr_ops> dlr_ = {};
   };
 
   /**
