@@ -92,6 +92,12 @@
 
 /**
  * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-prod Product meshes
+ * @brief %Mesh types for products of meshes.
+ */
+
+/**
+ * @ingroup triqs-meshes
  * @defgroup triqs-meshes-real Real time and frequency meshes
  * @brief %Mesh types for real time and frequency domains.
  */

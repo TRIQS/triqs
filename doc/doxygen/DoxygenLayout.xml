@@ -57,6 +57,11 @@
             <tab type="user" url="@ref triqs::mesh::detail::linear::mesh_point_t" title="mesh::detail::linear::mesh_point_t"/>
           </tab>
         </tab>
+        <tab type="usergroup" url="@ref triqs-meshes-prod" title="Product meshes">
+          <tab type="usergroup" url="@ref triqs::mesh::prod" title="mesh::prod">
+            <tab type="user" url="@ref triqs::mesh::prod_mesh_point" title="mesh::prod_mesh_point"/>
+          </tab>
+        </tab>
         <tab type="usergroup" url="@ref triqs-meshes-real" title="Real time and frequency meshes">
           <tab type="user" url="@ref triqs::mesh::refreq" title="mesh::refreq"/>
           <tab type="user" url="@ref triqs::mesh::retime" title="mesh::retime"/>
