@@ -64,7 +64,8 @@ namespace triqs::mesh {
    * the corresponding indices in an index tuple \f$ \mathbf{n} \f$, the data indices in a data index tuple \f$
    * \mathbf{d} \f$, and the hash value of the parent mesh.
    */
-  template <Mesh... Ms> struct prod_mesh_point : public std::tuple<typename Ms::mesh_point_t...> {
+  template <Mesh... Ms> class prod_mesh_point : public std::tuple<typename Ms::mesh_point_t...> {
+    public:
     /// Parent mesh type.
     using mesh_t = prod<Ms...>;
 
@@ -77,12 +78,6 @@ namespace triqs::mesh {
     /// Underlying tuple type of mesh points.
     using tuple_t = std::tuple<typename Ms::mesh_point_t...>;
 
-    private:
-    index_t _index           = std::apply([](auto &...ms) { return std::make_tuple(ms.index()...); }, as_tuple());
-    data_index_t _data_index = std::apply([](auto &...ms) { return std::make_tuple(ms.data_index()...); }, as_tuple());
-    uint64_t _mesh_hash      = std::apply([](auto &...ms) { return (ms.mesh_hash() + ...); }, as_tuple());
-
-    public:
     /// Default constructor leaves the mesh point uninitialized.
     prod_mesh_point() = default;
 
@@ -103,6 +98,11 @@ namespace triqs::mesh {
 
     /// Get the underlying tuple of mesh points.
     tuple_t const &as_tuple() const { return *this; }
+
+    private:
+    index_t _index           = std::apply([](auto &...ms) { return std::make_tuple(ms.index()...); }, as_tuple());
+    data_index_t _data_index = std::apply([](auto &...ms) { return std::make_tuple(ms.data_index()...); }, as_tuple());
+    uint64_t _mesh_hash      = std::apply([](auto &...ms) { return (ms.mesh_hash() + ...); }, as_tuple());
   };
 
   //
@@ -204,9 +204,9 @@ namespace triqs::mesh {
      * @brief Construct a product mesh with the given meshes \f$ M_1, \dots, M_k \f$.
      * @param ms Meshes to be combined into a product mesh \f$ M = M_1 \times \dots \times M_k \f$.
      */
-    prod(Ms const &...ms) 
+    prod(Ms const &...ms)
       requires(sizeof...(Ms) > 0)
-    : m_tuple_t{ms...}, hash_((ms.mesh_hash() + ...)) {}
+       : m_tuple_t{ms...}, hash_((ms.mesh_hash() + ...)) {}
 
     /**
      * @brief Construct a product mesh \f$ M = M_1 \times \dots \times M_k \f$ from the given tuple of meshes.
@@ -220,22 +220,6 @@ namespace triqs::mesh {
 
     /// Not-equal-to comparison operator compares the tuple of meshes in the product.
     bool operator!=(prod const &m) const = default;
-
-    /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return hash_; }
-
-    /// Get the size \f$ N \f$ of the mesh, i.e. the product of the sizes of its components.
-    [[nodiscard]] long size() const {
-      return triqs::tuple::fold([](auto const &m, size_t n) { return n * m.size(); }, as_tuple(), 1);
-    }
-
-    /// Get the sizes of the components as a `std::array`, i.e. \f$ (N_1, \dots, N_k) \f$.
-    [[nodiscard]] auto size_of_components() const {
-      std::array<long, std::tuple_size_v<m_tuple_t>> res;
-      auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
-      triqs::tuple::for_each_enumerate(as_tuple(), l);
-      return res;
-    }
 
     /**
      * @brief Check if the given indices \f$ n_1, \dots, n_k \f$ are valid.
@@ -281,18 +265,6 @@ namespace triqs::mesh {
       return triqs::tuple::map_on_zip(l, *this, d);
     }
 
-    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
-    [[nodiscard]] m_tuple_t const &components() const { return *this; }
-
-    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
-    [[nodiscard]] m_tuple_t &components() { return *this; }
-
-    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
-    [[nodiscard]] m_tuple_t const &as_tuple() const { return *this; }
-
-    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
-    [[nodiscard]] m_tuple_t &as_tuple() { return *this; }
-
     /**
      * @brief Subscript operator to access a mesh point by its data index tuple \f$ \mathbf{d} \f$.
      *
@@ -321,6 +293,34 @@ namespace triqs::mesh {
       return triqs::tuple::map_on_zip(l, *this, n);
     }
 
+    /// Get the hash value of the mesh.
+    [[nodiscard]] uint64_t mesh_hash() const { return hash_; }
+
+    /// Get the size \f$ N \f$ of the mesh, i.e. the product of the sizes of its components.
+    [[nodiscard]] long size() const {
+      return triqs::tuple::fold([](auto const &m, size_t n) { return n * m.size(); }, as_tuple(), 1);
+    }
+
+    /// Get the sizes of the components as a `std::array`, i.e. \f$ (N_1, \dots, N_k) \f$.
+    [[nodiscard]] auto size_of_components() const {
+      std::array<long, std::tuple_size_v<m_tuple_t>> res;
+      auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
+      triqs::tuple::for_each_enumerate(as_tuple(), l);
+      return res;
+    }
+
+    // Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
+    [[nodiscard]] m_tuple_t const &components() const { return *this; }
+
+    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
+    [[nodiscard]] m_tuple_t &components() { return *this; }
+
+    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
+    [[nodiscard]] m_tuple_t const &as_tuple() const { return *this; }
+
+    /// Get the underlying tuple of individual meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
+    [[nodiscard]] m_tuple_t &as_tuple() { return *this; }
+
     private:
     // Get a lazy range that generates the mesh points.
     [[nodiscard]] auto r_() const {
@@ -341,6 +341,19 @@ namespace triqs::mesh {
 
     /// Get a const iterator to the end of the mesh.
     [[nodiscard]] auto cend() const { return r_().cend(); }
+
+    /**
+     * @brief Write a triqs::mesh::prod mesh to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param m %Mesh to be written.
+     * @return Reference to `std::ostream` object.
+     */
+    friend std::ostream &operator<<(std::ostream &sout, prod const &m) {
+      sout << "Product Mesh";
+      triqs::tuple::for_each(m.as_tuple(), [&sout](auto &mesh) { sout << "\n  -- " << mesh; });
+      return sout;
+    }
 
     /**
      * @brief Serialize the mesh to a generic archive.
@@ -385,52 +398,15 @@ namespace triqs::mesh {
       triqs::tuple::for_each_enumerate(m.components(), l);
     }
 
-    /**
-     * @brief Write a triqs::mesh::prod mesh to a `std::ostream`.
-     *
-     * @param sout `std::ostream` object.
-     * @param m %Mesh to be written.
-     * @return Reference to `std::ostream` object.
-     */
-    friend std::ostream &operator<<(std::ostream &sout, prod const &m) {
-      sout << "Product Mesh";
-      triqs::tuple::for_each(m.as_tuple(), [&sout](auto &mesh) { sout << "\n  -- " << mesh; });
-      return sout;
-    }
-
     private:
     uint64_t hash_ = 0;
   };
-
-  /** @} */
 
   // Class template argument deduction rules (CTAD).
   template <typename M1, typename M2, typename... Ms> prod(M1, M2, Ms...) -> prod<M1, M2, Ms...>;
 
   template <typename M1, typename M2, typename... Ms>
   prod(std::tuple<M1, M2, Ms...>) -> prod<std::decay_t<M1>, std::decay_t<M2>, std::decay_t<Ms>...>;
-
-} // namespace triqs::mesh
-
-/// Specialize `std::tuple_size` for triqs::mesh::prod types.
-template <typename... Ms> struct std::tuple_size<triqs::mesh::prod<Ms...>> : public std::integral_constant<size_t, sizeof...(Ms)> {};
-
-/// Specialize `std::tuple_size` for triqs::mesh::prod_mesh_point types.
-template <typename... Ms> struct std::tuple_size<triqs::mesh::prod_mesh_point<Ms...>> : public std::integral_constant<size_t, sizeof...(Ms)> {};
-
-/// Specialize `std::tuple_element` for triqs::mesh::prod types.
-template <size_t N, typename... Ms> struct std::tuple_element<N, triqs::mesh::prod<Ms...>> : public std::tuple_element<N, std::tuple<Ms...>> {};
-
-/// Specialize `std::tuple_element` for triqs::mesh::prod_mesh_point types.
-template <size_t N, typename... Ms>
-struct std::tuple_element<N, triqs::mesh::prod_mesh_point<Ms...>> : public std::tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
-
-namespace triqs::mesh {
-
-  /**
-   * @addtogroup triqs-meshes-prod
-   * @{
-   */
 
   /**
    * @brief Multiplication operator for two product meshes.
@@ -488,3 +464,16 @@ namespace triqs::mesh {
   /** @} */
 
 } // namespace triqs::mesh
+
+/// Specialize `std::tuple_size` for triqs::mesh::prod types.
+template <typename... Ms> struct std::tuple_size<triqs::mesh::prod<Ms...>> : public std::integral_constant<size_t, sizeof...(Ms)> {};
+
+/// Specialize `std::tuple_size` for triqs::mesh::prod_mesh_point types.
+template <typename... Ms> struct std::tuple_size<triqs::mesh::prod_mesh_point<Ms...>> : public std::integral_constant<size_t, sizeof...(Ms)> {};
+
+/// Specialize `std::tuple_element` for triqs::mesh::prod types.
+template <size_t N, typename... Ms> struct std::tuple_element<N, triqs::mesh::prod<Ms...>> : public std::tuple_element<N, std::tuple<Ms...>> {};
+
+/// Specialize `std::tuple_element` for triqs::mesh::prod_mesh_point types.
+template <size_t N, typename... Ms>
+struct std::tuple_element<N, triqs::mesh::prod_mesh_point<Ms...>> : public std::tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
