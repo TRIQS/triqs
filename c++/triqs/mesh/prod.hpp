@@ -105,13 +105,6 @@ namespace triqs::mesh {
     uint64_t mesh_hash_      = std::apply([](auto &...ms) { return (ms.mesh_hash() + ...); }, as_tuple());
   };
 
-  //
-  template <typename P, typename C> auto make_mesh_range_prod(P const *, C const &m_components, uint64_t) {
-    auto f             = [](auto &&...x) { return itertools::product(x...); };
-    auto to_mesh_point = [](auto &&n_mp) { return typename P::mesh_point_t{n_mp}; };
-    return itertools::transform(std::apply(f, m_components), to_mesh_point);
-  }
-
   /**
    * @brief Product mesh type for combining multiple meshes.
    *
