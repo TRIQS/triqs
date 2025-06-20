@@ -15,70 +15,88 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides generic evaluation of functions defined on meshes.
+ */
+
 #pragma once
-#include <array>
+
 #include "./concepts.hpp"
-//#include "../utility/macros.hpp"
 #include "./prod.hpp"
+#include "./utils.hpp"
 
-// We write the evaluation on the cartesian product of meshes generically.
-// i.e. on a tuple of meshes (m1, m...)
-// We currify the function, and call evaluation for each step of the curry.
-//
-// We introduce a function
-//           evaluate(m, f, x)
-// that evaluates any function f on a mesh at point x of a mesh m
-//
-// We denote a lambda here as  x -> f(x) for a light notation.
-// If f in any function with N arguments
-//
-//    evaluate( (m1, m...),  (y1, y...) -> f(y1, y...),    (x1, x...))
-// =  evaluate( (m...),     (y...) -> evaluate(m1, y1-> f(y1, y...), x1),      (x...))
+#include <nda/nda.hpp>
 
-// In other words, we currify the function as :
-//                  yn -> ... -> y2 -> y1 -> f(y1, y2, yn)
-// an apply evaluate at each step.
-//
-// Example :
-// e.g.  3 meshes  m1, m2, m3
-// evaluate(m1, f, x1) = sum w1(x1) f(z1(x1)) // write z1 simply later
-// evaluate(m2, f, x2) =  w2 f(z2)            // from now on, I omit x deps of z, and "sum" for simplicity
-// evaluate(m3, f, x3) =  w3 f(z3)
-// then (I also add the explicit capture to be closer to C++ implementation below)
-//
-// evaluate( (m1,m2), (y1, y2) -> g(y1, y2)  , (x1, x2))
-//                                 = evaluate( (m2), y2 -> evaluate(m1, [y2](y1) -> g[y1, y2), x1) ,  (x2) )
-//                                 = evaluate( (m2), y2 -> w1 g(z1, y2),  (x2) )
-//                                 = w2 w1 g(z1, z2)
-//
-// evaluate( (m1,m2,m3), g, (x1, x2, x3)) = evaluate( (m2, m3), (y2, y3)                  -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1)     , (x2, x3) )
-//                                        = evaluate( (m3), (y3) -> evaluate(m2, [y3](y2) -> evaluate(m1, [y2, y3](y1) -> g(y1, y2, y3), x1), x2), (x3) )
-//
-//                                        = w3                  evaluate(m2, [z3](y2) -> evaluate(m1, [y2, z3](y1) -> g(y1, y2, z3), x1), x2 )
-//                                        = w3 w2                                        evaluate(m1, [z2, z3](y1) -> g(y1, z2, z3), x1)
-//                                        = w3 w2 w1                                                                  g(z1, z2, z3))
-//
-namespace triqs::mesh { // NOLINT
+#include <tuple>
+#include <utility>
+
+namespace triqs::mesh {
+
+  /**
+   * @addtogroup triqs-meshes-utils
+   * @{
+   */
+
   namespace detail {
 
-    // Take a tuple and return a new tuple without the first element
-    template <typename Tu> auto pop_front_tuple(Tu const &tu) {
-      static constexpr auto S = std::tuple_size_v<Tu>;
-      static_assert(S >= 1);
-      return [&]<size_t... Is>(std::index_sequence<Is...>) { return std::tie(std::get<Is + 1>(tu)...); }(std::make_index_sequence<S - 1>{});
+    // Create a new tuple by removing the first element of a given tuple.
+    template <typename T>
+      requires(std::tuple_size_v<T> >= 1)
+    auto pop_front_tuple(T const &tup) {
+      return [&]<size_t... Is>(std::index_sequence<Is...>) {
+        return std::tie(std::get<Is + 1>(tup)...);
+      }(std::make_index_sequence<std::tuple_size_v<T> - 1>{});
     }
   } // namespace detail
 
-  // evaluate on a mesh index just pass through
-  template <Mesh M> FORCEINLINE auto evaluate(M const &, auto const &f, typename M::index_t const &index) { return f(index); }
+  /**
+   * @brief Evaluate a function \f$ f \f$ at the index of a mesh point of the given mesh.
+   * 
+   * @details It simply forwards the index to the function object \f$ f \f$.
+   *
+   * @tparam M triqs::mesh::Mesh type.
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @param n %Mesh point index \f$ n \f$.
+   * @return Result of the function call.
+   */
+  template <Mesh M> FORCEINLINE auto evaluate(M const &, auto const &f, typename M::index_t const &n) { return f(n); }
 
-  // evaluate on a closest_mesh_point : pass through, like an index.
+  /**
+   * @brief Evaluate a function \f$ f \f$ at a triqs::mesh::closest_mesh_point_t object.
+   * 
+   * @details It simply forwards the given object to the function object \f$ f \f$.
+   *
+   * @tparam T Value type of triqs::mesh::closest_mesh_point_t.
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @param cmp triqs::mesh::closest_mesh_point_t object.
+   * @return Result of the function call.
+   */
   template <typename T> FORCEINLINE auto evaluate(Mesh auto const &, auto const &f, mesh::closest_mesh_point_t<T> const &cmp) { return f(cmp); }
 
-  // all_t : pass through, like a (range of) index
-  FORCEINLINE auto evaluate(Mesh auto const &, auto const &f, all_t) { return f(all_t{}); }
+  /**
+   * @brief Evaluate a function \f$ f \f$ for `nda::range::all`.
+   * 
+   * @details It simply calls the function object \f$ f \f$ with `nda::range::all`.
+   *
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @return Result of the function call.
+   */
+  FORCEINLINE auto evaluate(Mesh auto const &, auto const &f, nda::range::all_t) { return f(nda::range::all_t{}); }
 
-  // evaluate on a mesh point. Use its value if its available, else pass through
+  /**
+   * @brief Evaluate a function \f$ f \f$ at a specific mesh point of the given mesh.
+   *
+   * @details If the given mesh satisfies the triqs::mesh::MeshWithValues concept, it calls `evaluate` with the mesh, 
+   * the function object \f$ f \f$ and the value of the mesh point. Otherwise, it calls \f$ f \f$ with the mesh point 
+   * itself.
+   *
+   * @tparam M triqs::mesh::Mesh type.
+   * @param m %Mesh object.
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @param mp %Mesh point of the mesh.
+   * @return Result of the evaluation.
+   */
   template <Mesh M> FORCEINLINE auto evaluate(M const &m, auto const &f, typename M::mesh_point_t const &mp) {
     if constexpr (MeshWithValues<M>) {
       return evaluate(m, f, mp.value());
@@ -87,30 +105,96 @@ namespace triqs::mesh { // NOLINT
     }
   }
 
-  // Implementation for tuple.
-  // NB the X points are passed as a pack, not a tuple.
-  // We use the recursive formula above, except with size of the tuple is 1, where we simply call other evaluate overloads.
-  // NB : do not forward here. Arguments are always taken by const & and it makes the
-  // overloads clearer.
-  // Do not restrict M here, as this function can be used (in brzone) with simpler objects which do not have the full Mesh concept.
-  //
-  template <typename... M, typename X1, typename... X>
-  FORCEINLINE auto evaluate(std::tuple<M...> const &mesh_tuple, auto const &f, X1 const &x1, X const &...x) {
-    auto const &m1 = std::get<0>(mesh_tuple);
-    if constexpr (sizeof...(M) > 1)
+  /**
+   * @brief Evaluate a multivariate function \f$ f \f$ defined on the given domains (meshes) at the given arguments.
+   *
+   * @details The function is evaluated by currying, i.e. it is evaluated step by step for each domain.
+   *
+   * Suppose that we want to evaluate the function \f$ f : \mathrm{D}_1 \times \dots \times \mathrm{D}_n \to \mathrm{R}
+   * \f$ at the points \f$ x_1 \in \mathrm{D}_1, \dots, x_n \in \mathrm{D}_n \f$. Then currying works by creating a
+   * sequence of functions each taking one argument:
+   * \f[
+   *   \mathrm{curry}(f) : \mathrm{D}_n \to ( \mathrm{D_{n-1}} \to ( \dots \to ( \mathrm{D}_1 \to \mathrm{R} ) ) ) \; .
+   * \f]
+   * Here, \f$ \mathrm{curry}(f) \f$ is a function that
+   * - takes an argument \f$ x_n \in \mathrm{D}_n \f$ and returns a new function \f$ f_{x_n} \f$ that
+   * - takes an argument \f$ x_{n-1} \in \mathrm{D}_{n-1} \f$ and returns a new function \f$ f_{x_n, x_{n-1}} \f$ that
+   * - . . .
+   * - takes an argument \f$ x_{2} \in \mathrm{D}_2 \f$ and returns a new function \f$ f_{x_n, x_{n-1}, \dots, x_2} \f$
+   * that
+   * - takes an argument \f$ x_1 \in \mathrm{D}_1 \f$ and returns the final result \f$ f(x_1, \dots, x_n) \f$.
+   * 
+   * This is used to evaluate @ref triqs-gfs defined on product meshes.
+   * 
+   * @note The intermediate functions objects \f$ f_{x_n, \dots} \f$ are hidden by nested `evaluate` calls.
+   *
+   * @code
+   * #include <triqs/mesh.hpp>
+   * #include <iostream>
+   *
+   * // Dummy domain.
+   * struct domain {};
+   *
+   * // Overload evaluate for a single dummy domain.
+   * auto evaluate(domain d, auto f, double x) { return f(x); }
+   *
+   * int main() {
+   *   // function to evaluate by currying
+   *   auto f = [](double x, double y, double z) { return x + y + z; };
+   *
+   *   // calculate f(1, 2, 3) = 6 using triqs::mesh::evaluate
+   *   std::cout << triqs::mesh::evaluate(std::make_tuple(domain{}, domain{}, domain{}), f, 1, 2, 3) << std::endl;
+   * }
+   * @endcode
+   *
+   * Output:
+   *
+   * ```
+   * 6
+   * ```
+   *
+   * @tparam Ds Domain (%Mesh) types.
+   * @tparam X1 First argument type.
+   * @tparam Xs Remaining argument types.
+   * @param tup Tuple of the domains (meshes) \f$ \mathrm{D}_1, \dots, \mathrm{D}_n \f$.
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @param x1 First argument \f$ x_1 \in \mathrm{D}_1 \f$.
+   * @param xs Remaining arguments \f$ x_2 \in \mathrm{D}_2, \dots, x_n \in \mathrm{D}_n \f$.
+   * @return Result of the evaluation \f$ f(x_1, \dots, x_n) \f$.
+   */
+  template <typename... Ds, typename X1, typename... Xs>
+  FORCEINLINE auto evaluate(std::tuple<Ds...> const &tup, auto const &f, X1 const &x1, Xs const &...xs) {
+    auto const &d1 = std::get<0>(tup);
+    if constexpr (sizeof...(Ds) > 1) {
       return evaluate(
-         detail::pop_front_tuple(mesh_tuple), [ f, &x1, &m1 ](auto const &...y) __attribute__((always_inline)) {
-           return evaluate(
-              m1, [ f, &y... ](auto const &y1) __attribute__((always_inline)) { return f(y1, y...); }, x1);
+         detail::pop_front_tuple(tup),
+         [f, &x1, &d1](auto const &...ys) __attribute__((always_inline)) {
+           return evaluate(d1, [f, &ys...](auto const &y1) __attribute__((always_inline)) { return f(y1, ys...); }, x1);
          },
-         x...);
-    else
-      return evaluate(m1, f, x1);
+         xs...);
+    } else {
+      return evaluate(d1, f, x1);
+    }
   }
 
-  // Cartesian product mesh is done as a tuple
-  template <Mesh... M, typename... X> FORCEINLINE auto evaluate(mesh::prod<M...> const &m, auto const &f, X const &...x) {
-    return evaluate(m.components(), f, x...);
+  /**
+   * @brief Evaluate a multivariate function \f$ f \f$ defined on the given product mesh at the given arguments.
+   *
+   * @details It simply forwards the arguments and the components of the product mesh to 
+   * @ref triqs::mesh::evaluate(std::tuple<Ds...> const &tup, auto const &f, X1 const &x1, Xs const &...xs) 
+   * "triqs::mesh::evaluate".
+   *
+   * @tparam Ms triqs::mesh::Mesh types of the product mesh.
+   * @tparam Xs Argument types.
+   * @param m Product mesh.
+   * @param f Callable object \f$ f \f$ representing the function to be evaluated.
+   * @param xs Arguments \f$ x_1, \dots, x_n \f$.
+   * @return Result of the evaluation \f$ f(x_1, \dots, x_n) \f$.
+   */
+  template <Mesh... Ms, typename... Xs> FORCEINLINE auto evaluate(mesh::prod<Ms...> const &m, auto const &f, Xs const &...xs) {
+    return evaluate(m.components(), f, xs...);
   }
+
+  /** @} */
 
 } // namespace triqs::mesh
