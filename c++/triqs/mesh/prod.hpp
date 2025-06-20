@@ -88,21 +88,21 @@ namespace triqs::mesh {
     prod_mesh_point(tuple_t mpt) : tuple_t(std::move(mpt)) {}
 
     /// Get the index tuple \f$ \mathbf{n} \f$ of the mesh point.
-    [[nodiscard]] index_t index() const { return _index; }
+    [[nodiscard]] index_t index() const { return index_; }
 
     /// Get the data index tuple \f$ \mathbf{d} \f$ of the mesh point.
-    [[nodiscard]] data_index_t data_index() const { return _data_index; }
+    [[nodiscard]] data_index_t data_index() const { return data_index_; }
 
     /// Get the hash value of the parent mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return _mesh_hash; }
+    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the underlying tuple of mesh points.
     tuple_t const &as_tuple() const { return *this; }
 
     private:
-    index_t _index           = std::apply([](auto &...ms) { return std::make_tuple(ms.index()...); }, as_tuple());
-    data_index_t _data_index = std::apply([](auto &...ms) { return std::make_tuple(ms.data_index()...); }, as_tuple());
-    uint64_t _mesh_hash      = std::apply([](auto &...ms) { return (ms.mesh_hash() + ...); }, as_tuple());
+    index_t index_           = std::apply([](auto &...ms) { return std::make_tuple(ms.index()...); }, as_tuple());
+    data_index_t data_index_ = std::apply([](auto &...ms) { return std::make_tuple(ms.data_index()...); }, as_tuple());
+    uint64_t mesh_hash_      = std::apply([](auto &...ms) { return (ms.mesh_hash() + ...); }, as_tuple());
   };
 
   //
@@ -206,14 +206,14 @@ namespace triqs::mesh {
      */
     prod(Ms const &...ms)
       requires(sizeof...(Ms) > 0)
-       : m_tuple_t{ms...}, hash_((ms.mesh_hash() + ...)) {}
+       : m_tuple_t{ms...}, mesh_hash_((ms.mesh_hash() + ...)) {}
 
     /**
      * @brief Construct a product mesh \f$ M = M_1 \times \dots \times M_k \f$ from the given tuple of meshes.
      * @param mt Tuple of meshes, i.e. \f$ (M_1, \dots, M_k) \f$.
      */
     template <typename... U>
-    prod(std::tuple<U...> const &mt) : m_tuple_t{mt}, hash_(std::apply([](auto &...m) { return (m.mesh_hash() + ...); }, mt)) {}
+    prod(std::tuple<U...> const &mt) : m_tuple_t{mt}, mesh_hash_(std::apply([](auto &...m) { return (m.mesh_hash() + ...); }, mt)) {}
 
     /// Equal-to comparison operator compares the tuple of meshes in the product.
     bool operator==(prod const &m) const { return as_tuple() == m.as_tuple(); }
@@ -294,7 +294,7 @@ namespace triqs::mesh {
     }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return hash_; }
+    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the product of the sizes of its components.
     [[nodiscard]] long size() const {
@@ -399,7 +399,7 @@ namespace triqs::mesh {
     }
 
     private:
-    uint64_t hash_ = 0;
+    uint64_t mesh_hash_ = 0;
   };
 
   // Class template argument deduction rules (CTAD).
