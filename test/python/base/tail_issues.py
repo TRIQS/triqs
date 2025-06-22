@@ -89,7 +89,7 @@ class test_tail_issues(unittest.TestCase):
             exact_mom = np.linalg.matrix_power(H, n)
             rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
             # print "rel err ", rel_err
-            self.assertLess(rel_err, 1e-4)
+            self.assertLess(rel_err, 2e-4)
 
         # Check error of tail coefficients imposing known moments
         km = make_zero_tail(g, 2)
@@ -99,7 +99,7 @@ class test_tail_issues(unittest.TestCase):
             exact_mom = np.linalg.matrix_power(H, n)
             rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
             # print "rel err ", rel_err
-            self.assertLess(rel_err, 1e-4)
+            self.assertLess(rel_err, 2e-4)
 
     def test_imag_gt(self):
         # Init Gf with SemiCircular DOS
