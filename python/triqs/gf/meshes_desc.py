@@ -176,6 +176,10 @@ m.add_property(name = "symmetrize",
                getter = cfunction(calling_pattern="bool result = self_c.symmetrize()",
                signature = "bool()",
                doc = "Symmetry grid flag"))
+m.add_property(name = "dlr_freq",
+               getter = cfunction(calling_pattern="nda::vector_const_view<double> result = self_c.dlr_freq()",
+               signature = "nda::vector_const_view<double>()",
+               doc = "Array of DLR Frequencies"))
 
 module.add_class(m)
 
@@ -264,6 +268,10 @@ m.add_property(name = "symmetrize",
                getter = cfunction(calling_pattern="bool result = self_c.symmetrize()",
                signature = "bool()",
                doc = "Symmetry grid flag"))
+m.add_property(name = "dlr_freq",
+               getter = cfunction(calling_pattern="nda::vector_const_view<double> result = self_c.dlr_freq()",
+               signature = "nda::vector_const_view<double>()",
+               doc = "Vector of DLR Frequencies"))
 
 module.add_class(m)
 
@@ -319,6 +327,10 @@ m.add_property(name = "symmetrize",
                getter = cfunction(calling_pattern="bool result = self_c.symmetrize()",
                signature = "bool()",
                doc = "Symmetry grid flag"))
+m.add_property(name = "dlr_freq",
+               getter = cfunction(calling_pattern="nda::vector_const_view<double> result = self_c.dlr_freq()",
+               signature = "nda::vector_const_view<double>()",
+               doc = "Vector of DLR Frequencies"))
 
 module.add_class(m)
 
