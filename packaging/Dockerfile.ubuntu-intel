@@ -1,5 +1,5 @@
-FROM intel/hpckit:2024.2.1-0-devel-ubuntu22.04
-ARG LLVM=18
+FROM intel/oneapi-hpckit:2025.2.0-0-devel-ubuntu24.04
+ARG LLVM=19
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
       wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-scipy \
       python3-venv
 
-ENV PYTHON_VERSION=3.10 \
+ENV PYTHON_VERSION=3.12 \
     CC=icx CXX=icpx CXXFLAGS="-stdlib=libc++" \
     CPLUS_INCLUDE_PATH=/usr/lib/llvm-${LLVM}/include/c++/v1 \
     VIRTUAL_ENV=/home/venv \

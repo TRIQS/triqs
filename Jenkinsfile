@@ -75,11 +75,11 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$venv/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
           "HDF5_ROOT=$hdf5",
+          "LAPACK_ROOT=${env.BREW}/opt/openblas",
           "C_INCLUDE_PATH=$hdf5/include:${env.BREW}/include",
           "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
           "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "DYLD_LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
-          "LAPACK_ROOT=${env.BREW}/opt/openblas",
           "PYTHONPATH=$installDir/lib/python3.12/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
           "VIRTUAL_ENV=$venv",
