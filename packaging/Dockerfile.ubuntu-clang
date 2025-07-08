@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       git \
       vim \
       lldb-${LLVM} \
+      clang-format-${LLVM} \
       hdf5-tools \
       libboost-dev \
       libclang-${LLVM}-dev \
