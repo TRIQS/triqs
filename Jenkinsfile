@@ -71,7 +71,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
       checkout scm
 
-      def hdf5 = "${env.BREW}/opt/hdf5@1.10"
+      def hdf5 = "${env.BREW}/opt/hdf5"
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$venv/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
           "HDF5_ROOT=$hdf5",
@@ -80,7 +80,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:${env.BREW}/include",
           "LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
           "DYLD_LIBRARY_PATH=$venv/lib:$hdf5/lib:${env.BREW}/lib",
-          "PYTHONPATH=$installDir/lib/python3.12/site-packages",
+          "PYTHONPATH=$installDir/lib/python3.13/site-packages",
           "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
           "VIRTUAL_ENV=$venv",
           "OMP_NUM_THREADS=2"]) {
