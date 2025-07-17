@@ -1,0 +1,17 @@
+boost
+boost-mpi
+cmake
+eigen
+fftw
+gmp
+gsl
+hdf5
+llvm
+mpi4py
+numpy
+open-mpi
+openblas
+python
+python-matplotlib
+scipy
+wentzell/triqs/nfft
