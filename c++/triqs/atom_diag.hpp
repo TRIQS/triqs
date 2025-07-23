@@ -23,6 +23,6 @@
 
 #ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>>  = true;
-template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<false>> = true;
+template <> constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>>  = true;
+template <> constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<false>> = true;
 #endif

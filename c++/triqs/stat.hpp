@@ -27,5 +27,5 @@
 
 #ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
-template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram> = true;
+template <> constexpr bool c2py::is_wrapped<triqs::stat::histogram> = true;
 #endif

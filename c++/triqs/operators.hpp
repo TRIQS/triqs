@@ -22,5 +22,5 @@
 #ifdef C2PY_INCLUDED
 #include <c2py/c2py.hpp>
 #include "./cpp2py_converters/operators_real_complex.hpp"
-template <> static constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
+template <> constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
 #endif
