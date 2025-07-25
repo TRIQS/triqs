@@ -1,5 +1,5 @@
 def projectName = "triqs"
-def dockerName = projectName.toLowerCase();
+def dockerName = projectName.toLowerCase()
 /* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"
 /* whether to keep and publish the results */
@@ -47,7 +47,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
         }
       }
       if (keepInstall) {
-	docker.withRegistry("https://hub.docker.com/", "dockerhub") {
+	docker.withRegistry("https://index.docker.io/v1/", "dockerhub") {
 	  img.push("flatironinstitute/triqs-jenkins:${env.BRANCH_NAME}-${env.STAGE_NAME}")
 	}
       } else {
