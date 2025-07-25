@@ -41,7 +41,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       else if (platform == "sanitize")
         args = '-DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
       def uid = sh(returnStdout: true, script: "id -u").trim()
-      def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} .")
+      def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {
           sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
@@ -49,7 +49,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       }
       if (keepInstall) {
 	docker.withRegistry("https://index.docker.io/v1/", "dockerhub") {
-	  img.push("flatironinstitute/triqs-jenkins:${env.BRANCH_NAME}-${env.STAGE_NAME}")
+	  img.push()
 	}
       } else {
         sh "docker rmi --no-prune ${img.imageName()}"
@@ -123,7 +123,7 @@ try {
         def subdir = "${projectName}/${env.BRANCH_NAME}"
         git(url: "ssh://git@github.com/TRIQS/TRIQS.github.io.git", branch: "master", credentialsId: "ssh", changelog: false)
         sh "rm -rf ${subdir}"
-        docker.image("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${documentationPlatform}").inside() {
+        docker.image("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${documentationPlatform}").inside() {
           sh """#!/bin/bash -ex
             base=\$INSTALL/share/doc
             dir="${projectName}"
