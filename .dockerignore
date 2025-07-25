@@ -1,7 +1,7 @@
 .travis.yml
 CITATIONS.bib
 ChangeLog.md
-Dockerfile.build
+Dockerfile.*
 Jenkinsfile
 TODO
 .git/objects/pack
