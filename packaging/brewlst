@@ -3,6 +3,7 @@ boost-mpi
 cmake
 eigen
 fftw
+git-lfs
 gmp
 gsl
 hdf5
