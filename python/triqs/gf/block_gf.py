@@ -93,7 +93,8 @@ class BlockGf:
             GFlist = []
             for bl, bl_size in kwargs['gf_struct']:
                 BlockNameList.append(bl)
-                assert isinstance(bl_size, (int, np.integer)), "gf_struct should be a list of pairs of bl_name (str) and bl_size (int)"
+                assert isinstance(bl, str) and isinstance(bl_size, (int, np.integer)), \
+                    "gf_struct should be a list of pairs of bl_name (str) and bl_size (int)"
                 if bl_size > 0 and kwargs['target_rank'] > 0:
                     GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[bl_size]*kwargs['target_rank'], name='G_%s'%bl))
                 else:
