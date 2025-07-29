@@ -22,4 +22,10 @@
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
 
+#ifdef C2PY_INCLUDED
+#include <c2py/c2py.hpp>
+template <> constexpr bool c2py::is_wrapped<triqs::mc_tools::random_generator> = true;
+template <> constexpr char *c2py::tp_name<triqs::mc_tools::random_generator>   = "RandomGenerator";
+#endif
+
 #endif

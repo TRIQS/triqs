@@ -49,12 +49,16 @@ namespace cpp2py {
   // -----------------------------------
 
   template <typename M, typename T> struct py_converter<triqs::gfs::gf<M, T>> {
+    using c_t    = triqs::gfs::gf<M, T>;
     using conv_t = py_converter<triqs::gfs::gf_view<M, T>>;
-    using c_type = triqs::gfs::gf<M, T>;
+
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() { return conv_t::tp_name(); }
+#endif
 
     static PyObject *c2py(triqs::gfs::gf_view<M, T> g) { return conv_t::c2py(g); }
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return c_type{conv_t::py2c(ob)}; }
+    static c_t py2c(PyObject *ob) { return c_t{conv_t::py2c(ob)}; }
   };
 
   // -----------------------------------
@@ -62,12 +66,16 @@ namespace cpp2py {
   // -----------------------------------
 
   template <typename M, typename T> struct py_converter<triqs::gfs::gf_const_view<M, T>> {
+    using c_t    = triqs::gfs::gf_const_view<M, T>;
     using conv_t = py_converter<triqs::gfs::gf_view<M, T>>;
-    using c_type = triqs::gfs::gf_const_view<M, T>;
 
-    static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() { return conv_t::tp_name(); }
+#endif
+
+    static PyObject *c2py(c_t g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
+    static c_t py2c(PyObject *ob) { return conv_t::py2c(ob); }
   };
 
   // -----------------------------------
@@ -76,12 +84,19 @@ namespace cpp2py {
 
   // Converter for gf one var
   template <typename M, typename T> struct py_converter<triqs::gfs::gf_view<M, T>> {
+    using c_t    = triqs::gfs::gf_view<M, T>;
+    using mesh_t = typename c_t::mesh_t;
+    using data_t = typename c_t::data_t;
 
-    using c_type = triqs::gfs::gf_view<M, T>;
-    using mesh_t = typename c_type::mesh_t;
-    using data_t = typename c_type::data_t;
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() {
+      std::ostringstream out;
+      out << "Gf[" << ::c2py::python_typename<M>() << ", " << T::rank << "]";
+      return out.str();
+    }
+#endif
 
-    static PyObject *c2py(c_type g) {
+    static PyObject *c2py(c_t g) {
 
       pyref cls = pyref::get_class("triqs.gf", "Gf", true);
       if (cls.is_null()) return NULL;
@@ -135,11 +150,11 @@ namespace cpp2py {
 
     // ----------------------------------------------
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
       pyref x = borrowed(ob);
       pyref m = x.attr("_mesh");
       pyref d = x.attr("_data");
-      return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d)};
+      return c_t{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d)};
     }
   };
 
@@ -149,11 +164,17 @@ namespace cpp2py {
 
   template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf<M, T, nda::C_layout, A>> {
     using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, nda::C_stride_layout, A>>;
-    using c_type = triqs::gfs::block_gf<M, T, nda::C_layout, A>;
+    using c_t    = triqs::gfs::block_gf<M, T, nda::C_layout, A>;
+
+    // ------------ tp_name ---------------
+
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() { return conv_t::tp_name(); }
+#endif
 
     static PyObject *c2py(triqs::gfs::block_gf_view<M, T, nda::C_stride_layout, A> g) { return conv_t::c2py(g); }
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return c_type{conv_t::py2c(ob)}; }
+    static c_t py2c(PyObject *ob) { return c_t{conv_t::py2c(ob)}; }
   };
 
   // -----------------------------------
@@ -162,11 +183,17 @@ namespace cpp2py {
 
   template <typename M, typename T, int A> struct py_converter<triqs::gfs::block_gf_const_view<M, T, nda::C_stride_layout, A>> {
     using conv_t = py_converter<triqs::gfs::block_gf_view<M, T, nda::C_stride_layout, A>>;
-    using c_type = triqs::gfs::block_gf_const_view<M, T, nda::C_stride_layout, A>;
+    using c_t    = triqs::gfs::block_gf_const_view<M, T, nda::C_stride_layout, A>;
 
-    static PyObject *c2py(c_type g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
+    // ------------ tp_name ---------------
+
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() { return conv_t::tp_name(); }
+#endif
+
+    static PyObject *c2py(c_t g) = delete; // You can not convert a C++ const_view to a Python Gf ! Violates const correctness.
     static bool is_convertible(PyObject *ob, bool raise_exception) { return conv_t::is_convertible(ob, raise_exception); }
-    static c_type py2c(PyObject *ob) { return conv_t::py2c(ob); }
+    static c_t py2c(PyObject *ob) { return conv_t::py2c(ob); }
   };
 
   // -----------------------------------
@@ -174,14 +201,21 @@ namespace cpp2py {
   // -----------------------------------
 
   template <typename M, typename T> struct py_converter<triqs::gfs::block_gf_view<M, T>> {
-
     using gf_type      = triqs::gfs::gf<M, T>;
     using gf_view_type = triqs::gfs::gf_view<M, T>;
-    using c_type       = triqs::gfs::block_gf_view<M, T>;
+    using c_t          = triqs::gfs::block_gf_view<M, T>;
+
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() {
+      std::ostringstream out;
+      out << "BlockGf[" << ::c2py::python_typename<M>() << ", " << T::rank << "]";
+      return out.str();
+    }
+#endif
 
     // ----------------------------------------------
 
-    static PyObject *c2py(c_type g) {
+    static PyObject *c2py(c_t g) {
       // rm the view_proxy
       std::vector<gf_view_type> vg;
       vg.reserve(g.data().size());
@@ -203,7 +237,7 @@ namespace cpp2py {
     static void _set_err(PyObject *p, const char *X, std::string const &C) {
       using namespace std::string_literals;
       std::string err = "Cpp2py converter: Python to C++ :\n"s + "  ... Conversion of a BlockGf from Python to C++ "
-         + triqs::utility::typeid_name<c_type>() + "\n  ... Cannot convert the "s + X + " of BlockGf from Python type :  " + p->ob_type->tp_name
+         + triqs::utility::typeid_name<c_t>() + "\n  ... Cannot convert the "s + X + " of BlockGf from Python type :  " + p->ob_type->tp_name
          + " to the C++ type " + C;
       PyErr_SetString(PyExc_TypeError, err.c_str());
     }
@@ -235,7 +269,7 @@ namespace cpp2py {
 
     // ----------------------------------------------
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
       pyref x     = borrowed(ob);
       pyref names = x.attr("_BlockGf__indices");
       pyref gfs   = x.attr("_BlockGf__GFlist");
@@ -248,14 +282,21 @@ namespace cpp2py {
   // -----------------------------------
 
   template <typename M, typename T> struct py_converter<triqs::gfs::block2_gf_view<M, T>> {
-
     using gf_type      = triqs::gfs::gf<M, T>;
     using gf_view_type = triqs::gfs::gf_view<M, T>;
-    using c_type       = triqs::gfs::block2_gf_view<M, T>;
+    using c_t          = triqs::gfs::block2_gf_view<M, T>;
+
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() {
+      std::ostringstream out;
+      out << "Block2Gf[" << ::c2py::python_typename<M>() << ", " << T::rank << "]";
+      return out.str();
+    }
+#endif
 
     // ----------------------------------------------
 
-    static PyObject *c2py(c_type g) {
+    static PyObject *c2py(c_t g) {
       std::vector<std::vector<gf_view_type>> vvg;
       vvg.reserve(g.data().size());
       for (auto const &x : g.data()) {
@@ -290,7 +331,7 @@ namespace cpp2py {
 
     // ----------------------------------------------
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
       pyref x      = borrowed(ob);
       pyref names1 = x.attr("_Block2Gf__indices1");
       pyref names2 = x.attr("_Block2Gf__indices2");

@@ -29,6 +29,8 @@ namespace cpp2py {
 
   template <> struct py_converter<triqs::mesh::all_t> {
 
+    static constexpr char *tp_name = "all";
+
     static PyObject *c2py(triqs::mesh::all_t m) {
       pyref all = pyref::get_class("builtins", "all", true);
       if (all.is_null()) return NULL;
@@ -48,6 +50,9 @@ namespace cpp2py {
   // -----------------------------------
 
   template <> struct py_converter<triqs::mesh::statistic_enum> {
+
+    static constexpr char *tp_name = "Statistic (\"Fermion\" | \"Boson\")";
+
     static PyObject *c2py(triqs::mesh::statistic_enum x) {
       if (x == triqs::mesh::Fermion) return PyUnicode_FromString("Fermion");
       return PyUnicode_FromString("Boson"); // last case separate to avoid no return warning of compiler
@@ -78,10 +83,11 @@ namespace cpp2py {
   // -----------------------------------
 
   template <> struct py_converter<triqs::mesh::matsubara_freq> {
+    using c_t = triqs::mesh::matsubara_freq;
 
-    using c_type = triqs::mesh::matsubara_freq;
+    static constexpr char *tp_name = "MatsubaraFreq";
 
-    static PyObject *c2py(c_type const &x) {
+    static PyObject *c2py(c_t const &x) {
       pyref cls = pyref::get_class("triqs.gf", "MatsubaraFreq", true);
       if (cls.is_null()) return NULL;
 
@@ -109,12 +115,12 @@ namespace cpp2py {
 
     // ----------------------------------------------
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
       pyref x         = borrowed(ob);
       pyref n         = x.attr("n");
       pyref beta      = x.attr("beta");
       pyref statistic = x.attr("statistic");
-      return c_type{convert_from_python<long>(n), convert_from_python<double>(beta), convert_from_python<triqs::mesh::statistic_enum>(statistic)};
+      return c_t{convert_from_python<long>(n), convert_from_python<double>(beta), convert_from_python<triqs::mesh::statistic_enum>(statistic)};
     }
   };
 
@@ -123,10 +129,11 @@ namespace cpp2py {
   // -----------------------------------
 
   template <> struct py_converter<triqs::lattice::bravais_lattice::point_t> {
+    using c_t = triqs::lattice::bravais_lattice::point_t;
 
-    using c_type = triqs::lattice::bravais_lattice::point_t;
+    static constexpr char *tp_name = "LatticePoint";
 
-    static PyObject *c2py(c_type const &x) {
+    static PyObject *c2py(c_t const &x) {
       pyref cls = pyref::get_class("triqs.lattice", "LatticePoint", true);
       if (cls.is_null()) return NULL;
 
@@ -156,7 +163,7 @@ namespace cpp2py {
       triqs::lattice::bravais_lattice *_c;
     };
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
 
       pyref x             = borrowed(ob);
       pyref index         = x.attr("index");
@@ -167,7 +174,7 @@ namespace cpp2py {
         std::terminate();
       }
 
-      return c_type{convert_from_python<std::array<long, 3>>(index), lattice_c_ptr};
+      return c_t{convert_from_python<std::array<long, 3>>(index), lattice_c_ptr};
     }
   };
 
@@ -176,11 +183,21 @@ namespace cpp2py {
   // -----------------------------------
 
   template <triqs::mesh::Mesh... Ms> struct py_converter<triqs::mesh::prod<Ms...>> {
+    using c_t         = triqs::mesh::prod<Ms...>;
+    using mtuple_conv = py_converter<typename c_t::m_tuple_t>; // the tuple of meshes
 
-    using c_type      = triqs::mesh::prod<Ms...>;
-    using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
+#ifdef C2PY_INCLUDED
+    static std::string tp_name() {
+      std::ostringstream out;
+      std::string sep;
+      out << "MeshProduct[";
+      ((out << sep << ::c2py::python_typename<Ms>(), sep = ", "), ...);
+      out << "]";
+      return out.str();
+    }
+#endif
 
-    static PyObject *c2py(c_type m) {
+    static PyObject *c2py(c_t m) {
       pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
       if (cls.is_null()) return NULL;
       pyref m_tuple = mtuple_conv::c2py(m.components()); // take the C++ tuple of meshes and make the corresponding Python tuple
@@ -200,10 +217,10 @@ namespace cpp2py {
       return mtuple_conv::is_convertible(ml, raise_exception);
     }
 
-    static c_type py2c(PyObject *ob) {
+    static c_t py2c(PyObject *ob) {
       pyref x  = borrowed(ob);
       pyref ml = x.attr("_mlist");
-      return triqs::tuple::apply_construct<c_type>(mtuple_conv::py2c(ml));
+      return triqs::tuple::apply_construct<c_t>(mtuple_conv::py2c(ml));
     }
   };
 
@@ -212,10 +229,11 @@ namespace cpp2py {
   // -----------------------------------
 
   template <triqs::mesh::MeshPoint MP> struct py_converter<MP> {
+    using c_t = MP;
 
-    using c_type = MP;
+    static constexpr char *tp_name = "MeshPoint";
 
-    static PyObject *c2py(c_type const &p) {
+    static PyObject *c2py(c_t const &p) {
 
       pyref cls = pyref::get_class("triqs.gf", "MeshPoint", /* raise_exception */ true);
       if (cls.is_null()) return NULL;

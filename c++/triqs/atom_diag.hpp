@@ -25,4 +25,6 @@
 #include <c2py/c2py.hpp>
 template <> constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<true>>  = true;
 template <> constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<false>> = true;
+template <> const char *c2py::tp_name<triqs::atom_diag::atom_diag<true>>        = "AtomDiagComplex";
+template <> const char *c2py::tp_name<triqs::atom_diag::atom_diag<false>>       = "AtomDiagReal";
 #endif

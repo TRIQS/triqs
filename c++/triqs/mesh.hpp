@@ -63,6 +63,26 @@
 
 #ifdef C2PY_INCLUDED
 #include "./cpp2py_converters/mesh.hpp"
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::imfreq>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::dlr_imfreq> = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::imtime>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::dlr_imtime> = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::dlr>        = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::legendre>   = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::refreq>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::retime>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::brzone>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::cyclat>     = true;
+template <> constexpr char *c2py::tp_name<triqs::mesh::imfreq>       = "MeshImFreq";
+template <> constexpr char *c2py::tp_name<triqs::mesh::dlr_imfreq>   = "MeshDLRImFreq";
+template <> constexpr char *c2py::tp_name<triqs::mesh::imtime>       = "MeshImTime";
+template <> constexpr char *c2py::tp_name<triqs::mesh::dlr_imtime>   = "MeshDLRImTime";
+template <> constexpr char *c2py::tp_name<triqs::mesh::dlr>          = "MeshDLR";
+template <> constexpr char *c2py::tp_name<triqs::mesh::legendre>     = "MeshLegendre";
+template <> constexpr char *c2py::tp_name<triqs::mesh::refreq>       = "MeshReFreq";
+template <> constexpr char *c2py::tp_name<triqs::mesh::retime>       = "MeshReTime";
+template <> constexpr char *c2py::tp_name<triqs::mesh::brzone>       = "MeshBrZone";
+template <> constexpr char *c2py::tp_name<triqs::mesh::cyclat>       = "MeshCycLat";
 #endif
 
 namespace triqs::mesh {

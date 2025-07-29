@@ -26,6 +26,8 @@ namespace cpp2py {
     using c_t    = triqs::operators::many_body_operator_real;
     using conv_t = py_converter<triqs::operators::many_body_operator>;
 
+    static constexpr char *tp_name = "Operator";
+
     static PyObject *c2py(c_t const &x) { return conv_t::c2py(x); }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
@@ -49,6 +51,8 @@ namespace cpp2py {
   template <> struct py_converter<triqs::operators::many_body_operator_complex> {
     using c_t    = triqs::operators::many_body_operator_complex;
     using conv_t = py_converter<triqs::operators::many_body_operator>;
+
+    static constexpr char *tp_name = "Operator";
 
     static PyObject *c2py(c_t const &x) { return conv_t::c2py(x); }
 

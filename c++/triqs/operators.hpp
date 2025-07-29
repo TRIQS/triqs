@@ -23,4 +23,5 @@
 #include <c2py/c2py.hpp>
 #include "./cpp2py_converters/operators_real_complex.hpp"
 template <> constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
+template <> constexpr char *c2py::tp_name<triqs::operators::many_body_operator>   = "Operator";
 #endif
