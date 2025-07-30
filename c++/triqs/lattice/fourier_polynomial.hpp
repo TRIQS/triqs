@@ -58,7 +58,7 @@ namespace triqs {
 
     C2PY_IGNORE auto const &operator[](std::array<long, kdim> R) { return coeff_list[get_R_idx(R)]; }
 
-    long get_R_idx(std::array<long, kdim> R) {
+    long get_R_idx(std::array<long, kdim> R) const {
       // find the home cell of the TB file to get H0
       auto it = std::ranges::find(R_list, R);
       if (it == R_list.end()) { TRIQS_RUNTIME_ERROR << "Could not locate R in the Wannier Hamiltonian.\n"; } // TODO add R vector in report
@@ -171,6 +171,19 @@ namespace triqs {
 
       nda::blas::gemm(1, phases, coeff_mat_view, 0, result_mat_view);
       return result;
+    }
+
+    // ------ call with a generator of k points ----------------
+    template <typename V>
+      requires(std::ranges::contiguous_range<V>)
+    nda::array<dcomplex, 3> operator()(V const &k_iterator) const {
+      /// simply convert this into an nda structure and pass it to nda::array template function
+      // FIXME : thus should be an nda function : vector generator -> matrix
+      auto kvecs = nda::matrix<double>(k_iterator.size(), kdim);
+      for (auto [ik, k] : itertools::enumerate(k_iterator)) {
+        for (auto idim : nda::range(kdim)) { kvecs(ik, idim) = k[idim]; }
+      }
+      return operator()(kvecs);
     }
 
     // -----------------------------

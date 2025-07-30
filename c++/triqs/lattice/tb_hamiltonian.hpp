@@ -6,32 +6,35 @@
 #include "fourier_polynomial.hpp"
 #include "superlattice.hpp"
 
-static constexpr auto r_all = nda::range::all;
+// FIXME : Should not be in hpp !!
 
-// TODO : throw an error if any k value outside 0,1?
-// TODO do we also want to allow for a vector of kpts, or an iterator (like a mesh type)?
-
+// FIXME : put in triqs lattice
+// FP as well.
 namespace triqs {
 
   class tb_hamiltonian : public fourier_polynomial<2, 3> {
 
-    static constexpr int kdim = 3;
+    static constexpr auto r_all = nda::range::all;
 
     public:
-    tb_hamiltonian(std::vector<std::array<long, kdim>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
-       : fourier_polynomial<2, kdim>(std::move(Rs), std::move(hoppings)) {};
+    tb_hamiltonian(std::vector<std::array<long, 3>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
+       : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)) {};
 
-    tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, kdim>{std::move(fp)} {}
+    C2PY_IGNORE tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, 3>{std::move(fp)} {}
 
     // ------------------------ Accessors ----------------------------
-    [[nodiscard]] auto const &get_hoppings() const { return this->get_coefficients(); }
-    [[nodiscard]] long n_orbitals() const { return this->get_coefficients()[0].extent(0); }
+    ///
+    [[nodiscard]] auto const &hoppings() const { return this->get_coefficients(); }
 
-    /** Provide an iterator of tuples of $$(R, t_{R, ab})$$
-    * @return elements : tuple of (R, t_{R,ba}) pairs
+    /** 
+     * Provide an iterator of tuples of $$(R, t_{R, ab})$$
+     * @return elements : tuple of (R, t_{R,ba}) pairs
      */
     // FIXME this is temporary and I might be in trouble doing this, but we are changing to nda anyway...
-    //[[nodiscard]] auto const &elements() const { return itertools::zip(fourier_polynomial<2, kdim>::Rs, fourier_polynomial<2, kdim>::coefficients); }
+    [[nodiscard]] auto elements() const { return itertools::zip(this->get_R_list(), this->get_coefficients()); }
+
+    ///
+    [[nodiscard]] long n_orbitals() const { return this->get_coefficients()[0].extent(0); }
 
     //------------------- band basis energy functions ---------------------------
 
@@ -60,7 +63,7 @@ namespace triqs {
 
     // TODO would we like to update what these are called in the HDF5?
 
-    [[nodiscard]] static std::string hdf5_format() { return "tight_binding"; }
+    [[nodiscard]] static std::string hdf5_format() { return "tb_hamiltonian"; }
 
     // Function that writes the solver_core to hdf5 file
     /*     friend void h5_write(h5::group fg, std::string subgroup_name, tb_hamiltonian const &tb) {
@@ -79,4 +82,12 @@ namespace triqs {
       return tb_hamiltonian(R, hoppings);
     } */
   };
+
+  // Superlattice folding user function
+
+  /// @brief Fold the tight-binding Hamiltonian into a superlattice
+  inline tb_hamiltonian fold(lattice::superlattice const &sl, tb_hamiltonian const &tb) {
+    return fold(sl, static_cast<fourier_polynomial<2, 3> const &>(tb));
+  }
+
 } // namespace triqs
