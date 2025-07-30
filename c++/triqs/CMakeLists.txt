@@ -175,5 +175,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_W
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 
-# Install headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.hxx")
+# Install headers and third-party license files
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.hxx" PATTERN "LICENSE*")
