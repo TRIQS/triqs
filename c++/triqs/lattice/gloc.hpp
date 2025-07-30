@@ -7,7 +7,6 @@
 #include <triqs/lattice/brillouin_zone.hpp>
 #include <triqs/lattice/tb_hamiltonian.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
-#include <triqs/utility/gf_utils.hpp>
 
 // TODO perhaps move this somewhere else?
 namespace nda::temp {

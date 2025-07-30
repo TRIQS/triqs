@@ -1,11 +1,10 @@
 #pragma once
 #include <nda/nda.hpp>
 #include <cassert>
-#include "fourier_polynomial.hpp"
-#include "nda/blas/tools.hpp"
-#include "nda/layout/range.hpp"
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
+#include "fourier_polynomial.hpp"
+#include "superlattice.hpp"
 
 static constexpr auto r_all = nda::range::all;
 
@@ -17,15 +16,17 @@ namespace triqs {
   class tb_hamiltonian : public fourier_polynomial<2, 3> {
 
     static constexpr int kdim = 3;
-    long norbitals;
 
     public:
     tb_hamiltonian(std::vector<std::array<long, kdim>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
-       : fourier_polynomial<2, kdim>(std::move(Rs), std::move(hoppings)), norbitals(this->get_coefficients()[0].shape(0)){};
+       : fourier_polynomial<2, kdim>(std::move(Rs), std::move(hoppings)) {};
+
+    tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, kdim>{std::move(fp)} {}
 
     // ------------------------ Accessors ----------------------------
     [[nodiscard]] auto const &get_hoppings() const { return this->get_coefficients(); }
-    [[nodiscard]] long n_orbitals() const { return norbitals; }
+    [[nodiscard]] long n_orbitals() const { return this->get_coefficients()[0].extent(0); }
+
     /** Provide an iterator of tuples of $$(R, t_{R, ab})$$
     * @return elements : tuple of (R, t_{R,ba}) pairs
      */

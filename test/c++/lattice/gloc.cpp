@@ -5,10 +5,8 @@
 #include <triqs/mesh/imfreq.hpp>
 #include <triqs/lattice/gloc.hpp>
 #include <triqs/lattice/tb_hamiltonian.hpp>
-#include "triqs/utility/gf_utils.hpp"
 
 using namespace triqs;
-using namespace triqs::block2gf_temp;
 
 TEST(gloc_tests, gloc_single_orbital) { // NOLINT
 
