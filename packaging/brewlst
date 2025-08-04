@@ -8,6 +8,7 @@ gmp
 gsl
 hdf5
 llvm
+libomp
 mpi4py
 numpy
 open-mpi
