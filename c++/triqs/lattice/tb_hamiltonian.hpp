@@ -18,7 +18,7 @@ namespace triqs {
 
     public:
     tb_hamiltonian(std::vector<std::array<long, 3>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
-       : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)) {};
+       : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)){};
 
     C2PY_IGNORE tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, 3>{std::move(fp)} {}
 
@@ -30,7 +30,6 @@ namespace triqs {
      * Provide an iterator of tuples of $$(R, t_{R, ab})$$
      * @return elements : tuple of (R, t_{R,ba}) pairs
      */
-    // FIXME this is temporary and I might be in trouble doing this, but we are changing to nda anyway...
     [[nodiscard]] auto elements() const { return itertools::zip(this->get_R_list(), this->get_coefficients()); }
 
     ///

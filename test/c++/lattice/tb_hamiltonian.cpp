@@ -7,8 +7,6 @@
 using namespace triqs;
 using namespace triqs::lattice;
 
-CLEF_MAKE_FNT_LAZY(inverse);
-
 TEST(tb_tests, simple_construct) { // NOLINT
 
   // simplest case is to pass no placeholders, just doubles
@@ -76,7 +74,7 @@ TEST(tb_tests, tb_ptr_test) { // NOLINT
   // 2d integrations
   namespace ph    = triqs::lattice::placeholders;
   auto f_wk       = inverse(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
-  auto result_ptr = integrate_ptr(f_wk, {10, 10, 1}, std::vector{omega}, {});
+  auto result_ptr = integrate_ptr(f_wk, std::vector{omega}, {10, 10, 1}, {});
 
   // value below in adaptive case is more precise answer to integral -- this is an inaccurate answer for ptr with 10x pts
   dcomplex answer = {-0.21999931548255128, -0.30777709520545604};

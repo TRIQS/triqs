@@ -142,7 +142,7 @@ namespace triqs {
         new_coefficients[Rz - Rz_min] += coeff_list[idx] * std::exp(2i * M_PI * kR);
       }
       return {std::move(new_Rs), std::move(new_coefficients)};
-    };
+    }
 
     // -----------------------------
 
@@ -196,7 +196,11 @@ namespace triqs {
     */
     std::conditional_t<(coeff_dim == 2), nda::matrix<dcomplex>, nda::array<dcomplex, 3>> operator()(std::array<double, kdim> ks) const {
       assert(ks.size() == kdim);
+<<<<<<< HEAD
       //auto vals = [&](long idx) { return std::exp(2i * M_PI * nda::blas::dot_generic(ks, Rs[idx])) * hoppings[idx]; };
+=======
+      //auto vals = [&](long idx) { return std::exp(2i * M_PI * nda::linalg::detail::dot_generic(ks, Rs[idx])) * hoppings[idx]; };
+>>>>>>> f269acd3 (Fix signature of dot_generic in tight_binding after change in NDA)
 
       auto dot = [](auto const &x, auto const &y) {
         double r = 0;

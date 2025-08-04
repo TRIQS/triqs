@@ -3,8 +3,6 @@
 #include "triqs/utility/integration/integrator.hpp"
 #include <triqs/gfs.hpp>
 
-// TODO should we also make PTR return a lambda on omega, store things explicitly?
-// TODO ensure we allow integration without omega mesh at all... do we actually want to keep equispaced for this???
 // TODO need to upgrade this for integration of the IBZ
 
 // omp reduction operation for nda array
@@ -61,19 +59,16 @@ namespace triqs::lattice {
   /**
     * @brief Compute the integral of f_kw on k using PTR on the domain from 0,1, utilizing both MPI and OMP parallelism
     *
-    * FIXME: refactor to make this into a generic (not frequency dependent) PTR, where we could later evaluate at a given omega
-    *
-    * @tparam A complex double, double, or matsubara_freq datatype
-    * @param f_kw CLEF expression representing the function to integrate, with placeholder for kx, ky, kz and omega
-    *     from the lattice::placeholders namespace
+    * @tparam T
+    * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
+    * @param omega_values list of frequency values as complex double, double, or mesh point type 
     * @param k_grid_dims the grid on which to evaluate the expression using PTR
-    * @param omega_values list of frequency values as complex double, double, or matsubara_freqs
-    * @param comm the relevant MPI communicator
-    * @return integral The value of the integral expression, fully evaluated on kx, ky, kz and omega
+    * @param comm MPI communicator
+    * @return The value of the integral expression, fully evaluated on kx, ky, kz and omega
     */
   template <typename T>
     requires(std::convertible_to<T, dcomplex> or std::convertible_to<T, double>) // allow for real or imaginary mesh points or numbers
-  nda::array<dcomplex, 3> integrate_ptr(auto const &f_kw, std::array<long, 3> const &k_grid_dims, std::vector<T> const &omega_values,
+  nda::array<dcomplex, 3> integrate_ptr(auto const &f_kw, std::vector<T> const &omega_values, std::array<long, 3> const &k_grid_dims,
                                         mpi::communicator comm) {
 
     for (auto i : {0, 1, 2}) {
@@ -95,7 +90,7 @@ namespace triqs::lattice {
     };
 
     // perform the PTR, integrating
-#pragma omp parallel for collapse(3) reduction(array_add_c_3 : result) default(none)                                                                 \
+#pragma omp parallel for reduction(array_add_c_3 : result) default(none)                                                                             \
    shared(k_grid_dims, omega_values, f_kw, ph::kx, ph::ky, ph::kz, ph::w, r_all, mpi_chunk_max)
     for (auto ikx : mpi_chunk_max(0)) {
       double kx  = ikx / double(k_grid_dims[0]);
@@ -119,13 +114,23 @@ namespace triqs::lattice {
 
   // -------------------------------------------
 
+  /**
+    * @brief Compute the integral of f_kw on k using PTR on the domain from 0,1, utilizing both MPI and OMP parallelism
+    *
+    * @tparam T 
+    * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
+    * @param w_mesh mesh of frequency points on which to perform the integration
+    * @param k_grid_dims the grid on which to evaluate the expression using PTR
+    * @param comm MPI communicator
+    * @return The value of the integral expression, fully evaluated on kx, ky, kz and omega
+    */
   template <typename Mesh>
   auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid_dims, mpi::communicator comm = {}) {
 
-    int dim          = deduce_dim_from_expression(f_kw);
-    auto g_out       = gf{w_mesh, {dim, dim}};
-    auto mesh_points = w_mesh | std::ranges::to<std::vector>();
-    auto ptr_result  = integrate_ptr(f_kw, w_mesh, k_grid_dims, comm);
+    int dim    = deduce_dim_from_expression(f_kw);
+    auto g_out = gf{w_mesh, {dim, dim}};
+    std::vector<typename Mesh::mesh_point_t> mesh_points(w_mesh.begin(), w_mesh.end());
+    auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid_dims, comm);
     // fill in the GF to return
     for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
     return g_out;
@@ -209,13 +214,14 @@ namespace triqs::lattice {
     auto k_grid_dims = opt.k_grid_dims;
 
     // set up initialize set of omega values to be run (all of them for first loop)
-    auto mesh_points = w_mesh | std::ranges::to<std::vector>();
+    std::vector<typename Mesh::mesh_point_t> mesh_points; // (w_mesh.begin(), w_mesh.end());
+    for (auto w : w_mesh) mesh_points.emplace_back(w);
 
     // ---- Do the PTR -------
     while (!all_converged() and *std::ranges::max_element(k_grid_dims) < opt.n_k_max) {
 
       // update the list of omega values we need to cover
-      auto ptr_result = integrate_ptr(f_kw, k_grid_dims, mesh_points, comm);
+      auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid_dims, comm);
 
       // check which ones are converged after this run
       for (auto &&[n, w] : itertools::enumerate(mesh_points)) {
@@ -223,7 +229,13 @@ namespace triqs::lattice {
         g_out[w]                      = ptr_result(n, r_all, r_all);
       }
       // update list of unconverged frequencies to work on
-      mesh_points = mesh_points | std::views::filter([&](auto om) { return !ptr_converged[om.data_index()]; }) | std::ranges::to<std::vector>();
+      // REFACTOR it's much nicer to use the below line if we later can
+      //mesh_points = mesh_points | std::views::filter([&](auto om) { return !ptr_converged[om.data_index()]; }) | std::ranges::to<std::vector>();
+      std::vector<typename Mesh::mesh_point_t> unconv_mesh_points;
+      for (auto w : mesh_points) {
+        if (!ptr_converged[w.data_index()]) unconv_mesh_points.emplace_back(w);
+      }
+      mesh_points = unconv_mesh_points;
 
       // increment the grid, update g_out
       for (auto ik : {0, 1, 2}) k_grid_dims[ik] += opt.delta_k_grid_dims[ik];

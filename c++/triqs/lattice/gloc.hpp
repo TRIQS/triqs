@@ -8,29 +8,41 @@
 #include <triqs/lattice/tb_hamiltonian.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
 
-// TODO perhaps move this somewhere else?
-namespace nda::temp {
-  CLEF_MAKE_FNT_LAZY(inverse);
-}
-
 namespace triqs {
 
   /**
-   * @brief Compute local Green's function on a given mesh using tight binding Hamiltonian
-   *        In particular, this function works on a single gf object, for a single spin channel,
-   *        by the function which works on block2_gf above.
+   * @brief Compute the non-interacting local Green's function on a given mesh from a tight binding Hamiltonian
    *
-   * @param tb_hopping A tight binding hopping t(k) (matrix valued)
+   * @tparam Mesh 
+   * @param mesh 
+   * @param tb_hopping A tight binding Hamiltonian
    * @param mu Chemical potential
-   * @param Sigma_embed Self energy in the embedded basis? TODO I don't think this was relevant
-   * @param Sigma_DC ? TODO JC would like this to be optional
-   * @param bz_int_options Option of the BZ integration
-   * @param d_H ? for magnetic fields etc?
-   * @return gloc = gf on the mesh
+   * @param Sigma The dynamic part of the embedded self-energy.
+   * @param opt Container for options related integration of the BZ   
+   * @return gloc, the local Green's function on frequency mesh of the provided self-energy
+   */
+  template <typename Mesh>
+  gfs::gf<Mesh, gfs::matrix_valued> gloc(Mesh const &w_mesh, tb_hamiltonian const &H_k, double mu, triqs::lattice::bz_int_options const &opt) {
+
+    auto I       = nda::eye<dcomplex>(H_k.n_orbitals());
+    namespace ph = triqs::lattice::placeholders;
+    auto expr_kw = inverse((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz));
+    // call the integration for this block
+    return triqs::lattice::integrate_bz(expr_kw, w_mesh, opt);
+  }
+
+  /**
+   * @brief Compute local Green's function on a given mesh from a tight binding Hamiltonian
+   *
+   * @param tb_hopping A tight binding Hamiltonian
+   * @param mu Chemical potential
+   * @param Sigma The dynamic part of the embedded self-energy.
+   * @param opt Container for options related integration of the BZ   
+   * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */
   template <typename Mesh>
   gfs::gf<Mesh, gfs::matrix_valued> gloc(tb_hamiltonian const &H_k, double mu, gfs::gf<Mesh, gfs::matrix_valued> const &Sigma,
-                                         lattice::bz_int_options const &opt) {
+                                         triqs::lattice::bz_int_options const &opt) {
 
     int n_orbitals = Sigma.target_shape()[0];
     auto I         = nda::eye<dcomplex>(n_orbitals);
@@ -38,12 +50,30 @@ namespace triqs {
       throw std::runtime_error("Number of orbitals in Hk " + std::to_string(H_k.n_orbitals()) + " not matched to shape of self energy "
                                + std::to_string(n_orbitals));
     }
-    namespace ph = lattice::placeholders;
-    auto expr_kw =
-       nda::temp::inverse((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz) - nda::clef::make_expr(std::move(Sigma))[ph::w]);
+    namespace ph = triqs::lattice::placeholders;
+    auto expr_kw = inverse((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz) - nda::clef::make_expr(std::move(Sigma))[ph::w]);
     // call the integration for this block
-    return lattice::integrate_bz(expr_kw, Sigma.mesh(), opt);
+    return triqs::lattice::integrate_bz(expr_kw, Sigma.mesh(), opt);
   }
+
+  // FIXME : I could put this function to match the interface of modest, but it seems contrived when done in the full orbital space.
+  /**
+   * @brief Compute local Green's function on a given mesh using tight binding Hamiltonian
+   *
+   * @param tb_hopping A tight binding Hamiltonian
+   * @param mu Chemical potential
+   * @param Sigma_dynamic The dynamic part of the embedded self-energy.
+   * @param Sigma_static The static part of the embedded self-energy.
+   * @param opt Container for options related integration of the BZ   
+   * @return gloc, the local Green's function on frequency mesh of the provided self-energy
+   */
+  /*   template <typename Mesh>
+  gfs::gf<Mesh, gfs::matrix_valued> gloc(tb_hamiltonian const &H_k, double mu, gfs::gf<Mesh, gfs::matrix_valued> const &Sigma_dynamic,
+                                         gfs::gf<Mesh, gfs::matrix_valued> const &Sigma_static, lattice::bz_int_options const &opt) {
+
+    // call the integration for this block
+    return gloc(H_k, mu, Sigma_dynamic + Sigma_static, opt);
+  } */
 
   // TODO should I have a blockgf one for spin up/spin down ?
   /** TODO this is just a way to use of a more general GF object.
@@ -55,6 +85,8 @@ namespace triqs {
     return gloc(H_k, mu, Sigma, opt);
   } */
 
+  // Add DLR functions?
+
   /** @cond DOXYGEN_SKIP_THIS */
 
   template gfs::gf<mesh::imfreq, gfs::matrix_valued> gloc(tb_hamiltonian const &H_k, double mu,
@@ -62,6 +94,12 @@ namespace triqs {
 
   template gfs::gf<mesh::refreq, gfs::matrix_valued> gloc(tb_hamiltonian const &H_k, double mu,
                                                           gfs::gf<mesh::refreq, gfs::matrix_valued> const &Sigma, lattice::bz_int_options const &opt);
+
+  template gfs::gf<mesh::imfreq, gfs::matrix_valued> gloc(mesh::imfreq const &w_mesh, tb_hamiltonian const &H_k, double mu,
+                                                          triqs::lattice::bz_int_options const &opt);
+
+  template gfs::gf<mesh::refreq, gfs::matrix_valued> gloc(mesh::refreq const &w_mesh, tb_hamiltonian const &H_k, double mu,
+                                                          triqs::lattice::bz_int_options const &opt);
 
   /** @endcond */
 

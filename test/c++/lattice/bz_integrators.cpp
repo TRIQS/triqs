@@ -49,7 +49,7 @@ namespace triqs::lattice {
     auto ex      = 1. / (ph::w + eps(ph::kx, ph::ky, ph::kz) + 0.1 * 1i);
 
     // call the integration for this block -- this operates in place on g
-    auto result = integrate_ptr(ex, {10, 10, 10}, std::vector{iw_mesh[7].value()}, {});
+    auto result = integrate_ptr(ex, std::vector{iw_mesh[7].value()}, {10, 10, 10}, {});
 
     // explicit comparison to serial result
     dcomplex sum = 0;
