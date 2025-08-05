@@ -75,9 +75,9 @@ the study of interacting quantum systems, for example:
 * Orthogonal polynomial representation of imaginary-time Green’s functions `Phys. Rev. B 84 075145 <https://doi.org/10.1103/PhysRevB.84.075145>`_
 
 * Discrete Lehmann representation of imaginary time Green's functions `Phys. Rev. B 105 235115 <https://doi.org/10.1103/PhysRevB.105.235115>`_
-  through the cppdlr library `arXiv.2404.02334 <https://doi.org/10.48550/arXiv.2404.02334>`_
+  through the cppdlr library `J. Open Source Softw. 9(100) 6297 <https://doi.org/10.21105/joss.06297>`_
 
-* Constrained residual minimization Dyson Solver `arXiv:2310.01266 <https://doi.org/10.48550/arXiv.2310.01266>`_
+* Constrained residual minimization Dyson Solver `Phys. Rev. B 111 115155 <https://doi.org/10.1103/PhysRevB.111.115155>`_
 
 Please cite the relevant papers when using these algorithms in your research.
 
