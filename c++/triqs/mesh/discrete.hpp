@@ -17,6 +17,8 @@
 
 #pragma once
 #include "./utils.hpp"
+#include "./mesh_iterator.hpp"
+
 namespace triqs::mesh {
 
   struct discrete {
@@ -104,16 +106,10 @@ namespace triqs::mesh {
 
     // -------------------------- Range & Iteration --------------------------
 
-    private:
-    [[nodiscard]] auto r_() const {
-      return itertools::transform(range(size()), [this](long i) { return (*this)[i]; });
-    }
-
-    public:
-    [[nodiscard]] auto begin() const { return r_().begin(); }
-    [[nodiscard]] auto cbegin() const { return r_().cbegin(); }
-    [[nodiscard]] auto end() const { return r_().end(); }
-    [[nodiscard]] auto cend() const { return r_().cend(); }
+    [[nodiscard]] auto begin() const { return mesh_iterator<discrete>{.mesh_ptr = this, .data_index = 0}; }
+    [[nodiscard]] auto cbegin() const { return begin(); }
+    [[nodiscard]] auto end() const { return mesh_iterator<discrete>{.mesh_ptr = this, .data_index = size()}; }
+    [[nodiscard]] auto cend() const { return end(); }
 
     // -------------------- print  -------------------
 

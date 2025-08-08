@@ -37,6 +37,7 @@
 #include "arrays.hpp"
 
 #include "./mesh/utils.hpp"
+#include "./mesh/mesh_iterator.hpp"
 
 #include "./mesh/imtime.hpp"
 #include "./mesh/imfreq.hpp"
