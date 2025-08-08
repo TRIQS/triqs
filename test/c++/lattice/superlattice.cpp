@@ -155,8 +155,8 @@ TEST(SuperLatticeTest, 2x2SquareLattice3d_with_gloc) {
   auto Sigma2 = gfs::gf<mesh::dlr_imfreq>{Sigma1.mesh(), {M, M}};
   for (auto i : nda::range(M)) Sigma2.data()(r_all, i, i) = Sigma1.data()(r_all, 0, 0);
 
-  auto opt1 = lattice::bz_int_options{.k_grid_dims = {10, 10, 5}, .n_k_max = 11, .run_adaptive = false};
-  auto opt2 = lattice::bz_int_options{.k_grid_dims = {5, 5, 5}, .n_k_max = 6, .run_adaptive = false};
+  auto opt1 = lattice::bz_int_options{.k_grid = {10, 10, 5}, .k_grid_max = {10, 10, 5}, .run_adaptive = false};
+  auto opt2 = lattice::bz_int_options{.k_grid = {5, 5, 5}, .k_grid_max = {5, 5, 5}, .run_adaptive = false};
   auto g1   = gloc(tb, 0.0, Sigma1, opt1);
   auto g2   = gloc(tb_AF, 0.0, Sigma2, opt2);
 

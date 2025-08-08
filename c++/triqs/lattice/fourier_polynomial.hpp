@@ -91,7 +91,7 @@ namespace triqs {
           for (int i = 0; i < v.size(); ++i)
             if (v[i] == 1) return i;
           return -1; // to silence compiler warning
-        }(is_ph);    // immediately calling the lambda. executed at compile time
+        }(is_ph); // immediately calling the lambda. executed at compile time
 
         return nda::clef::make_expr_call(partial_eval<ph_position>(ks...), // auto{k...[ph_position]}); // C++26
                                          auto{std::get<ph_position>(std::tie(ks...))});
@@ -196,11 +196,7 @@ namespace triqs {
     */
     std::conditional_t<(coeff_dim == 2), nda::matrix<dcomplex>, nda::array<dcomplex, 3>> operator()(std::array<double, kdim> ks) const {
       assert(ks.size() == kdim);
-<<<<<<< HEAD
-      //auto vals = [&](long idx) { return std::exp(2i * M_PI * nda::blas::dot_generic(ks, Rs[idx])) * hoppings[idx]; };
-=======
       //auto vals = [&](long idx) { return std::exp(2i * M_PI * nda::linalg::detail::dot_generic(ks, Rs[idx])) * hoppings[idx]; };
->>>>>>> f269acd3 (Fix signature of dot_generic in tight_binding after change in NDA)
 
       auto dot = [](auto const &x, auto const &y) {
         double r = 0;

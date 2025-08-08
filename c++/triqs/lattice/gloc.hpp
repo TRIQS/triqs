@@ -17,7 +17,7 @@ namespace triqs {
    * @param mesh 
    * @param tb_hopping A tight binding Hamiltonian
    * @param mu Chemical potential
-   * @param Sigma The dynamic part of the embedded self-energy.
+   * @param Sigma The self-energy
    * @param opt Container for options related integration of the BZ   
    * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */
@@ -36,7 +36,7 @@ namespace triqs {
    *
    * @param tb_hopping A tight binding Hamiltonian
    * @param mu Chemical potential
-   * @param Sigma The dynamic part of the embedded self-energy.
+   * @param Sigma The self-energy
    * @param opt Container for options related integration of the BZ   
    * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */

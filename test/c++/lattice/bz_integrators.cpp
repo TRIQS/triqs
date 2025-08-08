@@ -8,10 +8,6 @@
 double eps(double kx, double ky, double kz) { return std::cos(kx) + std::cos(ky) + std::cos(kz); }
 CLEF_MAKE_FNT_LAZY(eps);
 
-namespace nda {
-  CLEF_MAKE_FNT_LAZY(inverse);
-}
-
 namespace triqs::lattice {
 
   TEST(bz_integrators, adaptive) { // NOLINT
@@ -90,11 +86,11 @@ namespace triqs::lattice {
     double Gamma = 0.025;
     double beta  = 10;
     long n_iw    = 2;
-    auto expr_kw = nda::inverse(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
+    auto expr_kw = inverse(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
 
     auto iw_mesh = mesh::imfreq{beta, triqs::gfs::Fermion, n_iw, triqs::mesh::imfreq::option::positive_frequencies_only};
     gf<mesh::imfreq, matrix_valued> result(iw_mesh, {norb, norb});
-    bz_int_options options{.tolerance = 1.e-2, .k_grid_dims = {10, 10, 10}, .n_k_max = 20};
+    bz_int_options options{.tolerance = 1.e-2, .k_grid = {10, 10, 10}, .k_grid_max = {20, 20, 20}};
     result = integrate_bz(expr_kw, iw_mesh, options);
 
     EXPECT_COMPLEX_NEAR(dcomplex{0.00011757400118563716, -0.4167788744251697}, result[0](0, 0), 1.e-5);

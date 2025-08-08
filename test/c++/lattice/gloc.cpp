@@ -25,7 +25,7 @@ TEST(gloc_tests, gloc_single_orbital) { // NOLINT
   //auto Sigma = gfs::gf<mesh::imfreq>{iw_mesh, {norb, norb}};
 
   // call the integration function
-  lattice::bz_int_options options{.tolerance = 1.e-3, .k_grid_dims = {10, 10, 10}, .n_k_max = 20};
+  lattice::bz_int_options options{.tolerance = 1.e-3, .k_grid = {10, 10, 10}, .k_grid_max = {20, 20, 20}};
 
   auto Gloc = gloc(iw_mesh, tb, 0., options);
 
@@ -49,7 +49,7 @@ TEST(gloc_tests, gloc_multiple_orbitals) { // NOLINT
   //auto Sigma = gfs::gf<mesh::imfreq>{iw_mesh, {norb, norb}};
 
   // call the integration function
-  lattice::bz_int_options options{.tolerance = 1.e-3, .k_grid_dims = {10, 10, 10}, .n_k_max = 40};
+  lattice::bz_int_options options{.tolerance = 1.e-3, .k_grid = {10, 10, 10}, .k_grid_max = {40, 40, 40}};
 
   auto Gloc = gloc(iw_mesh, tb, 0., options);
 

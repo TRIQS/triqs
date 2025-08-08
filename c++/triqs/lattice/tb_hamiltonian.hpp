@@ -1,12 +1,10 @@
-#pragma once
+c++/triqs/lattice/tb_hamiltonian.hpp#pragma once
 #include <nda/nda.hpp>
 #include <cassert>
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
 #include "fourier_polynomial.hpp"
 #include "superlattice.hpp"
-
-// FIXME : Should not be in hpp !!
 
 // FIXME : put in triqs lattice
 // FP as well.
@@ -18,7 +16,7 @@ namespace triqs {
 
     public:
     tb_hamiltonian(std::vector<std::array<long, 3>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
-       : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)){};
+       : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)) {};
 
     C2PY_IGNORE tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, 3>{std::move(fp)} {}
 
@@ -48,6 +46,10 @@ namespace triqs {
       * @param k k-points as an array of [nk, 3] in units of the reciprocal lattice vectors
       * @return energies as a matrix of shape [nk, nbands] of band-basis energies as real doubles
       */
+<<<<<<< HEAD
+=======
+    // DOC FIXME : MORE PRECISE
+>>>>>>> bdea3b96 (improve bz integration options + docstrings for bz int, gloc)
     nda::array<double, 2> eigenvalues(nda::array_view<double, 2> k) const;
 
     // REFACTOR -- reformat this and also move it to cpp file
@@ -61,25 +63,7 @@ namespace triqs {
     // ------------------- HDF5 Read / Write -------------------
 
     // TODO would we like to update what these are called in the HDF5?
-
-    [[nodiscard]] static std::string hdf5_format() { return "tb_hamiltonian"; }
-
-    // Function that writes the solver_core to hdf5 file
-    /*     friend void h5_write(h5::group fg, std::string subgroup_name, tb_hamiltonian const &tb) {
-      auto grp = fg.create_group(subgroup_name);
-      write_hdf5_format(grp, tb);
-      h5_write(grp, "displ_vec", tb.Rs);
-      h5_write(grp, "overlap_mat_vec", tb.coefficients);
-    }
-
-    // Function to read tight_binding object from hdf5 file
-    CPP2PY_IGNORE
-    static tight_binding h5_read_construct(h5::group g, std::string subgroup_name) {
-      auto grp      = g.open_group(subgroup_name);
-      auto R        = h5::h5_read<std::vector<std::array<long, kdim>>>(grp, "displ_vec");
-      auto hoppings = h5::h5_read<std::vector<nda::matrix<dcomplex>>>(grp, "overlap_mat_vec");
-      return tb_hamiltonian(R, hoppings);
-    } */
+    [[nodiscard]] inline static std::string hdf5_format() { return "tb_hamiltonian"; }
   };
 
   // Superlattice folding user function

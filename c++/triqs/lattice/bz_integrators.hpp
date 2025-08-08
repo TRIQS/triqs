@@ -1,6 +1,7 @@
 #pragma once
 #include "triqs/utility/integration/adaptive.hpp"
 #include "triqs/utility/integration/integrator.hpp"
+#include <stdexcept>
 #include <triqs/gfs.hpp>
 
 // TODO need to upgrade this for integration of the IBZ
@@ -30,13 +31,24 @@ namespace triqs::lattice {
     double tolerance = 1.e-3; // target error
   };
 
-  // Options for the case of integrate_bz function, with both adaptive + ptr integration
+  /**
+  * @brief Options for the case of integrate_bz function, with both adaptive + ptr integration
+  *
+  * @details The integration function we are running for Gloc currently makes an attempt to converge the integration at 
+  * each frequency using fixed k-grid integration with increasing grid density, starting from `k_grid` 
+  * and increasing in increments of `delta_k_grid` until either a given point is converged with PTR or we hit `k_grid_max`. 
+  * After that, the remaining unconverged frequency points are run with adaptive 
+  * integration until they reach a certain absolute tolerance. 
+  * 
+  */
   struct bz_int_options {
-    double tolerance                      = 1.e-3;
-    std::array<long, 3> k_grid_dims       = {10, 10, 10}; // default PTR number of points
-    std::array<long, 3> delta_k_grid_dims = {2, 2, 2};    // Increase step of n_kx in the grid refinement
-    int n_k_max                           = 100;          // Max of n_kx, n_ky, n_kz
-    bool run_adaptive                     = true;         // if false, does not run adaptive integration at the end
+    double tolerance                 = 1.e-3;        /// absolute tolerance of the integrated quantity
+    std::array<long, 3> k_grid       = {10, 10, 10}; /// default PTR number of points
+    std::array<long, 3> delta_k_grid = {2, 2, 2};    /// Increase step of k in the grid refinement
+    std::array<long, 3> k_grid_max   = {20, 20, 20}; /// Max of kx, ky, kz
+    bool run_adaptive                = true;         /// if false, does not run adaptive integration at the end
+    bool run_ptr                     = true;         /// if false, does not run PTR integration, goes directly to adaptive
+    bool verbose                     = false;        /// if logging should be printed
   };
 
   // helper to determine the return container dimension
@@ -62,17 +74,17 @@ namespace triqs::lattice {
     * @tparam T
     * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
     * @param omega_values list of frequency values as complex double, double, or mesh point type 
-    * @param k_grid_dims the grid on which to evaluate the expression using PTR
+    * @param k_grid the grid on which to evaluate the expression using PTR
     * @param comm MPI communicator
     * @return The value of the integral expression, fully evaluated on kx, ky, kz and omega
     */
   template <typename T>
     requires(std::convertible_to<T, dcomplex> or std::convertible_to<T, double>) // allow for real or imaginary mesh points or numbers
-  nda::array<dcomplex, 3> integrate_ptr(auto const &f_kw, std::vector<T> const &omega_values, std::array<long, 3> const &k_grid_dims,
+  nda::array<dcomplex, 3> integrate_ptr(auto const &f_kw, std::vector<T> const &omega_values, std::array<long, 3> const &k_grid,
                                         mpi::communicator comm) {
 
     for (auto i : {0, 1, 2}) {
-      if (k_grid_dims[i] <= 0) std::runtime_error{"Cannot use PTR integration with kgrid dim <= 0."};
+      if (k_grid[i] <= 0) std::runtime_error{"Cannot use PTR integration with kgrid dim <= 0."};
     }
 
     namespace ph  = triqs::lattice::placeholders;
@@ -80,27 +92,26 @@ namespace triqs::lattice {
     auto result   = nda::zeros<dcomplex>(omega_values.size(), block_dim, block_dim); // container to return
 
     // Determine the longest direction and apply MPI chunk to this dimension, otherwise provide a simple iterator
-    auto mpi_chunk_max = [&k_grid_dims, comm](int kdim) {
+    auto mpi_chunk_max = [&k_grid, comm](int kdim) {
       // chunk the biggest one with MPI
-      if (kdim == std::distance(k_grid_dims.begin(), std::ranges::max_element(k_grid_dims))) {
-        return mpi::chunk(nda::range(k_grid_dims[kdim]), comm);
-      }
-      return itertools::slice(nda::range(k_grid_dims[kdim]), 0,
-                              k_grid_dims[kdim]); // otherwise complains about different return types
+      if (kdim == std::distance(k_grid.begin(), std::ranges::max_element(k_grid))) { return mpi::chunk(nda::range(k_grid[kdim]), comm); }
+      return itertools::slice(nda::range(k_grid[kdim]), 0,
+                              k_grid[kdim]); // otherwise complains about different return types
     };
 
+    // REFACTOR: why does performing partial eval within different loops not help?
     // perform the PTR, integrating
-#pragma omp parallel for reduction(array_add_c_3 : result) default(none)                                                                             \
-   shared(k_grid_dims, omega_values, f_kw, ph::kx, ph::ky, ph::kz, ph::w, r_all, mpi_chunk_max)
+#pragma omp parallel for collapse(3) reduction(array_add_c_3 : result) default(none)                                                                 \
+   shared(k_grid, omega_values, f_kw, ph::kx, ph::ky, ph::kz, ph::w, r_all, mpi_chunk_max)
     for (auto ikx : mpi_chunk_max(0)) {
-      double kx  = ikx / double(k_grid_dims[0]);
-      auto f_wyz = eval(f_kw, ph::kx = kx);
+      //auto f_wyz = eval(f_kw, ph::kx = kx);
       for (auto iky : mpi_chunk_max(1)) {
-        double ky = iky / double(k_grid_dims[1]);
-        auto f_wz = eval(f_wyz, ph::ky = ky);
+        //auto f_wz = eval(f_wyz, ph::ky = ky);
         for (auto ikz : mpi_chunk_max(2)) {
-          double kz = ikz / double(k_grid_dims[2]);
-          auto f_w  = eval(f_wz, ph::kz = kz);
+          double kx = ikx / double(k_grid[0]);
+          double ky = iky / double(k_grid[1]);
+          double kz = ikz / double(k_grid[2]);
+          auto f_w  = eval(f_kw, ph::kx = kx, ph::ky = ky, ph::kz = kz);
           for (auto &&[n, omega] : itertools::enumerate(omega_values)) result(n, r_all, r_all) += eval(f_w, ph::w = omega);
         }
       }
@@ -108,7 +119,7 @@ namespace triqs::lattice {
     result = mpi::all_reduce(result, comm);
 
     // apply normalization
-    result /= double(k_grid_dims[0] * k_grid_dims[1] * k_grid_dims[2]);
+    result /= double(k_grid[0] * k_grid[1] * k_grid[2]);
     return result;
   }
 
@@ -120,17 +131,16 @@ namespace triqs::lattice {
     * @tparam T 
     * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
     * @param w_mesh mesh of frequency points on which to perform the integration
-    * @param k_grid_dims the grid on which to evaluate the expression using PTR
+    * @param k_grid the grid on which to evaluate the expression using PTR
     * @param comm MPI communicator
     * @return The value of the integral expression, fully evaluated on kx, ky, kz and omega
     */
-  template <typename Mesh>
-  auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid_dims, mpi::communicator comm = {}) {
+  template <typename Mesh> auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid, mpi::communicator comm = {}) {
 
     int dim    = deduce_dim_from_expression(f_kw);
     auto g_out = gf{w_mesh, {dim, dim}};
     std::vector<typename Mesh::mesh_point_t> mesh_points(w_mesh.begin(), w_mesh.end());
-    auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid_dims, comm);
+    auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid, comm);
     // fill in the GF to return
     for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
     return g_out;
@@ -203,6 +213,35 @@ namespace triqs::lattice {
 
     namespace ph = triqs::lattice::placeholders;
 
+    // set up kgrid
+    auto k_grid          = opt.k_grid;
+    auto kgrid_above_max = [&](auto &k_grid) { // REFACTOR maybe this can be done with less
+      for (auto ik : {0, 1, 2})
+        if (k_grid[ik] >= opt.k_grid_max[ik]) { return true; }
+      return false;
+    };
+
+    // REFACTOR this feels like something that should go into a constructor for a bz_int_opt object
+    // note that the PTR will always run once as long as run_ptr = true
+    if (opt.tolerance <= 0) { throw std::runtime_error("Must provide a positive tolerance."); }
+    if (!opt.run_ptr and !opt.run_adaptive) {
+      throw std::runtime_error("Must choose at least one of run_ptr or run_adaptive for BZ integration to work.");
+    }
+    if (opt.run_ptr) { // check PTR options are sound
+      //if (kgrid_above_max(k_grid)) { throw std::runtime_error("Cannot perform PTR integration when initial k_grid > k_grid_max."); }
+      if (!std::all_of(k_grid.begin(), k_grid.end(), [&](int k) { return k > 0; })) { // check if values are positive
+        throw std::runtime_error("Cannot run integraton with k_grid <= 0. ");
+      }
+      // check that kgrid increment is meaningful
+      if (!std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k >= 0; })) {
+        throw std::runtime_error("delta_k_grid cannot be negative.");
+      }
+      // delta_k_grid = 0 is reasonable only if k_grid >= k_grid_max, otherwise this will run doing nothing
+      if (std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k == 0; }) and !kgrid_above_max(k_grid)) {
+        throw std::runtime_error("delta_k_grid can only be zero if k_grid >= k_grid_max.");
+      }
+    }
+
     int dim    = deduce_dim_from_expression(f_kw);
     auto g_out = gf{w_mesh, {dim, dim}};
 
@@ -210,42 +249,49 @@ namespace triqs::lattice {
     std::vector<bool> ptr_converged(w_mesh.size(), false);
     auto all_converged = [&]() { return std::ranges::all_of(ptr_converged, std::identity()); };
 
-    // set up kgrid
-    auto k_grid_dims = opt.k_grid_dims;
-
     // set up initialize set of omega values to be run (all of them for first loop)
-    std::vector<typename Mesh::mesh_point_t> mesh_points; // (w_mesh.begin(), w_mesh.end());
+    std::vector<typename Mesh::mesh_point_t> mesh_points; // (w_mesh.begin(), w_mesh.end()); // TODO why doesn't this single line work?
     for (auto w : w_mesh) mesh_points.emplace_back(w);
 
-    // ---- Do the PTR -------
-    while (!all_converged() and *std::ranges::max_element(k_grid_dims) < opt.n_k_max) {
+    // ------ Do the PTR -------
+    if (opt.run_ptr) {
+      do { // run loop at least once if PTR is chosen
 
-      // update the list of omega values we need to cover
-      auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid_dims, comm);
+        if (opt.verbose) {
+          int remaining_ptr = ptr_converged.size() - std::reduce(ptr_converged.begin(), ptr_converged.end());
+          std::cout << "Points remaining unconverged: " << remaining_ptr << ", now running with k-grid " << k_grid[0] << " " << k_grid[1] << " "
+                    << k_grid[2] << std::endl;
+        }
 
-      // check which ones are converged after this run
-      for (auto &&[n, w] : itertools::enumerate(mesh_points)) {
-        ptr_converged[w.data_index()] = (max_element(abs(ptr_result(n, r_all, r_all) - g_out[w])) < opt.tolerance);
-        g_out[w]                      = ptr_result(n, r_all, r_all);
-      }
-      // update list of unconverged frequencies to work on
-      // REFACTOR it's much nicer to use the below line if we later can
-      //mesh_points = mesh_points | std::views::filter([&](auto om) { return !ptr_converged[om.data_index()]; }) | std::ranges::to<std::vector>();
-      std::vector<typename Mesh::mesh_point_t> unconv_mesh_points;
-      for (auto w : mesh_points) {
-        if (!ptr_converged[w.data_index()]) unconv_mesh_points.emplace_back(w);
-      }
-      mesh_points = unconv_mesh_points;
+        // update the list of omega values we need to cover
+        auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid, comm);
 
-      // increment the grid, update g_out
-      for (auto ik : {0, 1, 2}) k_grid_dims[ik] += opt.delta_k_grid_dims[ik];
+        // check which ones are converged after this run
+        for (auto &&[n, w] : itertools::enumerate(mesh_points)) {
+          ptr_converged[w.data_index()] = (max_element(abs(ptr_result(n, r_all, r_all) - g_out[w])) < opt.tolerance);
+          g_out[w]                      = ptr_result(n, r_all, r_all);
+        }
+        // update list of unconverged frequencies to work on
+        // REFACTOR it's much nicer to use the below line if we later can
+        //mesh_points = mesh_points | std::views::filter([&](auto om) { return !ptr_converged[om.data_index()]; }) | std::ranges::to<std::vector>();
+        std::vector<typename Mesh::mesh_point_t> unconv_mesh_points;
+        for (auto w : mesh_points) {
+          if (!ptr_converged[w.data_index()]) unconv_mesh_points.emplace_back(w);
+        }
+        mesh_points = unconv_mesh_points;
+
+        // increment the grid for the next iteration
+        for (auto ik : {0, 1, 2}) k_grid[ik] += opt.delta_k_grid[ik];
+
+      } while (!all_converged() and !kgrid_above_max(k_grid));
     }
 
     // ------- Execute adaptive algo for the frequencies PTR could not do ----------
     if (opt.run_adaptive) {
       adaptive_options adaptive_opt = {.tolerance = opt.tolerance};
-      auto calc                     = integrate_adaptive(f_kw, adaptive_opt);
-      // adaptive evaluation at each frequency is MPI and OMP parallel;
+      if (opt.verbose) std::cout << "Running adaptive integration on remaining points." << std::endl;
+      auto calc = integrate_adaptive(f_kw, adaptive_opt);
+      // adaptive evaluation at each frequency is MPI parallel;
       // possibly could be done better but this is ok for now
       for (auto &&[n, w] : itertools::enumerate(mpi::chunk(g_out.mesh(), comm))) {
         if (not ptr_converged[n]) g_out[w] = calc(w);
