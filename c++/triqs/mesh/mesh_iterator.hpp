@@ -113,7 +113,7 @@ namespace triqs::mesh {
      * @return True, if they belong to the same mesh and if their current data indices are equal.
      */
     [[nodiscard]] bool operator==(mesh_iterator const &other) const noexcept {
-      return mesh_ptr->mesh_hash() == other.mesh_ptr->mesh_hash() and data_index == other.data_index;
+      return mesh_ptr == other.mesh_ptr and data_index == other.data_index;
     }
 
     /**

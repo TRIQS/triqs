@@ -69,7 +69,10 @@ TEST(TRIQS, MeshIteratorComparisons) {
     EXPECT_TRUE(it2 == rg.end());
     EXPECT_TRUE(it != it2);
     check_ordering(it, it2);
-    for (; it != it2; ++it, --it2) check_ordering(it, it2);
+    for (; it != it2;) {
+      check_ordering(it++, it2);
+      if (it != it2) check_ordering(it, it2--);
+    }
     EXPECT_TRUE(it == it2);
     for (; it != rg.end(); it++);
     for (; it2 != rg.begin(); it2--);
@@ -79,7 +82,8 @@ TEST(TRIQS, MeshIteratorComparisons) {
     check_ordering(it2, it);
   };
   check_comparisons(my_mesh(2));
-  check_comparisons(my_mesh(6));
+  check_comparisons(my_mesh(5));
+  check_comparisons(my_mesh(7));
   check_comparisons(my_mesh(10));
 }
 
