@@ -47,6 +47,7 @@
         <tab type="usergroup" url="@ref triqs-meshes-utils" title="Mesh utilities">
           <tab type="user" url="@ref triqs::mesh::closest_mesh_point_t" title="mesh::closest_mesh_point_t"/>
           <tab type="user" url="@ref triqs::mesh::energy_t" title="mesh::energy_t"/>
+          <tab type="user" url="@ref triqs::mesh::mesh_iterator" title="mesh::mesh_iterator"/>
         </tab>
         <tab type="usergroup" url="@ref triqs-meshes-other" title="Other mesh types">
           <tab type="usergroup" url="@ref triqs::mesh::discrete" title="mesh::discrete">

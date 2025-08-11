@@ -31,6 +31,7 @@
 namespace triqs::mesh {
 
   /**
+   * @ingroup triqs-meshes-utils
    * @brief A generic random access iterator for 1D meshes.
    * 
    * @details The iterator simply store a pointer to the underlying mesh and the data index of the current mesh point.
