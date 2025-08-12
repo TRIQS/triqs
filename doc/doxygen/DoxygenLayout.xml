@@ -35,6 +35,9 @@
             <tab type="user" url="@ref triqs::mesh::imfreq::mesh_point_t" title="mesh::imfreq::mesh_point_t"/>
           </tab>
           <tab type="user" url="@ref triqs::mesh::imtime" title="mesh::imtime"/>
+          <tab type="usergroup" url="@ref triqs-meshes-matsubara" title="Matsubara frequencies">
+            <tab type="user" url="@ref triqs::mesh::matsubara_freq" title="mesh::matsubara_freq"/>
+          </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-meshes-concepts" title="Mesh concepts">
           <tab type="user" url="@ref triqs::mesh::MeshPoint" title="mesh::MeshPoint"/>

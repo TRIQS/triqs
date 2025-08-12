@@ -19,7 +19,6 @@
 
 #pragma once
 #include "./../gf/flatten.hpp"
-#include "triqs/mesh/domains/matsubara.hpp"
 #include <triqs/utility/tuple_tools.hpp>
 
 namespace triqs::gfs {

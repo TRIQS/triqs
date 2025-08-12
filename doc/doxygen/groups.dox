@@ -64,6 +64,15 @@
  */
 
 /**
+ * @ingroup triqs-meshes-imag
+ * @defgroup triqs-meshes-matsubara Matsubara frequencies
+ * @brief Tools to represent and manipulate Matsubara frequencies.
+ * 
+ * @details Arithmetic operations between Matsubara frequencies and scalars are performed using the complex values of
+ * the Matsubara frequencies.
+ */
+
+/**
  * @ingroup triqs-meshes
  * @defgroup triqs-meshes-concepts Mesh concepts
  * @brief Various concepts used with @ref triqs-meshes.

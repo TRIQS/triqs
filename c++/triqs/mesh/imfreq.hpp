@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "./domains/matsubara.hpp"
 #include "./matsubara_freq.hpp"
 #include "./mesh_iterator.hpp"
 #include "./tail_fitter.hpp"
@@ -234,20 +233,6 @@ namespace triqs::mesh {
        : imfreq(b, stat, static_cast<long>((w_max.value * b / std::numbers::pi - (stat == Fermion ? 1 : 0)) / 2) + 1, opt) {}
 
     /**
-     * @brief Construct an imaginary frequency mesh on a given `triqs::mesh::matsubara_freq_domain`.
-     * @deprecated Use imfreq(double, statistic_enum, long, option) instead.
-     */
-    [[deprecated("matsubara_freq_domain is deprecated.")]] imfreq(matsubara_freq_domain dom, long N_iw = 1025, option opt = option::all_frequencies)
-       : imfreq(dom.beta, dom.statistic, N_iw, opt) {}
-
-    /**
-     * @brief Construct an imaginary frequency mesh on a given `triqs::mesh::matsubara_freq_domain`.
-     * @deprecated Use imfreq(double, statistic_enum, energy_t, option) instead.
-     */
-    [[deprecated("matsubara_freq_domain is deprecated")]] imfreq(matsubara_freq_domain dom, energy_t w_max, option opt = option::all_frequencies)
-       : imfreq(dom.beta, dom.statistic, w_max, opt) {}
-
-    /**
      * @brief Equal-to comparison operator compares \f$ \beta \f$, the particle statistics, \f$ N_{i\omega_n} \f$ and
      * whether all or only positive frequencies are in the mesh.
      */
@@ -397,12 +382,6 @@ namespace triqs::mesh {
 
     /// Get the hash value of the mesh.
     [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
-
-    /**
-     * @brief Get the Matsubara frequency domain.
-     * @deprecated `triqs::mesh::matsubara_freq_domain` is deprecated.
-     */
-    [[deprecated("matsubara_freq_domain is deprecated")]] [[nodiscard]] matsubara_freq_domain domain() const noexcept { return {beta_, stat_}; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points.
     [[nodiscard]] long size() const noexcept { return last_index_ - first_index_ + 1; }

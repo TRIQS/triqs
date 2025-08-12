@@ -25,7 +25,6 @@
 #pragma once
 
 #include "./bases/linear.hpp"
-#include "./domains/matsubara.hpp"
 #include "./utils.hpp"
 
 #include <fmt/format.h>
@@ -99,17 +98,6 @@ namespace triqs::mesh {
      */
     imtime(double beta = 1.0, statistic_enum stat = Fermion, long N = 0) : linear(0, beta, N), beta_(beta), stat_(stat) {}
 
-    /**
-     * @brief Construct an imaginary time mesh on a given `triqs::mesh::matsubara_time_domain` with \f$ N \geq 0 \f$
-     * equally spaced mesh points.
-     *
-     * @deprecated Use imtime(double, statistic_enum, long) instead.
-     * 
-     * @param dom `triqs::mesh::matsubara_time_domain` object.
-     * @param N Size of the mesh.
-     */
-    [[deprecated("matsubara_time_domain is deprecated")]] imtime(matsubara_time_domain dom, long N) : imtime(dom.beta, dom.statistic, N) {}
-
     /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator==(imtime const &) const = default;
 
@@ -121,12 +109,6 @@ namespace triqs::mesh {
 
     /// Get the particle statistics.
     [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
-
-    /**
-     * @brief Get the Matsubara time domain.
-     * @deprecated `triqs::mesh::matsubara_time_domain` is deprecated.
-     */
-    [[deprecated("matsubara_time_domain is deprecated")]] [[nodiscard]] matsubara_time_domain domain() const noexcept { return {beta_, stat_}; }
 
     /**
      * @brief Serialize the mesh to a generic archive.
