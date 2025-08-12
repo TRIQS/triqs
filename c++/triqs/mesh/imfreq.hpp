@@ -357,19 +357,8 @@ namespace triqs::mesh {
      */
     imfreq get_positive_freq() const { return {beta_, stat_, N_iw_, option::positive_frequencies_only}; }
 
-    /**
-     * @brief Map an index \f$ n \f$ to its corresponding Matsubara frequency \f$ i\omega_n \f$.
-     *
-     * @note This function does not check if the index is valid and it returns a triqs::mesh::matsubara_freq object not
-     * a mesh_point_t.
-     *
-     * @param n Matsubara index \f$ n \f$ to map.
-     * @return Matsubara frequency \f$ i\omega_n \f$.
-     */
-    matsubara_freq index_to_freq(index_t n) const { return {n, beta_, stat_}; }
-
     /// Get the complex value of the largest positive Matsubara frequency in the mesh.
-    std::complex<double> w_max() const { return index_to_freq(last_index_); }
+    std::complex<double> w_max() const { return to_value(last_index_); }
 
     /// Get the inverse temperature \f$ \beta \f$.
     [[nodiscard]] double beta() const noexcept { return beta_; }
