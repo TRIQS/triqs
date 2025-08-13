@@ -57,6 +57,9 @@ endif()
 
 # Find libraries for which we use imported targets
 find_package(Boost 1.70 REQUIRED)
+message(STATUS "Found Boost Headers: ${Boost_INCLUDE_DIRS}")
+# Workaround for OSX + GCC + Boost Issue with boost/core/bit.hpp and incorrect boost::ulong_long_type
+target_compile_definitions(Boost::headers INTERFACE BOOST_HAS_LONG_LONG)
 
 # Find the target dependencies
 function(find_dep)
