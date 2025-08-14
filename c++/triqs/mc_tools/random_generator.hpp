@@ -18,9 +18,10 @@
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 #pragma once
-#include <triqs/utility/first_include.hpp>
-#include "../utility/exceptions.hpp"
+
+#include "../utility/first_include.hpp"
 #include "../utility/buffered_function.hpp"
+
 #include <cmath>
 #include <string>
 #include <assert.h>

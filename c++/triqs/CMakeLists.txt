@@ -80,6 +80,7 @@ target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 
 message(STATUS "-------- Boost detection -------------")
 find_package(Boost 1.70 REQUIRED)
+message(STATUS "Found Boost Headers: ${Boost_INCLUDE_DIRS}")
 target_link_libraries(triqs PUBLIC Boost::headers)
 
 # ---------------------------------
