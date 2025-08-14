@@ -42,7 +42,8 @@ Multiple panels figures
 `Only valid for matplotlib v>=1.0`.
 
 While one can use the regular matplotlib subfigure to make multi-panel figures,
-subplots makes it a bit more pythonic:
+subplots makes it a bit more pythonic. To plot on a specific axes panel, pass
+the axes object using the ``axes`` parameter:
 
 .. plot:: documentation/manual/triqs/plotting_protocols/plotting/example.py
    :scale: 70

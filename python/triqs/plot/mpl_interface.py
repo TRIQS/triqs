@@ -34,14 +34,24 @@ except:
         print("subplots not supported")
         return plt.figure(1), [plt.subplot(nrows, ncols, x + 1) for x in range(nrows * ncols)]
 
-def oplot(obj, *opt_list, **opt_dict):
+def oplot(obj, *opt_list, axes=None, **opt_dict):
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays.
-    Options are the same as for the pyplot.plot function.
+
+    Parameters
+    ----------
+    obj : object
+        Object to plot (must have plot protocol) or array
+    axes : matplotlib.axes.Axes, optional
+        Axes object to plot on. If None, uses current axes.
+    *opt_list : positional arguments
+        Passed to matplotlib plot function
+    **opt_dict : keyword arguments
+        Passed to matplotlib plot function
     """
-    plt.figure(num=opt_dict.pop('num', plt.gcf().number))
-    __oplot_impl(plt, plt.xlabel, plt.ylabel, plt.legend, obj, plt.xticks, plt.title, *opt_list, **opt_dict)
+    axes = plt.gca() if axes is None else axes
+    __oplot_impl(axes, axes.set_xlabel, axes.set_ylabel, axes.legend, obj, axes.set_xticks, axes.set_title, *opt_list, **opt_dict)
 
 
 def oplotr(obj, *opt_list, **opt_dict):
@@ -61,8 +71,11 @@ def oploti(obj, *opt_list, **opt_dict):
     opt_dict['mode'] = 'I'
     oplot(obj, *opt_list, **opt_dict)
 
+def __axoplot_impl(top, xlabel, ylabel, legend, obj, xticks, title, *opt_list, **opt_dict):
+    warnings.warn("ax.oplot is deprecated, use oplot(obj, axes=ax) instead", DeprecationWarning, stacklevel=2)
+    return __oplot_impl(top, xlabel, ylabel, legend, obj, xticks, title, *opt_list, **opt_dict)
 
-mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __oplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, self.set_xticks, self.set_title, *opt_list, **opt_dict)
+mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __axoplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, self.set_xticks, self.set_title, *opt_list, **opt_dict)
 
 
 def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  title_fct, *opt_list, **opt_dict):
