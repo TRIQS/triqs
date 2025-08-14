@@ -85,8 +85,6 @@ target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 message(STATUS "-------- Boost detection -------------")
 find_package(Boost 1.70 REQUIRED)
 message(STATUS "Found Boost Headers: ${Boost_INCLUDE_DIRS}")
-# Workaround for OSX + GCC + Boost Issue with boost/core/bit.hpp and incorrect boost::ulong_long_type
-target_compile_definitions(Boost::headers INTERFACE BOOST_HAS_LONG_LONG)
 target_link_libraries(triqs PUBLIC Boost::headers)
 
 # ---------------------------------

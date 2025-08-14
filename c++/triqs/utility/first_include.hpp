@@ -36,6 +36,11 @@ using dcomplex = std::complex<double>;
 // disable std::auto_ptr (disabled in c++17) usage in boost
 #define BOOST_NO_AUTO_PTR
 
+// Workaround GCC 15 + Boost Issue for OSX Builds
+#if defined(__GNUC__) && (__GNUC__ == 15) && defined(__APPLE__) && !defined(__clang__)
+#define BOOST_HAS_LONG_LONG 1
+#endif
+
 #define CPP2PY_IGNORE __attribute__((annotate("ignore_in_python")))
 #define CPP2PY_ARG_AS_DICT __attribute__((annotate("use_parameter_class")))
 
