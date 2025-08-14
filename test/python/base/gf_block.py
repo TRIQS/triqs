@@ -128,5 +128,81 @@ class test_Gf_Block(unittest.TestCase):
 
         assert_block2_gfs_are_close(B3, B4)
 
+    def test_integer_indexing(self):
+        """Test integer indexing for BlockGf"""
+
+        # Create a BlockGf with 3 blocks
+        gf_struct = [('up', 2), ('down', 2), ('extra', 2)]
+        B = BlockGf(mesh=self.iw_mesh, gf_struct=gf_struct)
+
+        # Initialize blocks with different values
+        B['up'] << inverse(iOmega_n + 1.0)
+        B['down'] << inverse(iOmega_n + 2.0)
+        B['extra'] << inverse(iOmega_n + 3.0)
+
+        # Test positive integer access
+        G0 = B[0]  # Should be 'up'
+        G1 = B[1]  # Should be 'down'
+        G2 = B[2]  # Should be 'extra'
+
+        assert_gfs_are_close(G0, B['up'])
+        assert_gfs_are_close(G1, B['down'])
+        assert_gfs_are_close(G2, B['extra'])
+
+        # Test negative integer access (Python convention)
+        G_last = B[-1]   # Should be 'extra'
+        G_second_last = B[-2]  # Should be 'down'
+        G_first = B[-3]  # Should be 'up'
+
+        assert_gfs_are_close(G_last, B['extra'])
+        assert_gfs_are_close(G_second_last, B['down'])
+        assert_gfs_are_close(G_first, B['up'])
+
+        # Test that B[0] and B[-3] refer to the same block
+        assert_gfs_are_close(B[0], B[-3])
+        assert_gfs_are_close(B[1], B[-2])
+        assert_gfs_are_close(B[2], B[-1])
+
+        # Test out-of-bounds access (positive)
+        with self.assertRaises(IndexError):
+            _ = B[3]
+
+        with self.assertRaises(IndexError):
+            _ = B[100]
+
+        # Test out-of-bounds access (negative)
+        with self.assertRaises(IndexError):
+            _ = B[-4]
+
+        with self.assertRaises(IndexError):
+            _ = B[-100]
+
+        # Test type errors
+        with self.assertRaises(TypeError):
+            _ = B[1.5]
+
+        with self.assertRaises(TypeError):
+            _ = B[None]
+
+        with self.assertRaises(TypeError):
+            _ = B[[0, 1]]
+
+        # Test setitem with integer index
+        G_new = Gf(mesh=self.iw_mesh, target_shape=(2,2))
+        G_new << inverse(iOmega_n + 5.0)
+
+        B[1] << G_new
+        assert_gfs_are_close(B[1], G_new)
+        assert_gfs_are_close(B['down'], G_new)
+
+        # Test with negative index
+        G_new2 = Gf(mesh=self.iw_mesh, target_shape=(2,2))
+        G_new2 << inverse(iOmega_n + 7.0)
+
+        B[-1] << G_new2
+        assert_gfs_are_close(B[-1], G_new2)
+        assert_gfs_are_close(B[2], G_new2)
+        assert_gfs_are_close(B['extra'], G_new2)
+
 if __name__ == '__main__':
     unittest.main()

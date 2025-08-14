@@ -269,22 +269,38 @@ class BlockGf:
 
     #--------------  Bracket operator []  -------------------------
 
-    def __getitem__(self,key):
+    # string access
+    def __getitem_str(self,key):
         try:
             g = self.__me_as_dict[key]
         except KeyError:
-            raise IndexError("bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices))
+            raise IndexError("block index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices))
         return g
+
+    # integer access
+    def __getitem_int(self, key):
+        n = self.n_blocks
+        # Handle negative indices (Python convention)
+        if key < 0:
+            key = n + key
+        if key < 0 or key >= n:
+            raise IndexError(f"block index out of bounds for BlockGf with {n} blocks")
+        return self.__GFlist[key]
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.__getitem_str(key)
+        elif isinstance(key, int):
+            return self.__getitem_int(key)
+        else:
+            raise TypeError(f"BlockGf can be accessed using str or int indices, not {type(key)}")
+
 
     def __setitem__(self,key,val):
         if key == slice(None, None, None): # G[:] = XXX is the same as G << XXX
             self << val
-            return
-        try:
-            g = self.__me_as_dict[key]
-        except KeyError:
-            raise IndexError("bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices))
-        g << val
+        else:
+            self[key] << val
 
     # -------------- Various operations -------------------------------------
 
