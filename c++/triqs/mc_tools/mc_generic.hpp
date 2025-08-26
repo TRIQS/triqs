@@ -311,7 +311,7 @@ namespace triqs::mc_tools {
         finished = NC + 1 >= n_cycles and not infinite;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
 
-        // Stop if an emergeny occured on any node
+        // Stop if an emergency occurred on any node
         if (node_monitor) stop_it |= node_monitor->event_on_any_rank();
 
       } // end main NC loop

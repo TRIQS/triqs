@@ -83,7 +83,7 @@ class Idx:
 
 
 class Gf(metaclass=AddMethod):
-    r"""TRIQS Greens function container class
+    r"""TRIQS Green's function container class
 
     Parameters
     ----------
@@ -92,19 +92,19 @@ class Gf(metaclass=AddMethod):
           The mesh on which the Green function is defined.
 
     data: numpy.array, optional
-          The data of the Greens function.
+          The data of the Green's function.
           Must be of dimension ``mesh.rank + target_rank``.
 
     target_shape: list of int, optional
                   Shape of the target space.
 
     is_real: bool
-             Is the Greens function real valued?
+             Is the Green's function real valued?
              If true, and target_shape is set, the data will be real.
              Mutually exclusive with argument ``data``.
 
     name: str
-          The name of the Greens function for plotting.
+          The name of the Green's function for plotting.
 
     Notes
     -----
@@ -204,7 +204,7 @@ class Gf(metaclass=AddMethod):
         )
 
     def density(self, *args, **kwargs):
-        r"""Compute the density matrix of the Greens function
+        r"""Compute the density matrix of the Green's function
 
         Parameters
         ----------
@@ -221,7 +221,7 @@ class Gf(metaclass=AddMethod):
         Notes
         -----
 
-        Only works for single mesh Greens functions with a, Matsubara,
+        Only works for single mesh Green's functions with a, Matsubara,
         real-frequency, or Legendre mesh.
         """
 
@@ -255,12 +255,12 @@ class Gf(metaclass=AddMethod):
 
     @property
     def mesh(self):
-        """gf_mesh : The mesh of the Greens function."""
+        """gf_mesh : The mesh of the Green's function."""
         return self._mesh
 
     @property
     def data(self):
-        """ndarray : Raw data of the Greens function.
+        """ndarray : Raw data of the Green's function.
 
         Storage convention is ``self.data[x,y,z, ..., n0,n1,n2]``
         where ``x,y,z`` correspond to the mesh variables (the mesh) and
@@ -269,7 +269,7 @@ class Gf(metaclass=AddMethod):
         return self._data
 
     def copy(self):
-        """Deep copy of the Greens function.
+        """Deep copy of the Green's function.
 
         Returns
         -------
@@ -279,7 +279,7 @@ class Gf(metaclass=AddMethod):
         return Gf(mesh=self._mesh.copy(), data=self._data.copy(), name=self.name)
 
     def copy_from(self, another):
-        """Copy the data of another Greens function into self."""
+        """Copy the data of another Green's function into self."""
         self._mesh.copy_from(another.mesh)
         assert self._data.shape == another._data.shape, (
             'Shapes are incompatible: ' + str(self._data.shape) + ' vs ' + str(another._data.shape)
@@ -288,7 +288,7 @@ class Gf(metaclass=AddMethod):
         self.__check_invariants()
 
     def __repr__(self):
-        return 'Greens Function %s with mesh %s and target_shape %s: \n' % (self.name, self.mesh, self.target_shape)
+        return "Green's Function %s with mesh %s and target_shape %s: \n" % (self.name, self.mesh, self.target_shape)
 
     def __str__(self):
         return self.__repr__()
@@ -332,7 +332,7 @@ class Gf(metaclass=AddMethod):
             assert len(key) == self.rank, 'wrong number of arguments in [[ ]]. Expected %s, got %s' % (self.rank, len(key))
             assert all(
                 isinstance(x, (MeshPoint, Idx, MatsubaraFreq, slice)) for x in key
-            ), 'Invalid accessor of Greens function, please combine only MeshPoints, Idx and slice'
+            ), "Invalid accessor of Green's function, please combine only MeshPoints, Idx and slice"
             assert self.rank > 1, 'Internal error : impossible case'  # here all == any for one argument
             mlist = self._mesh._mlist
             for x in key:
@@ -391,12 +391,12 @@ class Gf(metaclass=AddMethod):
 
     @property
     def real(self):
-        """Gf : A Greens function with a view of the real part."""
+        """Gf : A Green's function with a view of the real part."""
         return Gf(mesh=self._mesh, data=self._data.real, name=('Re ' + self.name) if self.name else '')
 
     @property
     def imag(self):
-        """Gf : A Greens function with a view of the imaginary part."""
+        """Gf : A Green's function with a view of the imaginary part."""
         return Gf(mesh=self._mesh, data=self._data.imag, name=('Im ' + self.name) if self.name else '')
 
     # --------------  Lazy system -------------------------------------
@@ -627,7 +627,7 @@ class Gf(metaclass=AddMethod):
     # ----------------------------- other operations -----------------------------------
 
     def invert(self):
-        """Inverts the Greens function (in place)."""
+        """Inverts the Green's function (in place)."""
 
         if self.target_rank == 0:  # Scalar target space
             self.data[:] = 1.0 / self.data
@@ -638,52 +638,52 @@ class Gf(metaclass=AddMethod):
             d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:]  # reshaped view, guarantee no copy
             wrapped_aux._gf_invert_data_in_place(d)
         else:
-            raise TypeError('Inversion only makes sense for matrix or scalar_valued Greens functions')
+            raise TypeError("Inversion only makes sense for matrix or scalar_valued Green's functions")
 
     def inverse(self):
-        """Computes the inverse of the Greens function.
+        """Computes the inverse of the Green's function.
 
         Returns
         -------
         G : Gf (copy)
-            The matrix/scalar inverse of the Greens function.
+            The matrix/scalar inverse of the Green's function.
         """
         r = self.copy()
         r.invert()
         return r
 
     def transpose(self):
-        """Take the transpose of a matrix valued Greens function.
+        """Take the transpose of a matrix valued Green's function.
 
         Returns
         -------
 
         G : Gf (copy)
-            The transpose of the Greens function.
+            The transpose of the Green's function.
 
         Notes
         -----
 
-        Only implemented for single mesh matrix valued Greens functions.
+        Only implemented for single mesh matrix valued Green's functions.
 
         """
 
         # FIXME Why this assert ?
         # assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf"
 
-        assert self.rank == 1, 'Transpose only implemented for single mesh Greens functions'
-        assert self.target_rank == 2, 'Transpose only implemented for matrix valued Greens functions'
+        assert self.rank == 1, "Transpose only implemented for single mesh Green's functions"
+        assert self.target_rank == 2, "Transpose only implemented for matrix valued Green's functions"
 
         d = np.transpose(self.data.copy(), (0, 2, 1))
         return Gf(mesh=self.mesh, data=d)
 
     def conjugate(self):
-        """Conjugate of the Greens function.
+        """Conjugate of the Green's function.
 
         Returns
         -------
         G : Gf (copy)
-            Conjugate of the Greens function.
+            Conjugate of the Green's function.
         """
         return Gf(mesh=self.mesh, data=np.conj(self.data))
 
@@ -692,9 +692,9 @@ class Gf(metaclass=AddMethod):
         self._data[:] = 0
 
     def from_L_G_R(self, L, G, R):
-        r"""Matrix transform of the target space of a matrix valued Greens function.
+        r"""Matrix transform of the target space of a matrix valued Green's function.
 
-        Sets the current Greens function :math:`g_{ab}` to the matrix transform of :math:`G_{cd}`
+        Sets the current Green's function :math:`g_{ab}` to the matrix transform of :math:`G_{cd}`
         using the left and right transform matrices :math:`L_{ac}` and :math:`R_{db}`.
 
         .. math::
@@ -706,18 +706,18 @@ class Gf(metaclass=AddMethod):
         L : (a, c) ndarray
             Left side transform matrix.
         G : Gf matrix valued target_shape == (c, d)
-            Greens function to transform.
+            Green's function to transform.
         R : (d, b) ndarray
             Right side transform matrix.
 
         Notes
         -----
 
-        Only implemented for Greens functions with a single mesh.
+        Only implemented for Green's functions with a single mesh.
         """
 
-        assert self.rank == 1, 'Only implemented for Greens functions with one mesh'
-        assert self.target_rank == 2, 'Matrix transform only valid for matrix valued Greens functions'
+        assert self.rank == 1, "Only implemented for Green's functions with one mesh"
+        assert self.target_rank == 2, "Matrix transform only valid for matrix valued Green's functions"
 
         assert len(L.shape) == 2, 'L needs to be two dimensional'
         assert len(R.shape) == 2, 'R needs to be two dimensional'
@@ -742,11 +742,11 @@ class Gf(metaclass=AddMethod):
         Returns
         -------
         density : float
-            Total density of the Greens function.
+            Total density of the Green's function.
 
         Notes
         -----
-        Only implemented for single mesh Greens function with a,
+        Only implemented for single mesh Green's function with a,
         Matsubara, real-frequency, or Legendre mesh.
 
         """
@@ -795,7 +795,7 @@ class Gf(metaclass=AddMethod):
         x_window : optional
             The window of x variable (omega/omega_n/t/tau) for which data is requested.
         flatten_y: bool, optional
-            If the Greens function is of size (1, 1) flatten the array as a 1d array.
+            If the Green's function is of size (1, 1) flatten the array as a 1d array.
 
         Returns
         -------

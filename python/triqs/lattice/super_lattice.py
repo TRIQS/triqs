@@ -59,7 +59,7 @@ class TBSuperLattice(TBLattice):
             raise ValueError("super_lattice_units is not correct. Cf Doc. value is %s, ndim = %s "%(super_lattice_units,ndim))
 
         Ncluster_sites = int(numpy.rint(abs(numpy.linalg.det(self.__super_lattice_units ))))
-        assert Ncluster_sites >0, "Superlattice vectors are not independant !"
+        assert Ncluster_sites >0, "Superlattice vectors are not independent !"
         self._M = self.__super_lattice_units.transpose()
         self._Mtilde = numpy.array(numpy.rint(numpy.linalg.inv(self._M)*Ncluster_sites), dtype = int)
 

@@ -458,7 +458,7 @@ def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
             chol = chol.real
         # chol has shape n_orb x n_orb. We repeat columns
         # of chol until V matrix is filled and normalize each
-        # col by the sqrt(#occurances)
+        # col by the sqrt(#occurrences)
         col_idxs = [i % n_orb for i in range(Nb)]
         V0 = np.block([chol[:, i:i+1] / np.sqrt(col_idxs.count(i)) for i in col_idxs])
     else:

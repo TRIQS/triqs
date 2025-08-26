@@ -16,7 +16,7 @@
 //
 // Authors: Olivier Parcollet
 
-// Compiler independant call to Fortran names
+// Compiler independent call to Fortran names
 #ifndef TRIQS_BIND_FORTRAN_LOWERCASE
 #define TRIQS_FORTRAN_MANGLING(id) id##_
 #else
