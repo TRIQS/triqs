@@ -9,7 +9,9 @@ gsl
 hdf5
 llvm
 libomp
+meson
 mpi4py
+ninja
 numpy
 open-mpi
 openblas
