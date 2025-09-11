@@ -17,53 +17,110 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides Legendre polynomials and related functions.
+ */
+
 #pragma once
 
+#include <array>
 #include <complex>
-#include <ostream>
+
+#include <nda/macros.hpp>
 
 namespace triqs::utility {
 
-  // This is T_{nl} following Eq.(E2) of our paper
+  /**
+   * @brief Get the quantity \f$ T_{nl} \f$ from Eq.(E2) in the paper
+   * <a href="https://doi.org/10.1103/PhysRevB.84.075145">https://doi.org/10.1103/PhysRevB.84.075145</a>.
+   *
+   * @param n Matsubara index \f$ n \f$.
+   * @param l Legendre polynomial order \f$ l \f$.
+   * @return \f$ T_{nl} = (-1)^n i^{l+1} \sqrt{2l + 1} j_l(\bar{\nu_n} / 2) \f$.
+   */
   std::complex<double> legendre_T(int n, int l);
 
-  // This is t_l^p following Eq.(E8) of our paper
+  /**
+   * @brief Get the quantity \f$ t_l^{(p)} \f$ from Eq.(E8) in the paper
+   * <a href="https://doi.org/10.1103/PhysRevB.84.075145">https://doi.org/10.1103/PhysRevB.84.075145</a>.
+   *
+   * @param l Legendre polynomial order \f$ l \f$.
+   * @param p Index \f$ p \f$.
+   * @return \f$ t_l^{(p)} = (-1)^p 2 \sqrt{2l + 1} \frac{(l + p - 1)!}{(p - 1)! (l - p + 1)!} \delta_{p+l,\text{odd}}
+   * \f$.
+   */
   double legendre_t(int l, int p);
 
-  // Modified spherical Bessel function of the first kind i(n,x)
+  /**
+   * @brief Get the modified spherical bessel function \f$ i_n(x) \f$ of the first kind of order \f$ n \f$ evaluated at
+   * \f$ x \f$.
+   *
+   * @param n Order \f$ n \f$ of the modified spherical Bessel function.
+   * @param x Value \f$ x \f$ at which to evaluate the function.
+   * @return \f$ i_n(x) = \sqrt{\frac{\pi}{2x}} I_{n+1/2}(x) \f$.
+   */
   double mod_cyl_bessel_i(int n, double x);
 
   /**
-   * Generates the Legendre polynomials
-   *  P_0(x) = 1.0
-   *  P_1(x) = x
-   *  n P_{n} = (2n-1) x P_{n-1}(x) - (n-1) P_{n-2}(x)
+   * @brief Recursive generation of Legendre polynomials \f$ P_l(x) \f$.
+   *
+   * @details Legendre polynomials are defined on the interval \f$ [-1, 1] \f$. They form an orthogonal basis with
+   * respect to the inner product
+   * \f[
+   *   \langle P_k, P_l \rangle = \int_{-1}^1 P_k(x) P_l(x) dx = \frac{2}{2l + 1} \delta_{kl} \; .
+   * \f]
+   *
+   * The recurrence relation is given by
+   * \f[
+   *   (l + 1) P_{l+1}(x) = (2l + 1) x P_l(x) - l P_{l-1}(x) \; ,
+   * \f]
+   * with \f$ P_0(x) = 1 \f$ and \f$ P_1(x) = x \f$.
+   *
+   * See [Wikipedia](https://en.wikipedia.org/wiki/Legendre_polynomials) for more information.
    */
   class legendre_generator {
-
-    double _x;
-    unsigned int n;
-    double cyclicArray[2];
-
     public:
+    /**
+     * @brief Construct a Legendre polynomial generator at a given value \f$ x \f$.
+     * @param x Value \f$ x \f$ at which to evaluate the Legendre polynomials.
+     */
+    legendre_generator(double x = 0.0) : x_(x), arr_{1.0, x} { EXPECTS(x >= -1.0 and x <= 1.0); }
+
+    /**
+     * @brief Increase the degree of the polynomial from \f$ l \f$ to \f$ l + 1 \f$ using \f$ (l + 1) P_{l+1}(x) =
+     * (2l + 1) x P_l(x) - l P_{l-1}(x) \f$.
+     *
+     * @return Value of the l<sup>th</sup> order Legendre polynomial evaluated at \f$ x \f$.
+     */
     double next() {
-      if (n > 1) {
-        unsigned int eo = (n) % 2;
-        cyclicArray[eo] = ((2 * n - 1) * _x * cyclicArray[1 - eo] - (n - 1) * cyclicArray[eo]) / n;
-        n++;
-        return cyclicArray[eo];
+      if (l_ > 1) {
+        auto idx  = static_cast<unsigned int>(l_ % 2);
+        arr_[idx] = ((2 * l_ - 1) * x_ * arr_[1 - idx] - (l_ - 1) * arr_[idx]) / l_;
+        ++l_;
+        return arr_[idx];
       } else {
-        n++;
-        return cyclicArray[n - 1];
+        ++l_;
+        return arr_[l_ - 1];
       }
     }
 
+    /**
+     * @brief Reset the generator to 0<sup>th</sup> order and with a new \f$ x \f$ value.
+     * @param x Value \f$ x \f$ at which to evaluate the Legendre polynomials.
+     */
     void reset(double x) {
-      _x             = x;
-      n              = 0;
-      cyclicArray[0] = 1.0;
-      cyclicArray[1] = x;
+      EXPECTS(x >= -1.0 and x <= 1.0);
+      x_      = x;
+      l_      = 0;
+      arr_[0] = 1.0;
+      arr_[1] = x;
     }
+
+    private:
+    double x_{0.0};
+    unsigned int l_{0};
+    std::array<double, 2> arr_{1.0, 0.0};
   };
 
 } // namespace triqs::utility
