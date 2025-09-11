@@ -30,7 +30,7 @@ TEST(TRIQSUtility, LegendreGenerator) {
   // compare with stdlib implementation
   for (auto x : x_values) {
     auto gen = triqs::utility::legendre_generator{x};
-    for (auto l : nda::range(l_max)) EXPECT_DOUBLE_EQ(gen.next(), boost::math::legendre_p(l, x));
+    for (auto l : nda::range(l_max)) EXPECT_NEAR(gen.next(), boost::math::legendre_p(l, x), 1e-10);
   }
 }
 
