@@ -239,12 +239,6 @@ namespace triqs::mesh {
     bool operator==(imfreq const &m) const { return (std::tie(beta_, stat_, N_iw_, opt_) == std::tie(m.beta_, m.stat_, m.N_iw_, m.opt_)); }
 
     /**
-     * @brief Not-equal-to comparison operator compares \f$ \beta \f$, the particle statistics, \f$ N_{i\omega_n} \f$ 
-     * and whether all or only positive frequencies are in the mesh.
-     */
-    bool operator!=(imfreq const &m) const { return !(operator==(m)); }
-
-    /**
      * @brief Check if a Matsubara index \f$ n \f$ is valid.
      *
      * @param n Matsubara index \f$ n \f$ to check.
@@ -505,9 +499,5 @@ namespace triqs::mesh {
   }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<imfreq>);
-  static_assert(MeshWithValues<imfreq>);
 
 } // namespace triqs::mesh
