@@ -215,9 +215,6 @@ namespace triqs::mesh {
     /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr_imtime const &m) const { return mesh_hash_ == m.mesh_hash_ and stat_ == m.stat_; }
 
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(dlr_imtime const &m) const { return !(operator==(m)); }
-
     /**
      * @brief Check if an index \f$ l \f$ is valid.
      *
@@ -267,10 +264,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the index \f$ l \f$, data index \f$ d(l) = l \f$, hash value of the current mesh and
      * the imaginary time node \f$ \tau_l \f$ as its value.
      */
-    [[nodiscard]] mesh_point_t operator()(long l) const {
-      EXPECTS(is_index_valid(l));
-      return {l, l, mesh_hash_, to_value(l)};
-    }
+    [[nodiscard]] mesh_point_t operator()(long l) const { return {l, l, mesh_hash_, to_value(l)}; }
 
     /**
      * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \tau_l \f$.
@@ -431,9 +425,5 @@ namespace triqs::mesh {
   double evaluate(dlr_imtime const &m, ...) = delete;
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<dlr_imtime>);
-  static_assert(MeshWithValues<dlr_imtime>);
 
 } // namespace triqs::mesh

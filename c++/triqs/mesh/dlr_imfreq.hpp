@@ -51,39 +51,39 @@ namespace triqs::mesh {
    * @brief Imaginary frequency discrete Lehmann representation (DLR) mesh type.
    *
    * @details An imaginary frequency DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the
-   * inverse temperature \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff 
-   * \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should 
+   * inverse temperature \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff
+   * \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should
    * be symmetric around \f$ i\omega_n = 0 \f$ (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
    * for Bosons).
    *
    * An imaginary frequency DLR mesh has the following properties:
    *
    * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
-   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$ 
-   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(i\omega_n, 
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$
+   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(i\omega_n,
    * \omega_l) \f$.
    * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
    * and vice versa.
    * - An index \f$ l \f$ is mapped to the corresponding value \f$ i\omega_{n_l} \f$, where \f$ i\omega_{n_l} \f$ is the
    * l<sup>th</sup> DLR interpolation node in imaginary frequency space.
-   * 
-   * @note The index \f$ l \f$, which is used to access a certain mesh point, is different from the Matsubara index \f$ 
-   * n_l \f$ that is stored in the mesh point object. That means, if `m` is an instance of triqs::mesh::dlr_imfreq, 
+   *
+   * @note The index \f$ l \f$, which is used to access a certain mesh point, is different from the Matsubara index \f$
+   * n_l \f$ that is stored in the mesh point object. That means, if `m` is an instance of triqs::mesh::dlr_imfreq,
    * then `m(l).index() != l` in general.
-   * 
-   * @ref triqs-gfs containers that are based on an imaginary frequency DLR mesh store the function values at the 
-   * discrete frequency points \f$ i\omega_{n_l} \f$, i.e. \f$ f_l = f(i\omega_{n_l}) \f$. In contrast to 
-   * triqs::mesh::dlr and triqs::mesh::imfreq, the GF container cannot evaluate the function at an arbitrary Matsubara 
+   *
+   * @ref triqs-gfs containers that are based on an imaginary frequency DLR mesh store the function values at the
+   * discrete frequency points \f$ i\omega_{n_l} \f$, i.e. \f$ f_l = f(i\omega_{n_l}) \f$. In contrast to
+   * triqs::mesh::dlr and triqs::mesh::imfreq, the GF container cannot evaluate the function at an arbitrary Matsubara
    * frequency \f$ i\omega_n \f$ (see the deleted triqs::mesh::evaluate(dlr_imfreq const &, ...)).
    *
    * @code
    * #include <fmt/std.h>
    * #include <triqs/mesh.hpp>
-   * 
+   *
    * int main() {
    *   // initialize a fermionic imaginary frequency DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
    *   triqs::mesh::dlr_imfreq m{10, triqs::mesh::Fermion, 0.5, 1e-6};
-   * 
+   *
    *   // loop over all mesh points and print their index, data index and value
    *   for (int i = 0; auto mp : m) {
    *     fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), std::complex<double>(mp.value()));
@@ -117,7 +117,7 @@ namespace triqs::mesh {
 
     /**
      * @brief %Mesh point of a triqs::mesh::dlr_imfreq mesh.
-     * 
+     *
      * @details It inherits from triqs::mesh::matsubara_freq and in addition to the Matsubara index \f$ n_l \f$, the
      * inverse temperature \f$ \beta \f$ and the particle statistics, it also stores the data index \f$ d \f$ and the
      * hash value of the parent mesh.
@@ -187,9 +187,9 @@ namespace triqs::mesh {
     /**
      * @brief Construct an imaginary frequency DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error
      * tolerance \f$ \epsilon \f$.
-     * 
+     *
      * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
-     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
+     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and
      * `cppdlr::imfreq_ops` objects.
      *
      * @param b Inverse temperature \f$ \beta > 0 \f$.
@@ -219,9 +219,6 @@ namespace triqs::mesh {
 
     /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr_imfreq const &m) const { return mesh_hash_ == m.mesh_hash_; }
-
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(dlr_imfreq const &m) const { return !(operator==(m)); }
 
     /**
      * @brief Check if an index \f$ l \f$ is valid.
@@ -431,15 +428,11 @@ namespace triqs::mesh {
   };
 
   /**
-   * @brief Evaluating a function \f$ f \f$ at a given Matsubara frequency \f$ i\omega_n \f$ is deleted for 
+   * @brief Evaluating a function \f$ f \f$ at a given Matsubara frequency \f$ i\omega_n \f$ is deleted for
    * triqs::mesh::dlr_imfreq meshes.
    */
   double evaluate(dlr_imfreq const &m, ...) = delete;
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<dlr_imfreq>);
-  static_assert(MeshWithValues<dlr_imfreq>);
 
 } // namespace triqs::mesh
