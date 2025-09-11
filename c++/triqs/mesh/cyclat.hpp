@@ -192,7 +192,9 @@ namespace triqs::mesh {
          s1_(dims_[1] * dims_[2]),
          units_(bl.units()),
          units_inv_(nda::linalg::inv(units_)),
-         mesh_hash_(hash(nda::sum(bl.units()), dims[0], dims[1], dims[2])) {}
+         mesh_hash_(hash(nda::sum(bl.units()), dims[0], dims[1], dims[2])) {
+      EXPECTS(dims_[0] > 0 and dims_[1] > 0 and dims_[2] > 0);
+    }
 
     /**
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with the given periodization matrix.
@@ -225,12 +227,6 @@ namespace triqs::mesh {
      * @param n3 Number of unit cells in the supercell along the third dimension.
      */
     cyclat(long n1 = 1, long n2 = 1, long n3 = 1) : cyclat{bravais_lattice{nda::eye<double>(3)}, std::array{n1, n2, n3}} {}
-
-    /// Equal-to comparison operator compares the hash values.
-    bool operator==(cyclat const &m) const { return mesh_hash() == m.mesh_hash(); }
-
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(cyclat const &m) const { return !(operator==(m)); }
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a unit cell/lattice point in the
@@ -368,6 +364,12 @@ namespace triqs::mesh {
     [[nodiscard]] auto cend() const { return end(); }
 
     /**
+     * @brief Equal-to comparison operator compares the underlying Bravais lattice and the number of unit cells in each 
+     * of the three dimensions.
+     */
+    bool operator==(cyclat const &m) const { return bl_ == m.lattice() && dims_ == m.dims(); }
+
+    /**
      * @brief Write a triqs::mesh::cyclat mesh to a `std::ostream`.
      *
      * @param sout `std::ostream` object.
@@ -375,7 +377,7 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, cyclat const &m) {
-      return sout << "Cyclic lattice mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- lattice: " << m.lattice();
+      return sout << "Cyclic lattice mesh with linear dimensions " << m.dims() << " and an underlying " << m.lattice();
     }
 
     /**
@@ -480,9 +482,5 @@ namespace triqs::mesh {
   auto evaluate(cyclat const &m, auto const &f, cyclat::value_t const &r_n_tilde) { return evaluate(m, f, r_n_tilde.index()); }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<cyclat>);
-  static_assert(MeshWithValues<cyclat>);
 
 } // namespace triqs::mesh
