@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <concepts>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -56,8 +57,9 @@ namespace triqs::mesh::detail {
    * and vice versa.
    * - An index \f$ n \f$ is mapped to the corresponding value \f$ m \f$ by the linear function \f$ m(n) = a + n \cdot
    * \Delta \f$ sucht that \f$ m(0) = a \f$ and \f$ m(N-1) = b \f$. The step size of the mesh is \f$ \Delta = \frac{b -
-   * a}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is undefined. For implementation purposes, we set the step size and
-   * its inverse to zero for \f$ N = 1 \f$.
+   * a}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is undefined. For implementation purposes, we set \f$ \Delta = 0 \f$
+   * and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$ and \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = \infty \f$ for 
+   * \f$ N = 1 \f$.
    * - An arbitrary value \f$ x \in [a, b] \f$ is mapped to the closest mesh point with index \f$ n \f$ by the function
    * \f$ n(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$.
    *
@@ -145,27 +147,32 @@ namespace triqs::mesh::detail {
     };
 
     /**
+     * @brief Default construct an empty linear mesh of size \f$ N = 0 \f$.
+     */
+    linear() = default;
+
+    /**
      * @brief Construct a linear mesh on the interval \f$ [a, b] \f$ of a given size \f$ N \geq 0 \f$.
      *
      * @param a Lower bound \f$ a \f$ of the interval.
      * @param b Upper bound \f$ b \f$ of the interval.
      * @param N Size of the mesh.
      */
-    linear(value_t a = 0, value_t b = 1, long N = 2)
-       : N_(N),
-         a_(a),
-         b_(b),
-         delta_(N_ == 1 ? 0. : (b - a) / (N_ - 1)),
-         delta_inv_{delta_ == 0.0 ? std::numeric_limits<double>::infinity() : 1. / delta_},
-         mesh_hash_(hash(N_, a_, b_)) {
-      EXPECTS(a <= b);
+    linear(value_t a, value_t b, long N) : N_(N), a_(a), b_(b) {
+      EXPECTS(N_ >= 0);
+      if (N_ == 1) {
+        EXPECTS(a_ == b_);
+        delta_     = 0;
+        delta_inv_ = std::numeric_limits<double>::infinity();
+      } else if (N_ > 1) {
+        EXPECTS(a_ < b_);
+        delta_     = (b_ - a_) / (N_ - 1);
+        delta_inv_ = 1 / delta_;
+      }
     }
 
-    /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
-    bool operator==(linear const &) const = default;
-
-    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes and the interval \f$ [a, b] \f$.
-    bool operator!=(linear const &) const = default;
+    /// Equal-to comparison operator compares \f$ N \f$ and the interval \f$ [a, b] \f$.
+    bool operator==(linear const &rhs) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -177,7 +184,7 @@ namespace triqs::mesh::detail {
 
     private:
     // Check if a value is valid.
-    [[nodiscard]] bool is_value_valid(value_t m) const noexcept { return a_ <= m and m <= b_; }
+    [[nodiscard]] bool is_value_valid(value_t m) const noexcept { return N_ > 0 and a_ <= m and m <= b_; }
 
     public:
     /**
@@ -197,10 +204,7 @@ namespace triqs::mesh::detail {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value \f$ x \f$ to map.
      * @return Data index \f$ d(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$.
      */
-    [[nodiscard]] index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
-      EXPECTS(is_value_valid(cmp.value));
-      return to_data_index(to_index(cmp));
-    }
+    [[nodiscard]] index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept { return to_data_index(to_index(cmp)); }
 
     /**
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ n(d) \f$.
@@ -221,7 +225,7 @@ namespace triqs::mesh::detail {
      */
     [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
-      return static_cast<index_t>((cmp.value - a_) * delta_inv_ + 0.5);
+      return (N_ == 1 ? 0 : static_cast<index_t>((cmp.value - a_) * delta_inv_ + 0.5));
     }
 
     /**
@@ -241,7 +245,7 @@ namespace triqs::mesh::detail {
      * @return mesh_point_t with the index \f$ n(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$,
      * data index \f$ d(x) = n(x) \f$, hash value of the current mesh and value \f$ m(x) = a + n(x) \cdot \Delta \f$.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[this->to_data_index(cmp)]; }
+    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
@@ -250,10 +254,7 @@ namespace triqs::mesh::detail {
      * @return mesh_point_t with the index \f$ n \f$, data index \f$ d(n) = n \f$, hash value of the current mesh and
      * value \f$ m(n) = a + n \cdot \Delta \f$.
      */
-    [[nodiscard]] mesh_point_t operator()(index_t n) const noexcept {
-      EXPECTS(is_index_valid(n));
-      return {n, n, mesh_hash_, to_value(n)};
-    }
+    [[nodiscard]] mesh_point_t operator()(index_t n) const noexcept { return {n, n, mesh_hash_, to_value(n)}; }
 
     /**
      * @brief Map an index \f$ n \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ m(n) \f$.
@@ -264,9 +265,8 @@ namespace triqs::mesh::detail {
     [[nodiscard]] value_t to_value(index_t n) const noexcept {
       EXPECTS(is_index_valid(n));
       if (N_ == 1) return a_;
-      double wr  = double(n) / (N_ - 1);
-      double res = a_ * (1 - wr) + b_ * wr;
-      return res;
+      auto const w = static_cast<double>(n) / (N_ - 1);
+      return a_ * (1 - w) + b_ * w;
     }
 
     /// Get the hash value of the mesh.
@@ -322,9 +322,9 @@ namespace triqs::mesh::detail {
     void h5_write_impl(h5::group g, std::string const &name, const char *format) const {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format_as_string(gr, format); // NOLINT (downcasting to base class)
-      h5::write(gr, "min", this->a_);
-      h5::write(gr, "max", this->b_);
-      h5::write(gr, "size", this->size());
+      h5::write(gr, "min", a_);
+      h5::write(gr, "max", b_);
+      h5::write(gr, "size", N_);
     }
 
     /**
@@ -337,10 +337,10 @@ namespace triqs::mesh::detail {
     void h5_read_impl(h5::group g, std::string const &name, const char *exp_format) {
       h5::group gr = g.open_group(name);
       h5::assert_hdf5_format_as_string(gr, exp_format, true);
-      auto a  = h5::read<value_t>(gr, "min");
-      auto b  = h5::read<value_t>(gr, "max");
-      auto sz = h5::read<long>(gr, "size");
-      *this   = linear(a, b, sz);
+      auto a = h5::read<value_t>(gr, "min");
+      auto b = h5::read<value_t>(gr, "max");
+      auto N = h5::read<long>(gr, "size");
+      *this  = linear(a, b, N);
     }
 
     public:
@@ -361,19 +361,18 @@ namespace triqs::mesh::detail {
      * @return Linear interpolation of \f$ f(x) \f$.
      */
     auto evaluate(auto const &f, double x) const {
-      EXPECTS(this->is_value_valid(x) and this->size() > 1);
-      x        = std::max(x, this->a_);
-      double a = (x - this->a_) * this->delta_inv();
-      long i   = std::min(static_cast<long>(a), this->size() - 2);
-      double w = std::min(a - i, 1.0); //NOLINT
-      return (1 - w) * f(i) + w * f(i + 1);
+      EXPECTS(is_value_valid(x) and N_ > 1);
+      auto const n_dbl = (x - a_) * delta_inv_;
+      auto const n     = std::clamp<index_t>(static_cast<index_t>(n_dbl), 0, N_ - 2);
+      auto const w     = std::min(n_dbl - n, 1.0);
+      return (1 - w) * f(n) + w * f(n + 1);
     }
 
     protected:
-    long N_;
-    value_t a_, b_, delta_;
-    double delta_inv_;
-    uint64_t mesh_hash_ = 0;
+    long N_{0};
+    value_t a_{0}, b_{0};
+    value_t delta_{0}, delta_inv_{0};
+    uint64_t mesh_hash_{hash(N_, a_, b_)};
   };
 
 } // namespace triqs::mesh::detail
