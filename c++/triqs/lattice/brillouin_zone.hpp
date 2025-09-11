@@ -139,12 +139,6 @@ namespace triqs::lattice {
     bool operator==(brillouin_zone const &bz) const { return reciprocal_matrix() == bz.reciprocal_matrix() && lattice() == bz.lattice(); }
 
     /**
-     * @brief Not-equal-to comparison operator.
-     * @return True, if the underlying Bravais lattice or the reciprocal basis vectors are not equal.
-     */
-    bool operator!=(brillouin_zone const &bz) const { return !(operator==(bz)); }
-
-    /**
      * @brief Write a triqs::lattice::brillouin_zone to a `std::ostream`.
      *
      * @param sout `std::ostream` object.

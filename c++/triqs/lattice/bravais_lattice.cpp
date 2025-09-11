@@ -33,7 +33,7 @@ namespace triqs::lattice {
   bravais_lattice::bravais_lattice(nda::matrix<double> const &A_T, std::vector<r_t> orb_pos, std::vector<std::string> orb_name)
      : atom_orb_pos_(std::move(orb_pos)),
        atom_orb_name_(orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size()) : std::move(orb_name)),
-       ndim_(static_cast<int>(first_dim(A_T))) {
+       ndim_(static_cast<int>(nda::first_dim(A_T))) {
     // consistency checks
     EXPECTS(atom_orb_pos_.size() == atom_orb_name_.size());
     if (ndim_ < 1 || ndim_ > 3) TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vector matrix has wrong size: " << A_T;

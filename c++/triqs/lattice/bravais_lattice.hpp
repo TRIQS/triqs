@@ -68,7 +68,8 @@ namespace triqs::lattice {
    * \f$ is the matrix with the basis vectors as its columns.
    *
    * @note Although the supported dimensions are 1, 2 and 3, the index vectors are always 3-dimensional, i.e. \f$
-   * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored.
+   * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored when computing the
+   * corresponding lattice vector.
    */
   class bravais_lattice {
     public:
@@ -89,7 +90,8 @@ namespace triqs::lattice {
      * where \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ are the basis vectors of the underlying Bravais lattice.
      *
      * @note Although the supported dimensions are 1, 2 and 3, the index vectors are always 3-dimensional, i.e. \f$
-     * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored.
+     * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored when computing the
+     * corresponding lattice vector.
      */
     class point_t {
       public:
@@ -260,17 +262,12 @@ namespace triqs::lattice {
 
     /**
      * @brief Equal-to comparison operator.
-     * @return True, if the number of dimensions, unit cell basis vectors and the atomic orbital positions are equal.
+     * @return True, if the number of dimensions, unit cell basis vectors and the atomic orbital positions and names are 
+     * equal.
      */
     bool operator==(bravais_lattice const &bl) const {
-      return units_ == bl.units() && ndim_ == bl.ndim() && orbital_positions() == bl.orbital_positions();
+      return units_ == bl.units() && ndim_ == bl.ndim() && atom_orb_pos_ == bl.orbital_positions() && atom_orb_name_ == bl.orbital_names();
     }
-
-    /**
-     * @brief Not-equal-to comparison operator.
-     * @return True, if the number of dimensions, unit cell basis vectors or the atomic orbital positions are not equal.
-     */
-    bool operator!=(bravais_lattice const &bl) const { return !(operator==(bl)); }
 
     /**
      * @brief Write a triqs::lattice::bravais_lattice to a `std::ostream`.
@@ -280,7 +277,7 @@ namespace triqs::lattice {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
-      auto str = fmt::format("Bravais Lattice in {} dimensions with {} orbitals:\n", bl.ndim(), bl.n_orbitals());
+      auto str = fmt::format("Bravais Lattice in {} dimensions with {} orbital(s):\n", bl.ndim(), bl.n_orbitals());
       str += fmt::format("  Basis vectors: {}\n",
                          std::views::transform(nda::range(bl.ndim()), [&bl](int i) { return bl.units()(i, nda::range(bl.ndim())); }));
       str += fmt::format("  Orbital positions: {}\n", bl.orbital_positions());
