@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include "./concepts.hpp"
 #include "./mesh_iterator.hpp"
 
 #include <h5/h5.hpp>
@@ -124,9 +123,6 @@ namespace triqs::mesh {
 
     /// Equal-to comparison operator compares the size \f$ N \f$ of the meshes.
     bool operator==(discrete const &) const = default;
-
-    /// Not-equal-to comparison operator compares the size \f$ N \f$ of the meshes.
-    bool operator!=(discrete const &) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -247,9 +243,5 @@ namespace triqs::mesh {
     long N_;
     uint64_t mesh_hash_ = 0;
   };
-
-  // Check mesh concepts.
-  static_assert(Mesh<discrete>);
-  static_assert(!MeshWithValues<discrete>);
 
 } // namespace triqs::mesh
