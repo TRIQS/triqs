@@ -101,9 +101,6 @@ namespace triqs::mesh {
     /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator==(imtime const &) const = default;
 
-    /// Not-equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
-    bool operator!=(imtime const &) const = default;
-
     /// Get the inverse temperature \f$ \beta \f$.
     [[nodiscard]] double beta() const noexcept { return beta_; }
 
@@ -198,9 +195,5 @@ namespace triqs::mesh {
   auto evaluate(imtime const &m, auto const &f, double tau) { return m.evaluate(f, tau); }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<imtime>);
-  static_assert(MeshWithValues<imtime>);
 
 } // namespace triqs::mesh
