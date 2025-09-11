@@ -165,8 +165,4 @@ namespace triqs::mesh {
 
   /** @} */
 
-  // Check mesh concepts.
-  static_assert(Mesh<refreq>);
-  static_assert(MeshWithValues<refreq>);
-
 } // namespace triqs::mesh

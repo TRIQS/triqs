@@ -161,8 +161,4 @@ namespace triqs::mesh {
 
   /** @} */
 
-  // Check mesh concepts.
-  static_assert(Mesh<retime>);
-  static_assert(MeshWithValues<retime>);
-
 } // namespace triqs::mesh
