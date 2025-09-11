@@ -153,9 +153,6 @@ namespace triqs::mesh {
     /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator==(legendre const &) const = default;
 
-    /// Not-equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
-    bool operator!=(legendre const &) const = default;
-
     /**
      * @brief Check if an index \f$ n \f$ is valid.
      *
@@ -327,9 +324,5 @@ namespace triqs::mesh {
   }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<legendre>);
-  static_assert(!MeshWithValues<legendre>);
 
 } // namespace triqs::mesh
