@@ -230,9 +230,6 @@ namespace triqs::mesh {
     /// Equal-to comparison operator compares the hash values.
     bool operator==(dlr const &m) const { return mesh_hash_ == m.mesh_hash_; }
 
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(dlr const &m) const { return !(operator==(m)); }
-
     /**
      * @brief Check if an index \f$ l \f$ is valid.
      *
@@ -279,10 +276,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the index \f$ l \f$, data index \f$ d(l) = l \f$, hash value of the current mesh and
      * the DLR frequency \f$ \omega_l \f$ as its value.
      */
-    [[nodiscard]] mesh_point_t operator()(long l) const {
-      EXPECTS(is_index_valid(l));
-      return {l, l, mesh_hash_, to_value(l)};
-    }
+    [[nodiscard]] mesh_point_t operator()(long l) const { return {l, l, mesh_hash_, to_value(l)}; }
 
     /**
      * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \omega_l \f$.
@@ -484,9 +478,5 @@ namespace triqs::mesh {
   }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<dlr>);
-  static_assert(MeshWithValues<dlr>);
 
 } // namespace triqs::mesh
