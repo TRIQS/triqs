@@ -92,6 +92,7 @@ external_dependency(itertools
   GIT_REPO https://github.com/TRIQS/itertools
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH bd9a69d187bf6666c0d953c7b49f95207ad340ce
 )
 
 # -- mpi --
@@ -99,6 +100,7 @@ external_dependency(mpi
   GIT_REPO https://github.com/TRIQS/mpi
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH 23a56cdaadacc662da9251d2ddc0c40da023a0d2
 )
 
 # -- h5 --
@@ -106,6 +108,7 @@ external_dependency(h5
   GIT_REPO https://github.com/TRIQS/h5
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH f5f28c74d0221c7c6ee5e94791f86b11121f281b
 )
 
 # -- nda --
@@ -113,6 +116,7 @@ external_dependency(nda
   GIT_REPO https://github.com/TRIQS/nda
   VERSION 1.3
   GIT_TAG unstable
+  GIT_HASH ba9e96433de6a3691ad96e9515dd2fefc88af58b
 ) 
 
 # -- cppdlr --
@@ -120,4 +124,5 @@ external_dependency(cppdlr
   GIT_REPO https://github.com/flatironinstitute/cppdlr
   VERSION 1.1
   GIT_TAG main
+  GIT_HASH fae598a4fdf2880736744d433fe9b8d72730e44f
 )
