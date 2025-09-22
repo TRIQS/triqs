@@ -83,7 +83,7 @@ endif()
 set(FMT_INSTALL ON)
 external_dependency(fmt
   GIT_REPO https://github.com/fmtlib/fmt
-  GIT_TAG 11.1.4
+  GIT_TAG 12.0.0
 )
 target_compile_options(fmt PRIVATE $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>)
 
