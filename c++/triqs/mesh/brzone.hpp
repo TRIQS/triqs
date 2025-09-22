@@ -187,10 +187,7 @@ namespace triqs::mesh {
           return *value_;
         else {
           auto guard = std::lock_guard{value_mutex_};
-          if (value_)
-            return *value_;
-          else
-            return *(value_ = m_ptr_->to_value(index_));
+          return *(value_ = m_ptr_->to_value(index_));
         }
       }
 
@@ -253,7 +250,9 @@ namespace triqs::mesh {
          s1_(dims_[1] * dims_[2]),
          units_(nda::linalg::inv(1.0 * nda::diag(dims)) * bz.units()),
          units_inv_(nda::linalg::inv(units_)),
-         mesh_hash_(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {}
+         mesh_hash_(hash(nda::sum(bz.units()), dims[0], dims[1], dims[2])) {
+      EXPECTS(dims_[0] > 0 and dims_[1] > 0 and dims_[2] > 0);
+    }
 
     /**
      * @brief Construct a Brillouin zone mesh with the given periodization matrix.
@@ -276,12 +275,6 @@ namespace triqs::mesh {
      * @param n Number of mesh points along each of the three dimensions.
      */
     brzone(brillouin_zone const &bz, long n) : brzone(bz, std::array{n, (bz.ndim() >= 2 ? n : 1l), (bz.ndim() >= 3 ? n : 1)}) {}
-
-    /// Equal-to comparison operator compares the hash values.
-    bool operator==(brzone const &m) const { return mesh_hash() == m.mesh_hash(); }
-
-    /// Not-equal-to comparison operator compares the hash values.
-    bool operator!=(brzone const &m) const { return !(operator==(m)); }
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a \f$ \mathbf{k}^\mathbf{n} \f$ in the
@@ -501,6 +494,12 @@ namespace triqs::mesh {
     [[nodiscard]] auto cend() const { return end(); }
 
     /**
+     * @brief Equal-to comparison operator compares the underlying Brillouin zone and the number of k-points in each 
+     * of the three dimensions.
+     */
+    bool operator==(brzone const &m) const { return bz_ == m.bz() && dims_ == m.dims(); }
+
+    /**
      * @brief Write a triqs::mesh::brzone mesh to a `std::ostream`.
      *
      * @param sout `std::ostream` object.
@@ -508,7 +507,7 @@ namespace triqs::mesh {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &sout, brzone const &m) {
-      return sout << "Brillouin zone mesh with linear dimensions " << m.dims() << "\n -- units = " << m.units() << "\n -- brillouin_zone: " << m.bz();
+      return sout << "Brillouin zone mesh with " << m.dims() << " k-points and an underlying " << m.bz();
     }
 
     /**
@@ -702,12 +701,8 @@ namespace triqs::mesh {
    * @param r Right hand side operand, a BZ mesh point.
    * @return triqs::mesh::k_expr object representing the multiplication of a scalar and a BZ mesh point.
    */
-  template <std::integral Int, BzMeshPoint R> k_expr<'*', Int, R> operator*(Int l, R &&r) { return {l, std::forward<R>(r)}; }
+  template <std::integral Int, BzMeshPoint R> k_expr<'*', long, R> operator*(Int l, R &&r) { return {static_cast<long>(l), std::forward<R>(r)}; }
 
   /** @} */
-
-  // Check mesh concepts.
-  static_assert(Mesh<brzone>);
-  static_assert(MeshWithValues<brzone>);
 
 } // namespace triqs::mesh
