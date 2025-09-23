@@ -59,7 +59,7 @@ namespace triqs::mesh {
 
   /**
    * @brief %Mesh point type for the triqs::mesh::prod mesh.
-   * 
+   *
    * @details It inherits from `std::tuple` and in addition to the mesh points of the individual meshes, it stores
    * the corresponding indices in an index tuple \f$ \mathbf{n} \f$, the data indices in a data index tuple \f$
    * \mathbf{d} \f$, and the hash value of the parent mesh.
@@ -211,9 +211,6 @@ namespace triqs::mesh {
     /// Equal-to comparison operator compares the tuple of meshes in the product.
     bool operator==(prod const &m) const { return as_tuple() == m.as_tuple(); }
 
-    /// Not-equal-to comparison operator compares the tuple of meshes in the product.
-    bool operator!=(prod const &m) const = default;
-
     /**
      * @brief Check if the given indices \f$ n_1, \dots, n_k \f$ are valid.
      *
@@ -261,7 +258,7 @@ namespace triqs::mesh {
     /**
      * @brief Subscript operator to access a mesh point by its data index tuple \f$ \mathbf{d} \f$.
      *
-     * @details Each data index \f$ d_i \f$ in the tuple is used to access the mesh point in the corresponding mesh 
+     * @details Each data index \f$ d_i \f$ in the tuple is used to access the mesh point in the corresponding mesh
      * component \f$ M_i \f$.
      *
      * @param d Data index tuple \f$ \mathbf{d} \f$ of the mesh point.
@@ -275,9 +272,9 @@ namespace triqs::mesh {
     /**
      * @brief Function call operator to access a mesh point by its index tuple \f$ \mathbf{n} \f$.
      *
-     * @details Each index \f$ n_i \f$ in the tuple is used to access the mesh point in the corresponding mesh 
+     * @details Each index \f$ n_i \f$ in the tuple is used to access the mesh point in the corresponding mesh
      * component \f$ M_i \f$.
-     * 
+     *
      * @param n Index tuple \f$ \mathbf{n} \f$ of the mesh point.
      * @return mesh_point_t containing the mesh points of the components.
      */
@@ -408,7 +405,7 @@ namespace triqs::mesh {
    * @tparam Rs %Mesh types of the right-hand side product mesh.
    * @param m Left-hand side product mesh, i.e. \f$ M_1 \times \dots \times M_k \f$.
    * @param n Right-hand side product mesh, i.e. \f$ N_1 \times \dots \times N_l \f$.
-   * @return A product mesh containing the components of both meshes, i.e. \f$ M_1 \times \dots \times M_k \times N_1 
+   * @return A product mesh containing the components of both meshes, i.e. \f$ M_1 \times \dots \times M_k \times N_1
    * \times \dots \times N_l \f$.
    */
   template <Mesh... Ls, Mesh... Rs> auto operator*(prod<Ls...> const &m, prod<Rs...> const &n) {
@@ -422,7 +419,7 @@ namespace triqs::mesh {
    * @tparam Rs %Mesh types of the right-hand side product mesh.
    * @param n Left-hand side single mesh \f$ N \f$.
    * @param m Right-hand side product mesh \f$ M = M_1 \times \dots \times M_k \f$.
-   * @return A product mesh containing the single mesh as well as the components of the product meshes, i.e. \f$ 
+   * @return A product mesh containing the single mesh as well as the components of the product meshes, i.e. \f$
    * N \times M_1 \times \dots \times M_k \f$.
    */
   template <Mesh L, Mesh... Rs> auto operator*(L const &n, prod<Rs...> const &m) {
@@ -436,7 +433,7 @@ namespace triqs::mesh {
    * @tparam R %Mesh type of the right-hand side single mesh.
    * @param m Left-hand side product mesh \f$ M = M_1 \times \dots \times M_k \f$.
    * @param n Right-hand side single mesh \f$ N \f$.
-   * @return A product mesh containing the components of the product meshes as well as the single mesh, i.e. \f$ M_1 
+   * @return A product mesh containing the components of the product meshes as well as the single mesh, i.e. \f$ M_1
    * \times \dots \times M_k \times N \f$.
    */
   template <Mesh... Ls, Mesh R> auto operator*(prod<Ls...> const &m, R const &n) {
