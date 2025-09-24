@@ -126,7 +126,7 @@ namespace triqs::mc_tools {
      * @return Uniform random integer.
      */
     template <typename T>
-      requires std::integral<T>
+      requires(std::integral<T>)
     T operator()(T i) {
       return (i == 1 ? 0 : static_cast<T>(std::floor(i * this->operator()())));
     }

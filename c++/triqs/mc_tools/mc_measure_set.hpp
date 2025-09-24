@@ -90,7 +90,7 @@ namespace triqs::mc_tools {
      * @param enable_report Enable the measure::report method.
      */
     template <typename T>
-      requires MCMeasure<T, MCSignType>
+      requires(MCMeasure<T, MCSignType>)
     measure_itr_t insert(T &&m, std::string name, bool enable_timer, bool enable_report) {
       if (has(name)) throw std::runtime_error(fmt::format("Error in measure_set: Measure with name {} already exists", name));
       return measures_.emplace(name, measure<MCSignType>{std::forward<T>(m), enable_timer, enable_report}).first;
