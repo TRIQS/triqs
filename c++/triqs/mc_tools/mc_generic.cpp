@@ -18,6 +18,11 @@
 //
 // Authors: Michel Ferrero, Henri Menke, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, Thomas Ayral
 
+/**
+ * @file
+ * @brief Implementation details for triqs/mc_tools/mc_generic.hpp.
+ */
+
 #include "./concepts.hpp"
 #include "./mc_generic.hpp"
 #include "../utility/signal_handler.hpp"

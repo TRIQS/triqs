@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a type erased random number generator.
+ */
+
 #pragma once
 
 #include <h5/h5.hpp>
@@ -35,14 +40,19 @@
 namespace triqs::mc_tools {
 
   /**
+   * @addtogroup triqs-mc
+   * @{
+   */
+
+  /**
    * @brief Wrapper that erases the type of a random number generator.
    *
    * @details Various RNGs from the Boost library are supported (see triqs::mc_tools::random_generator_names() or
-   * triqs::mc_tools::random_generator_names_list()) as well as the triqs::mc_tools::RandomGenerators::RandMT. The RNG
-   * is specified in the constructor by giving its name.
+   * triqs::mc_tools::random_generator_names_list()) as well as the RNG in triqs/mc_tools/MersenneRNG.hpp. The RNG is
+   * specified in the constructor by giving its name.
    *
-   * For performance reasons, we use a triqs::utility::buffered_function to avoid some of the costs of repeated function
-   * calls to the RNG.
+   * For performance reasons, we use a buffer for the generated random numbers to avoid some of the costs of repeated
+   * function calls to the RNG.
    */
   class random_generator {
     private:
@@ -87,7 +97,7 @@ namespace triqs::mc_tools {
      * triqs::mc_tools::random_generator_names() or triqs::mc_tools::random_generator_names_list()). If the name does
      * not match any of the supported RNGs, a `std::runtime_error` is thrown.
      *
-     * An empty name corresponds to the triqs::mc_tools::RandomGenerators::RandMT RNG.
+     * An empty name corresponds to the RNG in triqs/mc_tools/MersenneRNG.hpp.
      *
      * @param name Name of the RNG to be used.
      * @param seed Seed for the RNG.
@@ -108,7 +118,8 @@ namespace triqs::mc_tools {
     [[nodiscard]] std::string name() const { return name_; }
 
     /**
-     * @brief Generate a random sample from the uniform integer distribution defined on the set `{0, ..., i-1}`.
+     * @brief Generate a random sample from the uniform integer distribution defined on the set \f$ \{0, ..., i-1 \}
+     * \f$.
      *
      * @tparam T Integral type.
      * @param i Upper bound (excluded).
@@ -122,7 +133,7 @@ namespace triqs::mc_tools {
 
     /**
      * @brief Look ahead at the next value that will be generated with a call to operator()().
-     * @return Uniform random double from the interval `[0, 1)`.
+     * @return Uniform random double from the interval \f$ [0, 1) \f$.
      */
     [[nodiscard]] double preview() {
       if (idx_ > buffer_.size() - 1) refill();
@@ -130,8 +141,8 @@ namespace triqs::mc_tools {
     }
 
     /**
-     * @brief Generate a random sample from the uniform distribution defined on the interval `[0, 1)`.
-     * @return Uniform random double from the interval `[0, 1)`.
+     * @brief Generate a random sample from the uniform distribution defined on the interval \f$ [0, 1) \f$.
+     * @return Uniform random double from the interval \f$ [0, 1) \f$.
      */
     double operator()() {
       if (idx_ > buffer_.size() - 1) refill();
@@ -139,18 +150,18 @@ namespace triqs::mc_tools {
     }
 
     /**
-     * @brief Generate a random sample from the uniform distribution defined on the interval `[0, b)`.
+     * @brief Generate a random sample from the uniform distribution defined on the interval \f$ [0, b) \f$.
      * @param b Upper bound of the interval.
-     * @return Uniform random double from the interval `[0, b)`.
+     * @return Uniform random double from the interval \f$ [0, b) \f$.
      */
     double operator()(double b) { return b * (this->operator()()); }
 
     /**
-     * @brief Generate a random sample from the uniform distribution defined on the interval `[a, b)`.
+     * @brief Generate a random sample from the uniform distribution defined on the interval \f$ [a, b) \f$.
      *
      * @param a Lower bound of the interval.
      * @param b Upper bound of the interval.
-     * @return Uniform random double from the interval `[a, b)`.
+     * @return Uniform random double from the interval \f$ [a, b) \f$.
      */
     double operator()(double a, double b) {
       assert(b > a);
@@ -163,7 +174,7 @@ namespace triqs::mc_tools {
     /**
      * @brief Write the RNG object to HDF5.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param name Name of the dataset/subgroup.
      * @param rng RNG object to be written.
      */
@@ -181,7 +192,7 @@ namespace triqs::mc_tools {
     /**
      * @brief Read the RNG object from HDF5.
      *
-     * @param g h5::group to be read from.
+     * @param g `h5::group` to be read from.
      * @param name Name of the dataset/subgroup.
      * @param rng RNG object to be read into.
      */
@@ -224,5 +235,7 @@ namespace triqs::mc_tools {
 
   /// Get a `std::vector<std::string>` containing all available RNG names.
   [[nodiscard]] std::vector<std::string> random_generator_names_list();
+
+  /** @} */
 
 } // namespace triqs::mc_tools

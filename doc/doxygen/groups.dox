@@ -116,3 +116,8 @@
  * analytically. As the name suggests, they are intended to be used for quantum many-body Green's functions, self
  * energies or other correlation functions, but they can in principle be used for more general functions.
  */
+
+/**
+ * @defgroup triqs-mc MC tools
+ * @brief Tools to implement and perform Monte Carlo simulations.
+ */

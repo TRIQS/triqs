@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a type erased auxiliary MC measurement.
+ */
+
 #pragma once
 
 #include <concepts>
@@ -25,6 +30,7 @@
 namespace triqs::mc_tools {
 
   /**
+   * @ingroup triqs-mc
    * @brief Type erasure class for auxiliary MC measures.
    *
    * @details It takes any type that is callable and erases its type.
