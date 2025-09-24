@@ -102,7 +102,7 @@ namespace triqs::mc_tools {
       }
     }
 
-    // throw an exception, if we the absolute ratio is still non-finite
+    // throw an exception, if the absolute ratio is still non-finite
     const auto abs_ratio = std::abs(ratio);
     if (!std::isfinite(abs_ratio)) {
       const auto cplx_ratio = std::complex<double>{ratio};

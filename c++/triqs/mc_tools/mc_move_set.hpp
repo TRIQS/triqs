@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @brief Provides a set for MC moves.
+ * @brief Provides a set of MC moves.
  */
 
 #pragma once
@@ -44,8 +44,8 @@
 namespace triqs::mc_tools {
 
   /**
-   * @ingroup triqs-mc
-   * @brief MC move set class.
+   * @ingroup triqs-mc-moves
+   * @brief Set of MC moves.
    *
    * @details It combines multiple MC moves.
    *
@@ -58,7 +58,7 @@ namespace triqs::mc_tools {
    * - move_set::calibrate, move_set::collect_statistics and the HDF5 routines loop over all moves and call the
    * corresponding method for each registered move.
    *
-   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   * @tparam MCSignType Type of the sign/weight of a MC configuration (triqs::mc_tools::DoubleOrComplex).
    */
   template <DoubleOrComplex MCSignType> class move_set {
     public:
@@ -161,10 +161,10 @@ namespace triqs::mc_tools {
     /// Get the index of the current move.
     [[nodiscard]] auto current() const { return current_; }
 
-    /// Get the probabilities of all the moves.
+    /// Get the probabilities with which the moves are selected.
     [[nodiscard]] auto const &probabilities() const { return probs_; }
 
-    /// Get the sign of the last attempt.
+    /// Get the sign of the acceptance ratio of the last attempt.
     [[nodiscard]] auto attempt_sign() const { return attempt_sign_; }
 
     /// Get the HDF5 format tag.

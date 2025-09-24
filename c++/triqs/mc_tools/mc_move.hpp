@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @brief Provides a type erased MC move.
+ * @brief Provides type erasure for MC moves.
  */
 
 #pragma once
@@ -43,29 +43,26 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> class move_set;
 
   /**
-   * @ingroup triqs-mc
+   * @ingroup triqs-mc-moves
    * @brief Type erasure class for MC moves.
    *
    * @details It takes any type that models the triqs::mc_tools::MCMove concept and erases its type.
    *
-   * Any MC move must define the following methods:
-   * - `MCSignType %attempt()`: Proposes a new MC configuration and returns the acceptance ratio of the proposed move.
-   * - `MCSignType %accept()`: Accepts the previously proposed move and returns a possible sign correction.
-   *
    * The sign of the new configuration, if accepted, is calculated as `new_sign = old_sign * sgn(attempt()) *
    * %accept()`. If `%attempt()` returns the full MC acceptance ratio (including all signs), then `%accept()` should
-   * always return 1. Otherwise, the calculation of the sign can be partially or fully done in the `%accept()` method.
+   * always return \f$ 1 \f$. Otherwise, the calculation of the sign can be partially or fully done in the `%accept()`
+   * method.
    *
    * Optionally, the following methods can be defined:
-   * - `void %reject()`: Callback function if the previously proposed move is rejected.
-   * - `void calibrate(mpi::communicator const &)`: Calibrates the move. Usually done during the warm-up phase.
-   * - `void collect_statistics(mpi::communicator const &)`: Collects statistics from multiple MPI processes.
+   * - `%reject()`: Callback function if the previously proposed move is rejected.
+   * - `calibrate(mpi::communicator const &)`: Calibrates the move. Usually done during the warm-up phase.
+   * - `collect_statistics(mpi::communicator const &)`: Collects statistics from multiple MPI processes.
    *
    * Optionally, the following free functions can be defined:
-   * - `void h5_write(h5::group, std::string const &, T const &) const`: Writes the move object of type `T` to HDF5.
-   * - `void h5_read(h5::group, std::string const &, T &)`: Reads the move object of type `T` from HDF5.
+   * - `h5_write(h5::group, std::string const &, T const &) const`: Writes the move object of type `T` to HDF5.
+   * - `h5_read(h5::group, std::string const &, T &)`: Reads the move object of type `T` from HDF5.
    *
-   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   * @tparam MCSignType Type of the sign/weight of a MC configuration (triqs::mc_tools::DoubleOrComplex).
    */
   template <DoubleOrComplex MCSignType> class move {
     private:
@@ -181,8 +178,10 @@ namespace triqs::mc_tools {
 
     /**
      * @brief Collect statistics from multiple MPI processes.
+     *
      * @details It sets the total (over all MPI processes) acceptance rate and optionally calls the
      * `collect_statistics(mpi::communicator const &)` method of the original type.
+     *
      * @param c MPI communicator.
      */
     void collect_statistics(mpi::communicator const &c);
@@ -198,7 +197,7 @@ namespace triqs::mc_tools {
 
     /**
      * @brief Reset the gathered statistics to their initial states.
-     * @details If the move is a move set, it calls the `clear_statistics()` method for all moves in the set.
+     * @details If the move is a move set, it calls the clear_statistics() method for all moves in the set.
      */
     void clear_statistics();
 

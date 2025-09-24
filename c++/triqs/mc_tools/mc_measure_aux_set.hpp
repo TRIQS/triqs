@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @brief Provides a type erased auxiliary MC measurement.
+ * @brief Provides type erasure for auxiliary MC measurements.
  */
 
 #pragma once
@@ -30,13 +30,13 @@
 namespace triqs::mc_tools {
 
   /**
-   * @ingroup triqs-mc
+   * @ingroup triqs-mc-measures
    * @brief Type erasure class for auxiliary MC measures.
    *
    * @details It takes any type that is callable and erases its type.
    *
    * Any auxiliary MC measure must define the following method:
-   * - `void operator()()`: Performs an auxiliary measurement.
+   * - `%operator()()`: Performs an auxiliary measurement.
    *
    * @note The object is passed and stored as a shared pointer. That means it can be used and shared among multiple
    * measures.
@@ -56,7 +56,7 @@ namespace triqs::mc_tools {
     struct measure_aux_model : public measure_aux_concept {
       std::shared_ptr<T> ptr_;
       measure_aux_model(std::shared_ptr<T> const &m_ptr) : ptr_{m_ptr} {}
-      virtual void call() override { return (*ptr_)(); }
+      void call() override { return (*ptr_)(); }
     };
 
     public:

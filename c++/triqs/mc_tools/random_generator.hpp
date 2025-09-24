@@ -40,16 +40,31 @@
 namespace triqs::mc_tools {
 
   /**
-   * @addtogroup triqs-mc
+   * @addtogroup triqs-mc-utils
    * @{
    */
 
   /**
    * @brief Wrapper that erases the type of a random number generator.
    *
-   * @details Various RNGs from the Boost library are supported (see triqs::mc_tools::random_generator_names() or
-   * triqs::mc_tools::random_generator_names_list()) as well as the RNG in triqs/mc_tools/MersenneRNG.hpp. The RNG is
-   * specified in the constructor by giving its name.
+   * @details The following RNGs are supported (see also triqs::mc_tools::random_generator_names() or
+   * triqs::mc_tools::random_generator_names_list()): 
+   * 
+   * - *empty string*: uses the custom Mersenne Twister RNG in triqs/mc_tools/MersenneRNG.hpp
+   * - *mt19937*: uses `boost::mt19937`
+   * - *mt11213b*: uses `boost::mt11213b`
+   * - *lagged_fibonacci607*: uses `boost::lagged_fibonacci607`
+   * - *lagged_fibonacci1279*: uses `boost::lagged_fibonacci127`
+   * - *lagged_fibonacci2281*: uses `boost::lagged_fibonacci2281`
+   * - *lagged_fibonacci3217*: uses `boost::lagged_fibonacci3217`
+   * - *lagged_fibonacci4423*: uses `boost::lagged_fibonacci4423`
+   * - *lagged_fibonacci9689*: uses `boost::lagged_fibonacci9689`
+   * - *lagged_fibonacci19937*: uses `boost::lagged_fibonacci19937`
+   * - *lagged_fibonacci23209*: uses `boost::lagged_fibonacci23209`
+   * - *lagged_fibonacci44497*: uses `boost::lagged_fibonacci44497`
+   * - *ranlux3*: uses `boost::ranlux3`
+   * 
+   * The RNG is specified in the constructor by giving its name.
    *
    * For performance reasons, we use a buffer for the generated random numbers to avoid some of the costs of repeated
    * function calls to the RNG.
@@ -108,7 +123,7 @@ namespace triqs::mc_tools {
     /// Deleted copy constructor.
     random_generator(random_generator const &) = delete;
 
-    /// Deleted copy assignment operator.
+    /// Default move constructor.
     random_generator(random_generator &&) = default;
 
     /// Default move assignment operator.
@@ -118,8 +133,7 @@ namespace triqs::mc_tools {
     [[nodiscard]] std::string name() const { return name_; }
 
     /**
-     * @brief Generate a random sample from the uniform integer distribution defined on the set \f$ \{0, ..., i-1 \}
-     * \f$.
+     * @brief Generate a random sample from the uniform integer distribution defined on \f$ \{0, ..., i-1 \}\f$.
      *
      * @tparam T Integral type.
      * @param i Upper bound (excluded).

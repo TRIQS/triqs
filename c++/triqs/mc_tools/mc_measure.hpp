@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @brief Provides a type erased MC measurement.
+ * @brief Provides type erasure for MC measurements.
  */
 
 #pragma once
@@ -45,24 +45,19 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> class measure_set;
 
   /**
-   * @ingroup triqs-mc
+   * @ingroup triqs-mc-measures
    * @brief Type erasure class for MC measures.
    *
    * @details It takes any type that models the triqs::mc_tools::MCMeasure concept and erases its type.
    *
-   * Any MC measure must define the following methods:
-   * - `void %accumulate(MCSignType)`: Performs a measurement on the current MC configuration given the sign of its
-   * weight.
-   * - `void collect_results(mpi::communicator const &)`: Collects results from multiple MPI processes.
-   *
    * Optionally, the following method can be defined:
-   * - `std::string %report() const`: Reports information about the measure in a `std::string` object.
+   * - `%report() const -> std::string`: Reports information about the measure in a `std::string` object.
    *
    * Optionally, the following free functions can be defined:
-   * - `void h5_write(h5::group, std::string const &, T const &) const`: Writes the measure object of type `T` to HDF5.
-   * - `void h5_read(h5::group, std::string const &, T &)`: Reads the measure object of type `T` from HDF5.
+   * - `h5_write(h5::group, std::string const &, T const &) const`: Writes the measure object of type `T` to HDF5.
+   * - `h5_read(h5::group, std::string const &, T &)`: Reads the measure object of type `T` from HDF5.
    *
-   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   * @tparam MCSignType Type of the sign/weight of a MC configuration (triqs::mc_tools::DoubleOrComplex).
    */
   template <DoubleOrComplex MCSignType> class measure {
     private:
