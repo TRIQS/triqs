@@ -121,3 +121,33 @@
  * @defgroup triqs-mc MC tools
  * @brief Tools to implement and perform Monte Carlo simulations.
  */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-concepts MC concepts
+ * @brief Concepts that specify the requirements for MC moves and measurements. 
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-measures MC measurements
+ * @brief Abstraction for Monte Carlo measurements.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-moves MC moves
+ * @brief Abstraction for Monte Carlo moves.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-utils MC utilities
+ * @brief Various utilities used with @ref triqs-mc.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-simulation MC simulation
+ * @brief Run and manage MC simulations.
+ */

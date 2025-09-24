@@ -47,7 +47,7 @@
 namespace triqs::mc_tools {
 
   /**
-   * @ingroup triqs-mc
+   * @ingroup triqs-mc-simulation
    * @brief Generic Monte Carlo class.
    *
    * @details This class provides a generic Monte Carlo simulation framework. It allows to register MC moves and
@@ -55,9 +55,9 @@ namespace triqs::mc_tools {
    * Additionally, one can register auxiliary measures that are callable objects (see triqs::mc_tools::measure_aux).
    *
    * Most MC simulations consist of two phases:
-   * - warmup phase: No measurements are done during this phase. It is used to equilibrate the underlying Markov chain
-   * and to optionally calibrate the MC moves.
-   * - accumulation phase: This phase is used to accumulate measurements. The Markov chain is assumed to be already
+   * - **warmup phase**: No measurements are done during this phase. It is used to equilibrate the underlying Markov 
+   * chain and to optionally calibrate the MC moves.
+   * - **accumulation phase**: This phase is used to accumulate measurements. The Markov chain is assumed to be already
    * warmed up such that it generates MC configurations distrubuted according to the desired probability distribution.
    *
    * Both phases follow the same overall procedure:
@@ -77,12 +77,12 @@ namespace triqs::mc_tools {
    * calibrated to optimize the sampling procedure.
    *
    * The simulation stops when one of the following conditions is met:
-   * - The number of requested cycles is done (if the specified number is < 1, the simulation runs indefinitely).
+   * - The number of requested cycles is done (if the number is \f$ < 1 \f$, the simulation runs indefinitely).
    * - A user provided callback function returns true.
    * - A signal is caught by the signal handler provided in triqs/utility/signal_handler.hpp.
    * - An exception is caught.
    *
-   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   * @tparam MCSignType Type of the sign/weight of a MC configuration (triqs::mc_tools::DoubleOrComplex).
    */
   template <DoubleOrComplex MCSignType> class mc_generic {
     private:

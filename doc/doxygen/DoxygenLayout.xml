@@ -68,17 +68,27 @@
         </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-mc" title="MC tools">
-        <tab type="user" url="@ref triqs::mc_tools::DoubleOrComplex" title="mc_tools::DoubleOrComplex"/>
-        <tab type="user" url="@ref triqs::mc_tools::MCMove" title="mc_tools::MCMove"/>
-        <tab type="user" url="@ref triqs::mc_tools::MCMeasure" title="mc_tools::MCMeasure"/>
-        <tab type="user" url="@ref triqs::mc_tools::mc_generic" title="mc_tools::mc_generic"/>
-        <tab type="user" url="@ref triqs::mc_tools::mc_generic::run_param_t" title="mc_tools::mc_generic::run_param_t"/>
-        <tab type="user" url="@ref triqs::mc_tools::measure_aux" title="mc_tools::measure_aux"/>
-        <tab type="user" url="@ref triqs::mc_tools::measure_set" title="mc_tools::measure_set"/>
-        <tab type="user" url="@ref triqs::mc_tools::measure" title="mc_tools::measure"/>
-        <tab type="user" url="@ref triqs::mc_tools::move_set" title="mc_tools::move_set"/>
-        <tab type="user" url="@ref triqs::mc_tools::move" title="mc_tools::move"/>
-        <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
+        <tab type="usergroup" url="@ref triqs-mc-concepts" title="MC concepts">
+          <tab type="user" url="@ref triqs::mc_tools::DoubleOrComplex" title="mc_tools::DoubleOrComplex"/>
+          <tab type="user" url="@ref triqs::mc_tools::MCMove" title="mc_tools::MCMove"/>
+          <tab type="user" url="@ref triqs::mc_tools::MCMeasure" title="mc_tools::MCMeasure"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-measures" title="MC measurements">
+          <tab type="user" url="@ref triqs::mc_tools::measure" title="mc_tools::measure"/>
+          <tab type="user" url="@ref triqs::mc_tools::measure_aux" title="mc_tools::measure_aux"/>
+          <tab type="user" url="@ref triqs::mc_tools::measure_set" title="mc_tools::measure_set"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-moves" title="MC moves">
+          <tab type="user" url="@ref triqs::mc_tools::move" title="mc_tools::move"/>
+          <tab type="user" url="@ref triqs::mc_tools::move_set" title="mc_tools::move_set"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-simulation" title="MC simulation">
+          <tab type="user" url="@ref triqs::mc_tools::mc_generic" title="mc_tools::mc_generic"/>
+          <tab type="user" url="@ref triqs::mc_tools::mc_generic::run_param_t" title="mc_tools::mc_generic::run_param_t"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-utils" title="MC utilities">
+          <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
+        </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>

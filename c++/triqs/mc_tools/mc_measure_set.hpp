@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @brief Provides a set for MC measurements.
+ * @brief Provides a set of MC measurements.
  */
 
 #pragma once
@@ -42,8 +42,8 @@
 namespace triqs::mc_tools {
 
   /**
-   * @ingroup triqs-mc
-   * @brief MC measure set class.
+   * @ingroup triqs-mc-measures
+   * @brief Set of MC measures.
    *
    * @details It combines multiple MC measures.
    *
@@ -53,7 +53,7 @@ namespace triqs::mc_tools {
    * - measure_set::collect_results: Calls the measure::collect_results method for all registered MC measures.
    * - measure_set::report: Concatenates the reports from all measurements by calling their measure::report method.
    *
-   * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
+   * @tparam MCSignType Type of the sign/weight of a MC configuration (triqs::mc_tools::DoubleOrComplex).
    */
   template <DoubleOrComplex MCSignType> class measure_set {
     public:

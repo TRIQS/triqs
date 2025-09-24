@@ -33,12 +33,12 @@
 namespace triqs::mc_tools {
 
   /**
-   * @addtogroup triqs-mc
+   * @addtogroup triqs-mc-concepts
    * @{
    */
 
   /**
-   * @brief Check if a type is either a double or a `std::complex<double>`.
+   * @brief Check if a type is either a `double` or a `std::complex<double>`.
    * @tparam T Type to check.
    */
   template <typename T>
@@ -46,8 +46,13 @@ namespace triqs::mc_tools {
 
   /**
    * @brief Check if a type can be used as a MC move.
-   * @details It checks if the given type has `attempt()` and `accept()` methods that return a value which is
-   * convertible to `MCSignType`.
+   * 
+   * @details A MC move type is required to define the following methods:
+   * - `attempt() -> MCSignType`: Proposes a new MC configuration and returns the acceptance ratio of the proposed move.
+   * - `accept() -> MCSignType`: Accepts the previously proposed move and returns a possible sign correction.
+   * 
+   * See also triqs::mc_tools::move and triqs::mc_tools::move_set for more information.
+   * 
    * @tparam T Type to check.
    */
   template <typename T, typename MCSignType>
@@ -58,8 +63,14 @@ namespace triqs::mc_tools {
 
   /**
    * @brief Check if a type can be used as a MC measure.
-   * @details It checks if the given type has `accumulate(MCSignType)` and `collect_results(mpi::communicator const &)`
-   * methods.
+   * 
+   * @details A MC measure type is required to define the following methods:
+   * - `accumulate(MCSignType)`: Performs a measurement on the current MC configuration given the sign of its weight. 
+   * - `collect_results(mpi::communicator const &)`: Collects results from multiple MPI processes.
+   * 
+   * See also triqs::mc_tools::measure, triqs::mc_tools::measure_set and triqs::mc_tools::measure_aux for more 
+   * information.
+   * 
    * @tparam T Type to check.
    */
   template <typename T, typename MCSignType>

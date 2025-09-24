@@ -99,7 +99,7 @@ TEST(TRIQSMCTools, RandomGeneratorHDF5) {
 
 TEST(TRIQSMCTools, RandomGeneratorMoveOperation) {
   using namespace triqs::mc_tools;
-  auto rng = random_generator();
+  auto rng  = random_generator();
   auto rng2 = random_generator();
   for (int i = 0; i < 10; ++i) {
     rng();
@@ -112,7 +112,7 @@ TEST(TRIQSMCTools, RandomGeneratorMoveOperation) {
 
   // move assignment
   auto rng4 = random_generator();
-  rng4 = std::move(rng2);
+  rng4      = std::move(rng2);
   for (int i = 0; i < 10; ++i) EXPECT_DOUBLE_EQ(rng3(), rng4());
 }
 
