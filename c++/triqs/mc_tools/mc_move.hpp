@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a type erased MC move.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -38,20 +43,21 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> class move_set;
 
   /**
+   * @ingroup triqs-mc
    * @brief Type erasure class for MC moves.
    *
    * @details It takes any type that models the triqs::mc_tools::MCMove concept and erases its type.
    *
    * Any MC move must define the following methods:
-   * - `MCSignType attempt()`: Proposes a new MC configuration and returns the acceptance ratio of the proposed move.
-   * - `MCSignType accept()`: Accepts the previously proposed move and returns a possible sign correction.
+   * - `MCSignType %attempt()`: Proposes a new MC configuration and returns the acceptance ratio of the proposed move.
+   * - `MCSignType %accept()`: Accepts the previously proposed move and returns a possible sign correction.
    *
    * The sign of the new configuration, if accepted, is calculated as `new_sign = old_sign * sgn(attempt()) *
-   * accept()`. If `attempt()` returns the full MC acceptance ratio (including all signs), then `accept()` should
-   * always return 1. Otherwise, the calculation of the sign can be partially or fully done in the `accept()` method.
+   * %accept()`. If `%attempt()` returns the full MC acceptance ratio (including all signs), then `%accept()` should
+   * always return 1. Otherwise, the calculation of the sign can be partially or fully done in the `%accept()` method.
    *
    * Optionally, the following methods can be defined:
-   * - `void reject()`: Callback function if the previously proposed move is rejected.
+   * - `void %reject()`: Callback function if the previously proposed move is rejected.
    * - `void calibrate(mpi::communicator const &)`: Calibrates the move. Usually done during the warm-up phase.
    * - `void collect_statistics(mpi::communicator const &)`: Collects statistics from multiple MPI processes.
    *
@@ -162,7 +168,7 @@ namespace triqs::mc_tools {
 
     /**
      * @brief Optional callback function if the proposed move is rejected.
-     * @details Does nothing if the original type does not implement a `reject()` method.
+     * @details Does nothing if the original type does not implement a `%reject()` method.
      */
     void reject() { ptr_->reject(); }
 
@@ -220,7 +226,7 @@ namespace triqs::mc_tools {
      *
      * @details Does nothing if there is no specialized `h5_write` function for the original move object.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param name Name of the dataset/subgroup.
      * @param m Move object to be written.
      */
@@ -231,7 +237,7 @@ namespace triqs::mc_tools {
      *
      * @details Does nothing if there is no specialized `h5_read` function for the original move object.
      *
-     * @param g h5::group to be read from.
+     * @param g `h5::group` to be read from.
      * @param name Name of the dataset/subgroup.
      * @param m Move object to be read into.
      */

@@ -17,53 +17,56 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#include "signal_handler.hpp"
-#include <signal.h>
-#include <string.h>
-#include <vector>
+#include "./signal_handler.hpp"
+
+#include <csignal>
+#include <cstring>
 #include <iostream>
-namespace triqs {
-  namespace signal_handler {
+#include <vector>
 
-    namespace {
+namespace triqs::signal_handler {
 
-      std::vector<int> signals_list;
-      bool initialized = false;
+  namespace {
 
-      void slot(int signal) {
-        std::cerr << "TRIQS : Received signal " << signal << std::endl;
-        signals_list.push_back(signal);
-      }
-    } // namespace
+    std::vector<int> signals_list; // NOLINT
+    bool initialized = false;      // NOLINT
 
-    void start() {
-      if (initialized) return;
-      static struct sigaction action;
-      memset(&action, 0, sizeof(action));
-      action.sa_handler = slot;
-      sigaction(SIGINT, &action, NULL);
-      sigaction(SIGTERM, &action, NULL);
-      sigaction(SIGXCPU, &action, NULL);
-      sigaction(SIGQUIT, &action, NULL);
-      sigaction(SIGUSR1, &action, NULL);
-      sigaction(SIGUSR2, &action, NULL);
-      sigaction(SIGSTOP, &action, NULL);
-      initialized = true;
+    void slot(int signal) {
+      std::cerr << "TRIQS : Received signal " << signal << std::endl;
+      signals_list.push_back(signal);
     }
 
-    void stop() {
-      signals_list.clear();
-      initialized = false;
-    }
+  } // anonymous namespace
 
-    bool received(bool pop_) {
-      //if (!initialized) start();
-      bool r = signals_list.size() != 0;
-      if (r && pop_) pop();
-      return r;
-    }
+  void start() {
+    if (initialized) return;
+    static struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = slot;
+    sigaction(SIGINT, &action, NULL);
+    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGXCPU, &action, NULL);
+    sigaction(SIGQUIT, &action, NULL);
+    sigaction(SIGUSR1, &action, NULL);
+    sigaction(SIGUSR2, &action, NULL);
+    sigaction(SIGSTOP, &action, NULL);
+    initialized = true;
+  }
 
-    int last() { return signals_list.back(); }
-    void pop() { return signals_list.pop_back(); }
-  } // namespace signal_handler
-} // namespace triqs
+  void stop() {
+    signals_list.clear();
+    initialized = false;
+  }
+
+  bool received(bool pop_) {
+    //if (!initialized) start();
+    bool r = signals_list.size() != 0;
+    if (r && pop_) pop();
+    return r;
+  }
+
+  int last() { return signals_list.back(); }
+
+  void pop() { return signals_list.pop_back(); }
+
+} // namespace triqs::signal_handler

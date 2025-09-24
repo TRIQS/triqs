@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a set for MC measurements.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -37,6 +42,7 @@
 namespace triqs::mc_tools {
 
   /**
+   * @ingroup triqs-mc
    * @brief MC measure set class.
    *
    * @details It combines multiple MC measures.
@@ -153,7 +159,7 @@ namespace triqs::mc_tools {
      *
      * @details It loops over all registered measures and calls the `h5_write` function for each measure.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param key Name of the subgroup.
      * @param ms Measure set object to be written.
      */
@@ -168,8 +174,8 @@ namespace triqs::mc_tools {
      *
      * @details It loops over all registered measures and calls the `h5_read` function for each measure.
      *
-     * @param g h5::group to be read from.
-     * @param ky Name of the subgroup.
+     * @param g `h5::group` to be read from.
+     * @param key Name of the subgroup.
      * @param ms Measure set object to be read into.
      */
     friend void h5_read(h5::group g, std::string const &key, measure_set &ms) {

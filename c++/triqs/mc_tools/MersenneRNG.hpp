@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a Mersenne Twister random number generator.
+ */
+
 #ifndef MERSENNE_RNG_H
 #define MERSENNE_RNG_H
 

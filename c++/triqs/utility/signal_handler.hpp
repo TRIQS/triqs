@@ -17,25 +17,31 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a signal handler for the TRIQS library.
+ */
+
 #pragma once
-namespace triqs {
-  namespace signal_handler {
 
-    class exception {};
+namespace triqs::signal_handler {
 
-    /// Start the signal handler
-    void start();
+  // Empty exception class.
+  class exception {};
 
-    /// Stop it. ?
-    void stop();
+  /// Start the signal handler.
+  void start();
 
-    /// A signal has been received. If pop, and there is a signal, pop it.
-    bool received(bool pop = false);
+  /// Stop the signal handler.
+  void stop();
 
-    /// Last received.
-    int last();
+  /// A signal has been received. If `pop` is true and there is a signal, pop it.
+  bool received(bool pop = false);
 
-    /// pop the last signal
-    void pop();
-  } // namespace signal_handler
-} // namespace triqs
+  /// Last received signal.
+  int last();
+
+  /// Pop the last signal.
+  void pop();
+
+} // namespace triqs::signal_handler

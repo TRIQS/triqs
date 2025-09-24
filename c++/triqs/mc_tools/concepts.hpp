@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides concepts for the @ref triqs-mc.
+ */
+
 #pragma once
 
 #include <mpi/communicator.hpp>
@@ -28,7 +33,12 @@
 namespace triqs::mc_tools {
 
   /**
-   * @brief Check if a type is either a double or a std::complex<double>.
+   * @addtogroup triqs-mc
+   * @{
+   */
+
+  /**
+   * @brief Check if a type is either a double or a `std::complex<double>`.
    * @tparam T Type to check.
    */
   template <typename T>
@@ -57,5 +67,7 @@ namespace triqs::mc_tools {
     { x.accumulate(std::declval<MCSignType>()) };
     { x.collect_results(comm) };
   };
+
+  /** @} */
 
 } // namespace triqs::mc_tools

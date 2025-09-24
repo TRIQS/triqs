@@ -18,6 +18,11 @@
 //
 // Authors: Michel Ferrero, Henri Menke, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell, Thomas Ayral
 
+/**
+ * @file
+ * @brief Provides a generic class to run Monte Carlo simulations.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -42,6 +47,7 @@
 namespace triqs::mc_tools {
 
   /**
+   * @ingroup triqs-mc
    * @brief Generic Monte Carlo class.
    *
    * @details This class provides a generic Monte Carlo simulation framework. It allows to register MC moves and
@@ -73,7 +79,7 @@ namespace triqs::mc_tools {
    * The simulation stops when one of the following conditions is met:
    * - The number of requested cycles is done (if the specified number is < 1, the simulation runs indefinitely).
    * - A user provided callback function returns true.
-   * - A signal is caught by the triqs::utility::signal_handler.
+   * - A signal is caught by the signal handler provided in triqs/utility/signal_handler.hpp.
    * - An exception is caught.
    *
    * @tparam MCSignType triqs::mc_tools::DoubleOrComplex type of the sign/weight of a MC configuration.
@@ -92,12 +98,16 @@ namespace triqs::mc_tools {
       /// Number of MC steps/moves per cycle.
       std::int64_t cycle_length = 1;
 
-      /// Optional callback function that returns a boolean value indicating if we should stop the simulation. Executed
-      /// at the end of each cycle.
+      /**
+       * @brief Optional callback function that returns a boolean value indicating if we should stop the simulation.
+       * Executed at the end of each cycle.
+       */
       std::function<bool()> stop_callback = []() { return false; };
 
-      /// The sign of the MC weight is initialized to this value before the simulation starts (if it is !=
-      /// default_initial_sign).
+      /**
+       * @brief The sign of the MC weight is initialized to this value before the simulation starts (if it is `!=
+       * default_initial_sign`).
+       */
       MCSignType initial_sign = default_initial_sign;
 
       /// MPI communicator.
@@ -115,8 +125,10 @@ namespace triqs::mc_tools {
       /// Should we calibrate the moves during the simulation? Usually false during the accumulation phase.
       bool enable_calibration = false;
 
-      /// Should we continue the simulation on the current rank after the given number of cycles is done and wait for
-      /// all other ranks to finish as well or should we stop immediately?
+      /**
+       * @brief Should we continue the simulation on the current rank after the given number of cycles is done and wait
+       * for all other ranks to finish as well or should we stop immediately?
+       */
       bool continue_after_ncycles_done = false;
 
       /// Time interval (in seconds) after which the simulation checks for exceptions on other nodes.
@@ -142,7 +154,7 @@ namespace triqs::mc_tools {
      * @tparam T triqs::mc_tools::MCMove type.
      * @param m MC move to register.
      * @param name Name of the move.
-     * @param weight Weight of the move which is proportional to its proposal probability (>= 0).
+     * @param weight Weight of the move which is proportional to its proposal probability (\f$ \geq 0 \f$).
      */
     template <typename T> void add_move(T &&m, std::string name, double weight = 1.0) { moves_.add(std::forward<T>(m), name, weight); }
 
@@ -212,8 +224,8 @@ namespace triqs::mc_tools {
     /**
      * @brief Run a generic MC simulation.
      *
-     * @param ncycles Number of MC cycles to run (< 1 to run indefinitely).
-     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param ncycles Number of MC cycles to run (\f$ < 1 \f$ to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (\f$ > 0 \f$).
      * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
      * @param enable_measures Enable measurements at the end of each cycle (false during warmup phase).
      * @param c MPI communicator.
@@ -227,8 +239,8 @@ namespace triqs::mc_tools {
     /**
      * @brief Run the warumup phase of the MC simulation.
      *
-     * @param ncycles Number of warumup cycles to run (< 1 to run indefinitely).
-     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param ncycles Number of warumup cycles to run (\f$ < 1 \f$ to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (\f$ > 0 \f$).
      * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
      * @param initial_sign Sign of the initial MC configuration.
      * @param c MPI communicator.
@@ -245,10 +257,9 @@ namespace triqs::mc_tools {
     /**
      * @brief Run the accumulation phase of the MC simulation.
      *
-     * @param ncycles Number of accumulation cycles to run (< 1 to run indefinitely).
-     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param ncycles Number of accumulation cycles to run (\f$ < 1 \f$ to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (\f$ > 0 \f$).
      * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
-     * @param initial_sign Sign of the initial MC configuration.
      * @param c MPI communicator.
      * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
      * returned true, 2 if it has been stopped due to a signal.
@@ -258,9 +269,9 @@ namespace triqs::mc_tools {
     /**
      * @brief Run the warumup and accumulation phases of the MC simulation.
      *
-     * @param ncycles_warmup Number of warumup cycles to run (< 1 to run indefinitely).
-     * @param ncycles_acc Number of accumulation cycles to run (< 1 to run indefinitely).
-     * @param cycle_length Number of MC steps per cycle (> 0).
+     * @param ncycles_warmup Number of warumup cycles to run (\f$ < 1 \f$ to run indefinitely).
+     * @param ncycles_acc Number of accumulation cycles to run (\f$ < 1 \f$ to run indefinitely).
+     * @param cycle_length Number of MC steps per cycle (\f$ > 0 \f$).
      * @param stop_callback Callback function to check if the simulation should be stopped (returns true to stop).
      * @param initial_sign Sign of the initial MC configuration.
      * @param c MPI communicator.
@@ -326,7 +337,7 @@ namespace triqs::mc_tools {
      * @details It writes the registered moves and measures as well as the number of cycles and measures that have been
      * done and the sign of the current configuration.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param name Name of the subgroup.
      * @param mc MC simulation object to be written.
      */
@@ -345,7 +356,7 @@ namespace triqs::mc_tools {
      * @details It reads the registered moves and measures as well as the number of cycles and measures that have been
      * done and the sign of the last configuration.
      *
-     * @param g h5::group to be read from.
+     * @param g `h5::group` to be read from.
      * @param name Name of the subgroup.
      * @param mc MC simulation object to be read into.
      */

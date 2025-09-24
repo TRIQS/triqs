@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a set for MC moves.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -39,14 +44,15 @@
 namespace triqs::mc_tools {
 
   /**
+   * @ingroup triqs-mc
    * @brief MC move set class.
    *
    * @details It combines multiple MC moves.
    *
    * Since it models the triqs::mc_tools::MCMove concept, it can be used just like any other MC move:
    *
-   * - move_set::attempt: Selects a move from the set according to the given weights (>= 0) and calls the move::attempt
-   * method of the selected move.
+   * - move_set::attempt: Selects a move from the set according to the given weights (\f$ \geq 0 \f$) and calls the
+   * move::attempt method of the selected move.
    * - move_set::accept and move_set::reject: Calls the move::accept and move::reject method of the previously attempted
    * move, respectively.
    * - move_set::calibrate, move_set::collect_statistics and the HDF5 routines loop over all moves and call the
@@ -85,7 +91,7 @@ namespace triqs::mc_tools {
      * @tparam T triqs::mc_tools::MCMove type.
      * @param m MC move to add to the set.
      * @param name Name of the move.
-     * @param weight Weight of the move (>= 0).
+     * @param weight Weight of the move (\f$ \geq 0 \f$).
      */
     template <typename T>
       requires MCMove<T, MCSignType>
@@ -161,19 +167,18 @@ namespace triqs::mc_tools {
     /// Get the sign of the last attempt.
     [[nodiscard]] auto attempt_sign() const { return attempt_sign_; }
 
+    /// Get the HDF5 format tag.
+    [[nodiscard]] static std::string hdf5_format() { return "move_set"; }
+
     /**
      * @brief Write the move set object to HDF5.
      *
      * @details It loops over all registered moves and calls the `h5_write` function for each move.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param name Name of the subgroup.
      * @param ms Move set object to be written.
      */
-
-    /// Get the HDF5 format tag.
-    [[nodiscard]] static std::string hdf5_format() { return "move_set"; }
-
     friend void h5_write(h5::group g, std::string const &name, move_set const &ms) {
       auto gr = g.create_group(name);
       h5::write_hdf5_format(gr, ms);
@@ -185,7 +190,7 @@ namespace triqs::mc_tools {
      *
      * @details It loops over all registered moves and calls the `h5_read` function for each move.
      *
-     * @param g h5::group to be read from.
+     * @param g `h5::group` to be read from.
      * @param name Name of the subgroup.
      * @param ms Move set object to be read into.
      */

@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Implementation details for triqs/mc_tools/MersenneRNG.hpp.
+ */
+
 #include "./MersenneRNG.hpp"
 
 #ifdef DEBUG

@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a type erased MC measurement.
+ */
+
 #pragma once
 
 #include "./concepts.hpp"
@@ -40,17 +45,18 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> class measure_set;
 
   /**
+   * @ingroup triqs-mc
    * @brief Type erasure class for MC measures.
    *
    * @details It takes any type that models the triqs::mc_tools::MCMeasure concept and erases its type.
    *
    * Any MC measure must define the following methods:
-   * - `void accumulate(MCSignType)`: Performs a measurement on the current MC configuration given the sign of its
+   * - `void %accumulate(MCSignType)`: Performs a measurement on the current MC configuration given the sign of its
    * weight.
    * - `void collect_results(mpi::communicator const &)`: Collects results from multiple MPI processes.
    *
    * Optionally, the following method can be defined:
-   * - `std::string report() const`: Reports information about the measure in a `std::string` object.
+   * - `std::string %report() const`: Reports information about the measure in a `std::string` object.
    *
    * Optionally, the following free functions can be defined:
    * - `void h5_write(h5::group, std::string const &, T const &) const`: Writes the measure object of type `T` to HDF5.
@@ -195,7 +201,7 @@ namespace triqs::mc_tools {
      *
      * @details Does nothing if there is no specialized `h5_write` function for the original measure object.
      *
-     * @param g h5::group to be written to.
+     * @param g `h5::group` to be written to.
      * @param name Name of the dataset/subgroup.
      * @param m Measure object to be written.
      */
@@ -206,7 +212,7 @@ namespace triqs::mc_tools {
      *
      * @details Does nothing if there is no specialized `h5_read` function for the original measure object.
      *
-     * @param g h5::group to be read from.
+     * @param g `h5::group` to be read from.
      * @param name Name of the dataset/subgroup.
      * @param m Measure object to be read into.
      */
