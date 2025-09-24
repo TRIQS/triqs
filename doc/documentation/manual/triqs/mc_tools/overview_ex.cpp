@@ -1,4 +1,5 @@
 #include <iostream>
+#include <mpi/mpi.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 

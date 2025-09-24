@@ -1,5 +1,6 @@
 #pragma once
 #include "configuration.hpp"
+#include <mpi/mpi.hpp>
 
 // The measure of the magnetization
 struct compute_m {
