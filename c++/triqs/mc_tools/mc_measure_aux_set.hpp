@@ -52,7 +52,7 @@ namespace triqs::mc_tools {
     // Auxiliary MC measure model implements the auxiliary MC measure concept by calling the appropriate methods of the
     // type earased object.
     template <typename T>
-      requires std::invocable<T>
+      requires(std::invocable<T>)
     struct measure_aux_model : public measure_aux_concept {
       std::shared_ptr<T> ptr_;
       measure_aux_model(std::shared_ptr<T> const &m_ptr) : ptr_{m_ptr} {}
@@ -67,7 +67,7 @@ namespace triqs::mc_tools {
      * @param m_ptr Shared pointer to the auxiliary MC measure object.
      */
     template <typename T>
-      requires std::invocable<T>
+      requires(std::invocable<T>)
     measure_aux(std::shared_ptr<T> const &m_ptr) : ptr_{std::make_unique<measure_aux_model<T>>(m_ptr)} {}
 
     /// Function call operator performs the auxiliary measurement.

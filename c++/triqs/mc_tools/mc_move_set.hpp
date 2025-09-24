@@ -94,7 +94,7 @@ namespace triqs::mc_tools {
      * @param weight Weight of the move (\f$ \geq 0 \f$).
      */
     template <typename T>
-      requires MCMove<T, MCSignType>
+      requires(MCMove<T, MCSignType>)
     void add(T &&m, std::string name, double weight) {
       if (weight < 0.0) throw std::runtime_error(fmt::format("Error in move_set: Weight of move {} is negative: {} < 0", name, weight));
       moves_.emplace_back(std::forward<T>(m));
