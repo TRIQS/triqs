@@ -53,26 +53,26 @@
 
 /**
  * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-concepts Mesh concepts
+ * @brief Various concepts used with @ref triqs-meshes.
+ */
+
+/**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-types Mesh types
+ * @brief Different mesh types provided by the **TRIQS** library.
+ */
+
+/**
+ * @ingroup triqs-meshes-types
  * @defgroup triqs-meshes-func Function space meshes
  * @brief %Mesh types for function spaces.
  */
 
 /**
- * @ingroup triqs-meshes
+ * @ingroup triqs-meshes-types
  * @defgroup triqs-meshes-imag Imaginary time and frequency meshes
  * @brief %Mesh types for imaginary time and frequency domains.
- */
-
-/**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-lattice Lattice meshes
- * @brief %Mesh types for Bravais lattices and Brillouin zones.
- */
-
-/**
- * @ingroup triqs-meshes-lattice
- * @defgroup triqs-meshes-kexpr k-vector expressions
- * @brief Lazy expressions for k-vectors.
  */
 
 /**
@@ -85,33 +85,39 @@
  */
 
 /**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-concepts Mesh concepts
- * @brief Various concepts used with @ref triqs-meshes.
+ * @ingroup triqs-meshes-types
+ * @defgroup triqs-meshes-lattice Lattice meshes
+ * @brief %Mesh types for Bravais lattices and Brillouin zones.
+ */
+
+/**
+ * @ingroup triqs-meshes-lattice
+ * @defgroup triqs-meshes-kexpr k-vector expressions
+ * @brief Lazy expressions for k-vectors.
+ */
+
+/**
+ * @ingroup triqs-meshes-types
+ * @defgroup triqs-meshes-other Other mesh types
+ * @brief Mesh types used as base classes and rarely used mesh types.
+ */
+
+/**
+ * @ingroup triqs-meshes-types
+ * @defgroup triqs-meshes-prod Product meshes
+ * @brief %Mesh types for products of meshes.
+ */
+
+/**
+ * @ingroup triqs-meshes-types
+ * @defgroup triqs-meshes-real Real time and frequency meshes
+ * @brief %Mesh types for real time and frequency domains.
  */
 
 /**
  * @ingroup triqs-meshes
  * @defgroup triqs-meshes-utils Mesh utilities
  * @brief Various utilities used with @ref triqs-meshes.
- */
-
-/**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-other Other mesh types
- * @brief Mesh types used as base classes and rarely used mesh types.
- */
-
-/**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-prod Product meshes
- * @brief %Mesh types for products of meshes.
- */
-
-/**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-real Real time and frequency meshes
- * @brief %Mesh types for real time and frequency domains.
  */
 
 /**
