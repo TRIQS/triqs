@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "./concepts.hpp"
 #include "./mean_error.hpp"
 #include "./utils.hpp"
 

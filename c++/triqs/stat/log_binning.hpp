@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "./concepts.hpp"
 #include "./utils.hpp"
 
 #include <h5/h5.hpp>

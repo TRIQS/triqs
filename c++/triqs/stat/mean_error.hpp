@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "./concepts.hpp"
 #include "./utils.hpp"
 
 #include <itertools/itertools.hpp>
