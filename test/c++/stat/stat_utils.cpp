@@ -55,6 +55,11 @@ TEST(TRIQSStat, MakeReal) {
   auto arr_c_real = make_real(arr_c);
   EXPECT_ARRAY_EQ(arr_c_real, (nda::array<double, 1>{1.2, 3.4}));
   static_assert(std::same_as<decltype(arr_c_real), nda::array<double, 1>>);
+
+  auto arr_c2      = nda::matrix<std::complex<double>>{{{1.2, 2.3}, {3.4, 4.5}}, {{5.6, 6.7}, {7.8, 8.9}}};
+  auto arr_c2_real = make_real(arr_c2(nda::range::all, 0));
+  EXPECT_ARRAY_EQ(arr_c2_real, (nda::vector<double>{1.2, 5.6}));
+  static_assert(std::same_as<decltype(arr_c2_real), nda::vector<double>>);
 }
 
 TEST(TRIQSStat, GetRegularType) {
@@ -67,6 +72,37 @@ TEST(TRIQSStat, GetRegularType) {
   nda::matrix<std::complex<double>> M(10, 10);
   static_assert(std::same_as<get_regular_t<decltype(v + v)>, nda::vector<double>>);
   static_assert(std::same_as<get_regular_t<decltype(M + M)>, nda::matrix<std::complex<double>>>);
+}
+
+TEST(TRIQSStat, AbsSquare) {
+  using namespace triqs::stat;
+  // scalars
+  double r = -2.0;
+  auto r_sq = abs_square(r);
+  EXPECT_DOUBLE_EQ(r_sq, 4.0);
+  static_assert(std::same_as<decltype(r_sq), double>);
+
+  auto z = std::complex<double>{3.0, 4.0};
+  auto z_sq = abs_square(z);
+  EXPECT_DOUBLE_EQ(z_sq, 25.0);
+  static_assert(std::same_as<decltype(z_sq), double>);
+
+  // arrays
+  auto arr_d = nda::array<double, 1>{1.0, -2.0, 0.5};
+  auto arr_d_sq = abs_square(arr_d);
+  EXPECT_ARRAY_EQ(arr_d_sq, (nda::array<double, 1>{1.0, 4.0, 0.25}));
+  static_assert(std::same_as<decltype(arr_d_sq), nda::array<double, 1>>);
+
+  auto arr_c = nda::array<std::complex<double>, 1>{{1.0, 2.0}, {-3.0, 4.0}};
+  auto arr_c_sq = abs_square(arr_c);
+  EXPECT_ARRAY_EQ(arr_c_sq, (nda::array<double, 1>{1.0 * 1.0 + 2.0 * 2.0, 3.0 * 3.0 + 4.0 * 4.0}));
+  static_assert(std::same_as<decltype(arr_c_sq), nda::array<double, 1>>);
+
+  // views
+  auto M = nda::matrix<std::complex<double>>{{{1.0, 2.0}, {3.0, 4.0}}, {{5.0, 12.0}, {8.0, 15.0}}};
+  auto v_sq = abs_square(M(nda::range::all, 0));
+  EXPECT_ARRAY_EQ(v_sq, (nda::vector<double>{1.0 + 4.0, 25.0 + 144.0}));
+  static_assert(std::same_as<decltype(v_sq), nda::vector<double>>);
 }
 
 MAKE_MAIN;
