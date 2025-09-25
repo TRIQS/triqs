@@ -66,14 +66,10 @@ namespace triqs::stat {
     return h1;
   }
 
-  bool histogram::operator==(histogram const &h) const {
-    return a_ == h.a_ && b_ == h.b_ && data_ == h.data_ && n_data_pts_ == h.n_data_pts_ && n_lost_pts_ == h.n_lost_pts_ && binsize_ == h.binsize_;
-  }
-
   void h5_write(h5::group g, std::string const &name, histogram const &h) {
     h5::write(g, name, h.data_);
     auto ds = g.open_dataset(name);
-    write_hdf5_format(ds, h);
+    h5::write_hdf5_format(ds, h);
     h5::write_attribute(ds, "a", h.a_);
     h5::write_attribute(ds, "b", h.b_);
     h5::write_attribute(ds, "n_data_pts", h.n_data_pts_);
@@ -83,6 +79,7 @@ namespace triqs::stat {
   void h5_read(h5::group g, std::string const &name, histogram &h) {
     h5::read(g, name, h.data_);
     auto ds = g.open_dataset(name);
+    h5::assert_hdf5_format(ds, h);
     h5::read_attribute(ds, "a", h.a_);
     h5::read_attribute(ds, "b", h.b_);
     h5::read_attribute(ds, "n_data_pts", h.n_data_pts_);

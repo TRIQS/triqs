@@ -41,7 +41,7 @@
 namespace triqs::stat {
 
   /**
-   * @addtogroup triqs-stat-hist
+   * @addtogroup triqs-stat-utils
    * @{
    */
 
@@ -65,7 +65,7 @@ namespace triqs::stat {
    */
   class histogram {
     public:
-    /// Default constructor.
+    /// Default constructor leaves the histogram in a valid but unusable state.
     histogram() = default;
 
     /**
@@ -131,13 +131,13 @@ namespace triqs::stat {
 
     /**
      * @brief Get the domain on which the histogram is defined.
-     * @return `std::pair` containing the lower and upper bounds of the histogram.
+     * @return `std::pair` containing the lower and upper bounds \f$ [a, b] \f$ of the histogram.
      */
     C2PY_PROPERTY_GET(limits) auto limits() const { return std::pair{a_, b_}; }
 
     /**
      * @brief Get the data stored in the histogram.
-     * @return `nda::vector<double>` containing the count of data points in each bin.
+     * @return `nda::vector<double>` containing the number of data points in each bin.
      */
     C2PY_PROPERTY_GET(data) auto const &data() const { return data_; }
 
@@ -148,7 +148,7 @@ namespace triqs::stat {
     C2PY_PROPERTY_GET(n_data_pts) auto n_data_pts() const { return n_data_pts_; }
 
     /**
-     * @brief Get the number of data point that fell outside of the interval and were discarded.
+     * @brief Get the number of data points that fell outside of the interval and were discarded.
      * @return Number of discarded data points.
      */
     C2PY_PROPERTY_GET(n_lost_pts) auto n_lost_pts() const { return n_lost_pts_; }
@@ -167,15 +167,11 @@ namespace triqs::stat {
      */
     friend histogram operator+(histogram h1, histogram const &h2);
 
-    /**
-     * @brief Equal-to operator for histograms.
-     * @return True, if their domains, data vectors, number of accumulated and discarded data points and bin sizes are
-     * equal. False otherwise.
+    /** 
+     * @brief Default equal-to operator compares the domains, data vectors, number of accumulated and discarded data 
+     * points and bin sizes.
      */
-    bool operator==(histogram const &h) const;
-
-    /// Not-equal-to operator for histograms (see operator==(histogram const &)).
-    inline bool operator!=(histogram const &h) const { return not(*this == h); }
+    bool operator==(histogram const &h) const = default;
 
     /**
      * @brief Implementation of an MPI broadcast for triqs::stat::histogram.
@@ -214,16 +210,13 @@ namespace triqs::stat {
       return h2;
     }
 
-    /**
-     * @brief Get the HDF5 format tag for the histogram type.
-     * @return `std::string` containing the format tag.
-     */
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "Histogram"; }
 
     /**
      * @brief Write a triqs::stat::histogram to HDF5.
      *
-     * @param g h5::group in which the dataset is created.
+     * @param g `h5::group` in which the dataset is created.
      * @param name Name of the dataset to which the histogram will be written.
      * @param h Histogram to be written.
      */
@@ -232,7 +225,7 @@ namespace triqs::stat {
     /**
      * @brief Read a triqs::stat::histogram from HDF5.
      *
-     * @param g h5::group containing the dataset.
+     * @param g `h5::group` containing the dataset.
      * @param name Name of the dataset from which the histogram will be read.
      * @param h Histogram to be read into.
      */
@@ -259,9 +252,41 @@ namespace triqs::stat {
      */
     void deserialize(auto &ar) { ar & a_ & b_ & n_data_pts_ & n_lost_pts_ & data_ & binsize_; }
 
-    // Friend declarations.
-    inline friend histogram pdf(histogram const &h);
-    inline friend histogram cdf(histogram const &h);
+    /**
+     * @brief Normalize a histogram.
+     *
+     * @details It simply divides each bin count by the total number of data points (including the lost points).
+     *
+     * @note This does not return the PDF of the underlying continuous distribution but rather the discrete probabilities
+     * that a data point falls into a certain bin.
+     *
+     * @param h Histogram to be normalized.
+     * @return Normalized histogram.
+     */
+    inline friend histogram pdf(histogram const &h) {
+      auto pdf = h;
+      pdf.data_ /= static_cast<double>(h.n_data_pts());
+      return pdf;
+    }
+
+    /**
+     * @brief Normalize and integrate a histogram.
+     *
+     * @details It simply performs partial summation of the bin counts and then divides by the total number of data
+     * points (including the lost points).
+     *
+     * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
+     * probabilities from pdf(histogram const &).
+     *
+     * @param h Histogram to be normalized and integrated.
+     * @return Normalized and integrated histogram.
+     */
+    inline friend histogram cdf(histogram const &h) {
+      auto cdf = h;
+      for (int i = 1; i < h.size(); ++i) cdf.data_[i] += cdf.data_[i - 1];
+      cdf.data_ /= static_cast<double>(h.n_data_pts());
+      return cdf;
+    }
 
     private:
     // Initialize the histogram by checking the interval and setting the bin size.
@@ -275,42 +300,6 @@ namespace triqs::stat {
     std::uint64_t n_lost_pts_{0};
     nda::vector<double> data_{};
   };
-
-  /**
-   * @brief Normalize a histogram.
-   *
-   * @details It simply divides each bin count by the total number of data points (including the lost points).
-   *
-   * @note This does not return the PDF of the underlying continuous distribution but rather the discrete probabilities
-   * that a data point falls into a certain bin.
-   *
-   * @param h Histogram to be normalized.
-   * @return Normalized histogram.
-   */
-  inline histogram pdf(histogram const &h) {
-    auto pdf = h;
-    pdf.data_ /= double(h.n_data_pts());
-    return pdf;
-  }
-
-  /**
-   * @brief Normalize and integrate a histogram.
-   *
-   * @details It simply performs partial summation of the bin counts and then divides by the total number of data
-   * points (including the lost points).
-   *
-   * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
-   * probabilities from triqs::stat::pdf.
-   *
-   * @param h Histogram to be normalized and integrated.
-   * @return Normalized and integrated histogram.
-   */
-  inline histogram cdf(histogram const &h) {
-    auto cdf = h;
-    for (int i = 1; i < h.size(); ++i) cdf.data_[i] += cdf.data_[i - 1];
-    cdf.data_ /= static_cast<double>(h.n_data_pts());
-    return cdf;
-  }
 
   /** @} */
 
