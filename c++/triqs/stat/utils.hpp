@@ -17,15 +17,16 @@
 
 /**
  * @file
- * @brief Provides various concepts and utilities for the @ref triqs-stat-utils.
+ * @brief Provides various utilities for the @ref triqs-stat-utils.
  */
 
 #pragma once
 
+#include "./concepts.hpp"
+
 #include <nda/nda.hpp>
 
-#include <complex>
-#include <ranges>
+#include <type_traits>
 #include <utility>
 
 namespace triqs::stat {
@@ -34,42 +35,6 @@ namespace triqs::stat {
    * @addtogroup triqs-stat-utils
    * @{
    */
-
-  /**
-   * @brief Concept to check if a type can be used with various @ref triqs-stat.
-   *
-   * @details Allowed types include
-   * - `double` or `std::complex<double>` scalars and
-   * - `nda::Array` types with `double` or `std::complex<double>` as their value type and with algebra 'A'.
-   *
-   * @tparam T Type to check.
-   */
-  template <typename T>
-  concept StatCompatible =
-     (nda::Scalar<T> || (nda::Array<T> && nda::get_algebra<T> == 'A')) && nda::is_any_of<nda::get_value_t<T>, double, std::complex<double>>;
-
-  /**
-   * @brief Concept to check if a type can be used with triqs::stat::lin_binning or triqs::stat::log_binning.
-   *
-   * @details Allowed types include triqs::stat::StatCompatible types that are either scalar or regular array types.
-   *
-   * @tparam T Type to check.
-   */
-  template <typename T>
-  concept AccCompatible = StatCompatible<T> && (nda::Scalar<T> || nda::is_regular_v<T>);
-
-  /**
-   * @brief Concept to check if a range can be used with various @ref triqs-stat.
-   *
-   * @details Allowed ranges are required to
-   * - have a triqs::stat::StatCompatible value type,
-   * - to be a `std::ranges::sized_range`, and
-   * - to be a `std::ranges::forward_range`.
-   *
-   * @tparam R Range to check.
-   */
-  template <typename R>
-  concept StatCompatibleRange = std::ranges::sized_range<R> && std::ranges::forward_range<R> && StatCompatible<std::ranges::range_value_t<R>>;
 
   /**
    * @brief Make a given object real and regular.

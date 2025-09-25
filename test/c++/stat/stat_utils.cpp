@@ -23,18 +23,6 @@
 #include <complex>
 #include <concepts>
 
-TEST(TRIQSStat, AccCompatible) {
-  using namespace triqs::stat;
-  static_assert(AccCompatible<double>);
-  static_assert(AccCompatible<nda::array<double, 2>>);
-  static_assert(AccCompatible<nda::array<std::complex<double>, 1>>);
-  static_assert(!AccCompatible<nda::vector<std::complex<double>>>);
-  static_assert(!AccCompatible<nda::matrix<std::complex<double>>>);
-  static_assert(!AccCompatible<int>);
-  static_assert(!AccCompatible<float>);
-  static_assert(!AccCompatible<nda::array<float, 1>>);
-}
-
 TEST(TRIQSStat, ZeroedSample) {
   using namespace triqs::stat;
   using arr_d_type = nda::array<double, 3>;

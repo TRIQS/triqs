@@ -381,9 +381,9 @@
  */
 
 /**
- * @defgroup triqs-stat-utils Utilities
+ * @defgroup triqs-stat-concepts Concepts
  * @ingroup triqs-stat
- * @brief Various concepts and utilities for the @ref triqs-stat.
+ * @brief Various concepts for the @ref triqs-stat.
  */
 
 /**
@@ -402,4 +402,10 @@
  * @defgroup triqs-stat-resampling Resampling techniques
  * @ingroup triqs-stat
  * @brief Resampling algorithms such as jackknife.
+ */
+
+/**
+ * @defgroup triqs-stat-utils Utilities
+ * @ingroup triqs-stat
+ * @brief Various utilities for the @ref triqs-stat.
  */
