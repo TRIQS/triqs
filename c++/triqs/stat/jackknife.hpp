@@ -17,6 +17,11 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a jackknife resampling class.
+ */
+
 #pragma once
 
 #include "./mean_error.hpp"
@@ -34,6 +39,11 @@
 #include <utility>
 
 namespace triqs::stat {
+
+  /**
+   * @addtogroup triqs-stat-resampling
+   * @{
+   */
 
   namespace detail {
 
@@ -75,7 +85,7 @@ namespace triqs::stat {
   /**
    * @brief Perform jackknife resampling.
    *
-   * @details Calculate the value and error of a general function \$ f \$ of the averages of sampled observables using
+   * @details Calculate the value and error of a general function \f$ f \f$ of the averages of sampled observables using
    * jackknife resampling.
    *
    * Let \f$ \left( X_1, X_2, \ldots \right) \f$ denote the different observables and let \f$ \left\{ x_j^{(i)} : i =
@@ -130,5 +140,7 @@ namespace triqs::stat {
   auto jackknife_mpi(mpi::communicator comm, F &&f, R &&rg, Rs &&...rgs) { // NOLINT (ranges need not be forwarded)
     return detail::jackknife_impl(comm, std::forward<F>(f), rg, rgs...);
   }
+
+  /** @} */
 
 } // namespace triqs::stat

@@ -78,7 +78,7 @@ meshes.
 
 ## Operators
 
-## Statistical analysis
+## Statical analysis tools
 
 ## Testing tools
 

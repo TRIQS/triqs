@@ -15,6 +15,11 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides functions to calculate the arithmetic mean and standard error of a range of values.
+ */
+
 #pragma once
 
 #include "./utils.hpp"
@@ -30,6 +35,11 @@
 #include <utility>
 
 namespace triqs::stat {
+
+  /**
+   * @addtogroup triqs-stat-utils
+   * @{
+   */
 
   /**
    * @brief Calculate the arithmetic mean or the simple sum of some range of values.
@@ -69,8 +79,9 @@ namespace triqs::stat {
    *   \overline{x} = \frac{1}{N} \sum_{i=1}^P N_i \overline{x}_i \; ,
    * \f]
    * where \f$ N_i \f$ is the number of samples on process \f$ i \f$, \f$ N \f$ is the total number of samples and \f$
-   * P \f$ is the number of MPI processes. The result will be available on all MPI processes and its type depends on the
-   * value type of the range.
+   * P \f$ is the number of MPI processes.
+   *
+   * The result will be available on all MPI processes and its type depends on the value type of the range.
    *
    * If the optional MPI communicator is not provided, it simply calls triqs::stat::mean.
    *
@@ -185,5 +196,7 @@ namespace triqs::stat {
     apply_error_tag<etag>(res_s, n_red);
     return std::make_pair(res_m, res_s);
   }
+
+  /** @} */
 
 } // namespace triqs::stat

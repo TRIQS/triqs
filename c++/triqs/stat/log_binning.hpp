@@ -17,6 +17,11 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a logarithmic binning accumulator.
+ */
+
 #pragma once
 
 #include "./utils.hpp"
@@ -36,6 +41,7 @@
 namespace triqs::stat {
 
   /**
+   * @ingroup triqs-stat-accs
    * @brief Logarithmic binning accumulator.
    *
    * @details Estimate the autocorrelation time of the samples by calculating the standard error of the data binned with
@@ -60,7 +66,7 @@ namespace triqs::stat {
    * Monte Carlo simulations. Provided the computational and memory costs are acceptable, it is advisable to always turn
    * on logarithmic binning to check that \f$ \tau \f$ was estimated correctly and acts as expected.
    *
-   * @tparam T triqs::stats::AccCompatible type.
+   * @tparam T triqs::stat::AccCompatible type.
    */
   template <AccCompatible T> class log_binning {
     public:
@@ -134,14 +140,14 @@ namespace triqs::stat {
     /**
      * @brief Accumulate a new sample.
      *
-     * @details Let \f$ x_i \f$ be the <sup>i</sup>th sample that is currently being added to the accumulator.
+     * @details Let \f$ x_i \f$ be the i<sup>th</sup> sample that is currently being added to the accumulator.
      *
      * For each bin \f$ n = 0, 1, \dots, N - 1 \f$, let us define the following quantities:
      * - the bin size \f$ b_n = 2^n \f$,
      * - the current number of effective samples \f$ k_n(i) = \lfloor i / b_n \rfloor \f$,
      * - the current number of bare samples \f$ l_n(i) = i - k_n(i) b_n \f$,
      * - the current sum of bare samples \f$ p_n(i) = \sum_{j=1}^{l_n(i)} x_{j + k_n(i) b_n} \f$,
-     * - the \f$ k_n(i) \f$ effective samples \f$ y_n[k_n(i)] = \frac{1}{b_n} \sum_{j=1}^b_n x_{j + k_n(i) b_n} \f$,
+     * - the \f$ k_n(i) \f$ effective samples \f$ y_n[k_n(i)] = \frac{1}{b_n} \sum_{j=1}^{b_n} x_{j + k_n(i) b_n} \f$,
      * - the current mean of the effective samples \f$ m_n[k_n(i)] = \frac{1}{k_n(i)} \sum_{j=1}^{k_n(i)} y_j \f$ and
      * - the current sum of the squared deviations from the mean \f$ q_n[k_n(i)] = \sum_{j=1}^{k_n(i)} \left\{ y_n(j) -
      * m_n[k_n(i)] \right\}^2 \f$.
@@ -150,7 +156,7 @@ namespace triqs::stat {
      * \f[
      *   p_n(i) =
      *   \begin{cases}
-     *   p_n(i-1) + x_i & \text{if } 1 < l_n(i) <= b_n \\
+     *   p_n(i-1) + x_i & \text{if } 1 < l_n(i) \leq b_n \\
      *   x_i & \text{if } l_n(i) = 1
      *   \end{cases}
      *   \; .
@@ -231,12 +237,12 @@ namespace triqs::stat {
     }
 
     /**
-     * @brief Get the overall mean as well as the estimated standard error, integrated autocorrelation time and
-     * effective number of samples for each bin.
+     * @brief Get the overall mean of the data as well as the estimated standard error, integrated autocorrelation time
+     * and effective number of samples for each bin.
      *
      * @details The standard error, \f$ s_n \f$, is defined as the square root of the variance
      * \f[
-     *   s_n^2 = \frac{1}{k_n (k_n - 1)} \sum_{i=1}^{k_n} (y_i - m_n)^2 = \frac{1}{k (k - 1)} q_n \; ,
+     *   s_n^2 = \frac{1}{k_n (k_n - 1)} \sum_{i=1}^{k_n} (y_i - m_n)^2 = \frac{q_n}{k_n (k_n - 1)} \; ,
      * \f]
      * where \f$ m_n \f$ and \f$ q_n \f$ is the mean and the sum of the squared deviations from the mean currently
      * stored in the accumulator for each bin \f$ n \f$. \f$ k_n \f$ is the number of effective samples in a bin and
@@ -253,19 +259,19 @@ namespace triqs::stat {
      * esimation.
      *
      * @param min_samples Minimum number of effective samples required (\f$ \geq 2 \f$).
-     * @return `std::tuple` containing the overall mean, the standard errors, the integrated autocorrelation times and
-     * the effective number of samples for each bin.
+     * @return `std::tuple` containing the overall mean as well as the standard errors, integrated autocorrelation times
+     * and effective number of samples for each bin.
      */
     [[nodiscard]] auto mean_errors_and_taus(int min_samples = 2) const {
       return calculate_mean_errors_and_taus(mean_bins_, var_bins_, effective_counts(), min_samples);
     }
 
     /**
-     * @brief Get the overall mean as well as the estimated standard error, integrated autocorrelation time and
-     * effective number of samples for each bin on multiple MPI processes.
+     * @brief Get the overall mean of the data as well as the estimated standard error, integrated autocorrelation time
+     * and effective number of samples for each bin on multiple MPI processes.
      *
      * @details The data in each bin is first reduced across all MPI processes using log_binning::mpi_all_reduce, before
-     * the overall mean, standard errors and integrated autocorrelation times are calculated for the reduced bins.
+     * the overall mean, standard error and integrated autocorrelation time are calculated for the reduced bins.
      *
      * Only bins with at least `min_samples` effective samples after the reduction are considered for error and
      * autcorrelation time esimation.
@@ -276,8 +282,8 @@ namespace triqs::stat {
      *
      * @param c MPI communicator.
      * @param min_samples Minimum number of effective samples required (\f$ \geq 2 \f$).
-     * @return `std::tuple` containing the overall mean, the standard errors, the integrated autocorrelation times and
-     * the effective number of samples for each reduced bin.
+     * @return `std::tuple` containing the overall mean as well as the standard errors, integrated autocorrelation times
+     * and effective number of samples for each reduced bin.
      */
     [[nodiscard]] auto mean_errors_and_taus(mpi::communicator c, int min_samples = 2) const {
       auto [mean_red, var_red, nsamples_red] = mpi_all_reduce(c);
@@ -332,14 +338,14 @@ namespace triqs::stat {
      * @param name Name of the subgroup to which the accumulator will be written.
      * @param acc Accumulator to be written.
      */
-    friend void h5_write(h5::group g, std::string const &name, log_binning const &l) {
+    friend void h5_write(h5::group g, std::string const &name, log_binning const &acc) {
       auto gr = g.create_group(name);
-      h5::write(gr, "max_n_bins", l.max_n_bins_);
-      h5::write(gr, "count", l.count_);
-      h5::write(gr, "mean_bins", l.mean_bins_);
-      h5::write(gr, "var_bins", l.var_bins_);
-      h5::write(gr, "bare_bins", l.bare_bins_);
-      h5::write(gr, "bare_counts", l.bare_counts_);
+      h5::write(gr, "max_n_bins", acc.max_n_bins_);
+      h5::write(gr, "count", acc.count_);
+      h5::write(gr, "mean_bins", acc.mean_bins_);
+      h5::write(gr, "var_bins", acc.var_bins_);
+      h5::write(gr, "bare_bins", acc.bare_bins_);
+      h5::write(gr, "bare_counts", acc.bare_counts_);
     }
 
     /**
@@ -349,14 +355,14 @@ namespace triqs::stat {
      * @param name Name of the subgroup from which the accumulator will be read.
      * @param acc Accumulator to be read into.
      */
-    friend void h5_read(h5::group g, std::string const &name, log_binning &l) {
+    friend void h5_read(h5::group g, std::string const &name, log_binning &acc) {
       auto gr = g.open_group(name);
-      h5::read(gr, "max_n_bins", l.max_n_bins_);
-      h5::read(gr, "count", l.count_);
-      h5::read(gr, "mean_bins", l.mean_bins_);
-      h5::read(gr, "var_bins", l.var_bins_);
-      h5::read(gr, "bare_bins", l.bare_bins_);
-      h5::read(gr, "bare_counts", l.bare_counts_);
+      h5::read(gr, "max_n_bins", acc.max_n_bins_);
+      h5::read(gr, "count", acc.count_);
+      h5::read(gr, "mean_bins", acc.mean_bins_);
+      h5::read(gr, "var_bins", acc.var_bins_);
+      h5::read(gr, "bare_bins", acc.bare_bins_);
+      h5::read(gr, "bare_counts", acc.bare_counts_);
     }
 
     /// Get the HDF5 format string.

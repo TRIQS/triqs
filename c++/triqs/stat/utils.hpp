@@ -15,6 +15,11 @@
 //
 // Authors: Philipp Dumitrescu, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides various concepts and utilities for the @ref triqs-stat-utils.
+ */
+
 #pragma once
 
 #include <nda/nda.hpp>
@@ -26,7 +31,12 @@
 namespace triqs::stat {
 
   /**
-   * @brief Concept to check if a type can be used with various triqs::stat tools.
+   * @addtogroup triqs-stat-utils
+   * @{
+   */
+
+  /**
+   * @brief Concept to check if a type can be used with various @ref triqs-stat.
    *
    * @details Allowed types include
    * - `double` or `std::complex<double>` scalars and
@@ -49,7 +59,7 @@ namespace triqs::stat {
   concept AccCompatible = StatCompatible<T> && (nda::Scalar<T> || nda::is_regular_v<T>);
 
   /**
-   * @brief Concept to check if a range can be used with various triqs::stat tools.
+   * @brief Concept to check if a range can be used with various @ref triqs-stat.
    *
    * @details Allowed ranges are required to
    * - have a triqs::stat::StatCompatible value type,
@@ -77,7 +87,7 @@ namespace triqs::stat {
   /// Type trait to get the type that would be returned by triqs::stat::make_real.
   template <typename T> using get_real_t = std::remove_cvref_t<decltype(make_real(std::declval<T>()))>;
 
-  /// Type trait to get the type that would be returned by nda::make_regular.
+  /// Type trait to get the type that would be returned by `nda::make_regular`.
   template <typename T> using get_regular_t = std::remove_cvref_t<decltype(nda::make_regular(std::declval<T>()))>;
 
   /**
@@ -99,36 +109,37 @@ namespace triqs::stat {
    * - variance of the data itself (`var_data`): \f$ s_{x}^2 = \frac{1}{N - 1} S^2 \f$,
    * - variance of the mean (`var_mean`): \f$ s_{\overline{x}}^2 = \frac{s_x^2}{N} \f$,
    * - standard error of the data (`err_data`): \f$ s_x = \sqrt{s_x^2} \f$,
-   * - standard error of the mean (`err_mean`): \f$ s_{\overline{x}} = \sqrt{s_{\overline{x}}^2} \f$,
-   * - jackknife error estimate (`jk_err`): \f$ s_x = \sqrt{\frac{N - 1}{N} S^2} \f$, or
+   * - standard error of the mean (`err_mean`): \f$ s_{\overline{x}} = \sqrt{s_{\overline{x}}^2} \f$ or
+   * - jackknife error estimate (`jk_err`): \f$ s_x = \sqrt{\frac{N - 1}{N} S^2} \f$.
    */
   enum class error_tag { sum, var_data, var_mean, err_data, err_mean, jk_err };
 
   /**
-   * @brief Given the mean and the number of samples, apply a transformation to get the result specified by the given
-   * mean tag.
+   * @brief Given the mean \f$ \overline{x} \f$ and the number of samples \f$ N \f$, apply a transformation to get the
+   * result specified by the given mean tag.
    *
    * @details See also triqs::stat::mean_tag.
    *
    * @tparam T triqs::stat::AccCompatible type.
    * @tparam mtag triqs::stat::mean_tag to indicate the transformation to apply.
-   * @param m Mean to be transformed.
-   * @param nsamples Number of samples.
+   * @param m Mean \f$ \overline{x} \f$.
+   * @param nsamples Number of samples \f$ n \f$.
    */
   template <mean_tag mtag, AccCompatible T> void apply_mean_tag(T &m, [[maybe_unused]] long nsamples) {
     if constexpr (mtag == mean_tag::sum) m *= nsamples;
   }
 
   /**
-   * @brief Given the sum of squared deviations from the mean and the number of samples, apply a transformation to get
-   * the result specified by the given error tag.
+   * @brief Given the sum of squared deviations from the mean, \f$ S^2 = \sum_{i=1}^N \left| x_i - \overline{x}
+   * \right|^2 \f$, and the number of samples \f$ N \f$, apply a transformation to get the result specified by the given
+   * error tag.
    *
    * @details See also triqs::stat::error_tag.
    *
    * @tparam T triqs::stat::AccCompatible type.
    * @tparam etag triqs::stat::error_tag to indicate the transformation to apply.
-   * @param sum_sq_devs Sum of squared deviations from the mean to be transformed.
-   * @param nsamples Number of samples.
+   * @param sum_sq_devs Sum of squared deviations from the mean \f$ S^2 \f$.
+   * @param nsamples Number of samples \f$ N \f$.
    */
   template <error_tag etag, AccCompatible T> void apply_error_tag(T &sum_sq_devs, [[maybe_unused]] long nsamples) {
     if constexpr (etag == error_tag::sum) return;
@@ -177,7 +188,7 @@ namespace triqs::stat {
    * where \f$ s^2_n \f$ is the variance of the mean with binning and \f$ s_0 \f$ is the variance of the mean without
    * binning.
    *
-   * @tparam T triqs::stats::StatCompatible type.
+   * @tparam T triqs::stat::StatCompatible type.
    * @param s_n Standard error of the mean with binning.
    * @param s_0 Standard error of the mean without binning.
    * @return Estimate of the integrated auto-correlation time.
@@ -185,5 +196,7 @@ namespace triqs::stat {
   template <StatCompatible T> auto tau_estimate_from_errors(T const &s_n, T const &s_0) {
     return nda::make_regular(0.5 * (abs_square(s_n) / abs_square(s_0) - 1.0));
   }
+
+  /** @} */
 
 } // namespace triqs::stat
