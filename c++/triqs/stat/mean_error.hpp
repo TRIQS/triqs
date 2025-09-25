@@ -38,9 +38,72 @@
 namespace triqs::stat {
 
   /**
-   * @addtogroup triqs-stat-utils
+   * @addtogroup triqs-stat-meanerr
    * @{
    */
+
+  /**
+   * @brief Tag to indicate what to calculate when computing the mean of a range of values.
+   *
+   * @details This tag is mostly used internally. Given a range of values \f$ \{x_i : i = 1, \ldots, N\} \f$, the tag
+   * determines if we either calculate the
+   * - a simple sum (`sum`): \f$ R_x = \sum_{i=1}^N x_i \f$ or the
+   * - arithmetic mean (`mean`): \f$ \overline{x} = \frac{1}{N} \sum_{i=1}^N x_i = \frac{1}{N} R_x \f$.
+   */
+  enum class mean_tag { sum, mean };
+
+  /**
+   * @brief Tag to indicate what to calculate when computing the error of a range of values.
+   *
+   * @details This tag is mostly used internally. Given a range of values \f$ \{x_i : i = 1, \ldots, N\} \f$, the tag
+   * determines if we either calculate the
+   * - sum of squared deviations from the mean (`sum`): \f$ S^2 = \sum_{i=1}^N \left| x_i - \overline{x} \right|^2 \f$,
+   * - variance of the data itself (`var_data`): \f$ s_{x}^2 = \frac{1}{N - 1} S^2 \f$,
+   * - variance of the mean (`var_mean`): \f$ s_{\overline{x}}^2 = \frac{s_x^2}{N} \f$,
+   * - standard error of the data (`err_data`): \f$ s_x = \sqrt{s_x^2} \f$,
+   * - standard error of the mean (`err_mean`): \f$ s_{\overline{x}} = \sqrt{s_{\overline{x}}^2} \f$ or
+   * - jackknife error estimate (`jk_err`): \f$ s_x = \sqrt{\frac{N - 1}{N} S^2} \f$.
+   */
+  enum class error_tag { sum, var_data, var_mean, err_data, err_mean, jk_err };
+
+  /**
+   * @brief Given the mean \f$ \overline{x} \f$ and the number of samples \f$ N \f$, apply a transformation to get the
+   * result specified by the given mean tag.
+   *
+   * @details See also triqs::stat::mean_tag.
+   *
+   * @tparam T triqs::stat::AccCompatible type.
+   * @tparam mtag triqs::stat::mean_tag to indicate the transformation to apply.
+   * @param m Mean \f$ \overline{x} \f$.
+   * @param nsamples Number of samples \f$ n \f$.
+   */
+  template <mean_tag mtag, AccCompatible T> void apply_mean_tag(T &m, [[maybe_unused]] long nsamples) {
+    if constexpr (mtag == mean_tag::sum) m *= nsamples;
+  }
+
+  /**
+   * @brief Given the sum of squared deviations from the mean, \f$ S^2 = \sum_{i=1}^N \left| x_i - \overline{x}
+   * \right|^2 \f$, and the number of samples \f$ N \f$, apply a transformation to get the result specified by the given
+   * error tag.
+   *
+   * @details See also triqs::stat::error_tag.
+   *
+   * @tparam T triqs::stat::AccCompatible type.
+   * @tparam etag triqs::stat::error_tag to indicate the transformation to apply.
+   * @param sum_sq_devs Sum of squared deviations from the mean \f$ S^2 \f$.
+   * @param nsamples Number of samples \f$ N \f$.
+   */
+  template <error_tag etag, AccCompatible T> void apply_error_tag(T &sum_sq_devs, [[maybe_unused]] long nsamples) {
+    if constexpr (etag == error_tag::sum) return;
+    auto const nd = static_cast<double>(nsamples);
+    if constexpr (etag == error_tag::err_data || etag == error_tag::var_data)
+      sum_sq_devs /= (nd - 1);
+    else if constexpr (etag == error_tag::err_mean || etag == error_tag::var_mean)
+      sum_sq_devs /= (nd * (nd - 1));
+    else if constexpr (etag == error_tag::jk_err)
+      sum_sq_devs *= (nd - 1) / nd;
+    if constexpr (etag == error_tag::err_data || etag == error_tag::err_mean || etag == error_tag::jk_err) sum_sq_devs = nda::sqrt(sum_sq_devs);
+  }
 
   /**
    * @brief Calculate the arithmetic mean or the simple sum of some range of values.
@@ -149,7 +212,7 @@ namespace triqs::stat {
    * @brief Calculate the arithmetic mean or the simple sum as well as a corresponding error estimate of some range of
    * values spread across multiple MPI processes.
    *
-   * @details If the optional MPI communicator is not provided, we first use triqs::stat::mean_and_err to calculate the
+   * @details If the optional MPI communicator is provided, we first use triqs::stat::mean_and_err to calculate the
    * mean and the sum of squared deviations from the mean on each process. Then the mean is reduced following the same
    * procedure as in triqs::stat::mean_mpi. With the reduced mean, we calculate
    * \f[
@@ -196,6 +259,25 @@ namespace triqs::stat {
     apply_mean_tag<mtag>(res_m, n_red);
     apply_error_tag<etag>(res_s, n_red);
     return std::make_pair(res_m, res_s);
+  }
+
+  /**
+   * @brief Compute an estimate for the integrated auto-correlation time.
+   *
+   * @details The integrated autocorrelation time is estimated as
+   * \f[
+   *   \tau = \frac{1}{2} \left( \frac{s^2_n}{s^2_0} - 1 \right)^2 \; ,
+   * \f]
+   * where \f$ s^2_n \f$ is the variance of the mean with binning and \f$ s_0 \f$ is the variance of the mean without
+   * binning.
+   *
+   * @tparam T triqs::stat::StatCompatible type.
+   * @param s_n Standard error of the mean with binning.
+   * @param s_0 Standard error of the mean without binning.
+   * @return Estimate of the integrated auto-correlation time.
+   */
+  template <StatCompatible T> auto tau_estimate_from_errors(T const &s_n, T const &s_0) {
+    return nda::make_regular(0.5 * (abs_square(s_n) / abs_square(s_0) - 1.0));
   }
 
   /** @} */

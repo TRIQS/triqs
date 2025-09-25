@@ -97,6 +97,15 @@ template <typename T> void test_mean_and_error(T const &tmp) {
   std::tie(m2, e2) = triqs::stat::mean_and_err<triqs::stat::error_tag::jk_err>(data_rank);
   check_array_or_scalar(m2, mean_rank);
   check_array_or_scalar(e2, err_rank * std::sqrt((nsamples - 1) * (nsamples - 1)));
+  std::tie(m2, e2) = triqs::stat::mean_and_err<triqs::stat::error_tag::var_data>(data_rank);
+  check_array_or_scalar(m2, mean_rank);
+  check_array_or_scalar(e2, triqs::stat::abs_square(err_rank) * nsamples);
+  std::tie(m2, e2) = triqs::stat::mean_and_err<triqs::stat::error_tag::var_mean>(data_rank);
+  check_array_or_scalar(m2, mean_rank);
+  check_array_or_scalar(e2, triqs::stat::abs_square(err_rank));
+  std::tie(m2, e2) = triqs::stat::mean_and_err<triqs::stat::error_tag::err_data>(data_rank);
+  check_array_or_scalar(m2, mean_rank);
+  check_array_or_scalar(e2, err_rank * std::sqrt(nsamples));
 
   // mean_and_err_mpi
   auto [m2_mpi, e2_mpi] = triqs::stat::mean_and_err_mpi(comm, data_rank);
@@ -108,6 +117,15 @@ template <typename T> void test_mean_and_error(T const &tmp) {
   std::tie(m2_mpi, e2_mpi) = triqs::stat::mean_and_err_mpi<triqs::stat::error_tag::jk_err>(comm, data_rank);
   check_array_or_scalar(m2_mpi, mean_all);
   check_array_or_scalar(e2_mpi, err_all * std::sqrt((mpi_samples - 1) * (mpi_samples - 1)));
+  std::tie(m2_mpi, e2_mpi) = triqs::stat::mean_and_err_mpi<triqs::stat::error_tag::var_data>(comm, data_rank);
+  check_array_or_scalar(m2_mpi, mean_all);
+  check_array_or_scalar(e2_mpi, triqs::stat::abs_square(err_all) * mpi_samples);
+  std::tie(m2_mpi, e2_mpi) = triqs::stat::mean_and_err_mpi<triqs::stat::error_tag::var_mean>(comm, data_rank);
+  check_array_or_scalar(m2_mpi, mean_all);
+  check_array_or_scalar(e2_mpi, triqs::stat::abs_square(err_all));
+  std::tie(m2_mpi, e2_mpi) = triqs::stat::mean_and_err_mpi<triqs::stat::error_tag::err_data>(comm, data_rank);
+  check_array_or_scalar(m2_mpi, mean_all);
+  check_array_or_scalar(e2_mpi, err_all * std::sqrt(mpi_samples));
 }
 
 TEST(TRIQSStat, MeanErrorWithDoubleScalar) { test_mean_and_error(0.0); }
@@ -144,6 +162,59 @@ TEST(TRIQSStat, MeanErrorWithTransformedViewsOfArrays) {
   auto scale_view = std::ranges::transform_view(data, [](auto const &x) { return x * 2; });
   auto m5         = mean(std::ranges::transform_view(scale_view, [](auto const &x) { return nda::make_regular(x + 1.0); }));
   check_array_or_scalar(m5, data_mean * 2.0 + 1.0);
+}
+
+TEST(TRIQSStat, TauEstimate) {
+  using namespace triqs::stat;
+
+  // test with scalar values
+  double s_n      = 2.0;
+  double s_0      = 1.0;
+  auto tau_scalar = tau_estimate_from_errors(s_n, s_0);
+  check_array_or_scalar(tau_scalar, 1.5); // 0.5 * (4 - 1) = 1.5
+
+  // test with complex scalar values
+  std::complex<double> s_n_complex{2.0, 1.0};
+  std::complex<double> s_0_complex{1.0, 0.5};
+  auto tau_complex = tau_estimate_from_errors(s_n_complex, s_0_complex);
+  // |s_n|^2 = 5, |s_0|^2 = 1.25, so tau = 0.5 * (5/1.25 - 1) = 0.5 * 3 = 1.5
+  check_array_or_scalar(tau_complex, 1.5);
+
+  // test with array values
+  nda::array<double, 1> s_n_arr{2.0, 3.0};
+  nda::array<double, 1> s_0_arr{1.0, 1.5};
+  auto tau_arr = tau_estimate_from_errors(s_n_arr, s_0_arr);
+  nda::array<double, 1> expected_tau{1.5, 1.5}; // 0.5 * (4-1) and 0.5 * (4-1)
+  check_array_or_scalar(tau_arr, expected_tau);
+}
+
+TEST(TRIQSStat, MeanErrorWithNullCommunicator) {
+  using namespace triqs::stat;
+
+  // test data
+  std::vector<double> data{1.0, 2.0, 3.0, 4.0, 5.0};
+
+  // test mean_mpi with null communicator (should behave like mean)
+  auto mean_null   = mean_mpi(std::nullopt, data);
+  auto mean_normal = mean(data);
+  check_array_or_scalar(mean_null, mean_normal);
+
+  // test mean_mpi with sum tag and null communicator
+  auto mean_sum_null   = mean_mpi<mean_tag::sum>(std::nullopt, data);
+  auto mean_sum_normal = mean<mean_tag::sum>(data);
+  check_array_or_scalar(mean_sum_null, mean_sum_normal);
+
+  // test mean_and_err_mpi with null communicator
+  auto [mean_err_null, err_null]     = mean_and_err_mpi(std::nullopt, data);
+  auto [mean_err_normal, err_normal] = mean_and_err(data);
+  check_array_or_scalar(mean_err_null, mean_err_normal);
+  check_array_or_scalar(err_null, err_normal);
+
+  // test mean_and_err_mpi with different tags and null communicator
+  auto [mean_sum_null2, err_sum_null]     = mean_and_err_mpi<error_tag::sum, mean_tag::sum>(std::nullopt, data);
+  auto [mean_sum_normal2, err_sum_normal] = mean_and_err<error_tag::sum, mean_tag::sum>(data);
+  check_array_or_scalar(mean_sum_null2, mean_sum_normal2);
+  check_array_or_scalar(err_sum_null, err_sum_normal);
 }
 
 MAKE_MAIN;
