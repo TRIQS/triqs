@@ -108,7 +108,7 @@ namespace triqs::stat {
     /// Type of the accumulated data.
     using value_t = T;
 
-    /// Real type corresponding to the accumulated data.
+    /// Real type of the accumulated data type.
     using real_t = get_real_t<T>;
 
     /// Type of the callback function that is called when bins are compressed.
@@ -393,6 +393,9 @@ namespace triqs::stat {
       return bins_gathered;
     }
 
+    /// Get the HDF5 format string.
+    [[nodiscard]] static std::string hdf5_format() { return "lin_binning"; }
+
     /**
      * @brief Write a triqs::stat::lin_binning accumulator to HDF5.
      *
@@ -402,6 +405,7 @@ namespace triqs::stat {
      */
     friend void h5_write(h5::group g, std::string const &name, lin_binning const &acc) {
       auto gr = g.create_group(name);
+      h5::write_hdf5_format(gr, acc);
       h5::write(gr, "max_n_bins", acc.max_n_bins_);
       h5::write(gr, "bin_capacity", acc.bin_capacity_);
       h5::write(gr, "last_bin_count", acc.last_bin_count_);
@@ -420,6 +424,7 @@ namespace triqs::stat {
      */
     friend void h5_read(h5::group g, std::string const &name, lin_binning &acc) {
       auto gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, acc);
       h5::read(gr, "max_n_bins", acc.max_n_bins_);
       h5::read(gr, "bin_capacity", acc.bin_capacity_);
       h5::read(gr, "last_bin_count", acc.last_bin_count_);
@@ -428,9 +433,6 @@ namespace triqs::stat {
       h5::read(gr, "mean", acc.mean_);
       h5::read(gr, "var", acc.var_);
     }
-
-    /// Get the HDF5 format string.
-    [[nodiscard]] static std::string hdf5_format() { return "lin_binning"; }
 
     private:
     // Get the mean, its standard error and an estimate for the integrated autocorrelation time.
