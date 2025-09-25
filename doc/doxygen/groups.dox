@@ -393,12 +393,6 @@
  */
 
 /**
- * @defgroup triqs-stat-hist Histogram
- * @ingroup triqs-stat
- * @brief Basic histogram class.
- */
-
-/**
  * @defgroup triqs-stat-meanerr Mean and error estimation
  * @ingroup triqs-stat
  * @brief Calculate mean and error estimates.

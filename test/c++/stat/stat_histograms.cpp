@@ -19,9 +19,12 @@
 
 #include <triqs/stat/histograms.hpp>
 #include <triqs/test_tools/arrays.hpp>
+#include <triqs/utility/exceptions.hpp>
 
 #include <nda/nda.hpp>
 
+#include <exception>
+#include <iostream>
 #include <vector>
 #include <utility>
 
@@ -98,6 +101,9 @@ TEST(TRIQSStat, HistogramBasics) {
   EXPECT_ARRAY_NEAR(exp_h3, h4.data());
   EXPECT_EQ(8, h4.n_data_pts());
   EXPECT_EQ(3, h4.n_lost_pts());
+
+  // print
+  std::cout << h1 << std::endl;
 }
 
 TEST(TRIQSStat, HistogramClear) {
@@ -161,6 +167,103 @@ TEST(TRIQSStat, HistogramCDF) {
   auto h1     = make_histogram1();
   auto cdf_h1 = cdf(h1);
   EXPECT_ARRAY_NEAR(exp_cdf, cdf_h1.data());
+}
+
+TEST(TRIQSStat, HistogramInvalidConstructors) {
+  // test invalid parameter combinations that should throw
+  EXPECT_THROW(triqs::stat::histogram(10, 5), std::exception);         // a > b
+  EXPECT_THROW(triqs::stat::histogram(5, 5, 0), triqs::runtime_error); // n_bins = 0
+  EXPECT_THROW(triqs::stat::histogram(0, 10, -1), std::exception);     // negative bins
+}
+
+TEST(TRIQSStat, HistogramOperators) {
+  // test equality operators
+  auto h1 = make_histogram1();
+  auto h2 = make_histogram1();
+  auto h3 = make_histogram2();
+
+  EXPECT_TRUE(h1 == h2);
+  EXPECT_FALSE(h1 != h2);
+  EXPECT_FALSE(h1 == h3);
+  EXPECT_TRUE(h1 != h3);
+
+  // test with different data
+  triqs::stat::histogram h4{0, 10};
+  triqs::stat::histogram h5{0, 10};
+  h4 << 1.0 << 2.0;
+  h5 << 1.0 << 3.0;
+  EXPECT_FALSE(h4 == h5);
+  EXPECT_TRUE(h4 != h5);
+}
+
+TEST(TRIQSStat, HistogramBoundaryValues) {
+  triqs::stat::histogram h{0, 10};
+
+  // test exact boundary values
+  h << 0.0 << 10.0;
+  EXPECT_EQ(2, h.n_data_pts());
+  EXPECT_EQ(0, h.n_lost_pts());
+
+  // test values just outside boundaries
+  h << -0.01 << 10.01;
+  EXPECT_EQ(2, h.n_data_pts()); // still 2 valid points
+  EXPECT_EQ(2, h.n_lost_pts()); // 2 points outside bounds
+
+  // test values just inside boundaries
+  h.clear();
+  h << 1e-10 << 10 - 1e-10;
+  EXPECT_EQ(2, h.n_data_pts());
+  EXPECT_EQ(0, h.n_lost_pts());
+}
+
+TEST(TRIQSStat, HistogramEmptyOperations) {
+  triqs::stat::histogram h{0, 10};
+
+  // test operations on empty histogram
+  EXPECT_EQ(0, h.n_data_pts());
+  EXPECT_EQ(0, h.n_lost_pts());
+}
+
+TEST(TRIQSStat, HistogramAdditionErrors) {
+  auto h1 = make_histogram1();      // {0, 10, 11 bins}
+  auto h2 = make_histogram2();      // {0, 10, 21 bins}
+  triqs::stat::histogram h3{0, 20}; // different domain
+
+  // test addition with different number of bins
+  EXPECT_THROW(h1 + h2, triqs::runtime_error);
+
+  // test addition with different domains
+  EXPECT_THROW(h1 + h3, triqs::runtime_error);
+
+  // test valid addition (already tested in HistogramSum, but verify no throw)
+  auto h4 = make_histogram3(); // same domain and bins as h1
+  EXPECT_NO_THROW(h1 + h4);
+}
+
+TEST(TRIQSStat, HistogramConsistencyAcrossConstructors) {
+  // test that histograms created with different constructors but same parameters behave consistently
+  triqs::stat::histogram h1{0, 10};         // int constructor
+  triqs::stat::histogram h2{0.0, 10.0, 11}; // double constructor with same effective bins
+
+  std::vector<double> test_data{1.0, 2.0, 3.0, 5.0, 8.0};
+
+  // add same data to both
+  for (auto val : test_data) {
+    h1 << val;
+    h2 << val;
+  }
+
+  // results should be identical
+  EXPECT_EQ(h1.n_data_pts(), h2.n_data_pts());
+  EXPECT_EQ(h1.n_lost_pts(), h2.n_lost_pts());
+  EXPECT_EQ(h1.size(), h2.size());
+  EXPECT_ARRAY_NEAR(h1.data(), h2.data());
+
+  // limits should be the same
+  EXPECT_EQ(h1.limits(), h2.limits());
+
+  // grid points should be the same
+  for (int i = 0; i < h1.size(); ++i) { EXPECT_DOUBLE_EQ(h1.mesh_point(i), h2.mesh_point(i)); }
 }
 
 MAKE_MAIN;

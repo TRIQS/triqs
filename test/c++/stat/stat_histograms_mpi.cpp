@@ -40,13 +40,9 @@ TEST(TRIQSStat, HistogramMPIBroadcast) {
   // create and broadcast histogram
   auto h = world.rank() ? triqs::stat::histogram{0, 20} : make_histogram();
   mpi::broadcast(h, world, 0);
-  EXPECT_EQ(11, h.size());
-  EXPECT_EQ(0, h.mesh_point(0));
-  EXPECT_EQ(1, h.mesh_point(1));
-  EXPECT_EQ(std::make_pair(.0, 10.), h.limits());
-  EXPECT_ARRAY_NEAR(exp_h, h.data());
-  EXPECT_EQ(8, h.n_data_pts());
-  EXPECT_EQ(3, h.n_lost_pts());
+
+  // verify broadcasted histogram
+  EXPECT_EQ(h, make_histogram());
 }
 
 TEST(TRIQSStat, HistogramMPIReduce) {
@@ -76,6 +72,30 @@ TEST(TRIQSStat, HistogramMPIReduce) {
   EXPECT_ARRAY_NEAR(exp_h, h3.data());
   EXPECT_EQ(8 * world.size(), h3.n_data_pts());
   EXPECT_EQ(3 * world.size(), h3.n_lost_pts());
+}
+
+TEST(TRIQSStat, HistogramMPIRankSpecificData) {
+  mpi::communicator world;
+
+  // create histogram with rank-specific data
+  triqs::stat::histogram h{0, 10, 11};
+
+  // add rank-specific data points
+  for (int i = 0; i < world.rank() + 1; ++i) {
+    h << (world.rank() + 1.0); // each rank adds its own value
+  }
+
+  // each rank should have different amounts of data
+  EXPECT_EQ(world.rank() + 1, h.n_data_pts());
+  EXPECT_EQ(0, h.n_lost_pts());
+
+  // reduce to get total across all ranks
+  auto h_reduced = mpi::all_reduce(h, world);
+
+  // total data points should be sum of (1 + 2 + ... + world.size())
+  long expected_total = (world.size() * (world.size() + 1)) / 2;
+  EXPECT_EQ(expected_total, h_reduced.n_data_pts());
+  EXPECT_EQ(0, h_reduced.n_lost_pts());
 }
 
 MAKE_MAIN;
