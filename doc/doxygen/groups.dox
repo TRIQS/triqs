@@ -399,6 +399,12 @@
  */
 
 /**
+ * @defgroup triqs-stat-meanerr Mean and error estimation
+ * @ingroup triqs-stat
+ * @brief Calculate mean and error estimates.
+ */
+
+/**
  * @defgroup triqs-stat-resampling Resampling techniques
  * @ingroup triqs-stat
  * @brief Resampling algorithms such as jackknife.

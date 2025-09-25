@@ -156,6 +156,7 @@
         <tab type="usergroup" url="@ref triqs-stat-hist" title="Histogram">
           <tab type="user" url="@ref triqs::stat::histogram" title="stat::histogram"/>
         </tab>
+        <tab type="user" url="@ref triqs-stat-meanerr" title="Mean and error estimation"/>
         <tab type="user" url="@ref triqs-stat-resampling" title="Resampling techniques"/>
         <tab type="user" url="@ref triqs-stat-utils" title="Utilities"/>
       </tab>
