@@ -17,6 +17,11 @@
 //
 // Authors: Philipp Dumitrescu, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a linear binning accumulator.
+ */
+
 #pragma once
 
 #include "./mean_error.hpp"
@@ -37,6 +42,7 @@
 namespace triqs::stat {
 
   /**
+   * @ingroup triqs-stat-accs
    * @brief Compress a given number of adjacent bins.
    *
    * @details It simply averages the data of adjacent bins and returns a vector containing those averages. The
@@ -45,7 +51,7 @@ namespace triqs::stat {
    * It returns a copy of the given bins if the compression factor is less than 2 and it returns an empty vector if the
    * number of bins is smaller than the compression factor.
    *
-   * @tparam T triqs::stats::AccCompatible type.
+   * @tparam T triqs::stat::AccCompatible type.
    * @param bins `std::vector` containing the bins to be compressed.
    * @param fac Compression factor.
    * @return Compressed bins.
@@ -68,6 +74,7 @@ namespace triqs::stat {
   }
 
   /**
+   * @ingroup triqs-stat-accs
    * @brief Linear binning accumulator.
    *
    * @details Accumulate consecutive data points into either a fixed number of bins with a dynamic bin capacity or a
@@ -84,16 +91,16 @@ namespace triqs::stat {
    * parameter is set to -1 and is ignored.
    * - `max_n_bins > 1`: The data is accumulated into a fixed number of bins with initial capacity `bin_capacity`. Once,
    * all bins are full, i.e. they have accumulated `bin_capacity` data points, the bins are compressed by a factor of
-   * 2. This means that the data of two adjacent bins is averaged and stored in the first `max_n_bins / 2` bins and that
-   * the bin capacity is increased by a factor of 2. Any left over data is put into the bin with index `max_n_bins / 2`.
-   * Before the compression is done, an optional callback function is called (usually to report autocorrelation times).
+   * \f$ 2 \f$. This means that the data of two adjacent bins is averaged and stored in the first `max_n_bins / 2` bins
+   * and that the bin capacity is doubled. Any left over data is put into the bin with index `max_n_bins / 2`. Before
+   * the compression is done, an optional callback function is called (usually to report autocorrelation times).
    * - `max_n_bins < 0`: The data is accumulated into an unbounded number of bins with capacity `bin_capacity`. Once, a
    * bin is full, a new bin is created and appended.
    *
    * In addition to the linear bins, the accumulator further keeps track of the overall mean and the sum of the squared
    * deviations from the mean. This is used to provide an estimate for the integrated autocorrelation time.
    *
-   * @tparam T triqs::stats::AccCompatible type.
+   * @tparam T triqs::stat::AccCompatible type.
    */
   template <AccCompatible T> class lin_binning {
     public:
@@ -179,14 +186,14 @@ namespace triqs::stat {
     /**
      * @brief Accumulate a new sample.
      *
-     * @details Let \f$ x_i \f$ be the <sup>i</sup>th sample that is currently being added to the accumulator.
+     * @details Let \f$ x_i \f$ be the i<sup>th</sup> sample that is currently being added to the accumulator.
      *
      * The data point is accumulated into the currently active bin. In case that the active bin is full and the maximum
      * number of bins is reached, the bins are compressed by merging two adjacent bins into one (see
      * lin_binning::compress). Otherwise, a new bin with the given data point is added.
      *
-     * Let \$ m_n(k_n) \f$ be the stored mean of the data in the currently active bin \f$ n \f$ and let \f$ k_n \f$ be
-     * the number of data points in that bin. The mean in the bin is then updated as
+     * Let \f$ m_n(k_n) \f$ be the stored mean of the data in the currently active bin \f$ n \f$ and let \f$ k_n \f$
+     * be the number of data points in that bin. The mean in the bin is then updated as
      * \f[
      *   m_n(k_n) = m_n(k_n - 1) + \frac{x_i - m_n(k_n - 1)}{k_n} \; .
      * \f]
@@ -346,7 +353,8 @@ namespace triqs::stat {
      * to have the same capacity on all processes and only those bins are then gathered.
      *
      * @param c MPI communicator.
-     * @return `std::vector' containing the full (and compressed) bins from all processes.
+     * @param same_capacity Compress bins to have the same capacity on all processes and only gather those bins.
+     * @return `std::vector` containing the full (and compressed) bins from all processes.
      */
     [[nodiscard]] auto mpi_all_gather(mpi::communicator c, bool same_capacity = true) const {
       // only consider full bins
@@ -387,7 +395,7 @@ namespace triqs::stat {
     /**
      * @brief Write a triqs::stat::lin_binning accumulator to HDF5.
      *
-     * @param g h5::group in which the subgroup is created.
+     * @param g `h5::group` in which the subgroup is created.
      * @param name Name of the subgroup to which the accumulator will be written.
      * @param acc Accumulator to be written.
      */
@@ -405,7 +413,7 @@ namespace triqs::stat {
     /**
      * @brief Read a triqs::stat::lin_binning accumulator from HDF5.
      *
-     * @param g h5::group containing the subgroup.
+     * @param g `h5::group` containing the subgroup.
      * @param name Name of the subgroup from which the accumulator will be read.
      * @param acc Accumulator to be read into.
      */

@@ -143,7 +143,20 @@
       </tab>
       <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
       </tab>
-      <tab type="usergroup" url="@ref triqs-stat" title="Statistical tools">
+      <tab type="usergroup" url="@ref triqs-stat" title="Statistical analysis tools">
+        <tab type="usergroup" url="@ref triqs-stat-accs" title="Accumulators">
+          <tab type="user" url="@ref triqs::stat::lin_binning" title="stat::lin_binning"/>
+          <tab type="user" url="@ref triqs::stat::log_binning" title="stat::log_binning"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-stat-hist" title="Histogram">
+          <tab type="user" url="@ref triqs::stat::histogram" title="stat::histogram"/>
+        </tab>
+        <tab type="user" url="@ref triqs-stat-resampling" title="Resampling techniques"/>
+        <tab type="usergroup" url="@ref triqs-stat-utils" title="Utilities">
+          <tab type="user" url="@ref triqs::stat::StatCompatible" title="stat::StatCompatible"/>
+          <tab type="user" url="@ref triqs::stat::AccCompatible" title="stat::AccCompatible"/>
+          <tab type="user" url="@ref triqs::stat::StatCompatibleRange" title="stat::StatCompatibleRange"/>
+        </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>

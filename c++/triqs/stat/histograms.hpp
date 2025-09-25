@@ -18,6 +18,11 @@
 //
 // Authors: Philipp Dumitrescu, Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a histogram class.
+ */
+
 #pragma once
 
 #include "../arrays.hpp"
@@ -34,6 +39,11 @@
 #include <utility>
 
 namespace triqs::stat {
+
+  /**
+   * @addtogroup triqs-stat-hist
+   * @{
+   */
 
   /**
    * @brief Class representing a histogram on a given interval.
@@ -88,7 +98,7 @@ namespace triqs::stat {
     /**
      * @brief Add a data point to the histogram.
      *
-     * @details The data point \f$ x \f$ falls into the bin \f$ n = \lfloor \frac{x - a}{h} + 0.5 \rfloor.
+     * @details The data point \f$ x \f$ falls into the bin \f$ n = \lfloor \frac{x - a}{h} + 0.5 \rfloor \f$.
      *
      * If \f$ x \notin [a, b] \f$, the data point is not added to the histogram but instead the number of lost points is
      * increased.
@@ -301,5 +311,7 @@ namespace triqs::stat {
     cdf.data_ /= static_cast<double>(h.n_data_pts());
     return cdf;
   }
+
+  /** @} */
 
 } // namespace triqs::stat

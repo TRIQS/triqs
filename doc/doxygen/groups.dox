@@ -374,3 +374,32 @@
  * @details This module provides histograms, accumulators, and other statistical tools
  * for analyzing and post-processing Monte Carlo simulation data.
  */
+
+/**
+ * @defgroup triqs-stat Statistical analysis tools
+ * @brief Tools to perform statistical analysis on data.
+ */
+
+/**
+ * @defgroup triqs-stat-utils Utilities
+ * @ingroup triqs-stat
+ * @brief Various concepts and utilities for the @ref triqs-stat.
+ */
+
+/**
+ * @defgroup triqs-stat-accs Accumulators
+ * @ingroup triqs-stat
+ * @brief Linear and logarithmic binning accumulators.
+ */
+
+/**
+ * @defgroup triqs-stat-hist Histogram
+ * @ingroup triqs-stat
+ * @brief Basic histogram class.
+ */
+
+/**
+ * @defgroup triqs-stat-resampling Resampling techniques
+ * @ingroup triqs-stat
+ * @brief Resampling algorithms such as jackknife.
+ */

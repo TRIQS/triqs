@@ -17,6 +17,11 @@
 //
 // Authors: Philipp D, Igor Krivenko, Nils Wentzell
 
+/**
+ * @file
+ * @brief Implementation details for triqs/stat/histograms.hpp.
+ */
+
 #include "./histograms.hpp"
 #include "../utility/exceptions.hpp"
 
