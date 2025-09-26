@@ -74,7 +74,7 @@ namespace triqs::stat {
     /// Type of the accumulated data.
     using value_t = T;
 
-    /// Real type corresponding to the accumulated data.
+    /// Real type of the accumulated data type.
     using real_t = get_real_t<T>;
 
     /// Default constructor creates a turned off accumulator.
@@ -246,8 +246,8 @@ namespace triqs::stat {
      *   s_n^2 = \frac{1}{k_n (k_n - 1)} \sum_{i=1}^{k_n} (y_i - m_n)^2 = \frac{q_n}{k_n (k_n - 1)} \; ,
      * \f]
      * where \f$ m_n \f$ and \f$ q_n \f$ is the mean and the sum of the squared deviations from the mean currently
-     * stored in the accumulator for each bin \f$ n \f$. \f$ k_n \f$ is the number of effective samples in a bin and
-     * \f$ y_i \f$ is an effective sample.
+     * stored in the accumulator for each bin \f$ n \f$, respectively. \f$ k_n \f$ is the number of effective samples in 
+     * a bin and \f$ y_i \f$ is an effective sample.
      *
      * The integrated autocorrelation time, \f$ \tau_n \f$, can then be estimated as
      * \f[
@@ -332,6 +332,9 @@ namespace triqs::stat {
       return std::make_tuple(mean_red, var_red, nsamples_red);
     }
 
+    /// Get the HDF5 format string.
+    [[nodiscard]] static std::string hdf5_format() { return "log_binning"; }
+
     /**
      * @brief Write a triqs::stat::log_binning accumulator to HDF5.
      *
@@ -341,6 +344,7 @@ namespace triqs::stat {
      */
     friend void h5_write(h5::group g, std::string const &name, log_binning const &acc) {
       auto gr = g.create_group(name);
+      h5::write_hdf5_format(gr, acc);
       h5::write(gr, "max_n_bins", acc.max_n_bins_);
       h5::write(gr, "count", acc.count_);
       h5::write(gr, "mean_bins", acc.mean_bins_);
@@ -358,6 +362,7 @@ namespace triqs::stat {
      */
     friend void h5_read(h5::group g, std::string const &name, log_binning &acc) {
       auto gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, acc);
       h5::read(gr, "max_n_bins", acc.max_n_bins_);
       h5::read(gr, "count", acc.count_);
       h5::read(gr, "mean_bins", acc.mean_bins_);
@@ -365,9 +370,6 @@ namespace triqs::stat {
       h5::read(gr, "bare_bins", acc.bare_bins_);
       h5::read(gr, "bare_counts", acc.bare_counts_);
     }
-
-    /// Get the HDF5 format string.
-    [[nodiscard]] static std::string hdf5_format() { return "log_binning"; }
 
     private:
     // Get the overall mean as well as the standard error, integrated autocorrelation time and effective number of
