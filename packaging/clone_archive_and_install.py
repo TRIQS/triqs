@@ -26,7 +26,7 @@ core_repos = {
     },
     "fmt": {
         "url": "https://github.com/fmtlib/fmt",
-        "tag": "11.0.2"
+        "tag": "12.0.0"
     },
     "Cpp2Py": {
         "url": "https://github.com/TRIQS/cpp2py",
