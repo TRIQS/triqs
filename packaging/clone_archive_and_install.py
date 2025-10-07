@@ -27,6 +27,26 @@ extern_repos = {
     "fmt": {
         "url": "https://github.com/fmtlib/fmt",
         "tag": "12.0.0"
+    },
+        "cpm": {
+        "url": "https://github.com/cpm-cmake/CPM.cmake",
+        "tag": "v0.40.5"
+    },
+    "xtl": {
+        "url": "https://github.com/xtensor-stack/xtl",
+        "tag": "0.7.7",
+    },
+    "xsimd": {
+        "url": "https://github.com/xtensor-stack/xsimd",
+        "tag": "13.2.0",
+    },
+    "findfftw": {
+        "url": "https://github.com/egpbos/findFFTW",
+        "tag": "master",
+    },
+    "finufft": {
+        "url": "https://github.com/flatironinstitute/finufft",
+        "tag": "v2.4.0",
     }
 }
 
@@ -71,6 +91,10 @@ app_repos = {
     "ctseg": {
         "url": "https://github.com/TRIQS/ctseg",
         "deps": ["GTest", "Cpp2Py"]
+    },
+    "ctint": {
+        "url": "https://github.com/TRIQS/ctint",
+        "deps": ["GTest", "Cpp2Py", "cpm", "xtl", "xsimd", "findfftw", "finufft"],
     },
     "dft_tools": {
         "url": "https://github.com/TRIQS/dft_tools",
@@ -268,6 +292,24 @@ def main():
             build_dir = Path(args.dir + "/" + name + ".build")
             install_prefix = Path(args.dir + "/install" if args.install_prefix is None else args.install_prefix)
             cmake_install_prefix = "-DCMAKE_INSTALL_PREFIX=" + str(install_prefix.absolute())
+
+            # handle ctint and its dependencies
+            if name == "ctint":
+                # set up CPM source cache directory
+                cpm_version = extern_repos["cpm"]["tag"].lstrip('v')
+                cpm_src_cache = Path(args.dir + "/cpm.cache")
+
+                # copy CPM to the source cache
+                tmp_path = Path(cpm_src_cache / "cpm")
+                tmp_path.mkdir(parents=True, exist_ok=True)
+                shutil.copy(Path(args.dir + "/cpm.src/cmake/CPM.cmake"), tmp_path / f"CPM_{cpm_version}.cmake")
+
+                # modify cmake arguments for ctint
+                ctint_cmake_args = (f"-DCPM_SOURCE_CACHE={str(cpm_src_cache.resolve())} "
+                                    f"-DCPM_xtl_SOURCE={str(Path(args.dir + '/xtl.src').absolute())} "
+                                    f"-DCPM_xsimd_SOURCE={str(Path(args.dir + '/xsimd.src').absolute())} "
+                                    f"-DCPM_findfftw_SOURCE={str(Path(args.dir + '/findfftw.src').absolute())}")
+                repo_info["cmake_args"] = repo_info.get("cmake_args", "") + (" " if repo_info.get("cmake_args") else "") + ctint_cmake_args
 
             # source triqs shell variables for apps if not already in the environment
             if name in app_repos and "TRIQS_ROOT" not in os.environ:
