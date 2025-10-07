@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 # prepare repository information for the TRIQS core libraries (including triqs itself) and the applications based on
-# triqs (the user can add/remove repositories as needed)
+# triqs (the user can add/remove repositories as needed) as well as some external dependencies
 #
 # the following keys are supported:
 # - url: URL of the repository for cloning
@@ -19,7 +19,7 @@ from pathlib import Path
 # - deps: list of dependencies that should be cloned and soft-linked to the deps folder
 # - cmake_args: additional arguments passed to the cmake command
 # - no_tests: do not run tests after building
-core_repos = {
+extern_repos = {
     "GTest": {
         "url": "https://github.com/google/googletest",
         "tag": "main"
@@ -27,7 +27,10 @@ core_repos = {
     "fmt": {
         "url": "https://github.com/fmtlib/fmt",
         "tag": "12.0.0"
-    },
+    }
+}
+
+core_repos = {
     "Cpp2Py": {
         "url": "https://github.com/TRIQS/cpp2py",
         "tag": "main"
@@ -93,8 +96,9 @@ app_repos = {
 }
 
 
-# merge the core_repos and app_repos dictionaries
-all_repos = core_repos | app_repos
+# merge the extern_repos, core_repos and app_repos dictionaries
+triqs_repos = core_repos | app_repos
+all_repos = extern_repos | triqs_repos
 
 
 def clone_repo(name, clone_dir, clone_args="--depth 1 -c advice.detachedHead=false -q"):
@@ -230,9 +234,9 @@ def main():
 
             # loop over remaining repos
             for name in args.install:
-                # check if the repo is in the repo information
-                if name not in all_repos:
-                    raise ValueError(f"Repository {name} not found in the repository information.")
+                # check if the repo is in the triqs repo information
+                if name not in triqs_repos:
+                    raise ValueError(f"Repository {name} not found in the TRIQS repository information: {', '.join(triqs_repos.keys())}")
 
                 # filter out dependencies that will be installed by another repo with higher priority
                 for dep_name in all_repos[name].get("deps", []):
