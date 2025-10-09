@@ -9,8 +9,6 @@ using namespace triqs::lattice;
 
 TEST(tb_tests, simple_construct) { // NOLINT
 
-  // simplest case is to pass no placeholders, just doubles
-
   // set up tb_hopping object
   std::vector<std::array<long, 3>> displ_vec = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
   double t                                   = 1.0;
@@ -52,9 +50,11 @@ TEST(tb_tests, test_evaluators) { // NOLINT
   auto tb_H                                  = tb_hamiltonian(displ_vec, overlap_mat_vec);
 
   auto Hk_ab = tb_H(0.33, 0.5, 0.33);
+
   // matrix of two kpoints -- we will check against the second one
   nda::matrix<double> kpoint = {{+0.15, +0.338028169014, -0.4}, {0.33, 0.5, 0.33}};
   auto Hk_ab_gemm            = tb_H(kpoint);
+
   EXPECT_COMPLEX_NEAR(Hk_ab(0, 0), Hk_ab_gemm(1, 0, 0));
 }
 
@@ -106,6 +106,29 @@ TEST(tb_tests, tb_adaptive_test) { // NOLINT
 
   dcomplex answer = {-0.22338077801907302, -0.34352111773477229};
   EXPECT_COMPLEX_NEAR(result_adapt(0, 0), answer, 1.e-5);
+}
+
+TEST(tb_tests, h5_read_write) {
+
+  std::vector<std::array<long, 3>> displ_vec = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
+  double t                                   = 1.0;
+  auto overlap_mat_vec                       = std::vector(displ_vec.size(), nda::array<dcomplex, 2>(nda::diag(nda::vector<dcomplex>{t, t})));
+  auto tb                                    = tb_hamiltonian(displ_vec, overlap_mat_vec);
+
+  // write
+  {
+    auto file = h5::file{"test_tb.h5", 'w'};
+    auto grp  = h5::group{file};
+    h5_write(grp, "hamiltonian", tb);
+  }
+
+  // read
+  {
+    auto file  = h5::file{"test_tb.h5", 'r'};
+    auto grp   = h5::group{file};
+    auto tb_in = h5::h5_read<triqs::tb_hamiltonian>(grp, "hamiltonian");
+    EXPECT_EQ(tb, tb_in);
+  }
 }
 
 MPI_TEST_MAIN

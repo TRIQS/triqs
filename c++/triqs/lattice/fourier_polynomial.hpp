@@ -178,7 +178,7 @@ namespace triqs {
       requires(std::ranges::contiguous_range<V>)
     nda::array<dcomplex, 3> operator()(V const &k_iterator) const {
       /// simply convert this into an nda structure and pass it to nda::array template function
-      // FIXME : thus should be an nda function : vector generator -> matrix
+      // FIXME : this should be an nda function : vector generator -> matrix
       auto kvecs = nda::matrix<double>(k_iterator.size(), kdim);
       for (auto [ik, k] : itertools::enumerate(k_iterator)) {
         for (auto idim : nda::range(kdim)) { kvecs(ik, idim) = k[idim]; }

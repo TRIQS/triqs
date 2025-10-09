@@ -22,8 +22,6 @@
 
 #include <triqs/lattice/tight_binding.hpp>
 
-#include <vector>
-
 using namespace triqs::gfs;
 using namespace triqs::lattice;
 using namespace nda;

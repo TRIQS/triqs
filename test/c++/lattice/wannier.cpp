@@ -27,7 +27,6 @@ TEST(wannier_loader_test, svo_tb) { // NOLINT
   EXPECT_NEAR(13.5010, Ek_band(0, 2), 1e-4);
 
   // TODO extend test to check velocities and berry connection contribution
-  // TODO check calls on vectors of kpts
 }
 
 MAKE_MAIN;

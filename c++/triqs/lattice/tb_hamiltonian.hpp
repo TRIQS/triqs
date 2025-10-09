@@ -5,6 +5,7 @@ c++/triqs/lattice/tb_hamiltonian.hpp#pragma once
 #include <itertools/itertools.hpp>
 #include "fourier_polynomial.hpp"
 #include "superlattice.hpp"
+#include <nda/h5.hpp>
 
 // FIXME : put in triqs lattice
 // FP as well.
@@ -25,12 +26,15 @@ namespace triqs {
     [[nodiscard]] auto const &hoppings() const { return this->get_coefficients(); }
 
     /** 
-     * Provide an iterator of tuples of $$(R, t_{R, ab})$$
+     * @brief Provide an iterator of tuples of $$(R, t_{R, ab})$$
      * @return elements : tuple of (R, t_{R,ba}) pairs
      */
     [[nodiscard]] auto elements() const { return itertools::zip(this->get_R_list(), this->get_coefficients()); }
 
-    ///
+    /** 
+     * @brief Provide number of orbitals (the dimension of the stored Hamiltonian)
+     * @return n_orbitals 
+     */
     [[nodiscard]] long n_orbitals() const { return this->get_coefficients()[0].extent(0); }
 
     //------------------- band basis energy functions ---------------------------
@@ -52,18 +56,46 @@ namespace triqs {
 >>>>>>> bdea3b96 (improve bz integration options + docstrings for bz int, gloc)
     nda::array<double, 2> eigenvalues(nda::array_view<double, 2> k) const;
 
-    // REFACTOR -- reformat this and also move it to cpp file
-    // simpler : R vectors, dimension, ... not the hopping
-    friend std::ostream &operator<<(std::ostream &out, tb_hamiltonian const &tb) {
-      out << "tb_hamiltonian [";
-      for (auto const &[R, C] : tb.elements()) out << "\n   " << R << " : " << C;
-      return out << " ]";
+    // ------------------- Comparison -------------------
+
+    bool operator==(tb_hamiltonian const &tb) const {
+      return this->get_coefficients() == tb.get_coefficients() && this->get_R_list() == tb.get_R_list();
     }
 
-    // ------------------- HDF5 Read / Write -------------------
+    bool operator!=(tb_hamiltonian const &tb) const { return !(operator==(tb)); }
 
-    // TODO would we like to update what these are called in the HDF5?
+    // ------------------- Read / Write -------------------------------
+
+    friend std::ostream &operator<<(std::ostream &out, tb_hamiltonian const &tb) {
+      out << "tb_hamiltonian consisting of " << tb.get_R_list().size() << " lattice components (R)";
+      out << " with hopping dimension (n_orbitals) " << tb.n_orbitals() << "x" << tb.n_orbitals();
+      // if it's a small one, we can print it:
+      if (tb.get_R_list().size() < 12) {
+        out << "\n[";
+        for (auto const &[R, C] : tb.elements()) out << "\n   " << R << " : " << C;
+        out << " ]";
+      }
+      return out;
+    }
+
     [[nodiscard]] inline static std::string hdf5_format() { return "tb_hamiltonian"; }
+
+    /// Function that writes the tb_Hamiltonian to hdf5 file
+    friend void h5_write(h5::group fg, std::string subgroup_name, tb_hamiltonian const &tb) {
+      auto grp = fg.create_group(subgroup_name);
+      write_hdf5_format(grp, tb);
+      h5_write(grp, "lattice_vectors_R", tb.get_R_list());
+      h5_write(grp, "hoppings", tb.hoppings());
+    }
+
+    // Function to read tight_binding object from hdf5 file
+    CPP2PY_IGNORE
+    static tb_hamiltonian h5_read_construct(h5::group g, std::string subgroup_name) {
+      auto grp      = g.open_group(subgroup_name);
+      auto R        = h5::h5_read<std::vector<std::array<long, 3>>>(grp, "lattice_vectors_R");
+      auto hoppings = h5::h5_read<std::vector<nda::array<dcomplex, 2>>>(grp, "hoppings");
+      return tb_hamiltonian(R, hoppings);
+    }
   };
 
   // Superlattice folding user function
