@@ -50,10 +50,6 @@ namespace triqs {
       * @param k k-points as an array of [nk, 3] in units of the reciprocal lattice vectors
       * @return energies as a matrix of shape [nk, nbands] of band-basis energies as real doubles
       */
-<<<<<<< HEAD
-=======
-    // DOC FIXME : MORE PRECISE
->>>>>>> bdea3b96 (improve bz integration options + docstrings for bz int, gloc)
     nda::array<double, 2> eigenvalues(nda::array_view<double, 2> k) const;
 
     // ------------------- Comparison -------------------

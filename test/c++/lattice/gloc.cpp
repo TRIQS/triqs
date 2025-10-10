@@ -4,9 +4,10 @@
 #include <triqs/lattice/bz_integrators.hpp>
 #include <triqs/mesh/imfreq.hpp>
 #include <triqs/lattice/gloc.hpp>
-#include <triqs/lattice/tb_hamiltonian.hpp>
+#include <triqs/tight_binding/tb_hamiltonian.hpp>
 
 using namespace triqs;
+using namespace tb;
 
 TEST(gloc_tests, gloc_single_orbital) { // NOLINT
 

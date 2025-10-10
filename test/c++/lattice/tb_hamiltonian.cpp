@@ -1,11 +1,12 @@
 #include <nda/gtest_tools.hpp>
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/lattice/tb_hamiltonian.hpp>
+#include <triqs/tight_binding/tb_hamiltonian.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
 #include <triqs/utility/integration/adaptive.hpp>
 
 using namespace triqs;
 using namespace triqs::lattice;
+using namespace triqs::tb;
 
 TEST(tb_tests, simple_construct) { // NOLINT
 
@@ -126,7 +127,7 @@ TEST(tb_tests, h5_read_write) {
   {
     auto file  = h5::file{"test_tb.h5", 'r'};
     auto grp   = h5::group{file};
-    auto tb_in = h5::h5_read<triqs::tb_hamiltonian>(grp, "hamiltonian");
+    auto tb_in = h5::h5_read<tb_hamiltonian>(grp, "hamiltonian");
     EXPECT_EQ(tb, tb_in);
   }
 }

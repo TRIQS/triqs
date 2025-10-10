@@ -1,6 +1,6 @@
 
-#include <triqs/lattice/superlattice.hpp>
-#include <triqs/lattice/tb_hamiltonian.hpp>
+#include <triqs/tight_binding/superlattice.hpp>
+#include <triqs/tight_binding/tb_hamiltonian.hpp>
 #include <triqs/lattice/gloc.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <fmt/core.h>
@@ -12,8 +12,7 @@ template <typename T, int Rank, typename Layout, char Algebra, typename Allocato
 struct fmt::formatter<nda::basic_array<T, Rank, Layout, Algebra, Allocator>> : fmt::ostream_formatter {};
 
 using namespace triqs::lattice;
-
-//static constexpr auto r_all = nda::range::all;
+using namespace triqs::tb;
 
 TEST(SuperLatticeTest, 2x2SquareLattice) {
 
@@ -135,7 +134,7 @@ auto make_random_self(int M) {
   auto const &mesh = g.mesh();
   auto A           = random_constant();
   auto B           = random_constant();
-  for (auto &&[n, iw] : itertools::enumerate(mesh)) { g.data()(n, r_all, r_all) = A + B / (iw + 10); }
+  for (auto &&[n, iw] : itertools::enumerate(mesh)) { g.data()(n, nda::range::all, nda::range::all) = A + B / (iw + 10); }
   return g;
 }
 
@@ -153,14 +152,14 @@ TEST(SuperLatticeTest, 2x2SquareLattice3d_with_gloc) {
   auto Sigma1 = make_random_self(tb.n_orbitals());
   auto M      = tb_AF.n_orbitals();
   auto Sigma2 = gfs::gf<mesh::dlr_imfreq>{Sigma1.mesh(), {M, M}};
-  for (auto i : nda::range(M)) Sigma2.data()(r_all, i, i) = Sigma1.data()(r_all, 0, 0);
+  for (auto i : nda::range(M)) Sigma2.data()(nda::range::all, i, i) = Sigma1.data()(nda::range::all, 0, 0);
 
   auto opt1 = lattice::bz_int_options{.k_grid = {10, 10, 5}, .k_grid_max = {10, 10, 5}, .run_adaptive = false};
   auto opt2 = lattice::bz_int_options{.k_grid = {5, 5, 5}, .k_grid_max = {5, 5, 5}, .run_adaptive = false};
   auto g1   = gloc(tb, 0.0, Sigma1, opt1);
   auto g2   = gloc(tb_AF, 0.0, Sigma2, opt2);
 
-  for (auto i : nda::range(M)) EXPECT_ARRAY_NEAR(g1.data()(r_all, 0, 0), (g2.data()(r_all, i, i)), 1e-12);
+  for (auto i : nda::range(M)) EXPECT_ARRAY_NEAR(g1.data()(nda::range::all, 0, 0), (g2.data()(nda::range::all, i, i)), 1e-12);
 }
 
 MAKE_MAIN;

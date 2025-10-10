@@ -6,7 +6,7 @@
 #include <map>
 
 constexpr auto _all_ = nda::range::all;
-namespace triqs::lattice {
+namespace triqs::tb {
 
   //superlattice::superlattice(nda::array_view<long, 2> sl_units, std::vector<std::array<long, 3>> cluster_pts)
   superlattice::superlattice(nda::array<long, 2> sl_units, nda::array<long, 2> cluster_pts) : units(sl_units), cluster_points(cluster_pts) {
@@ -90,4 +90,4 @@ namespace triqs::lattice {
   template fourier_polynomial<2, 2> fold(superlattice const &sl, fourier_polynomial<2, 2> const &fp);
   template fourier_polynomial<2, 1> fold(superlattice const &sl, fourier_polynomial<2, 1> const &fp);
 
-} // namespace triqs::lattice
+} // namespace triqs::tb

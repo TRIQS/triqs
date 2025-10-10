@@ -1,8 +1,7 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/lattice/wannier_loader.hpp>
-//#include <triqs/lattice/tb_hamiltonian.hpp>
+#include <triqs/tight_binding/wannier_loader.hpp>
 
-using namespace triqs;
+using namespace triqs::tb;
 
 TEST(wannier_loader_test, svo_tb) { // NOLINT
 

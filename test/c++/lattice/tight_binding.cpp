@@ -20,10 +20,11 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/test_tools/gfs.hpp>
 
-#include <triqs/lattice/tight_binding.hpp>
+#include <triqs/tight_binding/tight_binding.hpp>
 
 using namespace triqs::gfs;
 using namespace triqs::lattice;
+using namespace triqs::tb;
 using namespace nda;
 
 TEST(tight_binding, h5_read_write) {

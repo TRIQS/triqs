@@ -10,7 +10,7 @@
 // MOVE THIS
 #define C2PY_IGNORE __attribute__((annotate("c2py_ignore")))
 
-namespace triqs {
+namespace triqs::tb {
 
   // TODO should the R vectors be double?
 
@@ -210,7 +210,8 @@ namespace triqs {
       return res;
     }
   };
-} // namespace triqs
+} // namespace triqs::tb
 
 // this allows the deep partial evaluation mechanism to speed up calculations
-template <int coeff_dim, int kdim> inline constexpr bool nda::clef::supports_partial_eval_of_calls<triqs::fourier_polynomial<coeff_dim, kdim>> = true;
+template <int coeff_dim, int kdim>
+inline constexpr bool nda::clef::supports_partial_eval_of_calls<triqs::tb::fourier_polynomial<coeff_dim, kdim>> = true;

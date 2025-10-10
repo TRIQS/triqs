@@ -14,8 +14,6 @@ namespace triqs::lattice {
 
   using namespace triqs::gfs;
 
-  static constexpr auto r_all = nda::range::all;
-
   // The placeholders authorized in the expressions integrated by bz_integrator
   namespace placeholders {
 
@@ -34,12 +32,12 @@ namespace triqs::lattice {
   /**
   * @brief Options for the case of integrate_bz function, with both adaptive + ptr integration
   *
-  * @details The integration function we are running for Gloc currently makes an attempt to converge the integration at 
-  * each frequency using fixed k-grid integration with increasing grid density, starting from `k_grid` 
-  * and increasing in increments of `delta_k_grid` until either a given point is converged with PTR or we hit `k_grid_max`. 
-  * After that, the remaining unconverged frequency points are run with adaptive 
-  * integration until they reach a certain absolute tolerance. 
-  * 
+  * @details The integration function we are running for Gloc currently makes an attempt to converge the integration at
+  * each frequency using fixed k-grid integration with increasing grid density, starting from `k_grid`
+  * and increasing in increments of `delta_k_grid` until either a given point is converged with PTR or we hit `k_grid_max`.
+  * After that, the remaining unconverged frequency points are run with adaptive
+  * integration until they reach a certain absolute tolerance.
+  *
   */
   struct bz_int_options {
     double tolerance                 = 1.e-3;        /// absolute tolerance of the integrated quantity
@@ -73,7 +71,7 @@ namespace triqs::lattice {
     *
     * @tparam T
     * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
-    * @param omega_values list of frequency values as complex double, double, or mesh point type 
+    * @param omega_values list of frequency values as complex double, double, or mesh point type
     * @param k_grid the grid on which to evaluate the expression using PTR
     * @param comm MPI communicator
     * @return The value of the integral expression, fully evaluated on kx, ky, kz and omega
@@ -102,7 +100,7 @@ namespace triqs::lattice {
     // REFACTOR: why does performing partial eval within different loops not help?
     // perform the PTR, integrating
 #pragma omp parallel for collapse(3) reduction(array_add_c_3 : result) default(none)                                                                 \
-   shared(k_grid, omega_values, f_kw, ph::kx, ph::ky, ph::kz, ph::w, r_all, mpi_chunk_max)
+   shared(k_grid, omega_values, f_kw, ph::kx, ph::ky, ph::kz, ph::w, mpi_chunk_max)
     for (auto ikx : mpi_chunk_max(0)) {
       //auto f_wyz = eval(f_kw, ph::kx = kx);
       for (auto iky : mpi_chunk_max(1)) {
@@ -112,7 +110,7 @@ namespace triqs::lattice {
           double ky = iky / double(k_grid[1]);
           double kz = ikz / double(k_grid[2]);
           auto f_w  = eval(f_kw, ph::kx = kx, ph::ky = ky, ph::kz = kz);
-          for (auto &&[n, omega] : itertools::enumerate(omega_values)) result(n, r_all, r_all) += eval(f_w, ph::w = omega);
+          for (auto &&[n, omega] : itertools::enumerate(omega_values)) result(n, nda::range::all, nda::range::all) += eval(f_w, ph::w = omega);
         }
       }
     }
@@ -128,7 +126,7 @@ namespace triqs::lattice {
   /**
     * @brief Compute the integral of f_kw on k using PTR on the domain from 0,1, utilizing both MPI and OMP parallelism
     *
-    * @tparam T 
+    * @tparam T
     * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
     * @param w_mesh mesh of frequency points on which to perform the integration
     * @param k_grid the grid on which to evaluate the expression using PTR
@@ -268,8 +266,8 @@ namespace triqs::lattice {
 
         // check which ones are converged after this run
         for (auto &&[n, w] : itertools::enumerate(mesh_points)) {
-          ptr_converged[w.data_index()] = (max_element(abs(ptr_result(n, r_all, r_all) - g_out[w])) < opt.tolerance);
-          g_out[w]                      = ptr_result(n, r_all, r_all);
+          ptr_converged[w.data_index()] = (max_element(abs(ptr_result(n, nda::range::all, nda::range::all) - g_out[w])) < opt.tolerance);
+          g_out[w]                      = ptr_result(n, nda::range::all, nda::range::all);
         }
         // update list of unconverged frequencies to work on
         // REFACTOR it's much nicer to use the below line if we later can

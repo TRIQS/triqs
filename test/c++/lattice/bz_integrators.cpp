@@ -2,7 +2,7 @@
 #include <nda/matrix_functions.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
-#include <triqs/lattice/tb_hamiltonian.hpp>
+#include <triqs/tight_binding/tb_hamiltonian.hpp>
 #include <nda/nda.hpp>
 
 double eps(double kx, double ky, double kz) { return std::cos(kx) + std::cos(ky) + std::cos(kz); }
@@ -76,7 +76,7 @@ namespace triqs::lattice {
     std::vector<std::array<long, 3>> displ_vec = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
     double t                                   = 1.0;
     auto overlap_mat_vec                       = std::vector(displ_vec.size(), nda::array<dcomplex, 2>(nda::diag(nda::vector<dcomplex>{t, t})));
-    auto tb                                    = tb_hamiltonian(displ_vec, overlap_mat_vec);
+    auto tb                                    = tb::tb_hamiltonian(displ_vec, overlap_mat_vec);
     auto I                                     = nda::eye<dcomplex>(norb);
 
     // create expression

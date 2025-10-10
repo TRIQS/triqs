@@ -2,7 +2,7 @@
 #include "fourier_polynomial.hpp"
 #include <nda/nda.hpp>
 
-namespace triqs::lattice {
+namespace triqs::tb {
 
   namespace stdr = std::ranges;
 
@@ -59,4 +59,4 @@ namespace triqs::lattice {
    */
   template <int kdim> fourier_polynomial<2, kdim> fold(superlattice const &sl, fourier_polynomial<2, kdim> const &fp);
 
-} // namespace triqs::lattice
+} // namespace triqs::tb
