@@ -2,7 +2,7 @@
 #include <nda/matrix_functions.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
-#include <triqs/tight_binding/tb_hamiltonian.hpp>
+#include <triqs/tb/tb_hamiltonian.hpp>
 #include <nda/nda.hpp>
 
 double eps(double kx, double ky, double kz) { return std::cos(kx) + std::cos(ky) + std::cos(kz); }

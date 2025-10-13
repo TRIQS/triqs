@@ -1,6 +1,6 @@
 #include <nda/gtest_tools.hpp>
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/tight_binding/tb_hamiltonian.hpp>
+#include <triqs/tb/tb_hamiltonian.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
 #include <triqs/utility/integration/adaptive.hpp>
 

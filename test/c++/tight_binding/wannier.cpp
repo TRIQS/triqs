@@ -1,5 +1,5 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/tight_binding/wannier_loader.hpp>
+#include <triqs/tb/wannier_loader.hpp>
 
 using namespace triqs::tb;
 

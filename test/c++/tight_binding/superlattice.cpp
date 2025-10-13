@@ -1,6 +1,6 @@
 
-#include <triqs/tight_binding/superlattice.hpp>
-#include <triqs/tight_binding/tb_hamiltonian.hpp>
+#include <triqs/tb/superlattice.hpp>
+#include <triqs/tb/tb_hamiltonian.hpp>
 #include <triqs/lattice/gloc.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <fmt/core.h>

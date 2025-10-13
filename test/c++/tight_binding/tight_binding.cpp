@@ -20,7 +20,7 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/test_tools/gfs.hpp>
 
-#include <triqs/tight_binding/tight_binding.hpp>
+#include <triqs/tb/tight_binding.hpp>
 
 using namespace triqs::gfs;
 using namespace triqs::lattice;

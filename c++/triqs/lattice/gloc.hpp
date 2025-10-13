@@ -5,7 +5,7 @@
 #include <itertools/omp_chunk.hpp>
 #include <triqs/gfs/gf/targets.hpp>
 #include <triqs/lattice/brillouin_zone.hpp>
-#include <triqs/tight_binding/tb_hamiltonian.hpp>
+#include <triqs/tb/tb_hamiltonian.hpp>
 #include <triqs/lattice/bz_integrators.hpp>
 
 namespace triqs {
