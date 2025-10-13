@@ -39,7 +39,20 @@ namespace triqs {
       //------------------- band basis energy functions ---------------------------
 
       /**
-      * @brief Function to take a list of kpoints and return a matrix of of energies in orbital space.
+      * @brief Function to take a list of kpoints and return a matrix of of energies in the diagonalized (band) space.
+      *
+      * $$ H_{k,mn} = U_{\mathbf{k},ma}^\dagger (\sum_j t(\mathbf{R}_j)_{ab} * exp(2 \pi i * \mathbf{k} * \mathbf{R}_j) U_{\mathbf{k},nb} $$
+      *
+      * with lattice vectors {R_j} and associated overlap (hopping) matrices {t(\mathbf{R}_j)_{ab}}
+      * k needs to be represented in units of the reciprocal lattice vectors (from 0 to 1)
+      *
+      * @param k k-points as an array of [nk, 3] in units of the reciprocal lattice vectors
+      * @return energies as a matrix of shape [nk, nbands] of band-basis energies as real doubles
+      */
+      nda::array<double, 2> eigenvalues(nda::array_view<double, 2> k) const;
+
+      /**
+      * @brief Function to take a list of kpoints and return a tuple containing the band energies and the eigenvectors of H(k)
       *
       * $$ H_{k,mn} = U_{\mathbf{k},ma}^\dagger (\sum_j t(\mathbf{R}_j)_{ab} * exp(2 \pi i * \mathbf{k} * \mathbf{R}_j) U_{\mathbf{k},nb} $$
       *
@@ -47,9 +60,9 @@ namespace triqs {
       * k needs to be represented in units of the reciprocal lattice vectors (from 0 to 1)
       *
       * @param k k-points as an array of [nk, 3] in units of the reciprocal lattice vectors
-      * @return energies as a matrix of shape [nk, nbands] of band-basis energies as real doubles
+      * @return tuple containing band-basis energies as a matrix of real doubles with shape [nk, nbands] and complex eigenvectors as a matrix of shape [nk,nBand,nOrbitals]
       */
-      nda::array<double, 2> eigenvalues(nda::array_view<double, 2> k) const;
+      std::pair<nda::array<double, 2>, nda::array<dcomplex, 3>> eigenvectors(nda::array_view<double, 2> k) const;
 
       // ------------------- Comparison -------------------
       bool operator==(tb_hamiltonian const &tb) const {

@@ -25,6 +25,16 @@ TEST(wannier_loader_test, svo_tb) { // NOLINT
   EXPECT_NEAR(13.2095, Ek_band(0, 1), 1e-4);
   EXPECT_NEAR(13.5010, Ek_band(0, 2), 1e-4);
 
+  // check that the eigenvectors of the Hamiltonian properly diagonalize it
+  auto [ens, eigvecs]         = tb.eigenvectors(kpoint);
+  nda::matrix<dcomplex> Uk    = eigvecs(0, nda::range::all, nda::range::all); // pull out the second kpt for testing
+  nda::matrix<dcomplex> Hk_ab = tb(kpoint)(0, nda::range::all, nda::range::all);
+  auto Hk_diag                = nda::dagger(Uk) * Hk_ab * Uk;
+
+  EXPECT_COMPLEX_NEAR(Hk_diag(0, 0), Ek_band(0, 0), 1e-4);
+  EXPECT_COMPLEX_NEAR(Hk_diag(1, 1), Ek_band(0, 1), 1e-4);
+  EXPECT_COMPLEX_NEAR(Hk_diag(2, 2), Ek_band(0, 2), 1e-4);
+
   // TODO extend test to check velocities and berry connection contribution
 }
 
