@@ -19,7 +19,8 @@
 
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
-#include <nda/linalg/det_and_inverse.hpp>
+#include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <iostream>
 #include "./old_test_tool.hpp"
 

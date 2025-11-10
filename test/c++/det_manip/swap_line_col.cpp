@@ -19,7 +19,6 @@
 #include <triqs/det_manip/det_manip.hpp>
 #include <random>
 #include <iostream>
-#include <nda/linalg/det_and_inverse.hpp>
 #include "./old_test_tool.hpp"
 #include <triqs/test_tools/arrays.hpp>
 

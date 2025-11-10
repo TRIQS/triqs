@@ -20,7 +20,6 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <nda/nda.hpp>
 #include <triqs/det_manip/det_manip.hpp>
-#include <nda/linalg/det_and_inverse.hpp>
 namespace arrays = nda;
 using triqs::det_manip::det_manip;
 

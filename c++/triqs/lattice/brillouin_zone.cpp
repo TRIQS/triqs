@@ -19,7 +19,8 @@
 
 #include "./brillouin_zone.hpp"
 #include <nda/blas.hpp>
-#include <nda/linalg/det_and_inverse.hpp>
+#include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <nda/linalg/cross_product.hpp>
 namespace triqs {
   namespace lattice {

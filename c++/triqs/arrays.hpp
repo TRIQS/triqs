@@ -31,7 +31,8 @@
 #include <nda/mpi.hpp>
 #include <nda/blas.hpp>
 #include <nda/lapack.hpp>
-#include <nda/linalg/det_and_inverse.hpp>
+#include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <nda/clef/adapters/math.hpp>
 #include <nda/clef/sum.hpp>
 

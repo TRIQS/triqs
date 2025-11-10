@@ -27,7 +27,8 @@
 #include <cmath>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/callable_traits.hpp>
-#include <nda/linalg/det_and_inverse.hpp>
+#include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 
 namespace triqs::det_manip {
 

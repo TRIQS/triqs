@@ -20,8 +20,8 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/det_manip/det_manip.hpp>
 #include <random>
-#include <nda/linalg/det_and_inverse.hpp>
-//#include <nda/asserts.hpp>
+#include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <iostream>
 #include "./old_test_tool.hpp"
 
