@@ -37,6 +37,13 @@ std::vector<int> block_sizes() const {
   return res;
 }
 
+/// Access gf struct -- will fail if the target_shape is non-square because block_sizes() will fail
+gf_struct_t gf_struct() const {
+  gf_struct_t result;
+  for (auto [blk_name, size] : itertools::zip(block_names(), block_sizes())) result.emplace_back(blk_name, size);
+  return result;
+}
+
 int size1() const
   requires(Arity == 2)
 {
