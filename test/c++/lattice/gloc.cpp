@@ -22,7 +22,6 @@ TEST(gloc_tests, gloc_single_orbital) { // NOLINT
   auto iw_mesh = mesh::imfreq{beta, gfs::Fermion, n_iw, mesh::imfreq::option::positive_frequencies_only};
 
   // make a zero self energy
-  // TODO what is the right way to use this block2gf make function?
   //auto Sigma = gfs::gf<mesh::imfreq>{iw_mesh, {norb, norb}};
 
   // call the integration function
