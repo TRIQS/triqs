@@ -15,12 +15,12 @@ namespace triqs {
     /**
    * @brief Compute the non-interacting local Green's function on a given mesh from a tight binding Hamiltonian
    *
-   * @tparam Mesh 
-   * @param mesh 
+   * @tparam Mesh
+   * @param mesh
    * @param tb_hopping A tight binding Hamiltonian
    * @param mu Chemical potential
    * @param Sigma The self-energy
-   * @param opt Container for options related integration of the BZ   
+   * @param opt Container for options related integration of the BZ
    * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */
     template <typename Mesh>
@@ -39,7 +39,7 @@ namespace triqs {
    * @param tb_hopping A tight binding Hamiltonian
    * @param mu Chemical potential
    * @param Sigma The self-energy
-   * @param opt Container for options related integration of the BZ   
+   * @param opt Container for options related integration of the BZ
    * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */
     template <typename Mesh>
@@ -66,7 +66,7 @@ namespace triqs {
    * @param mu Chemical potential
    * @param Sigma_dynamic The dynamic part of the embedded self-energy.
    * @param Sigma_static The static part of the embedded self-energy.
-   * @param opt Container for options related integration of the BZ   
+   * @param opt Container for options related integration of the BZ
    * @return gloc, the local Green's function on frequency mesh of the provided self-energy
    */
     /*   template <typename Mesh>
