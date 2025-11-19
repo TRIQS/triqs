@@ -28,7 +28,7 @@ namespace triqs {
 
       auto I       = nda::eye<dcomplex>(H_k.n_orbitals());
       namespace ph = triqs::lattice::placeholders;
-      auto expr_kw = inverse((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz));
+      auto expr_kw = inv((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz));
       // call the integration for this block
       return triqs::lattice::integrate_bz(expr_kw, w_mesh, opt);
     }
@@ -53,7 +53,7 @@ namespace triqs {
                                  + std::to_string(n_orbitals));
       }
       namespace ph = triqs::lattice::placeholders;
-      auto expr_kw = inverse((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz) - nda::clef::make_expr(std::move(Sigma))[ph::w]);
+      auto expr_kw = inv((ph::w + mu) * I - nda::clef::make_expr(H_k)(ph::kx, ph::ky, ph::kz) - nda::clef::make_expr(std::move(Sigma))[ph::w]);
       // call the integration for this block
       return triqs::lattice::integrate_bz(expr_kw, Sigma.mesh(), opt);
     }

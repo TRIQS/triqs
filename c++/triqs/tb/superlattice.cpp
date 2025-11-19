@@ -16,9 +16,9 @@ namespace triqs::tb {
     TRIQS_ASSERT(cluster_pts.extent(1) == dim());
     transfo_SL_L = nda::matrix<double>{transpose(units)};
     // Ensure non-empty cluster points
-    if (abs(nda::determinant(transfo_SL_L)) != n_cluster_sites())
+    if (abs(nda::linalg::det(transfo_SL_L)) != n_cluster_sites())
       throw std::runtime_error{"Mismatch between det(superlattice vectors) and number of cluster points!"};
-    transfo_SL_L = nda::inverse(transfo_SL_L);
+    transfo_SL_L = nda::linalg::inv(transfo_SL_L);
   }
 
   // ------------------------------------------------

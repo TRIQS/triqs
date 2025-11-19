@@ -9,7 +9,7 @@ namespace triqs {
       auto energies = nda::matrix<double>(nk, n_orbitals());
       // use blas call for FT on a block of kpoints
       auto Ek_orbital = nda::array<dcomplex, 3>{this->operator()(k)};
-      for (auto ik : nda::range(nk)) { energies(ik, r_all) = nda::linalg::eigenvalues(Ek_orbital(ik, nda::ellipsis())); }
+      for (auto ik : nda::range(nk)) { energies(ik, r_all) = nda::linalg::eigvalsh(Ek_orbital(ik, nda::ellipsis())); }
       return energies;
     }
 
@@ -21,7 +21,7 @@ namespace triqs {
       // use blas call for FT on a block of kpoints
       auto Ek_orbital = nda::array<dcomplex, 3>{this->operator()(k)};
       for (auto ik : nda::range(nk)) {
-        auto [en, eigvec]              = nda::linalg::eigenelements(Ek_orbital(ik, nda::ellipsis()));
+        auto [en, eigvec]              = nda::linalg::eigh(Ek_orbital(ik, nda::ellipsis()));
         energies(ik, r_all)            = en;
         eigenvectors(ik, r_all, r_all) = eigvec;
       }
