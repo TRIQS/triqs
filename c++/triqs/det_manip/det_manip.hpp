@@ -89,7 +89,7 @@ namespace triqs::det_manip {
            ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
       } else {
         auto Rk = range(k);
-        return nda::determinant(ksi(Rk, Rk));
+        return nda::linalg::det(ksi(Rk, Rk));
       };
     }
   };
@@ -319,8 +319,8 @@ namespace triqs::det_manip {
         for (long j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
       }
       range RN(N);
-      det             = nda::determinant(mat_inv(RN, RN));
-      mat_inv(RN, RN) = inverse(mat_inv(RN, RN));
+      det             = nda::linalg::det(mat_inv(RN, RN));
+      mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
     }
 
     det_manip(det_manip const &) = default;
@@ -695,7 +695,7 @@ namespace triqs::det_manip {
       // treat empty matrix separately
       if (N == 0) {
         N               = k;
-        mat_inv(Rk, Rk) = inverse(wk.ksi(Rk, Rk));
+        mat_inv(Rk, Rk) = nda::linalg::inv(wk.ksi(Rk, Rk));
         for (long l = 0; l < k; ++l) {
           row_num[wk.i[l]] = l;
           col_num[wk.j[l]] = l;
@@ -722,7 +722,7 @@ namespace triqs::det_manip {
       }
       RN = range(N);
 
-      wk.ksi(Rk, Rk)               = inverse(wk.ksi(Rk, Rk));
+      wk.ksi(Rk, Rk)               = nda::linalg::inv(wk.ksi(Rk, Rk));
       mat_inv(RN, range(N - k, N)) = 0;
       mat_inv(range(N - k, N), RN) = 0;
       //mat_inv(RN,RN) += wk.MB(RN,Rk) * (wk.ksi(Rk, Rk) * wk.MC(Rk,RN)); // OPTIMIZE BELOW
@@ -901,7 +901,7 @@ namespace triqs::det_manip {
 
       // M <- a - d^-1 b c with BLAS
       range Rl(N, N + k), Rk(k);
-      wk.ksi(Rk, Rk) = inverse(mat_inv(Rl, Rl));
+      wk.ksi(Rk, Rk) = nda::linalg::inv(mat_inv(Rl, Rl));
 
       // write explicitely the second product on ksi for speed ?
       //mat_inv(RN,RN) -= mat_inv(RN,Rl) * (wk.ksi * mat_inv(Rl,RN)); // OPTIMIZE BELOW
@@ -1114,7 +1114,7 @@ namespace triqs::det_manip {
       for (long i = 0; i < s; ++i)
         for (long j = 0; j < s; ++j) w_refill.M(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
       range R(s);
-      newdet  = nda::determinant(w_refill.M(R, R));
+      newdet  = nda::linalg::det(w_refill.M(R, R));
       newsign = 1;
 
       return newdet / (sign * det);
@@ -1143,7 +1143,7 @@ namespace triqs::det_manip {
       std::iota(col_num.begin(), col_num.end(), 0);
 
       range RN(N);
-      mat_inv(RN, RN) = inverse(w_refill.M(RN, RN));
+      mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
     }
 
     //------------------------------------------------------------------------------------------
@@ -1159,10 +1159,10 @@ namespace triqs::det_manip {
       matrix_type res(N, N);
       for (int i = 0; i < N; i++)
         for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
-      det = nda::determinant(res);
+      det = nda::linalg::det(res);
 
       if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = inverse(res);
+      res = nda::linalg::inv(res);
 
       if (do_check) { // check that mat_inv is close to res
         const bool relative = true;
@@ -1192,10 +1192,10 @@ namespace triqs::det_manip {
       nda::matrix<double> m(N, N);
       m() = 0.0;
       for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
-      s *= nda::determinant(m);
+      s *= nda::linalg::det(m);
       m() = 0.0;
       for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
-      s *= nda::determinant(m);
+      s *= nda::linalg::det(m);
       sign = (s > 0 ? 1 : -1);
     }
 

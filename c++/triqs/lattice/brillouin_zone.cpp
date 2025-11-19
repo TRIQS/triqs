@@ -32,9 +32,9 @@ namespace triqs {
       using nda::linalg::cross_product;
 
       auto Units = lattice().units();
-      if (abs(determinant(Units)) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
-      K_reciprocal     = 2 * M_PI * inverse(transpose(Units));
-      K_reciprocal_inv = inverse(K_reciprocal);
+      if (abs(nda::linalg::det(Units)) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone: the 3 unit vectors are not independent: " << Units;
+      K_reciprocal     = 2 * M_PI * nda::linalg::inv(transpose(Units));
+      K_reciprocal_inv = nda::linalg::inv(K_reciprocal);
     }
 
     // -------------- HDF5  --------------------------

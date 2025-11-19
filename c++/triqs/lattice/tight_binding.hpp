@@ -147,12 +147,12 @@ namespace triqs {
         requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
       {
         if constexpr (nda::ArrayOfRank<K, 1>) {
-          return nda::linalg::eigenvalues(fourier(k));
+          return nda::linalg::eigvalsh(fourier(k));
         } else { // Rank==2
           auto h_k = fourier(k);
           auto n_k = h_k.shape()[0];
           auto res = nda::array<double, 2>(n_k, n_orbitals());
-          for (auto l : range(n_k)) res(l, range::all) = nda::linalg::eigenvalues(h_k(l, nda::ellipsis()));
+          for (auto l : range(n_k)) res(l, range::all) = nda::linalg::eigvalsh(h_k(l, nda::ellipsis()));
           return res;
         }
       }
@@ -167,7 +167,7 @@ namespace triqs {
       inline auto dispersion(mesh::brzone const &k_mesh) const {
         auto h_k = fourier(k_mesh);
         auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_orbitals()});
-        for (auto k : k_mesh) e_k[k] = nda::linalg::eigenvalues(h_k[k]);
+        for (auto k : k_mesh) e_k[k] = nda::linalg::eigvalsh(h_k[k]);
         return e_k;
       }
 

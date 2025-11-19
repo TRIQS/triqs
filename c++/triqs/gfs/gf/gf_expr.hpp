@@ -218,7 +218,7 @@ namespace triqs {
 
     template <typename A> void _gf_invert_data_in_place(A &a) {
       auto mesh_lengths = nda::stdutil::mpop<2>(a.indexmap().lengths());
-      nda::for_each(mesh_lengths, [&a](auto &&...i) { nda::inverse_in_place(make_matrix_view(a(i..., range::all, range::all))); });
+      nda::for_each(mesh_lengths, [&a](auto &&...i) { nda::linalg::inv_in_place(make_matrix_view(a(i..., range::all, range::all))); });
     }
 
     // Python specific operator and definitions

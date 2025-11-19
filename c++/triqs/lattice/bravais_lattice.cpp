@@ -80,7 +80,7 @@ namespace triqs {
           if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << units__;
           break;
       }
-      units_inv_ = inverse(units_);
+      units_inv_ = nda::linalg::inv(units_);
     }
     //------------------------------------------------------------------------------------
 

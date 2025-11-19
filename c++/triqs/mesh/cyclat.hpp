@@ -59,7 +59,7 @@ namespace triqs::mesh {
          stride1(dims_[2]),
          stride0(dims_[1] * dims_[2]),
          units_(bl.units()),
-         units_inv_(inverse(units_)),
+         units_inv_(nda::linalg::inv(units_)),
          _mesh_hash(hash(sum(bl.units()), dims[0], dims[1], dims[2])) {}
 
     cyclat(bravais_lattice const &bl, nda::matrix<long> const &pm) : cyclat(bl, std::array{pm(0, 0), pm(1, 1), pm(2, 2)}) {

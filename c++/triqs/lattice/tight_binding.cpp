@@ -19,7 +19,7 @@
 
 #include "tight_binding.hpp"
 #include <nda/algorithms.hpp>
-#include <nda/linalg/eigenelements.hpp>
+#include <nda/linalg/eigh.hpp>
 #include "grid_generator.hpp"
 namespace triqs {
   namespace lattice {
@@ -76,7 +76,7 @@ namespace triqs {
           // cerr<<" index = "<<grid.index()<<endl;
           array_view<double, 1> eval_sl   = eval(range::all, grid.index());
           array_view<dcomplex, 2> evec_sl = evec(range::all, range::all, grid.index());
-          std::tie(eval_sl, evec_sl)      = linalg::eigenelements(TB.fourier((*grid)(range(ndim))));
+          std::tie(eval_sl, evec_sl)      = nda::linalg::eigh(TB.fourier((*grid)(range(ndim))));
           // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(ndim)) << endl;
         }
 
@@ -205,7 +205,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       array<double, 2> eval(norb, n_pts);
       k_t dk = (K2 - K1) / double(n_pts), k = K1;
-      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, i) = linalg::eigenvalues(TB.fourier(k(range(ndim)))()); }
+      for (int i = 0; i < n_pts; ++i, k += dk) { eval(range::all, i) = nda::linalg::eigvalsh(TB.fourier(k(range(ndim)))()); }
       return eval;
     }
 
@@ -226,7 +226,7 @@ namespace triqs {
       int ndim = TB.lattice().ndim();
       grid_generator grid(ndim, n_pts);
       array<double, 2> eval(norb, grid.size());
-      for (; grid; ++grid) { eval(range::all, grid.index()) = linalg::eigenvalues(TB.fourier((*grid)(range(ndim)))()); }
+      for (; grid; ++grid) { eval(range::all, grid.index()) = nda::linalg::eigvalsh(TB.fourier((*grid)(range(ndim)))()); }
       return eval;
     }
 

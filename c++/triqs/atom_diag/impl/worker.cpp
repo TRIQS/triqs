@@ -26,7 +26,7 @@
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/space_partition.hpp>
-#include <nda/linalg/eigenelements.hpp>
+#include <nda/linalg/eigh.hpp>
 
 using namespace triqs::hilbert_space;
 
@@ -306,7 +306,7 @@ namespace triqs {
           h_matrix(range::all, i) = f_state.amplitudes();
         }
 
-        auto eig                   = linalg::eigenelements(h_matrix);
+        auto eig                   = linalg::eigh(h_matrix);
         eigensystem.eigenvalues    = eig.first;
         eigensystem.unitary_matrix = eig.second;
         hdiag->gs_energy           = std::min(hdiag->gs_energy, eigensystem.eigenvalues[0]);

@@ -47,17 +47,17 @@ struct test {
   void check() {
 #define PRINT_ALLL
 #ifndef PRINT_ALL
-    std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
+    std::cerr << "det = " << D.determinant() << " == " << double(nda::linalg::det(D.matrix())) << std::endl;
 #else
-    std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
+    std::cerr << "det = " << D.determinant() << " == " << double(nda::linalg::det(D.matrix())) << std::endl;
     std::cerr << "inverse_matrix = " << D.inverse_matrix() << std::endl;
     //std::cerr  << "inverse inverse_matrix = " << nda::matrix<double>(inverse(D.inverse_matrix()) ) << std::endl;
     std::cerr << "matrix = " << D.matrix() << std::endl;
-    std::cerr << nda::matrix<double>(inverse(D.matrix())) << std::endl;
+    std::cerr << nda::matrix<double>(nda::linalg::inv(D.matrix())) << std::endl;
 #endif
     assert_close(D.determinant(), 0.5, PRECISION);
-    assert_close(D.determinant(), 1 / determinant(D.inverse_matrix()), PRECISION);
-    nda::assert_all_close(inverse(D.matrix()), D.inverse_matrix(), PRECISION);
+    assert_close(D.determinant(), 1 / nda::linalg::det(D.inverse_matrix()), PRECISION);
+    nda::assert_all_close(nda::linalg::inv(D.matrix()), D.inverse_matrix(), PRECISION);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
   }
 

@@ -29,7 +29,7 @@ TEST(real_in_tau, symmetrize_and_check) {
   // ============ Test with hermitian Gf
   auto h = matrix<dcomplex>{{{1 + 0i, 0.1}, {0.1, 2 + 0i}}};
   auto G = gf<imfreq>{{beta, Fermion, 20}, {2, 2}};
-  for (auto iw : G.mesh()) G[iw] = inverse(iw - h);
+  for (auto iw : G.mesh()) G[iw] = nda::linalg::inv(iw - h);
 
   EXPECT_TRUE(is_gf_real_in_tau(G));
 
@@ -39,7 +39,7 @@ TEST(real_in_tau, symmetrize_and_check) {
   // ============  Now with cplx-valued Hamiltonian
   h = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
 
-  for (auto iw : G.mesh()) { G[iw] = inverse(iw - h); }
+  for (auto iw : G.mesh()) { G[iw] = nda::linalg::inv(iw - h); }
 
   EXPECT_FALSE(is_gf_real_in_tau(G));
 

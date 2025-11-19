@@ -85,12 +85,12 @@ TEST(DetManip, ChangeRowCol) {
 
         auto det       = d.determinant();
         auto det2      = d2.determinant();
-        auto det_check = 1 / determinant(d.inverse_matrix());
+        auto det_check = 1 / nda::linalg::det(d.inverse_matrix());
 
         if (std::abs(detratio - det / det1) > precision) TRIQS_RUNTIME_ERROR << "detratio incorrect : " << detratio << "  " << det / det1;
         if (std::abs(det - det2) > precision) TRIQS_RUNTIME_ERROR << "Det != d2 : " << det << "  " << det2;
         if (std::abs(det - det_check) > precision) TRIQS_RUNTIME_ERROR << "Det != det_check : " << det << "  " << det_check;
-        nda::assert_all_close(nda::matrix<double>{inverse(d.matrix())}, d.inverse_matrix(), precision, true);
+        nda::assert_all_close(nda::matrix<double>{nda::linalg::inv(d.matrix())}, d.inverse_matrix(), precision, true);
       }
   }
 }

@@ -71,8 +71,8 @@ namespace triqs::mesh {
          size_(nda::stdutil::product(dims)),
          stride1(dims_[2]),
          stride0(dims_[1] * dims_[2]),
-         units_(inverse(1.0 * nda::diag(dims)) * bz.units()),
-         units_inv_(inverse(units_)),
+         units_(nda::linalg::inv(1.0 * nda::diag(dims)) * bz.units()),
+         units_inv_(nda::linalg::inv(units_)),
          _mesh_hash(hash(sum(bz.units()), dims[0], dims[1], dims[2])) {}
 
     ///
@@ -244,7 +244,7 @@ namespace triqs::mesh {
         nda::stack_vector<long, 3> res;
         for (auto const &[i1, i2, i3] : itertools::product_range(r1, r2, r3)) {
           auto iv   = nda::stack_vector<long, 3>{i1, i2, i3};
-          auto dstp = nda::norm(transpose(units()) * (w - iv));
+          auto dstp = nda::linalg::norm(transpose(units()) * (w - iv));
 
           // update result when distance is smaller than current
           if (dstp < dst) {
