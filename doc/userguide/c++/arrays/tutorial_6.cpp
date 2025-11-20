@@ -10,8 +10,8 @@ int main() {
   matrix<double> A(2, 2);
   A(i_, j_) << i_ + j_;
 
-  matrix<double> B = inverse(A);
-  double C         = determinant(A);
+  matrix<double> B = nda::linalg::inv(A);
+  double C         = nda::linalg::det(A);
 
   std::cout << "A^(-1) = " << B << std::endl;
   std::cout << "det(A) = " << C << std::endl;
