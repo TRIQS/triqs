@@ -111,6 +111,9 @@ TEST(tb_tests, tb_adaptive_test) { // NOLINT
 
 TEST(tb_tests, h5_read_write) {
 
+  mpi::communicator world;
+  if (world.rank() != 0) GTEST_SKIP();
+
   std::vector<std::array<long, 3>> displ_vec = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};
   double t                                   = 1.0;
   auto overlap_mat_vec                       = std::vector(displ_vec.size(), nda::array<dcomplex, 2>(nda::diag(nda::vector<dcomplex>{t, t})));
@@ -130,6 +133,23 @@ TEST(tb_tests, h5_read_write) {
     auto tb_in = h5::h5_read<tb_hamiltonian>(grp, "hamiltonian");
     EXPECT_EQ(tb, tb_in);
   }
+}
+
+TEST(tb_tests, mpi_broadcast) {
+
+  mpi::communicator world;
+
+  std::vector<std::array<long, 3>> displ_vec = {{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}}};
+  double t                                   = 1.0;
+  auto overlap_mat_vec                       = std::vector(displ_vec.size(), nda::array<dcomplex, 2>(nda::diag(nda::vector<dcomplex>{t, t})));
+  auto tb_ref                                = tb_hamiltonian(displ_vec, overlap_mat_vec);
+
+  // Only rank 0 has the actual data, others have default-constructed object
+  auto tb = world.rank() == 0 ? tb_ref : tb_hamiltonian{};
+
+  mpi::broadcast(tb, world, 0);
+
+  EXPECT_EQ(tb, tb_ref);
 }
 
 MPI_TEST_MAIN

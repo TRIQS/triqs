@@ -1,5 +1,7 @@
 #pragma once
 #include <nda/nda.hpp>
+#include <mpi/mpi.hpp>
+#include <nda/mpi.hpp>
 #include <cassert>
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
@@ -104,6 +106,12 @@ namespace triqs {
         auto grp = fg.open_group(subgroup_name);
         h5::read(grp, "lattice_vectors_R", tb.R_list);
         h5::read(grp, "hoppings", tb.coeff_list);
+      }
+
+      /// MPI broadcast
+      friend void mpi_broadcast(tb_hamiltonian &x, mpi::communicator c = {}, int root = 0) {
+        mpi::broadcast(x.R_list, c, root);
+        mpi::broadcast(x.coeff_list, c, root);
       }
     };
 
