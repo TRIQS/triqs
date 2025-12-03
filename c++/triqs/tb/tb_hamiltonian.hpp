@@ -4,6 +4,7 @@
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
 #include "fourier_polynomial.hpp"
+#include "nda/blas/tools.hpp"
 #include "superlattice.hpp"
 #include <nda/h5.hpp>
 
@@ -17,6 +18,9 @@ namespace triqs {
       public:
       tb_hamiltonian(std::vector<std::array<long, 3>> Rs, std::vector<nda::array<dcomplex, 2>> hoppings)
          : fourier_polynomial<2, 3>(std::move(Rs), std::move(hoppings)) {};
+
+      /// default constructor to zero hopping for single R vector at the origin
+      tb_hamiltonian() : fourier_polynomial<2, 3>({{{0, 0, 0}}}, std::vector(1, nda::array<dcomplex, 2>({{dcomplex(0.)}}))) {};
 
       C2PY_IGNORE tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, 3>{std::move(fp)} {}
 
@@ -96,17 +100,25 @@ namespace triqs {
       }
 
       // Function to read tight_binding object from hdf5 file
-      CPP2PY_IGNORE
-      static tb_hamiltonian h5_read_construct(h5::group g, std::string subgroup_name) {
-        auto grp      = g.open_group(subgroup_name);
+      //CPP2PY_IGNORE
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string subgroup_name, tb_hamiltonian &tb) {
+        auto grp      = fg.open_group(subgroup_name);
         auto R        = h5::h5_read<std::vector<std::array<long, 3>>>(grp, "lattice_vectors_R");
         auto hoppings = h5::h5_read<std::vector<nda::array<dcomplex, 2>>>(grp, "hoppings");
-        return tb_hamiltonian(R, hoppings);
+        tb            = tb_hamiltonian(R, hoppings);
+        //h5::read(grp, "lattice_vectors_R", tb.get_R_list());
+        //h5::read(grp, "hoppings", tb.hoppings());
       }
+      // static tb_hamiltonian h5_read_construct(h5::group g, std::string subgroup_name) {
+      //   auto grp      = g.open_group(subgroup_name);
+      //   auto R        = h5::h5_read<std::vector<std::array<long, 3>>>(grp, "lattice_vectors_R");
+      //   auto hoppings = h5::h5_read<std::vector<nda::array<dcomplex, 2>>>(grp, "hoppings");
+      //   return tb_hamiltonian(R, hoppings);
+      // }
     };
 
     // Superlattice folding user function
-
     /// @brief Fold the tight-binding Hamiltonian into a superlattice
     inline tb_hamiltonian fold(superlattice const &sl, tb_hamiltonian const &tb) {
       return fold(sl, static_cast<fourier_polynomial<2, 3> const &>(tb));
