@@ -99,23 +99,12 @@ namespace triqs {
         h5_write(grp, "hoppings", tb.hoppings());
       }
 
-      // Function to read tight_binding object from hdf5 file
-      //CPP2PY_IGNORE
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, tb_hamiltonian &tb) {
-        auto grp      = fg.open_group(subgroup_name);
-        auto R        = h5::h5_read<std::vector<std::array<long, 3>>>(grp, "lattice_vectors_R");
-        auto hoppings = h5::h5_read<std::vector<nda::array<dcomplex, 2>>>(grp, "hoppings");
-        tb            = tb_hamiltonian(R, hoppings);
-        //h5::read(grp, "lattice_vectors_R", tb.get_R_list());
-        //h5::read(grp, "hoppings", tb.hoppings());
+        auto grp = fg.open_group(subgroup_name);
+        h5::read(grp, "lattice_vectors_R", tb.R_list);
+        h5::read(grp, "hoppings", tb.coeff_list);
       }
-      // static tb_hamiltonian h5_read_construct(h5::group g, std::string subgroup_name) {
-      //   auto grp      = g.open_group(subgroup_name);
-      //   auto R        = h5::h5_read<std::vector<std::array<long, 3>>>(grp, "lattice_vectors_R");
-      //   auto hoppings = h5::h5_read<std::vector<nda::array<dcomplex, 2>>>(grp, "hoppings");
-      //   return tb_hamiltonian(R, hoppings);
-      // }
     };
 
     // Superlattice folding user function
