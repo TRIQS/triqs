@@ -68,9 +68,9 @@ namespace triqs::mesh {
     typename M::mesh_point_t;
     requires MeshPoint<typename M::mesh_point_t>;
 
-    // Mesh is a range of mesh point
-#if not(defined(_LIBCPP_VERSION) and (__clang_major__ < 16))
-    // Do NOT check on old compiler ....
+    // sized, forward range of mesh points
+    // Workaround libc++ ADL bug with using-directives affecting versions < 21
+#if not(defined(_LIBCPP_VERSION) and (_LIBCPP_VERSION < 210000))
     requires std::ranges::forward_range<M>;
     requires std::ranges::sized_range<M>;
 #endif
