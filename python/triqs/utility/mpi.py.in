@@ -24,12 +24,12 @@ import os
 
 def check_for_mpi():
     '''
-    Simple function checking if triqs has been called with 
+    Simple function checking if triqs has been called with
     mpirun or without, by checking for typical MPI environment
     variables. To enforce the MPI init TRIQS_FORCE_MPI_INIT
     can be set manually as env variable.
 
-    Returns: 
+    Returns:
     -------
     is_mpi: bool
             True if triqs called with mpirun
@@ -41,6 +41,9 @@ def check_for_mpi():
         is_mpi = True
     # for MPICH and intel based MPI:
     elif os.environ.get('PMI_RANK'):
+        is_mpi = True
+    # for PMIx (used by srun/Slurm with PMIx support):
+    elif os.environ.get('PMIX_RANK'):
         is_mpi = True
     elif os.environ.get('CRAY_MPICH_VERSION'):
         is_mpi = True
