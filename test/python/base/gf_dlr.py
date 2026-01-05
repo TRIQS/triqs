@@ -238,7 +238,7 @@ class test_dlr_mesh(unittest.TestCase):
         mesh_values = np.linspace(0, beta, 10001)
         G_analytic =-np.exp(-mesh_values[:, None] * pole + beta * (pole < 0.0) * pole) / (1. + np.exp(-beta * np.abs(pole)))
         # calc G^2 = 1/beta \int_0^\beta d\tau G(\tau)^2
-        Gsq = np.trapz(G_analytic[:,0]*G_analytic[:,0],x=mesh_values)/beta
+        Gsq = np.trapezoid(G_analytic[:,0]*G_analytic[:,0],x=mesh_values)/beta
         ref = np.sqrt(Gsq)
 
         # test all dlr mesh version
