@@ -52,7 +52,7 @@ namespace triqs::mc_tools {
     std::string res;
     for (auto &[name, m] : measures_) {
       auto str = m.report();
-      if (!str.empty()) res += str;
+      if (!str.empty()) res += "  " + str + "\n";
     }
     return res;
   }
