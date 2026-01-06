@@ -19,6 +19,7 @@
 import unittest
 
 import numpy as np
+from scipy import integrate
 from triqs.gf import Gf, make_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, iOmega_n, inverse, density, BlockGf, fit_gf_dlr
 from triqs.gf.meshes import MeshDLR, MeshDLRImFreq, MeshDLRImTime, MeshImFreq, MeshImTime
 from triqs.utility.comparison_tests import assert_gfs_are_close, assert_block_gfs_are_close
@@ -238,7 +239,7 @@ class test_dlr_mesh(unittest.TestCase):
         mesh_values = np.linspace(0, beta, 10001)
         G_analytic =-np.exp(-mesh_values[:, None] * pole + beta * (pole < 0.0) * pole) / (1. + np.exp(-beta * np.abs(pole)))
         # calc G^2 = 1/beta \int_0^\beta d\tau G(\tau)^2
-        Gsq = np.trapezoid(G_analytic[:,0]*G_analytic[:,0],x=mesh_values)/beta
+        Gsq = integrate.trapezoid(G_analytic[:,0]*G_analytic[:,0],x=mesh_values)/beta
         ref = np.sqrt(Gsq)
 
         # test all dlr mesh version
