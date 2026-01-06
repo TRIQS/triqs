@@ -86,7 +86,7 @@ namespace triqs::lattice {
     double Gamma = 0.025;
     double beta  = 10;
     long n_iw    = 2;
-    auto expr_kw = inv(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
+    auto expr_kw = nda::linalg::inv(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
 
     auto iw_mesh = mesh::imfreq{beta, triqs::gfs::Fermion, n_iw, triqs::mesh::imfreq::option::positive_frequencies_only};
     gf<mesh::imfreq, matrix_valued> result(iw_mesh, {norb, norb});

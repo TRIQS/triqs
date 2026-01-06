@@ -74,7 +74,7 @@ TEST(tb_tests, tb_ptr_test) { // NOLINT
 
   // 2d integrations
   namespace ph    = triqs::lattice::placeholders;
-  auto f_wk       = inv(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
+  auto f_wk       = nda::linalg::inv(ph::w * I - tb(ph::kx, ph::ky, ph::kz) + Gamma * I * 1i);
   auto result_ptr = integrate_ptr(f_wk, std::vector{omega}, {10, 10, 1}, {});
 
   // value below in adaptive case is more precise answer to integral -- this is an inaccurate answer for ptr with 10x pts
@@ -102,7 +102,7 @@ TEST(tb_tests, tb_adaptive_test) { // NOLINT
 
   // adaptive
   auto int_1d_adapt = triqs::utility::integrate_1d_adapt<nda::matrix<dcomplex>>{1e-5};
-  auto f_wk         = inv(om * I - tb(kx_, ky_, 0.) + Gamma * I * 1i);
+  auto f_wk         = nda::linalg::inv(om * I - tb(kx_, ky_, 0.) + Gamma * I * 1i);
   auto result_adapt = integrate(int_1d_adapt, integrate(int_1d_adapt, f_wk, ky_ = D), kx_ = D);
 
   dcomplex answer = {-0.22338077801907302, -0.34352111773477229};
