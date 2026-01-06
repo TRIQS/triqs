@@ -5,6 +5,39 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 3.3.2
+
+TRIQS Version 3.3.2 is a patch-release that introduces
+minor fixes to be more compatible with newer/older versions of compilers and dependencies.
+
+We thank all contributors: Thomas Hahn, Alexander Hampel, Henri Menke, Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### General
+* Use scipy.integrate instead of numpy.trapz or numpy.trapezoid
+* Fix build with libc++ < 21 when using-directive precedes includes
+* Add PMIX_RANK to MPI environment detection
+* Move workaround introduced in f8e8be93 from cmake directly into triqs/utility/first_include.hpp
+* Fix bug when dividing two Matsubara frequencies
+* Update intel image in Dockerfile.ubuntu-intel
+* Fix constraints not satisfied in template argument deduction
+
+### Gf
+* Fix x_data_view and allow other meshes
+
+### doc
+* Update cppdlr and CRM references
+* Add FI support notice to README.md
+* Some updates to OSX and virtualenv instructions
+* Add cdf logo, fix logo widths to match height, update FI/SF logos
+
+### cmake
+* Fix add_custom_commands to be compliant with cmake 3.31
+* Bump FMT version to 12.0.0
+* Remove CPLUS_INCLUDE_VARS and LIBRARY_PATH from vars.sh.in, should be propagated through cmake targets
+
+
 ## Version 3.3.1
 
 TRIQS Version 3.3.1 is a patch-release that introduces
