@@ -147,6 +147,12 @@ namespace triqs::mc_tools {
     // stop timer
     run_timer_.stop();
 
+    // update phase-specific timer
+    if (params.enable_measures)
+      acc_timer_ = run_timer_;
+    else
+      warmup_timer_ = run_timer_;
+
     // update statistics
     --cycle_counter;
     ncycles_done_ += cycle_counter;
@@ -174,12 +180,10 @@ namespace triqs::mc_tools {
   }
 
   template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::warmup(run_param_t const &params) {
-    report_(3) << fmt::format("[Rank {}] Performing warum up phase...\n", params.comm.rank());
+    report_(3) << fmt::format("[Rank {}] Performing warmup phase...\n", params.comm.rank());
     auto p            = params;
     p.enable_measures = false;
-    auto status       = run(p);
-    warmup_timer_     = run_timer_;
-    return status;
+    return run(p);
   }
 
   template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::accumulate(run_param_t const &params) {
@@ -187,9 +191,7 @@ namespace triqs::mc_tools {
     auto p               = params;
     p.enable_measures    = true;
     p.enable_calibration = false;
-    auto status          = run(p);
-    acc_timer_           = run_timer_;
-    return status;
+    return run(p);
   }
 
   template <DoubleOrComplex MCSignType>
