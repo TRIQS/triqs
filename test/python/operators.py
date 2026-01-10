@@ -178,5 +178,46 @@ class test_operators(unittest.TestCase):
         op_test_3 = n('up',0) * n('dn',0) + 1e-10*c('up',0)
         assert is_op_hermitian(op_test_3, 1e-9)
 
+    def test_extended_indices(self):
+        # Test operators with double indices (temporal coordinate)
+        op_tau = c(0.5) + c_dag(1.5)
+        self.assertIn('0.5', str(op_tau))
+        self.assertIn('1.5', str(op_tau))
+
+        # Test operators with tuple indices (spatial coordinate -> array<long,3>)
+        op_r = c((0, 0, 0)) + c_dag((1, 2, 3))
+        self.assertIn('(0,0,0)', str(op_r).replace(' ', ''))
+        self.assertIn('(1,2,3)', str(op_r).replace(' ', ''))
+
+        # Mixed indices - spin, spatial, temporal (DiagMC use case)
+        op_mixed = c_dag('up', (0, 0, 0), 0.0) * c('up', (1, 0, 0), 1.0)
+        op_str = str(op_mixed)
+        self.assertIn('up', op_str)
+
+        # 4 arguments
+        op_4arg = c('up', 0, (0, 0, 0), 0.5)
+        self.assertIn('up', str(op_4arg))
+
+        # Anticommutator with double indices
+        anti_comm = c(0.5) * c_dag(0.5) + c_dag(0.5) * c(0.5)
+        self.assertEqual(Operator(1.), anti_comm)
+
+        # Anticommutator with tuple indices
+        anti_comm_r = c((0, 0, 0)) * c_dag((0, 0, 0)) + c_dag((0, 0, 0)) * c((0, 0, 0))
+        self.assertEqual(Operator(1.), anti_comm_r)
+
+        # HDF5 round-trip
+        with HDFArchive('extended_op.h5', 'w') as arch:
+            arch['op_tau'] = op_tau
+            arch['op_r'] = op_r
+            arch['op_mixed'] = op_mixed
+            arch['op_4arg'] = op_4arg
+
+        with HDFArchive('extended_op.h5', 'r') as arch:
+            self.assertEqual(arch['op_tau'], op_tau)
+            self.assertEqual(arch['op_r'], op_r)
+            self.assertEqual(arch['op_mixed'], op_mixed)
+            self.assertEqual(arch['op_4arg'], op_4arg)
+
 if __name__ == '__main__':
     unittest.main()

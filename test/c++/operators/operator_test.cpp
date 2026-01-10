@@ -24,6 +24,7 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <string>
 #include <vector>
+#include <array>
 
 using namespace triqs::operators;
 using namespace triqs;
@@ -234,6 +235,97 @@ TEST(Operator, RealOrComplex) {
   EXPECT_TRUE((op1 - op3).is_zero());
   EXPECT_EQ(fundamental_operator_set::data_t(fs), fundamental_operator_set::data_t(fs2));
   EXPECT_EQ(fs.data(), fs2.data());
+}
+
+// Test extended indices: double and std::array<long,3>
+TEST(Operator, ExtendedIndices) {
+  using r_idx_t = std::array<long, 3>;
+
+  // Operators with double indices (temporal coordinate)
+  auto op_tau = c(0.5) + c_dag(1.5);
+  EXPECT_PRINT("1*c_dag(1.5) + 1*c(0.5)", op_tau);
+
+  // Operators with array<long,3> indices (spatial coordinate)
+  auto op_r = c(r_idx_t{0, 0, 0}) + c_dag(r_idx_t{1, 2, 3});
+  EXPECT_PRINT("1*c_dag((1,2,3)) + 1*c((0,0,0))", op_r);
+
+  // Mixed indices - spin, spatial, temporal
+  auto op_mixed = c_dag("up", r_idx_t{0, 0, 0}, 0.0) * c("up", r_idx_t{1, 0, 0}, 1.0);
+  EXPECT_PRINT("1*c_dag('up',(0,0,0),0)*c('up',(1,0,0),1)", op_mixed);
+
+  // Operators with many indices including all types
+  auto op_all_types = c(1, "a", 0.5, r_idx_t{1, 2, 3});
+  EXPECT_PRINT("1*c(1,'a',0.5,(1,2,3))", op_all_types);
+
+  // Test anticommutator with double indices
+  auto cd_tau = c_dag(0.5);
+  auto c_tau  = c(0.5);
+  EXPECT_PRINT("1", cd_tau * c_tau + c_tau * cd_tau);
+
+  // Test anticommutator with array indices
+  auto cd_r = c_dag(r_idx_t{0, 0, 0});
+  auto c_r  = c(r_idx_t{0, 0, 0});
+  EXPECT_PRINT("1", cd_r * c_r + c_r * cd_r);
+
+  // Canonical ordering with mixed types: long < string < double < array
+  // Create operators and verify ordering through product normalization
+  auto prod = c_dag(0) * c_dag("x") * c_dag(0.5) * c_dag(r_idx_t{0, 0, 0}) * c(r_idx_t{0, 0, 0}) * c(0.5) * c("x") * c(0);
+  EXPECT_PRINT("1*c_dag(0)*c_dag('x')*c_dag(0.5)*c_dag((0,0,0))*c((0,0,0))*c(0.5)*c('x')*c(0)", prod);
+
+  // Verify ordering is maintained when created in different order
+  auto prod2 = c_dag(r_idx_t{0, 0, 0}) * c_dag(0.5) * c_dag("x") * c_dag(0) * c(0) * c("x") * c(0.5) * c(r_idx_t{0, 0, 0});
+  EXPECT_TRUE((prod - prod2).is_zero());
+
+  // Dagger with extended indices
+  auto X = c_dag("up", r_idx_t{1, 0, 0}, 0.5) * c("dn", r_idx_t{0, 0, 0}, 1.0);
+  EXPECT_PRINT("1*c_dag('up',(1,0,0),0.5)*c('dn',(0,0,0),1)", X);
+  EXPECT_PRINT("1*c_dag('dn',(0,0,0),1)*c('up',(1,0,0),0.5)", dagger(X));
+
+  // HDF5 round-trip with double indices
+  {
+    auto f      = h5::file("extended_indices.h5", 'w');
+    auto op_h5d = c_dag(0.5) * c(1.5) + c_dag(2.0) * c(0.0);
+    h5_write(f, "OP_double", op_h5d);
+    auto op_read = h5::h5_read<many_body_operator>(f, "OP_double");
+    EXPECT_TRUE((op_h5d - op_read).is_zero());
+  }
+
+  // HDF5 round-trip with array indices
+  {
+    auto f      = h5::file("extended_indices.h5", 'w');
+    auto op_h5a = c_dag(r_idx_t{0, 0, 0}) * c(r_idx_t{1, 2, 3});
+    h5_write(f, "OP_array", op_h5a);
+    auto op_read = h5::h5_read<many_body_operator>(f, "OP_array");
+    EXPECT_TRUE((op_h5a - op_read).is_zero());
+  }
+
+  // HDF5 round-trip with mixed indices
+  {
+    auto f      = h5::file("extended_indices.h5", 'w');
+    auto op_h5m = c_dag("up", r_idx_t{1, 2, 3}, 0.5) * c("dn", r_idx_t{0, 0, 0}, 1.0);
+    h5_write(f, "OP_mixed", op_h5m);
+    auto op_read = h5::h5_read<many_body_operator>(f, "OP_mixed");
+    EXPECT_TRUE((op_h5m - op_read).is_zero());
+  }
+
+  // Fundamental operator set with extended indices
+  {
+    auto f      = h5::file("extended_indices_fs.h5", 'w');
+    auto op_h5  = c_dag("up", r_idx_t{1, 0, 0}, 0.5) * c("up", r_idx_t{0, 0, 0}, 0.0);
+
+    fundamental_operator_set fs;
+    fs.insert("up", r_idx_t{0, 0, 0}, 0.0);
+    fs.insert("up", r_idx_t{1, 0, 0}, 0.5);
+    fs.insert("up", r_idx_t{1, 0, 0}, 1.0);
+    fs.insert("dn", r_idx_t{0, 0, 0}, 0.0);
+    h5_write(f, "OP_fs", op_h5, fs);
+
+    fundamental_operator_set fs2;
+    many_body_operator op_read;
+    h5_read(f, "OP_fs", op_read, fs2);
+    EXPECT_TRUE((op_h5 - op_read).is_zero());
+    EXPECT_EQ(fs.data(), fs2.data());
+  }
 }
 
 MAKE_MAIN;

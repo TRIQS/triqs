@@ -11,12 +11,17 @@ module.add_include("<cpp2py/converters/map.hpp>")
 module.add_include("<cpp2py/converters/variant.hpp>")
 module.add_include("<cpp2py/converters/pair.hpp>")
 module.add_include("<cpp2py/converters/tuple.hpp>")
+module.add_include("<cpp2py/converters/std_array.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<triqs/cpp2py_converters/real_or_complex.hpp>")
 
 module.add_using("namespace triqs::operators")
- 
+
+module.add_preamble("""
+using indices_idx_t = std::variant<long, std::string, double, std::array<long, 3>>;
+""")
+
 # The operator class
 op = class_(
         py_type = "Operator",
@@ -43,15 +48,15 @@ op.add_property(name = "imag",
 
 module.add_class(op)
 
-# Add various overload of c, c_dag to the module Annihilation & Creation operators
+# Add various overload of c, c_dag, n to the module
+# Using variant type allows any combination of: int, string, double, array<long,3>
 for name, doc in [("c","annihilation operator"), ("c_dag","creation operator"), ("n","number operator")] :
     for sign in [
             "",
-            "std::string ind1",
-            "std::string ind1, std::string ind2",
-            "int i, std::string ind1",
-            "std::string ind1, int i",
-            "int i, int j"
+            "indices_idx_t i0",
+            "indices_idx_t i0, indices_idx_t i1",
+            "indices_idx_t i0, indices_idx_t i1, indices_idx_t i2",
+            "indices_idx_t i0, indices_idx_t i1, indices_idx_t i2, indices_idx_t i3",
             ]:
         module.add_function(name = name, signature="many_body_operator (%s)"%sign, doc=doc)
 
