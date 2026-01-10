@@ -27,16 +27,32 @@ namespace triqs {
 
       // a little visitor for reduction to string
       struct variant_visitor {
-        std::string operator()(int i) const { return "i" + std::to_string(i); }
+        std::string operator()(long i) const { return "i" + std::to_string(i); }
         std::string operator()(std::string const &s) const { return "s" + s; }
+        std::string operator()(double d) const { return "d" + std::to_string(d); }
+        std::string operator()(std::array<long, 3> const &a) const {
+          return "idx" + std::to_string(a[0]) + "," + std::to_string(a[1]) + "," + std::to_string(a[2]);
+        }
       };
 
       // decode the string
-      std::variant<long, std::string> string_to_variant(std::string const &s) {
+      std::variant<long, std::string, double, std::array<long, 3>> string_to_variant(std::string const &s) {
+        if (s.substr(0, 3) == "idx") {
+          // Parse array: "idx0,1,2" -> {0, 1, 2}
+          std::array<long, 3> arr{};
+          auto rest = s.substr(3);
+          size_t pos1 = rest.find(',');
+          size_t pos2 = rest.find(',', pos1 + 1);
+          arr[0] = std::stol(rest.substr(0, pos1));
+          arr[1] = std::stol(rest.substr(pos1 + 1, pos2 - pos1 - 1));
+          arr[2] = std::stol(rest.substr(pos2 + 1));
+          return arr;
+        }
         switch (s[0]) {
-          case 'i': return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int
-          case 's': return s.c_str() + 1;            // the variant is a string. Just skip the first char
-          default: TRIQS_RUNTIME_ERROR << "Variant indices absent in h5 read";
+          case 'i': return std::stol(s.c_str() + 1); // the variant is a long. Skip the first char and recover the long
+          case 's': return std::string(s.c_str() + 1); // the variant is a string. Just skip the first char
+          case 'd': return std::stod(s.c_str() + 1); // the variant is a double. Skip the first char and recover the double
+          default: TRIQS_RUNTIME_ERROR << "Unknown variant type prefix in h5 read: " << s[0];
         }
       }
 

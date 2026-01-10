@@ -31,10 +31,12 @@ namespace triqs {
 // maximum order of the monomial (here quartic operators)
 #define MAX_MONOMIAL_SIZE 4
 
-    struct print_visitor { // TODO C17 use generic lambda + if constexpr
+    struct print_visitor {
       std::ostream &os;
+      void operator()(long i) { os << i; }
       void operator()(std::string const &x) { os << '\'' << x << '\''; }
-      void operator()(int i) { os << i; }
+      void operator()(double d) { os << d; }
+      void operator()(std::array<long, 3> const &a) { os << '(' << a[0] << ',' << a[1] << ',' << a[2] << ')'; }
     };
 
     std::ostream &operator<<(std::ostream &os, canonical_ops_t const &op) {

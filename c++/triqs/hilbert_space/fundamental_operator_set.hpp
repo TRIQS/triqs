@@ -29,13 +29,14 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <array>
 #include <set>
 #include <map>
 
 namespace triqs::hilbert_space {
 
   /// The index type of an operator
-  using indices_t = std::vector<std::variant<long, std::string>>;
+  using indices_t = std::vector<std::variant<long, std::string, double, std::array<long, 3>>>;
 
   /// Type type describing the structure of a Block Green's function
   using triqs::gfs::gf_struct_t;

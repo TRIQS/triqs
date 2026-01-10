@@ -56,14 +56,28 @@ namespace triqs {
       // Example: c+_1 < c+_2 < c+_3 < c_3 < c_2 < c_1
       auto operator<=>(canonical_ops_t const &b) const {
         if (dagger != b.dagger) return !dagger <=> !b.dagger; // c+ < c
-        auto three_way_cmp = [](auto &is, auto &js) {
-          if (is == js) return std::strong_ordering::equal;
-          return (is < js) ? std::strong_ordering::less : std::strong_ordering::greater;
-        };
-        return dagger ? three_way_cmp(indices, b.indices) : three_way_cmp(b.indices, indices);
 
-        // FIXME Replace by (clang14+)
-        //return dagger ? indices <=> b.indices : b.indices <=> indices;
+        // Compare indices element-wise, ordering by type index first (long < string < double < array)
+        auto compare_indices = [](indices_t const &a, indices_t const &b) -> std::strong_ordering {
+          for (size_t i = 0; i < std::min(a.size(), b.size()); ++i) {
+            // Compare by type index first
+            if (a[i].index() != b[i].index()) return a[i].index() <=> b[i].index();
+            // Same type: compare values
+            auto cmp = std::visit(
+               [](auto const &x, auto const &y) -> std::strong_ordering {
+                 if constexpr (std::is_same_v<std::decay_t<decltype(x)>, std::decay_t<decltype(y)>>) {
+                   if (x == y) return std::strong_ordering::equal;
+                   return x < y ? std::strong_ordering::less : std::strong_ordering::greater;
+                 }
+                 return std::strong_ordering::equal; // unreachable due to index check
+               },
+               a[i], b[i]);
+            if (cmp != std::strong_ordering::equal) return cmp;
+          }
+          return a.size() <=> b.size();
+        };
+
+        return dagger ? compare_indices(indices, b.indices) : compare_indices(b.indices, indices);
       }
       bool operator==(canonical_ops_t const &b) const { return (*this <=> b) == 0; }
 

@@ -23,9 +23,9 @@ module.add_using("namespace triqs::operators::utils")
 module.add_using("namespace triqs::hilbert_space")
 
 module.add_preamble("""
-using variant_int_string = std::variant<long, std::string>;
+using variant_index = std::variant<long, std::string, double, std::array<long, 3>>;
 using block_matrix_t = nda::array<nda::matrix<real_or_complex>, 1>;
-using indices_t_t = std::tuple<variant_int_string, variant_int_string>;
+using indices_t_t = std::tuple<variant_index, variant_index>;
 auto v2t = [](indices_t const& v) { return std::make_tuple(v[0],v[1]); };
 using triqs::tuple::map;
 """)
