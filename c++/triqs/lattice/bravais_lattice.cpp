@@ -46,11 +46,11 @@ namespace triqs::lattice {
     if (ndim_ < 3) {
       if (ndim_ == 1) units_(1, 1) = 1;
       units_(2, nda::range::all) = nda::linalg::cross_product(units_(0, nda::range::all), units_(1, nda::range::all));
-      units_(2, nda::range::all) /= nda::norm(units_(2, nda::range::all));
+      units_(2, nda::range::all) /= nda::linalg::norm(units_(2, nda::range::all));
     }
 
     // linear independence check
-    if (std::abs(nda::determinant(units_)) < 1e-10)
+    if (std::abs(nda::linalg::det(units_)) < 1e-10)
       TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vectors are not linearly independent" << units_;
 
     // compute inverse (used for basis transformations)
