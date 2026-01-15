@@ -50,6 +50,8 @@
 
 #include "./mesh/legendre.hpp"
 
+#include "./mesh/chebyshev.hpp"
+
 #include "./mesh/dlr.hpp"
 #include "./mesh/dlr_imtime.hpp"
 #include "./mesh/dlr_imfreq.hpp"
@@ -71,6 +73,7 @@ template <> constexpr bool c2py::is_wrapped<triqs::mesh::imtime>       = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::dlr_imtime>   = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::dlr>          = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::legendre>     = true;
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::chebyshev>    = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::refreq>       = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::refreq_pts>   = true;
 template <> constexpr bool c2py::is_wrapped<triqs::mesh::refreq_log>   = true;
@@ -83,6 +86,7 @@ template <> constexpr char *c2py::tp_name<triqs::mesh::imtime>         = "MeshIm
 template <> constexpr char *c2py::tp_name<triqs::mesh::dlr_imtime>     = "MeshDLRImTime";
 template <> constexpr char *c2py::tp_name<triqs::mesh::dlr>            = "MeshDLR";
 template <> constexpr char *c2py::tp_name<triqs::mesh::legendre>       = "MeshLegendre";
+template <> constexpr char *c2py::tp_name<triqs::mesh::chebyshev>      = "MeshChebyshev";
 template <> constexpr char *c2py::tp_name<triqs::mesh::refreq>         = "MeshReFreq";
 template <> constexpr char *c2py::tp_name<triqs::mesh::refreq_pts>     = "MeshReFreqPts";
 template <> constexpr char *c2py::tp_name<triqs::mesh::refreq_log>     = "MeshReFreqLog";

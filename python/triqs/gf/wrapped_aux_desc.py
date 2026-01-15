@@ -30,6 +30,7 @@ def all_calls():
         'retime' : ['long', 'double'],
         'legendre' : ['long', 'double'],
         'dlr'    : ['long', 'double', 'matsubara_freq'],
+        'chebyshev' : ['long', 'double'],
         'brzone' : ['std::array<long,3>', 'std::array<double, 3>'],
         'cyclat' : ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t']
         }
@@ -42,7 +43,7 @@ def all_calls():
         [ 4, 'tensor_valued<4>', 'array<dcomplex, 4>']
         ]
 
-    meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'legendre', 'dlr', 'brzone', 'cyclat']
+    meshes = ['imfreq', 'imtime', 'refreq', 'retime', 'legendre', 'dlr', 'chebyshev', 'brzone', 'cyclat']
 
     real_valued = lambda target: target.replace("_", "_real_")
     for rank, target, return_t in target_and_return:
@@ -72,6 +73,7 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'retime' : 'ReTime',
                    'legendre' : 'Legendre',
                    'dlr'    : 'DLR',
+                   'chebyshev' : 'Chebyshev',
                    'dlr_imtime' : 'DLRImTime',
                    'dlr_imfreq' : 'DLRImFreq',
                    'brzone' : 'BrZone',
@@ -82,24 +84,28 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'prod<brzone,retime>': 'BrZone_x_ReTime',
                    'prod<brzone,legendre>'   : 'BrZone_x_Legendre',
                    'prod<brzone,dlr>'   : 'BrZone_x_DLR',
+                   'prod<brzone,chebyshev>': 'BrZone_x_Chebyshev',
                    'prod<cyclat,imfreq>': 'CycLat_x_ImFreq',
                    'prod<cyclat,imtime>': 'CycLat_x_ImTime',
                    'prod<cyclat,refreq>': 'CycLat_x_ReFreq',
                    'prod<cyclat,retime>': 'CycLat_x_ReTime',
                    'prod<cyclat,legendre>'   : 'CycLat_x_Legendre',
                    'prod<cyclat,dlr>'   : 'CycLat_x_DLR',
+                   'prod<cyclat,chebyshev>': 'CycLat_x_Chebyshev',
                    'prod<imfreq,brzone>': 'ImFreq_x_BrZone',
                    'prod<imtime,brzone>': 'ImTime_x_BrZone',
                    'prod<refreq,brzone>': 'ReFreq_x_BrZone',
                    'prod<retime,brzone>': 'ReTime_x_BrZone',
                    'prod<dlr,brzone>'   : 'DLR_x_BrZone',
                    'prod<legendre,brzone>'   : 'Legendre_x_BrZone',
+                   'prod<chebyshev,brzone>'  : 'Chebyshev_x_BrZone',
                    'prod<imfreq,cyclat>': 'ImFreq_x_CycLat',
                    'prod<imtime,cyclat>': 'ImTime_x_CycLat',
                    'prod<refreq,cyclat>': 'ReFreq_x_CycLat',
                    'prod<retime,cyclat>': 'ReTime_x_CycLat',
                    'prod<dlr,cyclat>'   : 'DLR_x_CycLat',
                    'prod<legendre,cyclat>'   : 'Legendre_x_CycLat',
+                   'prod<chebyshev,cyclat>'  : 'Chebyshev_x_CycLat',
                    }
 
 m.add_preamble("""
@@ -149,7 +155,7 @@ for TY in ['double', 'dcomplex'] :
 m.add_function("void _gf_invert_data_in_place(array_view <dcomplex, 3> a)", doc = "Aux function for inversion")
 
 # For legacy Python code : authorize g + Matrix functions, which are defined in legacy_for_python_api.hpp
-for M in ['imfreq', 'imtime', 'refreq', 'retime', 'brzone', 'cyclat', 'legendre', 'dlr', 'dlr_imfreq', 'dlr_imtime']:
+for M in ['imfreq', 'imtime', 'refreq', 'retime', 'brzone', 'cyclat', 'legendre', 'dlr', 'chebyshev', 'dlr_imfreq', 'dlr_imtime']:
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x += y")
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
 

@@ -366,6 +366,46 @@ m.add_property(name = "statistic",
 module.add_class(m)
 
 ########################
+##   MeshChebyshev
+########################
+
+m = make_mesh( py_type = "MeshChebyshev", c_tag = "chebyshev",
+        doc =  """Mesh of Chebyshev collocation points in imaginary time
+
+        Function values are stored at Chebyshev points of the first kind
+        and barycentric interpolation is used for evaluation at arbitrary
+        imaginary times. This provides exponential convergence for smooth
+        functions.
+
+        Parameters
+        ----------
+        beta : float
+            Inverse temperature
+        statistic : str
+            Statistic, 'Fermion' or 'Boson'
+        n_chebyshev : int
+            Number of Chebyshev points
+        """)
+m.add_constructor(signature = "(double beta, statistic_enum statistic, int n_chebyshev)")
+m.add_property(name = "beta",
+               getter = cfunction(calling_pattern="double result = self_c.beta()",
+               signature = "double()",
+               doc = "Inverse temperature"))
+m.add_property(name = "statistic",
+               getter = cfunction(calling_pattern="statistic_enum result = self_c.statistic()", signature = "statistic_enum()"),
+               doc = "Statistic")
+m.add_property(name = "points",
+               getter = cfunction(calling_pattern="nda::vector_const_view<double> result = self_c.points()",
+               signature = "nda::vector_const_view<double>()",
+               doc = "Chebyshev points scaled to [0, beta]"))
+m.add_property(name = "weights",
+               getter = cfunction(calling_pattern="nda::vector_const_view<double> result = self_c.weights()",
+               signature = "nda::vector_const_view<double>()",
+               doc = "Barycentric weights for interpolation"))
+
+module.add_class(m)
+
+########################
 ##   MeshReFreq
 ########################
 

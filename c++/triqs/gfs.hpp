@@ -30,6 +30,7 @@
 #include "./mesh.hpp"
 namespace triqs::gfs {
   using mesh::brzone;
+  using mesh::chebyshev;
   using mesh::cyclat;
   using mesh::dlr;
   using mesh::dlr_imfreq;

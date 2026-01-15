@@ -18,6 +18,7 @@ add_python_test(gf_fourier)
 add_python_test(gf_fourier_real)
 add_python_test(g_tau_mul)
 add_python_test(gf_dlr)
+add_python_test(gf_chebyshev)
 add_python_test(block_gf_constr)
 add_python_test(gf_bcast MPI_NUMPROC 2)
 
