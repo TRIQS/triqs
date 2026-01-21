@@ -1,5 +1,7 @@
 set(PYTHON_EXECUTABLE @CPP2PY_PYTHON_EXECUTABLE@)
 
+include(@CMAKE_INSTALL_PREFIX@/share/cmake/Modules/extract_flags.cmake)
+
 # runs a c++ test
 # if there is a .ref file a comparison test is done
 # Example: add_cpp_test(my_code)
@@ -31,6 +33,37 @@ function(triqs_add_cpp_test testname)
   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT OMPI_MCA_btl_base_warn_component_unused=0)
  else()
   add_test(${testname_}${ARGN} ${testcmd})
+ endif()
+
+ # Set LD_LIBRARY_PATH - extract from project target and triqs
+ if(TARGET ${PROJECT_NAME}_c)
+   extract_library_directories(_test_lib_path ${PROJECT_NAME}_c)
+ else()
+   set(_test_lib_path "")
+ endif()
+
+ # Append triqs library directory
+ set(_test_lib_path "${_test_lib_path}:@CMAKE_INSTALL_FULL_LIBDIR@")
+
+ # Append existing LD_LIBRARY_PATH, filtering out app install prefix
+ if(DEFINED ENV{LD_LIBRARY_PATH})
+   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib64:" "" _filtered "$ENV{LD_LIBRARY_PATH}")
+   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib:" "" _filtered "${_filtered}")
+   if(_filtered)
+     set(_test_lib_path "${_test_lib_path}:${_filtered}")
+   endif()
+ endif()
+
+ set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${_test_lib_path}")
+
+ # macOS support
+ if(APPLE)
+   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "DYLD_LIBRARY_PATH=${_test_lib_path}")
+ endif()
+
+ # Sanitizer preload
+ if(SANITIZER_RT_PRELOAD)
+   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
  endif()
 
  if(TEST_MPI_NUMPROC)

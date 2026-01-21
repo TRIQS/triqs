@@ -1,3 +1,5 @@
+include(extract_flags)
+
 # runs a c++ test
 # if there is a .ref file a comparison test is done
 # Example: add_cpp_test(my_code)
@@ -29,6 +31,30 @@ function(add_cpp_test testname)
   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT OMPI_MCA_btl_base_warn_component_unused=0)
  else()
   add_test(${testname_}${ARGN} ${testcmd})
+ endif()
+
+ # Set LD_LIBRARY_PATH to prioritize build-directory libraries
+ extract_library_directories(_test_lib_path triqs)
+
+ # Append existing LD_LIBRARY_PATH, filtering out install prefix
+ if(DEFINED ENV{LD_LIBRARY_PATH})
+   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib64:" "" _filtered "$ENV{LD_LIBRARY_PATH}")
+   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib:" "" _filtered "${_filtered}")
+   if(_filtered)
+     set(_test_lib_path "${_test_lib_path}:${_filtered}")
+   endif()
+ endif()
+
+ set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${_test_lib_path}")
+
+ # macOS support
+ if(APPLE)
+   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "DYLD_LIBRARY_PATH=${_test_lib_path}")
+ endif()
+
+ # Sanitizer preload
+ if(SANITIZER_RT_PRELOAD)
+   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
  endif()
 
  if(TEST_MPI_NUMPROC)
