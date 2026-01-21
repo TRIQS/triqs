@@ -132,3 +132,33 @@ macro(extract_flags)
   string(REGEX REPLACE " -isystem/usr/include " " " ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
 
 endmacro()
+
+# Extract all library directories from a target and its transitive dependencies
+# Result is a colon-separated path string suitable for LD_LIBRARY_PATH
+# Works with both imported targets (find_package) and build-tree targets (FetchContent/CPM)
+macro(extract_library_directories result_var target)
+  set(_lib_dirs "")
+  set(_processed_dirs "")
+
+  # Get INTERFACE_LINK_DIRECTORIES from target and all dependencies
+  get_property_recursive(_lib_dirs TARGET ${target} PROPERTY INTERFACE_LINK_DIRECTORIES)
+
+  # Handle BUILD_INTERFACE generator expressions (extract the paths)
+  foreach(_dir IN LISTS _lib_dirs)
+    string(REGEX REPLACE "\\$<BUILD_INTERFACE:([^>]*)>" "\\1" _dir "${_dir}")
+    # Skip INSTALL_INTERFACE entries during build
+    if(NOT _dir MATCHES "\\$<INSTALL_INTERFACE:")
+      list(APPEND _processed_dirs "${_dir}")
+    endif()
+  endforeach()
+  set(_lib_dirs "${_processed_dirs}")
+
+  # Remove duplicates and system directories
+  if(_lib_dirs)
+    list(REMOVE_DUPLICATES _lib_dirs)
+    list(FILTER _lib_dirs EXCLUDE REGEX "^/usr/lib")
+  endif()
+
+  # Convert to colon-separated string
+  string(REPLACE ";" ":" ${result_var} "${_lib_dirs}")
+endmacro()

@@ -261,6 +261,7 @@ endif()
 #-----------------------------------------------
 install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake/Modules)
 install (FILES cmake/Findsanitizer.cmake DESTINATION share/cmake/Modules)
+install (FILES cmake/extract_flags.cmake DESTINATION share/cmake/Modules)
 
 #---------------------------------------
 # Fortran bindings
