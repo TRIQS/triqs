@@ -30,12 +30,12 @@ namespace std {
 
   // == ostream operator<< for variant and vector of variant
 
-  template <typename... T> std::ostream &operator<<(std::ostream &os, std::variant<T...> const &v) {
+  template <typename T, typename... Ts> std::ostream &operator<<(std::ostream &os, std::variant<T, Ts...> const &v) {
     visit([&os](auto const &x) { os << x; }, v);
     return os;
   }
 
-  template <typename... T> std::ostream &operator<<(std::ostream &os, std::vector<std::variant<T...>> const &fs) {
+  template <typename T, typename... Ts> std::ostream &operator<<(std::ostream &os, std::vector<std::variant<T, Ts...>> const &fs) {
     int u = 0;
     for (auto const &i : fs) {
       if (u++) os << ",";
@@ -47,7 +47,7 @@ namespace std {
   // == Make std::to_string available for both string and variant
 
   inline string to_string(string const &str) { return str; }
-  template <typename... T> inline string to_string(variant<T...> const &var) {
+  template <typename T, typename... Ts> inline string to_string(variant<T, Ts...> const &var) {
     stringstream ss;
     ss << var;
     return ss.str();
