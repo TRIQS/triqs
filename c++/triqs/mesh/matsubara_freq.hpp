@@ -27,6 +27,7 @@
 #include "./utils.hpp"
 #include "../utility/kronecker.hpp"
 
+#include <compare>
 #include <complex>
 #include <iostream>
 #include <numbers>
@@ -82,6 +83,15 @@ namespace triqs::mesh {
 
     /// Conversion to `std::complex<double>`.
     operator cast_t() const { return std::complex<double>{0, std::numbers::pi * static_cast<double>(2 * n + statistic) / beta}; }
+
+    /// Equality comparison.
+    bool operator==(matsubara_freq const &) const = default;
+
+    /// Partial ordering by index when beta and statistic match, unordered otherwise.
+    std::partial_ordering operator<=>(matsubara_freq const &other) const {
+      if (beta != other.beta || statistic != other.statistic) return std::partial_ordering::unordered;
+      return n <=> other.n;
+    }
   };
 
   /**

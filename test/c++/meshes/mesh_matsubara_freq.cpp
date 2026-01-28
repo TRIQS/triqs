@@ -19,6 +19,7 @@
 #include <triqs/mesh/utils.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
+#include <compare>
 #include <complex>
 #include <iostream>
 #include <numbers>
@@ -280,6 +281,58 @@ TEST_F(TRIQSMesh, MatsubaraFreqKronecker) {
   EXPECT_FALSE(triqs::mesh::kronecker(om_5, nu_m5));
   EXPECT_TRUE(triqs::mesh::kronecker(om_5, om_5));
   EXPECT_TRUE(triqs::mesh::kronecker(om_5, nu_5));
+}
+
+TEST_F(TRIQSMesh, MatsubaraFreqComparison) {
+  using std::numbers::pi;
+  using namespace triqs::mesh;
+
+  // equality - same frequency
+  EXPECT_TRUE(om_5 == om_5);
+  EXPECT_TRUE(nu_3 == nu_3);
+  EXPECT_FALSE(om_5 != om_5);
+
+  // equality - different index
+  EXPECT_FALSE(om_5 == om_3);
+  EXPECT_TRUE(om_5 != om_3);
+
+  // equality - different statistic
+  EXPECT_FALSE(om_5 == nu_5);
+  EXPECT_TRUE(om_5 != nu_5);
+
+  // equality - different beta
+  matsubara_freq om_5_other_beta{5, 2 * pi, Boson};
+  EXPECT_FALSE(om_5 == om_5_other_beta);
+  EXPECT_TRUE(om_5 != om_5_other_beta);
+
+  // ordering - same beta and statistic
+  EXPECT_TRUE(om_3 < om_5);
+  EXPECT_TRUE(om_5 > om_3);
+  EXPECT_TRUE(om_3 <= om_5);
+  EXPECT_TRUE(om_5 >= om_3);
+  EXPECT_TRUE(om_5 <= om_5);
+  EXPECT_TRUE(om_5 >= om_5);
+  EXPECT_TRUE(om_m5 < om_m3);
+  EXPECT_TRUE(om_m3 > om_m5);
+
+  // ordering - different statistic returns false (unordered)
+  EXPECT_FALSE(om_5 < nu_5);
+  EXPECT_FALSE(om_5 > nu_5);
+  EXPECT_FALSE(om_5 <= nu_5);
+  EXPECT_FALSE(om_5 >= nu_5);
+
+  // ordering - different beta returns false (unordered)
+  EXPECT_FALSE(om_5 < om_5_other_beta);
+  EXPECT_FALSE(om_5 > om_5_other_beta);
+  EXPECT_FALSE(om_5 <= om_5_other_beta);
+  EXPECT_FALSE(om_5 >= om_5_other_beta);
+
+  // spaceship operator returns partial_ordering
+  EXPECT_TRUE((om_3 <=> om_5) == std::partial_ordering::less);
+  EXPECT_TRUE((om_5 <=> om_3) == std::partial_ordering::greater);
+  EXPECT_TRUE((om_5 <=> om_5) == std::partial_ordering::equivalent);
+  EXPECT_TRUE((om_5 <=> nu_5) == std::partial_ordering::unordered);
+  EXPECT_TRUE((om_5 <=> om_5_other_beta) == std::partial_ordering::unordered);
 }
 
 MAKE_MAIN;
