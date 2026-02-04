@@ -45,6 +45,7 @@ namespace triqs::mc_tools {
     nacc_     = 0;
     nprop_    = 0;
     acc_rate_ = -1;
+    timer_.reset();
     ptr_->ms_clear_statistics();
   }
 
@@ -54,6 +55,15 @@ namespace triqs::mc_tools {
       return str + ptr_->ms_get_statistics(prefix + "  ");
     } else {
       return fmt::format("{}Move {}: Proposed = {}, Accepted = {}, Rate = {:.4f}\n", prefix, name, nprop_, nacc_, acc_rate_);
+    }
+  }
+
+  template <DoubleOrComplex MCSignType> std::string move<MCSignType>::get_timings(std::string const &name, std::string const &prefix) const {
+    if (is_move_set_) {
+      auto str = fmt::format("{}Move set {}: Duration = {:.4f}\n", prefix, name, duration());
+      return str + ptr_->ms_get_timings(prefix + "  ");
+    } else {
+      return fmt::format("{}Move {}: Duration = {:.4f}\n", prefix, name, duration());
     }
   }
 

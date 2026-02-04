@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./concepts.hpp"
+#include "../utility/timer.hpp"
 
 #include <h5/h5.hpp>
 #include <mpi/communicator.hpp>
@@ -81,6 +82,7 @@ namespace triqs::mc_tools {
       virtual void ms_clear_statistics()                                                  = 0;
       [[nodiscard]] virtual std::string ms_get_statistics(std::string const &) const      = 0;
       [[nodiscard]] virtual std::map<std::string, double> ms_get_acceptance_rates() const = 0;
+      [[nodiscard]] virtual std::string ms_get_timings(std::string const &) const         = 0;
     };
 
     // MC move model implements the MC move concept by calling the appropriate methods of the type erased object.
@@ -120,6 +122,10 @@ namespace triqs::mc_tools {
         if constexpr (is_move_set) return move_.get_acceptance_rates();
         return {};
       }
+      [[nodiscard]] std::string ms_get_timings(std::string const &prefix) const override {
+        if constexpr (is_move_set) return move_.get_timings(prefix);
+        return {};
+      }
     };
 
     public:
@@ -151,7 +157,10 @@ namespace triqs::mc_tools {
      */
     MCSignType attempt() {
       ++nprop_;
-      return ptr_->attempt();
+      timer_.start();
+      auto result = ptr_->attempt();
+      timer_.stop();
+      return result;
     }
 
     /**
@@ -160,14 +169,21 @@ namespace triqs::mc_tools {
      */
     MCSignType accept() {
       ++nacc_;
-      return ptr_->accept();
+      timer_.start();
+      auto result = ptr_->accept();
+      timer_.stop();
+      return result;
     }
 
     /**
      * @brief Optional callback function if the proposed move is rejected.
      * @details Does nothing if the original type does not implement a `%reject()` method.
      */
-    void reject() { ptr_->reject(); }
+    void reject() {
+      timer_.start();
+      ptr_->reject();
+      timer_.stop();
+    }
 
     /**
      * @brief Optional callback function to calibrate the move.
@@ -211,6 +227,18 @@ namespace triqs::mc_tools {
     [[nodiscard]] std::string get_statistics(std::string const &name, std::string const &prefix = "") const;
 
     /**
+     * @brief Get a formatted string showing the runtime of the move.
+     *
+     * @param name Name of the move.
+     * @param prefix Prefix string to be added to the beginning of each line.
+     * @return String containing the duration of the move calls.
+     */
+    [[nodiscard]] std::string get_timings(std::string const &name, std::string const &prefix = "") const;
+
+    /// Get the duration of the cumulative attempt(), accept(), and reject() calls.
+    [[nodiscard]] double duration() const { return static_cast<double>(timer_); }
+
+    /**
      * @brief Get the acceptance rates of all moves in case it is a move set.
      * @return `std::map` containing the names of the moves and their acceptance rates if the move is a move set,
      * otherwise an empty map.
@@ -248,6 +276,7 @@ namespace triqs::mc_tools {
     std::uint64_t nacc_{0};
     double acc_rate_{-1};
     bool is_move_set_{false};
+    triqs::utility::timer timer_;
   };
 
   // Explicit template instantiation declarations.

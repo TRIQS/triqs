@@ -80,6 +80,12 @@ namespace triqs::mc_tools {
     return str;
   }
 
+  template <DoubleOrComplex MCSignType> std::string move_set<MCSignType>::get_timings(std::string const &prefix) const {
+    std::string str;
+    for (auto const &[m, name] : itertools::zip(moves_, names_)) { str += m.get_timings(name, prefix); }
+    return str;
+  }
+
   template <DoubleOrComplex MCSignType> void move_set<MCSignType>::initialize() {
     // initialize is called in add, so we need to resize the vectors
     probs_.resize(weights_.size());

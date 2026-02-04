@@ -43,6 +43,10 @@ namespace triqs {
         total_time += clock_t::now() - start_time;
         running = false;
       }
+      void reset() {
+        total_time = clock_t::duration(0);
+        running    = false;
+      }
       bool is_running() const { return running; }
       operator double() const {
         std::chrono::duration<double> total_time_seconds(total_time);

@@ -253,6 +253,7 @@ namespace triqs::mc_tools {
     info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
     info += fmt::format("[Rank {}] Measurement durations:\n{}", c.rank(), measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
     info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
+    info += fmt::format("[Rank {}] Move durations:\n{}", c.rank(), moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
 
     // gather all output strings on rank 0 to print in order
     auto all_infos = mpi::gather(info, c);

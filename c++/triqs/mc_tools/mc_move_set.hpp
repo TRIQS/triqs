@@ -158,6 +158,13 @@ namespace triqs::mc_tools {
      */
     [[nodiscard]] std::string get_statistics(std::string const &prefix = "") const;
 
+    /**
+     * @brief Get a formatted string with the timings of all moves.
+     * @param prefix Prefix string to be added to the beginning of each line (not intended for the user).
+     * @return String containing the duration of all moves in the set.
+     */
+    [[nodiscard]] std::string get_timings(std::string const &prefix = "") const;
+
     /// Get the index of the current move.
     [[nodiscard]] auto current() const { return current_; }
 
