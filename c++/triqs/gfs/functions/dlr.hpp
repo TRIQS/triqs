@@ -32,6 +32,7 @@
 #include "../../mesh/dlr.hpp"
 #include "../../mesh/dlr_imfreq.hpp"
 #include "../../mesh/dlr_imtime.hpp"
+#include "../../mesh/dlr2d.hpp"
 #include "../../mesh/imfreq.hpp"
 #include "../../mesh/imtime.hpp"
 #include "../../mesh/prod.hpp"
@@ -46,6 +47,55 @@ namespace triqs::gfs {
   using mesh::dlr;
   using mesh::dlr_imfreq;
   using mesh::dlr_imtime;
+  using mesh::dlr2d;
+
+  namespace detail {
+    // Helper to get the mesh type at position N from a (possibly product) mesh
+    template <int N, typename M>
+    struct mesh_at {
+      using type = M; // Non-product: the mesh itself (only valid for N=0)
+    };
+
+    template <int N, typename... Ms>
+    struct mesh_at<N, mesh::prod<Ms...>> {
+      using type = std::tuple_element_t<N, std::tuple<Ms...>>;
+    };
+
+    template <int N, typename M>
+    using mesh_at_t = typename mesh_at<N, M>::type;
+
+    // Get the underlying mesh type for regular GFs
+    template <typename G>
+    struct gf_mesh {
+      using type = typename G::mesh_t;
+    };
+
+    // Get the underlying mesh type for block GFs
+    template <typename G>
+      requires is_block_gf_v<G>
+    struct gf_mesh<G> {
+      using type = typename G::g_t::mesh_t;
+    };
+
+    template <typename G>
+    using gf_mesh_t = typename gf_mesh<G>::type;
+
+    // Check if mesh at position N is a 1D DLR mesh
+    template <int N, typename G>
+    concept IsDlrMeshAt = nda::AnyOf<mesh_at_t<N, gf_mesh_t<G>>, dlr, dlr_imtime, dlr_imfreq>;
+
+    // Check if mesh at position N is a 2D DLR mesh
+    template <int N, typename G>
+    concept IsDlr2dMeshAt = nda::AnyOf<mesh_at_t<N, gf_mesh_t<G>>, dlr2d, mesh::dlr2d_imfreq>;
+  } // namespace detail
+
+  // Concept: check if meshes at all positions N, Ns... are 1D DLR meshes
+  template <typename G, int N, int... Ns>
+  concept HasDlrMeshesAt = (MemoryGf<G> or is_block_gf_v<G>) and detail::IsDlrMeshAt<N, G> and (detail::IsDlrMeshAt<Ns, G> and ...);
+
+  // Concept: check if meshes at all positions N, Ns... are 2D DLR meshes
+  template <typename G, int N, int... Ns>
+  concept HasDlr2dMeshesAt = (MemoryGf<G> or is_block_gf_v<G>) and detail::IsDlr2dMeshAt<N, G> and (detail::IsDlr2dMeshAt<Ns, G> and ...);
 
   /**
    * @addtogroup triqs-gfs-basis
@@ -403,7 +453,7 @@ namespace triqs::gfs {
    * @return The Green's function evaluated on a uniform Matsubara mesh.
    */
   template <int N = 0, int... Ns, typename G>
-    requires(MemoryGf<G> or is_block_gf_v<G>)
+    requires HasDlrMeshesAt<G, N, Ns...>
   auto make_gf_imfreq(G const &g, long n_iw) {
     using M = typename G::mesh_t;
     if constexpr (is_block_gf_v<G>) {
