@@ -3,6 +3,7 @@
 
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/functions/dlr.hpp>
+#include <triqs/gfs/functions/dlr2d.hpp>
 #include <triqs/gfs/functions/imfreq.hpp>
 #include <triqs/gfs/transform/fourier.hpp>
 #include <triqs/mesh.hpp>
@@ -209,5 +210,22 @@ namespace triqs::gfs {
   auto make_gf_imfreq(block_gf_const_view<prod<brzone, dlr>, matrix_valued> g, long n_iw) { return make_gf_imfreq<1>(g, n_iw); }
   auto make_gf_imfreq(block_gf_const_view<prod<dlr, cyclat>, matrix_valued> g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
   auto make_gf_imfreq(block_gf_const_view<prod<cyclat, dlr>, matrix_valued> g, long n_iw) { return make_gf_imfreq<1>(g, n_iw); }
+
+  // make_gf_imfreq: dlr2d -> prod<imfreq, imfreq>
+  auto make_gf_imfreq(gf_const_view<dlr2d, scalar_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr2d, scalar_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr2d, scalar_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr2d, tensor_valued<1>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr2d, tensor_valued<1>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr2d, tensor_valued<1>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr2d, matrix_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr2d, matrix_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr2d, matrix_valued> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr2d, tensor_valued<3>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr2d, tensor_valued<3>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr2d, tensor_valued<3>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr2d, tensor_valued<4>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr2d, tensor_valued<4>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr2d, tensor_valued<4>> const &g, long n_iw = 0) { return make_gf_imfreq<0>(g, n_iw); }
 
 } // namespace triqs::gfs

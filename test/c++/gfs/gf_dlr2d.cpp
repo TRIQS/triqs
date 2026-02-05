@@ -201,4 +201,76 @@ TEST(DLR2D, MakeGfImfreqLargerMesh) {
   }
 }
 
+// Test make_gf_imfreq for block_gf (matrix-valued)
+TEST(DLR2D, MakeGfImfreqBlockGfMatrix) {
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef  = dlr2d{beta, w_max, eps, channel};
+    auto g_template = gf<dlr2d, matrix_valued>{mesh_coef, {2, 2}};
+    auto bg_dlr2d   = make_block_gf({"up", "down"}, {g_template, g_template});
+
+    for (int b = 0; b < 2; ++b) { init_matrix_coefs(bg_dlr2d[b], b + 1); }
+
+    auto bg_full = make_gf_imfreq(bg_dlr2d);
+
+    // Verify each block matches individual transformation
+    for (int b = 0; b < 2; ++b) {
+      auto g_full = make_gf_imfreq(bg_dlr2d[b]);
+      for (auto iw1 : std::get<0>(g_full.mesh()))
+        for (auto iw2 : std::get<1>(g_full.mesh())) { EXPECT_ARRAY_NEAR(g_full[iw1, iw2], bg_full[b][iw1, iw2], tol); }
+    }
+  }
+}
+
+// Test roundtrip with product mesh: start with prod<dlr2d, dlr2d> coefficients
+TEST(DLR2D, ProductMeshRoundtrip) {
+  // Use looser tolerance for product mesh tests due to accumulated numerical errors
+  constexpr double prod_tol = 1e-7;
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef = dlr2d{beta, w_max, eps, channel};
+    auto g_coef    = gf{mesh_coef * mesh_coef, {2, 2}};
+
+    // Initialize coefficients with test data
+    for (auto [mp1, mp2] : g_coef.mesh()) {
+      auto idx         = mp1.data_index() + mp2.data_index();
+      g_coef[mp1, mp2] = nda::matrix<dcomplex>{{0.1 * (idx + 1), 0.02 * idx}, {-0.02 * idx, 0.05 * (idx + 2)}};
+    }
+
+    // Transform to imfreq representation and back
+    auto g_iw      = make_gf_dlr2d_imfreq<0, 1>(g_coef);
+    auto g_iw_back = make_gf_dlr2d_imfreq<0, 1>(make_gf_dlr2d<0, 1>(g_iw));
+
+    EXPECT_GF_NEAR(g_iw, g_iw_back, prod_tol);
+  }
+}
+
+// Test single index transformation on product mesh
+TEST(DLR2D, ProductMeshSingleIndex) {
+  // Use looser tolerance for product mesh tests due to accumulated numerical errors
+  constexpr double prod_tol = 1e-7;
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef = dlr2d{beta, w_max, eps, channel};
+
+    // Start with prod<dlr2d, dlr2d> coefficients
+    auto g_coef = gf{mesh_coef * mesh_coef, {2, 2}};
+
+    // Initialize coefficients with test data
+    for (auto [mp1, mp2] : g_coef.mesh()) {
+      auto idx         = mp1.data_index() + mp2.data_index();
+      g_coef[mp1, mp2] = nda::matrix<dcomplex>{{0.1 * (idx + 1), 0.02 * idx}, {-0.02 * idx, 0.05 * (idx + 2)}};
+    }
+
+    // Transform only index 0 to imfreq: prod<dlr2d, dlr2d> -> prod<dlr2d_imfreq, dlr2d>
+    auto g_mixed = make_gf_dlr2d_imfreq<0>(g_coef);
+
+    // Transform back: prod<dlr2d_imfreq, dlr2d> -> prod<dlr2d, dlr2d>
+    auto g_back = make_gf_dlr2d<0>(g_mixed);
+
+    // Transform both to imfreq for comparison
+    auto g_iw      = make_gf_dlr2d_imfreq<0, 1>(g_coef);
+    auto g_iw_back = make_gf_dlr2d_imfreq<0, 1>(g_back);
+
+    EXPECT_GF_NEAR(g_iw, g_iw_back, prod_tol);
+  }
+}
+
 MAKE_MAIN;

@@ -510,7 +510,8 @@ def write_dlr_imtime(f):
 # ---------------------------------------------------------------------------
 
 def write_dlr_imfreq(f):
-    f.write(HEADER)
+    f.write(HEADER.replace("#include <triqs/gfs/functions/dlr.hpp>\n",
+                           "#include <triqs/gfs/functions/dlr.hpp>\n#include <triqs/gfs/functions/dlr2d.hpp>\n"))
     f.write("namespace triqs::gfs {\n\n")
 
     # --- make_gf_dlr_imfreq (single mesh) ---
@@ -574,6 +575,14 @@ def write_dlr_imfreq(f):
             for M in LATTICE_MESHES:
                 f.write(f"  auto make_gf_imfreq({view}<prod<dlr, {M}>, {target}> g, long n_iw) {{ return make_gf_imfreq<0>(g, n_iw); }}\n")
                 f.write(f"  auto make_gf_imfreq({view}<prod<{M}, dlr>, {target}> g, long n_iw) {{ return make_gf_imfreq<1>(g, n_iw); }}\n")
+    f.write("\n")
+
+    # --- make_gf_imfreq (dlr2d -> prod<imfreq, imfreq>) ---
+    f.write("  // make_gf_imfreq: dlr2d -> prod<imfreq, imfreq>\n")
+    for target in TARGETS:
+        for gf in GF_TYPES:
+            view = GF_VIEW_TYPES[gf]
+            f.write(f"  auto make_gf_imfreq({view}<dlr2d, {target}> const &g, long n_iw = 0) {{ return make_gf_imfreq<0>(g, n_iw); }}\n")
     f.write("\n")
 
     f.write("} // namespace triqs::gfs\n")
