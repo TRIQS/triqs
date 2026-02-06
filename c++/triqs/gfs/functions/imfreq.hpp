@@ -85,8 +85,9 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>,
-                    "is_gf_hermitian requires an imfreq or imtime Green function");
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>
+                       or std::is_same_v<mesh_t, mesh::dlr_imfreq> or std::is_same_v<mesh_t, mesh::dlr_imtime>,
+                    "is_gf_hermitian requires an imfreq, imtime, dlr_imfreq or dlr_imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "is_gf_hermitian requires a Green function with a target rank of 0, 2 or 4.");
 
@@ -101,6 +102,35 @@ namespace triqs::gfs {
           } else { // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices())
               if (abs(conj(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
+          }
+        }
+        return true;
+      } else if constexpr (std::is_same_v<mesh_t, mesh::dlr_imfreq>) { // === gf<dlr_imfreq>
+        // Requires symmetrize=true so that DLR nodes come in (iw, -iw) pairs
+        TRIQS_ASSERT(g.mesh().symmetrize());
+        long N = g.mesh().size();
+        for (long d = 0; d < N / 2; ++d) {
+          long d_neg = N - 1 - d;
+          if constexpr (target_t::rank == 0) { // ------ scalar_valued
+            if (abs(conj(g.data()(d_neg)) - g.data()(d)) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued
+            if (max_element(abs(dagger(g.data()(d_neg, ellipsis())) - g.data()(d, ellipsis()))) > tolerance) return false;
+          } else { // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices())
+              if (abs(conj(g.data()(d_neg, k, l, i, j)) - g.data()(d, i, j, k, l)) > tolerance) return false;
+          }
+        }
+        return true;
+      } else if constexpr (std::is_same_v<mesh_t, mesh::dlr_imtime>) { // === gf<dlr_imtime>
+        for (long d = 0; d < g.mesh().size(); ++d) {
+          if constexpr (target_t::rank == 0) { // ------ scalar_valued
+            if (abs(conj(g.data()(d)) - g.data()(d)) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued
+            for (auto [i, j] : g.target_indices())
+              if (abs(conj(g.data()(d, j, i)) - g.data()(d, i, j)) > tolerance) return false;
+          } else { // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices())
+              if (abs(conj(g.data()(d, k, l, i, j)) - g.data()(d, i, j, k, l)) > tolerance) return false;
           }
         }
         return true;
@@ -179,8 +209,9 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>,
-                    "make_hermitian requires an imfreq or imtime Green function");
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>
+                       or std::is_same_v<mesh_t, mesh::dlr_imfreq> or std::is_same_v<mesh_t, mesh::dlr_imtime>,
+                    "make_hermitian requires an imfreq, imtime, dlr_imfreq or dlr_imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "make_hermitian requires a Green function with a target rank of 0, 2 or 4.");
 
@@ -197,15 +228,31 @@ namespace triqs::gfs {
         }
         return g_sym;
 
-      } else { // === gf<imtime>
+      } else if constexpr (std::is_same_v<mesh_t, mesh::dlr_imfreq>) { // === gf<dlr_imfreq>
+        TRIQS_ASSERT(g.mesh().symmetrize());
         auto g_sym = typename G::regular_type{g};
-        for (auto t : g.mesh()) {
+        long N     = g.mesh().size();
+        for (long d = 0; d < N; ++d) {
+          long d_neg = N - 1 - d;
+          if constexpr (target_t::rank == 0)
+            g_sym.data()(d) = 0.5 * (g.data()(d) + conj(g.data()(d_neg)));
+          else if constexpr (target_t::rank == 2)
+            g_sym.data()(d, ellipsis()) = 0.5 * (g.data()(d, ellipsis()) + dagger(g.data()(d_neg, ellipsis())));
+          else
+            for (auto [i, j, k, l] : g.target_indices())
+              g_sym.data()(d, i, j, k, l) = 0.5 * (g.data()(d, i, j, k, l) + conj(g.data()(d_neg, k, l, i, j)));
+        }
+        return g_sym;
+      } else { // === gf<imtime> or gf<dlr_imtime>
+        auto g_sym = typename G::regular_type{g};
+        for (long d = 0; d < g.mesh().size(); ++d) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
-            g_sym[t] = 0.5 * (g[t] + conj(g[t]));
+            g_sym.data()(d) = 0.5 * (g.data()(d) + conj(g.data()(d)));
           else if constexpr (target_t::rank == 2) // matrix_valued
-            for (auto [i, j] : g.target_indices()) g_sym[t](i, j) = 0.5 * (g[t](i, j) + conj(g[t](j, i)));
+            for (auto [i, j] : g.target_indices()) g_sym.data()(d, i, j) = 0.5 * (g.data()(d, i, j) + conj(g.data()(d, j, i)));
           else // ---------------------------------- tensor_valued<4>
-            for (auto [i, j, k, l] : g.target_indices()) g_sym[t](i, j, k, l) = 0.5 * (g[t](i, j, k, l) + conj(g[t](k, l, i, j)));
+            for (auto [i, j, k, l] : g.target_indices())
+              g_sym.data()(d, i, j, k, l) = 0.5 * (g.data()(d, i, j, k, l) + conj(g.data()(d, k, l, i, j)));
         }
         return g_sym;
       }
