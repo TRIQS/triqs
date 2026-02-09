@@ -37,7 +37,7 @@ def compare(key, a, b, level, precision):
         assert t == type(b), "%s have different types"%key
 
         if t == dict or isinstance(a, HDFArchiveGroup) :
-            if list(a.keys()) != list(b.keys()):
+            if set(a.keys()) != set(b.keys()):
                 failures.append("Two archive groups '%s' with different keys \n %s \n vs\n %s"%(key,list(a.keys()), list(b.keys())))
             for k in a.keys():
                 compare(key + '/'+ k, a[k], b[k], level + 1, precision)
