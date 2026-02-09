@@ -330,8 +330,8 @@ namespace triqs::mesh {
      */
     friend std::ostream &operator<<(std::ostream &sout, dlr_imtime const &m) {
       auto stat_cstr = (m.stat_ == Boson ? "Boson" : "Fermion");
-      return sout << fmt::format("DLR imaginary time mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}", m.size(), m.beta_,
-                                 stat_cstr, m.w_max_, m.eps_);
+      return sout << fmt::format("DLR imaginary time mesh of size {} with beta = {}, statistics = {}, w_max = {}, eps = {}, symmetrized = {}",
+                                 m.size(), m.beta_, stat_cstr, m.w_max_, m.eps_, m.symmetrize_);
     }
 
     /**
