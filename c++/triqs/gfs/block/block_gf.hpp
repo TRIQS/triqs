@@ -59,17 +59,22 @@ namespace triqs::gfs {
   //
   template <typename G, int n = 0> inline constexpr bool is_block_gf_v = false;
 
+  // Specialization for cvref types: auto-decay
+  template <typename G, int n>
+    requires(!std::is_same_v<G, std::remove_cvref_t<G>>)
+  inline constexpr bool is_block_gf_v<G, n> = is_block_gf_v<std::remove_cvref_t<G>, n>;
+
   template <typename Mesh, typename Target, typename Layout, int Arity>
   inline constexpr bool is_block_gf_v<block_gf<Mesh, Target, Layout, Arity>, Arity> = true;
 
   template <typename Mesh, typename Target, typename Layout, int Arity, bool IsConst>
   inline constexpr bool is_block_gf_v<block_gf_view<Mesh, Target, Layout, Arity, IsConst>, Arity> = true;
 
+  template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
+
   template <typename, typename = std::void_t<>> inline constexpr int arity_of = -1;
 
   template <typename T> inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
-
-  template <typename G> inline constexpr bool is_block_gf_v<G, 0> = is_block_gf_v<G, 1> or is_block_gf_v<G, 2>;
 
   // Given a gf G, the corresponding block
   template <typename G> using get_mesh_t              = typename std::decay_t<G>::mesh_t;
@@ -172,7 +177,7 @@ namespace triqs::gfs {
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
     template <typename G>
     block_gf(G const &x)
-      requires(BlockGreenFunction<G>::value)
+      requires(BlockGreenFunction_v<G> and std::is_same_v<get_target_t<G>, Target>)
        : block_gf() {
       static_assert(G::arity == Arity, "Impossible");
       *this = x;
@@ -258,7 +263,9 @@ namespace triqs::gfs {
      *
      * The assignment resizes the mesh and the data, invalidating all pointers on them.
      */
-    template <typename RHS> block_gf &operator=(RHS &&rhs) {
+    template <typename RHS>
+      requires(BlockGreenFunction_v<RHS> and std::is_same_v<get_target_t<RHS>, Target>)
+    block_gf &operator=(RHS &&rhs) {
       if constexpr (Arity == 1) {
         _glist.resize(rhs.size());
         _block_names.resize(rhs.size());

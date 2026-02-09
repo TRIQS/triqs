@@ -51,12 +51,19 @@ namespace triqs::gfs {
   // is_gf<G> Check if G fullfills the Green function concecpt
   // FIXME : deprecated for concept
   template <typename G, typename M = void> inline constexpr bool is_gf_v = false;
+
+  // Specialization for cvref types: auto-decay
+  template <typename G, typename M>
+    requires(!std::is_same_v<G, std::remove_cvref_t<G>>)
+  inline constexpr bool is_gf_v<G, M> = is_gf_v<std::remove_cvref_t<G>, M>;
+
   template <typename G>
   inline constexpr bool is_gf_v<G, void> =
      is_instantiation_of_v<gf, G> or is_instantiation_of_v<gf_view, G> or is_instantiation_of_v<gf_const_view, G>;
-  template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
 
-  template <typename G, typename M = typename std::decay_t<G>::mesh_t>
+  template <typename G> inline constexpr bool is_gf_v<G, typename std::remove_cvref_t<G>::mesh_t> = is_gf_v<G, void>;
+
+  template <typename G, typename M = typename std::remove_cvref_t<G>::mesh_t>
   concept MemoryGf = mesh::Mesh<M> and requires(G g) {
     { g.data() } -> nda::MemoryArray;
     requires std::same_as<std::decay_t<decltype(g.mesh())>, M>;
