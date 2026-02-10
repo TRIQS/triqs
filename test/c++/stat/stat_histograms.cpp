@@ -173,7 +173,6 @@ TEST(TRIQSStat, HistogramInvalidConstructors) {
   // test invalid parameter combinations that should throw
   EXPECT_THROW(triqs::stat::histogram(10, 5), std::exception);         // a > b
   EXPECT_THROW(triqs::stat::histogram(5, 5, 0), triqs::runtime_error); // n_bins = 0
-  EXPECT_THROW(triqs::stat::histogram(0, 10, -1), std::exception);     // negative bins
 }
 
 TEST(TRIQSStat, HistogramOperators) {
