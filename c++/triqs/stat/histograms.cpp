@@ -40,7 +40,7 @@ namespace triqs::stat {
     binsize_ = (b_ - a_) / static_cast<double>(size() - 1);
   }
 
-  histogram::histogram(int a, int b) : a_(a), b_(b), data_(nda::vector<double>::zeros(b - a + 1)) { initialize(); }
+  histogram::histogram(int a, int b) : a_(a), b_(b), data_(nda::vector<double>::zeros(b > a ? b - a + 1 : 0)) { initialize(); }
 
   histogram::histogram(double a, double b, std::size_t nbins) : a_(a), b_(b), data_(nda::vector<double>::zeros(static_cast<long>(nbins))) {
     initialize();
