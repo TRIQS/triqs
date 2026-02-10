@@ -157,6 +157,18 @@ for Target in  ["scalar_valued", "tensor_valued<1>", "matrix_valued", "tensor_va
         m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr_imtime, {Target}> g_tau, long n_iw)", doc="""Transform any DLR Green's function to a Matsubara frequency Green's function""")
         m.add_function(f"{gf_type}<imfreq, {Target}> make_gf_imfreq({gf_view_type}<dlr_imfreq, {Target}> g_iw, long n_iw)", doc="""Transform any DLR Green's function to a Matsubara frequency Green's function""")
 
+# Joint Fourier on Product Meshes (lattice + DLR)
+for Target in ["scalar_valued", "matrix_valued"]:
+    for Lat, DLR in [('brzone', 'dlr_imfreq'), ('cyclat', 'dlr_imtime')]:
+        Lat_adj = 'cyclat' if Lat == 'brzone' else 'brzone'
+        DLR_adj = 'dlr_imtime' if DLR == 'dlr_imfreq' else 'dlr_imfreq'
+        # gf
+        m.add_function(f"gf<prod<{Lat_adj}, {DLR_adj}>, {Target}> make_gf_from_fourier(gf_view<prod<{Lat}, {DLR}>, {Target}> g_in)",
+            calling_pattern = "auto result = make_gf_from_fourier<0, 1>(g_in)")
+        # block_gf
+        m.add_function(f"block_gf<prod<{Lat_adj}, {DLR_adj}>, {Target}> make_gf_from_fourier(block_gf_view<prod<{Lat}, {DLR}>, {Target}> g_in)",
+            calling_pattern = f"auto result = map_block_gf([](auto &&g_bl) {{ return make_gf_from_fourier<0, 1>(make_const_view(g_bl)); }}, g_in)")
+
 # DLR Product Mesh Conversion
 # Limit combinations to avoid compile-time blowup
 for Target in  ["scalar_valued", "matrix_valued"]:
