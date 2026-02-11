@@ -40,7 +40,7 @@ from .backwd_compat.gf_refreq import *
 from .backwd_compat.gf_retime import *
 from .backwd_compat.gf_legendre import *
 
-from .meshes import MeshImFreq, MeshImTime, MeshReFreq, MeshReTime, MeshBrZone, MeshCycLat, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, make_adjoint_mesh
+from .meshes import MeshImFreq, MeshImTime, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshReTime, MeshBrZone, MeshCycLat, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, make_adjoint_mesh
 MeshBrillouinZone = MeshBrZone
 MeshCyclicLattice = MeshCycLat
 
@@ -57,7 +57,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'Idx', 'Gf', 'MeshProduct',
             'GfImFreq', 'MeshImFreq',
             'GfImTime', 'MeshImTime',
-            'GfReFreq', 'MeshReFreq',
+            'GfReFreq', 'MeshReFreq', 'MeshReFreqPts', 'MeshReFreqLog',
             'GfReTime', 'MeshReTime',
             'GfLegendre', 'MeshLegendre',
             'MeshBrZone', 'MeshBrillouinZone',

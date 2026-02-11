@@ -414,6 +414,74 @@ m.add_property(name = "delta",
 module.add_class(m)
 
 ########################
+##   MeshReFreqPts
+########################
+
+m = make_mesh(py_type = "MeshReFreqPts", c_tag = "refreq_pts",
+        doc =  """Mesh of real frequencies from arbitrary sorted points
+
+        Frequencies are given as a sorted list of values.
+        Linear interpolation is used for evaluation at arbitrary frequencies.
+
+        Parameters
+        ----------
+        pts : list of float
+            Sorted list of frequency points
+        """)
+m.add_constructor(signature = "(std::vector<double> pts)")
+
+m.add_property(name = "points",
+               getter = cfunction(calling_pattern="std::vector<double> result = self_c.points()",
+               signature = "std::vector<double>()",
+               doc = "The frequency points"))
+
+module.add_class(m)
+
+########################
+##   MeshReFreqLog
+########################
+
+m = make_mesh(py_type = "MeshReFreqLog", c_tag = "refreq_log",
+        doc =  """Logarithmic real frequency mesh
+
+        Generates a symmetric logarithmic mesh around zero using a geometric sequence.
+        Positive frequencies: w_max, w_max/ratio, w_max/ratio^2, ..., (>= eps).
+        Each positive frequency is mirrored to a negative one.
+
+        Parameters
+        ----------
+        eps : float
+            Smallest positive frequency (cutoff near zero)
+        w_max : float
+            Largest frequency
+        ratio : float
+            Common ratio of the geometric sequence (> 1)
+        """)
+m.add_constructor(signature = "(double eps, double w_max, double ratio)")
+
+m.add_property(name = "eps",
+               getter = cfunction(calling_pattern="double result = self_c.eps()",
+               signature = "double()",
+               doc = "Smallest positive frequency"))
+
+m.add_property(name = "w_max",
+               getter = cfunction(calling_pattern="double result = self_c.w_max()",
+               signature = "double()",
+               doc = "Largest frequency"))
+
+m.add_property(name = "ratio",
+               getter = cfunction(calling_pattern="double result = self_c.ratio()",
+               signature = "double()",
+               doc = "Common ratio of geometric sequence"))
+
+m.add_property(name = "points",
+               getter = cfunction(calling_pattern="std::vector<double> result = self_c.points()",
+               signature = "std::vector<double>()",
+               doc = "The generated frequency points"))
+
+module.add_class(m)
+
+########################
 ##   MeshReTime
 ########################
 
