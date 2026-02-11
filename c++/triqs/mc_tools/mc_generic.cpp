@@ -251,9 +251,11 @@ namespace triqs::mc_tools {
     info += fmt::format("[Rank {}] Simulation duration: {:.4f} seconds [{}]\n", c.rank(), get_accumulation_time(), get_accumulation_time_HHMMSS());
     info += fmt::format("[Rank {}] Number of measures: {}\n", c.rank(), nmeasures_done_);
     info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
-    info += fmt::format("[Rank {}] Measurement durations:\n{}", c.rank(), measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+    info += fmt::format("[Rank {}] Measurement durations (total = {:.4f}):\n{}", c.rank(), measures_.total_duration(),
+                        measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
     info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
-    info += fmt::format("[Rank {}] Move durations:\n{}", c.rank(), moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+    info += fmt::format("[Rank {}] Move durations (total = {:.4f}):\n{}", c.rank(), moves_.total_duration(),
+                        moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
 
     // gather all output strings on rank 0 to print in order
     auto all_infos = mpi::gather(info, c);

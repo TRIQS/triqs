@@ -165,6 +165,13 @@ namespace triqs::mc_tools {
      */
     [[nodiscard]] std::string get_timings(std::string const &prefix = "") const;
 
+    /// Get the total duration of all moves.
+    [[nodiscard]] double total_duration() const {
+      double total = 0.0;
+      for (auto const &m : moves_) total += m.duration();
+      return total;
+    }
+
     /// Get the index of the current move.
     [[nodiscard]] auto current() const { return current_; }
 

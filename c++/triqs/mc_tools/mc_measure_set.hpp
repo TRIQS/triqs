@@ -151,6 +151,13 @@ namespace triqs::mc_tools {
      */
     [[nodiscard]] std::string get_timings(std::string const &prefix = "") const;
 
+    /// Get the total duration of all measures.
+    [[nodiscard]] double total_duration() const {
+      double total = 0.0;
+      for (auto const &[name, m] : measures_) total += m.duration();
+      return total;
+    }
+
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "measure_set"; }
 
