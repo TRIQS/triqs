@@ -60,8 +60,8 @@ TEST(TRIQSDetManip, DetManipConstructWithMatrixBuilderAndRanges) {
   auto y_args  = x_args;
   auto exp_mat = nda::matrix<double>(5, 5);
   nda::for_each(exp_mat.shape(), [&](auto i, auto j) { exp_mat(i, j) = builder{}(i, j); });
-  auto exp_inv_mat = nda::inverse(exp_mat);
-  auto exp_det     = nda::determinant(exp_mat);
+  auto exp_inv_mat = nda::linalg::inv(exp_mat);
+  auto exp_det     = nda::linalg::det(exp_mat);
   auto check       = [&](auto const &dm, auto exp_size, auto exp_cap) {
     EXPECT_EQ(dm.size(), exp_size);
     EXPECT_EQ(dm.capacity(), exp_cap);
