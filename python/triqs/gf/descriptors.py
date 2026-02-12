@@ -22,7 +22,7 @@
 r""" """
 
 from .descriptor_base import *
-from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq
+from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog
 import warnings
 
 #######################################
@@ -92,7 +92,7 @@ semicircle
             def f(om_):
                 om = om_ + mu
                 return (om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2))/D/D*2*Id
-        elif type(G.mesh) == MeshReFreq:
+        elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             def f(om_):
               om = om_.real + mu
               if (om > -D) and (om < D):
@@ -132,7 +132,7 @@ class Flat (Base):
 
         if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
             f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
-        elif type(G.mesh) == MeshReFreq:
+        elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             def f(om):
               if (om.real > -D) and (om.real < D):
                 return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D) - 1j*pi*Id/(2*D)
