@@ -177,7 +177,7 @@ namespace triqs::gfs {
     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
     template <typename G>
     block_gf(G const &x)
-      requires(BlockGreenFunction_v<G> and std::is_same_v<get_target_t<G>, Target>)
+      requires(BlockGreenFunction_v<G> and (std::is_same_v<get_target_t<G>, Target> or std::is_same_v<typename get_target_t<G>::complex_t, Target>))
        : block_gf() {
       static_assert(G::arity == Arity, "Impossible");
       *this = x;
