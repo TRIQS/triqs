@@ -172,17 +172,28 @@ namespace triqs::gfs {
       for (size_t d = N + 1; d < shape.size(); ++d) n_after *= shape[d];
       long nrhs = n_before * n_after;
 
-      // Pack: (n_before, n_coefs, n_after) -> (n_coefs, nrhs) transposed for cppdlr2d
-      auto data_3d = nda::reshape(g.data(), n_before, n_coefs, n_after);
-      auto gc      = nda::matrix<dcomplex>(n_coefs, nrhs);
+      // Pack: (n_before, n_coefs, n_after) -> structured format for cppdlr2d
+      auto data_3d         = nda::reshape(g.data(), n_before, n_coefs, n_after);
+      long r               = dlr2d_m.dlr_rf().size();
+      auto const &dlr2d_rf = dlr2d_m.dlr2d_rf();
+      auto gc_reg          = nda::array<dcomplex, 4>(3, r, r, nrhs);
+      auto gc_sng          = nda::array<dcomplex, 2>(r, nrhs);
+      gc_reg()             = 0;
+      gc_sng()             = 0;
       for (long ib = 0; ib < n_before; ++ib)
         for (long c = 0; c < n_coefs; ++c)
-          for (long ia = 0; ia < n_after; ++ia) gc(c, ib * n_after + ia) = data_3d(ib, c, ia);
+          for (long ia = 0; ia < n_after; ++ia) {
+            long j = ib * n_after + ia;
+            if (dlr2d_rf(c, 0) < 3)
+              gc_reg(dlr2d_rf(c, 0), dlr2d_rf(c, 1), dlr2d_rf(c, 2), j) = data_3d(ib, c, ia);
+            else
+              gc_sng(dlr2d_rf(c, 1), j) = data_3d(ib, c, ia);
+          }
 
       // Evaluate on imfreq grid
       int idx_min = -static_cast<int>(n_iw);
       int idx_max = static_cast<int>(n_iw) - 1;
-      auto vals   = ::cppdlr2d::coefs2eval_if_grid(dlr2d_m.beta(), dlr2d_m.dlr_rf(), gc, dlr2d_m.dlr2d_rf(), idx_min, idx_max, idx_min, idx_max,
+      auto vals   = ::cppdlr2d::coefs2eval_if_grid(dlr2d_m.beta(), dlr2d_m.dlr_rf(), gc_reg, gc_sng, idx_min, idx_max, idx_min, idx_max,
                                                    dlr2d_m.channel());
       // vals: (nrhs, n_iw_size, n_iw_size)
 
@@ -215,9 +226,22 @@ namespace triqs::gfs {
       int idx_min = -static_cast<int>(n_iw);
       int idx_max = static_cast<int>(n_iw) - 1;
 
-      // Use flat coefficient version of coefs2eval_if_grid
-      auto gc_flat = nda::reshape(g.data(), n_coefs, nrhs);
-      auto vals    = ::cppdlr2d::coefs2eval_if_grid(m.beta(), m.dlr_rf(), gc_flat, m.dlr2d_rf(), idx_min, idx_max, idx_min, idx_max, m.channel());
+      // Convert flat coefficients to structured format
+      long r               = m.dlr_rf().size();
+      auto const &dlr2d_rf = m.dlr2d_rf();
+      auto gc_flat         = nda::reshape(g.data(), n_coefs, nrhs);
+      auto gc_reg          = nda::array<dcomplex, 4>(3, r, r, nrhs);
+      auto gc_sng          = nda::array<dcomplex, 2>(r, nrhs);
+      gc_reg()             = 0;
+      gc_sng()             = 0;
+      for (long j = 0; j < nrhs; ++j)
+        for (long i = 0; i < n_coefs; ++i) {
+          if (dlr2d_rf(i, 0) < 3)
+            gc_reg(dlr2d_rf(i, 0), dlr2d_rf(i, 1), dlr2d_rf(i, 2), j) = gc_flat(i, j);
+          else
+            gc_sng(dlr2d_rf(i, 1), j) = gc_flat(i, j);
+        }
+      auto vals = ::cppdlr2d::coefs2eval_if_grid(m.beta(), m.dlr_rf(), gc_reg, gc_sng, idx_min, idx_max, idx_min, idx_max, m.channel());
 
       // Unpack: vals is (nrhs, nm, nn) -> result is (nm, nn, ...)
       auto result_flat = nda::reshape(result.data(), n_iw_size, n_iw_size, nrhs);
