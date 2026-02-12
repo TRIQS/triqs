@@ -264,7 +264,7 @@ namespace triqs::gfs {
      * The assignment resizes the mesh and the data, invalidating all pointers on them.
      */
     template <typename RHS>
-      requires(BlockGreenFunction_v<RHS> and std::is_same_v<get_target_t<RHS>, Target>)
+      requires(BlockGreenFunction_v<RHS>)
     block_gf &operator=(RHS &&rhs) {
       if constexpr (Arity == 1) {
         _glist.resize(rhs.size());
