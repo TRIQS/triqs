@@ -24,6 +24,7 @@
 
 #include "./MersenneRNG.hpp"
 #include "./random_generator.hpp"
+#include "../utility/first_include.hpp"
 
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/seq.hpp>

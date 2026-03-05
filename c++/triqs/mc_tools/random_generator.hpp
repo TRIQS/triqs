@@ -212,7 +212,7 @@ namespace triqs::mc_tools {
      */
     friend void h5_read(h5::group g, std::string const &name, random_generator &rng) {
       auto gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, rng);
+      h5::assert_hdf5_format(gr, rng); // NOLINT (downcasting to base class)
       h5::read(gr, "name", rng.name_);
       h5::read(gr, "buffer", rng.buffer_);
       h5::read(gr, "idx", rng.idx_);
