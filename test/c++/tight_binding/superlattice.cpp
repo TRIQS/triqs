@@ -1,15 +1,7 @@
-
 #include <triqs/tb/superlattice.hpp>
 #include <triqs/tb/tb_hamiltonian.hpp>
 #include <triqs/lattice/gloc.hpp>
 #include <triqs/test_tools/gfs.hpp>
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-#include <fmt/ostream.h>
-
-// WHy this  ?
-template <typename T, int Rank, typename Layout, char Algebra, typename Allocator>
-struct fmt::formatter<nda::basic_array<T, Rank, Layout, Algebra, Allocator>> : fmt::ostream_formatter {};
 
 using namespace triqs::lattice;
 using namespace triqs::tb;
