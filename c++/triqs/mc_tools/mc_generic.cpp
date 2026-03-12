@@ -256,9 +256,9 @@ namespace triqs::mc_tools {
       info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
       info += fmt::format("[Rank {}] Measurement durations (total = {:.4f}):\n{}", c.rank(), measures_.total_duration(),
                           measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
-      info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
       info += fmt::format("[Rank {}] Move durations (total = {:.4f}):\n{}", c.rank(), moves_.total_duration(),
                           moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+      info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
     }
 
     // gather all output strings on rank 0 to print in order (collective; ranks with low verbosity contribute "")
