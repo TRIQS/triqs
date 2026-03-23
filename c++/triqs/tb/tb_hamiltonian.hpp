@@ -28,7 +28,7 @@ namespace triqs {
 
       // ------------------------ Accessors ----------------------------
       ///
-      [[nodiscard]] auto const &hoppings() const { return this->get_coefficients(); }
+      [[nodiscard]] auto const &hoppings() const { return this->coeff_list; }
 
       /** 
      * @brief Provide an iterator of tuples of $$(R, t_{R, ab})$$
