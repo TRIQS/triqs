@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Simons Foundation
+// Copyright (c) 2020 Simons Foundation
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,14 +13,6 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Michel Ferrero, Olivier Parcollet
+// Authors: Nils Wentzell
 
-#pragma once
-
-#include <triqs/operators/many_body_operator.hpp>
-
-#ifdef C2PY_INCLUDED
-template <> inline constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
-template <> inline constexpr char *c2py::tp_name<triqs::operators::many_body_operator>   = "Operator";
-#include "./c2py_converters/operators_real_complex.hpp"
-#endif
+#include <nda/c2py/converters.hpp>
