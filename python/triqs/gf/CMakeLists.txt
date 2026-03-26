@@ -1,3 +1,6 @@
+# All targets below link to triqs and nda_py
+link_libraries(triqs nda::nda_py)
+
 SET(PYTHON_SOURCES
   __init__.py
   block2_gf.py
