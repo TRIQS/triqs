@@ -1,3 +1,6 @@
+# All targets below link to triqs and nda_py
+link_libraries(triqs nda::nda_py)
+
 # Build C++ extension module
 add_cpp2py_module(atom_diag)
 
