@@ -98,7 +98,7 @@ namespace cpp2py {
       pyref beta = convert_to_python(x.beta);
       if (beta.is_null()) return NULL;
       pyref statistic = convert_to_python(x.statistic);
-      if (n.is_null()) return NULL;
+      if (statistic.is_null()) return NULL;
       PyDict_SetItemString(kw, "n", n);
       PyDict_SetItemString(kw, "beta", beta);
       PyDict_SetItemString(kw, "statistic", statistic);

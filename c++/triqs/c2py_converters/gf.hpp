@@ -41,7 +41,7 @@ namespace c2py {
     // Non-template core: builds and raises the TypeError. Called by the thin template wrappers below.
     inline void set_err_impl(PyObject *p, std::string_view kind, const char *X, std::string const &self_type, std::string const &C) {
       std::ostringstream err;
-      err << "Cpp2py converter: Python to C++ :\n"
+      err << "C2py converter: Python to C++ :\n"
           << "  ... Conversion of a " << kind << " from Python to C++ " << self_type << "\n"
           << "  ... Cannot convert the " << X << " of " << kind << " from Python type :  " << p->ob_type->tp_name << " to the C++ type " << C;
       PyErr_SetString(PyExc_TypeError, err.str().c_str());
@@ -236,7 +236,7 @@ namespace c2py {
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       pyref x = pyref::borrowed(ob);
 
-      // check the gfs and indicies
+      // check the gfs and indices
       pyref gfs = x.attr("_BlockGf__GFlist");
       if (!py_converter<std::vector<gf_view_type>>::is_convertible(gfs, false)) {
         if (raise_exception) _set_err(gfs, "_BlockGf__GFlist", triqs::utility::typeid_name<std::vector<gf_view_type>>());
