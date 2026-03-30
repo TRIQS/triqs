@@ -114,7 +114,7 @@ namespace c2py {
       pyref beta = cxx2py(x.beta);
       if (beta.is_null()) return NULL;
       pyref statistic = cxx2py(x.statistic);
-      if (n.is_null()) return NULL;
+      if (statistic.is_null()) return NULL;
       PyDict_SetItemString(kw, "n", n);
       PyDict_SetItemString(kw, "beta", beta);
       PyDict_SetItemString(kw, "statistic", statistic);
