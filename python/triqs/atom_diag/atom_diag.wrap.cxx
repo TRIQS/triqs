@@ -141,6 +141,11 @@ static auto const _c2py_fun_7 =
 static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
 
+// truncate
+static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_0 const &self, double energy_cutoff, int max_states) -> decltype(auto) { return self.truncate(energy_cutoff, max_states); }, "self",
+   "energy_cutoff"_a = std::numeric_limits<double>::infinity(), "max_states"_a = -1)};
+
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
 Get the target subspace :math:`B'` of the annihilation operator :math:`\hat c_i` acting on subspace
 :math:`B`.
@@ -311,6 +316,28 @@ Returns
    {{c2py::python_typename<int>()}},
    {c2py::python_typename<
       const nda::basic_array<double, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()});
+static const auto _c2py_doc_9 = _c2py_fun_9.doc(R"DOC(
+Create a truncated copy of this atom_diag by discarding high-energy eigenstates.
+
+Keeps the eigenstates whose energy (relative to the ground state) does not exceed ``energy_cutoff,``
+subject to a global cap of ``max_states`` states across all subspaces. Subspaces left without any retained
+eigenstate are dropped. Note that a degenerate multiplet straddling the cutoff (or the ``max_states`` boundary)
+may be split, keeping only some of its states.
+
+Parameters
+----------
+energy_cutoff : {par_0}
+   Keep eigenstates with energy :math:`\le` energy_cutoff (relative to the ground state).
+max_states : {par_1}
+   Keep at most this many eigenstates globally across all subspaces (-1 means unlimited).
+
+Returns
+-------
+{ret_0}
+   New atom_diag restricted to the retained eigenstates.
+)DOC",
+                                                {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}},
+                                                {c2py::python_typename<triqs::atom_diag::atom_diag<false>>()});
 
 // ----- Method table ----
 template <>
@@ -324,6 +351,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
    {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
    {"get_unitary_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
+   {"truncate", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_0>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_h5<_c2py_cls_0>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_h5<_c2py_cls_0>, METH_O, ""},
@@ -331,18 +359,39 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 };
 
 static constexpr auto prop_doc_0  = R"DOC(Get all eigenvalues :math:`E_{B,i}` grouped by invariant subspace.)DOC";
-static constexpr auto prop_doc_1  = R"DOC(Get the Fock states of every invariant subspace.)DOC";
+static constexpr auto prop_doc_1  = R"DOC(Get the Fock states of every invariant subspace.
+
+.. note::
+
+   See the single-subspace overload for truncation behavior.)DOC";
 static constexpr auto prop_doc_2  = R"DOC(Get the data of the fundamental operator set used at construction.)DOC";
-static constexpr auto prop_doc_3  = R"DOC(Get the dimension of the full Hilbert space.)DOC";
+static constexpr auto prop_doc_3  = R"DOC(Get the dimension of the full Hilbert space.
+
+.. note::
+
+   After truncation this still returns the original (untruncated) dimension. Use
+         get_total_eigenstate_count() for the number of retained eigenstates.)DOC";
 static constexpr auto prop_doc_4  = R"DOC(Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.)DOC";
 static constexpr auto prop_doc_5  = R"DOC(Get the Hamiltonian used at construction as a generic many-body operator.)DOC";
-static constexpr auto prop_doc_6  = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
-static constexpr auto prop_doc_7  = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
-static constexpr auto prop_doc_8  = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
-static constexpr auto prop_doc_9  = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
+static constexpr auto prop_doc_6  = R"DOC(Check whether the vacuum state :math:`|0\rangle` is present in the (possibly truncated) Hilbert space.)DOC";
+static constexpr auto prop_doc_7  = R"DOC(Check whether this atom_diag has been truncated.)DOC";
+static constexpr auto prop_doc_8  = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
+static constexpr auto prop_doc_9  = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_10 = R"DOC(Get the total number of retained eigenstates across all invariant subspaces.)DOC";
+static constexpr auto prop_doc_11 = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
+static constexpr auto prop_doc_12 = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
 
-The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.)DOC";
-static constexpr auto prop_doc_10 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
+The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.
+
+.. note::
+
+   After truncation this is a projection into the truncated eigenbasis (not unit-normalized), and it is a
+   zero vector if the vacuum subspace was removed. Check has_vacuum() first.)DOC";
+static constexpr auto prop_doc_13 = R"DOC(Get the index of the invariant subspace containing the vacuum state.
+
+.. note::
+
+   Returns -1 if the vacuum subspace was removed during truncation. Check has_vacuum() first.)DOC";
 
 // ----- Member and property table ----
 
@@ -356,14 +405,18 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
     prop_doc_3, nullptr},
    {"gs_energy", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_gs_energy)>, nullptr, prop_doc_4, nullptr},
    {"h_atomic", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_h_atomic_as_mbop)>, nullptr, prop_doc_5, nullptr},
-   {"n_subspaces", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::n_subspaces)>, nullptr, prop_doc_6, nullptr},
-   {"quantum_numbers", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_quantum_numbers)>, nullptr, prop_doc_7,
+   {"has_vacuum", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::has_vacuum)>, nullptr, prop_doc_6, nullptr},
+   {"is_truncated", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::is_truncated)>, nullptr, prop_doc_7, nullptr},
+   {"n_subspaces", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::n_subspaces)>, nullptr, prop_doc_8, nullptr},
+   {"quantum_numbers", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_quantum_numbers)>, nullptr, prop_doc_9,
     nullptr},
-   {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_unitary_matrices)>, nullptr, prop_doc_8,
-    nullptr},
-   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_state)>, nullptr, prop_doc_9, nullptr},
-   {"vacuum_subspace_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_subspace_index)>, nullptr,
+   {"total_eigenstate_count", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_total_eigenstate_count)>, nullptr,
     prop_doc_10, nullptr},
+   {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_unitary_matrices)>, nullptr, prop_doc_11,
+    nullptr},
+   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_state)>, nullptr, prop_doc_12, nullptr},
+   {"vacuum_subspace_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_subspace_index)>, nullptr,
+    prop_doc_13, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
@@ -462,46 +515,51 @@ qn_vector : {par_5}
                      {c2py::python_typename<int>()},
                      {c2py::python_typename<const std::vector<triqs::atom_diag::atom_diag<true>::many_body_op_t> &>()}});
 // c_connection
-static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.c_connection(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // c_matrix
-static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.c_matrix(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // cdag_connection
-static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.cdag_connection(op_linear_index, sp_index); },
    "self", "op_linear_index", "sp_index")};
 
 // cdag_matrix
-static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.cdag_matrix(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // flatten_subspace_index
-static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int sp_index, int i) -> decltype(auto) { return self.flatten_subspace_index(sp_index, i); }, "self", "sp_index", "i")};
 
 // get_eigenvalue
-static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_15 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int sp_index, int i) -> decltype(auto) { return self.get_eigenvalue(sp_index, i); }, "self", "sp_index", "i")};
 
 // get_subspace_dim
-static auto const _c2py_fun_15 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_1 const &self, int sp_index) -> decltype(auto) { return self.get_subspace_dim(sp_index); }, "self", "sp_index")};
 
 // get_subspace_dims
-static auto const _c2py_fun_16 =
+static auto const _c2py_fun_17 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.get_subspace_dims(); }, "self")};
 
 // get_unitary_matrix
-static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_1 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
 
-static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC(
+// truncate
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_1 const &self, double energy_cutoff, int max_states) -> decltype(auto) { return self.truncate(energy_cutoff, max_states); }, "self",
+   "energy_cutoff"_a = std::numeric_limits<double>::infinity(), "max_states"_a = -1)};
+
+static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC(
 Get the target subspace :math:`B'` of the annihilation operator :math:`\hat c_i` acting on subspace
 :math:`B`.
 
@@ -524,8 +582,8 @@ Returns
 {ret_0}
    Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
-                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC(
+                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
 Get the matrix block of the annihilation operator :math:`\hat c_i` acting on subspace :math:`B`.
 
 The returned matrix is the representation of :math:`\hat c_i` in the eigenbasis of :math:`\hat H`, 
@@ -546,7 +604,7 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                   {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
-static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
+static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC(
 Get the target subspace :math:`B'` of the creation operator :math:`\hat c^\dagger_i` acting on subspace
 :math:`B`.
 
@@ -570,7 +628,7 @@ Returns
    Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC(
+static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
 Get the matrix block of the creation operator :math:`\hat c^\dagger_i` acting on subspace :math:`B`.
 
 The returned matrix is the representation of :math:`\hat c^\dagger_i` in the eigenbasis of
@@ -591,7 +649,7 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                   {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
-static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
+static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
 Map a subspace-local pair :math:`(B, i)` to its linear index in the full Hilbert space.
 
 The full-Hilbert-space eigenstate index is
@@ -614,8 +672,8 @@ Returns
    Linear eigenstate index :math:`d(B, i)` in the eigenbasis of the full Hilbert space.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
-static const auto _c2py_doc_14 =
-   _c2py_fun_14.doc(R"DOC(
+static const auto _c2py_doc_15 =
+   _c2py_fun_15.doc(R"DOC(
 Get the eigenvalue :math:`E_{B,i}` of the Hamiltonian.
 
 Parameters
@@ -631,7 +689,7 @@ Returns
    Eigenvalue :math:`E_{B,i}`, with the global ground-state energy subtracted.
 )DOC",
                     {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
+static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC(
 Get the dimension :math:`\dim(B)` of invariant subspace :math:`B`.
 
 Parameters
@@ -645,7 +703,7 @@ Returns
    Number of eigenstates in subspace :math:`B`.
 )DOC",
                                                   {{c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
-static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC(
+static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC(
 Get the dimensions :math:`\dim(B)` of all invariant subspaces.
 
 Returns
@@ -654,7 +712,7 @@ Returns
    List of subspace dimensions, indexed by subspace index :math:`B`.
 )DOC",
                                                   {}, {c2py::python_typename<std::vector<int>>()});
-static const auto _c2py_doc_17 = _c2py_fun_17.doc(
+static const auto _c2py_doc_18 = _c2py_fun_18.doc(
    R"DOC(
 Get the unitary matrix :math:`U_B` mapping the Fock basis of subspace :math:`B` to its eigenbasis.
 
@@ -672,59 +730,107 @@ Returns
    {{c2py::python_typename<int>()}},
    {c2py::python_typename<
       const nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()});
+static const auto _c2py_doc_19 = _c2py_fun_19.doc(R"DOC(
+Create a truncated copy of this atom_diag by discarding high-energy eigenstates.
+
+Keeps the eigenstates whose energy (relative to the ground state) does not exceed ``energy_cutoff,``
+subject to a global cap of ``max_states`` states across all subspaces. Subspaces left without any retained
+eigenstate are dropped. Note that a degenerate multiplet straddling the cutoff (or the ``max_states`` boundary)
+may be split, keeping only some of its states.
+
+Parameters
+----------
+energy_cutoff : {par_0}
+   Keep eigenstates with energy :math:`\le` energy_cutoff (relative to the ground state).
+max_states : {par_1}
+   Keep at most this many eigenstates globally across all subspaces (-1 means unlimited).
+
+Returns
+-------
+{ret_0}
+   New atom_diag restricted to the retained eigenstates.
+)DOC",
+                                                  {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}},
+                                                  {c2py::python_typename<triqs::atom_diag::atom_diag<true>>()});
 
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
-   {"c_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
-   {"c_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
-   {"cdag_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
-   {"cdag_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
-   {"flatten_subspace_index", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
-   {"get_eigenvalue", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
-   {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
-   {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
-   {"get_unitary_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
+   {"c_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"c_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
+   {"cdag_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
+   {"cdag_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
+   {"flatten_subspace_index", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"get_eigenvalue", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
+   {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
+   {"get_unitary_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
+   {"truncate", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_1>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_h5<_c2py_cls_1>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_h5<_c2py_cls_1>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_11 = R"DOC(Get all eigenvalues :math:`E_{B,i}` grouped by invariant subspace.)DOC";
-static constexpr auto prop_doc_12 = R"DOC(Get the Fock states of every invariant subspace.)DOC";
-static constexpr auto prop_doc_13 = R"DOC(Get the data of the fundamental operator set used at construction.)DOC";
-static constexpr auto prop_doc_14 = R"DOC(Get the dimension of the full Hilbert space.)DOC";
-static constexpr auto prop_doc_15 = R"DOC(Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.)DOC";
-static constexpr auto prop_doc_16 = R"DOC(Get the Hamiltonian used at construction as a generic many-body operator.)DOC";
-static constexpr auto prop_doc_17 = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
-static constexpr auto prop_doc_18 = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
-static constexpr auto prop_doc_19 = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
-static constexpr auto prop_doc_20 = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
+static constexpr auto prop_doc_14 = R"DOC(Get all eigenvalues :math:`E_{B,i}` grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_15 = R"DOC(Get the Fock states of every invariant subspace.
 
-The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.)DOC";
-static constexpr auto prop_doc_21 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
+.. note::
+
+   See the single-subspace overload for truncation behavior.)DOC";
+static constexpr auto prop_doc_16 = R"DOC(Get the data of the fundamental operator set used at construction.)DOC";
+static constexpr auto prop_doc_17 = R"DOC(Get the dimension of the full Hilbert space.
+
+.. note::
+
+   After truncation this still returns the original (untruncated) dimension. Use
+         get_total_eigenstate_count() for the number of retained eigenstates.)DOC";
+static constexpr auto prop_doc_18 = R"DOC(Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.)DOC";
+static constexpr auto prop_doc_19 = R"DOC(Get the Hamiltonian used at construction as a generic many-body operator.)DOC";
+static constexpr auto prop_doc_20 = R"DOC(Check whether the vacuum state :math:`|0\rangle` is present in the (possibly truncated) Hilbert space.)DOC";
+static constexpr auto prop_doc_21 = R"DOC(Check whether this atom_diag has been truncated.)DOC";
+static constexpr auto prop_doc_22 = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
+static constexpr auto prop_doc_23 = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_24 = R"DOC(Get the total number of retained eigenstates across all invariant subspaces.)DOC";
+static constexpr auto prop_doc_25 = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
+static constexpr auto prop_doc_26 = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
+
+The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.
+
+.. note::
+
+   After truncation this is a projection into the truncated eigenbasis (not unit-normalized), and it is a
+   zero vector if the vacuum subspace was removed. Check has_vacuum() first.)DOC";
+static constexpr auto prop_doc_27 = R"DOC(Get the index of the invariant subspace containing the vacuum state.
+
+.. note::
+
+   Returns -1 if the vacuum subspace was removed during truncation. Check has_vacuum() first.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {
 
-   {"energies", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_energies)>, nullptr, prop_doc_11, nullptr},
-   {"fock_states", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_fock_states)>, nullptr, prop_doc_12, nullptr},
-   {"fops", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_fops_as_data)>, nullptr, prop_doc_13, nullptr},
+   {"energies", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_energies)>, nullptr, prop_doc_14, nullptr},
+   {"fock_states", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_fock_states)>, nullptr, prop_doc_15, nullptr},
+   {"fops", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_fops_as_data)>, nullptr, prop_doc_16, nullptr},
    {"full_hilbert_space_dim", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_full_hilbert_space_dim)>, nullptr,
-    prop_doc_14, nullptr},
-   {"gs_energy", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_gs_energy)>, nullptr, prop_doc_15, nullptr},
-   {"h_atomic", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_h_atomic_as_mbop)>, nullptr, prop_doc_16, nullptr},
-   {"n_subspaces", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::n_subspaces)>, nullptr, prop_doc_17, nullptr},
-   {"quantum_numbers", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_quantum_numbers)>, nullptr, prop_doc_18,
+    prop_doc_17, nullptr},
+   {"gs_energy", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_gs_energy)>, nullptr, prop_doc_18, nullptr},
+   {"h_atomic", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_h_atomic_as_mbop)>, nullptr, prop_doc_19, nullptr},
+   {"has_vacuum", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::has_vacuum)>, nullptr, prop_doc_20, nullptr},
+   {"is_truncated", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::is_truncated)>, nullptr, prop_doc_21, nullptr},
+   {"n_subspaces", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::n_subspaces)>, nullptr, prop_doc_22, nullptr},
+   {"quantum_numbers", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_quantum_numbers)>, nullptr, prop_doc_23,
     nullptr},
-   {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_unitary_matrices)>, nullptr, prop_doc_19,
+   {"total_eigenstate_count", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_total_eigenstate_count)>, nullptr,
+    prop_doc_24, nullptr},
+   {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_unitary_matrices)>, nullptr, prop_doc_25,
     nullptr},
-   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_state)>, nullptr, prop_doc_20, nullptr},
+   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_state)>, nullptr, prop_doc_26, nullptr},
    {"vacuum_subspace_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_subspace_index)>, nullptr,
-    prop_doc_21, nullptr},
+    prop_doc_27, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
@@ -750,7 +856,7 @@ Two specializations are provided, one for real-valued and one for complex-valued
 // ==================== module functions ====================
 
 // act
-static auto const _c2py_fun_18 =
+static auto const _c2py_fun_20 =
    c2py::dispatcher_f_kw_t{c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                                          const typename triqs::atom_diag::atom_diag<false>::full_hilbert_space_state_t &st,
                                          const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::act<false>(op, st, atom); },
@@ -761,14 +867,14 @@ static auto const _c2py_fun_18 =
                                       "op", "st", "atom")};
 
 // atomic_density_matrix
-static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::atom_diag::atom_diag<0> &atom, double beta) { return triqs::atom_diag::atomic_density_matrix<false>(atom, beta); },
               "atom", "beta"),
    c2py::cfun([](const triqs::atom_diag::atom_diag<1> &atom, double beta) { return triqs::atom_diag::atomic_density_matrix<true>(atom, beta); },
               "atom", "beta")};
 
 // atomic_g_iw
-static auto const _c2py_fun_20 =
+static auto const _c2py_fun_22 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_iw,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -783,7 +889,7 @@ static auto const _c2py_fun_20 =
                               "atom", "beta", "gf_struct", "n_iw", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_l
-static auto const _c2py_fun_21 =
+static auto const _c2py_fun_23 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_l,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -798,7 +904,7 @@ static auto const _c2py_fun_21 =
                               "atom", "beta", "gf_struct", "n_l", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_tau
-static auto const _c2py_fun_22 =
+static auto const _c2py_fun_24 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_tau,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -813,7 +919,7 @@ static auto const _c2py_fun_22 =
                               "atom", "beta", "gf_struct", "n_tau", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_w
-static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
    c2py::cfun(
       [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct,
          const std::pair<double, double> &energy_window, int n_w, double broadening, const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -828,14 +934,14 @@ static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
       "atom", "beta", "gf_struct", "energy_window", "n_w", "broadening"_a = 0, "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // partition_function
-static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::atom_diag::atom_diag<0> &atom, double beta) { return triqs::atom_diag::partition_function<false>(atom, beta); }, "atom",
               "beta"),
    c2py::cfun([](const triqs::atom_diag::atom_diag<1> &atom, double beta) { return triqs::atom_diag::partition_function<true>(atom, beta); }, "atom",
               "beta")};
 
 // quantum_number_eigenvalues
-static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::quantum_number_eigenvalues<false>(op, atom); },
               "op", "atom"),
@@ -844,7 +950,7 @@ static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
               "op", "atom")};
 
 // quantum_number_eigenvalues_checked
-static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_28 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::quantum_number_eigenvalues_checked<false>(op, atom); },
               "op", "atom"),
@@ -853,7 +959,7 @@ static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{
               "op", "atom")};
 
 // trace_rho_op
-static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_29 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::block_matrix_t &density_matrix,
                  const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::trace_rho_op<false>(density_matrix, op, atom); },
@@ -863,7 +969,7 @@ static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{
                  const triqs::atom_diag::atom_diag<1> &atom) { return triqs::atom_diag::trace_rho_op<true>(density_matrix, op, atom); },
               "density_matrix", "op", "atom")};
 
-static const auto _c2py_doc_18 = _c2py_fun_18.doc(
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(
    R"DOC(
 Act with a many-body operator on a state vector, :math:`|\psi'\rangle = \hat O\, |\psi\rangle`.
 
@@ -900,7 +1006,7 @@ Returns
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<typename triqs::atom_diag::atom_diag<false>::full_hilbert_space_state_t>(),
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::full_hilbert_space_state_t>()});
-static const auto _c2py_doc_19 = _c2py_fun_19.doc(
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(
    R"DOC(
 Compute the atomic density matrix at inverse temperature :math:`\beta`.
 
@@ -931,7 +1037,7 @@ Returns
     {c2py::python_typename<double>()}},
    {c2py::python_typename<typename triqs::atom_diag::atom_diag<false>::block_matrix_t>(),
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::block_matrix_t>()});
-static const auto _c2py_doc_20 = _c2py_fun_20.doc(
+static const auto _c2py_doc_22 = _c2py_fun_22.doc(
    R"DOC(
 Build the atomic Matsubara Green's function directly from a solved diagonalization problem.
 
@@ -967,7 +1073,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imfreq>>()});
-static const auto _c2py_doc_21 = _c2py_fun_21.doc(
+static const auto _c2py_doc_23 = _c2py_fun_23.doc(
    R"DOC(
 Build the atomic Green's function in the Legendre basis directly from a solved diagonalization problem.
 
@@ -1001,7 +1107,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::legendre>>()});
-static const auto _c2py_doc_22 = _c2py_fun_22.doc(
+static const auto _c2py_doc_24 = _c2py_fun_24.doc(
    R"DOC(
 Build the atomic imaginary-time Green's function directly from a solved diagonalization problem.
 
@@ -1035,7 +1141,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imtime>>()});
-static const auto _c2py_doc_23 = _c2py_fun_23.doc(
+static const auto _c2py_doc_25 = _c2py_fun_25.doc(
    R"DOC(
 Build the atomic retarded Green's function on a real-frequency mesh directly from a solved
 diagonalization problem.
@@ -1080,7 +1186,7 @@ Returns
     {c2py::python_typename<double>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::refreq>>()});
-static const auto _c2py_doc_24 = _c2py_fun_24.doc(
+static const auto _c2py_doc_26 = _c2py_fun_26.doc(
    R"DOC(
 Compute the atomic partition function at inverse temperature :math:`\beta`.
 
@@ -1107,7 +1213,7 @@ Returns
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()}},
    {c2py::python_typename<double>()});
-static const auto _c2py_doc_25 = _c2py_fun_25.doc(
+static const auto _c2py_doc_27 = _c2py_fun_27.doc(
    R"DOC(
 Tabulate the eigenvalues :math:`q_{B,i} = \langle B,i\,|\,\hat Q\,|\,B,i\rangle` of a quantum-number
 operator :math:`\hat Q` over all eigenstates of the Hamiltonian.
@@ -1133,7 +1239,7 @@ Returns
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<std::vector<std::vector<triqs::atom_diag::quantum_number_t>>>()});
-static const auto _c2py_doc_26 = _c2py_fun_26.doc(
+static const auto _c2py_doc_28 = _c2py_fun_28.doc(
    R"DOC(
 Tabulate the eigenvalues :math:`q_{B,i}` of a quantum-number operator :math:`\hat Q`, also checking that 
 the operator is diagonal in the eigenbasis.
@@ -1158,7 +1264,7 @@ Returns
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<std::vector<std::vector<triqs::atom_diag::quantum_number_t>>>()});
-static const auto _c2py_doc_27 = _c2py_fun_27.doc(
+static const auto _c2py_doc_29 = _c2py_fun_29.doc(
    R"DOC(
 Compute the trace of a many-body operator weighted by a block-diagonal density matrix.
 
@@ -1198,16 +1304,16 @@ Returns
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"act", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
-   {"atomic_density_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
-   {"atomic_g_iw", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
-   {"atomic_g_l", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
-   {"atomic_g_tau", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
-   {"atomic_g_w", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
-   {"partition_function", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
-   {"quantum_number_eigenvalues", (PyCFunction)c2py::pyfkw<_c2py_fun_25>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_25.c_str()},
-   {"quantum_number_eigenvalues_checked", (PyCFunction)c2py::pyfkw<_c2py_fun_26>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_26.c_str()},
-   {"trace_rho_op", (PyCFunction)c2py::pyfkw<_c2py_fun_27>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_27.c_str()},
+   {"act", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"atomic_density_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"atomic_g_iw", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
+   {"atomic_g_l", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
+   {"atomic_g_tau", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
+   {"atomic_g_w", (PyCFunction)c2py::pyfkw<_c2py_fun_25>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_25.c_str()},
+   {"partition_function", (PyCFunction)c2py::pyfkw<_c2py_fun_26>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_26.c_str()},
+   {"quantum_number_eigenvalues", (PyCFunction)c2py::pyfkw<_c2py_fun_27>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_27.c_str()},
+   {"quantum_number_eigenvalues_checked", (PyCFunction)c2py::pyfkw<_c2py_fun_28>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_28.c_str()},
+   {"trace_rho_op", (PyCFunction)c2py::pyfkw<_c2py_fun_29>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_29.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

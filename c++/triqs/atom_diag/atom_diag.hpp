@@ -39,6 +39,7 @@
 #include <complex>
 #include <initializer_list>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -311,6 +312,8 @@ namespace triqs::atom_diag {
     C2PY_IGNORE class hilbert_space const &get_full_hilbert_space() const { return full_hs; }
 
     /// Get the dimension of the full Hilbert space.
+    /// @note After truncation this still returns the original (untruncated) dimension. Use
+    ///       get_total_eigenstate_count() for the number of retained eigenstates.
     C2PY_PROPERTY_GET(full_hilbert_space_dim) int get_full_hilbert_space_dim() const { return full_hs.size(); }
 
     /// Get the number of invariant subspaces produced by the chosen partitioning scheme.
@@ -340,6 +343,9 @@ namespace triqs::atom_diag {
      *
      * @param sp_index Subspace index \f$ B \f$.
      * @return List of \f$ \dim(B) \f$ Fock states (encoded as 64-bit integers) spanning subspace \f$ B \f$.
+     *
+     * @note After truncation this returns ALL original Fock states of the subspace, which may exceed the number of
+     *       retained eigenstates. Use get_subspace_dim(sp_index) for the eigenstate count.
      */
     C2PY_IGNORE std::vector<fock_state_t> const &get_fock_states(int sp_index) const { return sub_hilbert_spaces[sp_index].get_all_fock_states(); }
 
@@ -348,6 +354,8 @@ namespace triqs::atom_diag {
      *
      * @return Outer list indexed by subspace index \f$ B \f$, inner list of length \f$ \dim(B) \f$ giving the Fock
      * states (encoded as 64-bit integers) spanning that subspace.
+     *
+     * @note See the single-subspace overload for truncation behavior.
      */
     C2PY_PROPERTY_GET(fock_states) std::vector<std::vector<fock_state_t>> get_fock_states() const {
       std::vector<std::vector<fock_state_t>> fock_states(n_subspaces());
@@ -432,7 +440,11 @@ namespace triqs::atom_diag {
     /// Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.
     C2PY_PROPERTY_GET(gs_energy) double get_gs_energy() const { return gs_energy; }
 
+    /// Check whether the vacuum state \f$ |0\rangle \f$ is present in the (possibly truncated) Hilbert space.
+    C2PY_PROPERTY_GET(has_vacuum) bool has_vacuum() const { return vacuum_subspace_index != -1; }
+
     /// Get the index of the invariant subspace containing the vacuum state.
+    /// @note Returns -1 if the vacuum subspace was removed during truncation. Check has_vacuum() first.
     C2PY_PROPERTY_GET(vacuum_subspace_index) long get_vacuum_subspace_index() const { return vacuum_subspace_index; }
 
     /**
@@ -440,9 +452,35 @@ namespace triqs::atom_diag {
      *
      * @details The returned vector is expressed in the eigenbasis of the Hamiltonian \f$ \hat H \f$.
      *
+     * @note After truncation this is a projection into the truncated eigenbasis (not unit-normalized), and it is a
+     * zero vector if the vacuum subspace was removed. Check has_vacuum() first.
+     *
      * @return Vacuum state vector.
      */
     C2PY_PROPERTY_GET(vacuum_state) full_hilbert_space_state_t const &get_vacuum_state() const { return vacuum; }
+
+    /// Check whether this atom_diag has been truncated.
+    C2PY_PROPERTY_GET(is_truncated) bool is_truncated() const { return truncated_; }
+
+    /// Get the total number of retained eigenstates across all invariant subspaces.
+    C2PY_PROPERTY_GET(total_eigenstate_count) int get_total_eigenstate_count() const {
+      if (n_subspaces() == 0) return 0;
+      return first_eigenstate_of_subspace.back() + get_subspace_dim(n_subspaces() - 1);
+    }
+
+    /**
+     * @brief Create a truncated copy of this atom_diag by discarding high-energy eigenstates.
+     *
+     * @details Keeps the eigenstates whose energy (relative to the ground state) does not exceed @p energy_cutoff,
+     * subject to a global cap of @p max_states states across all subspaces. Subspaces left without any retained
+     * eigenstate are dropped. Note that a degenerate multiplet straddling the cutoff (or the @p max_states boundary)
+     * may be split, keeping only some of its states.
+     *
+     * @param energy_cutoff Keep eigenstates with energy \f$ \le \f$ energy_cutoff (relative to the ground state).
+     * @param max_states Keep at most this many eigenstates globally across all subspaces (-1 means unlimited).
+     * @return New atom_diag restricted to the retained eigenstates.
+     */
+    [[nodiscard]] atom_diag truncate(double energy_cutoff = std::numeric_limits<double>::infinity(), int max_states = -1) const;
 
     /**
      * @brief Get the target subspace \f$ B' \f$ of the annihilation operator \f$ \hat c_i \f$ acting on subspace
@@ -565,6 +603,7 @@ namespace triqs::atom_diag {
     full_hilbert_space_state_t vacuum;                          // Vacuum vector (in the eigenbasis)
     std::vector<std::vector<quantum_number_t>> quantum_numbers; // Values of the quantum numbers for each subspace
     std::vector<int> first_eigenstate_of_subspace;              // Index of the first eigenstate of each subspace
+    bool truncated_{false};                                     // Flag indicating whether truncation was applied
   };
 
   /** @} */

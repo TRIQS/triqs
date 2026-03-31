@@ -28,8 +28,11 @@
 
 #include <itertools/itertools.hpp>
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
+#include <map>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -89,7 +92,8 @@ namespace triqs::atom_diag {
 
   ATOM_DIAG_METHOD(void, compute_vacuum()) {
     // Compute vacuum vector in the eigenbasis
-    vacuum() = 0;
+    vacuum()              = 0;
+    vacuum_subspace_index = -1;
     for (auto sp : range(sub_hilbert_spaces.size())) {
       if (sub_hilbert_spaces[sp].has_state(fock_state_t(0))) {
         vacuum_subspace_index               = sp;
@@ -114,6 +118,7 @@ namespace triqs::atom_diag {
 
   template <bool Complex>
   auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const -> std::pair<int, matrix_t> {
+    if (truncated_) TRIQS_RUNTIME_ERROR << "get_matrix_element_of_monomial is not supported on a truncated atom_diag";
 
     imperative_operator<class hilbert_space, scalar_t, false> monomial_op(many_body_op_t(1.0, op_vec), fops);
 
@@ -184,6 +189,126 @@ namespace triqs::atom_diag {
     return op_mat;
   }
 
+  // -----------------------------------------------------------------
+  // Truncation
+
+  template <bool Complex> atom_diag<Complex> atom_diag<Complex>::truncate(double energy_cutoff, int max_states) const {
+    if (energy_cutoff == std::numeric_limits<double>::infinity() && max_states < 0) return *this;
+
+    atom_diag result = *this;
+
+    // Collect all states sorted by energy
+    struct state_info_t {
+      double energy;
+      int sp_idx, inner_idx;
+    };
+    std::vector<state_info_t> all_states;
+    for (int sp = 0; sp < result.n_subspaces(); ++sp)
+      for (int i = 0; i < result.get_subspace_dim(sp); ++i) all_states.push_back({result.eigensystems[sp].eigenvalues[i], sp, i});
+    std::ranges::sort(all_states, {}, &state_info_t::energy);
+
+    // Determine which states to keep
+    std::vector<std::vector<int>> states_to_keep(result.n_subspaces());
+    int kept_count = 0;
+    for (auto const &[energy, sp_idx, inner_idx] : all_states) {
+      if ((max_states < 0 || kept_count < max_states) && energy <= energy_cutoff) {
+        states_to_keep[sp_idx].push_back(inner_idx);
+        ++kept_count;
+      }
+    }
+    for (auto &indices : states_to_keep) std::ranges::sort(indices);
+
+    // No states were actually removed
+    if (kept_count == static_cast<int>(all_states.size())) return result;
+
+    // Build old->new subspace index mapping
+    std::map<int, int> sp_remap;
+    for (int sp = 0; sp < result.n_subspaces(); ++sp)
+      if (!states_to_keep[sp].empty()) sp_remap[sp] = static_cast<int>(sp_remap.size());
+    if (sp_remap.empty()) TRIQS_RUNTIME_ERROR << "Truncation removed all states!";
+    int n_sp_new = static_cast<int>(sp_remap.size());
+
+    // Truncate eigensystems
+    std::vector<eigensystem_t> new_eigensystems(n_sp_new);
+    for (auto const &[old_sp, new_sp] : sp_remap) {
+      auto const &keep = states_to_keep[old_sp];
+      auto &old_eig    = result.eigensystems[old_sp];
+      auto &new_eig    = new_eigensystems[new_sp];
+
+      new_eig.eigenvalues    = vector<double>(old_eig.eigenvalues(keep));
+      new_eig.unitary_matrix = old_eig.unitary_matrix(range::all, keep);
+    }
+
+    // Rebuild sub_hilbert_spaces.
+    // Each sub_hilbert_space retains ALL its original Fock states even though the
+    // eigensystem now has fewer eigenstates. This means sub_hilbert_spaces[sp].dimension()
+    // may exceed get_subspace_dim(sp). This is intentional: the Fock states are needed by
+    // compute_vacuum() to locate |0> and by get_fock_states() for basis labeling.
+    // The unitary_matrix becomes rectangular (n_fock x n_kept) rather than square.
+    std::vector<sub_hilbert_space> new_sub_hilbert_spaces;
+    new_sub_hilbert_spaces.reserve(n_sp_new);
+    for (auto const &[old_sp, new_sp] : sp_remap) {
+      new_sub_hilbert_spaces.push_back(result.sub_hilbert_spaces[old_sp]);
+      new_sub_hilbert_spaces.back().set_index(new_sp);
+    }
+
+    // Update connection matrices
+    int n_ops = static_cast<int>(result.creation_connection.extent(0));
+    matrix<long> new_creation_connection(n_ops, n_sp_new);
+    matrix<long> new_annihilation_connection(n_ops, n_sp_new);
+    new_creation_connection.as_array_view()     = -1;
+    new_annihilation_connection.as_array_view() = -1;
+
+    for (int op = 0; op < n_ops; ++op) {
+      for (auto const &[old_sp, new_sp] : sp_remap) {
+        if (long t = result.creation_connection(op, old_sp); t != -1 && sp_remap.contains(t)) new_creation_connection(op, new_sp) = sp_remap[t];
+        if (long t = result.annihilation_connection(op, old_sp); t != -1 && sp_remap.contains(t)) new_annihilation_connection(op, new_sp) = sp_remap[t];
+      }
+    }
+
+    // Rebuild c/cdag matrices with truncated dimensions
+    std::vector<std::vector<matrix_t>> new_c_matrices(n_ops, std::vector<matrix_t>(n_sp_new));
+    std::vector<std::vector<matrix_t>> new_cdag_matrices(n_ops, std::vector<matrix_t>(n_sp_new));
+
+    auto truncate_op_matrices = [&](auto const &old_matrices, auto &new_matrices, auto const &connection) {
+      for (int op = 0; op < n_ops; ++op) {
+        for (auto const &[old_sp, new_sp] : sp_remap) {
+          long old_target = connection(op, old_sp);
+          if (old_target == -1 || !sp_remap.contains(old_target)) continue;
+          auto const &old_mat = old_matrices[op][old_sp];
+          if (old_mat.is_empty()) continue;
+
+          new_matrices[op][new_sp] = old_mat(states_to_keep[old_target], states_to_keep[old_sp]);
+        }
+      }
+    };
+
+    truncate_op_matrices(result.c_matrices, new_c_matrices, result.annihilation_connection);
+    truncate_op_matrices(result.cdag_matrices, new_cdag_matrices, result.creation_connection);
+
+    // Apply all updates
+    result.eigensystems            = std::move(new_eigensystems);
+    result.sub_hilbert_spaces      = std::move(new_sub_hilbert_spaces);
+    result.creation_connection     = std::move(new_creation_connection);
+    result.annihilation_connection = std::move(new_annihilation_connection);
+    result.c_matrices              = std::move(new_c_matrices);
+    result.cdag_matrices           = std::move(new_cdag_matrices);
+    result.truncated_              = true;
+
+    result.fill_first_eigenstate_of_subspace();
+    result.vacuum.resize(result.get_total_eigenstate_count());
+    result.compute_vacuum();
+
+    // Update quantum_numbers if present
+    if (!result.quantum_numbers.empty()) {
+      std::vector<std::vector<quantum_number_t>> new_qn;
+      for (auto const &[old_sp, _] : sp_remap) new_qn.push_back(result.quantum_numbers[old_sp]);
+      result.quantum_numbers = std::move(new_qn);
+    }
+
+    return result;
+  }
+
 #undef ATOM_DIAG_METHOD
 
   // -----------------------------------------------------------------
@@ -217,6 +342,7 @@ namespace triqs::atom_diag {
     h5::write(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
     h5::write(gr, "vacuum", ad.vacuum);
     h5::write(gr, "quantum_numbers", ad.quantum_numbers);
+    h5::write(gr, "truncated", ad.truncated_);
   }
 
   // -----------------------------------------------------------------
@@ -252,6 +378,7 @@ namespace triqs::atom_diag {
     h5::read(gr, "vacuum_subspace_index", ad.vacuum_subspace_index);
     h5::read(gr, "vacuum", ad.vacuum);
     h5::try_read(gr, "quantum_numbers", ad.quantum_numbers);
+    h5::try_read(gr, "truncated", ad.truncated_); // Backward compatible: default to false
     ad.fill_first_eigenstate_of_subspace();
   }
 
