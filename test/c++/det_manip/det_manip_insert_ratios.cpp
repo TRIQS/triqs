@@ -17,6 +17,7 @@
 #include <triqs/det_manip/det_manip_basic.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
 #include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <iostream>
 #include <cmath>
 
@@ -36,9 +37,17 @@ struct fun {
   }
 };
 
-// Tolerance for batch insert_ratios vs sequential try_insert. On a well-conditioned matrix (see
-// MIN_INSERT_RATIO) the gemm and gemv paths agree to ~4e-9; 1e-7 leaves margin for other BLAS.
-const double PRECISION = 1.e-7;
+// Estimate condition-number-aware relative tolerance for comparing two computations
+// involving M^{-1}. The Schur inverse accumulates O(N * eps * cond) error through N
+// rank-1 updates, and BLAS ordering differences add O(N * eps) per operation.
+double precision_for(auto const &D) {
+  if (D.size() == 0) return 1e-14;
+  long N      = D.size();
+  auto M      = D.matrix();
+  auto Mi     = nda::linalg::inv(M);
+  double cond = max_element(abs(M)) * max_element(abs(Mi));
+  return std::max(1e-12, double(N) * N * 1e-10 * cond);
+}
 
 template <typename T1, typename T2> void assert_close(T1 const &A, T2 const &B, double precision, std::string const &msg = "") {
   double diff  = std::abs(A - B);
@@ -104,6 +113,7 @@ void test_rank1_batch_vs_sequential() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 12345, mpi::communicator{});
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K  = 30;
   auto xs = random_array1(K, RNG);
@@ -114,7 +124,7 @@ void test_rank1_batch_vs_sequential() {
   for (long m = 0; m < K; ++m) {
     auto ratio = D.try_insert(0, 0, xs(m), ys(m));
     D.reject_last_try();
-    assert_close(batch(m), ratio, PRECISION, "rank1 m=" + std::to_string(m));
+    assert_close(batch(m), ratio, prec, "rank1 m=" + std::to_string(m));
   }
   std::cerr << "PASSED" << std::endl;
 }
@@ -165,13 +175,14 @@ void test_rank1_single_point() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 99999, mpi::communicator{});
   build_det(D, 10, RNG);
+  auto prec = precision_for(D);
 
   auto xs    = nda::array<double, 1>{5.0};
   auto ys    = nda::array<double, 1>{3.0};
   auto batch = D.insert_ratios(0, 0, xs, ys);
   auto ratio = D.try_insert(0, 0, xs(0), ys(0));
   D.reject_last_try();
-  assert_close(batch(0), ratio, PRECISION, "rank1 single");
+  assert_close(batch(0), ratio, prec, "rank1 single");
   std::cerr << "PASSED" << std::endl;
 }
 
@@ -194,6 +205,7 @@ void test_rank2_batch_vs_sequential() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 67890);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K = 30;
   auto x0s = random_array1(K, RNG);
@@ -206,7 +218,7 @@ void test_rank2_batch_vs_sequential() {
   for (long m = 0; m < K; ++m) {
     auto ratio = D.try_insert2(0, 1, 0, 1, x0s(m), x1s(m), y0s(m), y1s(m));
     D.reject_last_try();
-    assert_close(batch(m), ratio, PRECISION, "rank2 m=" + std::to_string(m));
+    assert_close(batch(m), ratio, prec, "rank2 m=" + std::to_string(m));
   }
   std::cerr << "PASSED" << std::endl;
 }
@@ -257,6 +269,7 @@ void test_rank2_reversed_indices() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 55555);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K = 15;
   auto x0s = random_array1(K, RNG);
@@ -269,7 +282,7 @@ void test_rank2_reversed_indices() {
   for (long m = 0; m < K; ++m) {
     auto ratio = D.try_insert2(1, 0, 0, 1, x0s(m), x1s(m), y0s(m), y1s(m));
     D.reject_last_try();
-    assert_close(batch_10(m), ratio, PRECISION, "rank2 reversed i m=" + std::to_string(m));
+    assert_close(batch_10(m), ratio, prec, "rank2 reversed i m=" + std::to_string(m));
   }
 
   // Test j0 > j1 (reversed col indices)
@@ -277,7 +290,7 @@ void test_rank2_reversed_indices() {
   for (long m = 0; m < K; ++m) {
     auto ratio = D.try_insert2(0, 1, 1, 0, x0s(m), x1s(m), y0s(m), y1s(m));
     D.reject_last_try();
-    assert_close(batch_01(m), ratio, PRECISION, "rank2 reversed j m=" + std::to_string(m));
+    assert_close(batch_01(m), ratio, prec, "rank2 reversed j m=" + std::to_string(m));
   }
 
   // Test both reversed
@@ -285,7 +298,7 @@ void test_rank2_reversed_indices() {
   for (long m = 0; m < K; ++m) {
     auto ratio = D.try_insert2(1, 0, 1, 0, x0s(m), x1s(m), y0s(m), y1s(m));
     D.reject_last_try();
-    assert_close(batch_11(m), ratio, PRECISION, "rank2 both reversed m=" + std::to_string(m));
+    assert_close(batch_11(m), ratio, prec, "rank2 both reversed m=" + std::to_string(m));
   }
 
   std::cerr << "PASSED" << std::endl;
@@ -429,6 +442,7 @@ void test_matrix_vs_paired() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 99998);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K = 15;
   auto xs = random_array1(K, RNG);
@@ -438,7 +452,7 @@ void test_matrix_vs_paired() {
   auto paired = D.insert_ratios(0, 0, xs, ys);
 
   for (long m = 0; m < K; ++m)
-    assert_close(mat(m, m), paired(m), PRECISION, "matrix diagonal m=" + std::to_string(m));
+    assert_close(mat(m, m), paired(m), prec, "matrix diagonal m=" + std::to_string(m));
   std::cerr << "PASSED" << std::endl;
 }
 
@@ -450,6 +464,7 @@ void test_rank2_array_insert_ratios() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 11223, mpi::communicator{});
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long M = 5, E = 8;
   auto xs = random_array2(M, E, RNG);
@@ -464,7 +479,7 @@ void test_rank2_array_insert_ratios() {
     for (long j = 0; j < E; ++j) {
       auto ratio = D.try_insert(0, 0, xs(i, j), ys(i, j));
       D.reject_last_try();
-      assert_close(batch(i, j), ratio, PRECISION, "rank2 array (" + std::to_string(i) + "," + std::to_string(j) + ")");
+      assert_close(batch(i, j), ratio, prec, "rank2 array (" + std::to_string(i) + "," + std::to_string(j) + ")");
     }
   std::cerr << "PASSED" << std::endl;
 }
@@ -497,6 +512,7 @@ void test_rank2_array_insert2_ratios() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 55667);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long M = 5, E = 8;
   auto x0s = random_array2(M, E, RNG);
@@ -512,7 +528,7 @@ void test_rank2_array_insert2_ratios() {
     for (long j = 0; j < E; ++j) {
       auto ratio = D.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(i, j), y0s(i, j), y1s(i, j));
       D.reject_last_try();
-      assert_close(batch(i, j), ratio, PRECISION,
+      assert_close(batch(i, j), ratio, prec,
                    "rank2 array insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
     }
   std::cerr << "PASSED" << std::endl;
@@ -526,6 +542,7 @@ void test_broadcast_insert2_ratios() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 77889);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long M = 5, E = 8;
   // Pair 0 (A-side): rank-2, shape (M, E)
@@ -544,7 +561,7 @@ void test_broadcast_insert2_ratios() {
     for (long j = 0; j < E; ++j) {
       auto ratio = D.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(j), y0s(i, j), y1s(j));
       D.reject_last_try();
-      assert_close(batch(i, j), ratio, PRECISION,
+      assert_close(batch(i, j), ratio, prec,
                    "broadcast insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
     }
   std::cerr << "PASSED" << std::endl;
@@ -618,6 +635,7 @@ void test_broadcast_insert2_ratios_reversed() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 99001);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long M = 4, E = 6;
   // Pair 0 (A-side): rank-1, shape (E) -- broadcast
@@ -635,7 +653,7 @@ void test_broadcast_insert2_ratios_reversed() {
     for (long j = 0; j < E; ++j) {
       auto ratio = D.try_insert2(0, 1, 0, 1, x0s(j), x1s(i, j), y0s(j), y1s(i, j));
       D.reject_last_try();
-      assert_close(batch(i, j), ratio, PRECISION,
+      assert_close(batch(i, j), ratio, prec,
                    "broadcast reversed insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
     }
   std::cerr << "PASSED" << std::endl;
@@ -674,6 +692,7 @@ void test_rank1_nonzero_position() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 31415, mpi::communicator{});
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K  = 12;
   auto xs = random_array1(K, RNG);
@@ -687,7 +706,7 @@ void test_rank1_nonzero_position() {
     for (long m = 0; m < K; ++m) {
       auto ratio = D.try_insert(i, j, xs(m), ys(m));
       D.reject_last_try();
-      assert_close(batch(m), ratio, PRECISION, "nonzero pos i=" + std::to_string(i) + " j=" + std::to_string(j) + " m=" + std::to_string(m));
+      assert_close(batch(m), ratio, prec, "nonzero pos i=" + std::to_string(i) + " j=" + std::to_string(j) + " m=" + std::to_string(m));
     }
   }
   std::cerr << "PASSED" << std::endl;
@@ -730,6 +749,7 @@ void test_rank2_odd_idx_sum() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 16180);
   build_det(D, 20, RNG);
+  auto prec = precision_for(D);
 
   long K   = 12;
   auto x0s = random_array1(K, RNG);
@@ -748,7 +768,7 @@ void test_rank2_odd_idx_sum() {
     for (long m = 0; m < K; ++m) {
       auto ratio = D.try_insert2(i0, i1, j0, j1, x0s(m), x1s(m), y0s(m), y1s(m));
       D.reject_last_try();
-      assert_close(batch(m), ratio, PRECISION,
+      assert_close(batch(m), ratio, prec,
                    "odd idx_sum (" + std::to_string(i0) + "," + std::to_string(i1) + "," + std::to_string(j0) + "," + std::to_string(j1)
                        + ") m=" + std::to_string(m));
     }

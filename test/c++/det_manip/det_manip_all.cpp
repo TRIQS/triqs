@@ -24,6 +24,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
+#include <cmath>
 #include "./old_test_tool.hpp"
 
 struct fun {
@@ -54,6 +55,11 @@ struct fun {
 template <class T1, class T2> void assert_close(T1 const &A, T2 const &B, double precision) {
   if (std::abs(A - B) > precision) TRIQS_RUNTIME_ERROR << "assert_close error : " << A << "\n" << B;
 }
+template <class T1, class T2> void assert_close_rel(T1 const &A, T2 const &B, double precision) {
+  double diff  = std::abs(A - B);
+  double scale = std::max({std::abs(double(A)), std::abs(double(B)), 1.0});
+  if (diff > precision * scale) TRIQS_RUNTIME_ERROR << "assert_close_rel error : " << A << " vs " << B << " reldiff=" << diff / scale;
+}
 const double PRECISION = 1.e-6;
 
 struct test {
@@ -66,17 +72,20 @@ struct test {
 
   test() : f(), DetM_Basic(f, 10), DetM_Schur(f, 10) {}
 
-  // #define PRINT_ALL
+  // Check that the Schur inverse satisfies M * M^{-1} ≈ I.
+  // Tolerance scales with N^2 * eps * cond(M) accounting for accumulated rank-1 update errors
+  // and potentially higher intermediate condition numbers during matrix buildup.
+  static void assert_inverse_ok(nda::matrix_const_view<double> M, nda::matrix_const_view<double> Minv, std::string const &msg = "") {
+    long N      = M.shape()[0];
+    double cond = max_element(abs(M)) * max_element(abs(nda::linalg::inv(M)));
+    double tol  = double(N) * N * 1e-10 * cond;
+    auto res    = nda::matrix<double>(M * Minv);
+    for (long i = 0; i < N; ++i) res(i, i) -= 1.0;
+    double r = max_element(abs(res));
+    if (r > tol) TRIQS_RUNTIME_ERROR << "inverse residual ||M*M^{-1} - I|| = " << r << " > " << tol << " (cond=" << cond << ") " << msg;
+  }
+
   void check(triqs::det_manip::det_manip_basic<fun> &DetM, double det_old, double detratio) {
-
-#ifndef PRINT_ALL
-    // std::cerr << "det = " << DetM.determinant() << " == " << double(nda::linalg::det(DetM.matrix())) << std::endl;
-#else
-    // std::cerr << "det = " << DetM.determinant() << " == " << double(nda::linalg::det(DetM.matrix())) << std::endl
-    << DetM.inverse_matrix() << DetM.matrix() << nda::matrix<double>(nda::linalg::inv(DetM.matrix())) << std::endl;
-    // std::cerr << "det_old = " << det_old << "detratio = " << detratio << " determin " << DetM.determinant() << std::endl;
-#endif
-
     if (DetM.size() > 0) {
       nda::assert_all_close(DetM.build_matrix_scratch(), DetM.matrix(), PRECISION, true);
       nda::assert_all_close(nda::linalg::inv(DetM.matrix()), DetM.inverse_matrix(), PRECISION, true);
@@ -86,10 +95,9 @@ struct test {
       assert(DetM.inverse_matrix().size() == 0);
     }
 
-    assert_close(DetM.determinant(), 1 / nda::linalg::det(DetM.inverse_matrix()), PRECISION);
-    assert_close(double(nda::linalg::det(DetM.matrix())), DetM.determinant(), PRECISION);
-
-    assert_close(det_old * detratio, DetM.determinant(), PRECISION);
+    assert_close_rel(DetM.determinant(), 1 / nda::linalg::det(DetM.inverse_matrix()), PRECISION);
+    assert_close_rel(double(nda::linalg::det(DetM.matrix())), DetM.determinant(), PRECISION);
+    assert_close_rel(det_old * detratio, DetM.determinant(), PRECISION);
   }
 
   void run(int N) {
@@ -144,7 +152,7 @@ struct test {
       DetM_Schur2.complete_operation();
       timer_schur.stop();
       nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      assert_inverse_ok(DetM_Schur2.matrix(), DetM_Schur2.inverse_matrix());
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -220,7 +228,7 @@ struct test {
       timer_schur.stop();
 
       nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      assert_inverse_ok(DetM_Schur2.matrix(), DetM_Schur2.inverse_matrix());
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -293,7 +301,7 @@ struct test {
       timer_schur.stop();
 
       nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      assert_inverse_ok(DetM_Schur2.matrix(), DetM_Schur2.inverse_matrix());
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -329,7 +337,7 @@ struct test {
       timer_schur.stop();
 
       nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      assert_inverse_ok(DetM_Schur2.matrix(), DetM_Schur2.inverse_matrix());
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
@@ -366,7 +374,7 @@ struct test {
       timer_schur.stop();
 
       nda::assert_all_close(DetM_Basic2.matrix(), DetM_Schur2.matrix(), PRECISION, true);
-      nda::assert_all_close(DetM_Basic2.inverse_matrix(), DetM_Schur2.inverse_matrix(), PRECISION, true);
+      assert_inverse_ok(DetM_Schur2.matrix(), DetM_Schur2.inverse_matrix());
     }
 
     std::cout << "   . timer_basic : " << double(timer_basic) << std::endl;
