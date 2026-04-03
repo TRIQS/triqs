@@ -22,7 +22,8 @@
 r""" """
 
 from .descriptor_base import *
-from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog
+from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshImTime, MeshDLRImTime
+from .semicirc import g_semicirc_iw, g_semicirc_w, g_semicirc_tau
 import warnings
 
 #######################################
@@ -70,7 +71,7 @@ class SemiCircular (Base):
 
     where :math:`A(\omega) = \theta( D - |\omega|) 2 \sqrt{ D^2 - \omega^2}/(\pi D^2)`.
 
-    (Only works in combination with frequency Green's functions.)
+    (Works with frequency and imaginary-time Green's functions.)
     """
     def __init__ (self, half_bandwidth, chem_potential=0.):
         r""":param half_bandwidth: :math:`D`, the half bandwidth of the
@@ -86,25 +87,29 @@ semicircle
     def __call__(self,G):
         D = self.half_bandwidth
         mu = self.chem_potential
-        Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex128)
-        from cmath import sqrt
         if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
+            Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex128)
             def f(om_):
                 om = om_ + mu
-                return (om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2))/D/D*2*Id
+                return g_semicirc_iw(om, D) * Id
         elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             def f(om_):
-              om = om_.real + mu
-              if (om > -D) and (om < D):
-                return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
-              else:
-                return (2.0/D**2) * (om - copysign(1,om) * sqrt(om**2 - D**2))
+                om = om_.real + mu
+                return g_semicirc_w(om, D)
+        elif type(G.mesh) in [MeshImTime, MeshDLRImTime]:
+            if mu != 0.:
+                raise NotImplementedError("SemiCircular on imaginary-time mesh with non-zero chemical potential is not supported")
+            Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
+            tau = numpy.array([t.value for t in G.mesh])
+            beta = G.mesh.beta
+            vals = g_semicirc_tau(tau, beta, D)
+            for n in range(len(tau)):
+                G.data[n,...] = vals[n] * Id
+            return G
         else:
-            raise TypeError("This initializer is only correct in frequency")
+            raise TypeError("SemiCircular: mesh type not supported: " + str(type(G.mesh)))
 
-        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
         Function(f)(G)
-
         return G
 
 ##################################################
