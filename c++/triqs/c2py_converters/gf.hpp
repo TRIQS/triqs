@@ -20,7 +20,13 @@
 #pragma once
 
 #include "./mesh.hpp"
-#include "../gfs.hpp"
+#include "../gfs/gf/gf.hpp"
+#include "../gfs/gf/gf_view.hpp"
+#include "../gfs/gf/gf_const_view.hpp"
+#include "../gfs/gf/targets.hpp"
+#include "../gfs/block/block_gf.hpp"
+#include "../gfs/block/block_gf_view.hpp"
+#include "../gfs/block/factories.hpp"
 #include "../utility/typeid_name.hpp"
 
 #include <c2py/converters/stl/vector.hpp>
