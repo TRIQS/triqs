@@ -1,0 +1,3 @@
+package_name = "triqs.operators"
+documentation = ""
+namespaces = "triqs::operators"

@@ -21,7 +21,7 @@
 """Operators for commonly used observables."""
 
 import numpy as np
-from triqs.operators.operators import Operator, n, c_dag, c
+from triqs.operators import Operator, n, c_dag, c
 from triqs.operators.util.op_struct import get_mkind
 from triqs.operators.util.U_matrix import spherical_to_cubic
 from itertools import product
