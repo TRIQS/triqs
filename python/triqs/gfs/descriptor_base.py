@@ -24,7 +24,7 @@ r""" """
 import numpy
 from math import *
 from .lazy_expressions import LazyExprTerminal, LazyExpr, transform
-from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog
+from triqs.mesh import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog
 
 class LazyCTX:
     def __init__ (self, G): 

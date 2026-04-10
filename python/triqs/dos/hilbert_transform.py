@@ -18,7 +18,7 @@
 # Authors: John Bonini, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 
-from triqs.gf import *
+from triqs.gfs import *
 import types, string, inspect, itertools
 from triqs.dos import DOS, DOSFromFunction
 import triqs.utility.mpi as mpi

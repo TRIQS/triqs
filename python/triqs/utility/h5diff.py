@@ -19,7 +19,7 @@
 
 from h5 import *
 from triqs.utility.comparison_tests import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 import sys
 import numpy

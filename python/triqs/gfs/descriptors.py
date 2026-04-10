@@ -22,7 +22,7 @@
 r""" """
 
 from .descriptor_base import *
-from .meshes import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshImTime, MeshDLRImTime
+from triqs.mesh import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshImTime, MeshDLRImTime
 from .semicirc import g_semicirc_iw, g_semicirc_w, g_semicirc_tau
 import warnings
 

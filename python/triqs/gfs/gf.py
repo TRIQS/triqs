@@ -21,16 +21,16 @@ import itertools, warnings, numbers
 from functools import reduce  # Valid in Python 2.6+, required in Python 3
 import operator
 import numpy as np
-from . import mesh_product
+from triqs.mesh import mesh_product
 from . import lazy_expressions
 from . import descriptors, descriptor_base
-from .mesh_product import MeshProduct
+from triqs.mesh.mesh_product import MeshProduct
 from triqs.plot.protocol import clip_array
-from . import meshes
+from triqs import mesh as meshes
 from . import plot
 from . import gf_fnt, wrapped_aux
-from .mesh_point import MeshPoint
-from .matsubara_freq import MatsubaraFreq
+from triqs.mesh.mesh_point import MeshPoint
+from triqs.mesh.matsubara_freq import MatsubaraFreq
 from operator import mul
 
 # list of all the meshes
@@ -88,7 +88,7 @@ class Gf(metaclass=AddMethod):
     Parameters
     ----------
 
-    mesh: Types defined in triqs.gf beginning with 'Mesh'
+    mesh: Types defined in triqs.mesh beginning with 'Mesh'
           The mesh on which the Green function is defined.
 
     data: numpy.array, optional

@@ -19,14 +19,14 @@ import numpy as np
 
 from scipy.optimize import minimize, NonlinearConstraint
 
-from triqs.gf import (
+from triqs.gfs import (
     Gf,
     BlockGf,
     make_gf_dlr,
     make_gf_dlr_imfreq,
     inverse
 )
-from triqs.gf.meshes import MeshDLRImFreq, MeshDLRImTime, MeshDLR
+from triqs.mesh import MeshDLRImFreq, MeshDLRImTime, MeshDLR
 
 from triqs.utility import mpi
 
@@ -72,9 +72,9 @@ def minimize_dyson(
 
     Parameters
     ----------
-    G0_dlr : triqs.gf.Gf or triqs.gf.BlockGf
+    G0_dlr : triqs.gfs.Gf or triqs.gfs.BlockGf
         non-interacting Green's function defined on a DLR, DLRImTime, or DLRImFreq mesh
-    G_dlr : triqs.gf.Gf or triqs.gf.BlockGf
+    G_dlr : triqs.gfs.Gf or triqs.gfs.BlockGf
         interacting Green's function defined on a DLR, DLRImTime, or DLRImFreq mesh
     Sigma_moments : list of numpy.ndarray or dict of list of numpy.ndarray
         moments of Σ. The first moment is the Hartree shift, i.e. the constant part of Σ.
@@ -87,7 +87,7 @@ def minimize_dyson(
 
     Returns
     -------
-    Sigma_DLR : triqs.gf.Gf or triqs.gf.BlockGf
+    Sigma_DLR : triqs.gfs.Gf or triqs.gfs.BlockGf
         optimized self-energy defined on a DLRImFreq mesh
     Sigma_0 : numpy.ndarray
         Hartree shift

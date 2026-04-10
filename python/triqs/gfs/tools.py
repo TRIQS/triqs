@@ -19,7 +19,7 @@
 # Authors: Michel Ferrero, Alexander Hampel, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
 from . import lazy_expressions, descriptors, gf_fnt
-from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
+from triqs.mesh import MeshImFreq, MeshLegendre, MeshImTime, MeshReFreq, MeshReTime
 from .block_gf import BlockGf
 from .gf import Gf
 from .gf_factories import make_hermitian

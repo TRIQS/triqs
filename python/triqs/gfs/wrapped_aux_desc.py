@@ -1,9 +1,9 @@
 from cpp2py.wrap_generator import *
 
 # This modules contains utilities that will only be called internally, not by users.
-m = module_(full_name = "triqs.gf.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
+m = module_(full_name = "triqs.gfs.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
-m.add_imports("triqs.gf.meshes", "triqs.gf.gf_fnt")
+m.add_imports("triqs.mesh", "triqs.gfs.gf_fnt")
 
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/mesh.hpp>")

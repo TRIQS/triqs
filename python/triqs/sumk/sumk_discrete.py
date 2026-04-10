@@ -19,7 +19,7 @@
 # Authors: John Bonini, Michel Ferrero, Alexander Hampel, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 
-from triqs.gf import *
+from triqs.gfs import *
 import triqs.utility.mpi as mpi
 from itertools import *
 import inspect

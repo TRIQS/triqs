@@ -22,24 +22,10 @@ r"""
 This is the base module for all common operations with Green's functions.
 It is imported with the command::
 
-  >>> from triqs.gf import *
+  >>> from triqs.gfs import *
 """
 
-import sys
-import importlib
-
-# Mesh classes have moved to triqs.mesh; import them here for backward compat
-import triqs.mesh
-from triqs.mesh import MeshPoint, MeshValueGenerator, MatsubaraFreq
-
-# Alias triqs.gf.meshes -> triqs.mesh and its submodules (must happen before
-# importing .gf, which does "from . import mesh_product" etc.)
-sys.modules['triqs.gf.meshes'] = triqs.mesh
-for _name in ['mesh_product', 'mesh_point', 'matsubara_freq']:
-    importlib.import_module(f'triqs.mesh.{_name}')
-    sys.modules[f'triqs.gf.{_name}'] = getattr(triqs.mesh, _name)
-del _name
-
+from triqs.mesh import MeshPoint, MeshValueGenerator, MeshProduct, MatsubaraFreq
 from .gf import *
 from .block_gf import BlockGf, fix_gf_struct_type
 from .block2_gf import Block2Gf
@@ -53,11 +39,11 @@ from .backwd_compat.gf_refreq import *
 from .backwd_compat.gf_retime import *
 from .backwd_compat.gf_legendre import *
 
-from triqs.mesh import MeshImFreq, MeshImTime, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshReTime, MeshBrZone, MeshCycLat, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, make_adjoint_mesh, MeshProduct
+from triqs.mesh import MeshImTime, MeshImFreq, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, MeshReFreq, MeshReTime, MeshReFreqPts, MeshReFreqLog, MeshBrZone, MeshCycLat, make_adjoint_mesh
 MeshBrillouinZone = MeshBrZone
 MeshCyclicLattice = MeshCycLat
 
-from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity 
+from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity
 
 from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau, make_gf_dlr, fit_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, make_gf_imtime, make_gf_imfreq
 

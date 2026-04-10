@@ -18,8 +18,8 @@
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 import warnings, numpy as np
-from triqs.gf.gf import Gf
-from triqs.gf.meshes import MeshReFreq
+from triqs.gfs.gf import Gf
+from triqs.mesh import MeshReFreq
 
 class GfReFreq(Gf) : 
     """
