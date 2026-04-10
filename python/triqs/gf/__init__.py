@@ -25,9 +25,22 @@ It is imported with the command::
   >>> from triqs.gf import *
 """
 
-from .mesh_point import MeshPoint, MeshValueGenerator
+import sys
+import importlib
+
+# Mesh classes have moved to triqs.mesh; import them here for backward compat
+import triqs.mesh
+from triqs.mesh import MeshPoint, MeshValueGenerator, MatsubaraFreq
+
+# Alias triqs.gf.meshes -> triqs.mesh and its submodules (must happen before
+# importing .gf, which does "from . import mesh_product" etc.)
+sys.modules['triqs.gf.meshes'] = triqs.mesh
+for _name in ['mesh_product', 'mesh_point', 'matsubara_freq']:
+    importlib.import_module(f'triqs.mesh.{_name}')
+    sys.modules[f'triqs.gf.{_name}'] = getattr(triqs.mesh, _name)
+del _name
+
 from .gf import *
-from .matsubara_freq import MatsubaraFreq
 from .block_gf import BlockGf, fix_gf_struct_type
 from .block2_gf import Block2Gf
 from .map_block import map_block
@@ -40,7 +53,7 @@ from .backwd_compat.gf_refreq import *
 from .backwd_compat.gf_retime import *
 from .backwd_compat.gf_legendre import *
 
-from .meshes import MeshImFreq, MeshImTime, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshReTime, MeshBrZone, MeshCycLat, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, make_adjoint_mesh
+from triqs.mesh import MeshImFreq, MeshImTime, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshReTime, MeshBrZone, MeshCycLat, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, make_adjoint_mesh, MeshProduct
 MeshBrillouinZone = MeshBrZone
 MeshCyclicLattice = MeshCycLat
 

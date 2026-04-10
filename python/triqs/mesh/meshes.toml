@@ -1,0 +1,26 @@
+# Name of the package if any. Package.ModuleName will be the module name
+package_name = "triqs.mesh"
+
+# The documentation string of the module.
+documentation = ""
+
+# List of namespaces as a space separated string e.g. "A A::B"
+# If non-empty, only the elements declared in EXACTLY these namespaces are wrapped.
+# NB e.g. in previous example A::detail will be ignored, whatever match_names.
+namespaces = "triqs::mesh"
+
+# Match/reject elements according to a regex (LLVM regex)
+# If match_names/match_names are both set, the algorithm is
+#  for X of fully qualified name qname
+#    if match_names and match_names does not match Qname : skip X
+#    if reject_names and reject_names matches Qname : skip X
+#    else keep X.
+#
+# match_names = ""
+# reject_names = ""
+
+# Only keep elements declared in files matching the pattern
+# match_files = "" # String must be a regex
+
+# If true, transform methods with no arguments into a read only property
+# wrap_no_arg_methods_as_properties = true
