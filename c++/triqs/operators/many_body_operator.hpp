@@ -25,7 +25,7 @@
 #include <cmath>
 #include <algorithm>
 #include <utility>
-#include <boost/operators.hpp>
+#include <triqs/utility/macros.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <h5/h5.hpp>
@@ -37,6 +37,9 @@ namespace triqs {
 
     /// The generic class
     template <typename ScalarType> class many_body_operator_generic;
+
+    template <typename ScalarType> many_body_operator_generic<ScalarType> real(many_body_operator_generic<ScalarType> const &op);
+    template <typename ScalarType> many_body_operator_generic<ScalarType> imag(many_body_operator_generic<ScalarType> const &op);
 
     /// The indices of the C, C^+ operators are a vector of int/string
     using indices_t = hilbert_space::fundamental_operator_set::indices_t;
@@ -96,17 +99,9 @@ namespace triqs {
 
     //-----------------------------------------------------------------------------------------
     /**
-  * many_body_operator_generic is a general operator in second quantification
-  */
-    template <typename ScalarType>
-    class many_body_operator_generic :
-       // implements vector space over ScalarType operators
-       boost::additive<many_body_operator_generic<ScalarType>>,
-       boost::multipliable<many_body_operator_generic<ScalarType>>,
-       boost::additive<many_body_operator_generic<ScalarType>, ScalarType>, // op+a a+op op-a
-       // boost::subtractable2_left<many_body_operator_generic<ScalarType>, ScalarType>, // a-op
-       boost::multipliable<many_body_operator_generic<ScalarType>, ScalarType>, // op*a a*op op/a
-       boost::dividable<many_body_operator_generic<ScalarType>, ScalarType> {
+     * many_body_operator_generic is a general operator in second quantification
+     */
+    template <typename ScalarType> class many_body_operator_generic {
 
       // Map of all monomials with coefficients
       using monomials_map_t = std::map<monomial_t, ScalarType>;
@@ -153,7 +148,7 @@ namespace triqs {
       }
 
       struct _cdress;
-      many_body_operator_generic(_cdress const &term) { normalize_and_insert(term.monomial, term.coef, monomials); }
+      C2PY_IGNORE many_body_operator_generic(_cdress const &term) { normalize_and_insert(term.monomial, term.coef, monomials); }
 
       template <typename S> many_body_operator_generic &operator=(many_body_operator_generic<S> const &x) {
         static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
@@ -184,11 +179,11 @@ namespace triqs {
 
       // We use utility::dressed_iterator to dress iterators
       // _cdress is a simple struct of refs to dress the iterators (Cf doc)
-      struct _cdress {
+      struct C2PY_IGNORE _cdress {
         monomial_t const &monomial;
         scalar_t coef;
         _cdress(typename monomials_map_t::const_iterator _it) : monomial(_it->first), coef(_it->second) {}
-        operator std::pair<std::vector<std::pair<bool, indices_t>>, scalar_t>() {
+        operator std::pair<std::vector<std::pair<bool, indices_t>>, scalar_t>() const {
           std::vector<std::pair<bool, indices_t>> tmp_monomial;
           tmp_monomial.reserve(monomial.size());
           for (auto cop : monomial) tmp_monomial.emplace_back(cop.dagger, cop.indices);
@@ -213,13 +208,23 @@ namespace triqs {
       /// Check if the operator is identically zero
       [[nodiscard]] bool is_zero() const { return monomials.empty(); }
 
-      // Algebraic operations involving scalar_t constants
+      /**
+       * @brief Negate all monomial coefficients.
+       *
+       * @return A new operator with all coefficients negated (same monomials).
+       */
       many_body_operator_generic operator-() const {
         auto res = *this;
         for (auto &m : res.monomials) m.second = -m.second;
         return res;
       }
 
+      /**
+       * @brief Add a scalar constant to the operator (modifies the zero-monomial term).
+       *
+       * @param alpha Scalar value to add.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator+=(scalar_t alpha) {
         using triqs::utility::is_zero;
         if (is_zero(alpha)) return *this;
@@ -233,11 +238,20 @@ namespace triqs {
         return *this;
       }
 
+      /**
+       * @brief Subtract a scalar constant from the operator.
+       *
+       * @param alpha Scalar value to subtract.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator-=(scalar_t alpha) { return operator+=(-alpha); }
 
-      friend many_body_operator_generic operator-(scalar_t alpha, many_body_operator_generic const &op) { return -op + alpha; }
-      //friend many_body_operator_generic operator/ (many_body_operator_generic const & op, scalar_t alpha) { return op/alpha; }
-
+      /**
+       * @brief Multiply all monomial coefficients by a scalar.
+       *
+       * @param alpha Scalar multiplier.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator*=(scalar_t alpha) {
         using triqs::utility::is_zero;
         if (is_zero(alpha)) {
@@ -248,9 +262,83 @@ namespace triqs {
         return *this;
       }
 
+      /**
+       * @brief Divide all monomial coefficients by a scalar.
+       *
+       * @param alpha Scalar divisor.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator/=(scalar_t alpha) { return operator*=(scalar_t(1) / alpha); }
 
-      // Algebraic operations
+      /**
+       * @brief Add a scalar to an operator.
+       *
+       * @param lhs Operator (taken by value for move-from).
+       * @param rhs Scalar value to add.
+       * @return The sum `lhs + rhs`.
+       */
+      friend many_body_operator_generic operator+(many_body_operator_generic lhs, scalar_t rhs) { return lhs += rhs; }
+
+      /**
+       * @brief Add an operator to a scalar.
+       *
+       * @param lhs Scalar value.
+       * @param rhs Operator (taken by value for move-from).
+       * @return The sum `lhs + rhs`
+       */
+      friend many_body_operator_generic operator+(scalar_t lhs, many_body_operator_generic rhs) { return rhs += lhs; }
+
+      /**
+       * @brief Subtract a scalar from an operator.
+       *
+       * @param lhs Operator (taken by value for move-from).
+       * @param rhs Scalar value to subtract.
+       * @return The difference `lhs - rhs`.
+       */
+      friend many_body_operator_generic operator-(many_body_operator_generic lhs, scalar_t rhs) { return lhs -= rhs; }
+
+      /**
+       * @brief Subtract an operator from a scalar.
+       *
+       * @param alpha Scalar value.
+       * @param op Operator to subtract from the scalar.
+       * @return The difference `alpha - op`.
+       */
+      friend many_body_operator_generic operator-(scalar_t alpha, many_body_operator_generic const &op) { return -op + alpha; }
+
+      /**
+       * @brief Multiply an operator by a scalar on the right.
+       *
+       * @param lhs Operator (taken by value for move-from).
+       * @param rhs Scalar multiplier.
+       * @return The product `lhs * rhs`.
+       */
+      friend many_body_operator_generic operator*(many_body_operator_generic lhs, scalar_t rhs) { return lhs *= rhs; }
+
+      /**
+       * @brief Multiply a scalar by an operator on the right.
+       *
+       * @param lhs Scalar multiplier.
+       * @param rhs Operator (taken by value for move-from).
+       * @return The product `lhs * rhs`.
+       */
+      friend many_body_operator_generic operator*(scalar_t lhs, many_body_operator_generic rhs) { return rhs *= lhs; }
+
+      /**
+       * @brief Divide an operator by a scalar.
+       *
+       * @param lhs Operator (taken by value for move-from).
+       * @param rhs Scalar divisor.
+       * @return The quotient `lhs / rhs`.
+       */
+      friend many_body_operator_generic operator/(many_body_operator_generic lhs, scalar_t rhs) { return lhs /= rhs; }
+
+      /**
+       * @brief Add another operator to this one.
+       *
+       * @param op Operator to add.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator+=(many_body_operator_generic const &op) {
         bool is_new_monomial;
         typename monomials_map_t::iterator it;
@@ -264,6 +352,12 @@ namespace triqs {
         return *this;
       }
 
+      /**
+       * @brief Subtract another operator from this one.
+       *
+       * @param op Operator to subtract.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator-=(many_body_operator_generic const &op) {
         bool is_new_monomial;
         typename monomials_map_t::iterator it;
@@ -277,23 +371,59 @@ namespace triqs {
         return *this;
       }
 
+      /**
+       * @brief Multiply this operator by another (operator product in Fock space).
+       *
+       * @param op Operator to right-multiply by.
+       * @return Reference to `this`.
+       */
       many_body_operator_generic &operator*=(many_body_operator_generic const &op) {
         monomials_map_t tmp_map; // product will be stored here
         for (auto const &m : monomials)
           for (auto const &op_m : op.monomials) {
-            // prepare an unnormalized product
             monomial_t product_m;
             product_m.reserve(m.first.size() + op_m.first.size());
             for (auto const &tmp_op : m.first) product_m.push_back(tmp_op);
             for (auto const &tmp_op : op_m.first) product_m.push_back(tmp_op);
-            // std::copy(m.first.begin(), m.first.end(), std::back_inserter(product_m));
-            // std::copy(op_m.first.begin(), op_m.first.end(), std::back_inserter(product_m));
             normalize_and_insert(product_m, m.second * op_m.second, tmp_map);
           }
         std::swap(monomials, tmp_map);
         return *this;
       }
 
+      /**
+       * @brief Sum of two operators.
+       *
+       * @param lhs Left-hand operator (taken by value for move-from).
+       * @param rhs Right-hand operator.
+       * @return The sum `lhs + rhs`.
+       */
+      friend many_body_operator_generic operator+(many_body_operator_generic lhs, many_body_operator_generic const &rhs) { return lhs += rhs; }
+
+      /**
+       * @brief Difference of two operators.
+       *
+       * @param lhs Left-hand operator (taken by value for move-from).
+       * @param rhs Right-hand operator.
+       * @return The difference `lhs - rhs`.
+       */
+      friend many_body_operator_generic operator-(many_body_operator_generic lhs, many_body_operator_generic const &rhs) { return lhs -= rhs; }
+
+      /**
+       * @brief Product of two operators (Fock-space operator product).
+       *
+       * @param lhs Left-hand operator (taken by value for move-from).
+       * @param rhs Right-hand operator.
+       * @return The product `lhs * rhs`.
+       */
+      friend many_body_operator_generic operator*(many_body_operator_generic lhs, many_body_operator_generic const &rhs) { return lhs *= rhs; }
+
+      /**
+       * @brief Equality comparison. Two operators are equal if their difference is zero.
+       *
+       * @param op Operator to compare against.
+       * @return `true` if the operators are equal.
+       */
       bool operator==(many_body_operator_generic const &op) const { return (*this - op).is_zero(); }
 
       // implementation details of dagger
@@ -316,15 +446,16 @@ namespace triqs {
         return res;
       }
 
-      /// Transform operator by applying a given functor to each monomial
       /**
-   * The functor must take two arguments convertible from monomial_t and scalar_t respectively,
-   * and return a value convertible to scalar_t -- new coefficient of the monomial.
-   *
-   @param op Operator to be transformed
-   @param L Functor to apply to each monomial
-   @return Transformed operator
-  */
+       * @brief Transform operator by applying a given functor to each monomial.
+       * 
+       * @details The functor must take two arguments convertible from monomial_t and scalar_t respectively,
+       * and return a value convertible to scalar_t -- new coefficient of the monomial.
+       *
+       * @param op Operator to be transformed
+       * @param L Functor to apply to each monomial
+       * @return Transformed operator
+       */
       template <typename w_max> friend many_body_operator_generic transform(many_body_operator_generic const &op, w_max &&L) {
         many_body_operator_generic res;
         using triqs::utility::is_zero;
@@ -335,29 +466,11 @@ namespace triqs {
         return res;
       }
 
-      /// Given an operator, return its copy with the imaginary parts of all monomial coefficients set to zero
-      /**
-   @param op Operator to be transformed
-   @return Real part of the operator
-  */
-      friend many_body_operator_generic real(many_body_operator_generic const &op) {
-        return transform(op, [](monomial_t const &, scalar_t c) {
-          using triqs::utility::real;
-          return real(c);
-        });
-      }
+      /// Get a copy of the operator with the imaginary parts of all monomial coefficients set to zero.
+      [[nodiscard]] C2PY_PROPERTY_GET(real) many_body_operator_generic real() const { return operators::real(*this); }
 
-      /// Given an operator, return its copy with the real parts of all monomial coefficients set to zero
-      /**
-   @param op Operator to be transformed
-   @return Imaginary part of the operator
-  */
-      friend many_body_operator_generic imag(many_body_operator_generic const &op) {
-        return transform(op, [](monomial_t const &, scalar_t c) {
-          using triqs::utility::imag;
-          return imag(c);
-        });
-      }
+      /// Get a copy of the operator with the real parts of all monomial coefficients set to zero.
+      [[nodiscard]] C2PY_PROPERTY_GET(imag) many_body_operator_generic imag() const { return operators::imag(*this); }
 
       void serialize(auto &ar) const { ar & monomials; }
       void deserialize(auto &ar) { ar & monomials; }
@@ -433,6 +546,26 @@ namespace triqs {
     void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2,
                                     double precision) {
       if (!(op1 - op2).is_almost_zero(precision)) TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
+    }
+
+    /**
+     * @brief Given an operator, return its copy with the imaginary parts of all monomial coefficients set to zero.
+     */
+    template <typename scalar_t> many_body_operator_generic<scalar_t> real(many_body_operator_generic<scalar_t> const &op) {
+      return transform(op, [](monomial_t const &, scalar_t c) {
+        using triqs::utility::real;
+        return real(c);
+      });
+    }
+
+    /**
+     * @brief Given an operator, return its copy with the real parts of all monomial coefficients set to zero.
+     */
+    template <typename scalar_t> many_body_operator_generic<scalar_t> imag(many_body_operator_generic<scalar_t> const &op) {
+      return transform(op, [](monomial_t const &, scalar_t c) {
+        using triqs::utility::imag;
+        return imag(c);
+      });
     }
 
     template <typename scalar_t> bool is_op_hermitian(many_body_operator_generic<scalar_t> const &op, double tolerance = 0.0) {
