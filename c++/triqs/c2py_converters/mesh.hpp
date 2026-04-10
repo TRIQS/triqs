@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "../lattice/bravais_lattice.hpp"
 #include "../mesh/concepts.hpp"
 #include "../mesh/matsubara_freq.hpp"
 #include "../mesh/prod.hpp"
@@ -137,60 +136,6 @@ namespace c2py {
       pyref beta      = x.attr("beta");
       pyref statistic = x.attr("statistic");
       return c_t{py2cxx<long>(n), py2cxx<double>(beta), py2cxx<triqs::mesh::statistic_enum>(statistic)};
-    }
-  };
-
-  // -----------------------------------
-  //   bravais_lattice::point_t
-  // -----------------------------------
-
-  template <> struct py_converter<triqs::lattice::bravais_lattice::point_t> {
-    using c_t = triqs::lattice::bravais_lattice::point_t;
-
-    static constexpr const char *tp_name = "LatticePoint";
-
-    static PyObject *c2py(c_t const &x) {
-      pyref cls = pyref::get_class("triqs.lattice", "LatticePoint", true);
-      if (cls.is_null()) return NULL;
-
-      pyref kw = PyDict_New();
-
-      pyref index = cxx2py(x.index());
-      if (index.is_null()) return NULL;
-      pyref lattice = cxx2py(x.lattice());
-      if (lattice.is_null()) return NULL;
-      PyDict_SetItemString(kw, "index", index);
-      PyDict_SetItemString(kw, "lattice", lattice);
-
-      pyref empty_tuple = PyTuple_New(0);
-      return PyObject_Call(cls, empty_tuple, kw);
-    }
-
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.lattice", "LatticePoint", true);
-      if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
-      return true;
-    }
-
-    // ----------------------------------------------
-
-    using lattice_py_type = struct {
-      PyObject_HEAD;
-      triqs::lattice::bravais_lattice *_c;
-    };
-
-    static c_t py2c(PyObject *ob) {
-
-      pyref x             = pyref::borrowed(ob);
-      pyref index         = x.attr("index");
-      pyref lattice       = x.attr("lattice");
-      auto *lattice_c_ptr = reinterpret_cast<lattice_py_type *>(static_cast<PyObject *>(lattice))->_c;
-      if (lattice_c_ptr == NULL) {
-        std::cerr << "Severe internal error : lattice_ptr is null in py2c\n";
-        std::terminate();
-      }
-
-      return c_t{py2cxx<std::array<long, 3>>(index), lattice_c_ptr};
     }
   };
 

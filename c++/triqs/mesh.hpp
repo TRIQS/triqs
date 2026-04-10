@@ -35,7 +35,6 @@
 #include "utility/view_tools.hpp"
 
 #include "arrays.hpp"
-#include "./lattice.hpp"
 #include "./mesh/utils.hpp"
 #include "./mesh/mesh_iterator.hpp"
 
