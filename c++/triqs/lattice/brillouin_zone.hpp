@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./bravais_lattice.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/ranges.h>
 #include <h5/h5.hpp>
@@ -81,7 +82,7 @@ namespace triqs::lattice {
     explicit brillouin_zone(bravais_lattice bl);
 
     /// Check if a given vector \f$ \mathbf{k} \f$ is part of the domain.
-    [[nodiscard]] bool contains(k_t const &) const { return true; }
+    [[nodiscard]] C2PY_IGNORE bool contains(k_t const &) const { return true; }
 
     /// Get the underlying triqs::lattice::bravais_lattice object.
     [[nodiscard]] auto const &lattice() const { return lattice_; }

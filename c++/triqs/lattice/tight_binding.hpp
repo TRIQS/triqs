@@ -22,6 +22,7 @@
 #include "brillouin_zone.hpp"
 #include "../mesh/brzone.hpp"
 #include "../gfs.hpp"
+#include "../utility/macros.hpp"
 #include <itertools/itertools.hpp>
 #include <h5/h5.hpp>
 #include <nda/linalg.hpp>
@@ -29,6 +30,15 @@
 
 namespace triqs {
   namespace lattice {
+
+    /**
+     * @brief An insertion-order-preserving hopping dictionary type.
+     * @details Unlike std::map, this preserves the order in which entries are added.
+     */
+    struct C2PY_IGNORE hopping_dict {
+      std::vector<nda::vector<long>> displ_vec;
+      std::vector<nda::matrix<dcomplex>> overlap_mat_vec;
+    };
 
     /**
      * For tightbinding Hamiltonian with fully localised orbitals
@@ -39,6 +49,8 @@ namespace triqs {
       bravais_lattice bl_;
       std::vector<nda::vector<long>> displ_vec_;
       std::vector<nda::matrix<dcomplex>> overlap_mat_vec_;
+
+      void check_hoppings();
 
       public:
       /**
@@ -52,6 +64,9 @@ namespace triqs {
        * @param overlap_mat_vec The vector of overlap (hopping) matrices
        */
       tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec);
+
+      /// Construct a tight_binding Hamiltonian on a given bravais_lattice from a hopping dictionary.
+      tight_binding(bravais_lattice bl, hopping_dict hoppings);
 
       /// Underlying lattice
       bravais_lattice const &lattice() const { return bl_; }
