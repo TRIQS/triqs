@@ -1,10 +1,6 @@
-# All targets below link to triqs and nda_py
-link_libraries(triqs nda::nda_py)
+# install Python files
+set(python_sources ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
+install(FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/atom_diag)
 
-# Build C++ extension module
-add_cpp2py_module(atom_diag)
-
-# Install __init__.py
-install(FILES __init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/atom_diag)
-install(TARGETS atom_diag DESTINATION ${TRIQS_PYTHON_LIB_DEST}/atom_diag)
-
+# install generated header
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/atom_diag.wrap.hxx DESTINATION include/triqs/atom_diag)
