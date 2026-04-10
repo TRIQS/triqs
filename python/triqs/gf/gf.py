@@ -632,11 +632,7 @@ class Gf(metaclass=AddMethod):
         if self.target_rank == 0:  # Scalar target space
             self.data[:] = 1.0 / self.data
         elif self.target_rank == 2:  # Matrix target space
-            # TODO: Replace by np.linag.inv, since v1.8
-            # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
-            d = self.data.view()
-            d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:]  # reshaped view, guarantee no copy
-            wrapped_aux._gf_invert_data_in_place(d)
+            self.data[:] = np.linalg.inv(self.data)
         else:
             raise TypeError("Inversion only makes sense for matrix or scalar_valued Green's functions")
 
