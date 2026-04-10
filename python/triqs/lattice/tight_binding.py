@@ -165,12 +165,12 @@ class TBLattice(object):
     @property
     def orbital_positions(self):
         """The list of orbital positions"""
-        return self.bl.orbital_positions
+        return list(self.bl.orbital_positions)
 
     @property
     def orbital_names(self):
         """The list of orbital names"""
-        return self.bl.orbital_names
+        return list(self.bl.orbital_names)
 
     # ---- Expose TightBinding API ----
 
@@ -201,8 +201,8 @@ class TBLattice(object):
             tb.displ_vec, tb.overlap_mat_vec)}
         return cls(bl.units[:bl.ndim, :bl.ndim],
                    hoppings,
-                   bl.orbital_positions,
-                   bl.orbital_names)
+                   list(bl.orbital_positions),
+                   list(bl.orbital_names))
 
     # ---- Comparison ----
 
