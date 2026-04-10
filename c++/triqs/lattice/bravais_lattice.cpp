@@ -30,17 +30,17 @@
 
 namespace triqs::lattice {
 
-  bravais_lattice::bravais_lattice(nda::matrix<double> const &A_T, std::vector<r_t> orb_pos, std::vector<std::string> orb_name)
-     : atom_orb_pos_(std::move(orb_pos)),
-       atom_orb_name_(orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size()) : std::move(orb_name)),
-       ndim_(static_cast<int>(nda::first_dim(A_T))) {
+  bravais_lattice::bravais_lattice(nda::matrix<double> const &units, std::vector<r_t> orbital_positions, std::vector<std::string> atom_orb_name)
+     : atom_orb_pos_(std::move(orbital_positions)),
+       atom_orb_name_(atom_orb_name.empty() ? std::vector<std::string>(atom_orb_pos_.size()) : std::move(atom_orb_name)),
+       ndim_(static_cast<int>(nda::first_dim(units))) {
     // consistency checks
     EXPECTS(atom_orb_pos_.size() == atom_orb_name_.size());
-    if (ndim_ < 1 || ndim_ > 3) TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vector matrix has wrong size: " << A_T;
+    if (ndim_ < 1 || ndim_ > 3) TRIQS_RUNTIME_ERROR << "Error in triqs::lattice::bravais_lattice: Basis vector matrix has wrong size: " << units;
 
     // initialize basis vectors
     auto rg        = nda::range(ndim_);
-    units_(rg, rg) = A_T(rg, rg);
+    units_(rg, rg) = units(rg, rg);
 
     // complete the basis for 1D and 2D
     if (ndim_ < 3) {

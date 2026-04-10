@@ -26,10 +26,8 @@ namespace triqs {
 
     using namespace arrays;
 
-    tight_binding::tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec)
-       : bl_(std::move(bl)), displ_vec_(std::move(displ_vec)), overlap_mat_vec_(std::move(overlap_mat_vec)) {
-
-      // checking inputs
+    void tight_binding::check_hoppings() {
+      // checking displacements and hopping matrices
       if (displ_vec_.size() != overlap_mat_vec_.size()) TRIQS_RUNTIME_ERROR << " Number of displacements != Number of matrices";
       for (int i = 0; i < displ_vec_.size(); ++i) {
         if (displ_vec_[i].size() != bl_.ndim())
@@ -53,6 +51,18 @@ namespace triqs {
         if (not found) TRIQS_RUNTIME_ERROR << "opposite hopping vector of " << displ_vec_[i] << " cannot be found";
       }
     }
+
+    //------------------------------------------------------
+
+    tight_binding::tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec)
+       : bl_(std::move(bl)), displ_vec_(std::move(displ_vec)), overlap_mat_vec_(std::move(overlap_mat_vec)) {
+      check_hoppings();
+    }
+
+    //------------------------------------------------------
+
+    tight_binding::tight_binding(bravais_lattice bl, lattice::hopping_dict hoppings)
+       : tight_binding(std::move(bl), std::move(hoppings.displ_vec), std::move(hoppings.overlap_mat_vec)) {}
 
     //------------------------------------------------------
 

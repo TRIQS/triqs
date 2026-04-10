@@ -25,6 +25,7 @@
 #pragma once
 
 #include "../arrays.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/ranges.h>
 #include <h5/h5.hpp>
@@ -93,7 +94,7 @@ namespace triqs::lattice {
      * \mathbf{n} = (n_1, n_2, n_3) \f$. Indices \f$ n_j \f$ with \f$ j > d \f$ are simply ignored when computing the
      * corresponding lattice vector.
      */
-    class point_t {
+    class C2PY_IGNORE point_t {
       public:
       /// Default constructor leaves the lattice point uninitialized, i.e. belonging to no Bravais lattice.
       point_t() = default;
@@ -197,11 +198,12 @@ namespace triqs::lattice {
      * @details The matrix \f$ \mathbf{A}^T \f$ containing the basis vectors as its rows is required to be square. The
      * number of dimensions of the Bravais lattices is determined by the size of the matrix.
      *
-     * @param A_T Matrix with the basis vectors \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ as its rows.
-     * @param orb_pos Atomic orbital positions \f$ \{ \mathbf{r}_1, \dots, \mathbf{r}_m \} \f$ in the unit cell.
-     * @param orb_name Optional names for the atomic orbitals.
+     * @param units Matrix with the basis vectors \f$ \{ \mathbf{a}_1, \dots, \mathbf{a}_d \} \f$ as its rows.
+     * @param orbital_positions Atomic orbital positions \f$ \{ \mathbf{r}_1, \dots, \mathbf{r}_m \} \f$ in the unit cell.
+     * @param atom_orb_name Optional names for the atomic orbitals.
      */
-    bravais_lattice(matrix_t const &A_T, std::vector<r_t> orb_pos = std::vector<r_t>{{0, 0, 0}}, std::vector<std::string> orb_name = {});
+    bravais_lattice(matrix_t const &units, std::vector<r_t> orbital_positions = std::vector<r_t>{{0, 0, 0}},
+                    std::vector<std::string> atom_orb_name = {});
 
     /// Check if a given vector \f$ \mathbf{r} \f$ is part of the domain.
     [[nodiscard]] bool contains(r_t const &) const { return true; }
@@ -258,7 +260,7 @@ namespace triqs::lattice {
      * @param n Index vector \f$ \mathbf{n} \f$.
      * @return bravais_lattice::point_t corresponding to the given index array.
      */
-    [[nodiscard]] point_t to_point(index_t const &n) const { return {n, this}; }
+    [[nodiscard]] C2PY_IGNORE point_t to_point(index_t const &n) const { return {n, this}; }
 
     /**
      * @brief Equal-to comparison operator.
