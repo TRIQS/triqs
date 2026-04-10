@@ -12,6 +12,7 @@
 
 namespace triqs::tb {
 
+  // NW: We should address remaining todo's in this branch?
   // TODO should the R vectors be double?
 
   using nda::dcomplex;
@@ -98,6 +99,7 @@ namespace triqs::tb {
       }
       // Called with > 1 placeholders in kdim > 1 or 1 placeholder in kdim == 1
       else
+        // NW: We have various FIXME's in the code on this branch, this should be cleaned up
         // FIXME : BUG : is this is a temporary, we MUST MOVE.
         // Use deducing this for this function
         return nda::clef::make_expr_call(*this, auto{ks}...);

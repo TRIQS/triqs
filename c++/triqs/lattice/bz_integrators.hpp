@@ -7,6 +7,7 @@
 // TODO need to upgrade this for integration of the IBZ
 
 // omp reduction operation for nda array
+// NW: Declare where used? Necessary?
 #pragma omp declare reduction(array_add_c_3 : nda::array<dcomplex, 3> : omp_out += omp_in)                                                           \
    initializer(omp_priv = nda::array<dcomplex, 3>(omp_orig.shape()))
 
@@ -25,6 +26,7 @@ namespace triqs::lattice {
   } // namespace placeholders
 
   // Options for adaptive integration
+  // NW: Struct for a single argument?
   struct adaptive_options {
     double tolerance = 1.e-3; // target error
   };
@@ -50,6 +52,7 @@ namespace triqs::lattice {
   };
 
   // helper to determine the return container dimension
+  // NW: detail namespace?
   int deduce_dim_from_expression(auto const &f_kw) {
     namespace ph  = triqs::lattice::placeholders;
     auto f_w_temp = eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = 0);
@@ -66,6 +69,7 @@ namespace triqs::lattice {
 
   //---------------------------------------------------------
 
+  // NW: clarify below, what is meant by 'on the domain from 0,1' ? The k-grid is clearly 3d, not 1d. Same applies to other functions below
   /**
     * @brief Compute the integral of f_kw on k using PTR on the domain from 0,1, utilizing both MPI and OMP parallelism
     *
@@ -117,6 +121,7 @@ namespace triqs::lattice {
     result = mpi::all_reduce(result, comm);
 
     // apply normalization
+    // NW: k_grid.size() ?
     result /= double(k_grid[0] * k_grid[1] * k_grid[2]);
     return result;
   }
@@ -172,6 +177,7 @@ namespace triqs::lattice {
     };
   }
 
+  // NW: No return? Was this ever tested?
   /**
     * @brief Compute the integral of f_kw on k adaptively on a 0,1 domain, return a GF which
     *         contains the evaluation of the adaptive integration.
@@ -189,6 +195,7 @@ namespace triqs::lattice {
     mpi::communicator comm = {};
     auto calc              = integrate_adaptive(f_kw, opt);
     for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
+    return g_out; 
   }
 
   // -------------------------------------------

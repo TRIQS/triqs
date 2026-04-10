@@ -7,6 +7,7 @@ namespace triqs {
 
   namespace tb {
 
+    // NW: Not user facing? detail namespace?
     template <typename T> T read(std::ifstream &file) {
       T x;
       file >> x;

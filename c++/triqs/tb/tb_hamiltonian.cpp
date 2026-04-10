@@ -1,5 +1,6 @@
 #include "tb_hamiltonian.hpp"
 
+// NW: Use nexted namespace syntax for new files: triqs::tb 
 namespace triqs {
   namespace tb {
 

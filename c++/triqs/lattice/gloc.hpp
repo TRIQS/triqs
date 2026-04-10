@@ -12,16 +12,18 @@
 namespace triqs {
   namespace lattice {
 
+    // NW: I fixed the doc formatting below, apply equally to other docstrings
+    // NW: Lets be more explicit about the type requirements for 'Mesh'
     /**
-   * @brief Compute the non-interacting local Green's function on a given mesh from a tight binding Hamiltonian
-   *
-   * @tparam Mesh The mesh type.
-   * @param mesh
-   * @param tb_hamiltonian A tight binding Hamiltonian
-   * @param mu Chemical potential
-   * @param opt Container for options related integration of the BZ
-   * @return gloc, the local Green's function on frequency mesh of the provided self-energy
-   */
+     * @brief Compute the non-interacting local Green's function on a given mesh from a tight binding Hamiltonian
+     *
+     * @tparam Mesh The mesh type.
+     * @param mesh
+     * @param tb_hamiltonian A tight binding Hamiltonian
+     * @param mu Chemical potential
+     * @param opt Container for options related integration of the BZ
+     * @return gloc, the local Green's function on frequency mesh of the provided self-energy
+     */
     template <typename Mesh>
     gfs::gf<Mesh, gfs::matrix_valued> gloc(Mesh const &w_mesh, tb::tb_hamiltonian const &H_k, double mu, bz_int_options const &opt) {
 
@@ -58,6 +60,7 @@ namespace triqs {
       return integrate_bz(expr_kw, Sigma.mesh(), opt);
     }
 
+    // NW: Use map_block below?
     /**
    * @brief Compute local Green's function on a given mesh as a block GF, from a tight binding Hamiltonian
    * @tparam Mesh The mesh type.
@@ -130,6 +133,7 @@ namespace triqs {
          utility::root_finder(method, f, 0.0, target_density, precision, 0.5, 1000, "Chemical Potential", "Total Density", verbosity));
     }
 
+    // NW: Why do we list explicit instantiations below?
     /** @cond DOXYGEN_SKIP_THIS */
 
     template double find_chemical_potential(double const target_density, tb::tb_hamiltonian const &H_k,
