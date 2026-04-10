@@ -1,0 +1,4 @@
+package_name = "triqs.gfs"
+documentation = ""
+namespaces = "triqs::gfs"
+match_names = "set_from_fourier"
