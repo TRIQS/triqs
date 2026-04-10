@@ -1,0 +1,3 @@
+package_name = "triqs.operators.util"
+documentation = "Functions to extract coefficients from many-body operators"
+namespaces = "triqs::operators::utils::py triqs::operators::utils"
