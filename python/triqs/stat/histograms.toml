@@ -1,0 +1,3 @@
+package_name = "triqs.stat"
+documentation = ""
+namespaces = "triqs::stat"
