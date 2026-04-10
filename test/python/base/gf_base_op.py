@@ -18,7 +18,7 @@
 # Authors: Michel Ferrero, Alexander Hampel, Jonathan Karp, Olivier Parcollet, Nils Wentzell
 
 from h5 import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 
 import numpy as np, copy
@@ -42,7 +42,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
     def test_Base_Op(self):
 
-        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 1000)
+        iw_mesh = MeshImFreq(beta=self.beta, statistic = "Fermion", n_iw = 1000)
 
         ga = Gf(mesh=iw_mesh, target_shape=(2,2), name = "a1Block")
         gb = Gf(mesh=iw_mesh, target_shape=(2,2), name = "b1Block")
@@ -74,7 +74,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert abs(dens - 4.000001283004012) < self.precision, "oops dens =  %s"%dens
 
         # FT:
-        f = lambda g,L : Gf(mesh = MeshImTime(beta=self.beta, S="Fermion", n_tau = L), target_shape = g.target_shape)
+        f = lambda g,L : Gf(mesh = MeshImTime(beta=self.beta, statistic="Fermion", n_tau = L), target_shape = g.target_shape)
         gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
         for (i,gtt) in gt : gtt.set_from_fourier(G[i])
 
@@ -90,7 +90,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert_arrays_are_close(gt['a'].data[:3], res, 1.e-3)
 
         # Matrix operations:
-        ga2 = Gf(indices = [1,2,3], mesh=MeshImFreq(beta=self.beta, S="Fermion", n_iw=1000), name = "a1Block")
+        ga2 = Gf(indices = [1,2,3], mesh=MeshImFreq(beta=self.beta, statistic="Fermion", n_iw=1000), name = "a1Block")
         mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], complex)
 
         ga2.from_L_G_R(mat.transpose(),ga,mat)
@@ -153,7 +153,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         check_pickle(gt)
 
         # some basic checks for MeshImTime
-        tau_mesh = MeshImTime(beta=self.beta, S = "Fermion", n_tau = 1000)
+        tau_mesh = MeshImTime(beta=self.beta, statistic = "Fermion", n_tau = 1000)
 
         ga_tau = Gf(mesh=tau_mesh, target_shape=(2,2), name = "a1Block")
         gb_tau = Gf(mesh=tau_mesh, target_shape=(2,2), name = "b1Block")
@@ -173,7 +173,7 @@ class test_Gf_Base_Op(unittest.TestCase):
 
     def test_Mat_Prod(self):
 
-        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_iw = 50)
+        iw_mesh = MeshImFreq(beta=self.beta, statistic = "Fermion", n_iw = 50)
 
         Mat = np.array([[1, 2], [3, 4]])
 
@@ -209,7 +209,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         assert_gfs_are_close(Mat * G * linalg.inv(Mat), G_exact)
 
     def test_different_rank_prod(self):
-        mesh = MeshImFreq(beta=self.beta, S="Fermion", n_iw=10)
+        mesh = MeshImFreq(beta=self.beta, statistic="Fermion", n_iw=10)
         G1 = Gf(mesh=mesh, target_shape=[2,2])
         G1 << inverse(iOmega_n + 2)
         G2 = Gf(mesh=mesh, target_shape=[])

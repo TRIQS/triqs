@@ -42,7 +42,7 @@ g4_tau(t1, t2, t3)
 
 import itertools
 import numpy as np
-from triqs.gf import Gf, GfImTime, MeshImTime, MeshProduct
+from triqs.gfs import Gf, GfImTime, MeshImTime, MeshProduct
 
 ntau = 10
 beta = 1.2345
@@ -60,9 +60,9 @@ for idx, tau in enumerate(g_tau.mesh):
 
     # comparison does not work at beta since the evaluation g_tau() wraps..
     if idx == len(g_tau.mesh)-1: break
-    
+
     #diff_interp = g_tau(tau)[0,0] - g_ref[idx] # FIXME: tau is complex
-    
+
     diff_interp = g_tau(tau.real)[0,0] - g_ref[idx]
     diff_dbrack = g_tau[tau][0,0] - g_ref[idx]
 
@@ -71,14 +71,14 @@ for idx, tau in enumerate(g_tau.mesh):
 
 # -- three imaginary time gf
 
-imtime = MeshImTime(beta=beta, S='Fermion', n_tau=ntau)
+imtime = MeshImTime(beta=beta, statistic='Fermion', n_tau=ntau)
 g4_tau = Gf(name='g4_tau', mesh= MeshProduct(imtime, imtime, imtime), indices=[1])
 
 for t1, t2, t3 in g4_tau.mesh:
     g4_tau[t1, t2, t3] = g_tau(t1)*g_tau(t3) - g_tau(t1)*g_tau(t3)
 
 for t1, t2, t3 in g4_tau.mesh:
-    val = g4_tau[t1, t2, t3] 
+    val = g4_tau[t1, t2, t3]
     val_ref = g_tau(t1)*g_tau(t3) - g_tau(t1)*g_tau(t3)
     np.testing.assert_array_almost_equal(val, val_ref)
 

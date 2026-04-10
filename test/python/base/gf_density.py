@@ -18,7 +18,7 @@
 # Authors: Alexander Hampel, Hugo U. R. Strand, Nils Wentzell
 
 import numpy as np
-from triqs.gf import *
+from triqs.gfs import *
 
 def fermi(eps, beta):
     return 1./(1. + np.exp(beta * eps))
@@ -27,7 +27,7 @@ beta = 50.0
 
 # -- Test Matsubara frequency density for free Gf
 
-iw_mesh = MeshImFreq(beta=beta, S='Fermion', n_iw=1000)
+iw_mesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=1000)
 g_iw = GfImFreq(mesh=iw_mesh, target_shape=[1,1])
 
 print("==============================================")

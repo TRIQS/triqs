@@ -16,7 +16,7 @@
 # Authors: Alexander Hampel, Nils Wentzell
 
 import unittest
-from triqs.gf import GfImFreq, MeshImFreq, BlockGf
+from triqs.gfs import GfImFreq, MeshImFreq, BlockGf
 from triqs.lattice import BravaisLattice, BrillouinZone
 from triqs.sumk import SumkDiscreteFromLattice
 from triqs.lattice.utils import k_space_path, TB_from_wannier90, TB_from_pythTB
@@ -156,7 +156,7 @@ class test_utils(unittest.TestCase):
         tbl_w90 = TB_from_wannier90(seed='wannier_TB_test', path='./', extend_to_spin=False)
 
         SK = SumkDiscreteFromLattice(lattice=tbl_w90, n_points=10)
-        Sigma_proto = GfImFreq(mesh=MeshImFreq(beta=40, S='Fermion', n_iw=1025),
+        Sigma_proto = GfImFreq(mesh=MeshImFreq(beta=40, statistic='Fermion', n_iw=1025),
                                target_shape=[tbl_w90.n_orbitals, tbl_w90.n_orbitals])
         Sigma_iw = BlockGf(name_list=['up', 'down'], block_list=[Sigma_proto, Sigma_proto], make_copies=True)
 

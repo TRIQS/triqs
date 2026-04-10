@@ -19,7 +19,7 @@
 # Authors: Igor Krivenko, Nils Wentzell
 
 from triqs.operators import *
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import *
 from triqs.atom_diag import *
 from triqs.utility.comparison_tests import *

@@ -20,7 +20,7 @@
 
 import numpy as np
 from numpy import eye, dot, linalg
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.lattice import *
 from triqs.lattice.lattice_tools import *
 from math import pi

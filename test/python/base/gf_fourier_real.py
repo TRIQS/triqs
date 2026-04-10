@@ -15,7 +15,7 @@
 #
 # Authors: Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 
 # ==== Matrix-valued Green functions
 

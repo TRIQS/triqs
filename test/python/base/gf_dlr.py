@@ -20,8 +20,8 @@ import unittest
 
 import numpy as np
 from scipy import integrate
-from triqs.gf import Gf, make_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, iOmega_n, inverse, density, BlockGf, fit_gf_dlr
-from triqs.gf.meshes import MeshDLR, MeshDLRImFreq, MeshDLRImTime, MeshImFreq, MeshImTime
+from triqs.gfs import Gf, make_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, iOmega_n, inverse, density, BlockGf, fit_gf_dlr
+from triqs.mesh import MeshImFreq, MeshDLRImFreq, MeshDLR, MeshDLRImTime, MeshImTime
 from triqs.utility.comparison_tests import assert_gfs_are_close, assert_block_gfs_are_close
 
 

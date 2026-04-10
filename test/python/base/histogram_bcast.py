@@ -26,7 +26,7 @@ import triqs.utility.mpi as mpi
 from triqs.stat.histograms import Histogram
 
 def py_histogram(int_vec):
-    
+
     hist = {}
     for val in int_vec:
         hist[val] = 1 + hist.get(val, 0)
@@ -61,7 +61,7 @@ if mpi.is_master_node():
 
 else:
     h, h_ref = None, None
-    
+
 h = mpi.bcast(h)
 h_ref = mpi.bcast(h_ref)
 
@@ -83,6 +83,6 @@ for rank in range(mpi.size):
                 assert( val == h_ref[pt] )
             else:
                 assert( pt not in h_ref )
-        
+
     mpi.barrier()
 

@@ -16,7 +16,7 @@
 # Authors: Alexander Hampel, Nils Wentzell
 
 from triqs.operators import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.atom_diag import *
 from triqs.utility.comparison_tests import *
 import numpy as np

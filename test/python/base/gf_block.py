@@ -17,7 +17,7 @@
 #
 # Authors: Jonathan Karp, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 from h5 import *
 
@@ -29,22 +29,22 @@ class test_Gf_Block(unittest.TestCase):
     def setUp(self):
 
         beta = 1.0
-        self.iw_mesh = MeshImFreq(beta=beta, S = "Fermion", n_iw = 5)
+        self.iw_mesh = MeshImFreq(beta=beta, statistic = "Fermion", n_iw = 5)
 
     def test_Construct(self):
 
         G1 = Gf(mesh=self.iw_mesh, target_shape=(2,2))
         G2 = G1.copy()
         G3 = G1.copy()
-        
+
         G1 << inverse(iOmega_n + 2.)
         G2 << inverse(iOmega_n - 2.)
-        
+
         G_vec = [G1, G2, G3]
-        
+
         B1 = BlockGf(name_list=['1', '2', '3'], block_list=G_vec)
         B2 = B1.copy()
-        
+
         gf_struct = [('1',2), ('2',2), ('3',2)]
         B3 = BlockGf(mesh=self.iw_mesh, gf_struct=gf_struct)
 

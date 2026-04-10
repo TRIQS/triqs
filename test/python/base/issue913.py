@@ -18,7 +18,7 @@
 
 import unittest
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.lattice.lattice_tools import BrillouinZone, BravaisLattice
 
 from triqs.utility.comparison_tests import *

@@ -22,7 +22,7 @@ Author: H. U.R. Strand (2019) """
 
 import numpy as np
 
-from triqs.gf import MeshBrZone
+from triqs.gfs import MeshBrZone
 from triqs.lattice.lattice_tools import BrillouinZone
 from triqs.lattice.lattice_tools import BravaisLattice
 

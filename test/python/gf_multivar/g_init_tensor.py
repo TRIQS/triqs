@@ -21,7 +21,7 @@
 import unittest
 import numpy as np
 
-from triqs.gf import *
+from triqs.gfs import *
 
 class TestInitGfMultivar(unittest.TestCase):
 

@@ -20,7 +20,7 @@
 import unittest
 from math import exp
 
-from triqs.gf import Gf, BlockGf, MeshImFreq, MeshImTime, MeshDLRImFreq, iOmega_n, inverse
+from triqs.gfs import Gf, BlockGf, MeshImFreq, MeshImTime, MeshDLRImFreq, iOmega_n, inverse
 from triqs.utility.comparison_tests import assert_gfs_are_close, assert_block_gfs_are_close
 import triqs.utility.mpi as mpi
 

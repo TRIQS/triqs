@@ -17,7 +17,7 @@
 #
 # Authors: Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 
 # A Green's function on the Matsubara axis set to a semicircular
 gw = GfImFreq(indices = [1], beta = 50)

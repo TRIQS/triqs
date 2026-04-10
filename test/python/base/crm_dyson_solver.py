@@ -17,9 +17,9 @@
 
 import numpy as np
 
-from triqs.gf import Gf, iOmega_n, inverse, BlockGf, make_gf_dlr, make_gf_imfreq, make_gf_dlr_imfreq
-from triqs.gf.meshes import MeshImFreq, MeshDLRImTime
-from triqs.gf.dlr_crm_dyson_solver import minimize_dyson
+from triqs.gfs import Gf, iOmega_n, inverse, BlockGf, make_gf_dlr, make_gf_imfreq, make_gf_dlr_imfreq
+from triqs.mesh import MeshImFreq, MeshDLRImTime
+from triqs.gfs.dlr_crm_dyson_solver import minimize_dyson
 from triqs.utility.comparison_tests import assert_gfs_are_close
 
 import unittest
@@ -39,7 +39,7 @@ class test_crm_dyson_solver(unittest.TestCase):
         self.eps2 = -0.5 * self.U
         np.random.seed(85281)
         # create reference solution on full mesh
-        self.iw_mesh = MeshImFreq(beta=self.beta, S='Fermion', n_iw=self.n_iw)
+        self.iw_mesh = MeshImFreq(beta=self.beta, statistic='Fermion', n_iw=self.n_iw)
         self.Sigma_iw_ref = Gf(mesh=self.iw_mesh, target_shape=[1, 1])
         self.Sigma_iw_ref << self.U / 2 + 0.25 * self.U * self.U * inverse(iOmega_n)
         # Specify the moments

@@ -21,8 +21,8 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from triqs.gf import *
-from triqs.gf.descriptors import Function
+from triqs.gfs import *
+from triqs.gfs.descriptors import Function
 from triqs.utility.comparison_tests import *
 
 beta = 100  # Inverse temperature

@@ -18,7 +18,7 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 from h5 import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 import numpy as np, copy
 from math import pi
