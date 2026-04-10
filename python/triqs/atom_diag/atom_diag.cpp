@@ -63,3 +63,5 @@ namespace triqs::atom_diag {
                                               excluded_states_t const &);
 
 } // namespace triqs::atom_diag
+
+#include "atom_diag.wrap.cxx"
