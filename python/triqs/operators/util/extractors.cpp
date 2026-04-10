@@ -98,3 +98,5 @@ namespace triqs::operators::utils {
   template op_t<roc> op_from_block_matrix(nda::array<nda::matrix<roc>, 1> const &, hilbert_space::gf_struct_t const &);
 
 } // namespace triqs::operators::utils
+
+#include "extractors.wrap.cxx"
