@@ -98,7 +98,7 @@ namespace cpp2py {
 
     static PyObject *c2py(c_t g) {
 
-      pyref cls = pyref::get_class("triqs.gf", "Gf", true);
+      pyref cls = pyref::get_class("triqs.gfs", "Gf", true);
       if (cls.is_null()) return NULL;
       pyref m = convert_to_python(g.mesh());
       if (m.is_null()) return NULL;
@@ -126,7 +126,7 @@ namespace cpp2py {
     // ----------------------------------------------
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.gf", "Gf", true);
+      pyref cls = pyref::get_class("triqs.gfs", "Gf", true);
 
       // first check it is a Gf
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
@@ -223,7 +223,7 @@ namespace cpp2py {
       pyref v_gf    = convert_to_python(vg);
       pyref v_names = convert_to_python(g.block_names());
       if (v_gf.is_null() or v_names.is_null()) return NULL;
-      pyref cls = pyref::module("triqs.gf").attr("BlockGf");
+      pyref cls = pyref::module("triqs.gfs").attr("BlockGf");
       if (cls.is_null()) return NULL;
       pyref kw = PyDict_New();
       PyDict_SetItemString(kw, "name_list", v_names);
@@ -245,7 +245,7 @@ namespace cpp2py {
     // ----------------------------------------------
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.gf", "BlockGf", true);
+      pyref cls = pyref::get_class("triqs.gfs", "BlockGf", true);
 
       // first check it is a BlockGf
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
@@ -309,7 +309,7 @@ namespace cpp2py {
       pyref v_names1 = convert_to_python(g.block_names()[0]);
       pyref v_names2 = convert_to_python(g.block_names()[1]);
       if (v_gf.is_null() or v_names1.is_null() or v_names2.is_null()) return NULL;
-      pyref cls = pyref::module("triqs.gf").attr("Block2Gf");
+      pyref cls = pyref::module("triqs.gfs").attr("Block2Gf");
       if (cls.is_null()) return NULL;
       pyref args = PyTuple_Pack(3, (PyObject *)v_names1, (PyObject *)v_names2, (PyObject *)v_gf);
       return PyObject_Call(cls, args, NULL);
@@ -318,8 +318,8 @@ namespace cpp2py {
     // ----------------------------------------------
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.gf", "Block2Gf", true);
-      if (cls.is_null()) throw std::runtime_error("Cannot find the triqs.gf.Block2Gf");
+      pyref cls = pyref::get_class("triqs.gfs", "Block2Gf", true);
+      if (cls.is_null()) throw std::runtime_error("Cannot find the triqs.gfs.Block2Gf");
 
       // first check it is a Block2Gf
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;

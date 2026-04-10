@@ -1,9 +1,9 @@
 from cpp2py.wrap_generator import *
 
 # This modules contains factory functions that generate a Green function
-m = module_(full_name = "triqs.gf.gf_factories", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
+m = module_(full_name = "triqs.gfs.gf_factories", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
-m.add_imports("triqs.gf.meshes")
+m.add_imports("triqs.mesh")
 
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/gf/gf_expr.hpp>")

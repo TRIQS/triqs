@@ -21,7 +21,7 @@
 class Cpp2pyInfo:
 
     table_imports = {
-        'triqs::gfs::' : 'triqs.gf',
+        'triqs::gfs::' : 'triqs.gfs',
         'triqs::mesh::' : 'triqs.mesh',
         'triqs::operators::many_body_operator' : 'triqs.operators',
         'triqs::lattice' : 'triqs.lattice',
@@ -51,7 +51,7 @@ class Cpp2pyInfo:
 def _get_cpp2py_wrapped_class_enums():
     return {'module_name' : 'UNUSED', 'includes' : "['<triqs/cpp2py_converters.hpp>']"}
 
-__all__ = ['Cpp2pyInfo', 'archive', 'dos', 'fit', 'gf', 'lattice', 'mesh', 'mc_tools', 'operators', 'plot',
+__all__ = ['Cpp2pyInfo', 'archive', 'dos', 'fit', 'gf', 'gfs', 'lattice', 'mesh', 'mc_tools', 'operators', 'plot',
            'random_generator', 'sumk', 'utility']
 
 

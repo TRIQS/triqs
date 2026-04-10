@@ -103,7 +103,7 @@ namespace c2py {
     static constexpr const char *tp_name = "MatsubaraFreq";
 
     static PyObject *c2py(c_t const &x) {
-      pyref cls = pyref::get_class("triqs.gf", "MatsubaraFreq", true);
+      pyref cls = pyref::get_class("triqs.mesh", "MatsubaraFreq", true);
       if (cls.is_null()) return NULL;
 
       pyref kw = PyDict_New();
@@ -123,7 +123,7 @@ namespace c2py {
     }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.gf", "MatsubaraFreq", true);
+      pyref cls = pyref::get_class("triqs.mesh", "MatsubaraFreq", true);
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
       return true;
     }
@@ -157,7 +157,7 @@ namespace c2py {
     }
 
     static PyObject *c2py(c_t m) {
-      pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
+      pyref cls = pyref::get_class("triqs.mesh", "MeshProduct", true);
       if (cls.is_null()) return NULL;
       pyref m_tuple = mtuple_conv::c2py(m.components()); // take the C++ tuple of meshes and make the corresponding Python tuple
       if (m_tuple.is_null()) return NULL;
@@ -165,7 +165,7 @@ namespace c2py {
     }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      pyref cls = pyref::get_class("triqs.gf", "MeshProduct", true);
+      pyref cls = pyref::get_class("triqs.mesh", "MeshProduct", true);
 
       // first check it is a MeshProduct
       if (not pyref::check_is_instance(ob, cls, raise_exception)) return false;
@@ -194,7 +194,7 @@ namespace c2py {
 
     static PyObject *c2py(c_t const &p) {
 
-      pyref cls = pyref::get_class("triqs.gf", "MeshPoint", /* raise_exception */ true);
+      pyref cls = pyref::get_class("triqs.mesh", "MeshPoint", /* raise_exception */ true);
       if (cls.is_null()) return NULL;
 
       pyref index = cxx2py(p.index());

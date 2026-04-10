@@ -22,7 +22,7 @@ r"""
 This is the base module for all common operations with Green's functions.
 It is imported with the command::
 
-  >>> from triqs.gf import *
+  >>> from triqs.gfs import *
 """
 
 __all__ = []

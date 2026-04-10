@@ -2,9 +2,9 @@ from cpp2py.wrap_generator import *
 
 # This modules contains functions that take a Green function as a first argument
 # They are automatically registered as member functions of the Gf class in the triqs/gf/gf.py file
-m = module_(full_name = "triqs.gf.gf_fnt", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
+m = module_(full_name = "triqs.gfs.gf_fnt", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
-m.add_imports("triqs.gf.meshes")
+m.add_imports("triqs.mesh")
 
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")

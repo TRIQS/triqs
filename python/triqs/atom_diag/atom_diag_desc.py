@@ -24,7 +24,7 @@ module = module_(full_name = "triqs.atom_diag.atom_diag",
                  doc = "Lightweight exact diagonalization solver",
                  app_name = "triqs")
 
-module.add_imports("triqs.gf", "triqs.operators", "h5._h5py")
+module.add_imports("triqs.gfs", "triqs.operators", "h5._h5py")
 
 module.add_preamble("""
 #include <cpp2py/converters/pair.hpp>
