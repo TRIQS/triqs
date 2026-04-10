@@ -1,31 +1,20 @@
-# 
+# install directory for Python modules
 set(TRIQS_PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/triqs)
 
-# Create a temporary copy of the python modules so that we can run before installation with the test
+# copy Python files into the build dir to have a complete package for the tests
 file(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
-list(FILTER all_py_files EXCLUDE REGEX "_desc\.py")
 foreach(f ${all_py_files})
- configure_file(${f} ${f} COPYONLY)
+  configure_file(${f} ${f} COPYONLY)
 endforeach()
-
-SET(PYTHON_SOURCES
- ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
- ${CMAKE_CURRENT_BINARY_DIR}/version.py
- )
-
 configure_file(version.py.in version.py)
 configure_file(utility/mpi.py.in utility/mpi.py)
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
-
-# Remove some warnings on clang and gcc for Python ?
-If("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
- add_compile_options(-Wno-deprecated-writable-strings)
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- add_compile_options(-Wno-literal-suffix -Wno-attributes -Wno-deprecated-declarations) 
-endif()
+# install Python files
+set(python_sources
+  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
+  ${CMAKE_CURRENT_BINARY_DIR}/version.py
+)
+install (FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
 # ---------------------------------------------
 
