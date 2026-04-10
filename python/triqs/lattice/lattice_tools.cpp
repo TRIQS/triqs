@@ -56,3 +56,5 @@ namespace triqs::lattice {
   template auto tight_binding::fourier(nda::array_const_view<double, 2> const &) const;
 
 } // namespace triqs::lattice
+
+#include "lattice_tools.wrap.cxx"
