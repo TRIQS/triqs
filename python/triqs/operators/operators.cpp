@@ -56,3 +56,5 @@ namespace triqs::operators {
   template bool is_op_hermitian(many_body_operator_generic<roc_t> const &, double);
 
 } // namespace triqs::operators
+
+#include "operators.wrap.cxx"
