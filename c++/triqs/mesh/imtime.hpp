@@ -26,6 +26,7 @@
 
 #include "./bases/linear.hpp"
 #include "./utils.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -83,7 +84,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 10
    * ```
    */
-  class imtime : public detail::linear<imtime, double> {
+  class C2PY_RENAME(MeshImTime) imtime : public detail::linear<imtime, double> {
     public:
     /// %Mesh point type of a triqs::mesh::imtime mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<imtime, double>::mesh_point_t;
@@ -93,19 +94,20 @@ namespace triqs::mesh {
      * mesh points and the given particle statistics.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
-     * @param N Size of the mesh.
+     * @param statistic Particle statistics (see triqs::mesh::statistic_enum).
+     * @param n_tau Size of the mesh.
      */
-    imtime(double beta = 1.0, statistic_enum stat = Fermion, long N = 0) : linear(0, beta, N), beta_(beta), stat_(stat) {}
+    C2PY_DEPRECATED_PARAMETER_NAME(S : statistic, n_max : n_tau)
+    imtime(double beta = 1.0, statistic_enum statistic = Fermion, long n_tau = 0) : linear(0, beta, n_tau), beta_(beta), stat_(statistic) {}
 
     /// Equal-to comparison operator compares \f$ N \f$, \f$ \beta \f$ and the particle statistics.
     bool operator==(imtime const &) const = default;
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) statistic_enum statistic() const noexcept { return stat_; }
 
     /**
      * @brief Serialize the mesh to a generic archive.
@@ -152,7 +154,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, imtime &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       // for backward compatibility
       long N = 0;

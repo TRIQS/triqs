@@ -25,6 +25,7 @@
 #pragma once
 
 #include "../arrays.hpp"
+#include "../utility/macros.hpp"
 
 #include <itertools/itertools.hpp>
 #include <nda/nda.hpp>
@@ -73,7 +74,7 @@ namespace triqs::mesh {
    * @param q Expansion order \f$ q \f$.
    * @return Vandermonde matrix \f$ V \f$.
    */
-  inline auto vander(std::vector<std::complex<double>> const &z_pts, int q) {
+  C2PY_IGNORE inline auto vander(std::vector<std::complex<double>> const &z_pts, int q) {
     nda::matrix<std::complex<double>> V(z_pts.size(), q + 1);
     for (auto [i, z_i] : itertools::enumerate(z_pts)) {
       auto z = std::complex<double>{1};
@@ -188,7 +189,7 @@ namespace triqs::mesh {
    * \f$ A_n \f$ are required to be hermitian, i,.e. \f$ [A_n]_{ij} = [A_n]_{ji}^* \f$, which enforces the symmetry \f$
    * [f(z)]_{ij} = [f(-z)]_{ji}^* \f$ in the function values.
    */
-  class tail_fitter {
+  class C2PY_IGNORE tail_fitter {
     public:
     /// Default fraction \f$ r \f$ of the mesh to consider in the tail fit.
     static constexpr double default_tail_fraction = 0.2;
@@ -511,18 +512,19 @@ namespace triqs::mesh {
    * @brief Shared handle for tail fitting.
    * @details It simply stores a `std::shared_ptr` to a triqs::mesh::tail_fitter object.
    */
-  class tail_fitter_handle {
+  class C2PY_IGNORE tail_fitter_handle {
     public:
     /**
      * @brief Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
      *
-     * @param r Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
-     * @param p_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
-     * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted
-     * automatically.
+     * @param tail_fraction Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
+     * @param n_tail_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
+     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be 
+     * adjusted automatically.
      */
-    void set_tail_fit_parameters(double r, int p_max = tail_fitter::default_n_tail_max, std::optional<int> q = {}) const {
-      tf_ptr_ = std::make_shared<tail_fitter>(tail_fitter{r, p_max, q});
+    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
+                                 std::optional<int> expansion_order = {}) const {
+      tf_ptr_ = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order});
     }
 
     /**
@@ -533,7 +535,7 @@ namespace triqs::mesh {
      *
      * @return Tail fitter object.
      */
-    tail_fitter &get_tail_fitter() const {
+    C2PY_IGNORE tail_fitter &get_tail_fitter() const {
       if (!tf_ptr_) tf_ptr_ = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max);
       return *tf_ptr_;
     }
@@ -541,14 +543,15 @@ namespace triqs::mesh {
     /**
      * @brief Construct a new triqs::mesh::tail_fitter object with the given parameters and return it.
      *
-     * @param r Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
-     * @param p_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
-     * @param q Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be adjusted
-     * automatically.
+     * @param tail_fraction Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
+     * @param n_tail_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
+     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be 
+     * adjusted automatically.
      * @return Tail fitter object.
      */
-    tail_fitter &get_tail_fitter(double r, int p_max = tail_fitter::default_n_tail_max, std::optional<int> q = {}) const {
-      set_tail_fit_parameters(r, p_max, q);
+    C2PY_IGNORE tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
+                                             std::optional<int> expansion_order = {}) const {
+      set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
       return *tf_ptr_;
     }
 

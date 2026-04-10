@@ -26,6 +26,7 @@
 #include "./matsubara_freq.hpp"
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
+#include "../utility/macros.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 #include <h5/h5.hpp>
@@ -114,7 +115,7 @@ namespace triqs::mesh {
    * mesh point #7: index = 7, data index = 7, value = 4.997323654048254
    * ```
    */
-  class dlr {
+  class C2PY_RENAME(MeshDLR) dlr {
     public:
     /// Value type.
     using value_t = double;
@@ -131,7 +132,7 @@ namespace triqs::mesh {
      * @details It stores the index \f$ l \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
      * \f$ \omega_l \f$ of the mesh point.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = dlr;
@@ -174,20 +175,20 @@ namespace triqs::mesh {
 
     private:
     // Construct a DLR mesh with a given set of DLR frequencies.
-    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym, nda::vector<double> const &dlr_freq)
-       : dlr(b, stat, wmax, epsilon, sym,
+    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
+       : dlr(beta, statistic, w_max, eps, symmetrize,
              detail::dlr_ops{.freq = dlr_freq,
-                             .imt  = {wmax * b, dlr_freq, sym},
-                             .imf  = {wmax * b, dlr_freq, static_cast<cppdlr::statistic_t>(stat), sym}}) {}
+                             .imt  = {w_max * beta, dlr_freq, symmetrize},
+                             .imf  = {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
 
     // Construct a DLR mesh with given DLR operations.
-    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym, detail::dlr_ops ops)
-       : beta_(b),
-         stat_(stat),
-         w_max_(wmax),
-         eps_(epsilon),
-         symmetrize_(sym),
-         mesh_hash_(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.freq))),
+    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, detail::dlr_ops ops)
+       : beta_(beta),
+         stat_(statistic),
+         w_max_(w_max),
+         eps_(eps),
+         symmetrize_(symmetrize),
+         mesh_hash_(hash(beta, statistic, w_max, eps, symmetrize, nda::sum(ops.freq))),
          dlr_{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
 
     public:
@@ -197,19 +198,19 @@ namespace triqs::mesh {
     /**
      * @brief Construct a DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error tolerance \f$
      * \epsilon \f$.
-     *
+     *                                                
      * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
      * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
      * `cppdlr::imfreq_ops` objects.
      *
-     * @param b Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics.
-     * @param wmax DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
-     * @param epsilon Error tolerance \f$ \epsilon \f$.
-     * @param sym Whether to choose the DLR frequencies symmetrically around \f$ \omega = 0 \f$.
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param statistic Particle statistics.
+     * @param w_max DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
+     * @param eps Error tolerance \f$ \epsilon \f$.
+     * @param symmetrize Whether to choose the DLR frequencies symmetrically around \f$ \omega = 0 \f$.
      */
-    dlr(double b, statistic_enum stat, double wmax, double epsilon, bool sym = false)
-       : dlr(b, stat, wmax, epsilon, sym, cppdlr::build_dlr_rf(wmax * b, epsilon, sym)) {}
+    dlr(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
+       : dlr(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
 
     /**
      * @brief Construct a DLR mesh from another DLR type mesh.
@@ -290,31 +291,31 @@ namespace triqs::mesh {
     }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
-    [[nodiscard]] double w_max() const noexcept { return w_max_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(w_max) double w_max() const noexcept { return w_max_; }
 
     /// Get the DLR error tolerance \f$ \epsilon \f$.
-    [[nodiscard]] double eps() const noexcept { return eps_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(eps) double eps() const noexcept { return eps_; }
 
     /// Is the mesh symmetric around \f$ \omega = 0 \f$?
-    [[nodiscard]] bool symmetrize() const noexcept { return symmetrize_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
     /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
-    [[nodiscard]] auto const &dlr_freq() const { return dlr_->freq; }
+    [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return this->dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
-    [[nodiscard]] auto const &dlr_it() const { return dlr_->imt; }
+    [[nodiscard]] C2PY_IGNORE auto const &dlr_it() const { return dlr_->imt; }
 
     /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
-    [[nodiscard]] auto const &dlr_if() const { return dlr_->imf; }
+    [[nodiscard]] C2PY_IGNORE auto const &dlr_if() const { return dlr_->imf; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
     [[nodiscard]] long size() const noexcept { return (dlr_ ? dlr_->freq.size() : 0); }
@@ -401,7 +402,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, dlr &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
       auto b       = h5::read<double>(gr, "beta");
       auto stat    = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
       auto wmax    = h5::read<double>(gr, "w_max");

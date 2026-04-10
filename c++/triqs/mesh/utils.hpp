@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./concepts.hpp"
+#include "../utility/macros.hpp"
 
 #include <nda/nda.hpp>
 
@@ -78,7 +79,7 @@ namespace triqs::mesh {
    *   \end{cases}
    * \f]
    */
-  [[nodiscard]] inline long positive_modulo(long x, long y) {
+  [[nodiscard]] C2PY_IGNORE inline long positive_modulo(long x, long y) {
     EXPECTS(y >= 0);
     long res = x % y;
     return (res >= 0 ? res : res + y);
@@ -96,6 +97,26 @@ namespace triqs::mesh {
     for (auto i : nda::range(m.size())) res(i) = m[i].value();
     return res;
   }
+
+  /**
+   * @brief Get a copy of a mesh (for Python bindings).
+   *
+   * @tparam M triqs::mesh::Mesh type.
+   * @param m %Mesh object to copy.
+   * @return Copy of the given mesh.
+   */
+  template <Mesh M> [[nodiscard]] M copy(M const &m) { return m; }
+
+  /**
+   * @brief Copy one mesh into another (for Python bindings).
+   * 
+   * @details Simply calls the copy assignment operator of the mesh.
+   *
+   * @tparam M triqs::mesh::Mesh type.
+   * @param m1 %Mesh object to copy into.
+   * @param m2 %Mesh object to copy from.
+   */
+  template <Mesh M> void copy_from(M &m1, M const &m2) { m1 = m2; }
 
   /// Constexpr bool that is true if the given triqs::mesh::Mesh type is a product of meshes, i.e. a triqs::mesh::prod.
   template <Mesh M> static constexpr bool is_product = false;
@@ -118,7 +139,7 @@ namespace triqs::mesh {
    * @param s triqs::mesh::statistic_enum value.
    * @return \f$ 1 \f$ for bosons and \f$ -1 \f$ for fermions.
    */
-  [[nodiscard]] inline int sign(statistic_enum s) { return (s == Boson ? 1 : -1); }
+  [[nodiscard]] C2PY_IGNORE inline int sign(statistic_enum s) { return (s == Boson ? 1 : -1); }
 
   /**
    * @brief Multiplication operator for two triqs::mesh::statistic_enum objects.
@@ -127,7 +148,7 @@ namespace triqs::mesh {
    * @param s2 Right-hand side operand.
    * @return Boson statistics if `s1 == s2`, otherwise Fermion statistics.
    */
-  [[nodiscard]] inline auto operator*(statistic_enum s1, statistic_enum s2) { return (s1 == s2 ? Boson : Fermion); }
+  [[nodiscard]] C2PY_IGNORE inline auto operator*(statistic_enum s1, statistic_enum s2) { return (s1 == s2 ? Boson : Fermion); }
 
   /**
    * @brief Lazy struct used in various function overloads as a placeholder for the closest mesh point to a given value.

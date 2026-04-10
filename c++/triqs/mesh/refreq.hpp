@@ -26,6 +26,7 @@
 
 #include "./bases/linear.hpp"
 #include "./tail_fitter.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -84,7 +85,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 5
    * ```
    */
-  class refreq : public detail::linear<refreq, double>, public tail_fitter_handle {
+  class C2PY_RENAME(MeshReFreq) refreq : public detail::linear<refreq, double>, public tail_fitter_handle {
     public:
     /// %Mesh point type of a triqs::mesh::refreq mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<refreq, double>::mesh_point_t;
@@ -95,27 +96,28 @@ namespace triqs::mesh {
      *
      * @param w_min Lower bound \f$ \omega_{\mathrm{min}} \f$ of the frequency interval.
      * @param w_max Upper bound \f$ \omega_{\mathrm{max}} \f$ of the frequency interval.
-     * @param N Size of the mesh.
+     * @param n_w Size of the mesh.
      */
-    refreq(double w_min = 0.0, double w_max = 0.0, long N = 0) : linear(w_min, w_max, N) {}
+    C2PY_DEPRECATED_PARAMETER_NAME(n_max : n_w)
+    refreq(double w_min = 0.0, double w_max = 0.0, long n_w = 0) : linear(w_min, w_max, n_w) {}
 
     /**
      * @brief Construct a real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with
      * \f$ N \geq 0  \f$ equally spaced mesh points.
      *
-     * @param interval `std::pair` containing the lower and upper bounds of the frequency interval.
-     * @param N Size of the mesh.
+     * @param window `std::pair` containing the lower and upper bounds of the frequency interval.
+     * @param n_w Size of the mesh.
      */
-    refreq(std::pair<double, double> interval, int N) : refreq(interval.first, interval.second, N) {}
+    refreq(std::pair<double, double> window, int n_w) : refreq(window.first, window.second, n_w) {}
 
     /// Is the mesh restricted to positive frequencies?
     static constexpr bool positive_only() { return false; }
 
     /// Get the lower bound of the interval \f$ \omega_{\text{min}} \f$, i.e. the value of the first mesh point.
-    [[nodiscard]] double w_min() const { return a_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(w_min) double w_min() const { return a_; }
 
     /// Get the upper bound of the interval \f$ \omega_{\text{max}} \f$, i.e. the value of the last mesh point.
-    [[nodiscard]] double w_max() const { return b_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(w_max) double w_max() const { return b_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshReFreq"; }

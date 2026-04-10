@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./bases/linear.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -83,7 +84,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 5
    * ```
    */
-  class retime : public detail::linear<retime, double> {
+  class C2PY_RENAME(MeshReTime) retime : public detail::linear<retime, double> {
     public:
     /// %Mesh point type of a triqs::mesh::retime mesh (see triqs::mesh::detail::linear::mesh_point_t).
     using mesh_point_t = detail::linear<retime, double>::mesh_point_t;
@@ -94,24 +95,25 @@ namespace triqs::mesh {
      *
      * @param t_min Lower bound \f$ t_{\mathrm{min}} \f$ of the time interval.
      * @param t_max Upper bound \f$ t_{\mathrm{max}} \f$ of the time interval.
-     * @param N Size of the mesh.
+     * @param n_t Size of the mesh.
      */
-    retime(double t_min = 0.0, double t_max = 0.0, long N = 0) : linear(t_min, t_max, N) {}
+    C2PY_DEPRECATED_PARAMETER_NAME(n_max : n_t)
+    retime(double t_min = 0.0, double t_max = 0.0, long n_t = 0) : linear(t_min, t_max, n_t) {}
 
     /**
      * @brief Construct a real time mesh on the interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ with \f$ N \geq 0 
      * \f$ equally spaced mesh points.
      *
-     * @param interval `std::pair` containing the lower and upper bounds of the time interval.
-     * @param N Size of the mesh.
+     * @param window `std::pair` containing the lower and upper bounds of the time interval.
+     * @param n_t Size of the mesh.
      */
-    retime(std::pair<double, double> interval, int N) : retime(interval.first, interval.second, N) {}
+    retime(std::pair<double, double> window, int n_t) : retime(window.first, window.second, n_t) {}
 
     /// Get the lower bound of the interval \f$ t_{\mathrm{min}} \f$, i.e. the value of the first mesh point.
-    [[nodiscard]] double t_min() const noexcept { return a_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(t_min) double t_min() const noexcept { return a_; }
 
     /// Get the upper bound of the interval \f$ t_{\mathrm{max}} \f$, i.e. the value of the last mesh point.
-    [[nodiscard]] double t_max() const noexcept { return b_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(t_max) double t_max() const noexcept { return b_; }
 
     /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "MeshReTime"; }

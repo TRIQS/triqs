@@ -26,6 +26,7 @@
 
 #include "../utils.hpp"
 #include "../mesh_iterator.hpp"
+#include "../../utility/macros.hpp"
 
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
@@ -70,7 +71,7 @@ namespace triqs::mesh::detail {
    */
   template <typename M, typename T>
     requires std::totally_ordered<T>
-  class linear {
+  class C2PY_IGNORE linear {
     public:
     /// Value type.
     using value_t = T;
@@ -90,7 +91,7 @@ namespace triqs::mesh::detail {
      * Arithmetic operations are defined for mesh points and scalars of the underlying value type. The operations are
      * performed between the value \f$ m \f$ of the mesh point and the given scalar.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = M;
@@ -149,7 +150,7 @@ namespace triqs::mesh::detail {
     /**
      * @brief Default construct an empty linear mesh of size \f$ N = 0 \f$.
      */
-    linear() = default;
+    C2PY_IGNORE linear() = default;
 
     /**
      * @brief Construct a linear mesh on the interval \f$ [a, b] \f$ of a given size \f$ N \geq 0 \f$.
@@ -158,7 +159,7 @@ namespace triqs::mesh::detail {
      * @param b Upper bound \f$ b \f$ of the interval.
      * @param N Size of the mesh.
      */
-    linear(value_t a, value_t b, long N) : N_(N), a_(a), b_(b) {
+    C2PY_IGNORE linear(value_t a, value_t b, long N) : N_(N), a_(a), b_(b) {
       EXPECTS(N_ >= 0);
       if (N_ == 1) {
         EXPECTS(a_ == b_);
@@ -172,7 +173,7 @@ namespace triqs::mesh::detail {
     }
 
     /// Equal-to comparison operator compares \f$ N \f$ and the interval \f$ [a, b] \f$.
-    bool operator==(linear const &rhs) const = default;
+    C2PY_IGNORE bool operator==(linear const &rhs) const = default;
 
     /**
      * @brief Check if an index \f$ n \f$ is valid.
@@ -204,7 +205,7 @@ namespace triqs::mesh::detail {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value \f$ x \f$ to map.
      * @return Data index \f$ d(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$.
      */
-    [[nodiscard]] index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept { return to_data_index(to_index(cmp)); }
+    [[nodiscard]] C2PY_IGNORE index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const noexcept { return to_data_index(to_index(cmp)); }
 
     /**
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ n(d) \f$.
@@ -223,7 +224,7 @@ namespace triqs::mesh::detail {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value \f$ x \f$ to map.
      * @return Index \f$ n(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$.
      */
-    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
+    [[nodiscard]] C2PY_IGNORE index_t to_index(closest_mesh_point_t<value_t> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
       return (N_ == 1 ? 0 : static_cast<index_t>((cmp.value - a_) * delta_inv_ + 0.5));
     }
@@ -245,7 +246,7 @@ namespace triqs::mesh::detail {
      * @return mesh_point_t with the index \f$ n(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$,
      * data index \f$ d(x) = n(x) \f$, hash value of the current mesh and value \f$ m(x) = a + n(x) \cdot \Delta \f$.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[to_data_index(cmp)]; }
+    [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const noexcept { return (*this)[to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
@@ -270,13 +271,13 @@ namespace triqs::mesh::detail {
     }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
     [[nodiscard]] long size() const noexcept { return N_; }
 
     /// Get the step size \f$ \Delta \f$ of the mesh, i.e. the distance between two consecutive mesh points.
-    [[nodiscard]] value_t delta() const noexcept { return delta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(delta) value_t delta() const noexcept { return delta_; }
 
     /// Get the inverse of the step size of the mesh, i.e. \f$ 1 / \Delta \f$.
     [[nodiscard]] value_t delta_inv() const noexcept { return delta_inv_; }
@@ -336,7 +337,7 @@ namespace triqs::mesh::detail {
      */
     void h5_read_impl(h5::group g, std::string const &name, const char *exp_format) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format_as_string(gr, exp_format, true);
+      h5::assert_hdf5_format_as_string(gr, exp_format, true); // NOLINT (downcasting to base class)
       auto a = h5::read<value_t>(gr, "min");
       auto b = h5::read<value_t>(gr, "max");
       auto N = h5::read<long>(gr, "size");

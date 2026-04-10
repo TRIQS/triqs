@@ -26,6 +26,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "./dlr.hpp"
+#include "../utility/macros.hpp"
 
 #include <cppdlr/cppdlr.hpp>
 #include <h5/h5.hpp>
@@ -99,7 +100,7 @@ namespace triqs::mesh {
    * mesh point #7: index = 7, data index = 7, value = 9.987968049992553
    * ```
    */
-  class dlr_imtime {
+  class C2PY_RENAME(MeshDLRImTime) dlr_imtime {
     public:
     /// Value type.
     using value_t = double;
@@ -116,7 +117,7 @@ namespace triqs::mesh {
      * @details It stores the index \f$ l \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
      * \f$ \tau_l \f$ of the mesh point.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = dlr;
@@ -159,20 +160,20 @@ namespace triqs::mesh {
 
     private:
     // Construct an imaginary time DLR mesh with a given set of DLR frequencies.
-    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym, nda::vector<double> const &dlr_freq)
-       : dlr_imtime(b, stat, wmax, epsilon, sym,
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, nda::vector<double> const &dlr_freq)
+       : dlr_imtime(beta, statistic, w_max, eps, symmetrize,
                     detail::dlr_ops{.freq = dlr_freq,
-                                    .imt  = {wmax * b, dlr_freq, sym},
-                                    .imf  = {wmax * b, dlr_freq, static_cast<cppdlr::statistic_t>(stat), sym}}) {}
+                                    .imt  = {w_max * beta, dlr_freq, symmetrize},
+                                    .imf  = {w_max * beta, dlr_freq, static_cast<cppdlr::statistic_t>(statistic), symmetrize}}) {}
 
     // Construct an imaginary time DLR mesh with given DLR operations.
-    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym, detail::dlr_ops ops)
-       : beta_(b),
-         stat_(stat),
-         w_max_(wmax),
-         eps_(epsilon),
-         symmetrize_(sym),
-         mesh_hash_(hash(b, stat, wmax, epsilon, sym, nda::sum(ops.imt.get_itnodes()))),
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize, detail::dlr_ops ops)
+       : beta_(beta),
+         stat_(statistic),
+         w_max_(w_max),
+         eps_(eps),
+         symmetrize_(symmetrize),
+         mesh_hash_(hash(beta, statistic, w_max, eps, symmetrize, nda::sum(ops.imt.get_itnodes()))),
          dlr_{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
 
     public:
@@ -187,14 +188,14 @@ namespace triqs::mesh {
      * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
      * `cppdlr::imfreq_ops` objects.
      *
-     * @param b Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics.
-     * @param wmax DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
-     * @param epsilon Error tolerance \f$ \epsilon \f$.
-     * @param sym Whether to choose the imaginary time points symmetrically around \f$ \tau = \beta / 2 \f$.
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param statistic Particle statistics.
+     * @param w_max DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
+     * @param eps Error tolerance \f$ \epsilon \f$.
+     * @param symmetrize Whether to choose the imaginary time points symmetrically around \f$ \tau = \beta / 2 \f$.
      */
-    dlr_imtime(double b, statistic_enum stat, double wmax, double epsilon, bool sym = false)
-       : dlr_imtime(b, stat, wmax, epsilon, sym, cppdlr::build_dlr_rf(wmax * b, epsilon, sym)) {}
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
+       : dlr_imtime(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
 
     /**
      * @brief Construct an imaginary frequency DLR mesh from another DLR type mesh.
@@ -235,7 +236,7 @@ namespace triqs::mesh {
     }
 
     /// Mapping of a value \f$ \tau \in [0, \beta] \f$ to the data index of the closest mesh point is deleted.
-    [[nodiscard]] long to_data_index(closest_mesh_point_t<double> const &cmp) const = delete;
+    [[nodiscard]] C2PY_IGNORE long to_data_index(closest_mesh_point_t<double> const &cmp) const = delete;
 
     /**
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ l(d) \f$.
@@ -280,31 +281,31 @@ namespace triqs::mesh {
     }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the DLR energy cutoff \f$ \omega_{\text{max}} = \Lambda / \beta \f$.
-    [[nodiscard]] double w_max() const noexcept { return w_max_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(w_max) double w_max() const noexcept { return w_max_; }
 
     /// Get the DLR error tolerance \f$ \epsilon \f$.
-    [[nodiscard]] double eps() const noexcept { return eps_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(eps) double eps() const noexcept { return eps_; }
 
     /// Is the mesh symmetric around \f$ \tau = \beta / 2 \f$?
-    [[nodiscard]] bool symmetrize() const noexcept { return symmetrize_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
     /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
-    [[nodiscard]] auto const &dlr_freq() const { return dlr_->freq; }
+    [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
-    [[nodiscard]] auto const &dlr_it() const { return dlr_->imt; }
+    [[nodiscard]] C2PY_IGNORE auto const &dlr_it() const { return dlr_->imt; }
 
     /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
-    [[nodiscard]] auto const &dlr_if() const { return dlr_->imf; }
+    [[nodiscard]] C2PY_IGNORE auto const &dlr_if() const { return dlr_->imf; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
     [[nodiscard]] long size() const noexcept { return (dlr_ ? dlr_->imt.get_itnodes().size() : 0); }
@@ -391,7 +392,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, dlr_imtime &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
       auto b       = h5::read<double>(gr, "beta");
       auto stat    = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
       auto wmax    = h5::read<double>(gr, "w_max");
