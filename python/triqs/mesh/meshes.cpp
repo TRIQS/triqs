@@ -99,3 +99,5 @@ namespace triqs::mesh {
   template C2PY_WRAP_AS_METHOD void copy_from(cyclat &, cyclat const &);
 
 } // namespace triqs::mesh
+
+#include "meshes.wrap.cxx"
