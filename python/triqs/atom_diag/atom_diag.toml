@@ -1,0 +1,3 @@
+package_name = "triqs.atom_diag"
+documentation = "Lightweight exact diagonalization solver"
+namespaces = "triqs::atom_diag"
