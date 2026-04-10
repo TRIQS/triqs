@@ -20,7 +20,6 @@
 #include <triqs/operators/many_body_operator.hpp>
 
 #ifdef C2PY_INCLUDED
-template <> inline constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator> = true;
-template <> inline constexpr char *c2py::tp_name<triqs::operators::many_body_operator>   = "Operator";
+#include <triqs/operators/operators.wrap.hxx>
 #include "./c2py_converters/operators_real_complex.hpp"
 #endif

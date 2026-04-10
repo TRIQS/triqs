@@ -1,14 +1,9 @@
-# All targets below link to triqs and nda_py
-link_libraries(triqs nda::nda_py)
+# install Python files
+set(python_sources ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
+install(FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators)
 
-SET(PYTHON_SOURCES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-)
+# install generated header
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/operators.wrap.hxx DESTINATION include/triqs/operators)
 
-
-add_cpp2py_module(operators)
-
-install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators)
-install(TARGETS operators DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators)
-
+# add submodule util
 add_subdirectory(util)
