@@ -463,10 +463,13 @@ class Gf(metaclass=AddMethod):
             assert self.mesh == arg.mesh, 'Can not add two Gf with different mesh'
             self._data += arg._data
         else:
-            if self._target_rank != 2 and not isinstance(arg, np.ndarray):
+            if self._target_rank == 2:
+                if not isinstance(arg, np.ndarray):
+                    n = self._data.shape[-1]
+                    arg = arg * np.eye(n, dtype=self._data.dtype)
                 self._data[:] += arg
-            elif self._target_rank == 2:
-                wrapped_aux._iadd_g_matrix_scalar(self, arg)
+            elif not isinstance(arg, np.ndarray):
+                self._data[:] += arg
             else:
                 raise NotImplemented
         return self
@@ -489,10 +492,13 @@ class Gf(metaclass=AddMethod):
             assert self.mesh == arg.mesh, 'Can not subtract two Gf with different mesh'
             self._data -= arg._data
         else:
-            if self._target_rank != 2 and not isinstance(arg, np.ndarray):
+            if self._target_rank == 2:
+                if not isinstance(arg, np.ndarray):
+                    n = self._data.shape[-1]
+                    arg = arg * np.eye(n, dtype=self._data.dtype)
                 self._data[:] -= arg
-            elif self._target_rank == 2:
-                wrapped_aux._isub_g_matrix_scalar(self, arg)
+            elif not isinstance(arg, np.ndarray):
+                self._data[:] -= arg
             else:
                 raise NotImplemented
         return self
