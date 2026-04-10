@@ -16,10 +16,9 @@ SET(PYTHON_SOURCES
 
 add_cpp2py_module(gf_fnt)
 add_cpp2py_module(gf_factories)
-add_cpp2py_module(wrapped_aux)
 
 install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
-install(TARGETS gf_fnt gf_factories wrapped_aux DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
+install(TARGETS gf_fnt gf_factories DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
 
 add_subdirectory(backwd_compat)
 add_subdirectory(plot)

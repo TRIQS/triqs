@@ -736,7 +736,7 @@ class Gf(metaclass=AddMethod):
         if not R.strides == sorted(R.strides):
             R = R.copy(order='C')
 
-        wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
+        wrapped_aux._set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
     def total_density(self, *args, **kwargs):
         """Compute total density.
