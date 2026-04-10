@@ -20,8 +20,8 @@ import numpy as np
 from h5 import HDFArchive
 import os
 
-from triqs.gf import Gf
-from triqs.gf.meshes import MeshChebyshev, MeshImTime
+from triqs.gfs import Gf
+from triqs.mesh import MeshChebyshev
 
 
 def test_function(tau, beta, omega):

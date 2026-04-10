@@ -15,10 +15,10 @@
 #
 # Authors: Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.lattice import *
 from h5 import *
-from triqs.lattice.tight_binding import * 
+from triqs.lattice.tight_binding import *
 from triqs.utility.h5diff import h5diff
 from triqs.utility.comparison_tests import *
 from numpy import cos
@@ -28,7 +28,7 @@ from numpy import cos
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0)])
 mesh_k = MeshBrZone(BrillouinZone(BL), n_k=20)
 
-mesh_iw = MeshImFreq(beta=1., S='Fermion', n_iw=100)
+mesh_iw = MeshImFreq(beta=1., statistic='Fermion', n_iw=100)
 mesh_k_iw = MeshProduct(mesh_k, mesh_iw)
 
 mesh_iw_dlr = MeshDLRImFreq(beta=1., statistic='Fermion', w_max=10, eps=1e-7)
@@ -60,7 +60,7 @@ for k in mesh_k:
 # === Test Evaluation
 
 for n in range(3):
-  G_iw = Gf(mesh=mesh_iw, target_shape = [1,1]) 
+  G_iw = Gf(mesh=mesh_iw, target_shape = [1,1])
   for k in mesh_k:
       G_iw << inverse(iOmega_n - eps(k) - Sigma(iOmega_n))
       assert_arrays_are_close(G_iw[Idx(n)], G_k_iw[k, Idx(n)])
@@ -69,12 +69,12 @@ for n in range(3):
       assert_arrays_are_close(G_iw[Idx(n)], G_k_iw(k.index, n))
       assert_arrays_are_close(G_iw[Idx(n)], G_k_iw(k.value, n))
       assert_gfs_are_close(G_iw, G_k_iw(k.value, all))
-  
+
       iwn = mesh_iw(n)
       assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k, iwn))
       assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k.index, iwn))
       assert_arrays_are_close(G_iw[Idx(n)], G_k_dlr(k.value, iwn))
-  
+
   G_k = Gf(mesh=mesh_k, target_shape = [1,1])
   for iw in mesh_iw:
       for k in mesh_k: G_k[k] = inverse(iw - eps(k) - Sigma(iw))
@@ -84,7 +84,7 @@ for n in range(3):
       assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw([n,0,0], iw.index))
       assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_iw([n,0,0], iw.value))
       assert_gfs_are_close(G_k, G_k_iw(all, iw))
-  
+
       assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_dlr([n,0,0], iw))
       assert_arrays_are_close(G_k[Idx(n,0,0)], G_k_dlr([n,0,0], iw.value))
       assert_gfs_are_close(G_k, G_k_dlr(all, iw))

@@ -20,7 +20,7 @@
 import copy
 import numpy as np
 
-from triqs.gf import MeshBrZone
+from triqs.gfs import MeshBrZone
 from triqs.lattice import BrillouinZone, BravaisLattice
 
 cell = [

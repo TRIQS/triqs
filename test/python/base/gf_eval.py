@@ -17,8 +17,8 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
-from triqs.gf.tools import fit_legendre
+from triqs.gfs import *
+from triqs.gfs.tools import fit_legendre
 from numpy import *
 
 def are_close(a,b):

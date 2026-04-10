@@ -18,8 +18,8 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 # Test from I. Krivenko.
-from triqs.gf import *
-from triqs.gf.descriptors import *
+from triqs.gfs import *
+from triqs.gfs.descriptors import *
 from triqs.utility import capture_stdout
 
 import unittest

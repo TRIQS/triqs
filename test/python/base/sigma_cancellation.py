@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 ##%matplotlib inline
 
 import numpy as np
-from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.gfs import Gf, MeshImFreq, iOmega_n, inverse
 
 def delta_inv(beta, nw, nk=100):
 

@@ -1,8 +1,8 @@
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import HDFArchive
 
 # Create Matsubara mesh
-iw_mesh = MeshImFreq(beta=10, S='Fermion', n_iw=100)
+iw_mesh = MeshImFreq(beta=10, statistic='Fermion', n_iw=100)
 
 # Create BlockGf
 giw = Gf(mesh=iw_mesh, target_shape=())

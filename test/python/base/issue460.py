@@ -17,7 +17,7 @@
 #
 # Authors: Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 import numpy as np
 

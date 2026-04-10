@@ -19,7 +19,7 @@
 import numpy as np
 
 from triqs.lattice import BrillouinZone, BravaisLattice, LatticePoint
-from triqs.gf import MeshBrZone, MeshCycLat, Gf
+from triqs.gfs import MeshBrZone, MeshCycLat, Gf
 
 import unittest
 

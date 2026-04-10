@@ -17,11 +17,11 @@
 #
 # Authors: Thomas Ayral, Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import *
 
 #one constructor
-m=MeshImFreq(beta=1, S='Fermion', n_iw=10)
+m=MeshImFreq(beta=1, statistic='Fermion', n_iw=10)
 G=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2']])
 
 #another constructor
@@ -61,6 +61,6 @@ print(G5.data.shape)
 assert G5.data.shape==(20,1,2,2,1),"not ok"
 assert G5[0,0,0,0].data.shape==(20,), "not ok"
 
-#ImTime, 
+#ImTime,
 print("#############################")
 G6=GfImTime(beta=1.,statistic="Fermion",n_points=100, target_shape=(1,2,2))

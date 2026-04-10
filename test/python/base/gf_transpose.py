@@ -17,7 +17,7 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 
 g = GfImFreq(indices = [list(range(3)), list(range(5))], beta = 40, n_points = 1000)
 gt = g.transpose()

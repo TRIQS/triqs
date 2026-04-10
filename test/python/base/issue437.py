@@ -17,7 +17,7 @@
 #
 # Authors: Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *                                             
+from triqs.gfs import *                                             
                                                                            
 G_iw = GfImFreq(beta=40,indices=[0,1])                                     
 G_w = GfReFreq(window=(-3,3),indices=[0,1])                                

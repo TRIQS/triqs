@@ -1,4 +1,4 @@
-from triqs.gf import *
+from triqs.gfs import *
 G1 = GfImFreq(beta=40, target_shape=(1,1))
 
 """ this test checks all constructors of BlockGf """

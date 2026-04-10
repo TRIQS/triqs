@@ -21,7 +21,7 @@ import numpy
 import unittest
 
 from h5 import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 
 

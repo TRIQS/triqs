@@ -18,13 +18,13 @@
 #
 # Authors: Thomas Ayral, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import *
 from itertools import product
 
 ##construct product mesh
-m1=MeshImFreq(beta=1., S="Fermion", n_iw=100)
-m2=MeshImFreq(beta=1., S="Boson", n_iw=100)
+m1=MeshImFreq(beta=1., statistic="Fermion", n_iw=100)
+m2=MeshImFreq(beta=1., statistic="Boson", n_iw=100)
 mprod=MeshProduct(m1,m2)
 
 assert len(mprod)==len(m1)*len(m2), "not ok: %s"%(mprod.size)
@@ -47,7 +47,7 @@ assert g.data.shape==(200,199)
 with HDFArchive("g_multivar.h5",'w') as A:
   A["g"] = g
   A["mprod"] = mprod
-  
+
 with HDFArchive("g_multivar.h5",'r') as A2:
     mprod2=A2["mprod"]
     g2 = A2["g"]
@@ -99,8 +99,8 @@ if not mpi.is_master_node():
 
 #ImTime
 ##construct product mesh
-m1=MeshImTime(beta=1., S="Fermion", n_tau=100)
-m2=MeshImTime(beta=1., S="Boson", n_tau=100)
+m1=MeshImTime(beta=1., statistic="Fermion", n_tau=100)
+m2=MeshImTime(beta=1., statistic="Boson", n_tau=100)
 mprod=MeshProduct(m1,m2)
 g=Gf(mesh = mprod, target_shape = [1,1,1])
 f=Gf(mesh = mprod, target_shape =[1,1,1])
@@ -124,9 +124,9 @@ assert H["a"].data[0,0,0,0,0]==15.0, "not ok: %s"%H["a"].data[0,0,0,0,0]
 assert H["b"].data[0,0,0,0,0]==10.0, "not ok: %s"%H["b"].data[0,0,0,0,0]
 
 # Legendre
-m1 = MeshImFreq(beta=2., S = "Boson", n_iw=20)
-m2 = MeshLegendre(beta=2., S = "Fermion", max_n=10)
-m3 = MeshLegendre(beta=2., S = "Fermion", max_n=10)
+m1 = MeshImFreq(beta=2., statistic = "Boson", n_iw=20)
+m2 = MeshLegendre(beta=2., statistic = "Fermion", max_n=10)
+m3 = MeshLegendre(beta=2., statistic = "Fermion", max_n=10)
 mprod = MeshProduct(m1,m2,m3)
 assert len(mprod) == len(m1)*len(m2)*len(m3)
 
