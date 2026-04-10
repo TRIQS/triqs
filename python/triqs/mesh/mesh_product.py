@@ -129,4 +129,3 @@ class MeshProduct:
 
 from h5.formats import register_class
 register_class (MeshProduct)
-

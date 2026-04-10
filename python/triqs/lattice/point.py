@@ -18,7 +18,7 @@
 import math
 import numpy
 from operator import add, neg
-from triqs.gf import MeshPoint
+from triqs.mesh import MeshPoint
 
 class LatticePoint:
     r""" TRIQS Lattice Point
