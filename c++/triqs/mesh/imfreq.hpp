@@ -28,6 +28,7 @@
 #include "./mesh_iterator.hpp"
 #include "./tail_fitter.hpp"
 #include "./utils.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -126,7 +127,7 @@ namespace triqs::mesh {
    * mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
    * ```
    */
-  class imfreq : public tail_fitter_handle {
+  class C2PY_RENAME(MeshImFreq) imfreq : public tail_fitter_handle {
     public:
     /// Value type.
     using value_t = matsubara_freq;
@@ -144,7 +145,7 @@ namespace triqs::mesh {
      * inverse temperature \f$ \beta \f$ and the particle statistics, it also stores the data index \f$ d \f$ and the
      * hash value of the parent mesh.
      */
-    class mesh_point_t : public matsubara_freq {
+    class C2PY_IGNORE mesh_point_t : public matsubara_freq {
       public:
       /// Parent mesh type.
       using mesh_t = imfreq;
@@ -199,13 +200,14 @@ namespace triqs::mesh {
     /**
      * @brief Construct an imaginary frequency mesh with \f$ N_{i\omega_n} \geq 0 \f$ positive Matsubara frequencies. 
      *
-     * @param b Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics.
-     * @param N_iw Number of positive Matsubara frequencies, i.e. \f$ N_{i\omega_n} \f$.
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param statistic Particle statistics.
+     * @param n_iw Number of positive Matsubara frequencies, i.e. \f$ N_{i\omega_n} \f$.
      * @param opt Whether to use all or only the positive frequencies.
      */
-    imfreq(double b, statistic_enum stat, long N_iw = 1025, option opt = option::all_frequencies)
-       : beta_(b), stat_(stat), N_iw_(N_iw), opt_(opt), mesh_hash_(hash(b, stat, N_iw, opt)) {
+    C2PY_DEPRECATED_PARAMETER_NAME(S : statistic, n_max : n_iw)
+    imfreq(double beta, statistic_enum statistic, long n_iw = 1025, option opt = option::all_frequencies)
+       : beta_(beta), stat_(statistic), N_iw_(n_iw), opt_(opt), mesh_hash_(hash(beta, statistic, n_iw, opt)) {
       EXPECTS(beta_ > 0);
       EXPECTS(N_iw_ >= 0);
       if (opt == option::positive_frequencies_only) first_index_ = 0;
@@ -224,13 +226,13 @@ namespace triqs::mesh {
      *   \end{cases} \; .
      * \f]
      *
-     * @param b Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics.
+     * @param beta Inverse temperature \f$ \beta > 0 \f$.
+     * @param statistic Particle statistics.
      * @param w_max Threshold \f$ \omega_{\text{max}} > 0 \f$ for the largest positive Matsubara frequency.
      * @param opt Whether to use all or only the positive frequencies.
      */
-    imfreq(double b, statistic_enum stat, energy_t w_max, option opt = option::all_frequencies)
-       : imfreq(b, stat, static_cast<long>((w_max.value * b / std::numbers::pi - (stat == Fermion ? 1 : 0)) / 2) + 1, opt) {}
+    C2PY_IGNORE imfreq(double beta, statistic_enum statistic, energy_t w_max, option opt = option::all_frequencies)
+       : imfreq(beta, statistic, static_cast<long>((w_max.value * beta / std::numbers::pi - (statistic == Fermion ? 1 : 0)) / 2) + 1, opt) {}
 
     /**
      * @brief Equal-to comparison operator compares \f$ \beta \f$, the particle statistics, \f$ N_{i\omega_n} \f$ and
@@ -276,7 +278,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing \f$ i\omega_n \f$.
      * @return Data index \f$ d(i\omega_n) = n - n_{\text{min}} \f$.
      */
-    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const {
+    [[nodiscard]] C2PY_IGNORE data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(beta_ == cmp.value.beta and stat_ == cmp.value.statistic);
       return to_data_index(to_index(cmp));
     }
@@ -299,7 +301,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing \f$ i\omega_n \f$.
      * @return Matsubara index \f$ n(i\omega_n) = n \f$.
      */
-    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const {
+    [[nodiscard]] C2PY_IGNORE index_t to_index(closest_mesh_point_t<value_t> const &cmp) const {
       EXPECTS(is_index_valid(cmp.value.n));
       return cmp.value.n;
     }
@@ -321,7 +323,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the Matsubara index \f$ n(i\omega_n) = n \f$, data index \f$ d(i\omega_n) = n -
      * n_{\text{min}} \f$ and same \f$ \beta \f$, particle statistics and hash value as the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[to_data_index(cmp)]; }
+    [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its Matsubara index \f$ n \in \{ n_{\text{min}}, \dots,
@@ -355,16 +357,16 @@ namespace triqs::mesh {
     std::complex<double> w_max() const { return to_value(last_index_); }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the number of positive Matsubara frequencies \f$ N_{i\omega_n} \f$.
-    [[nodiscard]] long n_iw() const noexcept { return N_iw_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(n_iw) long n_iw() const noexcept { return N_iw_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points.
     [[nodiscard]] long size() const noexcept { return last_index_ - first_index_ + 1; }
@@ -443,7 +445,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string name, imfreq &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       // enum option: positive_frequencies_only = 1, all_frequencies = 0
       int pos_freq = 0;
@@ -466,13 +468,13 @@ namespace triqs::mesh {
     }
 
     /// Return true if the given Matusbara index \f$ n \f$ is not valid (see is_index_valid()).
-    bool eval_to_zero(index_t n) const { return !is_index_valid(n); }
+    C2PY_IGNORE bool eval_to_zero(index_t n) const { return !is_index_valid(n); }
 
     /// Return true if the Matusbara index of the given Matsubara frequency \f$ i\omega_n \f$ is not valid.
-    bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
+    C2PY_IGNORE bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
 
     /// Return true if the Matusbara index of the given mesh point is not valid (see is_index_valid()).
-    bool eval_to_zero(mesh_point_t mp) const { return eval_to_zero(mp.value()); }
+    C2PY_IGNORE bool eval_to_zero(mesh_point_t mp) const { return eval_to_zero(mp.value()); }
 
     private:
     double beta_         = 1.0;

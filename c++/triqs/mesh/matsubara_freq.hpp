@@ -26,6 +26,7 @@
 
 #include "./utils.hpp"
 #include "../utility/kronecker.hpp"
+#include "../utility/macros.hpp"
 
 #include <compare>
 #include <complex>
@@ -49,7 +50,7 @@ namespace triqs::mesh {
    * - for fermions, it takes the values \f$ i \omega_n = i\frac{2 \pi (n + 1)}{\beta} \f$ and
    * - for bosons, it takes the values \f$ i\omega_n = i\frac{2 \pi n}{\beta} \f$.
    */
-  struct matsubara_freq {
+  struct C2PY_IGNORE matsubara_freq {
     /// Value type of a Matsubara frequency.
     using cast_t = std::complex<double>;
 
@@ -101,7 +102,7 @@ namespace triqs::mesh {
    * @param iw Frequency to be written.
    * @return Reference to `std::ostream` object.
    */
-  inline std::ostream &operator<<(std::ostream &sout, matsubara_freq const &iw) { return sout << std::complex<double>(iw); }
+  C2PY_IGNORE inline std::ostream &operator<<(std::ostream &sout, matsubara_freq const &iw) { return sout << std::complex<double>(iw); }
 
   /**
    * @brief Addition operator for two triqs::mesh::matsubara_freq objects.
@@ -114,7 +115,7 @@ namespace triqs::mesh {
    * @param iw2 Right hand side frequency operand.
    * @return Resulting triqs::mesh::matsubara_freq object.
    */
-  [[nodiscard]] inline matsubara_freq operator+(matsubara_freq const &iw1, matsubara_freq const &iw2) {
+  [[nodiscard]] C2PY_IGNORE inline matsubara_freq operator+(matsubara_freq const &iw1, matsubara_freq const &iw2) {
     return {iw1.n + iw2.n + (iw1.statistic & iw2.statistic), iw1.beta, ((iw1.statistic ^ iw2.statistic) == 1 ? Fermion : Boson)};
   }
 
@@ -129,7 +130,7 @@ namespace triqs::mesh {
    * @param iw2 Right hand side frequency operand.
    * @return Resulting triqs::mesh::matsubara_freq object.
    */
-  [[nodiscard]] inline matsubara_freq operator-(matsubara_freq const &iw1, matsubara_freq const &iw2) {
+  [[nodiscard]] C2PY_IGNORE inline matsubara_freq operator-(matsubara_freq const &iw1, matsubara_freq const &iw2) {
     return {iw1.n - iw2.n - (~iw1.statistic & iw2.statistic), iw1.beta, ((iw1.statistic ^ iw2.statistic) == 1 ? Fermion : Boson)};
   }
 
@@ -142,7 +143,7 @@ namespace triqs::mesh {
    * @param iw Frequency operand.
    * @return Resulting triqs::mesh::matsubara_freq object.
    */
-  [[nodiscard]] inline matsubara_freq operator-(matsubara_freq const &iw) {
+  [[nodiscard]] C2PY_IGNORE inline matsubara_freq operator-(matsubara_freq const &iw) {
     return {-(iw.n + (iw.statistic == Fermion ? 1 : 0)), iw.beta, iw.statistic};
   }
 
@@ -155,7 +156,7 @@ namespace triqs::mesh {
    * @param iw2 Right hand side frequency operand.
    * @return Resulting `std::complex<double>`.
    */
-  [[nodiscard]] inline auto operator/(matsubara_freq const &iw1, matsubara_freq const &iw2) {
+  [[nodiscard]] C2PY_IGNORE inline auto operator/(matsubara_freq const &iw1, matsubara_freq const &iw2) {
     return std::complex<double>{iw1} / std::complex<double>{iw2};
   }
 
@@ -168,7 +169,7 @@ namespace triqs::mesh {
    * @param iw2 Right hand side frequency operand.
    * @return Resulting `std::complex<double>`.
    */
-  [[nodiscard]] inline auto operator*(matsubara_freq const &iw1, matsubara_freq const &iw2) {
+  [[nodiscard]] C2PY_IGNORE inline auto operator*(matsubara_freq const &iw1, matsubara_freq const &iw2) {
     return std::complex<double>{iw1} * std::complex<double>{iw2};
   }
 
@@ -197,7 +198,7 @@ namespace triqs::mesh {
    * @param iw triqs::mesh::matsubara_freq object.
    * @return True, if the index of the Matsubara frequency is zero, false otherwise.
    */
-  [[nodiscard]] inline bool kronecker(matsubara_freq const &iw) { return iw.n == 0; }
+  [[nodiscard]] C2PY_IGNORE inline bool kronecker(matsubara_freq const &iw) { return iw.n == 0; }
 
   /**
    * @brief Kronecker delta function for two Matsubara frequencies.
@@ -206,7 +207,7 @@ namespace triqs::mesh {
    * @param iw2 triqs::mesh::matsubara_freq object.
    * @return True, if the indices of the Matsubara frequencies are equal, false otherwise.
    */
-  [[nodiscard]] inline bool kronecker(matsubara_freq const &iw1, matsubara_freq const &iw2) { return iw1.n == iw2.n; }
+  [[nodiscard]] C2PY_IGNORE inline bool kronecker(matsubara_freq const &iw1, matsubara_freq const &iw2) { return iw1.n == iw2.n; }
 
   /** @} */
 

@@ -23,6 +23,7 @@
 #pragma once
 
 #include "./mesh_iterator.hpp"
+#include "../utility/macros.hpp"
 
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
@@ -70,7 +71,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4
    * ```
    */
-  class discrete {
+  class C2PY_IGNORE discrete {
     public:
     /// Index type.
     using index_t = long;
@@ -234,7 +235,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, discrete &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
       long L = h5::read<long>(gr, "size");
       m      = discrete(L);
     }

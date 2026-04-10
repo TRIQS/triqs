@@ -43,13 +43,13 @@ namespace triqs::mesh {
    * N / 6 \f$, where \f$ N \f$ is the size of the given imaginary time mesh.
    * 
    * @param m Input triqs::mesh::imtime mesh.
-   * @param N_iw Number of positive Matsubara frequencies, i.e. \f$ N_{i\omega_n} \f$.
+   * @param n_iw Number of positive Matsubara frequencies, i.e. \f$ N_{i\omega_n} \f$.
    * @return Imaginary frequency mesh with the same \f$ \beta \f$ and particle statistics as the given imaginary time
    * mesh and \f$ N_{i\omega_n} \f$ positive Matsubara frequencies.
    */
-  [[nodiscard]] inline imfreq make_adjoint_mesh(imtime const &m, long N_iw = -1) {
-    if (N_iw == -1) N_iw = (m.size() - 1) / 6;
-    return {m.beta(), m.statistic(), N_iw};
+  [[nodiscard]] inline imfreq make_adjoint_mesh(imtime const &m, long n_iw = -1) {
+    if (n_iw == -1) n_iw = (m.size() - 1) / 6;
+    return {m.beta(), m.statistic(), n_iw};
   }
 
   /**
@@ -60,13 +60,13 @@ namespace triqs::mesh {
    * where \f$ n_{\text{max}} \f$ is the largest positive Matsubara index in the given imaginary frequency mesh.
    * 
    * @param m Input triqs::mesh::imtime mesh.
-   * @param N Size of the imaginary time mesh.
+   * @param n_tau Size of the imaginary time mesh.
    * @return Imaginary time mesh with the same \f$ \beta \f$ and particle statistics as the given imaginary frequency
    * mesh and size \f$ N \f$.
    */
-  [[nodiscard]] inline imtime make_adjoint_mesh(imfreq const &m, long N = -1) {
-    if (N == -1) N = 6 * (m.last_index() + 1) + 1;
-    return {m.beta(), m.statistic(), N};
+  [[nodiscard]] inline imtime make_adjoint_mesh(imfreq const &m, long n_tau = -1) {
+    if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
+    return {m.beta(), m.statistic(), n_tau};
   }
 
   /**

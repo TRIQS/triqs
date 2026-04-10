@@ -29,6 +29,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "../lattice/brillouin_zone.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/ranges.h>
 #include <h5/h5.hpp>
@@ -135,7 +136,7 @@ namespace triqs::mesh {
    * mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5000, 0.5000, 0.6667]
    * ```
    */
-  class brzone {
+  class C2PY_RENAME(MeshBrZone) brzone {
     public:
     /// Value type.
     using value_t = brillouin_zone::value_t;
@@ -152,7 +153,7 @@ namespace triqs::mesh {
      * @details It stores the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) \f$, a pointer to and the hash
      * value of the parent mesh, and the value \f$ \mathbf{k}^{\mathbf{n}} \f$.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = brzone;
@@ -263,7 +264,7 @@ namespace triqs::mesh {
      * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
      * @param M \f$ 3 \times 3 \f$ periodization matrix.
      */
-    brzone(brillouin_zone const &bz, nda::matrix<long> const &M) : brzone(bz, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
+    C2PY_IGNORE brzone(brillouin_zone const &bz, nda::matrix<long> const &M) : brzone(bz, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
       EXPECTS((M.shape() == std::array{3l, 3l}));
       EXPECTS(nda::is_matrix_diagonal(M));
     }
@@ -272,9 +273,9 @@ namespace triqs::mesh {
      * @brief Construct a Brillouin zone mesh with the same number of mesh points in each direction.
      *
      * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
-     * @param n Number of mesh points along each of the three dimensions.
+     * @param n_k Number of mesh points along each of the three dimensions.
      */
-    brzone(brillouin_zone const &bz, long n) : brzone(bz, std::array{n, (bz.ndim() >= 2 ? n : 1l), (bz.ndim() >= 3 ? n : 1)}) {}
+    brzone(brillouin_zone const &bz, long n_k) : brzone(bz, std::array{n_k, (bz.ndim() >= 2 ? n_k : 1l), (bz.ndim() >= 3 ? n_k : 1)}) {}
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a \f$ \mathbf{k}^\mathbf{n} \f$ in the
@@ -381,7 +382,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
      * (n_2 + N_2 n_1) \f$ and a pointer to the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
+    [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ \mathbf{n} \f$.
@@ -405,19 +406,19 @@ namespace triqs::mesh {
     }
 
     /// Get the number of mesh points in each of the three dimensions.
-    [[nodiscard]] auto const &dims() const { return dims_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(dims) auto const &dims() const { return dims_; }
 
     /// Get the matrix \f$ \tilde{\mathbf{B}}^T \f$ containing the scaled reciprocal basis vectors in its rows.
-    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
+    [[nodiscard]] C2PY_PROPERTY_GET(units) auto units() const { return nda::matrix_const_view<double>{units_}; }
 
     /// Get the matrix \f$ \left( \tilde{\mathbf{B}}^T \right)^{-1} \f$.
-    [[nodiscard]] auto units_inv() const { return nda::matrix_const_view<double>{units_inv_}; }
+    [[nodiscard]] C2PY_IGNORE auto units_inv() const { return nda::matrix_const_view<double>{units_inv_}; }
 
     /// Get the underlying Brillouin zone.
-    [[nodiscard]] auto const &bz() const noexcept { return bz_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(bz) auto const &bz() const noexcept { return bz_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the total number of mesh points in the first BZ.
     [[nodiscard]] long size() const { return size_; }
@@ -429,7 +430,7 @@ namespace triqs::mesh {
      * @return Corresponding index \f$ \mathbf{n} \f$ in the first BZ such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
      * \mathbf{N} \mathbf{m} \f$.
      */
-    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
+    [[nodiscard]] C2PY_IGNORE index_t index_modulo(index_t const &n_tilde) const {
       return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
     }
 
@@ -548,7 +549,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, brzone &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       std::array<long, 3> dims{};
       if (gr.has_key("dims")) {

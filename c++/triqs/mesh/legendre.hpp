@@ -27,6 +27,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "../utility/legendre.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -89,7 +90,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4
    * ```
    */
-  class legendre {
+  class C2PY_RENAME(MeshLegendre) legendre {
     public:
     /// Index type.
     using index_t = long;
@@ -101,7 +102,7 @@ namespace triqs::mesh {
      * @brief %Mesh point of a triqs::mesh::legendre mesh.
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$ and the hash value of the parent mesh.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = legendre;
@@ -142,10 +143,11 @@ namespace triqs::mesh {
      * [0, \beta] \f$ and the given particle statistics.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
-     * @param N Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
+     * @param statistic Particle statistics (see triqs::mesh::statistic_enum).
+     * @param max_n Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
      */
-    legendre(double beta, statistic_enum stat, long N) : beta_(beta), stat_(stat), N_(N), mesh_hash_(hash(beta, stat, N)) {
+    C2PY_DEPRECATED_PARAMETER_NAME(S : statistic, n_max : max_n)
+    legendre(double beta, statistic_enum statistic, long max_n) : beta_(beta), stat_(statistic), N_(max_n), mesh_hash_(hash(beta, statistic, max_n)) {
       EXPECTS(beta_ > 0);
       EXPECTS(N_ >= 0);
     }
@@ -200,13 +202,13 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(long n) const { return {n, to_data_index(n), mesh_hash_}; }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] auto statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) auto statistic() const noexcept { return stat_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points or polynomials in the series expansion.
     [[nodiscard]] long size() const { return N_; }
@@ -274,7 +276,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, legendre &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       // for backward compatibility
       if (gr.has_key("domain")) { gr = gr.open_group("domain"); }

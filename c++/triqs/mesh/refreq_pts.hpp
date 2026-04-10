@@ -25,6 +25,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "../utility/exceptions.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -88,7 +89,7 @@ namespace triqs::mesh {
    * mesh point #4: index = 4, data index = 4, value = 5
    * ```
    */
-  class refreq_pts {
+  class C2PY_RENAME(MeshReFreqPts) refreq_pts {
     public:
     /// Value type.
     using value_t = double;
@@ -108,7 +109,7 @@ namespace triqs::mesh {
      * Arithmetic operations are defined for mesh points and scalars. The operations are performed
      * between the value \f$ \omega_n \f$ of the mesh point and the given scalar.
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = refreq_pts;
@@ -183,7 +184,7 @@ namespace triqs::mesh {
      *
      * @param l Initializer list of frequency values.
      */
-    refreq_pts(std::initializer_list<double> l) : refreq_pts(std::vector<double>(l)) {}
+    C2PY_IGNORE refreq_pts(std::initializer_list<double> l) : refreq_pts(std::vector<double>(l)) {}
 
     /// Equal-to comparison operator.
     bool operator==(refreq_pts const &) const = default;
@@ -221,7 +222,9 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value to map.
      * @return Data index of the closest mesh point.
      */
-    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<double> const &cmp) const noexcept { return to_data_index(to_index(cmp)); }
+    [[nodiscard]] C2PY_IGNORE data_index_t to_data_index(closest_mesh_point_t<double> const &cmp) const noexcept {
+      return to_data_index(to_index(cmp));
+    }
 
     /**
      * @brief Map a data index \f$ d \f$ to the corresponding index \f$ n(d) = d \f$.
@@ -240,7 +243,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value to map.
      * @return Index of the closest mesh point.
      */
-    [[nodiscard]] index_t to_index(closest_mesh_point_t<double> const &cmp) const noexcept {
+    [[nodiscard]] C2PY_IGNORE index_t to_index(closest_mesh_point_t<double> const &cmp) const noexcept {
       EXPECTS(is_value_valid(cmp.value));
 
       auto itr_r = std::ranges::lower_bound(pts_, cmp.value);
@@ -270,7 +273,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the value.
      * @return mesh_point_t of the closest mesh point.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<double> const &cmp) const noexcept { return (*this)[to_data_index(cmp)]; }
+    [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<double> const &cmp) const noexcept { return (*this)[to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its index.
@@ -295,13 +298,13 @@ namespace triqs::mesh {
     }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const noexcept { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
     [[nodiscard]] long size() const noexcept { return static_cast<long>(pts_.size()); }
 
     /// Get the vector of frequency point values.
-    [[nodiscard]] std::vector<double> const &points() const noexcept { return pts_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(points) std::vector<double> const &points() const noexcept { return pts_; }
 
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<refreq_pts>{.mesh_ptr = this, .data_index = 0}; }
@@ -350,7 +353,7 @@ namespace triqs::mesh {
      */
     friend void h5_write(h5::group g, std::string const &name, refreq_pts const &m) {
       h5::group gr = g.create_group(name);
-      h5::write_hdf5_format(gr, m);
+      h5::write_hdf5_format(gr, m); // NOLINT (downcasting to base class)
       h5::write(gr, "points", m.pts_);
     }
 
@@ -363,7 +366,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, refreq_pts &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
       auto pts = h5::read<std::vector<double>>(gr, "points");
       m        = refreq_pts(std::move(pts));
     }

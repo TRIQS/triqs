@@ -25,6 +25,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "../utility/chebyshev.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/format.h>
 #include <h5/h5.hpp>
@@ -84,7 +85,7 @@ namespace triqs::mesh {
    * }
    * @endcode
    */
-  class chebyshev {
+  class C2PY_RENAME(MeshChebyshev) chebyshev {
     public:
     /// Value type (imaginary time tau).
     using value_t = double;
@@ -100,7 +101,7 @@ namespace triqs::mesh {
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the parent mesh,
      * and the value \f$ \tau_n \f$ (Chebyshev point scaled to \f$ [0, \beta] \f$).
      */
-    class mesh_point_t {
+    class C2PY_IGNORE mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = chebyshev;
@@ -139,7 +140,9 @@ namespace triqs::mesh {
   template <typename U> friend auto operator OP(mesh_point_t const &mp, U &&y) { return mp.value() OP std::forward<U>(y); }                          \
   template <typename U>                                                                                                                              \
     requires(not std::is_same_v<std::decay_t<U>, mesh_point_t>)                                                                                      \
-  friend auto operator OP(U &&x, mesh_point_t const &mp) { return std::forward<U>(x) OP mp.value(); }
+  friend auto operator OP(U &&x, mesh_point_t const &mp) {                                                                                           \
+    return std::forward<U>(x) OP mp.value();                                                                                                         \
+  }
       IMPL_OP(+)
       IMPL_OP(-)
       IMPL_OP(*)
@@ -230,25 +233,25 @@ namespace triqs::mesh {
     [[nodiscard]] mesh_point_t operator()(long n) const { return {n, to_data_index(n), mesh_hash_, to_value(n)}; }
 
     /// Get the inverse temperature \f$ \beta \f$.
-    [[nodiscard]] double beta() const noexcept { return beta_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(beta) double beta() const noexcept { return beta_; }
 
     /// Get the particle statistics.
-    [[nodiscard]] statistic_enum statistic() const noexcept { return stat_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(statistic) statistic_enum statistic() const noexcept { return stat_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of mesh points.
     [[nodiscard]] long size() const { return N_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Access to Chebyshev points on [-1, 1].
     [[nodiscard]] nda::vector_const_view<double> points_standard() const { return points_standard_; }
 
     /// Access to Chebyshev points scaled to [0, beta].
-    [[nodiscard]] nda::vector_const_view<double> points() const { return points_scaled_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(points) nda::vector_const_view<double> points() const { return points_scaled_; }
 
     /// Access to barycentric weights.
-    [[nodiscard]] nda::vector_const_view<double> weights() const { return weights_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(weights) nda::vector_const_view<double> weights() const { return weights_; }
 
     /// Get an iterator to the beginning of the mesh.
     [[nodiscard]] auto begin() const { return mesh_iterator<chebyshev>{.mesh_ptr = this, .data_index = 0}; }
@@ -316,7 +319,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, chebyshev &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       auto beta      = h5::read<double>(gr, "beta");
       auto statistic = (h5::read<std::string>(gr, "statistic") == "F" ? Fermion : Boson);
@@ -348,8 +351,7 @@ namespace triqs::mesh {
   namespace detail {
 
     // Type-correct return for exact mesh point match
-    template <typename F>
-    auto make_exact_result(F const &f, long i) {
+    template <typename F> auto make_exact_result(F const &f, long i) {
       using R = std::decay_t<decltype(f(0))>;
       if constexpr (nda::is_scalar_v<R>) {
         return f(i);
@@ -437,8 +439,10 @@ namespace triqs::mesh {
 
         for (long i = 1; i < N; ++i) {
           auto const fi = [&] {
-            if constexpr (f_returns_expression) return nda::make_regular(f(i));
-            else return f(i);
+            if constexpr (f_returns_expression)
+              return nda::make_regular(f(i));
+            else
+              return f(i);
           }();
           scalar_t const *fi_data = fi.data();
           for (long j = 0; j < sz; ++j) { r[j] += q[i] * fi_data[j]; }

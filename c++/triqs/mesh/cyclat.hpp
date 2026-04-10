@@ -27,6 +27,7 @@
 #include "./mesh_iterator.hpp"
 #include "./utils.hpp"
 #include "../lattice/bravais_lattice.hpp"
+#include "../utility/macros.hpp"
 
 #include <fmt/ranges.h>
 #include <h5/h5.hpp>
@@ -115,7 +116,7 @@ namespace triqs::mesh {
    * mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5, 0.5, 1]
    * ```
    */
-  class cyclat {
+  class C2PY_RENAME(MeshCycLat) cyclat {
     public:
     /// Value type.
     using value_t = bravais_lattice::point_t;
@@ -133,7 +134,7 @@ namespace triqs::mesh {
      * \f$, the underlying Bravais lattice and the value \f$ \mathbf{R}^{\mathbf{n}} \f$, it also stores the data index 
      * \f$ d \f$ and the hash value of the parent mesh.
      */
-    class mesh_point_t : public value_t {
+    class C2PY_IGNORE mesh_point_t : public value_t {
       public:
       /// Parent mesh type.
       using mesh_t = cyclat;
@@ -184,6 +185,7 @@ namespace triqs::mesh {
      * @param dims Number of unit cells in the supercell along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3) 
      * \f$.
      */
+    C2PY_DEPRECATED_PARAMETER_NAME(lattice : bl)
     cyclat(bravais_lattice const &bl, std::array<long, 3> const &dims)
        : bl_(bl),
          dims_(dims),
@@ -205,7 +207,7 @@ namespace triqs::mesh {
      * @param bl triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
      * @param M \f$ 3 \times 3 \f$ periodization matrix.
      */
-    cyclat(bravais_lattice const &bl, nda::matrix<long> const &M) : cyclat(bl, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
+    C2PY_IGNORE cyclat(bravais_lattice const &bl, nda::matrix<long> const &M) : cyclat(bl, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
       EXPECTS((M.shape() == std::array{3l, 3l}));
       EXPECTS(nda::is_matrix_diagonal(M));
     }
@@ -214,19 +216,19 @@ namespace triqs::mesh {
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with a cubic supercell.
      *
      * @param bl triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
-     * @param n Number of unit cells in the supercell along each of the three dimensions.
+     * @param L Number of unit cells in the supercell along each of the three dimensions.
      */
-    cyclat(bravais_lattice const &bl, long n) : cyclat{bl, std::array{n, (bl.ndim() >= 2 ? n : 1l), (bl.ndim() >= 3 ? n : 1)}} {}
+    cyclat(bravais_lattice const &bl, long L) : cyclat{bl, std::array{L, (bl.ndim() >= 2 ? L : 1l), (bl.ndim() >= 3 ? L : 1)}} {}
 
     /**
      * @brief Construct a cyclic lattice mesh on a cubic Bravais lattice with \f$ a = 1 \f$ and the given supercell 
      * dimensions.
      *
-     * @param n1 Number of unit cells in the supercell along the first dimension.
-     * @param n2 Number of unit cells in the supercell along the second dimension.
-     * @param n3 Number of unit cells in the supercell along the third dimension.
+     * @param L1 Number of unit cells in the supercell along the first dimension.
+     * @param L2 Number of unit cells in the supercell along the second dimension.
+     * @param L3 Number of unit cells in the supercell along the third dimension.
      */
-    cyclat(long n1 = 1, long n2 = 1, long n3 = 1) : cyclat{bravais_lattice{nda::eye<double>(3)}, std::array{n1, n2, n3}} {}
+    cyclat(long L1 = 1, long L2 = 1, long L3 = 1) : cyclat{bravais_lattice{nda::eye<double>(3)}, std::array{L1, L2, L3}} {}
 
     /**
      * @brief Check if an index \f$ \mathbf{n} \f$ is valid, i.e. corresponds to a unit cell/lattice point in the
@@ -258,7 +260,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
      * @return Data index \f$ d(\mathbf{R}^{\mathbf{n}}) = n_3 + N_3 (n_2 + N_2 n_1) \f$.
      */
-    [[nodiscard]] data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const { return to_data_index(to_index(cmp)); }
+    [[nodiscard]] C2PY_IGNORE data_index_t to_data_index(closest_mesh_point_t<value_t> const &cmp) const { return to_data_index(to_index(cmp)); }
 
     /**
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ \mathbf{n}(d)
@@ -280,7 +282,7 @@ namespace triqs::mesh {
      * @param cmp triqs::mesh::closest_mesh_point_t containing the lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
      * @return Index \f$ \mathbf{n} \f$.
      */
-    [[nodiscard]] index_t to_index(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.index(); }
+    [[nodiscard]] C2PY_IGNORE index_t to_index(closest_mesh_point_t<value_t> const &cmp) const { return cmp.value.index(); }
 
     /**
      * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
@@ -300,7 +302,7 @@ namespace triqs::mesh {
      * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
      * (n_2 + N_2 n_1) \f$ and the hash value and underlying Bravais lattice of the current mesh.
      */
-    [[nodiscard]] mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
+    [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
 
     /**
      * @brief Function call operator to access a mesh point by its index \f$ \mathbf{n} \f$.
@@ -323,19 +325,19 @@ namespace triqs::mesh {
     }
 
     /// Get the number of unit cells in each of the three dimensions.
-    [[nodiscard]] auto const &dims() const { return dims_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(dims) auto const &dims() const { return dims_; }
 
     /**
      * @brief Get the matrix \f$ \mathbf{A}^T \f$ containing the basis vectors of the Bravais lattice in its rows (see 
      * triqs::lattice::bravais_lattice::units()).
      */
-    [[nodiscard]] auto units() const { return nda::matrix_const_view<double>{units_}; }
+    [[nodiscard]] C2PY_PROPERTY_GET(units) auto units() const { return nda::matrix_const_view<double>{units_}; }
 
     /// Get the underlying Bravais lattice.
-    [[nodiscard]] auto const &lattice() const noexcept { return bl_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(lattice) auto const &lattice() const noexcept { return bl_; }
 
     /// Get the hash value of the mesh.
-    [[nodiscard]] uint64_t mesh_hash() const { return mesh_hash_; }
+    [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the number of unit cells in the supercell.
     [[nodiscard]] long size() const { return size_; }
@@ -347,7 +349,7 @@ namespace triqs::mesh {
      * @return Corresponding index \f$ \mathbf{n} \f$ in the supercell such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
      * \mathbf{N} \mathbf{m} \f$.
      */
-    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
+    [[nodiscard]] C2PY_IGNORE index_t index_modulo(index_t const &n_tilde) const {
       return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
     }
 
@@ -418,7 +420,7 @@ namespace triqs::mesh {
      */
     friend void h5_read(h5::group g, std::string const &name, cyclat &m) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, m, true);
+      h5::assert_hdf5_format(gr, m, true); // NOLINT (downcasting to base class)
 
       std::array<long, 3> dims{};
       if (gr.has_key("dims")) {

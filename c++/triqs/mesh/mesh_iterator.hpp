@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "../utility/macros.hpp"
+
 #include <compare>
 #include <cstddef>
 #include <iterator>
@@ -39,7 +41,7 @@ namespace triqs::mesh {
    * 
    * @tparam M Mesh type.
    */
-  template <typename M> struct mesh_iterator {
+  template <typename M> struct C2PY_IGNORE mesh_iterator {
     /// Value type.
     using value_type = typename M::mesh_point_t;
 
@@ -113,9 +115,7 @@ namespace triqs::mesh {
      * @param other Iterator to compare with.
      * @return True, if they belong to the same mesh and if their current data indices are equal.
      */
-    [[nodiscard]] bool operator==(mesh_iterator const &other) const noexcept {
-      return mesh_ptr == other.mesh_ptr and data_index == other.data_index;
-    }
+    [[nodiscard]] bool operator==(mesh_iterator const &other) const noexcept { return mesh_ptr == other.mesh_ptr and data_index == other.data_index; }
 
     /**
      * @brief Dereference operator.
@@ -152,7 +152,7 @@ namespace triqs::mesh {
      * @param it Iterator.
      * @return Copy of the given iterator with its current data index increased by \f$ n \f$.
      */
-    [[nodiscard]] friend mesh_iterator operator+(difference_type n, mesh_iterator it) noexcept { return it + n; }
+    [[nodiscard]] C2PY_IGNORE friend mesh_iterator operator+(difference_type n, mesh_iterator it) noexcept { return it + n; }
 
     /**
      * @brief Subtraction assignment operator.
