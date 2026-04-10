@@ -14,10 +14,7 @@ SET(PYTHON_SOURCES
   dlr_crm_dyson_solver.py
 )
 
-add_cpp2py_module(gf_factories)
-
 install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
-install(TARGETS gf_factories DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
 
 add_subdirectory(backwd_compat)
 add_subdirectory(plot)
