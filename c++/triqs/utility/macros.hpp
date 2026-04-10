@@ -60,3 +60,15 @@ namespace triqs {
   std::cerr << X;                                                                                                                                    \
   std::terminate();                                                                                                                                  \
   }
+
+// c2py related macros
+#ifndef C2PY_INCLUDED
+#define C2PY_IGNORE
+#define C2PY_WRAP_AS_METHOD
+#define C2PY_MODULE_INIT
+#define C2PY_NOGIL
+#define C2PY_RENAME(X)
+#define C2PY_PROPERTY_GET(X)
+#define C2PY_PROPERTY_SET(X)
+#define C2PY_DEPRECATED_PARAMETER_NAME(...)
+#endif // C2PY_INCLUDE
