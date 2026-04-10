@@ -1,0 +1,4 @@
+package_name = "triqs.gfs"
+documentation = ""
+namespaces = "triqs::gfs"
+match_names = "tau_L2_norm|rebinning_tau|enforce_discontinuity|is_gf_real_in_tau|is_gf_hermitian|set_from*"
