@@ -45,7 +45,7 @@ namespace triqs {
     }
 
     // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
-    void enforce_discontinuity(gf_view<legendre> &gl, nda::array_view<double, 2> disc) {
+    void enforce_discontinuity(gf_view<legendre> gl, nda::array_const_view<double, 2> disc) {
 
       double norm = 0.0;
       nda::vector<double> t(gl.data().shape()[0]);
