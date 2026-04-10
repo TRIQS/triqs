@@ -28,6 +28,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/hilbert_space/hilbert_space.hpp>
+#include <triqs/utility/macros.hpp>
 
 namespace triqs {
   namespace atom_diag {
@@ -72,7 +73,7 @@ namespace triqs {
       using many_body_op_t = triqs::operators::many_body_operator_generic<scalar_t>;
 
       /// Eigensystem within one invariant subspace of the Hamiltonian
-      struct eigensystem_t {
+      struct C2PY_IGNORE eigensystem_t {
         /// Eigenvalues, in ascending order; The ground state energy is set to 0 at initialisation.
         vector<double> eigenvalues;
         /// Unitary transformation matrix :math:`\hat U` from the Fock basis to the eigenbasis.
@@ -84,7 +85,7 @@ namespace triqs {
 #endif
 
         // MPI
-        friend void mpi_broadcast(eigensystem_t &eigs, mpi::communicator c = {}, int root = 0) {
+        C2PY_IGNORE friend void mpi_broadcast(eigensystem_t &eigs, mpi::communicator c = {}, int root = 0) {
           mpi::broadcast(eigs.eigenvalues, c, root);
           mpi::broadcast(eigs.unitary_matrix, c, root);
         }
@@ -105,7 +106,7 @@ namespace triqs {
       };
 
       /// Block matrix representation for operators
-      struct op_block_mat_t {
+      struct C2PY_IGNORE op_block_mat_t {
         op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range::all) = -1; };
         array<long, 1> connection;
         std::vector<matrix_t> block_mat;
@@ -125,7 +126,7 @@ namespace triqs {
       };
 
       /// Construct in an uninitialized state.
-      TRIQS_CPP2PY_IGNORE atom_diag() = default;
+      C2PY_IGNORE atom_diag() = default;
 
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
       /**
@@ -156,23 +157,29 @@ namespace triqs {
        * @param qn_vector Vector of quantum number operators.
        */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::vector<many_body_op_t> const &qn_vector);
-      atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::initializer_list<many_body_op_t> const &init_lst)
-         : atom_diag(h, fops, std::vector<many_body_op_t>{init_lst}){};
+      C2PY_IGNORE atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::initializer_list<many_body_op_t> const &init_lst)
+         : atom_diag(h, fops, std::vector<many_body_op_t>{init_lst}) {};
 
       /// The Hamiltonian used at construction
-      many_body_op_t const &get_h_atomic() const { return h_atomic; }
+      C2PY_IGNORE many_body_op_t const &get_h_atomic() const { return h_atomic; }
+
+      /// Get the Hamiltonian used at construction as a triqs::operators::many_body_operator.
+      C2PY_PROPERTY_GET(h_atomic) operators::many_body_operator get_h_atomic_as_mbop() const { return h_atomic; }
 
       /// The fundamental operator set used at construction
-      fundamental_operator_set const &get_fops() const { return fops; }
+      C2PY_IGNORE fundamental_operator_set const &get_fops() const { return fops; }
+
+      /// Get the data of the fundamental operator set used at construction.
+      C2PY_PROPERTY_GET(fops) triqs::hilbert_space::fundamental_operator_set::data_t const &get_fops_as_data() const { return fops.data(); }
 
       /// The full Hilbert space
-      TRIQS_CPP2PY_IGNORE class hilbert_space const &get_full_hilbert_space() const { return full_hs; }
+      C2PY_IGNORE class hilbert_space const &get_full_hilbert_space() const { return full_hs; }
 
       /// Dimension of the full Hilbert space
-      int get_full_hilbert_space_dim() const { return full_hs.size(); }
+      C2PY_PROPERTY_GET(full_hilbert_space_dim) int get_full_hilbert_space_dim() const { return full_hs.size(); }
 
       /// Number of invariant subspaces
-      int n_subspaces() const { return eigensystems.size(); }
+      C2PY_PROPERTY_GET(n_subspaces) int n_subspaces() const { return eigensystems.size(); }
 
       /// The dimension of a subspace
       /**
@@ -188,20 +195,20 @@ namespace triqs {
       }
 
       /// The list of Fock states for a particular subspace
-      std::vector<fock_state_t> const &get_fock_states(int sp_index) const { return sub_hilbert_spaces[sp_index].get_all_fock_states(); }
+      C2PY_IGNORE std::vector<fock_state_t> const &get_fock_states(int sp_index) const { return sub_hilbert_spaces[sp_index].get_all_fock_states(); }
 
       /// The list of Fock states for each subspace
-      std::vector<std::vector<fock_state_t>> get_fock_states() const {
+      C2PY_PROPERTY_GET(fock_states) std::vector<std::vector<fock_state_t>> get_fock_states() const {
         std::vector<std::vector<fock_state_t>> fock_states(n_subspaces());
         for (int i : range(n_subspaces())) fock_states[i] = sub_hilbert_spaces[i].get_all_fock_states();
         return fock_states;
       }
 
       /// Unitary matrix for given subspace that transform from Fock states to eigenstates
-      matrix<scalar_t> const &get_unitary_matrix(int sp_index) const { return eigensystems[sp_index].unitary_matrix; }
+      C2PY_IGNORE matrix<scalar_t> const &get_unitary_matrix(int sp_index) const { return eigensystems[sp_index].unitary_matrix; }
 
       /// Unitary matrices that transform from Fock states to eigenstates
-      std::vector<matrix<scalar_t>> get_unitary_matrices() const {
+      C2PY_PROPERTY_GET(unitary_matrices) std::vector<matrix<scalar_t>> get_unitary_matrices() const {
         std::vector<matrix<scalar_t>> umat(n_subspaces());
         for (int i : range(n_subspaces())) umat[i] = get_eigensystems()[i].unitary_matrix;
         return umat;
@@ -218,12 +225,12 @@ namespace triqs {
       /**
        * @param sp_index Index of the invariant subspace.
        */
-      TRIQS_CPP2PY_IGNORE range index_range_of_subspace(int sp_index) const {
+      C2PY_IGNORE range index_range_of_subspace(int sp_index) const {
         return range{first_eigenstate_of_subspace[sp_index], first_eigenstate_of_subspace[sp_index] + get_subspace_dim(sp_index)};
       }
 
       /// Get the eigensystems for all subspaces
-      TRIQS_CPP2PY_IGNORE std::vector<eigensystem_t> const &get_eigensystems() const { return eigensystems; }
+      C2PY_IGNORE std::vector<eigensystem_t> const &get_eigensystems() const { return eigensystems; }
 
       /// Get the i-th eigenvalue of subspace sp_index
       /**
@@ -236,25 +243,25 @@ namespace triqs {
       /**
        * @return result[sp_index][i] is the energy.
        */
-      std::vector<std::vector<double>> get_energies() const;
+      C2PY_PROPERTY_GET(energies) std::vector<std::vector<double>> get_energies() const;
 
       /// A vector of all the quantum numbers, grouped by subspace
       /**
        * @return result[sp_index][qn_index] is the qunatum number value.
        */
-      std::vector<std::vector<quantum_number_t>> const &get_quantum_numbers() const { return quantum_numbers; }
+      C2PY_PROPERTY_GET(quantum_numbers) std::vector<std::vector<quantum_number_t>> const &get_quantum_numbers() const { return quantum_numbers; }
 
       /// Ground state energy (i.e. min of all subspaces)
-      double get_gs_energy() const { return gs_energy; }
+      C2PY_PROPERTY_GET(gs_energy) double get_gs_energy() const { return gs_energy; }
 
       /// Returns invariant subspace containing the vacuum state
-      long get_vacuum_subspace_index() const { return vacuum_subspace_index; }
+      C2PY_PROPERTY_GET(vacuum_space_index) long get_vacuum_subspace_index() const { return vacuum_subspace_index; }
 
       /// Returns the vacuum state as a vector in the full Hilbert space
       /**
        * This vector is written in the eigenbasis of the Hamiltonian.
        */
-      full_hilbert_space_state_t const &get_vacuum_state() const { return vacuum; }
+      C2PY_PROPERTY_GET(vacuum_state) full_hilbert_space_state_t const &get_vacuum_state() const { return vacuum; }
 
       /// Subspace-to-subspace connections for fundamental operator :math:`C`
       /**
@@ -296,7 +303,7 @@ namespace triqs {
        * @return Index of the subspace connected from by :ref:`op_vec` from :ref:`B` and the corresponding matrix (not necessarily square)
        *
        */
-      std::pair<int, matrix_t> get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const;
+      C2PY_IGNORE std::pair<int, matrix_t> get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const;
 
       /// Get block matrix representation for general operator
       /**
@@ -305,7 +312,7 @@ namespace triqs {
        *
        * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
        */
-      op_block_mat_t get_op_mat(many_body_op_t const &op) const;
+      C2PY_IGNORE op_block_mat_t get_op_mat(many_body_op_t const &op) const;
 
 #ifdef __cpp_impl_three_way_comparison
       bool operator==(atom_diag const &rhs) const = default;
