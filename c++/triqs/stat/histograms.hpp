@@ -90,22 +90,22 @@ namespace triqs::stat {
     /// Get boundaries of the histogram
     /// @return Pair of histogram boundaries, `(a,b)`
     /// @brief Get boundaries of the histogram
-    std::pair<double, double> limits() const { return {a, b}; }
+    C2PY_PROPERTY_GET(limits) std::pair<double, double> limits() const { return {a, b}; }
 
     /// Read-only access to the data storage
     /// @return Constant reference to the histogram data array
     /// @brief Read-only access to the data storage
-    nda::vector<double> const &data() const { return _data; }
+    C2PY_PROPERTY_GET(data) nda::vector<double> const &data() const { return _data; }
 
     /// Get number of accumulated samples
     /// @return Number of accumulated data points
     /// @brief Get number of accumulated samples
-    unsigned long long n_data_pts() const { return _n_data_pts; }
+    C2PY_PROPERTY_GET(n_data_pts) unsigned long long n_data_pts() const { return _n_data_pts; }
 
     /// Get number of discarded samples
     /// @return Number of discarded data points
     /// @brief Get number of discarded samples
-    unsigned long long n_lost_pts() const { return _n_lost_pts; }
+    C2PY_PROPERTY_GET(n_lost_pts) unsigned long long n_lost_pts() const { return _n_lost_pts; }
 
     /// Compute the sum of two histograms over the same range, and with equal numbers of bins.
     /// This operator will throw if histograms to be added up are incompatible.
@@ -130,7 +130,7 @@ namespace triqs::stat {
     /// @param c MPI communicator object
     /// @param root MPI root rank for broadcast operation
     /// @brief MPI-broadcast histogram
-    friend void mpi_broadcast(histogram &h, mpi::communicator c = {}, int root = 0) {
+    C2PY_IGNORE friend void mpi_broadcast(histogram &h, mpi::communicator c = {}, int root = 0) {
       mpi::broadcast(h.a, c, root);
       mpi::broadcast(h.b, c, root);
       mpi::broadcast(h._data, c, root);
@@ -151,7 +151,7 @@ namespace triqs::stat {
     /// @param op Reduction operation, must be MPI_SUM
     /// @return Reduction result; valid only on MPI rank 0 if `all = false`
     /// @brief MPI-reduce histogram
-    friend histogram mpi_reduce(histogram const &h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    C2PY_IGNORE friend histogram mpi_reduce(histogram const &h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       TRIQS_ASSERT(op == MPI_SUM);
       histogram h2(h.a, h.b, h.n_bins);
       h2._data       = mpi::reduce(h._data, c, root, all, MPI_SUM);
