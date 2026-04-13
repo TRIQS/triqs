@@ -14,83 +14,83 @@ using namespace triqs::mesh;
 namespace triqs::gfs {
 
   // make_gf_dlr_imfreq: from dlr and dlr_imtime
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<4>> const &);
-  template auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<4>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<4>> const &);
-  template auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<4>> const &);
-  template auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &);
+  auto make_gf_dlr_imfreq(gf_const_view<dlr, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
+  auto make_gf_dlr_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr_imfreq<0>(g); }
 
   // make_gf_imfreq: from dlr, dlr_imtime, dlr_imfreq
-  template auto make_gf_imfreq(gf_const_view<dlr, scalar_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imtime, scalar_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imfreq, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imtime, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, scalar_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, scalar_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<1>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr, matrix_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imtime, matrix_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imfreq, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imtime, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, matrix_valued> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, matrix_valued> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<3>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &, long);
-  template auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &, long);
+  auto make_gf_imfreq(gf_const_view<dlr, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imtime, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imfreq, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imtime, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, scalar_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<1>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imtime, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imfreq, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imtime, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, matrix_valued> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<3>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imtime, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(gf_const_view<dlr_imfreq, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
+  auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
 
   // make_gf_dlr_imfreq: product mesh wrappers
   auto make_gf_dlr_imfreq(gf_const_view<prod<dlr, brzone>, scalar_valued> g) { return make_gf_dlr_imfreq<0>(g); }

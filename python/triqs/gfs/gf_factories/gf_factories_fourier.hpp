@@ -18,340 +18,340 @@ namespace triqs::gfs {
   // imtime -> imfreq
   template gf<imfreq, scalar_valued> make_gf_from_fourier(gf_const_view<imtime, scalar_valued>, int);
   template gf<imfreq, scalar_valued> make_gf_from_fourier(gf_const_view<imtime, scalar_real_valued>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &, int const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // imfreq -> imtime
   template gf<imtime, scalar_valued> make_gf_from_fourier(gf_const_view<imfreq, scalar_valued>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // retime -> refreq
   template gf<refreq, scalar_valued> make_gf_from_fourier(gf_const_view<retime, scalar_valued>, bool);
   template gf<refreq, scalar_valued> make_gf_from_fourier(gf_const_view<retime, scalar_real_valued>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // refreq -> retime
   template gf<retime, scalar_valued> make_gf_from_fourier(gf_const_view<refreq, scalar_valued>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // Known moments
-  template auto make_gf_from_fourier(gf_const_view<imtime, scalar_valued>, imfreq const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(gf_const_view<imtime, scalar_real_valued>, imfreq const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &, imfreq const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &, imfreq const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<imfreq, scalar_valued>, imtime const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &, imtime const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &, imtime const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, scalar_valued>, refreq const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, scalar_real_valued>, refreq const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &, refreq const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &, refreq const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &, refreq const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &, refreq const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<refreq, scalar_valued>, retime const &, array_const_view<dcomplex, 1> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &, retime const &, std::vector<array<dcomplex, 1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &, retime const &, std::vector<std::vector<array<dcomplex, 1>>> const &);
+  auto make_gf_from_fourier(gf_const_view<imtime, scalar_valued> g, imfreq const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imtime, scalar_real_valued> g, imfreq const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &g, imfreq const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &g, imfreq const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_valued> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, scalar_real_valued> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imfreq, scalar_valued> g, imtime const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, scalar_valued> const &g, imtime const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, scalar_valued> const &g, imtime const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, scalar_valued> g, refreq const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, scalar_real_valued> g, refreq const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_valued> const &g, refreq const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, scalar_real_valued> const &g, refreq const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_valued> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, scalar_real_valued> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<refreq, scalar_valued> g, retime const &m, array_const_view<dcomplex, 1> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, scalar_valued> const &g, retime const &m, std::vector<array<dcomplex, 1>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, scalar_valued> const &g, retime const &m, std::vector<std::vector<array<dcomplex, 1>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
 
   // Lattice Fourier
-  template auto make_gf_from_fourier(gf_const_view<brzone, scalar_valued>);
-  template auto make_gf_from_fourier(block_gf_const_view<brzone, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<brzone, scalar_valued> const &);
-  template auto make_gf_from_fourier(gf_const_view<cyclat, scalar_valued>);
-  template auto make_gf_from_fourier(block_gf_const_view<cyclat, scalar_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<cyclat, scalar_valued> const &);
+  auto make_gf_from_fourier(gf_const_view<brzone, scalar_valued> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<brzone, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<brzone, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(gf_const_view<cyclat, scalar_valued> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<cyclat, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<cyclat, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
 
   // === tensor_valued<1> (rank 1) ===
 
   // imtime -> imfreq
   template gf<imfreq, tensor_valued<1>> make_gf_from_fourier(gf_const_view<imtime, tensor_valued<1>>, int);
   template gf<imfreq, tensor_valued<1>> make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<1>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &, int const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // imfreq -> imtime
   template gf<imtime, tensor_valued<1>> make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<1>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // retime -> refreq
   template gf<refreq, tensor_valued<1>> make_gf_from_fourier(gf_const_view<retime, tensor_valued<1>>, bool);
   template gf<refreq, tensor_valued<1>> make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<1>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &, bool const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // refreq -> retime
   template gf<retime, tensor_valued<1>> make_gf_from_fourier(gf_const_view<refreq, tensor_valued<1>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // Known moments
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<1>>, imfreq const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<1>>, imfreq const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &, imfreq const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &, imfreq const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<1>>, imtime const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &, imtime const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &, imtime const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<1>>, refreq const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<1>>, refreq const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &, refreq const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &, refreq const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<1>>, retime const &, array_const_view<dcomplex, 2> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &, retime const &, std::vector<array<dcomplex, 2>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &, retime const &, std::vector<std::vector<array<dcomplex, 2>>> const &);
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<1>> g, imfreq const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<1>> g, imfreq const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<1>> const &g, imfreq const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<1>> const &g, imfreq const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<1>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<1>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<1>> g, imtime const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<1>> const &g, imtime const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<1>> const &g, imtime const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<1>> g, refreq const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<1>> g, refreq const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<1>> const &g, refreq const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<1>> const &g, refreq const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<1>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<1>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<1>> g, retime const &m, array_const_view<dcomplex, 2> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<1>> const &g, retime const &m, std::vector<array<dcomplex, 2>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<1>> const &g, retime const &m, std::vector<std::vector<array<dcomplex, 2>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
 
   // Lattice Fourier
-  template auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<1>>);
-  template auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<1>>);
-  template auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<1>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<1>> const &);
+  auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<1>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<1>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<1>> const &g) { return make_gf_from_fourier<0>(g); }
 
   // === matrix_valued (rank 2) ===
 
   // imtime -> imfreq
   template gf<imfreq, matrix_valued> make_gf_from_fourier(gf_const_view<imtime, matrix_valued>, int);
   template gf<imfreq, matrix_valued> make_gf_from_fourier(gf_const_view<imtime, matrix_real_valued>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &, int const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // imfreq -> imtime
   template gf<imtime, matrix_valued> make_gf_from_fourier(gf_const_view<imfreq, matrix_valued>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // retime -> refreq
   template gf<refreq, matrix_valued> make_gf_from_fourier(gf_const_view<retime, matrix_valued>, bool);
   template gf<refreq, matrix_valued> make_gf_from_fourier(gf_const_view<retime, matrix_real_valued>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // refreq -> retime
   template gf<retime, matrix_valued> make_gf_from_fourier(gf_const_view<refreq, matrix_valued>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // Known moments
-  template auto make_gf_from_fourier(gf_const_view<imtime, matrix_valued>, imfreq const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(gf_const_view<imtime, matrix_real_valued>, imfreq const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &, imfreq const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &, imfreq const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<imfreq, matrix_valued>, imtime const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &, imtime const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &, imtime const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, matrix_valued>, refreq const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, matrix_real_valued>, refreq const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &, refreq const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &, refreq const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &, refreq const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &, refreq const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<refreq, matrix_valued>, retime const &, array_const_view<dcomplex, 3> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &, retime const &, std::vector<array<dcomplex, 3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &, retime const &, std::vector<std::vector<array<dcomplex, 3>>> const &);
+  auto make_gf_from_fourier(gf_const_view<imtime, matrix_valued> g, imfreq const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imtime, matrix_real_valued> g, imfreq const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_valued> const &g, imfreq const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, matrix_real_valued> const &g, imfreq const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_valued> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, matrix_real_valued> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imfreq, matrix_valued> g, imtime const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, matrix_valued> const &g, imtime const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, matrix_valued> const &g, imtime const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, matrix_valued> g, refreq const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, matrix_real_valued> g, refreq const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_valued> const &g, refreq const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, matrix_real_valued> const &g, refreq const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_valued> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, matrix_real_valued> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<refreq, matrix_valued> g, retime const &m, array_const_view<dcomplex, 3> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, matrix_valued> const &g, retime const &m, std::vector<array<dcomplex, 3>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, matrix_valued> const &g, retime const &m, std::vector<std::vector<array<dcomplex, 3>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
 
   // Lattice Fourier
-  template auto make_gf_from_fourier(gf_const_view<brzone, matrix_valued>);
-  template auto make_gf_from_fourier(block_gf_const_view<brzone, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<brzone, matrix_valued> const &);
-  template auto make_gf_from_fourier(gf_const_view<cyclat, matrix_valued>);
-  template auto make_gf_from_fourier(block_gf_const_view<cyclat, matrix_valued> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<cyclat, matrix_valued> const &);
+  auto make_gf_from_fourier(gf_const_view<brzone, matrix_valued> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<brzone, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<brzone, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(gf_const_view<cyclat, matrix_valued> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<cyclat, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<cyclat, matrix_valued> const &g) { return make_gf_from_fourier<0>(g); }
 
   // === tensor_valued<3> (rank 3) ===
 
   // imtime -> imfreq
   template gf<imfreq, tensor_valued<3>> make_gf_from_fourier(gf_const_view<imtime, tensor_valued<3>>, int);
   template gf<imfreq, tensor_valued<3>> make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<3>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &, int const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // imfreq -> imtime
   template gf<imtime, tensor_valued<3>> make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<3>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // retime -> refreq
   template gf<refreq, tensor_valued<3>> make_gf_from_fourier(gf_const_view<retime, tensor_valued<3>>, bool);
   template gf<refreq, tensor_valued<3>> make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<3>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &, bool const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // refreq -> retime
   template gf<retime, tensor_valued<3>> make_gf_from_fourier(gf_const_view<refreq, tensor_valued<3>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // Known moments
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<3>>, imfreq const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<3>>, imfreq const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &, imfreq const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &, imfreq const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<3>>, imtime const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &, imtime const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &, imtime const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<3>>, refreq const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<3>>, refreq const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &, refreq const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &, refreq const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<3>>, retime const &, array_const_view<dcomplex, 4> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &, retime const &, std::vector<array<dcomplex, 4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &, retime const &, std::vector<std::vector<array<dcomplex, 4>>> const &);
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<3>> g, imfreq const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<3>> g, imfreq const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<3>> const &g, imfreq const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<3>> const &g, imfreq const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<3>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<3>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<3>> g, imtime const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<3>> const &g, imtime const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<3>> const &g, imtime const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<3>> g, refreq const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<3>> g, refreq const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<3>> const &g, refreq const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<3>> const &g, refreq const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<3>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<3>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<3>> g, retime const &m, array_const_view<dcomplex, 4> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<3>> const &g, retime const &m, std::vector<array<dcomplex, 4>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<3>> const &g, retime const &m, std::vector<std::vector<array<dcomplex, 4>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
 
   // Lattice Fourier
-  template auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<3>>);
-  template auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<3>>);
-  template auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<3>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<3>> const &);
+  auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<3>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<3>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<3>> const &g) { return make_gf_from_fourier<0>(g); }
 
   // === tensor_valued<4> (rank 4) ===
 
   // imtime -> imfreq
   template gf<imfreq, tensor_valued<4>> make_gf_from_fourier(gf_const_view<imtime, tensor_valued<4>>, int);
   template gf<imfreq, tensor_valued<4>> make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<4>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &, int const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // imfreq -> imtime
   template gf<imtime, tensor_valued<4>> make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<4>>, int);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &, int const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &, int const &);
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // retime -> refreq
   template gf<refreq, tensor_valued<4>> make_gf_from_fourier(gf_const_view<retime, tensor_valued<4>>, bool);
   template gf<refreq, tensor_valued<4>> make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<4>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &, bool const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // refreq -> retime
   template gf<retime, tensor_valued<4>> make_gf_from_fourier(gf_const_view<refreq, tensor_valued<4>>, bool);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &, bool const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &, bool const &);
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &g, bool const &x) { return make_gf_from_fourier<0>(g, x); }
 
   // Known moments
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<4>>, imfreq const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<4>>, imfreq const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &, imfreq const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &, imfreq const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &, imfreq const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<4>>, imtime const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &, imtime const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &, imtime const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<4>>, refreq const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<4>>, refreq const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &, refreq const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &, refreq const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &, refreq const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
-  template auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<4>>, retime const &, array_const_view<dcomplex, 5> const &);
-  template auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &, retime const &, std::vector<array<dcomplex, 5>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &, retime const &, std::vector<std::vector<array<dcomplex, 5>>> const &);
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_valued<4>> g, imfreq const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imtime, tensor_real_valued<4>> g, imfreq const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_valued<4>> const &g, imfreq const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imtime, tensor_real_valued<4>> const &g, imfreq const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_valued<4>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imtime, tensor_real_valued<4>> const &g, imfreq const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<imfreq, tensor_valued<4>> g, imtime const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<imfreq, tensor_valued<4>> const &g, imtime const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<imfreq, tensor_valued<4>> const &g, imtime const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_valued<4>> g, refreq const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<retime, tensor_real_valued<4>> g, refreq const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_valued<4>> const &g, refreq const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<retime, tensor_real_valued<4>> const &g, refreq const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_valued<4>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<retime, tensor_real_valued<4>> const &g, refreq const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(gf_const_view<refreq, tensor_valued<4>> g, retime const &m, array_const_view<dcomplex, 5> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block_gf_const_view<refreq, tensor_valued<4>> const &g, retime const &m, std::vector<array<dcomplex, 5>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
+  auto make_gf_from_fourier(block2_gf_const_view<refreq, tensor_valued<4>> const &g, retime const &m, std::vector<std::vector<array<dcomplex, 5>>> const &km) { return make_gf_from_fourier<0>(g, m, km); }
 
   // Lattice Fourier
-  template auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<4>>);
-  template auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<4>>);
-  template auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<4>> const &);
-  template auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<4>> const &);
+  auto make_gf_from_fourier(gf_const_view<brzone, tensor_valued<4>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<brzone, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<brzone, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(gf_const_view<cyclat, tensor_valued<4>> g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block_gf_const_view<cyclat, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
+  auto make_gf_from_fourier(block2_gf_const_view<cyclat, tensor_valued<4>> const &g) { return make_gf_from_fourier<0>(g); }
 
   // Product mesh Fourier wrappers
   auto make_gf_from_fourier(gf_view<prod<brzone, dlr_imfreq>, scalar_valued> g_in) {

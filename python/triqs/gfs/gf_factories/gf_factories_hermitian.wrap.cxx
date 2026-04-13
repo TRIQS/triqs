@@ -26,50 +26,50 @@ using c2py::operator""_a;
 
 // fit_gf_dlr
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
-   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout> &g, double w_max, double eps,
-                 bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
-   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 2, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
-   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout> &g, double w_max, double eps,
-                 bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::matrix_valued> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
-   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 2, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
-   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &g, double w_max,
-                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr<0>(g, w_max, eps, symmetrize); },
+                 double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
               "g", "w_max", "eps", "symmetrize"_a = false),
    c2py::cfun([](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g, double w_max,
                  double eps, bool symmetrize) { return triqs::gfs::fit_gf_dlr(g, w_max, eps, symmetrize); },
@@ -137,302 +137,267 @@ static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
               "g", "w_max", "eps", "symmetrize"_a = false)};
 
 // make_gf_dlr
-static auto const _c2py_fun_1 =
-   c2py::dispatcher_f_kw_t{
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &g) {
-           return triqs::gfs::make_gf_dlr<0>(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun(
-         [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued> g) {
-           return triqs::gfs::make_gf_dlr(g);
-         },
-         "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g"),
-      c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued,
-                                              nda::C_stride_layout, 1, true>
-                       g) { return triqs::gfs::make_gf_dlr(g); },
-                 "g")};
+static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued> &g) { return triqs::gfs::make_gf_dlr(g); }, "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued> &g) { return triqs::gfs::make_gf_dlr(g); }, "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued> &g) { return triqs::gfs::make_gf_dlr(g); }, "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &g) { return triqs::gfs::make_gf_dlr(g); }, "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>> &g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::scalar_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun(
+      [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued> g) {
+        return triqs::gfs::make_gf_dlr(g);
+      },
+      "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::brzone>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::brzone>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imtime, triqs::mesh::cyclat>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imtime>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::dlr_imfreq, triqs::mesh::cyclat>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g"),
+   c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr_imfreq>, triqs::gfs::matrix_valued,
+                                           nda::C_stride_layout, 1, true>
+                    g) { return triqs::gfs::make_gf_dlr(g); },
+              "g")};
 
 // make_hermitian
 static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
@@ -593,12 +558,8 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
       },
       "g")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
-Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
-)DOC");
-static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation
-)DOC");
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
+static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC()DOC");
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(
    R"DOC(
 Symmetrize a Green function object to fullfill fundamental Green function properties.

@@ -45,53 +45,53 @@ namespace triqs::gfs {
   template block2_gf<imfreq, tensor_valued<4>> make_real_in_tau(block2_gf_const_view<imfreq, tensor_valued<4>> const &);
 
   // make_gf_dlr: single mesh DLR conversions
-  template auto make_gf_dlr(gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imfreq, scalar_valued> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imfreq, scalar_valued> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imtime, scalar_valued> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, scalar_valued> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<1>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<1>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<1>> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imfreq, matrix_valued> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imfreq, matrix_valued> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imtime, matrix_valued> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, matrix_valued> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<3>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<3>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<3>> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<4>> const &);
-  template auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<4>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &);
-  template auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<4>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &);
-  template auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &);
+  auto make_gf_dlr(gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imfreq, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imfreq, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imtime, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, scalar_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<1>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imfreq, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imfreq, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imtime, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, matrix_valued> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<3>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(gf_const_view<dlr_imfreq, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
+  auto make_gf_dlr(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g) { return make_gf_dlr<0>(g); }
 
   // fit_gf_dlr: imtime -> dlr
-  template auto fit_gf_dlr(gf_const_view<imtime, scalar_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(block_gf_const_view<imtime, scalar_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(block2_gf_const_view<imtime, scalar_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<1>> const &, double, double, bool);
-  template auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<1>> const &, double, double, bool);
-  template auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<1>> const &, double, double, bool);
-  template auto fit_gf_dlr(gf_const_view<imtime, matrix_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(block_gf_const_view<imtime, matrix_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(block2_gf_const_view<imtime, matrix_valued> const &, double, double, bool);
-  template auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<3>> const &, double, double, bool);
-  template auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<3>> const &, double, double, bool);
-  template auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<3>> const &, double, double, bool);
-  template auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<4>> const &, double, double, bool);
-  template auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<4>> const &, double, double, bool);
-  template auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<4>> const &, double, double, bool);
+  auto fit_gf_dlr(gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
 
   // make_gf_dlr: product mesh wrappers
   auto make_gf_dlr(gf_const_view<prod<dlr_imtime, brzone>, scalar_valued> g) { return make_gf_dlr<0>(g); }
