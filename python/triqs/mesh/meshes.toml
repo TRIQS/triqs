@@ -1,3 +1,4 @@
 package_name = "triqs.mesh"
 documentation = ""
-namespaces = "triqs::mesh"
+namespaces = "triqs::mesh cppdlr"
+match_names = "triqs::mesh::.*|cppdlr::statistic_t"

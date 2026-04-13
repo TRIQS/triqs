@@ -22,6 +22,9 @@ using c2py::operator""_a;
 // ==================== enums =====================
 
 template <>
+std::map<cppdlr::statistic_t, str_t> c2py::enum_to_string<cppdlr::statistic_t> = {{cppdlr::statistic_t::Boson, "Boson"},
+                                                                                  {cppdlr::statistic_t::Fermion, "Fermion"}};
+template <>
 std::map<triqs::mesh::statistic_enum, str_t> c2py::enum_to_string<triqs::mesh::statistic_enum> = {{triqs::mesh::statistic_enum::Boson, "Boson"},
                                                                                                   {triqs::mesh::statistic_enum::Fermion, "Fermion"}};
 template <>
