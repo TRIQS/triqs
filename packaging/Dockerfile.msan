@@ -1,10 +1,8 @@
-FROM --platform=linux/amd64 ubuntu:24.04
-ARG LLVM=19
+FROM --platform=linux/amd64 ubuntu:26.04
+ARG LLVM=20
 ARG NTHREAD=10
 
-RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
-      #wget -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh && chmod +x /tmp/llvm.sh && /tmp/llvm.sh ${LLVM} && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
       g++ \
@@ -29,7 +27,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.12 \
+ENV PYTHON_VERSION=3.14 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} \
     LLVM_ROOT=/usr/lib/llvm-${LLVM}
 
@@ -41,8 +39,9 @@ RUN git clone https://github.com/llvm/llvm-project --branch release/${LLVM}.x --
       -DLLVM_USE_SANITIZER=MemoryWithOrigins \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_INSTALL_PREFIX=${LLVM_ROOT} \
-      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" && \
-      ninja -j${NTHREAD} install-cxx install-cxxabi
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+      -DLIBCXX_INCLUDE_TESTS=OFF -DLIBCXXABI_INCLUDE_TESTS=OFF && \
+      ninja -j${NTHREAD} install-cxx install-cxxabi install-unwind
 
 # Build Environment using MSAN
 # c.f. https://libcxx.llvm.org/UsingLibcxx.html#using-a-custom-built-libc
@@ -54,8 +53,8 @@ ENV CXXFLAGS="$MSAN_FLAGS -Wno-unused-command-line-argument $CUSTOM_LIBCXX_FLAGS
     MSAN_SYMBOLIZER_PATH=${LLVM_ROOT}/bin/llvm-symbolizer
 
 # Static zlib using fPIC to be linked into hdf5
-ADD https://www.zlib.net/zlib-1.3.1.tar.gz /tmp/
-RUN cd /tmp && tar xf /tmp/zlib-1.3.1.tar.gz && cd zlib-1.3.1 && \
+ADD https://www.zlib.net/zlib-1.3.2.tar.gz /tmp/
+RUN cd /tmp && tar xf /tmp/zlib-1.3.2.tar.gz && cd zlib-1.3.2 && \
       CFLAGS="-fPIC $CFLAGS" ./configure --prefix=/opt/zlib && make -j${NTHREAD} && make install && \
       cd /tmp #&& rm -rf /tmp/zlib*
 

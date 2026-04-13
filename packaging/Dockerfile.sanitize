@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 ARG LLVM=20
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -33,7 +33,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.12 \
+ENV PYTHON_VERSION=3.14 \
   CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++" \
   ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer \
   ASAN_OPTIONS=symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0 \

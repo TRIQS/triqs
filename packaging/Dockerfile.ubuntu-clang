@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 ARG LLVM=20
 
 # This platform includes dependencies for building docs
@@ -17,7 +17,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
       libomp-${LLVM}-dev \
-      libzstd-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
@@ -43,6 +42,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-myst-parser \
       python3-linkify-it
 
-ENV PYTHON_VERSION=3.12 \
+ENV PYTHON_VERSION=3.14 \
     CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}

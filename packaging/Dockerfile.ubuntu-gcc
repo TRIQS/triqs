@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 ARG LLVM=20
 
 # This platform does not regenerate Python bindings, but still installs clang /
@@ -33,5 +33,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-pip \
       python3-scipy
 
-ENV PYTHON_VERSION=3.12 \
+ENV PYTHON_VERSION=3.14 \
     CC=gcc CXX=g++
