@@ -22,7 +22,7 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
 
 .. code-block::  python
 
-   from triqs.gf import *
+   from triqs.gfs import *
    from triqs.operators import *
    from h5 import *
    import triqs.utility.mpi as mpi

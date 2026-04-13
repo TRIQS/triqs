@@ -1,5 +1,5 @@
 # Import the Green's functions 
-from triqs.gf import GfImFreq, iOmega_n, inverse
+from triqs.gfs import GfImFreq, iOmega_n, inverse
 
 # Create the Matsubara-frequency Green's function and initialize it
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "$G_\mathrm{imp}$")

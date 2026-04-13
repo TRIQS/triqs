@@ -1,4 +1,4 @@
-from triqs.gf import GfReFreq, Omega, Wilson, inverse
+from triqs.gfs import GfReFreq, Omega, Wilson, inverse
 import numpy
 
 eps_d,t  = 0.3, 0.2

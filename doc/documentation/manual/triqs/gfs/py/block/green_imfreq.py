@@ -1,4 +1,4 @@
-from triqs.gf import GfImFreq, SemiCircular
+from triqs.gfs import GfImFreq, SemiCircular
 
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
 

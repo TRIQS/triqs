@@ -1,5 +1,5 @@
-from triqs.gf import *
-from triqs.gf.descriptors import Omega
+from triqs.gfs import *
+from triqs.gfs.descriptors import Omega
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )
 
