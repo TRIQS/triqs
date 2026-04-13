@@ -1,4 +1,5 @@
 #include <c2py/c2py.hpp>
+#include <cppdlr/dlr_kernels.hpp>
 #include <nda/c2py/converters.hpp>
 #include <triqs/c2py_converters/lattice.hpp>
 #include <triqs/c2py_converters/mesh.hpp>
