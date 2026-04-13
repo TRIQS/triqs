@@ -52,7 +52,7 @@ Slicing
 Just like numpy arrays, the Green's function can be sliced, *when the indices are integers* (otherwise it is meaningless).
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
-  >>> from triqs.gf import *
+  >>> from triqs.gfs import *
   >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_points = 1000, name = "imp")
   >>> g[1:3:,1:3]
   gf_view
@@ -75,7 +75,7 @@ The former allows to access the Green function at a given :ref:`mesh index <gf_s
 
 .. code::
 
-        from triqs.gf import Idx
+        from triqs.gfs import Idx
         ...
         g[Idx(0)] = 1.0
 
@@ -112,7 +112,7 @@ the = sign is possible and equivalent to the `<<` operator.
 
    Let us illustrate this issue on a simple example::
 
-    from triqs.gf import *
+    from triqs.gfs import *
     # Create the Matsubara-frequency Green's function
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
 

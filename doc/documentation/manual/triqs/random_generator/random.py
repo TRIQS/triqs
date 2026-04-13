@@ -1,4 +1,4 @@
-from triqs.random_generator import *
+from triqs.mc_tools import *
 from triqs.plot.mpl_interface import *
 
 r = RandomGenerator("lagged_fibonacci607", 237489)

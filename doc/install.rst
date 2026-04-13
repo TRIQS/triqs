@@ -111,7 +111,7 @@ Ask your cluster administator to install the apptainer software. The TRIQS setup
 
 which will generate an image file `triqs_latest.sif`. You can then execute commands inside this image file, e.g.::
 
-        apptainer exec triqs_latest.sif python3 -c "from triqs.gf import *"
+        apptainer exec triqs_latest.sif python3 -c "from triqs.gfs import *"
 
 In order to run your code in parallel you will need to use Open MPI version 4.0.3 to match the version of the apptainer image.
 You can then run any command in parallel, e.g.::

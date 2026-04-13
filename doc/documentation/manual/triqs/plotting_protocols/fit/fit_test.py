@@ -1,5 +1,5 @@
 from triqs.plot.mpl_interface import oplot
-from triqs.gf import GfImFreq, Omega, inverse
+from triqs.gfs import GfImFreq, Omega, inverse
 
 g = GfImFreq(indices = [0], beta = 300, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )

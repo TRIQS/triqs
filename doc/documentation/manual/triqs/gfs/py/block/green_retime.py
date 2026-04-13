@@ -1,5 +1,5 @@
 from math import pi
-from triqs.gf import *
+from triqs.gfs import *
 
 gw = GfReFreq(indices = [1], window = (-5, 5), n_points = 1001, name = "egBlock")
 gw << SemiCircular(2.0)

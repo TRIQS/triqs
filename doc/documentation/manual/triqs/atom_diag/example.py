@@ -1,4 +1,4 @@
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from triqs.operators.util.hamiltonians import h_int_kanamori
 from h5 import HDFArchive

@@ -1,4 +1,4 @@
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.plot.mpl_interface import oplot,plt
 
 # A Green's function on the Matsubara axis set to a semicircular

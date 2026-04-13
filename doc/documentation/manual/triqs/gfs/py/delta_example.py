@@ -1,6 +1,6 @@
 #FIXME PS: find appropriate place for this!
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.plot.mpl_interface import *
 
 g = GfImFreq(beta=100.0, indices=[0])

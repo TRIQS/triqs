@@ -1,5 +1,5 @@
 import numpy as np
-from triqs.gf import GfReFreq, SemiCircular
+from triqs.gfs import GfReFreq, SemiCircular
 
 g = GfReFreq(indices = ['eg1', 'eg2'], window = (-5, 5), n_points = 1000, name = "egBlock")
 
