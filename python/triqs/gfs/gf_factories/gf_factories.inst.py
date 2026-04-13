@@ -114,7 +114,7 @@ def write_hermitian(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             for in_mesh in DLR_INPUT_MESHES:
-                f.write(f"  template auto make_gf_dlr({view}<{in_mesh}, {target}> const &);\n")
+                f.write(f"  auto make_gf_dlr({view}<{in_mesh}, {target}> const &g) {{ return make_gf_dlr<0>(g); }}\n")
     f.write("\n")
 
     # --- fit_gf_dlr (single mesh) ---
@@ -122,7 +122,7 @@ def write_hermitian(f):
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
-            f.write(f"  template auto fit_gf_dlr({view}<imtime, {target}> const &, double, double, bool);\n")
+            f.write(f"  auto fit_gf_dlr({view}<imtime, {target}> const &g, double w_max, double eps, bool symmetrize = false) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
     f.write("\n")
 
     # --- make_gf_dlr (product mesh wrappers) ---
@@ -181,17 +181,17 @@ def write_fourier(f):
                 ret_t_real = complex_t(real_t) if uses_ct else real_t
                 f.write(f"  template gf<{out_mesh}, {ret_t_real}> make_gf_from_fourier(gf_const_view<{m_in}, {real_t}>, {extra_arg});\n")
 
-            # block_gf / block2_gf: variadic template (uses auto) needs separate instantiation per arg count
+            # block_gf / block2_gf: variadic template (uses auto) needs wrapper functions for GCC compat
             for gf in BLOCK_GF_TYPES:
                 view = GF_VIEW_TYPES[gf]
-                # No extra args (variadic with empty Args pack)
-                f.write(f"  template auto make_gf_from_fourier({view}<{m_in}, {target}> const &);\n")
+                # No extra args
+                f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {target}> const &g) {{ return make_gf_from_fourier<0>(g); }}\n")
                 if has_real:
-                    f.write(f"  template auto make_gf_from_fourier({view}<{m_in}, {real_t}> const &);\n")
-                # With extra arg (variadic with Args={int} or Args={bool})
-                f.write(f"  template auto make_gf_from_fourier({view}<{m_in}, {target}> const &, {extra_arg} const &);\n")
+                    f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {real_t}> const &g) {{ return make_gf_from_fourier<0>(g); }}\n")
+                # With extra arg
+                f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {target}> const &g, {extra_arg} const &x) {{ return make_gf_from_fourier<0>(g, x); }}\n")
                 if has_real:
-                    f.write(f"  template auto make_gf_from_fourier({view}<{m_in}, {real_t}> const &, {extra_arg} const &);\n")
+                    f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {real_t}> const &g, {extra_arg} const &x) {{ return make_gf_from_fourier<0>(g, x); }}\n")
 
             f.write("\n")
 
@@ -204,23 +204,23 @@ def write_fourier(f):
             out_mesh = FOURIER_GF_INFO[m_in][0]
             has_real = m_in in TIME_MESHES
 
-            # gf: generic overload (gf_const_view<M1, T>, M2 const&, OptArgs const&...)
+            # gf: wrapper function for generic overload
             km_gf = known_moments_type("gf", target)
-            f.write(f"  template auto make_gf_from_fourier(gf_const_view<{m_in}, {target}>, {out_mesh} const &, {km_gf} const &);\n")
+            f.write(f"  auto make_gf_from_fourier(gf_const_view<{m_in}, {target}> g, {out_mesh} const &m, {km_gf} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
             if has_real:
-                f.write(f"  template auto make_gf_from_fourier(gf_const_view<{m_in}, {real_t}>, {out_mesh} const &, {km_gf} const &);\n")
+                f.write(f"  auto make_gf_from_fourier(gf_const_view<{m_in}, {real_t}> g, {out_mesh} const &m, {km_gf} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
 
-            # block_gf: separate known_moments template
+            # block_gf: wrapper function for known_moments
             km_block = known_moments_type("block_gf", target)
-            f.write(f"  template auto make_gf_from_fourier(block_gf_const_view<{m_in}, {target}> const &, {out_mesh} const &, {km_block} const &);\n")
+            f.write(f"  auto make_gf_from_fourier(block_gf_const_view<{m_in}, {target}> const &g, {out_mesh} const &m, {km_block} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
             if has_real:
-                f.write(f"  template auto make_gf_from_fourier(block_gf_const_view<{m_in}, {real_t}> const &, {out_mesh} const &, {km_block} const &);\n")
+                f.write(f"  auto make_gf_from_fourier(block_gf_const_view<{m_in}, {real_t}> const &g, {out_mesh} const &m, {km_block} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
 
-            # block2_gf: separate known_moments template
+            # block2_gf: wrapper function for known_moments
             km_block2 = known_moments_type("block2_gf", target)
-            f.write(f"  template auto make_gf_from_fourier(block2_gf_const_view<{m_in}, {target}> const &, {out_mesh} const &, {km_block2} const &);\n")
+            f.write(f"  auto make_gf_from_fourier(block2_gf_const_view<{m_in}, {target}> const &g, {out_mesh} const &m, {km_block2} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
             if has_real:
-                f.write(f"  template auto make_gf_from_fourier(block2_gf_const_view<{m_in}, {real_t}> const &, {out_mesh} const &, {km_block2} const &);\n")
+                f.write(f"  auto make_gf_from_fourier(block2_gf_const_view<{m_in}, {real_t}> const &g, {out_mesh} const &m, {km_block2} const &km) {{ return make_gf_from_fourier<0>(g, m, km); }}\n")
 
         f.write("\n")
 
@@ -233,9 +233,9 @@ def write_fourier(f):
             for gf in GF_TYPES:
                 view = GF_VIEW_TYPES[gf]
                 if gf == "gf":
-                    f.write(f"  template auto make_gf_from_fourier(gf_const_view<{m_in}, {target}>);\n")
+                    f.write(f"  auto make_gf_from_fourier(gf_const_view<{m_in}, {target}> g) {{ return make_gf_from_fourier<0>(g); }}\n")
                 else:
-                    f.write(f"  template auto make_gf_from_fourier({view}<{m_in}, {target}> const &);\n")
+                    f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {target}> const &g) {{ return make_gf_from_fourier<0>(g); }}\n")
 
         f.write("\n")
 
@@ -276,7 +276,7 @@ def write_dlr_imtime(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             for in_mesh in ["dlr", "dlr_imfreq"]:
-                f.write(f"  template auto make_gf_dlr_imtime({view}<{in_mesh}, {target}> const &);\n")
+                f.write(f"  auto make_gf_dlr_imtime({view}<{in_mesh}, {target}> const &g) {{ return make_gf_dlr_imtime<0>(g); }}\n")
     f.write("\n")
 
     # --- make_gf_imtime (single mesh) ---
@@ -285,7 +285,7 @@ def write_dlr_imtime(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             for in_mesh in ["dlr", "dlr_imtime", "dlr_imfreq"]:
-                f.write(f"  template auto make_gf_imtime({view}<{in_mesh}, {target}> const &, long);\n")
+                f.write(f"  auto make_gf_imtime({view}<{in_mesh}, {target}> const &g, long n_tau) {{ return make_gf_imtime<0>(g, n_tau); }}\n")
     f.write("\n")
 
     # --- make_gf_dlr_imtime (product mesh wrappers) ---
@@ -326,7 +326,7 @@ def write_dlr_imfreq(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             for in_mesh in ["dlr", "dlr_imtime"]:
-                f.write(f"  template auto make_gf_dlr_imfreq({view}<{in_mesh}, {target}> const &);\n")
+                f.write(f"  auto make_gf_dlr_imfreq({view}<{in_mesh}, {target}> const &g) {{ return make_gf_dlr_imfreq<0>(g); }}\n")
     f.write("\n")
 
     # --- make_gf_imfreq (single mesh) ---
@@ -335,7 +335,7 @@ def write_dlr_imfreq(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             for in_mesh in ["dlr", "dlr_imtime", "dlr_imfreq"]:
-                f.write(f"  template auto make_gf_imfreq({view}<{in_mesh}, {target}> const &, long);\n")
+                f.write(f"  auto make_gf_imfreq({view}<{in_mesh}, {target}> const &g, long n_iw) {{ return make_gf_imfreq<0>(g, n_iw); }}\n")
     f.write("\n")
 
     # --- make_gf_dlr_imfreq (product mesh wrappers) ---
