@@ -349,12 +349,8 @@ Returns
                                                        nda::borrowed<nda::mem::AddressSpace::Host>> &>()},
     {c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>()}},
-   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
-                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>::regular_type,
-                                    double>>(),
-    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout, 'A', nda::default_accessor,
-                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>::regular_type,
-                                    double>>()});
+   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>(),
+    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC()DOC");
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(
    R"DOC(
@@ -395,12 +391,8 @@ Returns
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::refreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::refreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>()}},
-   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
-                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>::regular_type,
-                                    double>>(),
-    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout, 'A', nda::default_accessor,
-                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>::regular_type,
-                                    double>>()});
+   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>(),
+    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC()DOC");
 static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
 static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC()DOC");

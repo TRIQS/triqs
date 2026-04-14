@@ -63,7 +63,7 @@ using _c2py_cls_1 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_1>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_1> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImFreq_x_BrZone_1";
 static auto _c2py_init_1                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_1, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imfreq, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_1, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imfreq, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1>    = c2py::pyfkw_constructor<_c2py_init_1>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_1> = _c2py_init_1.doc(R"DOC()DOC");
@@ -137,7 +137,7 @@ using _c2py_cls_2 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_2>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_2> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImFreq_x_CycLat_1";
 static auto _c2py_init_2                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_2, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imfreq, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_2, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imfreq, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_2>    = c2py::pyfkw_constructor<_c2py_init_2>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_2> = _c2py_init_2.doc(R"DOC()DOC");
@@ -281,7 +281,7 @@ using _c2py_cls_5 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_5>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_5> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImTime_x_BrZone_1";
 static auto _c2py_init_5                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_5, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_5, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_5>    = c2py::pyfkw_constructor<_c2py_init_5>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_5> = _c2py_init_5.doc(R"DOC()DOC");
@@ -355,8 +355,8 @@ using _c2py_cls_6 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_6>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_6> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImTime_x_BrZone_1_R";
 static auto _c2py_init_6                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_6,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::brzone>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_6,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::brzone>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_6>    = c2py::pyfkw_constructor<_c2py_init_6>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_6> = _c2py_init_6.doc(R"DOC()DOC");
 // __call__
@@ -429,7 +429,7 @@ using _c2py_cls_7 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_7>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_7> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImTime_x_CycLat_1";
 static auto _c2py_init_7                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_7, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_7, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_7>    = c2py::pyfkw_constructor<_c2py_init_7>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_7> = _c2py_init_7.doc(R"DOC()DOC");
@@ -503,8 +503,8 @@ using _c2py_cls_8 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_8>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_8> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyImTime_x_CycLat_1_R";
 static auto _c2py_init_8                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_8,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::cyclat>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_8,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::imtime, triqs::mesh::cyclat>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_8>    = c2py::pyfkw_constructor<_c2py_init_8>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_8> = _c2py_init_8.doc(R"DOC()DOC");
 // __call__
@@ -612,8 +612,8 @@ using _c2py_cls_10 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_10>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_10> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyReFreq_x_BrZone_1";
 static auto _c2py_init_10                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_10,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::refreq, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_10,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::refreq, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_10>    = c2py::pyfkw_constructor<_c2py_init_10>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_10> = _c2py_init_10.doc(R"DOC()DOC");
 // __call__
@@ -686,8 +686,8 @@ using _c2py_cls_11 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_11>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_11> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyReFreq_x_CycLat_1";
 static auto _c2py_init_11                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_11,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::refreq, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_11,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::refreq, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_11>    = c2py::pyfkw_constructor<_c2py_init_11>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_11> = _c2py_init_11.doc(R"DOC()DOC");
 // __call__
@@ -795,8 +795,8 @@ using _c2py_cls_13 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_13>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_13> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyReTime_x_BrZone_1";
 static auto _c2py_init_13                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_13,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::retime, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_13,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::retime, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_13>    = c2py::pyfkw_constructor<_c2py_init_13>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_13> = _c2py_init_13.doc(R"DOC()DOC");
 // __call__
@@ -869,8 +869,8 @@ using _c2py_cls_14 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_14>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_14> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyReTime_x_CycLat_1";
 static auto _c2py_init_14                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_14,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::retime, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_14,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::retime, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_14>    = c2py::pyfkw_constructor<_c2py_init_14>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_14> = _c2py_init_14.doc(R"DOC()DOC");
 // __call__
@@ -978,8 +978,8 @@ using _c2py_cls_16 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_16>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_16> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyLegendre_x_BrZone_1";
 static auto _c2py_init_16                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_16,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::legendre, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_16,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::legendre, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_16>    = c2py::pyfkw_constructor<_c2py_init_16>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_16> = _c2py_init_16.doc(R"DOC()DOC");
 // __call__
@@ -1052,8 +1052,8 @@ using _c2py_cls_17 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_17>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_17> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyLegendre_x_CycLat_1";
 static auto _c2py_init_17                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_17,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::legendre, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_17,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::legendre, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_17>    = c2py::pyfkw_constructor<_c2py_init_17>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_17> = _c2py_init_17.doc(R"DOC()DOC");
 // __call__
@@ -1167,7 +1167,7 @@ using _c2py_cls_19 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_19>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_19> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyDLR_x_BrZone_1";
 static auto _c2py_init_19                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_19, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_19, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_19>    = c2py::pyfkw_constructor<_c2py_init_19>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_19> = _c2py_init_19.doc(R"DOC()DOC");
@@ -1259,7 +1259,7 @@ using _c2py_cls_20 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_20>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_20> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyDLR_x_CycLat_1";
 static auto _c2py_init_20                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_20, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_20, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_20>    = c2py::pyfkw_constructor<_c2py_init_20>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_20> = _c2py_init_20.doc(R"DOC()DOC");
@@ -1386,8 +1386,8 @@ using _c2py_cls_22 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_22>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_22> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyChebyshev_x_BrZone_1";
 static auto _c2py_init_22                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_22,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_22,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_22>    = c2py::pyfkw_constructor<_c2py_init_22>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_22> = _c2py_init_22.doc(R"DOC()DOC");
 // __call__
@@ -1460,8 +1460,8 @@ using _c2py_cls_23 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_23>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_23> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyChebyshev_x_CycLat_1";
 static auto _c2py_init_23                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_23,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_23,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_23>    = c2py::pyfkw_constructor<_c2py_init_23>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_23> = _c2py_init_23.doc(R"DOC()DOC");
 // __call__
@@ -1569,8 +1569,8 @@ using _c2py_cls_25 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_25>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_25> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_ImFreq_1";
 static auto _c2py_init_25                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_25,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_25,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_25>    = c2py::pyfkw_constructor<_c2py_init_25>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_25> = _c2py_init_25.doc(R"DOC()DOC");
 // __call__
@@ -1643,8 +1643,8 @@ using _c2py_cls_26 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_26>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_26> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_ImTime_1";
 static auto _c2py_init_26                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_26,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_26,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_26>    = c2py::pyfkw_constructor<_c2py_init_26>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_26> = _c2py_init_26.doc(R"DOC()DOC");
 // __call__
@@ -1717,8 +1717,8 @@ using _c2py_cls_27 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_27>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_27> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_ImTime_1_R";
 static auto _c2py_init_27                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_27,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_27,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_27>    = c2py::pyfkw_constructor<_c2py_init_27>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_27> = _c2py_init_27.doc(R"DOC()DOC");
 // __call__
@@ -1791,8 +1791,8 @@ using _c2py_cls_28 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_28>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_28> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_ReFreq_1";
 static auto _c2py_init_28                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_28,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_28,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_28>    = c2py::pyfkw_constructor<_c2py_init_28>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_28> = _c2py_init_28.doc(R"DOC()DOC");
 // __call__
@@ -1865,8 +1865,8 @@ using _c2py_cls_29 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_29>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_29> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_ReTime_1";
 static auto _c2py_init_29                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_29,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_29,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_29>    = c2py::pyfkw_constructor<_c2py_init_29>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_29> = _c2py_init_29.doc(R"DOC()DOC");
 // __call__
@@ -1939,8 +1939,8 @@ using _c2py_cls_30 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_30>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_30> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_Legendre_1";
 static auto _c2py_init_30                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_30,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_30,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_30>    = c2py::pyfkw_constructor<_c2py_init_30>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_30> = _c2py_init_30.doc(R"DOC()DOC");
 // __call__
@@ -2013,7 +2013,7 @@ using _c2py_cls_31 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_31>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_31> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_DLR_1";
 static auto _c2py_init_31                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_31, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_31, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_31>    = c2py::pyfkw_constructor<_c2py_init_31>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_31> = _c2py_init_31.doc(R"DOC()DOC");
@@ -2105,8 +2105,8 @@ using _c2py_cls_32 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_32>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_32> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyBrZone_x_Chebyshev_1";
 static auto _c2py_init_32                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_32,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_32,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_32>    = c2py::pyfkw_constructor<_c2py_init_32>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_32> = _c2py_init_32.doc(R"DOC()DOC");
 // __call__
@@ -2214,8 +2214,8 @@ using _c2py_cls_34 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_34>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_34> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_ImFreq_1";
 static auto _c2py_init_34                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_34,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_34,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_34>    = c2py::pyfkw_constructor<_c2py_init_34>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_34> = _c2py_init_34.doc(R"DOC()DOC");
 // __call__
@@ -2288,8 +2288,8 @@ using _c2py_cls_35 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_35>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_35> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_ImTime_1";
 static auto _c2py_init_35                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_35,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_35,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_35>    = c2py::pyfkw_constructor<_c2py_init_35>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_35> = _c2py_init_35.doc(R"DOC()DOC");
 // __call__
@@ -2362,8 +2362,8 @@ using _c2py_cls_36 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_36>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_36> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_ImTime_1_R";
 static auto _c2py_init_36                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_36,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_36,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::tensor_real_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_36>    = c2py::pyfkw_constructor<_c2py_init_36>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_36> = _c2py_init_36.doc(R"DOC()DOC");
 // __call__
@@ -2436,8 +2436,8 @@ using _c2py_cls_37 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_37>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_37> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_ReFreq_1";
 static auto _c2py_init_37                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_37,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_37,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_37>    = c2py::pyfkw_constructor<_c2py_init_37>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_37> = _c2py_init_37.doc(R"DOC()DOC");
 // __call__
@@ -2510,8 +2510,8 @@ using _c2py_cls_38 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_38>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_38> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_ReTime_1";
 static auto _c2py_init_38                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_38,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_38,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_38>    = c2py::pyfkw_constructor<_c2py_init_38>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_38> = _c2py_init_38.doc(R"DOC()DOC");
 // __call__
@@ -2584,8 +2584,8 @@ using _c2py_cls_39 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_39>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_39> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_Legendre_1";
 static auto _c2py_init_39                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_39,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_39,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_39>    = c2py::pyfkw_constructor<_c2py_init_39>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_39> = _c2py_init_39.doc(R"DOC()DOC");
 // __call__
@@ -2658,7 +2658,7 @@ using _c2py_cls_40 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_40>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_40> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_DLR_1";
 static auto _c2py_init_40                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_40, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
+   _c2py_cls_40, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_40>    = c2py::pyfkw_constructor<_c2py_init_40>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_40> = _c2py_init_40.doc(R"DOC()DOC");
@@ -2750,8 +2750,8 @@ using _c2py_cls_41 = triqs::gfs::gf_proxy<
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_41>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_41> = "triqs.gfs.wrapped_aux_target_rank_1.CallProxyCycLat_x_Chebyshev_1";
 static auto _c2py_init_41                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-                                       _c2py_cls_41,
-                                       triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
+   _c2py_cls_41,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::tensor_valued<1>, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_41>    = c2py::pyfkw_constructor<_c2py_init_41>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_41> = _c2py_init_41.doc(R"DOC()DOC");
 // __call__

@@ -273,10 +273,10 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_2>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_2> = "triqs.lattice.lattice_tools.TightBinding";
 static auto _c2py_init_2                                     = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<
-                                          _c2py_cls_2, triqs::lattice::bravais_lattice,
-                                          std::vector<nda::basic_array<long, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>,
-                                          std::vector<
-                                             nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>(
+      _c2py_cls_2, triqs::lattice::bravais_lattice,
+      std::vector<nda::basic_array<long, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>,
+      std::vector<
+         nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>(
       "bl", "displ_vec", "overlap_mat_vec"),
    c2py::c_constructor<_c2py_cls_2, triqs::lattice::bravais_lattice, triqs::lattice::hopping_dict>("bl", "hoppings")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_2> = c2py::pyfkw_constructor<_c2py_init_2>;
@@ -403,7 +403,7 @@ static const auto _c2py_doc_4 = _c2py_fun_4.doc(
    R"DOC(
 [1, 2] Calculate the fourier transform for a given momentum vector k (or array of vectors)
 
-  $$ h_k = _j m_j * exp(2  i * {k} * {r}_j) $$
+  $$ h_k =  m_j * exp(2  i * {k} * {r}_j) $$
 
 with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
 k needs to be represented in units of the reciprocal lattice vectors

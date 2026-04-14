@@ -29,15 +29,15 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.atom_diag.atom_diag.AtomDiagReal";
 static auto _c2py_init_0                                     = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
-                                                           const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
+                       const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
-                                                           const triqs::hilbert_space::fundamental_operator_set &, const triqs::atom_diag::atom_diag<false>::many_body_op_t &>(
+                       const triqs::hilbert_space::fundamental_operator_set &, const triqs::atom_diag::atom_diag<false>::many_body_op_t &>(
       "h", "fops", "hyb"),
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
-                                                           const triqs::hilbert_space::fundamental_operator_set &, int, int>("h", "fops", "n_min", "n_max"),
+                       const triqs::hilbert_space::fundamental_operator_set &, int, int>("h", "fops", "n_min", "n_max"),
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
-                                                           const triqs::hilbert_space::fundamental_operator_set &,
-                                                           const std::vector<triqs::atom_diag::atom_diag<false>::many_body_op_t> &>("h", "fops", "qn_vector")};
+                       const triqs::hilbert_space::fundamental_operator_set &,
+                       const std::vector<triqs::atom_diag::atom_diag<false>::many_body_op_t> &>("h", "fops", "qn_vector")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> =
@@ -279,13 +279,13 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_1>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_1> = "triqs.atom_diag.atom_diag.AtomDiagComplex";
 static auto _c2py_init_1                                     = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &,
-                                                           const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
+                       const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &, const triqs::hilbert_space::fundamental_operator_set &,
-                                                           const triqs::atom_diag::atom_diag<true>::many_body_op_t &>("h", "fops", "hyb"),
+                       const triqs::atom_diag::atom_diag<true>::many_body_op_t &>("h", "fops", "hyb"),
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &, const triqs::hilbert_space::fundamental_operator_set &,
-                                                           int, int>("h", "fops", "n_min", "n_max"),
+                       int, int>("h", "fops", "n_min", "n_max"),
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &, const triqs::hilbert_space::fundamental_operator_set &,
-                                                           const std::vector<triqs::atom_diag::atom_diag<true>::many_body_op_t> &>("h", "fops", "qn_vector")};
+                       const std::vector<triqs::atom_diag::atom_diag<true>::many_body_op_t> &>("h", "fops", "qn_vector")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1> = c2py::pyfkw_constructor<_c2py_init_1>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_1> =
@@ -786,7 +786,7 @@ beta : {par_1}
 gf_struct : {par_2}
    Block structure of the Green's function, block name -> list of inner indices.
 energy_window : {par_3}
-   Energy window :math:`(_{min}, _{max})`.
+   Energy window :math:`({min}, {max})`.
 n_w : {par_4}
    Number of frequency points.
 broadening : {par_5}
