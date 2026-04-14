@@ -131,7 +131,7 @@ static const auto _c2py_doc_0 = _c2py_fun_0.doc(
    R"DOC(
 Convert the quadratic operator
 
-.. math:: _{ ij} h_{ ij} c_{, i}^ c_{, j}.
+.. math:: { ij} h_{ ij} c_{, i}^ c_{, j}.
 
 into its block-matrix representation
 
@@ -264,7 +264,7 @@ static const auto _c2py_doc_5 = _c2py_fun_5.doc(
    R"DOC(
 Convert the block-matrix h_{ ij} into the associated operator
 
-.. math:: _{ ij} h_{ ij} c_{, i}^ c_{, j}.
+.. math:: { ij} h_{ ij} c_{, i}^ c_{, j}.
 
 Parameters
 ----------

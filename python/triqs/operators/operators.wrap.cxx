@@ -100,7 +100,7 @@ static auto _c2py_init_0                                     = c2py::dispatcher_
    c2py::c_constructor<_c2py_cls_1>(),
    c2py::c_constructor<_c2py_cls_1, const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>::scalar_t &>("x"),
    c2py::c_constructor<_c2py_cls_1, const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>::scalar_t &,
-                                                           triqs::operators::monomial_t>("x", "monomial")};
+                       triqs::operators::monomial_t>("x", "monomial")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1>    = c2py::pyfkw_constructor<_c2py_init_0>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_1> = _c2py_init_0.doc(R"DOC()DOC");
 // get_monomials

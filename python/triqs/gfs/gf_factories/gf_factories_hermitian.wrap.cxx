@@ -650,34 +650,32 @@ Returns
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &>()}},
-   {c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout>::regular_type>(),
+   {c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<
-       typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imtime>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<
-       typename triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
@@ -731,18 +729,17 @@ Returns
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true> &>()}},
-   {c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout>::regular_type>(),
+   {c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 2, true>::regular_type>(),
-    c2py::python_typename<
-       typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout>::regular_type>(),
+    c2py::python_typename<typename triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>>::regular_type>(),
     c2py::python_typename<
        typename triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true>::regular_type>(),
     c2py::python_typename<

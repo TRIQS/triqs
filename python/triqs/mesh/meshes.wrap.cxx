@@ -754,12 +754,12 @@ mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
 using _c2py_cls_3                                            = triqs::mesh::dlr;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_3>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_3> = "triqs.mesh.meshes.MeshDLR";
-static auto _c2py_init_2                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_3>(),
+static auto _c2py_init_2 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_3>(),
                                                    c2py::c_constructor<_c2py_cls_3, double, triqs::mesh::statistic_enum, double, double, bool>(
                                                       "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
                                                    c2py::c_constructor<_c2py_cls_3, const triqs::mesh::dlr_imtime &>("m"),
                                                    c2py::c_constructor<_c2py_cls_3, const triqs::mesh::dlr_imfreq &>("m")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_3>    = c2py::pyfkw_constructor<_c2py_init_2>;
+template <> constexpr initproc c2py::tp_init<_c2py_cls_3> = c2py::pyfkw_constructor<_c2py_init_2>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_3> =
    _c2py_init_2.doc(R"DOC(
@@ -1062,12 +1062,12 @@ mesh point #7: index = 7, data index = 7, value = 4.997323654048254
 using _c2py_cls_4                                            = triqs::mesh::dlr_imtime;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_4>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_4> = "triqs.mesh.meshes.MeshDLRImTime";
-static auto _c2py_init_3                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_4>(),
+static auto _c2py_init_3 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_4>(),
                                                    c2py::c_constructor<_c2py_cls_4, double, triqs::mesh::statistic_enum, double, double, bool>(
                                                       "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
                                                    c2py::c_constructor<_c2py_cls_4, const triqs::mesh::dlr_imfreq &>("m"),
                                                    c2py::c_constructor<_c2py_cls_4, const triqs::mesh::dlr &>("m")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_4>    = c2py::pyfkw_constructor<_c2py_init_3>;
+template <> constexpr initproc c2py::tp_init<_c2py_cls_4> = c2py::pyfkw_constructor<_c2py_init_3>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_4> =
    _c2py_init_3.doc(R"DOC(
@@ -1372,12 +1372,12 @@ mesh point #7: index = 7, data index = 7, value = 9.987968049992553
 using _c2py_cls_5                                            = triqs::mesh::dlr_imfreq;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_5>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_5> = "triqs.mesh.meshes.MeshDLRImFreq";
-static auto _c2py_init_4                                     = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_5>(),
+static auto _c2py_init_4 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_5>(),
                                                    c2py::c_constructor<_c2py_cls_5, double, triqs::mesh::statistic_enum, double, double, bool>(
                                                       "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
                                                    c2py::c_constructor<_c2py_cls_5, const triqs::mesh::dlr_imtime &>("m"),
                                                    c2py::c_constructor<_c2py_cls_5, const triqs::mesh::dlr &>("m")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_5>    = c2py::pyfkw_constructor<_c2py_init_4>;
+template <> constexpr initproc c2py::tp_init<_c2py_cls_5> = c2py::pyfkw_constructor<_c2py_init_4>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_5> =
    _c2py_init_4.doc(R"DOC(
@@ -2933,9 +2933,9 @@ mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5000, 0.5000, 0.6
 using _c2py_cls_10                                            = triqs::mesh::chebyshev;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_10>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_10> = "triqs.mesh.meshes.MeshChebyshev";
-static auto _c2py_init_9                                      = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_10>(),
+static auto _c2py_init_9 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_10>(),
                                                    c2py::c_constructor<_c2py_cls_10, double, triqs::mesh::statistic_enum, long>("beta", "stat", "N")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_10>    = c2py::pyfkw_constructor<_c2py_init_9>;
+template <> constexpr initproc c2py::tp_init<_c2py_cls_10> = c2py::pyfkw_constructor<_c2py_init_9>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_10> =
    _c2py_init_9.doc(R"DOC(
