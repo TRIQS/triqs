@@ -38,11 +38,41 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace triqs::mesh {
+
+  namespace detail {
+    // Thread-safe cache for dlr2d_ops keyed on (beta, wmax, epsilon, compressgrid, compressbasis).
+    // build_dlr2d / build_dlr_rf / build_cf2if do not depend on channel, so PP and PH
+    // constructions with the same parameters can share the result.
+    inline std::shared_ptr<const dlr2d_ops> get_or_build_dlr2d_ops(double b, double wmax, double epsilon, bool compressgrid, bool compressbasis) {
+      using key_t = std::tuple<double, double, double, bool, bool>;
+      static std::mutex mu;
+      static std::map<key_t, std::shared_ptr<const dlr2d_ops>> cache;
+
+      key_t key{b, wmax, epsilon, compressgrid, compressbasis};
+      {
+        std::lock_guard lk(mu);
+        if (auto it = cache.find(key); it != cache.end()) return it->second;
+      }
+
+      double lambda  = wmax * b;
+      auto dlr_rf    = cppdlr::build_dlr_rf(lambda, epsilon);
+      auto [imf, rf] = ::cppdlr2d::build_dlr2d(lambda, epsilon, compressgrid, compressbasis);
+      auto cf2if     = ::cppdlr2d::build_cf2if(b, dlr_rf, imf, rf);
+      auto ops       = std::make_shared<const dlr2d_ops>(dlr2d_ops{.dlr_rf = dlr_rf, .dlr2d_if = imf, .dlr2d_rf = rf, .cf2if = cf2if});
+
+      std::lock_guard lk(mu);
+      auto [it, inserted] = cache.try_emplace(key, ops);
+      return it->second;
+    }
+  } // namespace detail
 
   /**
    * @addtogroup triqs-meshes-imag
@@ -179,14 +209,9 @@ namespace triqs::mesh {
      */
     dlr2d_imfreq(double b, double wmax, double epsilon, channel_enum channel, bool compressgrid = false, bool compressbasis = true)
        : beta_(b), w_max_(wmax), eps_(epsilon), channel_(channel), compressgrid_(compressgrid), compressbasis_(compressbasis) {
-      // Build 1D DLR real frequencies
-      double lambda  = wmax * b;
-      auto dlr_rf    = cppdlr::build_dlr_rf(lambda, epsilon);
-      auto [imf, rf] = ::cppdlr2d::build_dlr2d(lambda, epsilon, compressgrid, compressbasis);
-      auto cf2if     = ::cppdlr2d::build_cf2if(b, dlr_rf, imf, rf);
-
-      mesh_hash_ = hash(b, wmax, epsilon, channel, compressgrid, compressbasis, nda::sum(imf));
-      dlr2d_     = std::make_shared<detail::dlr2d_ops>(detail::dlr2d_ops{.dlr_rf = dlr_rf, .dlr2d_if = imf, .dlr2d_rf = rf, .cf2if = cf2if});
+      // Fetch cached ops (shared across PP/PH channels with identical build parameters).
+      dlr2d_     = detail::get_or_build_dlr2d_ops(b, wmax, epsilon, compressgrid, compressbasis);
+      mesh_hash_ = hash(b, wmax, epsilon, channel, compressgrid, compressbasis, nda::sum(dlr2d_->dlr2d_if));
       max_n_     = std::max(max_element(dlr2d_->dlr2d_if), -min_element(dlr2d_->dlr2d_if) - 1);
     }
 
