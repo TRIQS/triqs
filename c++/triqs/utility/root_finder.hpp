@@ -4,7 +4,6 @@
 // See LICENSE in the root of this distribution for details.
 
 #pragma once
-//#include "utils/defs.hpp"
 #include <fmt/core.h>
 #include <triqs/utility/report_stream.hpp>
 
@@ -29,7 +28,6 @@ namespace triqs::utility {
   inline std::pair<double, double> find_bounds(std::function<double(double)> f, double x_init, double y_value, double delta_x, double precision,
                                                long max_loops = 1000, bool verbosity = false) {
 
-    auto out = ostream_with_verbosity(std::cout, verbosity);
     double x = x_init;
     delta_x  = abs(delta_x);
 
@@ -44,7 +42,6 @@ namespace triqs::utility {
     for (; nbre_loop <= max_loops && (y2 - y_value) * eps > 0 && abs(y2 - y_value) > precision; ++nbre_loop) {
       x2 -= eps * delta_x;
       y2 = f(x2);
-      out << fmt::format("x={}, f(x)= {}\n", x2, y2);
     }
 
     if (x1 > x2) {
@@ -81,8 +78,8 @@ namespace triqs::utility {
     auto y1 = f(x_low);
     auto y2 = f(x_high);
 
-    out << fmt::format("{} < {} < {}\n", x1, x_name, x2);
-    out << fmt::format("{} < {} < {}\n", y1, y_name, y2);
+    out << fmt::format(" {:>4} | {:^24} | residual\n", "iter", fmt::format("{} interval", x_name));
+    out << fmt::format("------+--------------------------+----------\n");
 
     double yfound = (abs(y1 - y_target) < abs(y2 - y_target)) ? y1 : y2;
     double x      = (abs(y1 - y_target) < abs(y2 - y_target)) ? x1 : x2;
@@ -98,16 +95,14 @@ namespace triqs::utility {
         x2 = x;
         y2 = yfound;
       }
-      out << fmt::format("{} < {} < {}\n", x1, x_name, x2);
-      out << fmt::format("{} < {} < {}\n", y1, y_name, y2);
+      out << fmt::format(" {:4d} | [{:10g}, {:10g}]   | {:8.2e}\n", nbre_loop + 1, x1, x2, abs(yfound - y_target));
     }
 
-    if (std::abs(yfound - y_target) < precision) {
-      out << fmt::format("{} found in {} iterations:\n", x_name, nbre_loop);
-      out << fmt::format("{} = {}; {} = {}\n", y_name, yfound, x_name, x);
+    if (abs(yfound - y_target) < precision) {
+      fmt::print("Converged ({} iters): {} = {:g}, {} = {:g}\n", nbre_loop, x_name, x, y_name, yfound);
       return {x, yfound};
     } else {
-      out << fmt::format("FAILURE to adjust {} to the value {} after {} iterations.\n", x_name, y_target, nbre_loop);
+      fmt::print("Failed: {} did not converge to {:g} after {} iters\n", x_name, y_target, nbre_loop);
       throw std::runtime_error{fmt::format("Dichotomy adjustment for {} failed after {} iterations", x_name, nbre_loop)};
     }
   }
@@ -136,14 +131,17 @@ namespace triqs::utility {
     auto y_low  = f(x_low);
     auto y_high = f(x_high);
 
-    out << fmt::format("{} < {} < {}\n", x_low, x_name, x_high);
-    out << fmt::format("{} < {} < {}\n", y_low, y_name, y_high);
+    out << fmt::format(" {:>4} | {:^24} | residual\n", "iter", fmt::format("{} interval", x_name));
+    out << fmt::format("------+--------------------------+----------\n");
 
     for (auto it = 0; it < max_loops; it++) {
       auto x_mid = (x_high + x_low) / 2.0;
       auto y_mid = f(x_mid);
 
-      if (abs(y_mid - y_target) <= precision) return {x_mid, y_mid};
+      if (abs(y_mid - y_target) <= precision) {
+        fmt::print("Converged ({} iters): {} = {:g}, {} = {:g}\n", it + 1, x_name, x_mid, y_name, y_mid);
+        return {x_mid, y_mid};
+      }
 
       if (y_mid - y_target >= 0) {
         x_high = x_mid;
@@ -153,12 +151,12 @@ namespace triqs::utility {
         y_low = y_mid;
       }
 
-      out << fmt::format("{} < {} < {}\n", x_low, x_name, x_high);
-      out << fmt::format("{} < {} < {}\n", y_low, y_name, y_high);
+      out << fmt::format(" {:4d} | [{:10g}, {:10g}]   | {:8.2e}\n", it + 1, x_low, x_high, abs(y_mid - y_target));
     }
 
-    out << fmt::format("FAILURE to adjust {} to the value {} after {} iterations.\n", x_name, y_target, max_loops);
-    throw std::runtime_error{fmt::format("Dichotomy adjustment for {} failed after {} iterations", x_name, max_loops)};
+    out << fmt::format("Failed: {} did not converge to {:g} after {} iters\n", x_name, y_target, max_loops);
+
+    throw std::runtime_error{fmt::format("Bisection adjustment for {} failed after {} iterations", x_name, max_loops)};
   }
   //------------------------------------------------------
 
@@ -181,9 +179,7 @@ namespace triqs::utility {
                                                double delta_x, long max_loops = 1000, std::string x_name = "", std::string y_name = "",
                                                bool verbosity = false) {
 
-    auto out = ostream_with_verbosity(std::cout, verbosity);
-
-    out << fmt::format("Root finder search of {} to obtain {} = {} +/- {}\n", x_name, y_name, y_value, precision);
+    fmt::print("Root finder: seeking {} s.t. {} = {:g} \u00b1 {:g}\n", x_name, y_name, y_value, precision);
 
     auto [x1, x2] = find_bounds(f, x_init, y_value, delta_x, precision, max_loops, verbosity);
 
