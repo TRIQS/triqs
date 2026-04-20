@@ -53,6 +53,6 @@ def _get_cpp2py_wrapped_class_enums():
     return {'module_name' : 'UNUSED', 'includes' : "['<triqs/cpp2py_converters.hpp>']"}
 
 __all__ = ['Cpp2pyInfo', 'archive', 'dos', 'fit', 'gf', 'gfs', 'lattice', 'mesh', 'mc_tools', 'operators', 'plot',
-           'random_generator', 'sumk', 'utility']
+           'random_generator', 'solver_utils', 'sumk', 'utility']
 
 
