@@ -19,8 +19,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${TRIQS_PYTHON_
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/utility)
 
 # install generated headers consumed under #ifdef C2PY_INCLUDED by the triqs/<mod>.hpp umbrella headers.
-# Public wrap.hxx files live at one level of depth (atom_diag/, mesh/, ...); deeper files under
-# gfs/gf_factories/, gfs/gf_fnt/, gfs/wrapped_aux/, and operators/util/ are module-private and not shipped.
 install(DIRECTORY . DESTINATION include/triqs
         FILES_MATCHING PATTERN "*.wrap.hxx"
         PATTERN "wrapped_aux" EXCLUDE)
