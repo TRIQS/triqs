@@ -89,21 +89,16 @@ semicircle
         mu = self.chem_potential
         Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
         if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
-            def f(om_):
-                return g_semicirc_iw(om_ + mu, D) * Id
+            vals = g_semicirc_iw(G.mesh.values() + mu, D)
         elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
-            def f(om_):
-                return g_semicirc_w(om_.real + mu, D) * Id
+            vals = g_semicirc_w(G.mesh.values().real + mu, D)
         elif type(G.mesh) in [MeshImTime, MeshDLRImTime]:
             if mu != 0.:
                 raise NotImplementedError("SemiCircular on imaginary-time mesh with non-zero chemical potential is not supported")
             vals = g_semicirc_tau(G.mesh.values(), G.mesh.beta, D)
-            G.data[:] = numpy.multiply.outer(vals, Id)
-            return G
         else:
             raise TypeError(f"SemiCircular: mesh type not supported: {type(G.mesh)}")
-
-        Function(f)(G)
+        G.data[:] = numpy.multiply.outer(vals, Id)
         return G
 
 ##################################################
