@@ -52,7 +52,7 @@ class GfReFreq(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        warnings.warn("Please use Gf(mesh=MeshReFreq(..), ..) instead of GfReFreq", DeprecationWarning)
+        warnings.warn("Please use Gf(mesh=MeshReFreq(..), ..) instead of GfReFreq", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 10000, window = None, indices=None):
             if mesh is None:

@@ -52,7 +52,7 @@ class GfImFreq(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        warnings.warn("Please use Gf(mesh=MeshImFreq(..), ..) instead of GfImFreq", DeprecationWarning)
+        warnings.warn("Please use Gf(mesh=MeshImFreq(..), ..) instead of GfImFreq", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 1025, beta = None, statistic = 'Fermion', indices=None):
             if mesh is None:
