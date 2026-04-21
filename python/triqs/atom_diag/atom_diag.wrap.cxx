@@ -112,6 +112,10 @@ static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{
 static auto const _c2py_fun_7 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.get_subspace_dims(); }, "self")};
 
+// get_unitary_matrix
+static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod([](_c2py_cls_0 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
+
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
 Subspace-to-subspace connections for fundamental operator :math:`C`
 
@@ -213,6 +217,9 @@ sp_index : {par_0}
 static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC(
 Get the dimensions of all subspaces
 )DOC");
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC(
+Unitary matrix for given subspace that transform from Fock states to eigenstates
+)DOC");
 
 // ----- Method table ----
 template <>
@@ -225,6 +232,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {"get_eigenvalue", (PyCFunction)c2py::pyfkw<_c2py_fun_5>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_5.c_str()},
    {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
    {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
+   {"get_unitary_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_0>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_h5<_c2py_cls_0>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_h5<_c2py_cls_0>, METH_O, ""},
@@ -325,42 +333,46 @@ qn_vector : {par_2}
                      {c2py::python_typename<const triqs::hilbert_space::fundamental_operator_set &>()},
                      {c2py::python_typename<const std::vector<triqs::atom_diag::atom_diag<true>::many_body_op_t> &>()}});
 // c_connection
-static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.c_connection(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // c_matrix
-static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.c_matrix(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // cdag_connection
-static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.cdag_connection(op_linear_index, sp_index); },
    "self", "op_linear_index", "sp_index")};
 
 // cdag_matrix
-static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int op_linear_index, int sp_index) -> decltype(auto) { return self.cdag_matrix(op_linear_index, sp_index); }, "self",
    "op_linear_index", "sp_index")};
 
 // flatten_subspace_index
-static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int sp_index, int i) -> decltype(auto) { return self.flatten_subspace_index(sp_index, i); }, "self", "sp_index", "i")};
 
 // get_eigenvalue
-static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 const &self, int sp_index, int i) -> decltype(auto) { return self.get_eigenvalue(sp_index, i); }, "self", "sp_index", "i")};
 
 // get_subspace_dim
-static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_15 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_1 const &self, int sp_index) -> decltype(auto) { return self.get_subspace_dim(sp_index); }, "self", "sp_index")};
 
 // get_subspace_dims
-static auto const _c2py_fun_15 =
+static auto const _c2py_fun_16 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.get_subspace_dims(); }, "self")};
 
-static const auto _c2py_doc_8  = _c2py_fun_8.doc(R"DOC(
+// get_unitary_matrix
+static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod([](_c2py_cls_1 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
+
+static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC(
 Subspace-to-subspace connections for fundamental operator :math:`C`
 
 Parameters
@@ -376,7 +388,7 @@ Returns
    The index of the final subspace.
 )DOC",
                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC(
+static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC(
 Matrix block for fundamental operator :math:`C`
 
 Parameters
@@ -391,9 +403,9 @@ Returns
 {ret_0}
    The index of the final subspace.
 )DOC",
-                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
-                                                 {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
-static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC(
+                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
+                                                  {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
+static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
 Subspace-to-subspace connections for fundamental operator :math:`C^`
 *
 
@@ -410,7 +422,7 @@ Returns
    The index of the final subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
+static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC(
 Matrix block for fundamental operator :math:`C^`
 
 Parameters
@@ -427,7 +439,7 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                   {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
-static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC(
+static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
 Returns the state index in the full Hilbert space given a subspace index and an inner index
 
 Parameters
@@ -438,7 +450,7 @@ i : {par_1}
    State index within the subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
-static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
+static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
 Get the i-th eigenvalue of subspace sp_index
 
 Parameters
@@ -449,7 +461,7 @@ i : {par_1}
    State index within the subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
-static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
+static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
 The dimension of a subspace
 
 Parameters
@@ -458,21 +470,25 @@ sp_index : {par_0}
    Index of the invariant subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}});
-static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
+static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC(
 Get the dimensions of all subspaces
+)DOC");
+static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC(
+Unitary matrix for given subspace that transform from Fock states to eigenstates
 )DOC");
 
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
-   {"c_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
-   {"c_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
-   {"cdag_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
-   {"cdag_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
-   {"flatten_subspace_index", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
-   {"get_eigenvalue", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
-   {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
-   {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"c_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
+   {"c_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"cdag_connection", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
+   {"cdag_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
+   {"flatten_subspace_index", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
+   {"get_eigenvalue", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"get_subspace_dim", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"get_subspace_dims", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
+   {"get_unitary_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_1>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_h5<_c2py_cls_1>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_h5<_c2py_cls_1>, METH_O, ""},
@@ -525,7 +541,7 @@ finite fermionic systems of a moderate size.)DOC"
 // ==================== module functions ====================
 
 // act
-static auto const _c2py_fun_16 =
+static auto const _c2py_fun_18 =
    c2py::dispatcher_f_kw_t{c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                                          const typename triqs::atom_diag::atom_diag<false>::full_hilbert_space_state_t &st,
                                          const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::act<false>(op, st, atom); },
@@ -536,14 +552,14 @@ static auto const _c2py_fun_16 =
                                       "op", "st", "atom")};
 
 // atomic_density_matrix
-static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::atom_diag::atom_diag<0> &atom, double beta) { return triqs::atom_diag::atomic_density_matrix<false>(atom, beta); },
               "atom", "beta"),
    c2py::cfun([](const triqs::atom_diag::atom_diag<1> &atom, double beta) { return triqs::atom_diag::atomic_density_matrix<true>(atom, beta); },
               "atom", "beta")};
 
 // atomic_g_iw
-static auto const _c2py_fun_18 =
+static auto const _c2py_fun_20 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_iw,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -558,7 +574,7 @@ static auto const _c2py_fun_18 =
                               "atom", "beta", "gf_struct", "n_iw", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_l
-static auto const _c2py_fun_19 =
+static auto const _c2py_fun_21 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_l,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -573,7 +589,7 @@ static auto const _c2py_fun_19 =
                               "atom", "beta", "gf_struct", "n_l", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_tau
-static auto const _c2py_fun_20 =
+static auto const _c2py_fun_22 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct, int n_tau,
                                  const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -588,7 +604,7 @@ static auto const _c2py_fun_20 =
                               "atom", "beta", "gf_struct", "n_tau", "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // atomic_g_w
-static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
    c2py::cfun(
       [](const triqs::atom_diag::atom_diag<0> &atom, double beta, const triqs::gfs::gf_struct_t &gf_struct,
          const std::pair<double, double> &energy_window, int n_w, double broadening, const triqs::atom_diag::excluded_states_t &excluded_states) {
@@ -603,14 +619,14 @@ static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{
       "atom", "beta", "gf_struct", "energy_window", "n_w", "broadening"_a = 0, "excluded_states"_a = triqs::atom_diag::excluded_states_t{})};
 
 // partition_function
-static auto const _c2py_fun_22 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::atom_diag::atom_diag<0> &atom, double beta) { return triqs::atom_diag::partition_function<false>(atom, beta); }, "atom",
               "beta"),
    c2py::cfun([](const triqs::atom_diag::atom_diag<1> &atom, double beta) { return triqs::atom_diag::partition_function<true>(atom, beta); }, "atom",
               "beta")};
 
 // quantum_number_eigenvalues
-static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::quantum_number_eigenvalues<false>(op, atom); },
               "op", "atom"),
@@ -619,7 +635,7 @@ static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
               "op", "atom")};
 
 // quantum_number_eigenvalues_checked
-static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::quantum_number_eigenvalues_checked<false>(op, atom); },
               "op", "atom"),
@@ -628,7 +644,7 @@ static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{
               "op", "atom")};
 
 // trace_rho_op
-static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const typename triqs::atom_diag::atom_diag<false>::block_matrix_t &density_matrix,
                  const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &op,
                  const triqs::atom_diag::atom_diag<0> &atom) { return triqs::atom_diag::trace_rho_op<false>(density_matrix, op, atom); },
@@ -638,7 +654,7 @@ static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
                  const triqs::atom_diag::atom_diag<1> &atom) { return triqs::atom_diag::trace_rho_op<true>(density_matrix, op, atom); },
               "density_matrix", "op", "atom")};
 
-static const auto _c2py_doc_16 = _c2py_fun_16.doc(
+static const auto _c2py_doc_18 = _c2py_fun_18.doc(
    R"DOC(
 Act with operator `op` on state `st`
 
@@ -666,7 +682,7 @@ Returns
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<typename triqs::atom_diag::atom_diag<false>::full_hilbert_space_state_t>(),
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::full_hilbert_space_state_t>()});
-static const auto _c2py_doc_17 = _c2py_fun_17.doc(
+static const auto _c2py_doc_19 = _c2py_fun_19.doc(
    R"DOC(
 The atomic density matrix
 
@@ -689,7 +705,7 @@ Returns
     {c2py::python_typename<double>()}},
    {c2py::python_typename<typename triqs::atom_diag::atom_diag<false>::block_matrix_t>(),
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::block_matrix_t>()});
-static const auto _c2py_doc_18 = _c2py_fun_18.doc(
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(
    R"DOC(
 The atomic Matsubara Green's function, possibly with excluded states (none by default)
 
@@ -717,7 +733,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imfreq>>()});
-static const auto _c2py_doc_19 = _c2py_fun_19.doc(
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(
    R"DOC(
 The atomic Green's function in Legendre basis, possibly with excluded states (none by default)
 
@@ -745,7 +761,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::legendre>>()});
-static const auto _c2py_doc_20 = _c2py_fun_20.doc(
+static const auto _c2py_doc_22 = _c2py_fun_22.doc(
    R"DOC(
 The atomic imaginary time Green's function, possibly with excluded states (none by default)
 
@@ -773,7 +789,7 @@ Returns
     {c2py::python_typename<int>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imtime>>()});
-static const auto _c2py_doc_21 = _c2py_fun_21.doc(
+static const auto _c2py_doc_23 = _c2py_fun_23.doc(
    R"DOC(
 The atomic retarded Green's function, possibly with excluded states (none by default)
 
@@ -807,7 +823,7 @@ Returns
     {c2py::python_typename<double>()},
     {c2py::python_typename<const triqs::atom_diag::excluded_states_t &>()}},
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::refreq>>()});
-static const auto _c2py_doc_22 = _c2py_fun_22.doc(
+static const auto _c2py_doc_24 = _c2py_fun_24.doc(
    R"DOC(
 The atomic partition function
 
@@ -826,7 +842,7 @@ Returns
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()}},
    {c2py::python_typename<double>()});
-static const auto _c2py_doc_23 = _c2py_fun_23.doc(
+static const auto _c2py_doc_25 = _c2py_fun_25.doc(
    R"DOC(
 Compute values of a given quantum number for all eigenstates
 
@@ -846,7 +862,7 @@ Returns
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<std::vector<std::vector<double>>>()});
-static const auto _c2py_doc_24 = _c2py_fun_24.doc(
+static const auto _c2py_doc_26 = _c2py_fun_26.doc(
    R"DOC(
 Compute values of a given quantum number for all eigenstates
 
@@ -869,7 +885,7 @@ Returns
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
    {c2py::python_typename<std::vector<std::vector<double>>>()});
-static const auto _c2py_doc_25 = _c2py_fun_25.doc(
+static const auto _c2py_doc_27 = _c2py_fun_27.doc(
    R"DOC(
 Compute Tr (op * density_matrix)
 
@@ -899,16 +915,16 @@ Returns
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"act", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
-   {"atomic_density_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
-   {"atomic_g_iw", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
-   {"atomic_g_l", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
-   {"atomic_g_tau", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
-   {"atomic_g_w", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
-   {"partition_function", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
-   {"quantum_number_eigenvalues", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
-   {"quantum_number_eigenvalues_checked", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
-   {"trace_rho_op", (PyCFunction)c2py::pyfkw<_c2py_fun_25>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_25.c_str()},
+   {"act", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
+   {"atomic_density_matrix", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
+   {"atomic_g_iw", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"atomic_g_l", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"atomic_g_tau", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
+   {"atomic_g_w", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
+   {"partition_function", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
+   {"quantum_number_eigenvalues", (PyCFunction)c2py::pyfkw<_c2py_fun_25>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_25.c_str()},
+   {"quantum_number_eigenvalues_checked", (PyCFunction)c2py::pyfkw<_c2py_fun_26>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_26.c_str()},
+   {"trace_rho_op", (PyCFunction)c2py::pyfkw<_c2py_fun_27>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_27.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

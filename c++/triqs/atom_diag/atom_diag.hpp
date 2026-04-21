@@ -205,7 +205,7 @@ namespace triqs {
       }
 
       /// Unitary matrix for given subspace that transform from Fock states to eigenstates
-      C2PY_IGNORE matrix<scalar_t> const &get_unitary_matrix(int sp_index) const { return eigensystems[sp_index].unitary_matrix; }
+      matrix<scalar_t> const &get_unitary_matrix(int sp_index) const { return eigensystems[sp_index].unitary_matrix; }
 
       /// Unitary matrices that transform from Fock states to eigenstates
       C2PY_PROPERTY_GET(unitary_matrices) std::vector<matrix<scalar_t>> get_unitary_matrices() const {
