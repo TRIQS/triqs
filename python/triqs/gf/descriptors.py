@@ -87,27 +87,21 @@ semicircle
     def __call__(self,G):
         D = self.half_bandwidth
         mu = self.chem_potential
+        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
         if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
-            Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex128)
             def f(om_):
-                om = om_ + mu
-                return g_semicirc_iw(om, D) * Id
+                return g_semicirc_iw(om_ + mu, D) * Id
         elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             def f(om_):
-                om = om_.real + mu
-                return g_semicirc_w(om, D)
+                return g_semicirc_w(om_.real + mu, D)
         elif type(G.mesh) in [MeshImTime, MeshDLRImTime]:
             if mu != 0.:
                 raise NotImplementedError("SemiCircular on imaginary-time mesh with non-zero chemical potential is not supported")
-            Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
-            tau = numpy.array([t.value for t in G.mesh])
-            beta = G.mesh.beta
-            vals = g_semicirc_tau(tau, beta, D)
-            for n in range(len(tau)):
-                G.data[n,...] = vals[n] * Id
+            vals = g_semicirc_tau(G.mesh.values(), G.mesh.beta, D)
+            G.data[:] = numpy.multiply.outer(vals, Id)
             return G
         else:
-            raise TypeError("SemiCircular: mesh type not supported: " + str(type(G.mesh)))
+            raise TypeError(f"SemiCircular: mesh type not supported: {type(G.mesh)}")
 
         Function(f)(G)
         return G
