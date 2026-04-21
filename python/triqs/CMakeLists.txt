@@ -9,29 +9,22 @@ endforeach()
 configure_file(version.py.in version.py)
 configure_file(utility/mpi.py.in utility/mpi.py)
 
-# install Python files
-set(python_sources
-  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-  ${CMAKE_CURRENT_BINARY_DIR}/version.py
-)
-install (FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
+# install all source Python files under triqs/ (recursive; skips generator inputs)
+install(DIRECTORY . DESTINATION ${TRIQS_PYTHON_LIB_DEST}
+        FILES_MATCHING PATTERN "*.py"
+        PATTERN "*.inst.py" EXCLUDE)
 
-# ---------------------------------------------
+# install generated Python files
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/utility)
 
-add_subdirectory(atom_diag)
-add_subdirectory(dos)
-add_subdirectory(fit)
-add_subdirectory(gfs)
-add_subdirectory(mesh)
-add_subdirectory(gf)
-add_subdirectory(lattice)
-add_subdirectory(operators)
-add_subdirectory(plot)
-add_subdirectory(mc_tools)
-add_subdirectory(random_generator)
-add_subdirectory(stat)
-add_subdirectory(sumk)
-add_subdirectory(utility)
+# install generated headers consumed under #ifdef C2PY_INCLUDED by the triqs/<mod>.hpp umbrella headers.
+# Public wrap.hxx files live at one level of depth (atom_diag/, mesh/, ...); deeper files under
+# gfs/gf_factories/, gfs/gf_fnt/, gfs/wrapped_aux/, and operators/util/ are module-private and not shipped.
+install(DIRECTORY . DESTINATION include/triqs
+        FILES_MATCHING PATTERN "*.wrap.hxx"
+        PATTERN "gfs" EXCLUDE
+        PATTERN "util" EXCLUDE)
 
 # ---------------------------------------------
 
