@@ -456,7 +456,7 @@ namespace triqs {
        * @param L Functor to apply to each monomial
        * @return Transformed operator
        */
-      template <typename w_max> friend many_body_operator_generic transform(many_body_operator_generic const &op, w_max &&L) {
+      template <typename Lambda> friend many_body_operator_generic transform(many_body_operator_generic const &op, Lambda &&L) {
         many_body_operator_generic res;
         using triqs::utility::is_zero;
         for (auto const &x : op) {
