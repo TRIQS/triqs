@@ -465,6 +465,7 @@ class Gf(metaclass=AddMethod):
         else:
             if self._target_rank == 2:
                 if not isinstance(arg, np.ndarray):
+                    assert self._data.shape[-1] == self._data.shape[-2], 'Adding a scalar to a Gf with non-square target_shape is not supported'
                     n = self._data.shape[-1]
                     arg = arg * np.eye(n, dtype=self._data.dtype)
                 self._data[:] += arg
@@ -494,6 +495,7 @@ class Gf(metaclass=AddMethod):
         else:
             if self._target_rank == 2:
                 if not isinstance(arg, np.ndarray):
+                    assert self._data.shape[-1] == self._data.shape[-2], 'Subtracting a scalar from a Gf with non-square target_shape is not supported'
                     n = self._data.shape[-1]
                     arg = arg * np.eye(n, dtype=self._data.dtype)
                 self._data[:] -= arg
