@@ -93,7 +93,7 @@ semicircle
                 return g_semicirc_iw(om_ + mu, D) * Id
         elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             def f(om_):
-                return g_semicirc_w(om_.real + mu, D)
+                return g_semicirc_w(om_.real + mu, D) * Id
         elif type(G.mesh) in [MeshImTime, MeshDLRImTime]:
             if mu != 0.:
                 raise NotImplementedError("SemiCircular on imaginary-time mesh with non-zero chemical potential is not supported")
