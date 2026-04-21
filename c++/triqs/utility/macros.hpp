@@ -71,4 +71,4 @@ namespace triqs {
 #define C2PY_PROPERTY_GET(X)
 #define C2PY_PROPERTY_SET(X)
 #define C2PY_DEPRECATED_PARAMETER_NAME(...)
-#endif // C2PY_INCLUDE
+#endif // C2PY_INCLUDED
