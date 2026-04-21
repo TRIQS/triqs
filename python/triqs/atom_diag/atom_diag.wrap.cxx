@@ -240,10 +240,10 @@ static constexpr auto prop_doc_5  = R"DOC(Get the Hamiltonian used at constructi
 static constexpr auto prop_doc_6  = R"DOC(Number of invariant subspaces)DOC";
 static constexpr auto prop_doc_7  = R"DOC(A vector of all the quantum numbers, grouped by subspace)DOC";
 static constexpr auto prop_doc_8  = R"DOC(Unitary matrices that transform from Fock states to eigenstates)DOC";
-static constexpr auto prop_doc_9  = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
-static constexpr auto prop_doc_10 = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
+static constexpr auto prop_doc_9  = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
 
 This vector is written in the eigenbasis of the Hamiltonian.)DOC";
+static constexpr auto prop_doc_10 = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
 
 // ----- Member and property table ----
 
@@ -262,9 +262,9 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
     nullptr},
    {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_unitary_matrices)>, nullptr, prop_doc_8,
     nullptr},
-   {"vacuum_space_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_subspace_index)>, nullptr,
-    prop_doc_9, nullptr},
-   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_state)>, nullptr, prop_doc_10, nullptr},
+   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_state)>, nullptr, prop_doc_9, nullptr},
+   {"vacuum_subspace_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<false>::get_vacuum_subspace_index)>, nullptr,
+    prop_doc_10, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
@@ -488,10 +488,10 @@ static constexpr auto prop_doc_16 = R"DOC(Get the Hamiltonian used at constructi
 static constexpr auto prop_doc_17 = R"DOC(Number of invariant subspaces)DOC";
 static constexpr auto prop_doc_18 = R"DOC(A vector of all the quantum numbers, grouped by subspace)DOC";
 static constexpr auto prop_doc_19 = R"DOC(Unitary matrices that transform from Fock states to eigenstates)DOC";
-static constexpr auto prop_doc_20 = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
-static constexpr auto prop_doc_21 = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
+static constexpr auto prop_doc_20 = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
 
 This vector is written in the eigenbasis of the Hamiltonian.)DOC";
+static constexpr auto prop_doc_21 = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
 
 // ----- Member and property table ----
 
@@ -510,9 +510,9 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {
     nullptr},
    {"unitary_matrices", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_unitary_matrices)>, nullptr, prop_doc_19,
     nullptr},
-   {"vacuum_space_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_subspace_index)>, nullptr,
-    prop_doc_20, nullptr},
-   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_state)>, nullptr, prop_doc_21, nullptr},
+   {"vacuum_state", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_state)>, nullptr, prop_doc_20, nullptr},
+   {"vacuum_subspace_index", c2py::getter_from_method<c2py::castmc<>(&triqs::atom_diag::atom_diag<true>::get_vacuum_subspace_index)>, nullptr,
+    prop_doc_21, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>

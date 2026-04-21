@@ -255,7 +255,7 @@ namespace triqs {
       C2PY_PROPERTY_GET(gs_energy) double get_gs_energy() const { return gs_energy; }
 
       /// Returns invariant subspace containing the vacuum state
-      C2PY_PROPERTY_GET(vacuum_space_index) long get_vacuum_subspace_index() const { return vacuum_subspace_index; }
+      C2PY_PROPERTY_GET(vacuum_subspace_index) long get_vacuum_subspace_index() const { return vacuum_subspace_index; }
 
       /// Returns the vacuum state as a vector in the full Hilbert space
       /**
