@@ -306,7 +306,7 @@ namespace triqs::mesh {
     [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
     /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
-    [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return this->dlr_->freq; }
+    [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
     [[nodiscard]] C2PY_IGNORE auto const &dlr_it() const { return dlr_->imt; }
