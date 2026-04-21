@@ -304,7 +304,7 @@ namespace triqs::gfs {
 
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
     for (auto iw : g.mesh())
-      if (iw.n >= n_min or iw.n < -n_min) g[iw] = tail_eval(tail, iw);
+      if (iw.n >= n_min or iw.n < -n_min) g[iw] = mesh::detail::tail_eval(tail, iw);
   }
 
   template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
