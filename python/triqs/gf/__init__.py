@@ -4,7 +4,7 @@ import sys
 warnings.warn(
     "The triqs.gf module has been renamed to triqs.gfs. "
     "Please update your imports. triqs.gf will be removed in a future version.",
-    DeprecationWarning, stacklevel=2
+    FutureWarning, stacklevel=2
 )
 
 import triqs.gfs

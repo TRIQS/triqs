@@ -52,7 +52,7 @@ class GfImTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        warnings.warn("Please use Gf(mesh=MeshImTime(..), ..) instead of GfImTime", DeprecationWarning)
+        warnings.warn("Please use Gf(mesh=MeshImTime(..), ..) instead of GfImTime", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 10000, beta = None, statistic = 'Fermion', indices=None):
             if mesh is None:

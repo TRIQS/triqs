@@ -143,7 +143,7 @@ class Gf(metaclass=AddMethod):
 
             # indices backward compat layer
             if indices is not None:
-                warnings.warn('The use of string indices is no longer supported, converting to target_shape instead.', DeprecationWarning)
+                warnings.warn('The use of string indices is no longer supported, converting to target_shape instead.', FutureWarning)
                 assert target_shape is None, 'target_shape must be None if indices is not None'
                 if isinstance(indices[0], (list, range)):
                     target_shape = [len(li) for li in indices]
@@ -249,7 +249,7 @@ class Gf(metaclass=AddMethod):
 
     @property
     def indices(self):
-        warnings.warn('Gf.indices is deprecated, use Gf.target_shape', DeprecationWarning)
+        warnings.warn('Gf.indices is deprecated, use Gf.target_shape', FutureWarning)
         """(int, ...) : Deprecated. Use target_indices instead."""
         return [range(d) for d in self.target_shape]
 

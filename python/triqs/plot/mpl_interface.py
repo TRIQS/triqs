@@ -58,7 +58,7 @@ def oplotr(obj, *opt_list, **opt_dict):
     """
     Same as oplot, but enforce option mode='R'
     """
-    warnings.warn("oplotr is deprecated, use oplot(G.real, ...) instead", DeprecationWarning)
+    warnings.warn("oplotr is deprecated, use oplot(G.real, ...) instead", FutureWarning)
     opt_dict['mode'] = 'R'
     oplot(obj, *opt_list, **opt_dict)
 
@@ -67,12 +67,12 @@ def oploti(obj, *opt_list, **opt_dict):
     """
     Same as oplot, but enforce option mode='I'
     """
-    warnings.warn("oploti is deprecated, use oplot(G.imag, ...) instead", DeprecationWarning)
+    warnings.warn("oploti is deprecated, use oplot(G.imag, ...) instead", FutureWarning)
     opt_dict['mode'] = 'I'
     oplot(obj, *opt_list, **opt_dict)
 
 def __axoplot_impl(top, xlabel, ylabel, legend, obj, xticks, title, *opt_list, **opt_dict):
-    warnings.warn("ax.oplot is deprecated, use oplot(obj, axes=ax) instead", DeprecationWarning, stacklevel=2)
+    warnings.warn("ax.oplot is deprecated, use oplot(obj, axes=ax) instead", FutureWarning, stacklevel=2)
     return __oplot_impl(top, xlabel, ylabel, legend, obj, xticks, title, *opt_list, **opt_dict)
 
 mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __axoplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, self.set_xticks, self.set_title, *opt_list, **opt_dict)

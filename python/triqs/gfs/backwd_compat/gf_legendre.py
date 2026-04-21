@@ -52,7 +52,7 @@ class GfLegendre(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        warnings.warn("Please use Gf(mesh=MeshLegendre(..), ..) instead of GfLegendre", DeprecationWarning)
+        warnings.warn("Please use Gf(mesh=MeshLegendre(..), ..) instead of GfLegendre", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 30, beta = None, statistic = 'Fermion', indices=None):
             if mesh is None:

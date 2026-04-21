@@ -52,7 +52,7 @@ class GfReTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        warnings.warn("Please use Gf(mesh=MeshReTime(..), ..) instead of GfReTime", DeprecationWarning)
+        warnings.warn("Please use Gf(mesh=MeshReTime(..), ..) instead of GfReTime", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 10000, window = None, indices=None):
             if mesh is None:

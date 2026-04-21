@@ -99,7 +99,7 @@ class TBLattice(object):
 
         if hopping is not None:
             warnings.warn(
-                "Keyword hopping in TBLattice.__init__ deprecated; use hoppings instead.", DeprecationWarning)
+                "Keyword hopping in TBLattice.__init__ deprecated; use hoppings instead.", FutureWarning)
             hoppings = hopping
 
         if orbital_names is None:
