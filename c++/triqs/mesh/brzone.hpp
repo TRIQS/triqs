@@ -412,7 +412,7 @@ namespace triqs::mesh {
     [[nodiscard]] C2PY_PROPERTY_GET(units) auto units() const { return nda::matrix_const_view<double>{units_}; }
 
     /// Get the matrix \f$ \left( \tilde{\mathbf{B}}^T \right)^{-1} \f$.
-    [[nodiscard]] C2PY_IGNORE auto units_inv() const { return nda::matrix_const_view<double>{units_inv_}; }
+    [[nodiscard]] C2PY_PROPERTY_GET(units_inv) auto units_inv() const { return nda::matrix_const_view<double>{units_inv_}; }
 
     /// Get the underlying Brillouin zone.
     [[nodiscard]] C2PY_PROPERTY_GET(bz) auto const &bz() const noexcept { return bz_; }
@@ -430,7 +430,7 @@ namespace triqs::mesh {
      * @return Corresponding index \f$ \mathbf{n} \f$ in the first BZ such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
      * \mathbf{N} \mathbf{m} \f$.
      */
-    [[nodiscard]] C2PY_IGNORE index_t index_modulo(index_t const &n_tilde) const {
+    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
       return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
     }
 

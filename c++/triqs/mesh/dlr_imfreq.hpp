@@ -312,7 +312,7 @@ namespace triqs::mesh {
     [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get a `std::pair` containing the smallest and largest Matsubara frequency in the mesh.
-    [[nodiscard]] C2PY_IGNORE auto min_max_frequencies() const noexcept {
+    [[nodiscard]] auto min_max_frequencies() const noexcept {
       return std::pair<matsubara_freq, matsubara_freq>{(*this)(0).value(), (*this)(size() - 1).value()};
     }
 
