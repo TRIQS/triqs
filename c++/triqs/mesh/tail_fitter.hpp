@@ -42,14 +42,16 @@
 #include <vector>
 
 namespace triqs::mesh {
+  // Forward declaration.
+  class imfreq;
+} // namespace triqs::mesh
+
+namespace triqs::mesh::detail {
 
   /**
    * @addtogroup triqs-meshes-tailfitting
    * @{
    */
-
-  // Forward declaration.
-  class imfreq;
 
   /**
    * @brief Construct a Vandermonde matrix.
@@ -74,7 +76,7 @@ namespace triqs::mesh {
    * @param q Expansion order \f$ q \f$.
    * @return Vandermonde matrix \f$ V \f$.
    */
-  C2PY_IGNORE inline auto vander(std::vector<std::complex<double>> const &z_pts, int q) {
+  inline auto vander(std::vector<std::complex<double>> const &z_pts, int q) {
     nda::matrix<std::complex<double>> V(z_pts.size(), q + 1);
     for (auto [i, z_i] : itertools::enumerate(z_pts)) {
       auto z = std::complex<double>{1};
@@ -121,6 +123,10 @@ namespace triqs::mesh {
       return compute(std::complex<double>{0});
     }
   }
+
+} // namespace triqs::mesh::detail
+
+namespace triqs::mesh {
 
   /**
    * @brief Fit the high- and low-frequency tail of a function \f$ f \f$ defined on a triqs::mesh::refreq or a
@@ -315,7 +321,7 @@ namespace triqs::mesh {
         std::vector<std::complex<double>> z_pts;
         z_pts.reserve(fit_idxs_.size());
         for (long n : fit_idxs_) z_pts.push_back(z_max / m.to_value(n));
-        V_ = vander(z_pts, q_);
+        V_ = detail::vander(z_pts, q_);
       }
 
       // check if we have enough data points for the least square procedure (p > n_A + 1)
