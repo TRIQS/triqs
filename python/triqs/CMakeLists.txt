@@ -69,6 +69,10 @@ foreach(module_src ${module_sources})
 
   # target properties
   target_link_libraries(${module_name} PRIVATE triqs c2py::c2py)
+  # Python module TUs activate C2PY_INCLUDED (via <c2py/c2py.hpp>), which in turn
+  # pulls triqs/<mod>/<name>.wrap.hxx from python/ via the triqs/ umbrella headers.
+  # Scope the python/ include to these modules instead of exposing it on triqs itself.
+  target_include_directories(${module_name} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/python>)
   set_target_properties(${module_name} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${module_dir}
     CXX_VISIBILITY_PRESET hidden
