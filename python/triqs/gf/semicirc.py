@@ -42,7 +42,8 @@ def g_semicirc_iw(iw, D):
     G : complex or ndarray
     """
     iw = np.asarray(iw, dtype=complex)
-    return (2.0 / D**2) * (iw - 1j * np.sign(iw.imag) * np.sqrt(D**2 + (iw / 1j)**2))
+    w = iw.imag
+    return (2.0 / D**2) * (iw - 1j * np.sign(w) * np.sqrt(D**2 + w**2))
 
 
 # ── Real frequency ──────────────────────────────────────────────────────────
