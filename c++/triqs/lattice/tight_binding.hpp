@@ -19,7 +19,7 @@
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell, Thomas Ayral
 
 #pragma once
-#include "../lattice/brillouin_zone.hpp"
+#include "./brillouin_zone.hpp"
 #include "../mesh/brzone.hpp"
 #include "../gfs.hpp"
 #include "../utility/macros.hpp"
@@ -29,9 +29,7 @@
 #include <nda/stdutil/complex.hpp>
 
 namespace triqs {
-  namespace tb {
-
-    using namespace lattice;
+  namespace lattice {
 
     /**
      * @brief An insertion-order-preserving hopping dictionary type.
@@ -246,5 +244,5 @@ namespace triqs {
     std::pair<nda::array<double, 1>, nda::array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
     std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps,
                                                                       int ndiv);
-  } // namespace tb
+  } // namespace lattice
 } // namespace triqs

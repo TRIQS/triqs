@@ -20,10 +20,10 @@
 #include "tight_binding.hpp"
 #include <nda/algorithms.hpp>
 #include <nda/linalg/eigh.hpp>
-#include "../lattice/grid_generator.hpp"
+#include "./grid_generator.hpp"
 
 namespace triqs {
-  namespace tb {
+  namespace lattice {
 
     using namespace arrays;
 
@@ -62,7 +62,7 @@ namespace triqs {
 
     //------------------------------------------------------
 
-    tight_binding::tight_binding(bravais_lattice bl, lattice::hopping_dict hoppings)
+    tight_binding::tight_binding(bravais_lattice bl, hopping_dict hoppings)
        : tight_binding(std::move(bl), std::move(hoppings.displ_vec), std::move(hoppings.overlap_mat_vec)) {}
 
     //------------------------------------------------------
@@ -241,5 +241,5 @@ namespace triqs {
       return eval;
     }
 
-  } // namespace tb
+  } // namespace lattice
 } // namespace triqs
