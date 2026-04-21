@@ -71,7 +71,7 @@ namespace triqs::mesh::detail {
    */
   template <typename M, typename T>
     requires std::totally_ordered<T>
-  class C2PY_IGNORE linear {
+  class linear {
     public:
     /// Value type.
     using value_t = T;
@@ -91,7 +91,7 @@ namespace triqs::mesh::detail {
      * Arithmetic operations are defined for mesh points and scalars of the underlying value type. The operations are
      * performed between the value \f$ m \f$ of the mesh point and the given scalar.
      */
-    class C2PY_IGNORE mesh_point_t {
+    class mesh_point_t {
       public:
       /// Parent mesh type.
       using mesh_t = M;
@@ -150,7 +150,7 @@ namespace triqs::mesh::detail {
     /**
      * @brief Default construct an empty linear mesh of size \f$ N = 0 \f$.
      */
-    C2PY_IGNORE linear() = default;
+    linear() = default;
 
     /**
      * @brief Construct a linear mesh on the interval \f$ [a, b] \f$ of a given size \f$ N \geq 0 \f$.
@@ -159,7 +159,7 @@ namespace triqs::mesh::detail {
      * @param b Upper bound \f$ b \f$ of the interval.
      * @param N Size of the mesh.
      */
-    C2PY_IGNORE linear(value_t a, value_t b, long N) : N_(N), a_(a), b_(b) {
+    linear(value_t a, value_t b, long N) : N_(N), a_(a), b_(b) {
       EXPECTS(N_ >= 0);
       if (N_ == 1) {
         EXPECTS(a_ == b_);
