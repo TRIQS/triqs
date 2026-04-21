@@ -4,10 +4,10 @@ and SemiCircular descriptor on DLR imaginary-time meshes."""
 import numpy as np
 import unittest
 
-from triqs.gf import Gf, make_gf_dlr
-from triqs.gf.meshes import MeshDLRImTime, MeshDLRImFreq, MeshImFreq, MeshImTime, MeshReFreq
-from triqs.gf.descriptors import SemiCircular
-from triqs.gf.semicirc import g_semicirc_tau, g_semicirc_tau_adapquad, g_semicirc_iw
+from triqs.gfs import Gf, make_gf_dlr
+from triqs.gfs.descriptors import SemiCircular
+from triqs.gfs.semicirc import g_semicirc_tau, g_semicirc_tau_adapquad, g_semicirc_iw
+from triqs.mesh import MeshDLRImTime, MeshDLRImFreq, MeshImFreq, MeshImTime, MeshReFreq
 
 
 class test_g_semicirc_tau(unittest.TestCase):
