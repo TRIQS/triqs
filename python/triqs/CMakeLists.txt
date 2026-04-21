@@ -23,8 +23,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py DESTINATION ${TRIQS_PYT
 # gfs/gf_factories/, gfs/gf_fnt/, gfs/wrapped_aux/, and operators/util/ are module-private and not shipped.
 install(DIRECTORY . DESTINATION include/triqs
         FILES_MATCHING PATTERN "*.wrap.hxx"
-        PATTERN "gfs" EXCLUDE
-        PATTERN "util" EXCLUDE)
+        PATTERN "wrapped_aux" EXCLUDE)
 
 # ---------------------------------------------
 
