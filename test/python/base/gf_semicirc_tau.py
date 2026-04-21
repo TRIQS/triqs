@@ -5,7 +5,7 @@ import numpy as np
 import unittest
 
 from triqs.gf import Gf, make_gf_dlr
-from triqs.gf.meshes import MeshDLRImTime, MeshDLRImFreq, MeshImFreq
+from triqs.gf.meshes import MeshDLRImTime, MeshDLRImFreq, MeshImFreq, MeshImTime, MeshReFreq
 from triqs.gf.descriptors import SemiCircular
 from triqs.gf.semicirc import g_semicirc_tau, g_semicirc_tau_adapquad, g_semicirc_iw
 
@@ -54,6 +54,29 @@ class test_g_semicirc_tau(unittest.TestCase):
         for j, tau in enumerate(test_taus):
             self.assertAlmostEqual(g_c(tau), ref_tau[j], delta=10*eps,
                                    msg=f"iw->dlr->tau failed at tau={tau}")
+
+    def test_matrix_target_is_diagonal(self):
+        """SemiCircular on matrix-valued Gfs must produce a diagonal with
+        off-diagonals identically zero on every supported mesh."""
+        beta, D = 10., 1.
+        meshes = {
+            'ImFreq':  MeshImFreq(beta, 'Fermion', 50),
+            'ImTime':  MeshImTime(beta, 'Fermion', 101),
+            'ReFreq':  MeshReFreq(w_min=-2., w_max=2., n_w=51),
+        }
+        for name, mesh in meshes.items():
+            g_mat = Gf(mesh=mesh, target_shape=[2, 2])
+            g_mat << SemiCircular(D)
+            g_sca = Gf(mesh=mesh, target_shape=[])
+            g_sca << SemiCircular(D)
+
+            diag = np.einsum('nii->ni', g_mat.data)
+            off = g_mat.data - np.einsum('ni,ij->nij', diag, np.eye(2))
+            self.assertLess(np.max(np.abs(off)), 1e-14,
+                            f"{name}: off-diagonals not zero")
+            for i in range(2):
+                np.testing.assert_allclose(g_mat.data[:, i, i], g_sca.data,
+                                           err_msg=f"{name}: diagonal[{i}] differs from scalar")
 
 if __name__ == '__main__':
     unittest.main()
