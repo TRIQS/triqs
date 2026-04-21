@@ -349,7 +349,7 @@ namespace triqs::mesh {
      * @return Corresponding index \f$ \mathbf{n} \f$ in the supercell such that \f$ \tilde{\mathbf{n}} = \mathbf{n} +
      * \mathbf{N} \mathbf{m} \f$.
      */
-    [[nodiscard]] C2PY_IGNORE index_t index_modulo(index_t const &n_tilde) const {
+    [[nodiscard]] index_t index_modulo(index_t const &n_tilde) const {
       return {positive_modulo(n_tilde[0], dims_[0]), positive_modulo(n_tilde[1], dims_[1]), positive_modulo(n_tilde[2], dims_[2])};
     }
 
