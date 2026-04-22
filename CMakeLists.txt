@@ -101,9 +101,13 @@ endif()
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 
 #---------------------------------------------------------------------
-# Disable Compiler Extensions
+# Global Compilation Settings
 #---------------------------------------------------------------------
 
+# Export the list of compile-commands into compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Disable compiler extensions
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #---------------------------------------------------------------------
