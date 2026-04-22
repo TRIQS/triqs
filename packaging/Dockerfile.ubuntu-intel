@@ -1,4 +1,4 @@
-FROM intel/oneapi-hpckit:2025.2.0-0-devel-ubuntu24.04
+FROM intel/oneapi-hpckit:2025.3.1-0-devel-ubuntu24.04
 ARG LLVM=19
 
 RUN apt-get update && apt-get install -y lsb-release wget software-properties-common && \
