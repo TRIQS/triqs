@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
       libclang-${LLVM}-dev \
       libc++-${LLVM}-dev \
       libc++abi-${LLVM}-dev \
+      libzstd-dev \
       libfftw3-dev \
       libgmp-dev \
       libhdf5-dev \
