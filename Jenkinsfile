@@ -23,7 +23,7 @@ def platforms = [:]
 /* Each platform must have a corresponding Dockerfile.PLATFORM in triqs/packaging */
 def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "ubuntu-intel", "sanitize"]
 /* Platforms that regenerate the Python bindings via clair-c2py.
-   All others are built with -DUpdate_Python_Bindings=OFF and skip the clair install in the image. */
+   All others are built with -DUpdate_Python_Bindings=OFF. */
 def regenPlatforms = ["ubuntu-clang"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
@@ -45,7 +45,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       else if (platform == "sanitize")
         args += ' -DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
       def uid = sh(returnStdout: true, script: "id -u").trim()
-      def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} --build-arg WITH_CLAIR=${regen} .")
+      def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {
           sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"

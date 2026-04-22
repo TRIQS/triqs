@@ -1,7 +1,11 @@
 FROM ubuntu:24.04
+ARG LLVM=20
 
-# Python bindings are not regenerated on this platform, so clang/clair are not needed.
+# This platform does not regenerate Python bindings, but still installs clang /
+# libclang / libomp / libzstd so that the shared Dockerfile.build clair install
+# step succeeds (clair requires clang++-${LLVM}).
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      clang-${LLVM} \
       cmake \
       g++ \
       gfortran \
@@ -10,6 +14,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       lldb \
       hdf5-tools \
       libboost-dev \
+      libclang-${LLVM}-dev \
+      libomp-${LLVM}-dev \
+      libzstd-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
