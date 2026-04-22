@@ -16,11 +16,15 @@ ENV SRC=/src \
 # Hacky patch for matplotlib sphinx bug (https://github.com/matplotlib/matplotlib/pull/12456?)
 RUN ln -s /src /home/src
 
-# Build and install clair so that clair-c2py is available for Python binding regeneration
-RUN git clone https://github.com/flatironinstitute/clair --branch unstable $SRC/clair && \
-    mkdir $BUILD/clair && \
-    CXX="clang++-${LLVM}" CXXFLAGS="" CPLUS_INCLUDE_PATH="" cmake -S $SRC/clair -B $BUILD/clair -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL && \
-    cmake --build $BUILD/clair && cmake --install $BUILD/clair
+# Build and install clair so that clair-c2py is available for Python binding regeneration.
+# Set WITH_CLAIR=false to skip (e.g. for platforms that do not regenerate the Python bindings).
+ARG WITH_CLAIR=true
+RUN if [ "$WITH_CLAIR" = "true" ]; then \
+      git clone https://github.com/flatironinstitute/clair --branch unstable $SRC/clair && \
+      mkdir $BUILD/clair && \
+      CXX="clang++-${LLVM}" CXXFLAGS="" CPLUS_INCLUDE_PATH="" cmake -S $SRC/clair -B $BUILD/clair -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL && \
+      cmake --build $BUILD/clair && cmake --install $BUILD/clair; \
+    fi
 
 COPY --chown=build . $SRC/$APPNAME
 WORKDIR $BUILD/$APPNAME
