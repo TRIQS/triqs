@@ -93,7 +93,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         sh "${env.BREW}/bin/python3 -m venv $venv"
         sh "pip3 install -U -r $srcDir/requirements.txt"
-        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir"
+        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DUpdate_Python_Bindings=OFF"
         sh "make -j2 || make -j1 VERBOSE=1"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
