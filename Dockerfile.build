@@ -19,7 +19,7 @@ RUN ln -s /src /home/src
 # Build and install clair so that clair-c2py is available for Python binding regeneration
 RUN git clone https://github.com/flatironinstitute/clair --branch unstable $SRC/clair && \
     mkdir $BUILD/clair && \
-    CXX="clang++-19" CXXFLAGS="" CPLUS_INCLUDE_PATH="" cmake -S $SRC/clair -B $BUILD/clair -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL && \
+    CXX="clang++-${LLVM}" CXXFLAGS="" CPLUS_INCLUDE_PATH="" cmake -S $SRC/clair -B $BUILD/clair -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL && \
     cmake --build $BUILD/clair && cmake --install $BUILD/clair
 
 COPY --chown=build . $SRC/$APPNAME
