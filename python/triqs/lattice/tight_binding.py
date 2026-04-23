@@ -21,7 +21,7 @@
 from h5.formats import register_class
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'TBLattice']
 
-from ..gf import Gf, MeshBrZone, MeshCycLat
+from ..gfs import Gf, MeshBrZone, MeshCycLat
 from .lattice_tools import BravaisLattice
 from .lattice_tools import BrillouinZone
 from .lattice_tools import TightBinding
