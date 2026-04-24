@@ -12,6 +12,7 @@
 #include <triqs/mesh/dlr_imfreq.hpp>
 #include <triqs/mesh/dlr_imtime.hpp>
 #include <triqs/mesh/dlr.hpp>
+#include <triqs/mesh/fourier_poly.hpp>
 #include <triqs/mesh/imfreq.hpp>
 #include <triqs/mesh/imtime.hpp>
 #include <triqs/mesh/legendre.hpp>
@@ -98,6 +99,10 @@ namespace triqs::mesh {
   template C2PY_WRAP_AS_METHOD auto values(cyclat const &);
   template C2PY_WRAP_AS_METHOD cyclat copy(cyclat const &);
   template C2PY_WRAP_AS_METHOD void copy_from(cyclat &, cyclat const &);
+
+  // fourier_poly
+  template C2PY_WRAP_AS_METHOD fourier_poly copy(fourier_poly const &);
+  template C2PY_WRAP_AS_METHOD void copy_from(fourier_poly &, fourier_poly const &);
 
 } // namespace triqs::mesh
 

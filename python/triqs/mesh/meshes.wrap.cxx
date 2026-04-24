@@ -70,36 +70,24 @@ static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::me
 // copy_from
 static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::imtime>, "m1", "m2")};
 
-// delta_inv
-static auto const _c2py_fun_3 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.delta_inv(); }, "self")};
-
-// first_index
-static auto const _c2py_fun_4 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.first_index(); }, "self")};
-
 // is_index_valid
-static auto const _c2py_fun_5 =
+static auto const _c2py_fun_3 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
-// last_index
-static auto const _c2py_fun_6 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.last_index(); }, "self")};
-
 // to_data_index
-static auto const _c2py_fun_7 =
+static auto const _c2py_fun_4 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_8 =
+static auto const _c2py_fun_5 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_9 =
+static auto const _c2py_fun_6 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::imtime>, "m")};
+static auto const _c2py_fun_7 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::imtime>, "m")};
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`n \in \{0, 1, \ldots, N-1\}`.
@@ -146,13 +134,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                    {{c2py::python_typename<triqs::mesh::imtime &>()}, {c2py::python_typename<const triqs::mesh::imtime &>()}});
-static const auto _c2py_doc_3  = _c2py_fun_3.doc(R"DOC(
-Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.
-)DOC");
-static const auto _c2py_doc_4  = _c2py_fun_4.doc(R"DOC(
-Get the first index of the mesh, i.e. :math:`0`.
-)DOC");
-static const auto _c2py_doc_5  = _c2py_fun_5.doc(R"DOC(
+static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -165,11 +147,8 @@ Returns
 {ret_0}
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
-                                                 {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_6  = _c2py_fun_6.doc(R"DOC(
-Get the last index of the mesh, i.e. :math:`N - 1`.
-)DOC");
-static const auto _c2py_doc_7  = _c2py_fun_7.doc(R"DOC(
+                                                {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
+static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(n)`.
 
 Parameters
@@ -182,8 +161,8 @@ Returns
 {ret_0}
    Data index :math:`d(n) = n`.
 )DOC",
-                                                 {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_8  = _c2py_fun_8.doc(R"DOC(
+                                                {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`n(d)`.
 
 Parameters
@@ -196,8 +175,8 @@ Returns
 {ret_0}
    Index :math:`n(d) = d`.
 )DOC",
-                                                 {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC(
+                                                {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding value :math:`m(n)`.
 
 Parameters
@@ -210,8 +189,8 @@ Returns
 {ret_0}
    Value of the mesh point :math:`m(n) = a + n \cdot \Delta`.
 )DOC",
-                                                 {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_10 = _c2py_fun_10.doc(
+                                                {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
+static const auto _c2py_doc_7 = _c2py_fun_7.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -233,14 +212,11 @@ template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_1>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_1.c_str()},
    {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_2>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_2.c_str()},
-   {"delta_inv", (PyCFunction)c2py::pyfkw<_c2py_fun_3>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_3.c_str()},
-   {"first_index", (PyCFunction)c2py::pyfkw<_c2py_fun_4>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_4.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_5>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_5.c_str()},
-   {"last_index", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_3>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_3.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_4>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_4.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_5>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_5.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_0>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_0>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_0>, METH_O, ""},
@@ -249,8 +225,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 
 static constexpr auto prop_doc_0 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
 static constexpr auto prop_doc_1 = R"DOC(Get the step size :math:`\Delta` of the mesh, i.e. the distance between two consecutive mesh points.)DOC";
-static constexpr auto prop_doc_2 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_3 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_2 = R"DOC(Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.)DOC";
+static constexpr auto prop_doc_3 = R"DOC(Get the first index of the mesh, i.e. :math:`0`.)DOC";
+static constexpr auto prop_doc_4 = R"DOC(Get the last index of the mesh, i.e. :math:`N - 1`.)DOC";
+static constexpr auto prop_doc_5 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_6 = R"DOC(Get the particle statistics.)DOC";
 
 // ----- Member and property table ----
 
@@ -260,10 +239,19 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
    {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imtime::beta)>, nullptr, prop_doc_0, nullptr},
    {"delta", c2py::getter_from_method_B<triqs::mesh::imtime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::imtime, double>::delta)>,
     nullptr, prop_doc_1, nullptr},
+   {"delta_inv",
+    c2py::getter_from_method_B<triqs::mesh::imtime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::imtime, double>::delta_inv)>, nullptr,
+    prop_doc_2, nullptr},
+   {"first_index",
+    c2py::getter_from_method_B<triqs::mesh::imtime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::imtime, double>::first_index)>, nullptr,
+    prop_doc_3, nullptr},
+   {"last_index",
+    c2py::getter_from_method_B<triqs::mesh::imtime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::imtime, double>::last_index)>, nullptr,
+    prop_doc_4, nullptr},
    {"mesh_hash",
     c2py::getter_from_method_B<triqs::mesh::imtime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::imtime, double>::mesh_hash)>, nullptr,
-    prop_doc_2, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imtime::statistic)>, nullptr, prop_doc_3, nullptr},
+    prop_doc_5, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imtime::statistic)>, nullptr, prop_doc_6, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_0(PyObject *self, PyObject *key) {
@@ -411,66 +399,46 @@ opt : {par_3}
                                                                      {c2py::python_typename<long>()},
                                                                      {c2py::python_typename<triqs::mesh::imfreq::option>()}});
 // __call__
-static auto const _c2py_fun_11 =
+static auto const _c2py_fun_8 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_2> = c2py::pyfkw<_c2py_fun_11>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_2> = c2py::pyfkw<_c2py_fun_8>;
 
 // copy
-static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::imfreq>, "m")};
+static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::imfreq>, "m")};
 
 // copy_from
-static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::imfreq>, "m1", "m2")};
-
-// first_index
-static auto const _c2py_fun_14 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self) -> decltype(auto) { return self.first_index(); }, "self")};
-
-// get_positive_freq
-static auto const _c2py_fun_15 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self) -> decltype(auto) { return self.get_positive_freq(); }, "self")};
+static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::imfreq>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_16 =
+static auto const _c2py_fun_11 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
-// last_index
-static auto const _c2py_fun_17 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self) -> decltype(auto) { return self.last_index(); }, "self")};
-
-// positive_only
-static auto const _c2py_fun_18 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self) -> decltype(auto) { return self.positive_only(); }, "self")};
-
 // set_tail_fit_parameters
-static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_2 const &self, double tail_fraction, int n_tail_max, std::optional<int> expansion_order) -> decltype(auto) {
      return self.set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
    },
    "self", "tail_fraction", "n_tail_max"_a = triqs::mesh::tail_fitter::default_n_tail_max, "expansion_order"_a = std::optional<int>{})};
 
 // to_data_index
-static auto const _c2py_fun_20 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_2 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n"),
    c2py::cmethod([](_c2py_cls_2 const &self, const triqs::mesh::matsubara_freq &iw) -> decltype(auto) { return self.to_data_index(iw); }, "self",
                  "iw")};
 
 // to_index
-static auto const _c2py_fun_21 =
+static auto const _c2py_fun_14 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_22 =
+static auto const _c2py_fun_15 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::imfreq>, "m")};
+static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::imfreq>, "m")};
 
-// w_max
-static auto const _c2py_fun_24 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_2 const &self) -> decltype(auto) { return self.w_max(); }, "self")};
-
-static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC(
 Function call operator to access a mesh point by its Matsubara index :math:`n \in \{ n_{\text{min}}, \dots,
 n_{\text{max}} \}`.
 
@@ -485,9 +453,9 @@ Returns
    mesh_point_t with the Matsubara index :math:`n`, data index :math:`d(n) = n - n_{\text{min}}` and same
    :math:`\beta`, particle statistics and hash value as the current mesh.
 )DOC",
-                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::imfreq::mesh_point_t>()});
-static const auto _c2py_doc_12 =
-   _c2py_fun_12.doc(R"DOC(
+                                                {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::imfreq::mesh_point_t>()});
+static const auto _c2py_doc_9 =
+   _c2py_fun_9.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -500,9 +468,9 @@ Returns
 {ret_0}
    Copy of the given mesh.
 )DOC",
-                    {{c2py::python_typename<const triqs::mesh::imfreq &>()}}, {c2py::python_typename<triqs::mesh::imfreq>()});
-static const auto _c2py_doc_13 =
-   _c2py_fun_13.doc(R"DOC(
+                   {{c2py::python_typename<const triqs::mesh::imfreq &>()}}, {c2py::python_typename<triqs::mesh::imfreq>()});
+static const auto _c2py_doc_10 =
+   _c2py_fun_10.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -515,14 +483,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::imfreq &>()}, {c2py::python_typename<const triqs::mesh::imfreq &>()}});
-static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
-Get the first Matsubara index, i.e. :math:`n_{\text{min}}`.
-)DOC");
-static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
-Get a new mesh with the same :math:`\beta`, particle statistics and :math:`N_{i\omega_n}` but only
-positive frequencies.
-)DOC");
-static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC(
+static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
 Check if a Matsubara index :math:`n` is valid.
 
 Parameters
@@ -536,14 +497,8 @@ Returns
    True if :math:`n_\text{min} \leq n \leq n_\text{max}`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC(
-Get the last Matsubara index, i.e. :math:`n_{\text{max}}`.
-)DOC");
-static const auto _c2py_doc_18 = _c2py_fun_18.doc(R"DOC(
-Is the mesh restricted to positive Matsubara frequencies?
-)DOC");
-static const auto _c2py_doc_19 =
-   _c2py_fun_19.doc(R"DOC(
+static const auto _c2py_doc_12 =
+   _c2py_fun_12.doc(R"DOC(
 Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
 
 Parameters
@@ -557,7 +512,7 @@ expansion_order : {par_2}
    adjusted automatically.
 )DOC",
                     {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}, {c2py::python_typename<std::optional<int>>()}});
-static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC(
+static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
 [1] Map a Matsubara index :math:`n \in \{ n_{\text{min}}, \dots, n_{\text{max}} \}` to its corresponding data
 index :math:`d(n)`.
 
@@ -584,7 +539,7 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<long>()}, {c2py::python_typename<const triqs::mesh::matsubara_freq &>()}},
                                                   {c2py::python_typename<long>(), c2py::python_typename<long>()});
-static const auto _c2py_doc_21 = _c2py_fun_21.doc(R"DOC(
+static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding Matsubara index :math:`n(d)`.
 
 Parameters
@@ -598,7 +553,7 @@ Returns
    Matsubara index :math:`n(d) = d + n_{\text{min}}`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_22 = _c2py_fun_22.doc(R"DOC(
+static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
 Map a Matsubara index :math:`n \in \{ n_{\text{min}}, \dots, n_{\text{max}} \}` to its corresponding
 triqs::mesh::matsubara_freq :math:`i\omega_n`.
 
@@ -613,7 +568,7 @@ Returns
    Matsubara frequency :math:`i\omega_n`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::matsubara_freq>()});
-static const auto _c2py_doc_23 = _c2py_fun_23.doc(
+static const auto _c2py_doc_16 = _c2py_fun_16.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -630,46 +585,49 @@ Returns
    {{c2py::python_typename<const triqs::mesh::imfreq &>()}},
    {c2py::python_typename<
       nda::basic_array<triqs::mesh::matsubara_freq, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
-static const auto _c2py_doc_24 = _c2py_fun_24.doc(R"DOC(
-Get the complex value of the largest positive Matsubara frequency in the mesh.
-)DOC");
 
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_2>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
-   {"first_index", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
-   {"get_positive_freq", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
-   {"last_index", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
-   {"positive_only", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
-   {"set_tail_fit_parameters", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
-   {"w_max", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
+   {"set_tail_fit_parameters", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_2>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_2>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_2>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_4 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_5 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_6 = R"DOC(Get the number of positive Matsubara frequencies :math:`N_{i\omega_n}`.)DOC";
-static constexpr auto prop_doc_7 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_7  = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_8  = R"DOC(Get the first Matsubara index, i.e. :math:`n_{\text{min}}`.)DOC";
+static constexpr auto prop_doc_9  = R"DOC(Get a new mesh with the same :math:`\beta`, particle statistics and :math:`N_{i\omega_n}` but only
+positive frequencies.)DOC";
+static constexpr auto prop_doc_10 = R"DOC(Get the last Matsubara index, i.e. :math:`n_{\text{max}}`.)DOC";
+static constexpr auto prop_doc_11 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_12 = R"DOC(Get the number of positive Matsubara frequencies :math:`N_{i\omega_n}`.)DOC";
+static constexpr auto prop_doc_13 = R"DOC(Is the mesh restricted to positive Matsubara frequencies?)DOC";
+static constexpr auto prop_doc_14 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_15 = R"DOC(Get the complex value of the largest positive Matsubara frequency in the mesh.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_2>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::beta)>, nullptr, prop_doc_4, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::mesh_hash)>, nullptr, prop_doc_5, nullptr},
-   {"n_iw", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::n_iw)>, nullptr, prop_doc_6, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::statistic)>, nullptr, prop_doc_7, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::beta)>, nullptr, prop_doc_7, nullptr},
+   {"first_index", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::first_index)>, nullptr, prop_doc_8, nullptr},
+   {"get_positive_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::get_positive_freq)>, nullptr, prop_doc_9, nullptr},
+   {"last_index", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::last_index)>, nullptr, prop_doc_10, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::mesh_hash)>, nullptr, prop_doc_11, nullptr},
+   {"n_iw", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::n_iw)>, nullptr, prop_doc_12, nullptr},
+   {"positive_only", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::positive_only)>, nullptr, prop_doc_13, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::statistic)>, nullptr, prop_doc_14, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::imfreq::w_max)>, nullptr, prop_doc_15, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_1(PyObject *self, PyObject *key) {
@@ -802,37 +760,37 @@ m : {par_5}
                      {c2py::python_typename<bool>()},
                      {c2py::python_typename<const triqs::mesh::dlr_imtime &>(), c2py::python_typename<const triqs::mesh::dlr_imfreq &>()}});
 // __call__
-static auto const _c2py_fun_25 =
+static auto const _c2py_fun_17 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_3 const &self, long l) -> decltype(auto) { return self.operator()(l); }, "self", "l")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_3> = c2py::pyfkw<_c2py_fun_25>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_3> = c2py::pyfkw<_c2py_fun_17>;
 
 // copy
-static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr>, "m")};
+static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr>, "m")};
 
 // copy_from
-static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr>, "m1", "m2")};
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_28 =
+static auto const _c2py_fun_20 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_3 const &self, long l) -> decltype(auto) { return self.is_index_valid(l); }, "self", "l")};
 
 // to_data_index
-static auto const _c2py_fun_29 =
+static auto const _c2py_fun_21 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_3 const &self, long l) -> decltype(auto) { return self.to_data_index(l); }, "self", "l")};
 
 // to_index
-static auto const _c2py_fun_30 =
+static auto const _c2py_fun_22 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_3 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_31 =
+static auto const _c2py_fun_23 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_3 const &self, long l) -> decltype(auto) { return self.to_value(l); }, "self", "l")};
 
 // values
-static auto const _c2py_fun_32 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr>, "m")};
+static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr>, "m")};
 
-static const auto _c2py_doc_25 = _c2py_fun_25.doc(R"DOC(
+static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`l \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -847,7 +805,7 @@ Returns
    the DLR frequency :math:`\omega_l` as its value.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::dlr::mesh_point_t>()});
-static const auto _c2py_doc_26 = _c2py_fun_26.doc(R"DOC(
+static const auto _c2py_doc_18 = _c2py_fun_18.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -861,8 +819,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                                                   {{c2py::python_typename<const triqs::mesh::dlr &>()}}, {c2py::python_typename<triqs::mesh::dlr>()});
-static const auto _c2py_doc_27 =
-   _c2py_fun_27.doc(R"DOC(
+static const auto _c2py_doc_19 =
+   _c2py_fun_19.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -875,7 +833,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr &>()}, {c2py::python_typename<const triqs::mesh::dlr &>()}});
-static const auto _c2py_doc_28 = _c2py_fun_28.doc(R"DOC(
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC(
 Check if an index :math:`l` is valid.
 
 Parameters
@@ -889,7 +847,7 @@ Returns
    True if :math:`0 \leq l < N`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_29 = _c2py_fun_29.doc(R"DOC(
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(l)`.
 
 Parameters
@@ -903,7 +861,7 @@ Returns
    Data index :math:`d(l) = l`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_30 = _c2py_fun_30.doc(R"DOC(
+static const auto _c2py_doc_22 = _c2py_fun_22.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`l(d)`.
 
 Parameters
@@ -917,7 +875,7 @@ Returns
    Index :math:`l(d) = d`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_31 = _c2py_fun_31.doc(R"DOC(
+static const auto _c2py_doc_23 = _c2py_fun_23.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding value :math:`\omega_l`.
 
 Parameters
@@ -937,7 +895,7 @@ Returns
    DLR frequency :math:`\omega_l`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_32 = _c2py_fun_32.doc(
+static const auto _c2py_doc_24 = _c2py_fun_24.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -957,39 +915,39 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_3>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_26>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_26.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_27>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_27.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_28>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_28.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_29>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_29.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_30>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_30.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_31>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_31.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_32>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_32.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_3>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_3>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_3>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_8  = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_9  = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
-static constexpr auto prop_doc_10 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
-static constexpr auto prop_doc_11 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_12 = R"DOC(Get the particle statistics.)DOC";
-static constexpr auto prop_doc_13 = R"DOC(Is the mesh symmetric around :math:`\omega = 0`?)DOC";
-static constexpr auto prop_doc_14 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
+static constexpr auto prop_doc_16 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_17 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_18 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
+static constexpr auto prop_doc_19 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_20 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_21 = R"DOC(Is the mesh symmetric around :math:`\omega = 0`?)DOC";
+static constexpr auto prop_doc_22 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_3>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::beta)>, nullptr, prop_doc_8, nullptr},
-   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::dlr_freq)>, nullptr, prop_doc_9, nullptr},
-   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::eps)>, nullptr, prop_doc_10, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::mesh_hash)>, nullptr, prop_doc_11, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::statistic)>, nullptr, prop_doc_12, nullptr},
-   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::symmetrize)>, nullptr, prop_doc_13, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::w_max)>, nullptr, prop_doc_14, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::beta)>, nullptr, prop_doc_16, nullptr},
+   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::dlr_freq)>, nullptr, prop_doc_17, nullptr},
+   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::eps)>, nullptr, prop_doc_18, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::mesh_hash)>, nullptr, prop_doc_19, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::statistic)>, nullptr, prop_doc_20, nullptr},
+   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::symmetrize)>, nullptr, prop_doc_21, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr::w_max)>, nullptr, prop_doc_22, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_2(PyObject *self, PyObject *key) {
@@ -1110,38 +1068,38 @@ m : {par_5}
                      {c2py::python_typename<bool>()},
                      {c2py::python_typename<const triqs::mesh::dlr_imfreq &>(), c2py::python_typename<const triqs::mesh::dlr &>()}});
 // __call__
-static auto const _c2py_fun_33 =
+static auto const _c2py_fun_25 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_4 const &self, long l) -> decltype(auto) { return self.operator()(l); }, "self", "l")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_4> = c2py::pyfkw<_c2py_fun_33>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_4> = c2py::pyfkw<_c2py_fun_25>;
 
 // copy
-static auto const _c2py_fun_34 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr_imtime>, "m")};
+static auto const _c2py_fun_26 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr_imtime>, "m")};
 
 // copy_from
-static auto const _c2py_fun_35 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr_imtime>, "m1", "m2")};
+static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr_imtime>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_36 =
+static auto const _c2py_fun_28 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_4 const &self, long l) -> decltype(auto) { return self.is_index_valid(l); }, "self", "l")};
 
 // to_data_index
-static auto const _c2py_fun_37 =
+static auto const _c2py_fun_29 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_4 const &self, long l) -> decltype(auto) { return self.to_data_index(l); }, "self", "l")};
 
 // to_index
-static auto const _c2py_fun_38 =
+static auto const _c2py_fun_30 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_4 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_39 =
+static auto const _c2py_fun_31 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_4 const &self, long l) -> decltype(auto) { return self.to_value(l); }, "self", "l")};
 
 // values
-static auto const _c2py_fun_40 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr_imtime>, "m")};
+static auto const _c2py_fun_32 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr_imtime>, "m")};
 
-static const auto _c2py_doc_33 =
-   _c2py_fun_33.doc(R"DOC(
+static const auto _c2py_doc_25 =
+   _c2py_fun_25.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`l \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -1156,8 +1114,8 @@ Returns
    the imaginary time node :math:`\tau_l` as its value.
 )DOC",
                     {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::dlr_imtime::mesh_point_t>()});
-static const auto _c2py_doc_34 =
-   _c2py_fun_34.doc(R"DOC(
+static const auto _c2py_doc_26 =
+   _c2py_fun_26.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -1171,8 +1129,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::dlr_imtime &>()}}, {c2py::python_typename<triqs::mesh::dlr_imtime>()});
-static const auto _c2py_doc_35 =
-   _c2py_fun_35.doc(R"DOC(
+static const auto _c2py_doc_27 =
+   _c2py_fun_27.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -1185,7 +1143,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr_imtime &>()}, {c2py::python_typename<const triqs::mesh::dlr_imtime &>()}});
-static const auto _c2py_doc_36 = _c2py_fun_36.doc(R"DOC(
+static const auto _c2py_doc_28 = _c2py_fun_28.doc(R"DOC(
 Check if an index :math:`l` is valid.
 
 Parameters
@@ -1199,7 +1157,7 @@ Returns
    True if :math:`0 \leq l < N`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_37 = _c2py_fun_37.doc(R"DOC(
+static const auto _c2py_doc_29 = _c2py_fun_29.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(l)`.
 
 Parameters
@@ -1213,7 +1171,7 @@ Returns
    Data index :math:`d(l) = l`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_38 = _c2py_fun_38.doc(R"DOC(
+static const auto _c2py_doc_30 = _c2py_fun_30.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`l(d)`.
 
 Parameters
@@ -1227,7 +1185,7 @@ Returns
    Index :math:`l(d) = d`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_39 = _c2py_fun_39.doc(R"DOC(
+static const auto _c2py_doc_31 = _c2py_fun_31.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding value :math:`\tau_l`.
 
 Parameters
@@ -1247,7 +1205,7 @@ Returns
    DLR interpolation node in imaginary time space, i.e. :math:`\tau_l` .
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_40 = _c2py_fun_40.doc(
+static const auto _c2py_doc_32 = _c2py_fun_32.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -1267,39 +1225,39 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_4>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_34>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_34.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_35>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_35.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_36>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_36.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_37>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_37.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_38>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_38.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_39>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_39.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_40>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_40.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_26>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_26.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_27>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_27.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_28>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_28.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_29>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_29.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_30>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_30.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_31>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_31.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_32>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_32.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_4>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_4>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_4>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_15 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_16 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
-static constexpr auto prop_doc_17 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
-static constexpr auto prop_doc_18 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_19 = R"DOC(Get the particle statistics.)DOC";
-static constexpr auto prop_doc_20 = R"DOC(Is the mesh symmetric around :math:`\tau = \beta / 2`?)DOC";
-static constexpr auto prop_doc_21 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
+static constexpr auto prop_doc_23 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_24 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_25 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
+static constexpr auto prop_doc_26 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_27 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_28 = R"DOC(Is the mesh symmetric around :math:`\tau = \beta / 2`?)DOC";
+static constexpr auto prop_doc_29 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_4>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::beta)>, nullptr, prop_doc_15, nullptr},
-   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::dlr_freq)>, nullptr, prop_doc_16, nullptr},
-   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::eps)>, nullptr, prop_doc_17, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::mesh_hash)>, nullptr, prop_doc_18, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::statistic)>, nullptr, prop_doc_19, nullptr},
-   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::symmetrize)>, nullptr, prop_doc_20, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::w_max)>, nullptr, prop_doc_21, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::beta)>, nullptr, prop_doc_23, nullptr},
+   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::dlr_freq)>, nullptr, prop_doc_24, nullptr},
+   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::eps)>, nullptr, prop_doc_25, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::mesh_hash)>, nullptr, prop_doc_26, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::statistic)>, nullptr, prop_doc_27, nullptr},
+   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::symmetrize)>, nullptr, prop_doc_28, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imtime::w_max)>, nullptr, prop_doc_29, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_3(PyObject *self, PyObject *key) {
@@ -1420,42 +1378,38 @@ m : {par_5}
                      {c2py::python_typename<bool>()},
                      {c2py::python_typename<const triqs::mesh::dlr_imtime &>(), c2py::python_typename<const triqs::mesh::dlr &>()}});
 // __call__
-static auto const _c2py_fun_41 =
+static auto const _c2py_fun_33 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self, long l) -> decltype(auto) { return self.operator()(l); }, "self", "l")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_5> = c2py::pyfkw<_c2py_fun_41>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_5> = c2py::pyfkw<_c2py_fun_33>;
 
 // copy
-static auto const _c2py_fun_42 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr_imfreq>, "m")};
+static auto const _c2py_fun_34 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::dlr_imfreq>, "m")};
 
 // copy_from
-static auto const _c2py_fun_43 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr_imfreq>, "m1", "m2")};
+static auto const _c2py_fun_35 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::dlr_imfreq>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_44 =
+static auto const _c2py_fun_36 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self, long l) -> decltype(auto) { return self.is_index_valid(l); }, "self", "l")};
 
-// min_max_frequencies
-static auto const _c2py_fun_45 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self) -> decltype(auto) { return self.min_max_frequencies(); }, "self")};
-
 // to_data_index
-static auto const _c2py_fun_46 =
+static auto const _c2py_fun_37 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self, long l) -> decltype(auto) { return self.to_data_index(l); }, "self", "l")};
 
 // to_index
-static auto const _c2py_fun_47 =
+static auto const _c2py_fun_38 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_48 =
+static auto const _c2py_fun_39 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_5 const &self, long l) -> decltype(auto) { return self.to_value(l); }, "self", "l")};
 
 // values
-static auto const _c2py_fun_49 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr_imfreq>, "m")};
+static auto const _c2py_fun_40 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::dlr_imfreq>, "m")};
 
-static const auto _c2py_doc_41 =
-   _c2py_fun_41.doc(R"DOC(
+static const auto _c2py_doc_33 =
+   _c2py_fun_33.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`l \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -1470,8 +1424,8 @@ Returns
    particle statistics and hash value as the current mesh.
 )DOC",
                     {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::dlr_imfreq::mesh_point_t>()});
-static const auto _c2py_doc_42 =
-   _c2py_fun_42.doc(R"DOC(
+static const auto _c2py_doc_34 =
+   _c2py_fun_34.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -1485,8 +1439,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::dlr_imfreq &>()}}, {c2py::python_typename<triqs::mesh::dlr_imfreq>()});
-static const auto _c2py_doc_43 =
-   _c2py_fun_43.doc(R"DOC(
+static const auto _c2py_doc_35 =
+   _c2py_fun_35.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -1499,7 +1453,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr_imfreq &>()}, {c2py::python_typename<const triqs::mesh::dlr_imfreq &>()}});
-static const auto _c2py_doc_44 = _c2py_fun_44.doc(R"DOC(
+static const auto _c2py_doc_36 = _c2py_fun_36.doc(R"DOC(
 Check if an index :math:`l` is valid.
 
 Parameters
@@ -1513,10 +1467,7 @@ Returns
    True if :math:`0 \leq l < N`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_45 = _c2py_fun_45.doc(R"DOC(
-Get a `std::pair` containing the smallest and largest Matsubara frequency in the mesh.
-)DOC");
-static const auto _c2py_doc_46 = _c2py_fun_46.doc(R"DOC(
+static const auto _c2py_doc_37 = _c2py_fun_37.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(l)`.
 
 Parameters
@@ -1530,7 +1481,7 @@ Returns
    Data index :math:`d(l) = l`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_47 = _c2py_fun_47.doc(R"DOC(
+static const auto _c2py_doc_38 = _c2py_fun_38.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`l(d)`.
 
 Parameters
@@ -1544,7 +1495,7 @@ Returns
    Index :math:`l(d) = d`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_48 = _c2py_fun_48.doc(R"DOC(
+static const auto _c2py_doc_39 = _c2py_fun_39.doc(R"DOC(
 Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding triqs::mesh::matsubara_freq :math:`i\omega_{n_l}`
 .
 
@@ -1559,7 +1510,7 @@ Returns
    Matsubara frequency :math:`i\omega_{n_l}`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::matsubara_freq>()});
-static const auto _c2py_doc_49 = _c2py_fun_49.doc(
+static const auto _c2py_doc_40 = _c2py_fun_40.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -1580,40 +1531,41 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_5>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_42>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_42.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_43>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_43.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_44>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_44.c_str()},
-   {"min_max_frequencies", (PyCFunction)c2py::pyfkw<_c2py_fun_45>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_45.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_46>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_46.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_47>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_47.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_48>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_48.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_49>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_49.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_34>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_34.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_35>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_35.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_36>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_36.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_37>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_37.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_38>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_38.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_39>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_39.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_40>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_40.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_5>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_5>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_5>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_22 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_23 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
-static constexpr auto prop_doc_24 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
-static constexpr auto prop_doc_25 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_26 = R"DOC(Get the particle statistics.)DOC";
-static constexpr auto prop_doc_27 = R"DOC(Is the mesh symmetric around :math:`i\omega_n = 0`?)DOC";
-static constexpr auto prop_doc_28 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
+static constexpr auto prop_doc_30 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_31 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_32 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
+static constexpr auto prop_doc_33 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_34 = R"DOC(Get a `std::pair` containing the smallest and largest Matsubara frequency in the mesh.)DOC";
+static constexpr auto prop_doc_35 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_36 = R"DOC(Is the mesh symmetric around :math:`i\omega_n = 0`?)DOC";
+static constexpr auto prop_doc_37 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_5>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::beta)>, nullptr, prop_doc_22, nullptr},
-   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::dlr_freq)>, nullptr, prop_doc_23, nullptr},
-   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::eps)>, nullptr, prop_doc_24, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::mesh_hash)>, nullptr, prop_doc_25, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::statistic)>, nullptr, prop_doc_26, nullptr},
-   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::symmetrize)>, nullptr, prop_doc_27, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::w_max)>, nullptr, prop_doc_28, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::beta)>, nullptr, prop_doc_30, nullptr},
+   {"dlr_freq", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::dlr_freq)>, nullptr, prop_doc_31, nullptr},
+   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::eps)>, nullptr, prop_doc_32, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::mesh_hash)>, nullptr, prop_doc_33, nullptr},
+   {"min_max_frequencies", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::min_max_frequencies)>, nullptr, prop_doc_34, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::statistic)>, nullptr, prop_doc_35, nullptr},
+   {"symmetrize", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::symmetrize)>, nullptr, prop_doc_36, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::dlr_imfreq::w_max)>, nullptr, prop_doc_37, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_4(PyObject *self, PyObject *key) {
@@ -1718,49 +1670,37 @@ window : {par_3}
                                                                      {c2py::python_typename<long>(), c2py::python_typename<int>()},
                                                                      {c2py::python_typename<std::pair<double, double>>()}});
 // __call__
-static auto const _c2py_fun_50 =
+static auto const _c2py_fun_41 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_6> = c2py::pyfkw<_c2py_fun_50>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_6> = c2py::pyfkw<_c2py_fun_41>;
 
 // copy
-static auto const _c2py_fun_51 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::retime>, "m")};
+static auto const _c2py_fun_42 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::retime>, "m")};
 
 // copy_from
-static auto const _c2py_fun_52 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::retime>, "m1", "m2")};
-
-// delta_inv
-static auto const _c2py_fun_53 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self) -> decltype(auto) { return self.delta_inv(); }, "self")};
-
-// first_index
-static auto const _c2py_fun_54 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self) -> decltype(auto) { return self.first_index(); }, "self")};
+static auto const _c2py_fun_43 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::retime>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_55 =
+static auto const _c2py_fun_44 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
-// last_index
-static auto const _c2py_fun_56 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self) -> decltype(auto) { return self.last_index(); }, "self")};
-
 // to_data_index
-static auto const _c2py_fun_57 =
+static auto const _c2py_fun_45 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_58 =
+static auto const _c2py_fun_46 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_59 =
+static auto const _c2py_fun_47 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_6 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_60 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::retime>, "m")};
+static auto const _c2py_fun_48 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::retime>, "m")};
 
-static const auto _c2py_doc_50 = _c2py_fun_50.doc(R"DOC(
+static const auto _c2py_doc_41 = _c2py_fun_41.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`n \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -1776,8 +1716,8 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<long>()}},
                                                   {c2py::python_typename<triqs::mesh::detail::linear<triqs::mesh::retime, double>::mesh_point_t>()});
-static const auto _c2py_doc_51 =
-   _c2py_fun_51.doc(R"DOC(
+static const auto _c2py_doc_42 =
+   _c2py_fun_42.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -1791,8 +1731,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::retime &>()}}, {c2py::python_typename<triqs::mesh::retime>()});
-static const auto _c2py_doc_52 =
-   _c2py_fun_52.doc(R"DOC(
+static const auto _c2py_doc_43 =
+   _c2py_fun_43.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -1805,13 +1745,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::retime &>()}, {c2py::python_typename<const triqs::mesh::retime &>()}});
-static const auto _c2py_doc_53 = _c2py_fun_53.doc(R"DOC(
-Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.
-)DOC");
-static const auto _c2py_doc_54 = _c2py_fun_54.doc(R"DOC(
-Get the first index of the mesh, i.e. :math:`0`.
-)DOC");
-static const auto _c2py_doc_55 = _c2py_fun_55.doc(R"DOC(
+static const auto _c2py_doc_44 = _c2py_fun_44.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -1825,10 +1759,7 @@ Returns
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_56 = _c2py_fun_56.doc(R"DOC(
-Get the last index of the mesh, i.e. :math:`N - 1`.
-)DOC");
-static const auto _c2py_doc_57 = _c2py_fun_57.doc(R"DOC(
+static const auto _c2py_doc_45 = _c2py_fun_45.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(n)`.
 
 Parameters
@@ -1842,7 +1773,7 @@ Returns
    Data index :math:`d(n) = n`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_58 = _c2py_fun_58.doc(R"DOC(
+static const auto _c2py_doc_46 = _c2py_fun_46.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`n(d)`.
 
 Parameters
@@ -1856,7 +1787,7 @@ Returns
    Index :math:`n(d) = d`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_59 = _c2py_fun_59.doc(R"DOC(
+static const auto _c2py_doc_47 = _c2py_fun_47.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding value :math:`m(n)`.
 
 Parameters
@@ -1870,7 +1801,7 @@ Returns
    Value of the mesh point :math:`m(n) = a + n \cdot \Delta`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_60 = _c2py_fun_60.doc(
+static const auto _c2py_doc_48 = _c2py_fun_48.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -1890,26 +1821,26 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_6>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_51>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_51.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_52>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_52.c_str()},
-   {"delta_inv", (PyCFunction)c2py::pyfkw<_c2py_fun_53>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_53.c_str()},
-   {"first_index", (PyCFunction)c2py::pyfkw<_c2py_fun_54>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_54.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_55>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_55.c_str()},
-   {"last_index", (PyCFunction)c2py::pyfkw<_c2py_fun_56>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_56.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_57>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_57.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_58>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_58.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_59>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_59.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_60>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_60.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_42>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_42.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_43>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_43.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_44>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_44.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_45>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_45.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_46>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_46.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_47>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_47.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_48>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_48.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_6>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_6>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_6>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_29 = R"DOC(Get the step size :math:`\Delta` of the mesh, i.e. the distance between two consecutive mesh points.)DOC";
-static constexpr auto prop_doc_30 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_31 = R"DOC(Get the upper bound of the interval :math:`t_{\mathrm{max}}`, i.e. the value of the last mesh point.)DOC";
-static constexpr auto prop_doc_32 = R"DOC(Get the lower bound of the interval :math:`t_{\mathrm{min}}`, i.e. the value of the first mesh point.)DOC";
+static constexpr auto prop_doc_38 = R"DOC(Get the step size :math:`\Delta` of the mesh, i.e. the distance between two consecutive mesh points.)DOC";
+static constexpr auto prop_doc_39 = R"DOC(Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.)DOC";
+static constexpr auto prop_doc_40 = R"DOC(Get the first index of the mesh, i.e. :math:`0`.)DOC";
+static constexpr auto prop_doc_41 = R"DOC(Get the last index of the mesh, i.e. :math:`N - 1`.)DOC";
+static constexpr auto prop_doc_42 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_43 = R"DOC(Get the upper bound of the interval :math:`t_{\mathrm{max}}`, i.e. the value of the last mesh point.)DOC";
+static constexpr auto prop_doc_44 = R"DOC(Get the lower bound of the interval :math:`t_{\mathrm{min}}`, i.e. the value of the first mesh point.)DOC";
 
 // ----- Member and property table ----
 
@@ -1917,12 +1848,21 @@ template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_6>[] = {
 
    {"delta", c2py::getter_from_method_B<triqs::mesh::retime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::retime, double>::delta)>,
-    nullptr, prop_doc_29, nullptr},
+    nullptr, prop_doc_38, nullptr},
+   {"delta_inv",
+    c2py::getter_from_method_B<triqs::mesh::retime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::retime, double>::delta_inv)>, nullptr,
+    prop_doc_39, nullptr},
+   {"first_index",
+    c2py::getter_from_method_B<triqs::mesh::retime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::retime, double>::first_index)>, nullptr,
+    prop_doc_40, nullptr},
+   {"last_index",
+    c2py::getter_from_method_B<triqs::mesh::retime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::retime, double>::last_index)>, nullptr,
+    prop_doc_41, nullptr},
    {"mesh_hash",
     c2py::getter_from_method_B<triqs::mesh::retime, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::retime, double>::mesh_hash)>, nullptr,
-    prop_doc_30, nullptr},
-   {"t_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::retime::t_max)>, nullptr, prop_doc_31, nullptr},
-   {"t_min", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::retime::t_min)>, nullptr, prop_doc_32, nullptr},
+    prop_doc_42, nullptr},
+   {"t_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::retime::t_max)>, nullptr, prop_doc_43, nullptr},
+   {"t_min", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::retime::t_min)>, nullptr, prop_doc_44, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_5(PyObject *self, PyObject *key) {
@@ -2012,59 +1952,44 @@ window : {par_3}
                                                                      {c2py::python_typename<long>(), c2py::python_typename<int>()},
                                                                      {c2py::python_typename<std::pair<double, double>>()}});
 // __call__
-static auto const _c2py_fun_61 =
+static auto const _c2py_fun_49 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_7> = c2py::pyfkw<_c2py_fun_61>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_7> = c2py::pyfkw<_c2py_fun_49>;
 
 // copy
-static auto const _c2py_fun_62 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq>, "m")};
+static auto const _c2py_fun_50 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq>, "m")};
 
 // copy_from
-static auto const _c2py_fun_63 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq>, "m1", "m2")};
-
-// delta_inv
-static auto const _c2py_fun_64 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self) -> decltype(auto) { return self.delta_inv(); }, "self")};
-
-// first_index
-static auto const _c2py_fun_65 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self) -> decltype(auto) { return self.first_index(); }, "self")};
+static auto const _c2py_fun_51 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_66 =
+static auto const _c2py_fun_52 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
-// last_index
-static auto const _c2py_fun_67 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self) -> decltype(auto) { return self.last_index(); }, "self")};
-
-// positive_only
-static auto const _c2py_fun_68 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return _c2py_cls_7::positive_only(); })};
-
 // set_tail_fit_parameters
-static auto const _c2py_fun_69 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_53 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_7 const &self, double tail_fraction, int n_tail_max, std::optional<int> expansion_order) -> decltype(auto) {
      return self.set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
    },
    "self", "tail_fraction", "n_tail_max"_a = triqs::mesh::tail_fitter::default_n_tail_max, "expansion_order"_a = std::optional<int>{})};
 
 // to_data_index
-static auto const _c2py_fun_70 =
+static auto const _c2py_fun_54 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_71 =
+static auto const _c2py_fun_55 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_72 =
+static auto const _c2py_fun_56 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_7 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_73 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq>, "m")};
+static auto const _c2py_fun_57 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq>, "m")};
 
-static const auto _c2py_doc_61 = _c2py_fun_61.doc(R"DOC(
+static const auto _c2py_doc_49 = _c2py_fun_49.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`n \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -2080,8 +2005,8 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<long>()}},
                                                   {c2py::python_typename<triqs::mesh::detail::linear<triqs::mesh::refreq, double>::mesh_point_t>()});
-static const auto _c2py_doc_62 =
-   _c2py_fun_62.doc(R"DOC(
+static const auto _c2py_doc_50 =
+   _c2py_fun_50.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -2095,8 +2020,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::refreq &>()}}, {c2py::python_typename<triqs::mesh::refreq>()});
-static const auto _c2py_doc_63 =
-   _c2py_fun_63.doc(R"DOC(
+static const auto _c2py_doc_51 =
+   _c2py_fun_51.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -2109,13 +2034,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::refreq &>()}, {c2py::python_typename<const triqs::mesh::refreq &>()}});
-static const auto _c2py_doc_64 = _c2py_fun_64.doc(R"DOC(
-Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.
-)DOC");
-static const auto _c2py_doc_65 = _c2py_fun_65.doc(R"DOC(
-Get the first index of the mesh, i.e. :math:`0`.
-)DOC");
-static const auto _c2py_doc_66 = _c2py_fun_66.doc(R"DOC(
+static const auto _c2py_doc_52 = _c2py_fun_52.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -2129,14 +2048,8 @@ Returns
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_67 = _c2py_fun_67.doc(R"DOC(
-Get the last index of the mesh, i.e. :math:`N - 1`.
-)DOC");
-static const auto _c2py_doc_68 = _c2py_fun_68.doc(R"DOC(
-Is the mesh restricted to positive frequencies?
-)DOC");
-static const auto _c2py_doc_69 =
-   _c2py_fun_69.doc(R"DOC(
+static const auto _c2py_doc_53 =
+   _c2py_fun_53.doc(R"DOC(
 Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
 
 Parameters
@@ -2150,7 +2063,7 @@ expansion_order : {par_2}
    adjusted automatically.
 )DOC",
                     {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}, {c2py::python_typename<std::optional<int>>()}});
-static const auto _c2py_doc_70 = _c2py_fun_70.doc(R"DOC(
+static const auto _c2py_doc_54 = _c2py_fun_54.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(n)`.
 
 Parameters
@@ -2164,7 +2077,7 @@ Returns
    Data index :math:`d(n) = n`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_71 = _c2py_fun_71.doc(R"DOC(
+static const auto _c2py_doc_55 = _c2py_fun_55.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`n(d)`.
 
 Parameters
@@ -2178,7 +2091,7 @@ Returns
    Index :math:`n(d) = d`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_72 = _c2py_fun_72.doc(R"DOC(
+static const auto _c2py_doc_56 = _c2py_fun_56.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding value :math:`m(n)`.
 
 Parameters
@@ -2192,7 +2105,7 @@ Returns
    Value of the mesh point :math:`m(n) = a + n \cdot \Delta`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_73 = _c2py_fun_73.doc(
+static const auto _c2py_doc_57 = _c2py_fun_57.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -2212,29 +2125,29 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_7>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_62>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_62.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_63>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_63.c_str()},
-   {"delta_inv", (PyCFunction)c2py::pyfkw<_c2py_fun_64>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_64.c_str()},
-   {"first_index", (PyCFunction)c2py::pyfkw<_c2py_fun_65>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_65.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_66>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_66.c_str()},
-   {"last_index", (PyCFunction)c2py::pyfkw<_c2py_fun_67>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_67.c_str()},
-   {"positive_only", (PyCFunction)c2py::pyfkw<_c2py_fun_68>, METH_VARARGS | METH_KEYWORDS | METH_STATIC, _c2py_doc_68.c_str()},
-   {"set_tail_fit_parameters", (PyCFunction)c2py::pyfkw<_c2py_fun_69>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_69.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_70>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_70.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_71>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_71.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_72>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_72.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_73>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_73.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_50>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_50.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_51>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_51.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_52>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_52.c_str()},
+   {"set_tail_fit_parameters", (PyCFunction)c2py::pyfkw<_c2py_fun_53>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_53.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_54>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_54.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_55>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_55.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_56>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_56.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_57>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_57.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_7>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_7>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_7>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_33 = R"DOC(Get the step size :math:`\Delta` of the mesh, i.e. the distance between two consecutive mesh points.)DOC";
-static constexpr auto prop_doc_34 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_35 =
+static constexpr auto prop_doc_45 = R"DOC(Get the step size :math:`\Delta` of the mesh, i.e. the distance between two consecutive mesh points.)DOC";
+static constexpr auto prop_doc_46 = R"DOC(Get the inverse of the step size of the mesh, i.e. :math:`1 / \Delta`.)DOC";
+static constexpr auto prop_doc_47 = R"DOC(Get the first index of the mesh, i.e. :math:`0`.)DOC";
+static constexpr auto prop_doc_48 = R"DOC(Get the last index of the mesh, i.e. :math:`N - 1`.)DOC";
+static constexpr auto prop_doc_49 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_50 = R"DOC(Is the mesh restricted to positive frequencies?)DOC";
+static constexpr auto prop_doc_51 =
    R"DOC(Get the upper bound of the interval :math:`\omega_{\text{max}}`, i.e. the value of the last mesh point.)DOC";
-static constexpr auto prop_doc_36 =
+static constexpr auto prop_doc_52 =
    R"DOC(Get the lower bound of the interval :math:`\omega_{\text{min}}`, i.e. the value of the first mesh point.)DOC";
 
 // ----- Member and property table ----
@@ -2243,12 +2156,22 @@ template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_7>[] = {
 
    {"delta", c2py::getter_from_method_B<triqs::mesh::refreq, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::refreq, double>::delta)>,
-    nullptr, prop_doc_33, nullptr},
+    nullptr, prop_doc_45, nullptr},
+   {"delta_inv",
+    c2py::getter_from_method_B<triqs::mesh::refreq, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::refreq, double>::delta_inv)>, nullptr,
+    prop_doc_46, nullptr},
+   {"first_index",
+    c2py::getter_from_method_B<triqs::mesh::refreq, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::refreq, double>::first_index)>, nullptr,
+    prop_doc_47, nullptr},
+   {"last_index",
+    c2py::getter_from_method_B<triqs::mesh::refreq, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::refreq, double>::last_index)>, nullptr,
+    prop_doc_48, nullptr},
    {"mesh_hash",
     c2py::getter_from_method_B<triqs::mesh::refreq, c2py::castmc<>(&triqs::mesh::detail::linear<triqs::mesh::refreq, double>::mesh_hash)>, nullptr,
-    prop_doc_34, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq::w_max)>, nullptr, prop_doc_35, nullptr},
-   {"w_min", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq::w_min)>, nullptr, prop_doc_36, nullptr},
+    prop_doc_49, nullptr},
+   {"positive_only", c2py::getter_from_method<c2py::cast<>(&triqs::mesh::refreq::positive_only)>, nullptr, prop_doc_50, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq::w_max)>, nullptr, prop_doc_51, nullptr},
+   {"w_min", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq::w_min)>, nullptr, prop_doc_52, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_6(PyObject *self, PyObject *key) {
@@ -2349,43 +2272,43 @@ L3 : {par_5}
                                                                      {c2py::python_typename<long>()},
                                                                      {c2py::python_typename<long>()}});
 // __call__
-static auto const _c2py_fun_74 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_58 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_8 const &self, const triqs::mesh::cyclat::index_t &n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_8> = c2py::pyfkw<_c2py_fun_74>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_8> = c2py::pyfkw<_c2py_fun_58>;
 
 // copy
-static auto const _c2py_fun_75 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::cyclat>, "m")};
+static auto const _c2py_fun_59 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::cyclat>, "m")};
 
 // copy_from
-static auto const _c2py_fun_76 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::cyclat>, "m1", "m2")};
+static auto const _c2py_fun_60 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::cyclat>, "m1", "m2")};
 
 // index_modulo
-static auto const _c2py_fun_77 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_61 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_8 const &self, const triqs::mesh::cyclat::index_t &n_tilde) -> decltype(auto) { return self.index_modulo(n_tilde); },
                  "self", "n_tilde")};
 
 // is_index_valid
-static auto const _c2py_fun_78 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_62 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_8 const &self, const triqs::mesh::cyclat::index_t &n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
 // to_data_index
-static auto const _c2py_fun_79 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_63 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_8 const &self, const triqs::mesh::cyclat::index_t &n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_80 =
+static auto const _c2py_fun_64 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_8 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_81 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_65 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_8 const &self, const triqs::mesh::cyclat::index_t &n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_82 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::cyclat>, "m")};
+static auto const _c2py_fun_66 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::cyclat>, "m")};
 
-static const auto _c2py_doc_74 =
-   _c2py_fun_74.doc(R"DOC(
+static const auto _c2py_doc_58 =
+   _c2py_fun_58.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`\mathbf{n}`.
 
 Parameters
@@ -2400,8 +2323,8 @@ Returns
    (n_2 + N_2 n_1)` and the hash value and underlying Bravais lattice of the current mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<triqs::mesh::cyclat::mesh_point_t>()});
-static const auto _c2py_doc_75 =
-   _c2py_fun_75.doc(R"DOC(
+static const auto _c2py_doc_59 =
+   _c2py_fun_59.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -2415,8 +2338,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat &>()}}, {c2py::python_typename<triqs::mesh::cyclat>()});
-static const auto _c2py_doc_76 =
-   _c2py_fun_76.doc(R"DOC(
+static const auto _c2py_doc_60 =
+   _c2py_fun_60.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -2429,8 +2352,8 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::cyclat &>()}, {c2py::python_typename<const triqs::mesh::cyclat &>()}});
-static const auto _c2py_doc_77 =
-   _c2py_fun_77.doc(R"DOC(
+static const auto _c2py_doc_61 =
+   _c2py_fun_61.doc(R"DOC(
 Map an arbitrary index :math:`\tilde{\mathbf{n}}` to the unique index :math:`\mathbf{n}` in the supercell.
 
 Parameters
@@ -2445,7 +2368,7 @@ Returns
    \mathbf{N} \mathbf{m}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<triqs::mesh::cyclat::index_t>()});
-static const auto _c2py_doc_78 = _c2py_fun_78.doc(R"DOC(
+static const auto _c2py_doc_62 = _c2py_fun_62.doc(R"DOC(
 Check if an index :math:`\mathbf{n}` is valid, i.e. corresponds to a unit cell/lattice point in the
 supercell.
 
@@ -2460,7 +2383,7 @@ Returns
    True if :math:`0 \leq n_i < N_i \; \forall i`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_79 = _c2py_fun_79.doc(R"DOC(
+static const auto _c2py_doc_63 = _c2py_fun_63.doc(R"DOC(
 Map an index :math:`\mathbf{n}` to its corresponding data index :math:`d(\mathbf{n})`.
 
 Parameters
@@ -2474,7 +2397,7 @@ Returns
    Data index :math:`d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1)`.
 )DOC",
                                                   {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_80 = _c2py_fun_80.doc(R"DOC(
+static const auto _c2py_doc_64 = _c2py_fun_64.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`\mathbf{n}(d)`
 .
 
@@ -2490,8 +2413,8 @@ Returns
    \mod s_2 )`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::cyclat::index_t>()});
-static const auto _c2py_doc_81 =
-   _c2py_fun_81.doc(R"DOC(
+static const auto _c2py_doc_65 =
+   _c2py_fun_65.doc(R"DOC(
 Map an index :math:`\mathbf{n}` to its corresponding lattice point :math:`\mathbf{R}^{\mathbf{n}}`.
 
 Parameters
@@ -2505,8 +2428,8 @@ Returns
    triqs::lattice::bravais_lattice::point_t :math:`\mathbf{R}^{\mathbf{n}}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<triqs::mesh::cyclat::value_t>()});
-static const auto _c2py_doc_82 =
-   _c2py_fun_82.doc(R"DOC(
+static const auto _c2py_doc_66 =
+   _c2py_fun_66.doc(R"DOC(
 Get the values of all mesh points in a mesh.
 
 Parameters
@@ -2526,24 +2449,24 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_8>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_75>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_75.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_76>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_76.c_str()},
-   {"index_modulo", (PyCFunction)c2py::pyfkw<_c2py_fun_77>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_77.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_78>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_78.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_79>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_79.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_80>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_80.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_81>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_81.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_82>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_82.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_59>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_59.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_60>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_60.c_str()},
+   {"index_modulo", (PyCFunction)c2py::pyfkw<_c2py_fun_61>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_61.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_62>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_62.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_63>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_63.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_64>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_64.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_65>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_65.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_66>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_66.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_8>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_8>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_8>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_37 = R"DOC(Get the number of unit cells in each of the three dimensions.)DOC";
-static constexpr auto prop_doc_38 = R"DOC(Get the underlying Bravais lattice.)DOC";
-static constexpr auto prop_doc_39 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_40 = R"DOC(Get the matrix :math:`\mathbf{A}^T` containing the basis vectors of the Bravais lattice in its rows (see 
+static constexpr auto prop_doc_53 = R"DOC(Get the number of unit cells in each of the three dimensions.)DOC";
+static constexpr auto prop_doc_54 = R"DOC(Get the underlying Bravais lattice.)DOC";
+static constexpr auto prop_doc_55 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_56 = R"DOC(Get the matrix :math:`\mathbf{A}^T` containing the basis vectors of the Bravais lattice in its rows (see 
 triqs::lattice::bravais_lattice::units()).)DOC";
 
 // ----- Member and property table ----
@@ -2551,10 +2474,10 @@ triqs::lattice::bravais_lattice::units()).)DOC";
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_8>[] = {
 
-   {"dims", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::dims)>, nullptr, prop_doc_37, nullptr},
-   {"lattice", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::lattice)>, nullptr, prop_doc_38, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::mesh_hash)>, nullptr, prop_doc_39, nullptr},
-   {"units", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::units)>, nullptr, prop_doc_40, nullptr},
+   {"dims", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::dims)>, nullptr, prop_doc_53, nullptr},
+   {"lattice", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::lattice)>, nullptr, prop_doc_54, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::mesh_hash)>, nullptr, prop_doc_55, nullptr},
+   {"units", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::cyclat::units)>, nullptr, prop_doc_56, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_7(PyObject *self, PyObject *key) {
@@ -2665,50 +2588,50 @@ n_k : {par_2}
                                                                      {c2py::python_typename<const std::array<long, 3> &>()},
                                                                      {c2py::python_typename<long>()}});
 // __call__
-static auto const _c2py_fun_83 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_67 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_9 const &self, const triqs::mesh::brzone::index_t &n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_9> = c2py::pyfkw<_c2py_fun_83>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_9> = c2py::pyfkw<_c2py_fun_67>;
 
 // closest_index
-static auto const _c2py_fun_84 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_68 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_9 const &self,
       const nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> &k)
       -> decltype(auto) { return self.template closest_index<nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V'>>(k); },
    "self", "k")};
 
 // copy
-static auto const _c2py_fun_85 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::brzone>, "m")};
+static auto const _c2py_fun_69 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::brzone>, "m")};
 
 // copy_from
-static auto const _c2py_fun_86 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::brzone>, "m1", "m2")};
+static auto const _c2py_fun_70 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::brzone>, "m1", "m2")};
 
 // index_modulo
-static auto const _c2py_fun_87 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_71 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_9 const &self, const triqs::mesh::brzone::index_t &n_tilde) -> decltype(auto) { return self.index_modulo(n_tilde); },
                  "self", "n_tilde")};
 
 // is_index_valid
-static auto const _c2py_fun_88 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_72 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_9 const &self, const triqs::mesh::brzone::index_t &n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
 // to_data_index
-static auto const _c2py_fun_89 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_73 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_9 const &self, const triqs::mesh::brzone::index_t &n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_90 =
+static auto const _c2py_fun_74 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_9 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_91 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_75 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_9 const &self, const triqs::mesh::brzone::index_t &n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_92 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::brzone>, "m")};
+static auto const _c2py_fun_76 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::brzone>, "m")};
 
-static const auto _c2py_doc_83 =
-   _c2py_fun_83.doc(R"DOC(
+static const auto _c2py_doc_67 =
+   _c2py_fun_67.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`\mathbf{n}`.
 
 Parameters
@@ -2723,8 +2646,8 @@ Returns
    (n_2 + N_2 n_1)` and a pointer to the current mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<triqs::mesh::brzone::mesh_point_t>()});
-static const auto _c2py_doc_84 =
-   _c2py_fun_84.doc(R"DOC(
+static const auto _c2py_doc_68 =
+   _c2py_fun_68.doc(R"DOC(
 Map a given :math:`\mathbf{k}`-vector or expression to the closest :math:`\mathbf{k}^{\mathbf{n}}` in the 
 first BZ and return its index :math:`\mathbf{n}`.
 
@@ -2741,8 +2664,8 @@ Returns
                     {{c2py::python_typename<const nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor,
                                                                         nda::borrowed<nda::mem::AddressSpace::Host>> &>()}},
                     {c2py::python_typename<triqs::mesh::brzone::index_t>()});
-static const auto _c2py_doc_85 =
-   _c2py_fun_85.doc(R"DOC(
+static const auto _c2py_doc_69 =
+   _c2py_fun_69.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -2756,8 +2679,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::brzone &>()}}, {c2py::python_typename<triqs::mesh::brzone>()});
-static const auto _c2py_doc_86 =
-   _c2py_fun_86.doc(R"DOC(
+static const auto _c2py_doc_70 =
+   _c2py_fun_70.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -2770,8 +2693,8 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::brzone &>()}, {c2py::python_typename<const triqs::mesh::brzone &>()}});
-static const auto _c2py_doc_87 =
-   _c2py_fun_87.doc(R"DOC(
+static const auto _c2py_doc_71 =
+   _c2py_fun_71.doc(R"DOC(
 Map an arbitrary index :math:`\tilde{\mathbf{n}}` to the unique index :math:`\mathbf{n}` in the first BZ.
 
 Parameters
@@ -2786,7 +2709,7 @@ Returns
    \mathbf{N} \mathbf{m}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<triqs::mesh::brzone::index_t>()});
-static const auto _c2py_doc_88 = _c2py_fun_88.doc(R"DOC(
+static const auto _c2py_doc_72 = _c2py_fun_72.doc(R"DOC(
 Check if an index :math:`\mathbf{n}` is valid, i.e. corresponds to a :math:`\mathbf{k}^\mathbf{n}` in the
 first BZ.
 
@@ -2801,7 +2724,7 @@ Returns
    True if :math:`0 \leq n_i < N_i \; \forall i`, false otherwise.
 )DOC",
                                                   {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_89 = _c2py_fun_89.doc(R"DOC(
+static const auto _c2py_doc_73 = _c2py_fun_73.doc(R"DOC(
 Map an index :math:`\mathbf{n}` to its corresponding data index :math:`d(\mathbf{n})`.
 
 Parameters
@@ -2815,7 +2738,7 @@ Returns
    Data index :math:`d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1)`.
 )DOC",
                                                   {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_90 = _c2py_fun_90.doc(R"DOC(
+static const auto _c2py_doc_74 = _c2py_fun_74.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`\mathbf{n}(d)`.
 
 Parameters
@@ -2830,8 +2753,8 @@ Returns
    \mod s_2 )`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::brzone::index_t>()});
-static const auto _c2py_doc_91 =
-   _c2py_fun_91.doc(R"DOC(
+static const auto _c2py_doc_75 =
+   _c2py_fun_75.doc(R"DOC(
 Map an index :math:`\mathbf{n}` to its corresponding :math:`\mathbf{k}`-point :math:`\mathbf{k}^{\mathbf{n}}`
 .
 
@@ -2846,7 +2769,7 @@ Returns
    `nda::vector<double>` :math:`\mathbf{k}^{\mathbf{n}}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<triqs::mesh::brzone::value_t>()});
-static const auto _c2py_doc_92 = _c2py_fun_92.doc(
+static const auto _c2py_doc_76 = _c2py_fun_76.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -2868,38 +2791,38 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_9>[] = {
-   {"closest_index", (PyCFunction)c2py::pyfkw<_c2py_fun_84>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_84.c_str()},
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_85>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_85.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_86>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_86.c_str()},
-   {"index_modulo", (PyCFunction)c2py::pyfkw<_c2py_fun_87>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_87.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_88>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_88.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_89>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_89.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_90>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_90.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_91>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_91.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_92>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_92.c_str()},
+   {"closest_index", (PyCFunction)c2py::pyfkw<_c2py_fun_68>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_68.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_69>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_69.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_70>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_70.c_str()},
+   {"index_modulo", (PyCFunction)c2py::pyfkw<_c2py_fun_71>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_71.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_72>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_72.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_73>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_73.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_74>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_74.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_75>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_75.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_76>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_76.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_9>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_9>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_9>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_41 = R"DOC(Get the underlying Brillouin zone.)DOC";
-static constexpr auto prop_doc_42 = R"DOC(Get the number of mesh points in each of the three dimensions.)DOC";
-static constexpr auto prop_doc_43 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_44 =
+static constexpr auto prop_doc_57 = R"DOC(Get the underlying Brillouin zone.)DOC";
+static constexpr auto prop_doc_58 = R"DOC(Get the number of mesh points in each of the three dimensions.)DOC";
+static constexpr auto prop_doc_59 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_60 =
    R"DOC(Get the matrix :math:`\tilde{\mathbf{B}}^T` containing the scaled reciprocal basis vectors in its rows.)DOC";
-static constexpr auto prop_doc_45 = R"DOC(Get the matrix :math:`\left( \tilde{\mathbf{B}}^T \right)^{-1}`.)DOC";
+static constexpr auto prop_doc_61 = R"DOC(Get the matrix :math:`\left( \tilde{\mathbf{B}}^T \right)^{-1}`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_9>[] = {
 
-   {"bz", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::bz)>, nullptr, prop_doc_41, nullptr},
-   {"dims", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::dims)>, nullptr, prop_doc_42, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::mesh_hash)>, nullptr, prop_doc_43, nullptr},
-   {"units", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::units)>, nullptr, prop_doc_44, nullptr},
-   {"units_inv", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::units_inv)>, nullptr, prop_doc_45, nullptr},
+   {"bz", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::bz)>, nullptr, prop_doc_57, nullptr},
+   {"dims", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::dims)>, nullptr, prop_doc_58, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::mesh_hash)>, nullptr, prop_doc_59, nullptr},
+   {"units", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::units)>, nullptr, prop_doc_60, nullptr},
+   {"units_inv", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::brzone::units_inv)>, nullptr, prop_doc_61, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_8(PyObject *self, PyObject *key) {
@@ -3012,41 +2935,37 @@ N : {par_2}
 )DOC",
                     {{c2py::python_typename<double>()}, {c2py::python_typename<triqs::mesh::statistic_enum>()}, {c2py::python_typename<long>()}});
 // __call__
-static auto const _c2py_fun_93 =
+static auto const _c2py_fun_77 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_10> = c2py::pyfkw<_c2py_fun_93>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_10> = c2py::pyfkw<_c2py_fun_77>;
 
 // copy
-static auto const _c2py_fun_94 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::chebyshev>, "m")};
+static auto const _c2py_fun_78 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::chebyshev>, "m")};
 
 // copy_from
-static auto const _c2py_fun_95 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::chebyshev>, "m1", "m2")};
+static auto const _c2py_fun_79 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::chebyshev>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_96 =
+static auto const _c2py_fun_80 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
-// points_standard
-static auto const _c2py_fun_97 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self) -> decltype(auto) { return self.points_standard(); }, "self")};
-
 // to_data_index
-static auto const _c2py_fun_98 =
+static auto const _c2py_fun_81 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_99 =
+static auto const _c2py_fun_82 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_100 =
+static auto const _c2py_fun_83 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_10 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_101 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::chebyshev>, "m")};
+static auto const _c2py_fun_84 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::chebyshev>, "m")};
 
-static const auto _c2py_doc_93 = _c2py_fun_93.doc(R"DOC(
+static const auto _c2py_doc_77 = _c2py_fun_77.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`n \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -3060,8 +2979,8 @@ Returns
    mesh_point_t with the index :math:`n`, data index :math:`d(n) = n`, hash value and value :math:`\tau_n`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::chebyshev::mesh_point_t>()});
-static const auto _c2py_doc_94 =
-   _c2py_fun_94.doc(R"DOC(
+static const auto _c2py_doc_78 =
+   _c2py_fun_78.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -3075,8 +2994,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::chebyshev &>()}}, {c2py::python_typename<triqs::mesh::chebyshev>()});
-static const auto _c2py_doc_95 =
-   _c2py_fun_95.doc(R"DOC(
+static const auto _c2py_doc_79 =
+   _c2py_fun_79.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -3089,7 +3008,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::chebyshev &>()}, {c2py::python_typename<const triqs::mesh::chebyshev &>()}});
-static const auto _c2py_doc_96  = _c2py_fun_96.doc(R"DOC(
+static const auto _c2py_doc_80 = _c2py_fun_80.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -3102,11 +3021,8 @@ Returns
 {ret_0}
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
-                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_97  = _c2py_fun_97.doc(R"DOC(
-Access to Chebyshev points on [-1, 1].
-)DOC");
-static const auto _c2py_doc_98  = _c2py_fun_98.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
+static const auto _c2py_doc_81 = _c2py_fun_81.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(n)`.
 
 Parameters
@@ -3119,8 +3035,8 @@ Returns
 {ret_0}
    Data index :math:`d(n) = n`.
 )DOC",
-                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_99  = _c2py_fun_99.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_82 = _c2py_fun_82.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`n(d)`.
 
 Parameters
@@ -3133,8 +3049,8 @@ Returns
 {ret_0}
    Index :math:`n(d) = d`.
 )DOC",
-                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_100 = _c2py_fun_100.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_83 = _c2py_fun_83.doc(R"DOC(
 Map an index :math:`n` to its corresponding value :math:`\tau_n`.
 
 Parameters
@@ -3147,8 +3063,8 @@ Returns
 {ret_0}
    Value :math:`\tau_n` (Chebyshev point scaled to :math:`[0, \beta]`).
 )DOC",
-                                                    {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_101 = _c2py_fun_101.doc(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
+static const auto _c2py_doc_84 = _c2py_fun_84.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -3168,36 +3084,37 @@ Returns
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_10>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_94>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_94.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_95>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_95.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_96>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_96.c_str()},
-   {"points_standard", (PyCFunction)c2py::pyfkw<_c2py_fun_97>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_97.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_98>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_98.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_99>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_99.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_100>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_100.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_101>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_101.c_str()},
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_78>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_78.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_79>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_79.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_80>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_80.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_81>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_81.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_82>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_82.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_83>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_83.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_84>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_84.c_str()},
    {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_10>, METH_VARARGS, "  "},
    {"__getstate__", c2py::getstate_tuple<_c2py_cls_10>, METH_NOARGS, ""},
    {"__setstate__", c2py::setstate_tuple<_c2py_cls_10>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_46 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_47 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_48 = R"DOC(Access to Chebyshev points scaled to [0, beta].)DOC";
-static constexpr auto prop_doc_49 = R"DOC(Get the particle statistics.)DOC";
-static constexpr auto prop_doc_50 = R"DOC(Access to barycentric weights.)DOC";
+static constexpr auto prop_doc_62 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_63 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_64 = R"DOC(Access to Chebyshev points scaled to [0, beta].)DOC";
+static constexpr auto prop_doc_65 = R"DOC(Access to Chebyshev points on [-1, 1].)DOC";
+static constexpr auto prop_doc_66 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_67 = R"DOC(Access to barycentric weights.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_10>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::beta)>, nullptr, prop_doc_46, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::mesh_hash)>, nullptr, prop_doc_47, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points)>, nullptr, prop_doc_48, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::statistic)>, nullptr, prop_doc_49, nullptr},
-   {"weights", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::weights)>, nullptr, prop_doc_50, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::beta)>, nullptr, prop_doc_62, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::mesh_hash)>, nullptr, prop_doc_63, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points)>, nullptr, prop_doc_64, nullptr},
+   {"points_standard", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points_standard)>, nullptr, prop_doc_65, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::statistic)>, nullptr, prop_doc_66, nullptr},
+   {"weights", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::weights)>, nullptr, prop_doc_67, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_9(PyObject *self, PyObject *key) {
@@ -3252,17 +3169,133 @@ Properties:
    })DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_10>;
 // --------- class _c2py_cls_11 -----------
-using _c2py_cls_11                                            = triqs::mesh::legendre;
+using _c2py_cls_11                                            = triqs::mesh::fourier_poly;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_11>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_11> = "triqs.mesh.meshes.MeshLegendre";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_11> = "triqs.mesh.meshes.MeshFourierPoly";
 static auto _c2py_init_10 =
-   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_11>(),
-                           c2py::c_constructor<_c2py_cls_11, double, triqs::mesh::statistic_enum, long>("beta", "statistic", "max_n")}
-      .with_deprecated_params({{"S", "statistic"}, {"n_max", "max_n"}});
-template <> constexpr initproc c2py::tp_init<_c2py_cls_11> = c2py::pyfkw_constructor<_c2py_init_10>;
+   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_11>(), c2py::c_constructor<_c2py_cls_11, std::vector<std::array<long, 3>>>("R_list")};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_11>    = c2py::pyfkw_constructor<_c2py_init_10>;
+template <> const std::string c2py::tp_ctor_doc<_c2py_cls_11> = _c2py_init_10.doc(R"DOC()DOC");
+// __call__
+static auto const _c2py_fun_85 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
+
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_11> = c2py::pyfkw<_c2py_fun_85>;
+
+// copy
+static auto const _c2py_fun_86 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::fourier_poly>, "m")};
+
+// copy_from
+static auto const _c2py_fun_87 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::fourier_poly>, "m1", "m2")};
+
+// is_index_valid
+static auto const _c2py_fun_88 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
+
+// to_data_index
+static auto const _c2py_fun_89 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
+
+// to_index
+static auto const _c2py_fun_90 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod([](_c2py_cls_11 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d"),
+   c2py::cmethod([](_c2py_cls_11 const &self, const triqs::mesh::fourier_poly::value_t &R) -> decltype(auto) { return self.to_index(R); }, "self",
+                 "R")};
+
+// to_value
+static auto const _c2py_fun_91 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
+
+static const auto _c2py_doc_85 = _c2py_fun_85.doc(R"DOC()DOC");
+static const auto _c2py_doc_86 =
+   _c2py_fun_86.doc(R"DOC(
+Get a copy of a mesh (for Python bindings).
+
+Parameters
+----------
+m : {par_0}
+   %Mesh object to copy.
+
+Returns
+-------
+{ret_0}
+   Copy of the given mesh.
+)DOC",
+                    {{c2py::python_typename<const triqs::mesh::fourier_poly &>()}}, {c2py::python_typename<triqs::mesh::fourier_poly>()});
+static const auto _c2py_doc_87 =
+   _c2py_fun_87.doc(R"DOC(
+Copy one mesh into another (for Python bindings).
+
+Simply calls the copy assignment operator of the mesh.
+
+Parameters
+----------
+m1 : {par_0}
+   %Mesh object to copy into.
+m2 : {par_1}
+   %Mesh object to copy from.
+)DOC",
+                    {{c2py::python_typename<triqs::mesh::fourier_poly &>()}, {c2py::python_typename<const triqs::mesh::fourier_poly &>()}});
+static const auto _c2py_doc_88 = _c2py_fun_88.doc(R"DOC()DOC");
+static const auto _c2py_doc_89 = _c2py_fun_89.doc(R"DOC()DOC");
+static const auto _c2py_doc_90 = _c2py_fun_90.doc(R"DOC()DOC");
+static const auto _c2py_doc_91 = _c2py_fun_91.doc(R"DOC()DOC");
+
+// ----- Method table ----
 template <>
-const std::string c2py::tp_ctor_doc<_c2py_cls_11> =
-   _c2py_init_10.doc(R"DOC(
+PyMethodDef c2py::tp_methods<_c2py_cls_11>[] = {
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_86>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_86.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_87>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_87.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_88>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_88.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_89>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_89.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_90>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_90.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_91>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_91.c_str()},
+   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_11>, METH_VARARGS, "  "},
+   {"__getstate__", c2py::getstate_h5<_c2py_cls_11>, METH_NOARGS, ""},
+   {"__setstate__", c2py::setstate_h5<_c2py_cls_11>, METH_O, ""},
+   {nullptr, nullptr, 0, nullptr} // Sentinel
+};
+
+static constexpr auto prop_doc_68 = R"DOC()DOC";
+static constexpr auto prop_doc_69 = R"DOC()DOC";
+static constexpr auto prop_doc_70 = R"DOC()DOC";
+
+// ----- Member and property table ----
+
+template <>
+constinit PyGetSetDef c2py::tp_getset<_c2py_cls_11>[] = {
+
+   {"R_list", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::fourier_poly::R_list)>, nullptr, prop_doc_68, nullptr},
+   {"R_mat", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::fourier_poly::R_mat)>, nullptr, prop_doc_69, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::fourier_poly::mesh_hash)>, nullptr, prop_doc_70, nullptr},
+   {nullptr, nullptr, nullptr, nullptr, nullptr}};
+
+static PyObject *getitem_10(PyObject *self, PyObject *key) {
+  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_11, long>)};
+  return disp(self, key);
+}
+
+template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_11> = {c2py::tpxx_size<_c2py_cls_11>, getitem_10, nullptr};
+
+template <>
+const std::string c2py::tp_doc<_c2py_cls_11> = R"DOC(Mesh type storing a finite set of real-space lattice vectors (R-vectors).
+
+A `gf<fourier_poly, matrix_valued>` stores matrix-valued Fourier coefficients
+for each R-vector. Evaluation at k-points is delegated to free Fourier-evaluation
+kernels in `triqs::tb`.)DOC"
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_11>;
+// --------- class _c2py_cls_12 -----------
+using _c2py_cls_12                                            = triqs::mesh::legendre;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_12>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_12> = "triqs.mesh.meshes.MeshLegendre";
+static auto _c2py_init_11 =
+   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_12>(),
+                           c2py::c_constructor<_c2py_cls_12, double, triqs::mesh::statistic_enum, long>("beta", "statistic", "max_n")}
+      .with_deprecated_params({{"S", "statistic"}, {"n_max", "max_n"}});
+template <> constexpr initproc c2py::tp_init<_c2py_cls_12> = c2py::pyfkw_constructor<_c2py_init_11>;
+template <>
+const std::string c2py::tp_ctor_doc<_c2py_cls_12> =
+   _c2py_init_11.doc(R"DOC(
 [1] Default constructor constructs an empty mesh.
 
 ------
@@ -3283,31 +3316,30 @@ max_n : {par_2}
 )DOC",
                      {{c2py::python_typename<double>()}, {c2py::python_typename<triqs::mesh::statistic_enum>()}, {c2py::python_typename<long>()}});
 // __call__
-static auto const _c2py_fun_102 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
+static auto const _c2py_fun_92 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_11> = c2py::pyfkw<_c2py_fun_102>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_12> = c2py::pyfkw<_c2py_fun_92>;
 
 // copy
-static auto const _c2py_fun_103 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::legendre>, "m")};
+static auto const _c2py_fun_93 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::legendre>, "m")};
 
 // copy_from
-static auto const _c2py_fun_104 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::legendre>, "m1", "m2")};
+static auto const _c2py_fun_94 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::legendre>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_105 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
+static auto const _c2py_fun_95 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
 // to_data_index
-static auto const _c2py_fun_106 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
+static auto const _c2py_fun_96 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_107 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_11 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
+static auto const _c2py_fun_97 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
-static const auto _c2py_doc_102 =
-   _c2py_fun_102.doc(R"DOC(
+static const auto _c2py_doc_92 = _c2py_fun_92.doc(R"DOC(
 Function call operator to access a mesh point by its index :math:`n \in \{0, 1, \ldots, N-1\}`.
 
 Parameters
@@ -3320,9 +3352,9 @@ Returns
 {ret_0}
    mesh_point_t with the index :math:`n`, data index :math:`d(n) = n` and hash value of the current mesh.
 )DOC",
-                     {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::legendre::mesh_point_t>()});
-static const auto _c2py_doc_103 =
-   _c2py_fun_103.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::legendre::mesh_point_t>()});
+static const auto _c2py_doc_93 =
+   _c2py_fun_93.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -3335,9 +3367,9 @@ Returns
 {ret_0}
    Copy of the given mesh.
 )DOC",
-                     {{c2py::python_typename<const triqs::mesh::legendre &>()}}, {c2py::python_typename<triqs::mesh::legendre>()});
-static const auto _c2py_doc_104 =
-   _c2py_fun_104.doc(R"DOC(
+                    {{c2py::python_typename<const triqs::mesh::legendre &>()}}, {c2py::python_typename<triqs::mesh::legendre>()});
+static const auto _c2py_doc_94 =
+   _c2py_fun_94.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -3349,8 +3381,8 @@ m1 : {par_0}
 m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
-                     {{c2py::python_typename<triqs::mesh::legendre &>()}, {c2py::python_typename<const triqs::mesh::legendre &>()}});
-static const auto _c2py_doc_105 = _c2py_fun_105.doc(R"DOC(
+                    {{c2py::python_typename<triqs::mesh::legendre &>()}, {c2py::python_typename<const triqs::mesh::legendre &>()}});
+static const auto _c2py_doc_95 = _c2py_fun_95.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -3363,8 +3395,8 @@ Returns
 {ret_0}
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
-                                                    {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_106 = _c2py_fun_106.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
+static const auto _c2py_doc_96 = _c2py_fun_96.doc(R"DOC(
 Map an index :math:`n \in \{0, 1, \ldots, N-1\}` to its corresponding data index :math:`d(n)`.
 
 Parameters
@@ -3377,8 +3409,8 @@ Returns
 {ret_0}
    Data index :math:`d(n) = n`.
 )DOC",
-                                                    {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_107 = _c2py_fun_107.doc(R"DOC(
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+static const auto _c2py_doc_97 = _c2py_fun_97.doc(R"DOC(
 Map a data index :math:`d \in \{0, 1, \ldots, N-1\}` to the corresponding index :math:`n(d)`.
 
 Parameters
@@ -3391,45 +3423,45 @@ Returns
 {ret_0}
    Index :math:`n(d) = d`.
 )DOC",
-                                                    {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
+                                                  {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
 
 // ----- Method table ----
 template <>
-PyMethodDef c2py::tp_methods<_c2py_cls_11>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_103>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_103.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_104>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_104.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_105>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_105.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_106>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_106.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_107>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_107.c_str()},
-   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_11>, METH_VARARGS, "  "},
-   {"__getstate__", c2py::getstate_tuple<_c2py_cls_11>, METH_NOARGS, ""},
-   {"__setstate__", c2py::setstate_tuple<_c2py_cls_11>, METH_O, ""},
+PyMethodDef c2py::tp_methods<_c2py_cls_12>[] = {
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_93>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_93.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_94>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_94.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_95>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_95.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_96>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_96.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_97>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_97.c_str()},
+   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_12>, METH_VARARGS, "  "},
+   {"__getstate__", c2py::getstate_tuple<_c2py_cls_12>, METH_NOARGS, ""},
+   {"__setstate__", c2py::setstate_tuple<_c2py_cls_12>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_51 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_52 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_53 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_71 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_72 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_73 = R"DOC(Get the particle statistics.)DOC";
 
 // ----- Member and property table ----
 
 template <>
-constinit PyGetSetDef c2py::tp_getset<_c2py_cls_11>[] = {
+constinit PyGetSetDef c2py::tp_getset<_c2py_cls_12>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::beta)>, nullptr, prop_doc_51, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::mesh_hash)>, nullptr, prop_doc_52, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::statistic)>, nullptr, prop_doc_53, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::beta)>, nullptr, prop_doc_71, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::mesh_hash)>, nullptr, prop_doc_72, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::statistic)>, nullptr, prop_doc_73, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
-static PyObject *getitem_10(PyObject *self, PyObject *key) {
-  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_11, long>)};
+static PyObject *getitem_11(PyObject *self, PyObject *key) {
+  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_12, long>)};
   return disp(self, key);
 }
 
-template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_11> = {c2py::tpxx_size<_c2py_cls_11>, getitem_10, nullptr};
+template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_12> = {c2py::tpxx_size<_c2py_cls_12>, getitem_11, nullptr};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_11> = R"DOC(Legendre mesh type.
+const std::string c2py::tp_doc<_c2py_cls_12> = R"DOC(Legendre mesh type.
 
 A Legendre mesh satisfies the triqs::mesh::Mesh concept. It is defined by the number of Legendre
 polynomials :math:`N` used in the series expansion, an inverse temperature :math:`\beta > 0` and its particle 
@@ -3471,17 +3503,17 @@ mesh point #2: index = 2, data index = 2
 mesh point #3: index = 3, data index = 3
 mesh point #4: index = 4, data index = 4
 ```)DOC"
-   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_11>;
-// --------- class _c2py_cls_12 -----------
-using _c2py_cls_12                                            = triqs::mesh::refreq_log;
-template <> constexpr bool c2py::is_wrapped<_c2py_cls_12>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_12> = "triqs.mesh.meshes.MeshReFreqLog";
-static auto _c2py_init_11 =
-   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_12>(), c2py::c_constructor<_c2py_cls_12, double, double, double>("eps", "w_max", "ratio")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_12> = c2py::pyfkw_constructor<_c2py_init_11>;
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_12>;
+// --------- class _c2py_cls_13 -----------
+using _c2py_cls_13                                            = triqs::mesh::refreq_log;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_13>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_13> = "triqs.mesh.meshes.MeshReFreqLog";
+static auto _c2py_init_12 =
+   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_13>(), c2py::c_constructor<_c2py_cls_13, double, double, double>("eps", "w_max", "ratio")};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_13> = c2py::pyfkw_constructor<_c2py_init_12>;
 template <>
-const std::string c2py::tp_ctor_doc<_c2py_cls_12> =
-   _c2py_init_11.doc(R"DOC(
+const std::string c2py::tp_ctor_doc<_c2py_cls_13> =
+   _c2py_init_12.doc(R"DOC(
 [1] Default constructor creates an empty mesh.
 
 ------
@@ -3501,42 +3533,42 @@ ratio : {par_2}
 )DOC",
                      {{c2py::python_typename<double>()}, {c2py::python_typename<double>()}, {c2py::python_typename<double>()}});
 // __call__
-static auto const _c2py_fun_108 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
+static auto const _c2py_fun_98 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_12> = c2py::pyfkw<_c2py_fun_108>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_13> = c2py::pyfkw<_c2py_fun_98>;
 
 // copy
-static auto const _c2py_fun_109 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq_log>, "m")};
+static auto const _c2py_fun_99 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq_log>, "m")};
 
 // copy_from
-static auto const _c2py_fun_110 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq_log>, "m1", "m2")};
+static auto const _c2py_fun_100 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq_log>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_111 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
+static auto const _c2py_fun_101 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
 // is_value_valid
-static auto const _c2py_fun_112 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, double w) -> decltype(auto) { return self.is_value_valid(w); }, "self", "w")};
+static auto const _c2py_fun_102 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, double w) -> decltype(auto) { return self.is_value_valid(w); }, "self", "w")};
 
 // to_data_index
-static auto const _c2py_fun_113 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
+static auto const _c2py_fun_103 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_114 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
+static auto const _c2py_fun_104 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_115 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_12 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
+static auto const _c2py_fun_105 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_116 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq_log>, "m")};
+static auto const _c2py_fun_106 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq_log>, "m")};
 
-static const auto _c2py_doc_108 =
-   _c2py_fun_108.doc(R"DOC(
+static const auto _c2py_doc_98 =
+   _c2py_fun_98.doc(R"DOC(
 Function call operator to access a mesh point by its index.
 
 Parameters
@@ -3549,9 +3581,9 @@ Returns
 {ret_0}
    mesh_point_t at the given index.
 )DOC",
-                     {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::refreq_log::mesh_point_t>()});
-static const auto _c2py_doc_109 =
-   _c2py_fun_109.doc(R"DOC(
+                    {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::refreq_log::mesh_point_t>()});
+static const auto _c2py_doc_99 =
+   _c2py_fun_99.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -3564,9 +3596,9 @@ Returns
 {ret_0}
    Copy of the given mesh.
 )DOC",
-                     {{c2py::python_typename<const triqs::mesh::refreq_log &>()}}, {c2py::python_typename<triqs::mesh::refreq_log>()});
-static const auto _c2py_doc_110 =
-   _c2py_fun_110.doc(R"DOC(
+                    {{c2py::python_typename<const triqs::mesh::refreq_log &>()}}, {c2py::python_typename<triqs::mesh::refreq_log>()});
+static const auto _c2py_doc_100 =
+   _c2py_fun_100.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -3579,7 +3611,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                      {{c2py::python_typename<triqs::mesh::refreq_log &>()}, {c2py::python_typename<const triqs::mesh::refreq_log &>()}});
-static const auto _c2py_doc_111 = _c2py_fun_111.doc(R"DOC(
+static const auto _c2py_doc_101 = _c2py_fun_101.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -3593,7 +3625,7 @@ Returns
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_112 = _c2py_fun_112.doc(R"DOC(
+static const auto _c2py_doc_102 = _c2py_fun_102.doc(R"DOC(
 Check if a value :math:`\omega` is within the mesh range.
 
 Parameters
@@ -3607,7 +3639,7 @@ Returns
    True if :math:`-\omega_{\mathrm{max}} \leq \omega \leq \omega_{\mathrm{max}}`, false otherwise.
 )DOC",
                                                     {{c2py::python_typename<double>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_113 = _c2py_fun_113.doc(R"DOC(
+static const auto _c2py_doc_103 = _c2py_fun_103.doc(R"DOC(
 Map an index :math:`n` to its corresponding data index :math:`d(n) = n`.
 
 Parameters
@@ -3621,7 +3653,7 @@ Returns
    Data index :math:`d(n) = n`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_114 = _c2py_fun_114.doc(R"DOC(
+static const auto _c2py_doc_104 = _c2py_fun_104.doc(R"DOC(
 Map a data index :math:`d` to the corresponding index :math:`n(d) = d`.
 
 Parameters
@@ -3635,7 +3667,7 @@ Returns
    Index :math:`n(d) = d`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_115 = _c2py_fun_115.doc(R"DOC(
+static const auto _c2py_doc_105 = _c2py_fun_105.doc(R"DOC(
 Map an index :math:`n` to its corresponding value :math:`\omega_n`.
 
 Parameters
@@ -3649,7 +3681,7 @@ Returns
    Value of the mesh point :math:`\omega_n`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_116 = _c2py_fun_116.doc(
+static const auto _c2py_doc_106 = _c2py_fun_106.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -3668,48 +3700,48 @@ Returns
 
 // ----- Method table ----
 template <>
-PyMethodDef c2py::tp_methods<_c2py_cls_12>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_109>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_109.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_110>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_110.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_111>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_111.c_str()},
-   {"is_value_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_112>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_112.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_113>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_113.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_114>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_114.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_115>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_115.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_116>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_116.c_str()},
-   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_12>, METH_VARARGS, "  "},
-   {"__getstate__", c2py::getstate_tuple<_c2py_cls_12>, METH_NOARGS, ""},
-   {"__setstate__", c2py::setstate_tuple<_c2py_cls_12>, METH_O, ""},
+PyMethodDef c2py::tp_methods<_c2py_cls_13>[] = {
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_99>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_99.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_100>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_100.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_101>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_101.c_str()},
+   {"is_value_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_102>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_102.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_103>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_103.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_104>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_104.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_105>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_105.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_106>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_106.c_str()},
+   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_13>, METH_VARARGS, "  "},
+   {"__getstate__", c2py::getstate_tuple<_c2py_cls_13>, METH_NOARGS, ""},
+   {"__setstate__", c2py::setstate_tuple<_c2py_cls_13>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_54 = R"DOC(Get the smallest positive frequency :math:`\varepsilon`.)DOC";
-static constexpr auto prop_doc_55 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_56 = R"DOC(Get the vector of frequency point values.)DOC";
-static constexpr auto prop_doc_57 = R"DOC(Get the common ratio :math:`r` of the geometric sequence.)DOC";
-static constexpr auto prop_doc_58 = R"DOC(Get the largest frequency :math:`\omega_{\mathrm{max}}`.)DOC";
+static constexpr auto prop_doc_74 = R"DOC(Get the smallest positive frequency :math:`\varepsilon`.)DOC";
+static constexpr auto prop_doc_75 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_76 = R"DOC(Get the vector of frequency point values.)DOC";
+static constexpr auto prop_doc_77 = R"DOC(Get the common ratio :math:`r` of the geometric sequence.)DOC";
+static constexpr auto prop_doc_78 = R"DOC(Get the largest frequency :math:`\omega_{\mathrm{max}}`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
-constinit PyGetSetDef c2py::tp_getset<_c2py_cls_12>[] = {
+constinit PyGetSetDef c2py::tp_getset<_c2py_cls_13>[] = {
 
-   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::eps)>, nullptr, prop_doc_54, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::mesh_hash)>, nullptr, prop_doc_55, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::points)>, nullptr, prop_doc_56, nullptr},
-   {"ratio", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::ratio)>, nullptr, prop_doc_57, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::w_max)>, nullptr, prop_doc_58, nullptr},
+   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::eps)>, nullptr, prop_doc_74, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::mesh_hash)>, nullptr, prop_doc_75, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::points)>, nullptr, prop_doc_76, nullptr},
+   {"ratio", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::ratio)>, nullptr, prop_doc_77, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::w_max)>, nullptr, prop_doc_78, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
-static PyObject *getitem_11(PyObject *self, PyObject *key) {
-  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_12, long>)};
+static PyObject *getitem_12(PyObject *self, PyObject *key) {
+  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_13, long>)};
   return disp(self, key);
 }
 
-template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_12> = {c2py::tpxx_size<_c2py_cls_12>, getitem_11, nullptr};
+template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_13> = {c2py::tpxx_size<_c2py_cls_13>, getitem_12, nullptr};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_12> = R"DOC(Logarithmic real frequency mesh type.
+const std::string c2py::tp_doc<_c2py_cls_13> = R"DOC(Logarithmic real frequency mesh type.
 
 A logarithmic mesh satisfies the triqs::mesh::MeshWithValues concept and generates a
 symmetric set of frequency points around zero using a geometric sequence.
@@ -3743,16 +3775,16 @@ the function at an arbitrary frequency (see triqs::mesh::evaluate(refreq_log con
      for (int i = 0; auto mp : m)
        fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
    })DOC"
-   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_12>;
-// --------- class _c2py_cls_13 -----------
-using _c2py_cls_13                                            = triqs::mesh::refreq_pts;
-template <> constexpr bool c2py::is_wrapped<_c2py_cls_13>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_13> = "triqs.mesh.meshes.MeshReFreqPts";
-static auto _c2py_init_12 =
-   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_13>(), c2py::c_constructor<_c2py_cls_13, std::vector<double>>("pts")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_13> = c2py::pyfkw_constructor<_c2py_init_12>;
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_13>;
+// --------- class _c2py_cls_14 -----------
+using _c2py_cls_14                                            = triqs::mesh::refreq_pts;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_14>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_14> = "triqs.mesh.meshes.MeshReFreqPts";
+static auto _c2py_init_13 =
+   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_14>(), c2py::c_constructor<_c2py_cls_14, std::vector<double>>("pts")};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_14> = c2py::pyfkw_constructor<_c2py_init_13>;
 template <>
-const std::string c2py::tp_ctor_doc<_c2py_cls_13> = _c2py_init_12.doc(R"DOC(
+const std::string c2py::tp_ctor_doc<_c2py_cls_14> = _c2py_init_13.doc(R"DOC(
 [1] Default constructor creates an empty mesh.
 
 ------
@@ -3768,42 +3800,42 @@ pts : {par_0}
 )DOC",
                                                                       {{c2py::python_typename<std::vector<double>>()}});
 // __call__
-static auto const _c2py_fun_117 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
+static auto const _c2py_fun_107 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, long n) -> decltype(auto) { return self.operator()(n); }, "self", "n")};
 
-template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_13> = c2py::pyfkw<_c2py_fun_117>;
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_14> = c2py::pyfkw<_c2py_fun_107>;
 
 // copy
-static auto const _c2py_fun_118 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq_pts>, "m")};
+static auto const _c2py_fun_108 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy<triqs::mesh::refreq_pts>, "m")};
 
 // copy_from
-static auto const _c2py_fun_119 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq_pts>, "m1", "m2")};
+static auto const _c2py_fun_109 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::copy_from<triqs::mesh::refreq_pts>, "m1", "m2")};
 
 // is_index_valid
-static auto const _c2py_fun_120 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
+static auto const _c2py_fun_110 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, long n) -> decltype(auto) { return self.is_index_valid(n); }, "self", "n")};
 
 // is_value_valid
-static auto const _c2py_fun_121 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, double w) -> decltype(auto) { return self.is_value_valid(w); }, "self", "w")};
+static auto const _c2py_fun_111 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, double w) -> decltype(auto) { return self.is_value_valid(w); }, "self", "w")};
 
 // to_data_index
-static auto const _c2py_fun_122 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
+static auto const _c2py_fun_112 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, long n) -> decltype(auto) { return self.to_data_index(n); }, "self", "n")};
 
 // to_index
-static auto const _c2py_fun_123 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
+static auto const _c2py_fun_113 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, long d) -> decltype(auto) { return self.to_index(d); }, "self", "d")};
 
 // to_value
-static auto const _c2py_fun_124 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_13 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
+static auto const _c2py_fun_114 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_14 const &self, long n) -> decltype(auto) { return self.to_value(n); }, "self", "n")};
 
 // values
-static auto const _c2py_fun_125 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq_pts>, "m")};
+static auto const _c2py_fun_115 = c2py::dispatcher_f_kw_t{c2py::cmethod(&triqs::mesh::values<triqs::mesh::refreq_pts>, "m")};
 
-static const auto _c2py_doc_117 =
-   _c2py_fun_117.doc(R"DOC(
+static const auto _c2py_doc_107 =
+   _c2py_fun_107.doc(R"DOC(
 Function call operator to access a mesh point by its index.
 
 Parameters
@@ -3817,8 +3849,8 @@ Returns
    mesh_point_t at the given index.
 )DOC",
                      {{c2py::python_typename<long>()}}, {c2py::python_typename<triqs::mesh::refreq_pts::mesh_point_t>()});
-static const auto _c2py_doc_118 =
-   _c2py_fun_118.doc(R"DOC(
+static const auto _c2py_doc_108 =
+   _c2py_fun_108.doc(R"DOC(
 Get a copy of a mesh (for Python bindings).
 
 Parameters
@@ -3832,8 +3864,8 @@ Returns
    Copy of the given mesh.
 )DOC",
                      {{c2py::python_typename<const triqs::mesh::refreq_pts &>()}}, {c2py::python_typename<triqs::mesh::refreq_pts>()});
-static const auto _c2py_doc_119 =
-   _c2py_fun_119.doc(R"DOC(
+static const auto _c2py_doc_109 =
+   _c2py_fun_109.doc(R"DOC(
 Copy one mesh into another (for Python bindings).
 
 Simply calls the copy assignment operator of the mesh.
@@ -3846,7 +3878,7 @@ m2 : {par_1}
    %Mesh object to copy from.
 )DOC",
                      {{c2py::python_typename<triqs::mesh::refreq_pts &>()}, {c2py::python_typename<const triqs::mesh::refreq_pts &>()}});
-static const auto _c2py_doc_120 = _c2py_fun_120.doc(R"DOC(
+static const auto _c2py_doc_110 = _c2py_fun_110.doc(R"DOC(
 Check if an index :math:`n` is valid.
 
 Parameters
@@ -3860,7 +3892,7 @@ Returns
    True if :math:`0 \leq n < N`, false otherwise.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_121 = _c2py_fun_121.doc(R"DOC(
+static const auto _c2py_doc_111 = _c2py_fun_111.doc(R"DOC(
 Check if a value :math:`\omega` is within the mesh range.
 
 Parameters
@@ -3874,7 +3906,7 @@ Returns
    True if :math:`\omega_0 \leq \omega \leq \omega_{N-1}`, false otherwise.
 )DOC",
                                                     {{c2py::python_typename<double>()}}, {c2py::python_typename<bool>()});
-static const auto _c2py_doc_122 = _c2py_fun_122.doc(R"DOC(
+static const auto _c2py_doc_112 = _c2py_fun_112.doc(R"DOC(
 Map an index :math:`n` to its corresponding data index :math:`d(n) = n`.
 
 Parameters
@@ -3888,7 +3920,7 @@ Returns
    Data index :math:`d(n) = n`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_123 = _c2py_fun_123.doc(R"DOC(
+static const auto _c2py_doc_113 = _c2py_fun_113.doc(R"DOC(
 Map a data index :math:`d` to the corresponding index :math:`n(d) = d`.
 
 Parameters
@@ -3902,7 +3934,7 @@ Returns
    Index :math:`n(d) = d`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
-static const auto _c2py_doc_124 = _c2py_fun_124.doc(R"DOC(
+static const auto _c2py_doc_114 = _c2py_fun_114.doc(R"DOC(
 Map an index :math:`n` to its corresponding value :math:`\omega_n`.
 
 Parameters
@@ -3916,7 +3948,7 @@ Returns
    Value of the mesh point :math:`\omega_n`.
 )DOC",
                                                     {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
-static const auto _c2py_doc_125 = _c2py_fun_125.doc(
+static const auto _c2py_doc_115 = _c2py_fun_115.doc(
    R"DOC(
 Get the values of all mesh points in a mesh.
 
@@ -3935,42 +3967,42 @@ Returns
 
 // ----- Method table ----
 template <>
-PyMethodDef c2py::tp_methods<_c2py_cls_13>[] = {
-   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_118>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_118.c_str()},
-   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_119>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_119.c_str()},
-   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_120>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_120.c_str()},
-   {"is_value_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_121>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_121.c_str()},
-   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_122>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_122.c_str()},
-   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_123>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_123.c_str()},
-   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_124>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_124.c_str()},
-   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_125>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_125.c_str()},
-   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_13>, METH_VARARGS, "  "},
-   {"__getstate__", c2py::getstate_tuple<_c2py_cls_13>, METH_NOARGS, ""},
-   {"__setstate__", c2py::setstate_tuple<_c2py_cls_13>, METH_O, ""},
+PyMethodDef c2py::tp_methods<_c2py_cls_14>[] = {
+   {"copy", (PyCFunction)c2py::pyfkw<_c2py_fun_108>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_108.c_str()},
+   {"copy_from", (PyCFunction)c2py::pyfkw<_c2py_fun_109>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_109.c_str()},
+   {"is_index_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_110>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_110.c_str()},
+   {"is_value_valid", (PyCFunction)c2py::pyfkw<_c2py_fun_111>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_111.c_str()},
+   {"to_data_index", (PyCFunction)c2py::pyfkw<_c2py_fun_112>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_112.c_str()},
+   {"to_index", (PyCFunction)c2py::pyfkw<_c2py_fun_113>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_113.c_str()},
+   {"to_value", (PyCFunction)c2py::pyfkw<_c2py_fun_114>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_114.c_str()},
+   {"values", (PyCFunction)c2py::pyfkw<_c2py_fun_115>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_115.c_str()},
+   {"__write_hdf5__", c2py::tpxx_write_h5<_c2py_cls_14>, METH_VARARGS, "  "},
+   {"__getstate__", c2py::getstate_tuple<_c2py_cls_14>, METH_NOARGS, ""},
+   {"__setstate__", c2py::setstate_tuple<_c2py_cls_14>, METH_O, ""},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_59 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_60 = R"DOC(Get the vector of frequency point values.)DOC";
+static constexpr auto prop_doc_79 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_80 = R"DOC(Get the vector of frequency point values.)DOC";
 
 // ----- Member and property table ----
 
 template <>
-constinit PyGetSetDef c2py::tp_getset<_c2py_cls_13>[] = {
+constinit PyGetSetDef c2py::tp_getset<_c2py_cls_14>[] = {
 
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::mesh_hash)>, nullptr, prop_doc_59, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::points)>, nullptr, prop_doc_60, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::mesh_hash)>, nullptr, prop_doc_79, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::points)>, nullptr, prop_doc_80, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
-static PyObject *getitem_12(PyObject *self, PyObject *key) {
-  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_13, long>)};
+static PyObject *getitem_13(PyObject *self, PyObject *key) {
+  static c2py::dispatcher_t<c2py::pycfun23> disp = {c2py::cfun2(c2py::getitem<_c2py_cls_14, long>)};
   return disp(self, key);
 }
 
-template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_13> = {c2py::tpxx_size<_c2py_cls_13>, getitem_12, nullptr};
+template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_14> = {c2py::tpxx_size<_c2py_cls_14>, getitem_13, nullptr};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_13> = R"DOC(Real frequency mesh type from arbitrary sorted frequency points.
+const std::string c2py::tp_doc<_c2py_cls_14> = R"DOC(Real frequency mesh type from arbitrary sorted frequency points.
 
 A refreq_pts mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by
 a sorted vector of frequency values :math:`\{\omega_0, \omega_1, \ldots, \omega_{N-1}\}` with
@@ -4011,12 +4043,12 @@ mesh point #2: index = 2, data index = 2, value = 0
 mesh point #3: index = 3, data index = 3, value = 1
 mesh point #4: index = 4, data index = 4, value = 5
 ```)DOC"
-   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_13>;
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_14>;
 
 // ==================== module functions ====================
 
 // make_adjoint_mesh
-static auto const _c2py_fun_126 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_116 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::mesh::imtime &m, long n_iw) { return triqs::mesh::make_adjoint_mesh(m, n_iw); }, "m", "n_iw"_a = -1),
    c2py::cfun([](const triqs::mesh::imfreq &m, long n_tau) { return triqs::mesh::make_adjoint_mesh(m, n_tau); }, "m", "n_tau"_a = -1),
    c2py::cfun([](const triqs::mesh::dlr_imtime &m) { return triqs::mesh::make_adjoint_mesh(m); }, "m"),
@@ -4028,7 +4060,7 @@ static auto const _c2py_fun_126 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::mesh::cyclat &m) { return triqs::mesh::make_adjoint_mesh(m); }, "m"),
    c2py::cfun([](const triqs::mesh::brzone &m) { return triqs::mesh::make_adjoint_mesh(m); }, "m")};
 
-static const auto _c2py_doc_126 = _c2py_fun_126.doc(
+static const auto _c2py_doc_116 = _c2py_fun_116.doc(
    R"DOC(
 [1] Create the adjoint triqs::mesh::imfreq mesh to a given triqs::mesh::imtime mesh.
 
@@ -4136,7 +4168,7 @@ Returns
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"make_adjoint_mesh", (PyCFunction)c2py::pyfkw<_c2py_fun_126>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_126.c_str()},
+   {"make_adjoint_mesh", (PyCFunction)c2py::pyfkw<_c2py_fun_116>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_116.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
@@ -4182,6 +4214,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_meshes() {
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_11>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_12>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_13>) < 0) return NULL;
+  if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_14>) < 0) return NULL;
 
   m = PyModule_Create(&module_def);
   if (m == NULL) return NULL;
@@ -4201,9 +4234,10 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_meshes() {
   _add_type(_c2py_cls_8, "MeshCycLat");
   _add_type(_c2py_cls_9, "MeshBrZone");
   _add_type(_c2py_cls_10, "MeshChebyshev");
-  _add_type(_c2py_cls_11, "MeshLegendre");
-  _add_type(_c2py_cls_12, "MeshReFreqLog");
-  _add_type(_c2py_cls_13, "MeshReFreqPts");
+  _add_type(_c2py_cls_11, "MeshFourierPoly");
+  _add_type(_c2py_cls_12, "MeshLegendre");
+  _add_type(_c2py_cls_13, "MeshReFreqLog");
+  _add_type(_c2py_cls_14, "MeshReFreqPts");
 #undef _add_type
 
   c2py::pyref module = c2py::pyref::module("h5.formats");
@@ -4223,6 +4257,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_meshes() {
   register_h5_type<_c2py_cls_11>(register_class);
   register_h5_type<_c2py_cls_12>(register_class);
   register_h5_type<_c2py_cls_13>(register_class);
+  register_h5_type<_c2py_cls_14>(register_class);
 
   return m;
 }

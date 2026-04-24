@@ -52,6 +52,7 @@ using CallProxyCycLat_x_ReTime_4 = triqs::gfs::gf_proxy<gf_view<prod<cyclat,reti
 using CallProxyCycLat_x_Legendre_4 = triqs::gfs::gf_proxy<gf_view<prod<cyclat,legendre>,tensor_valued<4>>>;
 using CallProxyCycLat_x_DLR_4 = triqs::gfs::gf_proxy<gf_view<prod<cyclat,dlr>,tensor_valued<4>>>;
 using CallProxyCycLat_x_Chebyshev_4 = triqs::gfs::gf_proxy<gf_view<prod<cyclat,chebyshev>,tensor_valued<4>>>;
+using CallProxyFourierPoly_4 = triqs::gfs::gf_proxy<gf_view<fourier_poly,tensor_valued<4>>>;
 
 } // namespace c2py_module
 
@@ -346,5 +347,7 @@ template gf<cyclat, tensor_valued<4>> gf_proxy<gf_view<prod<cyclat,chebyshev>,te
 template gf<cyclat, tensor_valued<4>> gf_proxy<gf_view<prod<cyclat,chebyshev>,tensor_valued<4>>>::operator()<gf<cyclat, tensor_valued<4>>>(all_t const&, double const&);
 template gf<chebyshev, tensor_valued<4>> gf_proxy<gf_view<prod<cyclat,chebyshev>,tensor_valued<4>>>::operator()<gf<chebyshev, tensor_valued<4>>>(std::array<long,3> const&, all_t const&);
 template gf<chebyshev, tensor_valued<4>> gf_proxy<gf_view<prod<cyclat,chebyshev>,tensor_valued<4>>>::operator()<gf<chebyshev, tensor_valued<4>>>(triqs::lattice::bravais_lattice::point_t const&, all_t const&);
+template array<dcomplex, 4> gf_proxy<gf_view<fourier_poly,tensor_valued<4>>>::operator()<array<dcomplex, 4>>(long const&);
+template array<dcomplex, 4> gf_proxy<gf_view<fourier_poly,tensor_valued<4>>>::operator()<array<dcomplex, 4>>(std::array<double, 3> const&);
 
 } // namespace triqs::gfs

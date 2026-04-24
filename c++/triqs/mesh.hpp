@@ -57,6 +57,7 @@
 
 #include "./mesh/brzone.hpp"
 #include "./mesh/cyclat.hpp"
+#include "./mesh/fourier_poly.hpp"
 
 #include "./mesh/prod.hpp"
 

@@ -2818,6 +2818,41 @@ PyMethodDef c2py::tp_methods<_c2py_cls_41>[] = {
 };
 
 template <> const std::string c2py::tp_doc<_c2py_cls_41> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_41>;
+// --------- class _c2py_cls_42 -----------
+using _c2py_cls_42 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::fourier_poly, triqs::gfs::tensor_valued<3>, nda::C_stride_layout>>;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_42>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_42> = "triqs.gfs.wrapped_aux_target_rank_3.CallProxyFourierPoly_3";
+static auto _c2py_init_42                                     = c2py::dispatcher_c_kw_t{
+   c2py::c_constructor<_c2py_cls_42, triqs::gfs::gf_view<triqs::mesh::fourier_poly, triqs::gfs::tensor_valued<3>, nda::C_stride_layout>>("gv")};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_42>    = c2py::pyfkw_constructor<_c2py_init_42>;
+template <> const std::string c2py::tp_ctor_doc<_c2py_cls_42> = _c2py_init_42.doc(R"DOC()DOC");
+// __call__
+static auto const _c2py_fun_42 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod(
+      [](_c2py_cls_42 &self, const long &x1) -> decltype(auto) {
+        return self.template
+        operator()<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, const long &>(x1);
+      },
+      "self", "x1"),
+   c2py::cmethod(
+      [](_c2py_cls_42 &self, const std::array<double, 3> &x1) -> decltype(auto) {
+        return self.template operator()<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>,
+                                        const std::array<double, 3> &>(x1);
+      },
+      "self", "x1")};
+
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_42> = c2py::pyfkw<_c2py_fun_42>;
+
+static const auto _c2py_doc_42 = _c2py_fun_42.doc(R"DOC()DOC");
+
+// ----- Method table ----
+template <>
+PyMethodDef c2py::tp_methods<_c2py_cls_42>[] = {
+
+   {nullptr, nullptr, 0, nullptr} // Sentinel
+};
+
+template <> const std::string c2py::tp_doc<_c2py_cls_42> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_42>;
 
 // ==================== module functions ====================
 
@@ -2897,6 +2932,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_wrapped_aux_t
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_39>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_40>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_41>) < 0) return NULL;
+  if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_42>) < 0) return NULL;
 
   m = PyModule_Create(&module_def);
   if (m == NULL) return NULL;
@@ -2947,6 +2983,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_wrapped_aux_t
   _add_type(_c2py_cls_39, "CallProxyCycLat_x_Legendre_3");
   _add_type(_c2py_cls_40, "CallProxyCycLat_x_DLR_3");
   _add_type(_c2py_cls_41, "CallProxyCycLat_x_Chebyshev_3");
+  _add_type(_c2py_cls_42, "CallProxyFourierPoly_3");
 #undef _add_type
 
   return m;

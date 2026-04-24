@@ -41,6 +41,7 @@ namespace triqs::gfs {
   using mesh::make_adjoint_mesh;
   using mesh::prod;
   using mesh::refreq;
+  using mesh::fourier_poly;
   using mesh::retime;
 } // namespace triqs::gfs
 

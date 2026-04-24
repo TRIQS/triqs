@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include <triqs/tb/fourier_polynomial.hpp>
+#include <ranges>
+#include <tuple>
+
 namespace triqs::gfs {
 
   // evaluator by default forwards everything to evaluate
@@ -77,4 +81,42 @@ namespace triqs::gfs {
     template <typename G> decltype(auto) operator()(G const &g, int n) const { return g(matsubara_freq(n, g.mesh().beta(), g.mesh().statistic())); }
   };
 
+  /*----------------------------------------------------------
+   *  mesh::fourier_poly — Evaluator for Fourier polynomial GFs.
+   *  Dispatches tuple/array k-arguments directly to triqs::tb::fourier_eval,
+   *  using the mesh's R_mat and the GF's data array.
+   *--------------------------------------------------------*/
+
+  template <> struct gf_evaluator<mesh::fourier_poly> {
+
+    template <typename G, typename X>
+      requires(is_gf_v<G>)
+    auto operator()(G const &g, X &&x) const {
+      using Xd                       = std::decay_t<X>;
+      static constexpr int coeff_dim = G::target_t::rank;
+
+      auto fallback = [&](auto &&arg) {
+        auto l = [&g](auto &&...ys) -> decltype(auto) { return g[ys...]; };
+        return make_regular(evaluate(g.mesh(), l, std::forward<decltype(arg)>(arg)));
+      };
+
+      // k-point inputs dispatch to tb::fourier_eval regardless of target rank;
+      // index / mesh_point / range::all inputs go through the evaluate() fallback.
+      if constexpr (requires { std::get<2>(x); }) {
+        std::array<double, 3> k = {std::get<0>(x), std::get<1>(x), std::get<2>(x)};
+        return tb::fourier_eval<coeff_dim, 3>(g.mesh().R_mat(), g.data(), k);
+      } else if constexpr (nda::MemoryArray<Xd>) {
+        if constexpr (Xd::rank == 2)
+          return tb::fourier_eval<coeff_dim>(g.mesh().R_mat(), g.data(), nda::array_const_view<double, 2>(x));
+        else
+          return fallback(std::forward<X>(x));
+      } else if constexpr (std::ranges::range<Xd>) {
+        if constexpr (requires(std::ranges::range_value_t<Xd> v) { v[0]; })
+          return tb::fourier_eval<coeff_dim, 3>(g.mesh().R_mat(), g.data(), x);
+        else
+          return fallback(std::forward<X>(x));
+      } else
+        return fallback(std::forward<X>(x));
+    }
+  };
 } // namespace triqs::gfs

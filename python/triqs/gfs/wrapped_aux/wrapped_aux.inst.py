@@ -17,16 +17,21 @@ from itertools import product
 
 # Valid call argument types for each mesh
 VALID_ARGS = {
-    'imfreq':   ['long', 'matsubara_freq'],
-    'imtime':   ['long', 'double'],
-    'refreq':   ['long', 'double'],
-    'retime':   ['long', 'double'],
-    'legendre': ['long', 'double'],
-    'dlr':      ['long', 'double', 'matsubara_freq'],
-    'chebyshev':['long', 'double'],
-    'brzone':   ['std::array<long,3>', 'std::array<double, 3>'],
-    'cyclat':   ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'],
+    'imfreq':       ['long', 'matsubara_freq'],
+    'imtime':       ['long', 'double'],
+    'refreq':       ['long', 'double'],
+    'retime':       ['long', 'double'],
+    'legendre':     ['long', 'double'],
+    'dlr':          ['long', 'double', 'matsubara_freq'],
+    'chebyshev':    ['long', 'double'],
+    'brzone':       ['std::array<long,3>', 'std::array<double, 3>'],
+    'cyclat':       ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'],
+    'fourier_poly': ['long', 'std::array<double, 3>'],
 }
+
+# Optional per-rank overrides of VALID_ARGS. If a mesh/rank isn't listed here,
+# VALID_ARGS[mesh] is used.
+VALID_ARGS_PER_RANK = {}
 
 # (rank, target C++ type, return C++ type) for each target rank
 TARGETS = [
@@ -40,11 +45,16 @@ TARGETS = [
 # Lattice meshes form product meshes only with non-lattice meshes (and vice versa)
 LATTICE_MESHES = {'brzone', 'cyclat'}
 
+# Meshes that only live as single-mesh GFs (no product with another mesh).
+# Kept as its own set so future additions don't overload LATTICE_MESHES.
+SINGLE_ONLY_MESHES = {'fourier_poly'}
+
 # C++ mesh name -> Python class name component (e.g. 'imfreq' -> 'ImFreq')
 MESH_TO_PYNAME = {
     'imfreq': 'ImFreq', 'imtime': 'ImTime', 'refreq': 'ReFreq', 'retime': 'ReTime',
     'legendre': 'Legendre', 'dlr': 'DLR', 'chebyshev': 'Chebyshev',
     'brzone': 'BrZone', 'cyclat': 'CycLat',
+    'fourier_poly': 'FourierPoly',
 }
 
 
@@ -78,23 +88,32 @@ calls_by_rank = defaultdict(list)
 
 meshes = list(VALID_ARGS)
 
+def args_for(mesh, rank):
+    return VALID_ARGS_PER_RANK.get(mesh, {}).get(rank, VALID_ARGS[mesh])
+
+
 for rank, target, return_t in TARGETS:
     for m1 in meshes:
-        xs = VALID_ARGS[m1]
+        xs = args_for(m1, rank)
 
         # Single-mesh entries
         calls_by_rank[rank].append((m1, [return_t] * len(xs), rank, target, xs))
         if m1 == 'imtime':
             calls_by_rank[rank].append((m1, [return_t] * len(xs), rank, real_valued(target), xs))
 
-        # Product-mesh entries: exactly one of (m1, m2) must be a lattice mesh
+        # Product-mesh entries: exactly one of (m1, m2) must be a lattice mesh.
+        # Single-only meshes don't participate in products.
+        if m1 in SINGLE_ONLY_MESHES:
+            continue
         for m2 in meshes:
+            if m2 in SINGLE_ONLY_MESHES:
+                continue
             m1_is_lat = m1 in LATTICE_MESHES
             m2_is_lat = m2 in LATTICE_MESHES
             if not (m1_is_lat ^ m2_is_lat):
                 continue
 
-            ys = VALID_ARGS[m2]
+            ys = args_for(m2, rank)
             prod_mesh = f"prod<{m1},{m2}>"
 
             # Full evaluation: all (x, y) combinations
@@ -141,6 +160,10 @@ for rank in range(5):
         f.write("#include <triqs/c2py_converters/lattice.hpp>\n")
         f.write("#include <triqs/c2py_converters/mesh.hpp>\n")
         f.write(f'#include "./wrapped_aux_target_rank_{rank}.hpp"\n')
+        f.write("\n")
+        # Pull the clair-c2py-generated Python bindings into this TU so they
+        # compile alongside the explicit gf_proxy::operator() instantiations.
+        f.write(f'#include "wrapped_aux_target_rank_{rank}.wrap.cxx"\n')
 
     # Generate .hpp
     with open(f"wrapped_aux_target_rank_{rank}.hpp", "w") as f:

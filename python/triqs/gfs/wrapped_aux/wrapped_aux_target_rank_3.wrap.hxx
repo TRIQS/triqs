@@ -295,4 +295,11 @@ template <>
 inline constexpr auto c2py::tp_name<triqs::gfs::gf_proxy<
    triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::tensor_valued<3>, nda::C_stride_layout>>> =
    "triqs.gfs.wrapped_aux_target_rank_3.CallProxyCycLat_x_Chebyshev_3";
+template <>
+constexpr bool
+   c2py::is_wrapped<triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::fourier_poly, triqs::gfs::tensor_valued<3>, nda::C_stride_layout>>> = true;
+template <>
+inline constexpr auto
+   c2py::tp_name<triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::fourier_poly, triqs::gfs::tensor_valued<3>, nda::C_stride_layout>>> =
+      "triqs.gfs.wrapped_aux_target_rank_3.CallProxyFourierPoly_3";
 #endif
