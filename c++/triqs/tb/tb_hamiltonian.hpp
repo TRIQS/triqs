@@ -5,8 +5,8 @@
 #include <cassert>
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
+#include <ranges>
 #include "fourier_polynomial.hpp"
-#include "nda/blas/tools.hpp"
 #include "superlattice.hpp"
 #include <nda/h5.hpp>
 
@@ -27,20 +27,29 @@ namespace triqs {
       C2PY_IGNORE tb_hamiltonian(fourier_polynomial<2, 3> fp) : fourier_polynomial<2, 3>{std::move(fp)} {}
 
       // ------------------------ Accessors ----------------------------
-      ///
-      [[nodiscard]] auto const &hoppings() const { return this->coeff_list; }
 
-      /** 
+      /// Lazy range of 2D views into the packed coefficient array, one per R-vector.
+      [[nodiscard]] auto hoppings() {
+        return std::views::iota(0L, n_R()) | std::views::transform([this](long i) { return coeff_arr(i, nda::ellipsis{}); });
+      }
+
+      /// Lazy range of 2D views into the packed coefficient array, one per R-vector.
+      [[nodiscard]] auto hoppings() const {
+        return std::views::iota(0L, n_R()) | std::views::transform([this](long i) { return coeff_arr(i, nda::ellipsis{}); });
+      }
+
+      /**
      * @brief Provide an iterator of tuples of $$(R, t_{R, ab})$$
      * @return elements : tuple of (R, t_{R,ba}) pairs
      */
-      [[nodiscard]] auto elements() const { return itertools::zip(this->get_R_list(), this->get_coefficients()); }
+      [[nodiscard]] auto elements() { return std::views::zip(get_R_list(), hoppings()); }
+      [[nodiscard]] auto elements() const { return std::views::zip(get_R_list(), hoppings()); }
 
-      /** 
+      /**
      * @brief Provide number of orbitals (the dimension of the stored Hamiltonian)
-     * @return n_orbitals 
+     * @return n_orbitals
      */
-      [[nodiscard]] long n_orbitals() const { return this->get_coefficients()[0].extent(0); }
+      [[nodiscard]] long n_orbitals() const { return coeff_arr.shape(1); }
 
       //------------------- band basis energy functions ---------------------------
 
@@ -72,10 +81,8 @@ namespace triqs {
 
       // ------------------- Comparison -------------------
       bool operator==(tb_hamiltonian const &tb) const {
-        return this->get_coefficients() == tb.get_coefficients() && this->get_R_list() == tb.get_R_list();
+        return std::ranges::equal(this->get_R_list(), tb.get_R_list()) && this->get_coeff_arr() == tb.get_coeff_arr();
       }
-
-      bool operator!=(tb_hamiltonian const &tb) const { return !(operator==(tb)); }
 
       // ------------------- Read / Write -------------------------------
 
@@ -98,20 +105,25 @@ namespace triqs {
         auto grp = fg.create_group(subgroup_name);
         write_hdf5_format(grp, tb);
         h5_write(grp, "lattice_vectors_R", tb.get_R_list());
-        h5_write(grp, "hoppings", tb.hoppings());
+        h5_write(grp, "hoppings", tb.get_coeff_arr());
       }
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, tb_hamiltonian &tb) {
         auto grp = fg.open_group(subgroup_name);
-        h5::read(grp, "lattice_vectors_R", tb.R_list);
-        h5::read(grp, "hoppings", tb.coeff_list);
+        std::vector<std::array<long, 3>> r_list;
+        nda::array<dcomplex, 3> coeff_arr;
+        h5::read(grp, "lattice_vectors_R", r_list);
+        h5::read(grp, "hoppings", coeff_arr);
+        auto r_mat                                  = make_R_mat<3>(r_list);
+        static_cast<fourier_polynomial<2, 3> &>(tb) = fourier_polynomial<2, 3>(std::move(r_list), std::move(r_mat), std::move(coeff_arr));
       }
 
       /// MPI broadcast
       friend void mpi_broadcast(tb_hamiltonian &x, mpi::communicator c = {}, int root = 0) {
         mpi::broadcast(x.R_list, c, root);
-        mpi::broadcast(x.coeff_list, c, root);
+        mpi::broadcast(x.coeff_arr, c, root);
+        x.R_mat = make_R_mat<3>(x.R_list);
       }
     };
 

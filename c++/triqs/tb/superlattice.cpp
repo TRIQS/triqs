@@ -49,7 +49,7 @@ namespace triqs::tb {
     using itertools::enumerate;
     if (sl.dim() != kdim) throw std::runtime_error("Superlattice dimension does not match the Fourier polynomial dimension.");
 
-    auto n_orb_L   = fp.get_coefficients()[0].extent(0); // number of orbitals in the lattice
+    auto n_orb_L   = fp.get_coeff_arr().shape(1);        // number of orbitals in the lattice
     auto n_orb_SL  = n_orb_L * sl.n_cluster_sites();     // number of orbitals in the superlattice
     auto orb_range = [&](long a) { return nda::range(a * n_orb_L, (a + 1) * n_orb_L); };
 
@@ -77,7 +77,7 @@ namespace triqs::tb {
               SL_R_list.push_back(R_rounded_2);
               SL_coeff_list.emplace_back(nda::zeros<dcomplex>(n_orb_SL, n_orb_SL));
             }
-            SL_coeff_list[it->second](orb_range(i), orb_range(j)) += fp.get_coefficients()[r_idx];
+            SL_coeff_list[it->second](orb_range(i), orb_range(j)) += fp[r_idx];
           }
         }
       }

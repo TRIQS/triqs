@@ -19,8 +19,8 @@ TEST(SuperLatticeTest, 2x2SquareLattice) {
   // Call the fold function
   auto result = fold(SL, tb);
 
-  auto Rs    = result.get_R_list();
-  auto Coefs = result.get_coefficients();
+  auto Rs           = result.get_R_list();
+  auto const &Coefs = result.get_coeff_arr();
 
   auto expected_Rs = std::vector<std::array<long, 2>>{{0, 0}, {-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
@@ -32,10 +32,11 @@ TEST(SuperLatticeTest, 2x2SquareLattice) {
 
   auto expected_coeffs = std::vector<nda::matrix<dcomplex>>{t_SL_0, t_SL_m1h, t_SL_m1v, t_SL_1h, t_SL_1v};
 
-  ASSERT_EQ(Rs, expected_Rs);
-  ASSERT_EQ(Coefs.size(), expected_coeffs.size());
-  for (size_t i = 0; i < Coefs.size(); ++i) {
-    ASSERT_EQ(Coefs[i], expected_coeffs[i]) << "Mismatch at Coefs[" << i << "] = " << Coefs[i] << "\n  expected: " << expected_coeffs[i];
+  ASSERT_TRUE(std::ranges::equal(Rs, expected_Rs));
+  ASSERT_EQ(Coefs.shape(0), expected_coeffs.size());
+  for (size_t i = 0; i < expected_coeffs.size(); ++i) {
+    auto Ci = Coefs(i, nda::ellipsis{});
+    ASSERT_EQ(Ci, expected_coeffs[i]) << "Mismatch at Coefs[" << i << "] = " << Ci << "\n  expected: " << expected_coeffs[i];
   }
 }
 // ------------------------------------------------
@@ -52,8 +53,8 @@ TEST(SuperLatticeTest, 2x2SquareLattice3d) {
   // Call the fold function
   auto result = fold(SL, tb);
 
-  auto Rs    = result.get_R_list();
-  auto Coefs = result.get_coefficients();
+  auto Rs           = result.get_R_list();
+  auto const &Coefs = result.get_coeff_arr();
 
   auto expected_Rs = std::vector<std::array<long, 3>>{{0, 0, 1}, {0, 0, -1}, {0, 0, 0}, {-1, 0, 0}, {0, -1, 0}, {1, 0, 0}, {0, 1, 0}};
 
@@ -66,10 +67,11 @@ TEST(SuperLatticeTest, 2x2SquareLattice3d) {
 
   auto expected_coeffs = std::vector<nda::matrix<dcomplex>>{id, id, t_SL_0, t_SL_m1h, t_SL_m1v, t_SL_1h, t_SL_1v};
 
-  ASSERT_EQ(Rs, expected_Rs);
-  ASSERT_EQ(Coefs.size(), expected_coeffs.size());
-  for (size_t i = 0; i < Coefs.size(); ++i) {
-    ASSERT_EQ(Coefs[i], expected_coeffs[i]) << "Mismatch at Coefs[" << i << "] = " << Coefs[i] << "\n  expected: " << expected_coeffs[i];
+  ASSERT_TRUE(std::ranges::equal(Rs, expected_Rs));
+  ASSERT_EQ(Coefs.shape(0), expected_coeffs.size());
+  for (size_t i = 0; i < expected_coeffs.size(); ++i) {
+    auto Ci = Coefs(i, nda::ellipsis{});
+    ASSERT_EQ(Ci, expected_coeffs[i]) << "Mismatch at Coefs[" << i << "] = " << Ci << "\n  expected: " << expected_coeffs[i];
   }
 }
 // ------------------------------------------------
@@ -87,9 +89,8 @@ TEST(SuperLatticeTest, 2x1StaggeredCluster) {
   // Call the fold function
   auto result = fold(SL, tb);
 
-  auto Rs    = result.get_R_list();
-  auto Coefs = result.get_coefficients();
-  //for (size_t i = 0; i < Rs.extent(0); ++i) { std::cout << "R_SL[" << i << "] = " << Rs[i] << ", Coef_SL[" << i << "] = " << Coefs[i] << std::endl; }
+  auto Rs           = result.get_R_list();
+  auto const &Coefs = result.get_coeff_arr();
 
   auto expected_Rs = std::vector<std::array<long, 2>>{{0, 0}, {-1, -1}, {-1, 0}, {0, -1}, {1, 1}, {0, 1}, {1, 0}};
 
@@ -103,11 +104,11 @@ TEST(SuperLatticeTest, 2x1StaggeredCluster) {
 
   auto expected_coeffs = std::vector<nda::matrix<dcomplex>>{t_SL_00, t_SL_m1m1, t_SL_m10, t_SL_0m1, t_SL_11, t_SL_01, t_SL_10};
 
-  ASSERT_EQ(Rs, expected_Rs);
-  ASSERT_EQ(Coefs.size(), expected_coeffs.size());
-  for (size_t i = 0; i < Coefs.size(); ++i) {
-    ASSERT_EQ(Coefs[i], expected_coeffs[i]) << "Mismatch at R =" << Rs[i] << "  Coefs[" << i << "] = " << Coefs[i]
-                                            << "\n  expected: " << expected_coeffs[i];
+  ASSERT_TRUE(std::ranges::equal(Rs, expected_Rs));
+  ASSERT_EQ(Coefs.shape(0), expected_coeffs.size());
+  for (size_t i = 0; i < expected_coeffs.size(); ++i) {
+    auto Ci = Coefs(i, nda::ellipsis{});
+    ASSERT_EQ(Ci, expected_coeffs[i]) << "Mismatch at R =" << Rs[i] << "  Coefs[" << i << "] = " << Ci << "\n  expected: " << expected_coeffs[i];
   }
 }
 
