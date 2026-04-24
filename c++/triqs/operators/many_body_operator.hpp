@@ -28,6 +28,7 @@
 #include <triqs/utility/macros.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
+#include <triqs/utility/variant_extensions.hpp>
 #include <h5/h5.hpp>
 
 namespace triqs {
@@ -589,3 +590,15 @@ namespace triqs {
     }
   } // namespace operators
 } // namespace triqs
+
+template <> struct std::hash<triqs::operators::canonical_ops_t> {
+  std::size_t operator()(triqs::operators::canonical_ops_t const &c) const noexcept {
+    std::size_t h = std::hash<bool>{}(c.dagger);
+    for (auto const &idx : c.indices) {
+      std::visit(triqs::utility::overloaded{[&](std::array<long, 3> const &a) { for (long x : a) h += std::hash<long>{}(x); },
+                                            [&](auto const &v) { h += std::hash<std::decay_t<decltype(v)>>{}(v); }},
+                 idx);
+    }
+    return h;
+  }
+};

@@ -26,6 +26,15 @@
 #include <variant>
 #include <vector>
 
+namespace triqs::utility {
+
+  // Lambda-overload helper for std::visit: std::visit(overloaded{[](T1){...}, [](T2){...}}, var).
+  template <typename... Fs> struct overloaded : Fs... {
+    using Fs::operator()...;
+  };
+
+} // namespace triqs::utility
+
 namespace std {
 
   // == ostream operator<< for variant and vector of variant

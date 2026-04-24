@@ -15,7 +15,7 @@
 #
 # Authors: Alexander Hampel, Nils Wentzell
 
-import unittest, itertools
+import unittest, itertools, copy, pickle
 
 from h5 import *
 from triqs.operators import *
@@ -93,6 +93,26 @@ class test_operators(unittest.TestCase):
 
         self.assertEqual(arch['op1'], op1)
         self.assertEqual(arch['op_lst'], op_lst)
+
+    def test_copy_pickle(self):
+        op = n("up", 0) + 2.5 * c_dag("dn", 1) * c("dn", 1)
+
+        self.assertEqual(copy.deepcopy(op), op)
+        self.assertEqual(pickle.loads(pickle.dumps(op)), op)
+
+    def test_canonical_ops_hashable(self):
+        # CanonicalOpsT must be hashable; this is what enables the
+        # std::map<monomial_t, scalar_t> -> PyDict conversion during pickle.
+        from triqs.operators.operators import CanonicalOpsT
+        a = CanonicalOpsT(dagger=True, indices=["up", 0])
+        b = CanonicalOpsT(dagger=True, indices=["up", 0])
+        c = CanonicalOpsT(dagger=False, indices=["up", 0])
+
+        self.assertIsInstance(hash(a), int)
+        self.assertEqual(hash(a), hash(b))
+        self.assertNotEqual(hash(a), hash(c))
+        self.assertEqual({a: "x"}[b], "x")
+        self.assertEqual(len({a, b, c}), 2)
 
     def test_algebra(self):
 
