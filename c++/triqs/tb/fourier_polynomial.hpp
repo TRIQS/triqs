@@ -134,6 +134,7 @@ namespace triqs::tb {
     }
 
     public:
+    fourier_polynomial()                                          = default;
     fourier_polynomial(fourier_polynomial const &)                = default;
     fourier_polynomial(fourier_polynomial &&) noexcept            = default;
     fourier_polynomial &operator=(fourier_polynomial const &)     = default;
