@@ -100,23 +100,9 @@ namespace triqs {
 
       [[nodiscard]] inline static std::string hdf5_format() { return "tb_hamiltonian"; }
 
-      /// Function that writes the tb_Hamiltonian to hdf5 file
-      friend void h5_write(h5::group fg, std::string subgroup_name, tb_hamiltonian const &tb) {
-        auto grp = fg.create_group(subgroup_name);
-        write_hdf5_format(grp, tb);
-        h5_write(grp, "lattice_vectors_R", tb.get_R_list());
-        h5_write(grp, "hoppings", tb.get_coeff_arr());
-      }
+      friend void h5_write(h5::group g, std::string const &name, tb_hamiltonian const &tb) { tb.h5_write_impl(g, name, "tb_hamiltonian"); }
 
-      /// Read from HDF5
-      friend void h5_read(h5::group fg, std::string subgroup_name, tb_hamiltonian &tb) {
-        auto grp = fg.open_group(subgroup_name);
-        std::vector<std::array<long, 3>> r_list;
-        nda::array<dcomplex, 3> coeff_arr;
-        h5::read(grp, "lattice_vectors_R", r_list);
-        h5::read(grp, "hoppings", coeff_arr);
-        static_cast<fourier_polynomial<2, 3> &>(tb) = fourier_polynomial<2, 3>(std::move(r_list), std::move(coeff_arr));
-      }
+      friend void h5_read(h5::group g, std::string const &name, tb_hamiltonian &tb) { tb.h5_read_impl(g, name, "tb_hamiltonian"); }
     };
 
     // Superlattice folding user function

@@ -134,6 +134,29 @@ TEST(tb_tests, h5_read_write) {
   }
 }
 
+TEST(tb_tests, h5_fourier_polynomial_base) {
+
+  mpi::communicator world;
+  if (world.rank() != 0) GTEST_SKIP();
+
+  auto displ_vec = std::vector<std::array<long, 3>>{{{1, 0, 0}, {-1, 0, 0}}};
+  auto coeff_vec = std::vector(displ_vec.size(), nda::array<dcomplex, 2>(nda::diag({1.0, 1.0})));
+  auto fp        = fourier_polynomial<2, 3>(displ_vec, coeff_vec);
+
+  {
+    auto file = h5::file{"test_fp.h5", 'w'};
+    auto grp  = h5::group{file};
+    h5_write(grp, "fp", fp);
+  }
+  {
+    auto file  = h5::file{"test_fp.h5", 'r'};
+    auto grp   = h5::group{file};
+    auto fp_in = h5::h5_read<fourier_polynomial<2, 3>>(grp, "fp");
+    EXPECT_EQ(fp.get_R_list(), fp_in.get_R_list());
+    EXPECT_EQ(fp.get_coeff_arr(), fp_in.get_coeff_arr());
+  }
+}
+
 TEST(tb_tests, mutate_through_accessors) { // NOLINT
 
   auto displ_vec       = std::vector<std::array<long, 3>>{{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}};

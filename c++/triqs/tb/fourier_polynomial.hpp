@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
+#include <h5/h5.hpp>
 #include <mpi/mpi.hpp>
+#include <nda/h5.hpp>
 #include <nda/mpi.hpp>
 #include <nda/nda.hpp>
 #include <type_traits>
@@ -113,8 +115,24 @@ namespace triqs::tb {
     nda::matrix<double> R_mat;                     // R-vectors as doubles [nR, kdim] for BLAS
     nda::array<dcomplex, coeff_dim + 1> coeff_arr; // Fourier coefficients [nR, coeff_shape...]
 
-    private:
-    // -------------------------
+    /// HDF5 write helper for derived classes: writes R_list and coeff_arr under the given format tag.
+    void h5_write_impl(h5::group g, std::string const &name, char const *format) const {
+      auto gr = g.create_group(name);
+      h5::write_hdf5_format_as_string(gr, format);
+      h5::write(gr, "R_list", R_list);
+      h5::write(gr, "coeff_arr", coeff_arr);
+    }
+
+    /// HDF5 read helper for derived classes: reads R_list and coeff_arr in place; rebuilds R_mat.
+    void h5_read_impl(h5::group g, std::string const &name, char const *exp_format) {
+      auto gr = g.open_group(name);
+      h5::assert_hdf5_format_as_string(gr, exp_format, true);
+      h5::read(gr, "R_list", R_list);
+      h5::read(gr, "coeff_arr", coeff_arr);
+      TRIQS_ASSERT(R_list.size() == coeff_arr.shape(0));
+      R_mat = make_R_mat<kdim>(R_list);
+    }
+
     public:
     fourier_polynomial(fourier_polynomial const &)                = default;
     fourier_polynomial(fourier_polynomial &&) noexcept            = default;
@@ -142,6 +160,17 @@ namespace triqs::tb {
       mpi::broadcast(x.coeff_arr, c, root);
       x.R_mat = make_R_mat<kdim>(x.R_list);
     }
+
+    /// HDF5 format tag.
+    [[nodiscard]] static std::string hdf5_format() { return "fourier_polynomial"; }
+
+    /// HDF5 write: standalone serialization of a fourier_polynomial<C, K>.
+    friend void h5_write(h5::group g, std::string const &name, fourier_polynomial const &x) {
+      x.h5_write_impl(g, name, "fourier_polynomial");
+    }
+
+    /// HDF5 read.
+    friend void h5_read(h5::group g, std::string const &name, fourier_polynomial &x) { x.h5_read_impl(g, name, "fourier_polynomial"); }
 
     /** Access real space lattice points */
     [[nodiscard]] C2PY_IGNORE auto const &get_R_list() const { return R_list; }
