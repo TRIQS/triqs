@@ -1,5 +1,7 @@
 #pragma once
 #include <algorithm>
+#include <mpi/mpi.hpp>
+#include <nda/mpi.hpp>
 #include <nda/nda.hpp>
 #include <type_traits>
 #include <utility>
@@ -112,14 +114,6 @@ namespace triqs::tb {
     nda::array<dcomplex, coeff_dim + 1> coeff_arr; // Fourier coefficients [nR, coeff_shape...]
 
     private:
-    // Helper to pack a vector of coefficient arrays into a single coeff_arr
-    static nda::array<dcomplex, coeff_dim + 1> pack_coefficients(std::vector<nda::array<dcomplex, coeff_dim>> const &coeffs) {
-      TRIQS_ASSERT(!coeffs.empty());
-      auto arr = nda::array<dcomplex, coeff_dim + 1>(nda::stdutil::front_append(coeffs[0].shape(), coeffs.size()));
-      for (long i = 0; i < static_cast<long>(coeffs.size()); ++i) arr(i, nda::ellipsis{}) = coeffs[i];
-      return arr;
-    }
-
     // -------------------------
     public:
     fourier_polynomial(fourier_polynomial const &)                = default;
@@ -128,16 +122,25 @@ namespace triqs::tb {
     fourier_polynomial &operator=(fourier_polynomial &&) noexcept = default;
 
     /// Construct from vectors of R-vectors and coefficient arrays.
-    fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, std::vector<nda::array<dcomplex, coeff_dim>> coeff_list_)
-       : R_list(std::move(R_list_)), R_mat(make_R_mat<kdim>(R_list)), coeff_arr(pack_coefficients(coeff_list_)) {
-      TRIQS_ASSERT(this->R_list.size() == coeff_list_.size());
+    fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, std::vector<nda::array<dcomplex, coeff_dim>> const &coeff_list_)
+       : R_list(std::move(R_list_)), R_mat(make_R_mat<kdim>(R_list)) {
+      TRIQS_ASSERT(!coeff_list_.empty());
+      TRIQS_ASSERT(R_list.size() == coeff_list_.size());
+      coeff_arr.resize(nda::stdutil::front_append(coeff_list_[0].shape(), coeff_list_.size()));
+      for (long i = 0; i < static_cast<long>(coeff_list_.size()); ++i) coeff_arr(i, nda::ellipsis{}) = coeff_list_[i];
     }
 
-    /// Construct from R_list, R_mat, and packed coeff_arr directly.
-    fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, nda::matrix<double> R_mat_, nda::array<dcomplex, coeff_dim + 1> coeff_arr_)
-       : R_list(std::move(R_list_)), R_mat(std::move(R_mat_)), coeff_arr(std::move(coeff_arr_)) {
-      TRIQS_ASSERT(static_cast<long>(R_list.size()) == coeff_arr.shape(0));
-      TRIQS_ASSERT(R_mat.shape(0) == coeff_arr.shape(0));
+    /// Construct from R-vectors and a packed coefficient array directly.
+    fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, nda::array<dcomplex, coeff_dim + 1> coeff_arr_)
+       : R_list(std::move(R_list_)), R_mat(make_R_mat<kdim>(R_list)), coeff_arr(std::move(coeff_arr_)) {
+      TRIQS_ASSERT(R_list.size() == coeff_arr.shape(0));
+    }
+
+    /// MPI broadcast: send R_list and coeff_arr; recompute R_mat locally.
+    friend void mpi_broadcast(fourier_polynomial &x, mpi::communicator c = {}, int root = 0) {
+      mpi::broadcast(x.R_list, c, root);
+      mpi::broadcast(x.coeff_arr, c, root);
+      x.R_mat = make_R_mat<kdim>(x.R_list);
     }
 
     /** Access real space lattice points */
@@ -233,8 +236,7 @@ namespace triqs::tb {
         new_coeff_arr(new_idx, nda::ellipsis{}) += coeff_arr(idx, nda::ellipsis{}) * std::exp(2i * M_PI * kR);
       }
 
-      auto new_R_mat = make_R_mat<1>(new_Rs);
-      return {std::move(new_Rs), std::move(new_R_mat), std::move(new_coeff_arr)};
+      return {std::move(new_Rs), std::move(new_coeff_arr)};
     }
 
     // -----------------------------
@@ -246,9 +248,7 @@ namespace triqs::tb {
     }
 
     /// Evaluation at a contiguous range of k-points
-    template <typename V>
-      requires(std::ranges::contiguous_range<V>)
-    nda::array<dcomplex, coeff_dim + 1> operator()(V const &k_iterator) const {
+    nda::array<dcomplex, coeff_dim + 1> operator()(std::ranges::contiguous_range auto const &k_iterator) const {
       return fourier_eval<coeff_dim, kdim>(R_mat, coeff_arr, k_iterator);
     }
 

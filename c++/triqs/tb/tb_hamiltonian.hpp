@@ -115,15 +115,7 @@ namespace triqs {
         nda::array<dcomplex, 3> coeff_arr;
         h5::read(grp, "lattice_vectors_R", r_list);
         h5::read(grp, "hoppings", coeff_arr);
-        auto r_mat                                  = make_R_mat<3>(r_list);
-        static_cast<fourier_polynomial<2, 3> &>(tb) = fourier_polynomial<2, 3>(std::move(r_list), std::move(r_mat), std::move(coeff_arr));
-      }
-
-      /// MPI broadcast
-      friend void mpi_broadcast(tb_hamiltonian &x, mpi::communicator c = {}, int root = 0) {
-        mpi::broadcast(x.R_list, c, root);
-        mpi::broadcast(x.coeff_arr, c, root);
-        x.R_mat = make_R_mat<3>(x.R_list);
+        static_cast<fourier_polynomial<2, 3> &>(tb) = fourier_polynomial<2, 3>(std::move(r_list), std::move(coeff_arr));
       }
     };
 
