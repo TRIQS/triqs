@@ -95,28 +95,23 @@ namespace triqs::gfs {
       using Xd                       = std::decay_t<X>;
       static constexpr int coeff_dim = G::target_t::rank;
 
-      auto fallback = [&](auto &&arg) {
-        auto l = [&g](auto &&...ys) -> decltype(auto) { return g[ys...]; };
-        return make_regular(evaluate(g.mesh(), l, std::forward<decltype(arg)>(arg)));
-      };
-
       // k-point inputs dispatch to tb::fourier_eval regardless of target rank;
       // index / mesh_point / range::all inputs go through the evaluate() fallback.
       if constexpr (requires { std::get<2>(x); }) {
         std::array<double, 3> k = {std::get<0>(x), std::get<1>(x), std::get<2>(x)};
         return tb::fourier_eval<coeff_dim, 3>(g.mesh().R_mat(), g.data(), k);
-      } else if constexpr (nda::MemoryArray<Xd>) {
-        if constexpr (Xd::rank == 2)
-          return tb::fourier_eval<coeff_dim>(g.mesh().R_mat(), g.data(), nda::array_const_view<double, 2>(x));
-        else
-          return fallback(std::forward<X>(x));
-      } else if constexpr (std::ranges::range<Xd>) {
-        if constexpr (requires(std::ranges::range_value_t<Xd> v) { v[0]; })
-          return tb::fourier_eval<coeff_dim, 3>(g.mesh().R_mat(), g.data(), x);
-        else
-          return fallback(std::forward<X>(x));
-      } else
-        return fallback(std::forward<X>(x));
+      } else if constexpr (nda::MemoryArrayOfRank<Xd, 2>) {
+        return tb::fourier_eval<coeff_dim>(g.mesh().R_mat(), g.data(), nda::array_const_view<double, 2>(x));
+      } else if constexpr (std::ranges::range<Xd>
+                           and requires(std::ranges::range_value_t<Xd> v) {
+                                 requires std::tuple_size_v<decltype(v)> == 3;
+                                 requires nda::AnyOf<typename decltype(v)::value_type, double, float>;
+                               }) {
+        return tb::fourier_eval<coeff_dim, 3>(g.mesh().R_mat(), g.data(), x);
+      } else {
+        auto l = [&g](auto &&...ys) -> decltype(auto) { return g[ys...]; };
+        return make_regular(evaluate(g.mesh(), l, std::forward<X>(x)));
+      }
     }
   };
 } // namespace triqs::gfs
