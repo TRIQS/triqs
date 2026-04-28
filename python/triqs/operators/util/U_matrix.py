@@ -333,14 +333,22 @@ def spherical_to_cubic(l, convention='triqs'):
     l : integer
         Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
     convention : string, optional
-                 The basis convention.
-                 Takes the values
+                 The basis convention. For l=2 (d shell) the cubic orderings are:
 
-                 - 'triqs': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
+                 - 'triqs': ("xy","yz","z^2","xz","x^2-y^2"),
                  - 'vasp': same as 'triqs',
-                 - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz"),
-                 - 'wannier90': basis order as ("z^2", "xz", "yz", "x^2-y^2", "xy"),
+                 - 'wien2k': ("z^2","x^2-y^2","xy","yz","xz"),
+                 - 'wannier90': ("z^2","xz","yz","x^2-y^2","xy"),
                  - 'qe': same as 'wannier90'.
+
+                 For l=3 (f shell) the cubic orderings are:
+
+                 - 'triqs': ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)"),
+                 - 'vasp': ("y(3x^2-y^2)","xyz","yz^2","z^3","xz^2","z(x^2-y^2)","x(x^2-3y^2)"),
+                 - 'wannier90': ("z^3","xz^2","yz^2","z(x^2-y^2)","xyz","x(x^2-3y^2)","y(3x^2-y^2)"),
+                 - 'qe': same as 'wannier90',
+                 - 'wien2k': not supported for l=3 (dmftproj uses site-symmetry-specific
+                   transformations; see dmftproj/SRC_templates/case.cf_f_mm2).
 
     Returns
     -------
@@ -354,10 +362,13 @@ def spherical_to_cubic(l, convention='triqs'):
 
     size = 2*l+1
     T = np.zeros((size,size),dtype=complex)
-    if convention in ['wien2k', 'wannier90', 'qe'] and l == 3:
-        raise ValueError("spherical_to_cubic: [wien2k, wannier90, qe] convention implemented only for l=0,1,2")
+    if convention == 'wien2k' and l == 3:
+        raise ValueError("spherical_to_cubic: 'wien2k' convention not implemented for l=3 "
+                         "(dmftproj uses point-group-specific transformations; see "
+                         "dmftproj/SRC_templates/case.cf_f_mm2).")
     if l == 0:
         cubic_names = ("s")
+        T[0,0] = 1.0
     elif l == 1:
         if convention == 'wannier90' or convention == 'qe':
             cubic_names = ("z","x","y")
@@ -394,14 +405,33 @@ def spherical_to_cubic(l, convention='triqs'):
             T[3,1] = 1.0/sqrt(2);   T[3,3] = -1.0/sqrt(2)
             T[4,0] = 1.0/sqrt(2);   T[4,4] = 1.0/sqrt(2)
     elif l == 3:
-        cubic_names = ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)")
-        T[0,0] = 1.0/sqrt(2);    T[0,6] = -1.0/sqrt(2)
-        T[1,1] = 1.0/sqrt(2);    T[1,5] = 1.0/sqrt(2)
-        T[2,2] = 1.0/sqrt(2);    T[2,4] = -1.0/sqrt(2)
-        T[3,3] = 1.0
-        T[4,2] = 1j/sqrt(2);   T[4,4] = 1j/sqrt(2)
-        T[5,1] = 1j/sqrt(2);   T[5,5] = -1j/sqrt(2)
-        T[6,0] = 1j/sqrt(2);   T[6,6] = 1j/sqrt(2)
+        if convention == 'triqs':
+            cubic_names = ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)")
+            T[0,0] = 1.0/sqrt(2);   T[0,6] = -1.0/sqrt(2)
+            T[1,1] = 1.0/sqrt(2);   T[1,5] =  1.0/sqrt(2)
+            T[2,2] = 1.0/sqrt(2);   T[2,4] = -1.0/sqrt(2)
+            T[3,3] = 1.0
+            T[4,2] = 1j/sqrt(2);    T[4,4] =  1j/sqrt(2)
+            T[5,1] = 1j/sqrt(2);    T[5,5] = -1j/sqrt(2)
+            T[6,0] = 1j/sqrt(2);    T[6,6] =  1j/sqrt(2)
+        elif convention == 'vasp':
+            cubic_names = ("y(3x^2-y^2)","xyz","yz^2","z^3","xz^2","z(x^2-y^2)","x(x^2-3y^2)")
+            T[0,0] = 1j/sqrt(2);    T[0,6] =  1j/sqrt(2)
+            T[1,1] = 1j/sqrt(2);    T[1,5] = -1j/sqrt(2)
+            T[2,2] = 1j/sqrt(2);    T[2,4] =  1j/sqrt(2)
+            T[3,3] = 1.0
+            T[4,2] = 1.0/sqrt(2);   T[4,4] = -1.0/sqrt(2)
+            T[5,1] = 1.0/sqrt(2);   T[5,5] =  1.0/sqrt(2)
+            T[6,0] = 1.0/sqrt(2);   T[6,6] = -1.0/sqrt(2)
+        elif convention in ('wannier90', 'qe'):
+            cubic_names = ("z^3","xz^2","yz^2","z(x^2-y^2)","xyz","x(x^2-3y^2)","y(3x^2-y^2)")
+            T[0,3] = 1.0
+            T[1,2] = 1.0/sqrt(2);   T[1,4] = -1.0/sqrt(2)
+            T[2,2] = 1j/sqrt(2);    T[2,4] =  1j/sqrt(2)
+            T[3,1] = 1.0/sqrt(2);   T[3,5] =  1.0/sqrt(2)
+            T[4,1] = 1j/sqrt(2);    T[4,5] = -1j/sqrt(2)
+            T[5,0] = 1.0/sqrt(2);   T[5,6] = -1.0/sqrt(2)
+            T[6,0] = 1j/sqrt(2);    T[6,6] =  1j/sqrt(2)
     else: raise ValueError("spherical_to_cubic: implemented only for l=0,1,2,3")
 
     return T

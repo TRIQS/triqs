@@ -54,3 +54,14 @@ U, U_p = U_matrix_kanamori(n_orb=3, U_int=3.2, Up_int=1.67, J_hund=1.35, full_Ui
 
 assert_arrays_are_close(U_ref, U)
 assert_arrays_are_close(U_p_ref, U_p)
+
+
+# test spherical_to_cubic unitarity for all supported (l, convention) pairs
+for l in (0, 1, 2, 3):
+    for convention in ('triqs', 'vasp', 'wannier90', 'qe', 'wien2k'):
+        if convention == 'wien2k' and l == 3:
+            continue
+        T = spherical_to_cubic(l, convention=convention)
+        identity = numpy.eye(2*l+1)
+        assert_arrays_are_close(T @ T.conj().T, identity)
+        assert_arrays_are_close(T.conj().T @ T, identity)
