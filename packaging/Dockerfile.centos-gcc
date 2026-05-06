@@ -19,7 +19,6 @@ RUN dnf -y install dnf-plugins-core epel-release && \
       make \
       openmpi-devel \
       python3-devel \
-      python3-mako \
       python3-matplotlib \
       python3-mpi4py-openmpi \
       python3-numpy \
