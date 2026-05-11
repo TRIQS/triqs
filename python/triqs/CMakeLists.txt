@@ -74,7 +74,7 @@ foreach(module_src ${module_sources})
 
   # optionally generate Python bindings with clair-c2py
   if(Update_Python_Bindings)
-    set(wrap_cxx "${CMAKE_CURRENT_SOURCE_DIR}/${module_name}.wrap.cxx")
+    set(wrap_cxx "${CMAKE_CURRENT_SOURCE_DIR}/${module_dir}/${module_name}.wrap.cxx")
     set(depfile "${CMAKE_CURRENT_BINARY_DIR}/${module_name}.cpp.d")
 
     add_custom_command(
