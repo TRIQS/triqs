@@ -26,14 +26,27 @@ from scipy.integrate import quad
 def g_semicirc_iw(iw, D):
     r"""Semi-circular Green's function on the Matsubara axis.
 
+    For purely imaginary arguments :math:`i\omega_n`:
+
     .. math::
         G(i\omega) = \frac{2}{D^2}\bigl(i\omega
             - i\,\mathrm{sign}(\omega)\,\sqrt{D^2 + \omega^2}\bigr)
 
+    For general complex arguments :math:`z = i\omega_n + \mu` (used when a
+    chemical potential shift is applied via :class:`SemiCircular`):
+
+    .. math::
+        G(z) = \frac{2}{D^2}\bigl(z - \sqrt{z^2 - D^2}\bigr)
+
+    where the branch of the square root is chosen so that
+    :math:`\operatorname{Im}(\sqrt{z^2-D^2})` has the same sign as
+    :math:`\operatorname{Im}(z)`.
+
     Parameters
     ----------
     iw : complex or array_like
-        Matsubara frequencies (purely imaginary, e.g. ``1j * wn``).
+        Matsubara frequencies, either purely imaginary (e.g. ``1j * wn``)
+        or complex (e.g. ``1j * wn + mu``).
     D  : float
         Half-bandwidth.
 
@@ -42,8 +55,22 @@ def g_semicirc_iw(iw, D):
     G : complex or ndarray
     """
     iw = np.asarray(iw, dtype=complex)
-    w = iw.imag
-    return (2.0 / D**2) * (iw - 1j * np.sign(w) * np.sqrt(D**2 + w**2))
+    if np.all(iw.real == 0):
+        # Fast path for purely imaginary z = iω_n: the formula simplifies to
+        #   G(iω) = (2/D²)(iω − i·sign(ω)·√(D²+ω²))
+        # which is purely imaginary with Im(G) < 0 for ω > 0.
+        w = iw.imag
+        return (2.0 / D**2) * (iw - 1j * np.sign(w) * np.sqrt(D**2 + w**2))
+
+    # General Hilbert-transform formula for complex z (e.g. z = iω_n + μ):
+    sqrt_val = np.sqrt(iw**2 - D**2 + 0j)  # principal branch: Im(sqrt) >= 0
+
+    # Flip to the other sheet (negate) wherever the sign is wrong.
+    # Guard with nonzero: when Im(z)=0 (real axis), sign(Im(z))=0
+    nonzero = iw.imag != 0
+    flip = nonzero & (np.sign(sqrt_val.imag) != np.sign(iw.imag))
+    sqrt_val = np.where(flip, -sqrt_val, sqrt_val)
+    return (2.0 / D**2) * (iw - sqrt_val)
 
 
 # ── Real frequency ──────────────────────────────────────────────────────────
