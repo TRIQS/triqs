@@ -36,11 +36,6 @@ namespace {
                                       0.0035100036188629244571590432844256025990753183026236f,
                                       0.0010539239387211801847383842584035403509305745267760f,
                                       0.00031647363494910673051693859572897361990178111789649f};
-
-  // expected accuracy of the Welford algorithm used in the binning accumulators
-  constexpr float eps = std::numeric_limits<float>::epsilon();
-  std::vector<float> const tol_mean{eps, eps, 8 * eps, 15 * eps, 25 * eps};
-  std::vector<float> const tol_err{eps, eps, eps, eps, eps};
 } // namespace
 
 // Quasi RNG to generates a uniform sequence based on the lower Wythoff sequence.
@@ -69,12 +64,12 @@ TEST(TRIQSStat, GoldenRatioQuasiRNGTest) {
     }
 
     // test log binning
-    auto [m_log, err_log, tau_log, count_log] = log_acc.mean_errors_and_taus();
+    [[maybe_unused]] auto [m_log, err_log, taus_log, eff_log] = log_acc.mean_errors_and_taus();
     EXPECT_EQ(float(m_log), mean_exp[idx]);
     EXPECT_EQ(float(err_log[0]), err_exp[idx]);
 
     // test linear binning
-    auto [m_lin, err_lin, tau_lin] = lin_acc.mean_error_and_tau();
+    [[maybe_unused]] auto [m_lin, err_lin, tau_lin] = lin_acc.mean_error_and_tau();
     EXPECT_EQ(float(m_lin), mean_exp[idx]);
     EXPECT_EQ(float(err_lin), err_exp[idx]);
   }

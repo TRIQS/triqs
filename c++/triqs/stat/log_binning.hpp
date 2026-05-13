@@ -35,6 +35,7 @@
 
 #include <functional>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -54,12 +55,16 @@ namespace triqs::stat {
    *
    * Depending on the given parameter `max_n_bins`, which is given during construction, logarithmic binning is done in
    * the following way:
-   * - `max_n_bins == 0`: Logarithmic binning is turned off, i.e. no data is accumulated, only the count is increased.
-   * - `max_n_bins > 1`: The maximum number of bins \f$ N \f$ is restricted. The bin size of the last bin is \f$
+   * - `max_n_bins == 1`: Welford-only mode — only the running mean and standard error of the unbinned samples are
+   * tracked. No estimate of the autocorrelation time is available.
+   * - `max_n_bins >= 2`: The maximum number of bins \f$ N \f$ is restricted. The bin size of the last bin is \f$
    * 2^{N - 1} \f$.
-   * - `max_n_bins < 0`: The maximum number of bins is unbounded. A new bin is created as soon as the total number of
+   * - `max_n_bins == -1`: The maximum number of bins is unbounded. A new bin is created as soon as the total number of
    * accumulated samples is equal to a power of 2. The bin size of the new bin is \f$ 2^{N - 1} \f$, where \f$ N \f$
    * is the number of bins after the new one has been added.
+   *
+   * Any other value of `max_n_bins` is rejected at construction. To toggle accumulation on/off at runtime, wrap the
+   * accumulator in `std::optional<log_binning>`.
    *
    * See log_binning::operator<< for details on how the data is accumulated.
    *
@@ -87,23 +92,18 @@ namespace triqs::stat {
      * @param max_n_bins Maximum number of bins.
      */
     log_binning(T const &sample, int max_n_bins) : max_n_bins_(max_n_bins) {
-      // turn off logarithmic binning
-      if (max_n_bins == 0) return;
+      if (max_n_bins != -1 && max_n_bins < 1) throw std::runtime_error("log_binning: max_n_bins must be -1 (unbounded) or >= 1.");
 
-      // reserve space for max. number of bins
       if (max_n_bins > 0) {
         mean_bins_.reserve(max_n_bins);
         var_bins_.reserve(max_n_bins);
-        // we accumulate directly into the bin with bin size 1, i.e. there is no need to accumulate any bare samples
+        // bare bins start at block size 2; the size-1 bin is folded into mean_bins_/var_bins_ directly
         bare_bins_.reserve(max_n_bins - 1);
         bare_counts_.reserve(max_n_bins - 1);
       }
 
-      // initialize the mean and variance bin with bin size 1
       mean_bins_.emplace_back(zeroed_sample(sample));
       var_bins_.emplace_back(make_real(zeroed_sample(sample)));
-
-      // initialize the bare bin and count for the bin with bin size 2
       if (max_n_bins != 1) {
         bare_bins_.emplace_back(zeroed_sample(sample));
         bare_counts_.push_back(0);
@@ -113,7 +113,10 @@ namespace triqs::stat {
     /// Get the maximum number of bins.
     [[nodiscard]] long max_n_bins() const { return max_n_bins_; }
 
-    // Get the current number of bins.
+    /// True if the accumulator was constructed with an unbounded number of bins.
+    [[nodiscard]] bool is_unbounded() const { return max_n_bins_ == -1; }
+
+    /// Get the current number of bins.
     [[nodiscard]] long n_bins() const { return var_bins_.size(); }
 
     /// Get the total number of accumulated samples.
@@ -186,52 +189,51 @@ namespace triqs::stat {
     template <typename U> log_binning<T> &operator<<(U const &x) {
       ++count_;
 
-      // early return if logarithmic binning is turned off
-      if (max_n_bins_ == 0) return *this;
+      // seed shape from the first sample for default-constructed accumulators
+      if (mean_bins_.empty()) {
+        T s = x;
+        mean_bins_.emplace_back(zeroed_sample(s));
+        var_bins_.emplace_back(make_real(zeroed_sample(s)));
+        if (max_n_bins_ != 1) {
+          bare_bins_.emplace_back(zeroed_sample(s));
+          bare_counts_.push_back(0);
+        }
+      }
 
-      // always accumulate into the mean and variance bin with block size 1
       T x_m = (x - mean_bins_[0]);
       var_bins_[0] += abs_square(x_m) * (static_cast<double>(count_ - 1) / count_);
       mean_bins_[0] += x_m / count_;
 
-      // accumulate to bins with larger block sizes
-      if (max_n_bins_ != 1) {
-        // add a new bin if the total count is a power of 2 and we have not reached the maximum number of bins
-        if (count_ == (1 << bare_bins_.size()) && (max_n_bins_ < 0 || n_bins() < max_n_bins_)) {
-          // add new mean and variance bins with bin size 2^n_bins()
-          mean_bins_.emplace_back(zeroed_sample(mean_bins_[0]));
-          var_bins_.emplace_back(zeroed_sample(var_bins_[0]));
+      if (max_n_bins_ == 1) return *this;
 
-          // add new bare bin and count for the bin with bin size 2^{n_bins() + 1}
-          if (max_n_bins_ < 0 || n_bins() < max_n_bins_) {
-            bare_bins_.emplace_back(zeroed_sample(bare_bins_[0]));
-            bare_counts_.push_back(0);
-          }
+      if (count_ == (1L << bare_bins_.size()) && (is_unbounded() || n_bins() < max_n_bins_)) {
+        mean_bins_.emplace_back(zeroed_sample(mean_bins_[0]));
+        var_bins_.emplace_back(zeroed_sample(var_bins_[0]));
+
+        // n_bins() has just been incremented; re-check whether another mean bin could still follow
+        if (is_unbounded() || n_bins() < max_n_bins_) {
+          bare_bins_.emplace_back(zeroed_sample(bare_bins_[0]));
+          bare_counts_.push_back(0);
+        }
+      }
+
+      bare_bins_[0] += x;
+      ++bare_counts_[0];
+
+      for (int i = 0; i < bare_bins_.size() && bare_counts_[i] == 2; ++i) {
+        if (i + 1 < bare_bins_.size()) {
+          bare_bins_[i + 1] += bare_bins_[i];
+          ++bare_counts_[i + 1];
         }
 
-        // always accumulate into the bare bin with block size 2
-        bare_bins_[0] += x;
-        ++bare_counts_[0];
+        auto const bc = static_cast<double>(1ul << (i + 1));
+        auto const k  = count_ / bc;
+        x_m           = (bare_bins_[i] / bc - mean_bins_[i + 1]);
+        var_bins_[i + 1] += abs_square(x_m) * ((k - 1) / k);
+        mean_bins_[i + 1] += x_m / k;
 
-        // propagate full bare bins and add them to the mean and variance bins
-        for (int i = 0; i < bare_bins_.size() && bare_counts_[i] == 2; ++i) {
-          // propagate bare bin
-          if (i + 1 < bare_bins_.size()) {
-            bare_bins_[i + 1] += bare_bins_[i];
-            ++bare_counts_[i + 1];
-          }
-
-          // accumulate into the mean and variance bin
-          auto const bc = static_cast<double>(1ul << (i + 1));
-          auto const k  = count_ / bc;
-          x_m           = (bare_bins_[i] / bc - mean_bins_[i + 1]);
-          var_bins_[i + 1] += abs_square(x_m) * ((k - 1) / k);
-          mean_bins_[i + 1] += x_m / k;
-
-          // reset bare bin and count
-          bare_counts_[i] = 0;
-          bare_bins_[i]   = 0;
-        }
+        bare_counts_[i] = 0;
+        bare_bins_[i]   = 0;
       }
 
       return *this;
@@ -314,19 +316,16 @@ namespace triqs::stat {
       var_red.resize(nbins, zeroed_sample(var_bins_[0]));
       nsamples_red.resize(nbins, 0);
 
-      // reduce each bin separately
       for (int i = 0; i < nbins; ++i) {
-        // reduce the number of effective samples
-        auto const ns   = nsamples_red[i];
-        nsamples_red[i] = mpi::all_reduce(ns, c);
+        auto const ns = nsamples_red[i];
+        mpi::all_reduce_in_place(nsamples_red[i], c);
 
-        // reduce the mean bins
-        mean_red[i] *= static_cast<double>(ns) / nsamples_red[i];
-        mean_red[i] = mpi::all_reduce(mean_red[i], c);
+        // skip the per-rank reweighting (and its 0/0) if no rank has samples at this bin level
+        if (nsamples_red[i] > 0) mean_red[i] *= static_cast<double>(ns) / static_cast<double>(nsamples_red[i]);
+        mpi::all_reduce_in_place(mean_red[i], c);
 
-        // reduce the variance bins
         if (i < mean_bins_.size()) var_red[i] += ns * abs_square(mean_bins_[i] - mean_red[i]);
-        var_red[i] = mpi::all_reduce(var_red[i], c);
+        mpi::all_reduce_in_place(var_red[i], c);
       }
 
       return std::make_tuple(mean_red, var_red, nsamples_red);
@@ -369,6 +368,9 @@ namespace triqs::stat {
       h5::read(gr, "var_bins", acc.var_bins_);
       h5::read(gr, "bare_bins", acc.bare_bins_);
       h5::read(gr, "bare_counts", acc.bare_counts_);
+
+      if (acc.max_n_bins_ != -1 && acc.max_n_bins_ < 1)
+        throw std::runtime_error("h5_read: invalid log_binning state (max_n_bins must be -1 or >= 1).");
     }
 
     private:
@@ -386,17 +388,16 @@ namespace triqs::stat {
       auto taus       = std::vector<real_t>(size);
 
       // calculate errors and taus
-      real_t var0 = qk[0] / (nsamples[0] * (nsamples[0] - 1));
+      real_t var0 = qk[0] / (static_cast<double>(nsamples[0]) * static_cast<double>(nsamples[0] - 1));
       for (int i = 0; i < size; ++i) {
-        real_t var = errs[i] / (effs[i] * (effs[i] - 1));
+        real_t var = errs[i] / (static_cast<double>(effs[i]) * static_cast<double>(effs[i] - 1));
         errs[i]    = nda::sqrt(var);
         taus[i]    = 0.5 * (var / var0 - 1.0);
       }
       return std::make_tuple(mk[0], errs, taus, effs);
     }
 
-    private:
-    long max_n_bins_{0};
+    long max_n_bins_{-1};
     long count_{0};
     std::vector<value_t> mean_bins_{};
     std::vector<real_t> var_bins_{};

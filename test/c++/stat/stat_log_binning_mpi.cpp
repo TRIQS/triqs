@@ -67,4 +67,47 @@ TEST(TRIQSStat, LogBinningComplexDoubleScalarMPI) { test_mpi(std::complex<double
 TEST(TRIQSStat, LogBinningDoubleArrayMPI) { test_mpi(nda::array<double, 1>(7)); }
 TEST(TRIQSStat, LogBinningComplexDouble2DArrayMPI) { test_mpi(nda::array<std::complex<double>, 2>(3, 4)); }
 
+// Test MPI reduction when only rank 0 contributes samples (other ranks idle).
+template <typename T> void test_mpi_idle_ranks(T const &tmp) {
+  using namespace triqs::stat;
+  mpi::communicator comm;
+  log_binning acc_ref{tmp, -1};
+  log_binning acc_rank{tmp, -1};
+  auto rng = std::mt19937{};
+
+  // generate the same sequence on every rank; only rank 0 feeds it to acc_rank
+  int const nsamples = 64;
+  for (int j = 0; j < nsamples; ++j) {
+    auto sample = random_sample(tmp, rng);
+    acc_ref << sample;
+    if (comm.rank() == 0) acc_rank << sample;
+  }
+
+  // mpi reduce: result must equal the single-rank reference
+  auto [mk_mpi, qk_mpi, nsamples_mpi] = acc_rank.mpi_all_reduce(comm);
+  EXPECT_EQ(mk_mpi.size(), acc_ref.n_bins());
+  auto ref_counts = acc_ref.effective_counts();
+  for (int i = 0; i < acc_ref.n_bins(); ++i) {
+    EXPECT_EQ(nsamples_mpi[i], ref_counts[i]);
+    check_array_or_scalar(mk_mpi[i], acc_ref.mean_bins()[i]);
+    check_array_or_scalar(qk_mpi[i], acc_ref.var_bins()[i]);
+  }
+}
+
+TEST(TRIQSStat, LogBinningDoubleScalarMPIIdleRanks) { test_mpi_idle_ranks(0.0); }
+TEST(TRIQSStat, LogBinningDoubleArrayMPIIdleRanks) { test_mpi_idle_ranks(nda::array<double, 1>(7)); }
+
+// Test MPI reduction when no rank has any samples (all-empty).
+TEST(TRIQSStat, LogBinningDoubleScalarMPIAllEmpty) {
+  using namespace triqs::stat;
+  mpi::communicator comm;
+  log_binning acc{0.0, -1};
+
+  auto [mk_mpi, qk_mpi, nsamples_mpi] = acc.mpi_all_reduce(comm);
+  EXPECT_EQ(mk_mpi.size(), 1);
+  EXPECT_EQ(nsamples_mpi[0], 0);
+  EXPECT_EQ(mk_mpi[0], 0.0);
+  EXPECT_EQ(qk_mpi[0], 0.0);
+}
+
 MAKE_MAIN;
