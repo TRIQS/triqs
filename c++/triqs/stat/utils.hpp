@@ -26,6 +26,7 @@
 
 #include <nda/nda.hpp>
 
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -67,6 +68,31 @@ namespace triqs::stat {
       return T{0};
     } else {
       return get_regular_t<T>::zeros(sample.shape());
+    }
+  }
+
+  /**
+   * @brief Get a sample with all elements set to NaN.
+   *
+   * @details Used to flag undefined / insufficient-data results in places where a numeric value is
+   * expected (e.g. estimates of the standard error or autocorrelation time when there are too few
+   * samples). NaN is preferred over zero because it propagates through arithmetic and is
+   * distinguishable from a legitimate zero measurement.
+   *
+   * @tparam T triqs::stat::StatCompatible type.
+   * @param sample Dummy sample to determine its type and shape in case of an `nda::Array` type.
+   * @return NaN-filled sample.
+   */
+  template <StatCompatible T> [[nodiscard]] auto nan_sample([[maybe_unused]] T const &sample) {
+    if constexpr (nda::Scalar<T>) {
+      using real_t = std::remove_cvref_t<decltype(std::real(std::declval<T>()))>;
+      return T{std::numeric_limits<real_t>::quiet_NaN()};
+    } else {
+      using elem_t      = typename get_regular_t<T>::value_type;
+      using real_elem_t = std::remove_cvref_t<decltype(std::real(std::declval<elem_t>()))>;
+      auto res          = get_regular_t<T>(sample.shape());
+      res()             = elem_t{std::numeric_limits<real_elem_t>::quiet_NaN()};
+      return res;
     }
   }
 
