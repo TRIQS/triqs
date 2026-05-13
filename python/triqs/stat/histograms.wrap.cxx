@@ -171,8 +171,8 @@ static const auto _c2py_doc_2 =
    _c2py_fun_2.doc(R"DOC(
 Normalize and integrate a histogram.
 
-It simply performs partial summation of the bin counts and then divides by the total number of data
-points (including the lost points).
+It simply performs partial summation of the bin counts and then divides by the number of in-range data
+points (lost points are excluded).
 
 This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
 probabilities from triqs::stat::pdf.
@@ -192,7 +192,7 @@ static const auto _c2py_doc_3 =
    _c2py_fun_3.doc(R"DOC(
 Normalize a histogram.
 
-It simply divides each bin count by the total number of data points (including the lost points).
+It simply divides each bin count by the number of in-range data points (lost points are excluded).
 
 .. note::
 
