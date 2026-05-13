@@ -146,7 +146,7 @@ namespace triqs::mc_tools {
      * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
      */
     mc_generic(const std::string &rng_name, int rng_seed, int verbosity_lvl)
-       : rng_(rng_name, rng_seed), moves_(rng_), report_(&std::cout, verbosity_lvl) {}
+       : rng_(rng_name, rng_seed), moves_(rng_), report_(&std::cout, verbosity_lvl), verbosity_lvl_(verbosity_lvl) {}
 
     /**
      * @brief Register a new MC move.
@@ -393,6 +393,7 @@ namespace triqs::mc_tools {
     std::int64_t ncycles_done_{0};
     double percentage_done_{0};
     std::int64_t config_id_{0};
+    int verbosity_lvl_{0};
   };
 
   // Explicit template instantiation declarations.

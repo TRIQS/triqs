@@ -245,19 +245,23 @@ namespace triqs::mc_tools {
     auto tot_nmeasures = mpi::reduce(nmeasures_done_, c);
     auto tot_duration  = mpi::reduce(get_accumulation_time(), c);
 
-    // generate rank dependent output string
-    std::string info{"\n"};
-    info += fmt::format("[Rank {}] Warmup duration: {:.4f} seconds [{}]\n", c.rank(), get_warmup_time(), get_warmup_time_HHMMSS());
-    info += fmt::format("[Rank {}] Simulation duration: {:.4f} seconds [{}]\n", c.rank(), get_accumulation_time(), get_accumulation_time_HHMMSS());
-    info += fmt::format("[Rank {}] Number of measures: {}\n", c.rank(), nmeasures_done_);
-    info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
-    info += fmt::format("[Rank {}] Measurement durations (total = {:.4f}):\n{}", c.rank(), measures_.total_duration(),
-                        measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
-    info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
-    info += fmt::format("[Rank {}] Move durations (total = {:.4f}):\n{}", c.rank(), moves_.total_duration(),
-                        moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+    // generate rank dependent output string (skipped on ranks where it would not be printed;
+    // gather below is still called on every rank with an empty contribution to keep the collective safe)
+    std::string info;
+    if (verbosity_lvl_ >= 3) {
+      info = "\n";
+      info += fmt::format("[Rank {}] Warmup duration: {:.4f} seconds [{}]\n", c.rank(), get_warmup_time(), get_warmup_time_HHMMSS());
+      info += fmt::format("[Rank {}] Simulation duration: {:.4f} seconds [{}]\n", c.rank(), get_accumulation_time(), get_accumulation_time_HHMMSS());
+      info += fmt::format("[Rank {}] Number of measures: {}\n", c.rank(), nmeasures_done_);
+      info += fmt::format("[Rank {}] Cycles (measures) / second: {:.2e}\n", c.rank(), nmeasures_done_ / get_accumulation_time());
+      info += fmt::format("[Rank {}] Measurement durations (total = {:.4f}):\n{}", c.rank(), measures_.total_duration(),
+                          measures_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+      info += fmt::format("[Rank {}] Move statistics:\n{}", c.rank(), moves_.get_statistics(fmt::format("[Rank {}]   ", c.rank())));
+      info += fmt::format("[Rank {}] Move durations (total = {:.4f}):\n{}", c.rank(), moves_.total_duration(),
+                          moves_.get_timings(fmt::format("[Rank {}]   ", c.rank())));
+    }
 
-    // gather all output strings on rank 0 to print in order
+    // gather all output strings on rank 0 to print in order (collective; ranks with low verbosity contribute "")
     auto all_infos = mpi::gather(info, c);
     if (c.rank() == 0) {
       report_(3) << all_infos;
