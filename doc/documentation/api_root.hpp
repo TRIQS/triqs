@@ -13,6 +13,7 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 
+#include <triqs/stat/concepts.hpp>
 #include <triqs/stat/mean_error.hpp>
 #include <triqs/stat/lin_binning.hpp>
 #include <triqs/stat/log_binning.hpp>
