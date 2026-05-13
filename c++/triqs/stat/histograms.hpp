@@ -255,7 +255,7 @@ namespace triqs::stat {
     /**
      * @brief Normalize a histogram.
      *
-     * @details It simply divides each bin count by the total number of data points (including the lost points).
+     * @details It simply divides each bin count by the number of in-range data points (lost points are excluded).
      *
      * @note This does not return the PDF of the underlying continuous distribution but rather the discrete probabilities
      * that a data point falls into a certain bin.
@@ -272,8 +272,8 @@ namespace triqs::stat {
     /**
      * @brief Normalize and integrate a histogram.
      *
-     * @details It simply performs partial summation of the bin counts and then divides by the total number of data
-     * points (including the lost points).
+     * @details It simply performs partial summation of the bin counts and then divides by the number of in-range data
+     * points (lost points are excluded).
      *
      * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
      * probabilities from pdf(histogram const &).
