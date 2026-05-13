@@ -66,7 +66,7 @@ template <typename T> void check_bins(T const &acc, std::vector<typename T::valu
   using namespace triqs::stat;
   for (int i = 0; i < acc.n_bins(); ++i) {
     auto const bin_size = (1 << i);
-    auto [m, v]         = bin_data(data, bin_size);
+    auto m              = bin_data(data, bin_size).first;
     auto const nsamples = (data.size() % bin_size == 0 ? m.size() : m.size() - 1);
     auto [mean, err]    = mean_and_err<error_tag::sum>(std::span{m.data(), nsamples});
     err                 = (nsamples < 2 ? zeroed_sample(err) : err);
@@ -75,22 +75,32 @@ template <typename T> void check_bins(T const &acc, std::vector<typename T::valu
   }
 }
 
-// Test logarithmic binning with 0 bins.
-template <typename T> void test_zero_bins(const T &tmp) {
+// Test that a default-constructed accumulator is usable: the first sample seeds the shape, and
+// subsequent pushes match an explicitly constructed unbounded accumulator.
+template <typename T> void test_default_constructed(const T &tmp) {
   using namespace triqs::stat;
-  log_binning acc{tmp, 0};
+  log_binning<T> acc{};
+  log_binning ref{tmp, -1};
+  std::vector<T> data{};
   auto rng = std::mt19937{};
 
-  // empty accumulator
-  check_state(acc, 0, 0);
+  EXPECT_TRUE(acc.is_unbounded());
 
-  // add some random samples
-  for (int i = 0; i < 10; ++i) acc << random_sample(tmp, rng);
-  check_state(acc, 0, 10);
+  for (int i = 0; i < 20; ++i) {
+    auto sample = random_sample(tmp, rng);
+    acc << sample;
+    ref << sample;
+    data.push_back(sample);
+  }
+  check_acc(ref, acc);
+  check_bins(acc, data);
+}
 
-  // check sizes of calculated errors and taus
-  auto [m, errs, taus, effs] = acc.mean_errors_and_taus();
-  EXPECT_EQ(errs.size(), 0);
+// Test that the constructor rejects invalid max_n_bins values.
+template <typename T> void test_invalid_args(const T &tmp) {
+  using namespace triqs::stat;
+  EXPECT_THROW(log_binning(tmp, -2), std::runtime_error);
+  EXPECT_THROW(log_binning(tmp, 0), std::runtime_error);
 }
 
 // Test logarithmic binning with 1 bin.
@@ -217,11 +227,13 @@ template <typename T> void test_finite_bins(const T &tmp) {
   check_bins(acc10, data);
 }
 
-// zero bins
-TEST(TRIQSStat, LogBinningDoubleScalarMaxNBinsZero) { test_zero_bins(0.0); }
-TEST(TRIQSStat, LogBinningComplexDoubleScalarMaxNBinsZero) { test_zero_bins(std::complex<double>{0.0, 0.0}); }
-TEST(TRIQSStat, LogBinningDoubleArrayMaxNBinsZero) { test_zero_bins(nda::array<double, 1>(7)); }
-TEST(TRIQSStat, LogBinningComplexDouble2DArrayMaxNBinsZero) { test_zero_bins(nda::array<std::complex<double>, 2>(3, 4)); }
+// default-constructed
+TEST(TRIQSStat, LogBinningDoubleScalarDefaultConstructed) { test_default_constructed(0.0); }
+TEST(TRIQSStat, LogBinningDoubleArrayDefaultConstructed) { test_default_constructed(nda::array<double, 1>(7)); }
+
+// invalid constructor arguments
+TEST(TRIQSStat, LogBinningDoubleScalarInvalidArgs) { test_invalid_args(0.0); }
+TEST(TRIQSStat, LogBinningDoubleArrayInvalidArgs) { test_invalid_args(nda::array<double, 1>(7)); }
 
 // one bin
 TEST(TRIQSStat, LogBinningDoubleScalarMaxNBinsOne) { test_one_bin(0.0); }
