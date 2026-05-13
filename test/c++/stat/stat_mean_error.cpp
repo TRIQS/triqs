@@ -43,14 +43,12 @@ template <typename T> auto generate_data(T const &tmp, mpi::communicator comm) {
   auto mean_all  = zeroed_sample(tmp);
   auto err_all   = make_real(zeroed_sample(tmp));
   nda::array<T, 1> data_rank(nsamples);
-  nda::array<T, 1> data_all(nsamples * comm.size());
   for (int i = 0; i < nsamples * comm.size(); ++i) {
     // generate a random sample
     T sample = random_sample(tmp, rng);
 
-    // add the sample to the data and update the mean and error
+    // update the global mean and error
     auto const ns = static_cast<double>(i + 1);
-    data_all(i)   = sample;
     err_all += ((ns - 1) / ns) * abs_square(sample - mean_all);
     mean_all += (sample - mean_all) / ns;
 
@@ -66,13 +64,13 @@ template <typename T> auto generate_data(T const &tmp, mpi::communicator comm) {
   // calculate the standard error
   err_rank = nda::sqrt(err_rank / (nsamples * (nsamples - 1)));
   err_all  = nda::sqrt(err_all / (nsamples * comm.size() * (nsamples * comm.size() - 1)));
-  return std::make_tuple(mean_rank, err_rank, mean_all, err_all, data_rank, data_all);
+  return std::make_tuple(mean_rank, err_rank, mean_all, err_all, data_rank);
 }
 
 // Test mean, mean_mpi, mean_and_err and mean_and_err_mpi functions.
 template <typename T> void test_mean_and_error(T const &tmp) {
   mpi::communicator comm;
-  auto [mean_rank, err_rank, mean_all, err_all, data_rank, data_all] = generate_data<T>(tmp, comm);
+  auto [mean_rank, err_rank, mean_all, err_all, data_rank] = generate_data<T>(tmp, comm);
   auto const mpi_samples                                             = nsamples * comm.size();
 
   // mean

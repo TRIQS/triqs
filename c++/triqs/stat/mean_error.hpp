@@ -164,14 +164,14 @@ namespace triqs::stat {
     // early return if no communicator is provided
     if (!c) return mean<mtag>(rg);
 
-    auto tmp = mean<mtag>(rg);
+    value_t res = mean<mtag>(rg);
     if constexpr (mtag == mean_tag::mean) {
       // for mtag == mean_tag::mean, we need to take care of different sample sizes
       auto const n_i = std::ranges::size(rg);
       auto const n   = mpi::all_reduce(n_i, *c);
-      tmp *= static_cast<double>(n_i) / static_cast<double>(n);
+      res *= static_cast<double>(n_i) / static_cast<double>(n);
     }
-    value_t res = mpi::all_reduce(tmp, *c);
+    mpi::all_reduce_in_place(res, *c);
     return res;
   }
 
@@ -235,7 +235,6 @@ namespace triqs::stat {
   template <error_tag etag = error_tag::err_mean, mean_tag mtag = mean_tag::mean, StatCompatibleRange R>
   auto mean_and_err_mpi(std::optional<mpi::communicator> c, R &&rg) { // NOLINT (ranges should not be forwarded)
     using value_t = get_regular_t<std::ranges::range_value_t<R>>;
-    using real_t  = get_real_t<value_t>;
 
     // early return if no communicator is provided
     if (!c) return mean_and_err<etag, mtag>(rg);
@@ -249,16 +248,16 @@ namespace triqs::stat {
 
     // reduce the mean
     value_t res_m = m * (static_cast<double>(n) / static_cast<double>(n_red));
-    res_m         = mpi::all_reduce(res_m, *c);
+    mpi::all_reduce_in_place(res_m, *c);
 
     // reduce the sum of squared deviations from the mean
     ssqdev += n * abs_square(m - res_m);
-    real_t res_s = mpi::all_reduce(ssqdev, *c);
+    mpi::all_reduce_in_place(ssqdev, *c);
 
     // apply the mean and error tags
     apply_mean_tag<mtag>(res_m, n_red);
-    apply_error_tag<etag>(res_s, n_red);
-    return std::make_pair(res_m, res_s);
+    apply_error_tag<etag>(ssqdev, n_red);
+    return std::make_pair(res_m, ssqdev);
   }
 
   /**
@@ -266,7 +265,7 @@ namespace triqs::stat {
    *
    * @details The integrated autocorrelation time is estimated as
    * \f[
-   *   \tau = \frac{1}{2} \left( \frac{s^2_n}{s^2_0} - 1 \right)^2 \; ,
+   *   \tau = \frac{1}{2} \left( \frac{s^2_n}{s^2_0} - 1 \right) \; ,
    * \f]
    * where \f$ s^2_n \f$ is the variance of the mean with binning and \f$ s_0 \f$ is the variance of the mean without
    * binning.

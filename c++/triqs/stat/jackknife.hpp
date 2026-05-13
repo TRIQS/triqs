@@ -56,7 +56,7 @@ namespace triqs::stat {
       if (((std::ranges::size(rgs) != size) or ...)) throw std::runtime_error("Error in jackknife: Ranges must have the same size.");
 
       // all_reduce the size of the ranges if a communicator is provided
-      if (comm) size = mpi::all_reduce(size, *comm);
+      if (comm) mpi::all_reduce_in_place(size, *comm);
 
       // get the mean and the jackknife samples of each range and store them in a tuple
       auto [mean_tup, jk_tup] = [&comm, size, &rgs_tup]<std::size_t... Is>(std::index_sequence<Is...>) {
