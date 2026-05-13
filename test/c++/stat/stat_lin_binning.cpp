@@ -48,57 +48,38 @@ template <typename T> void check_acc(T const &acc1, T const &acc2) {
   check_array_or_scalar(acc1.var_data(), acc2.var_data());
 }
 
-// Test linear binning with 0 bins.
-template <typename T> void test_zero_bins(const T &tmp) {
+// Test that a default-constructed accumulator is usable: the first sample seeds the shape, and
+// subsequent pushes match an explicitly constructed unbounded/bin_capacity=1 accumulator.
+template <typename T> void test_default_constructed(const T &tmp) {
   using namespace triqs::stat;
-  lin_binning acc{tmp, 0, 1};
+  lin_binning<T> acc{};
+  lin_binning ref{tmp, -1, 1};
+  std::vector<T> data{};
   auto rng = std::mt19937{};
 
-  // empty accumulator
-  check_state(acc, 0, 0, 0, 0, 0, 0);
+  EXPECT_TRUE(acc.is_unbounded());
 
-  // add some random samples
-  for (int i = 0; i < 10; ++i) acc << random_sample(tmp, rng);
-  check_state(acc, 0, 0, 0, 0, 0, 10);
+  for (int i = 0; i < 10; ++i) {
+    auto sample = random_sample(tmp, rng);
+    acc << sample;
+    ref << sample;
+    data.push_back(sample);
+  }
+  check_acc(ref, acc);
+  auto [m, v] = bin_data(data, 10);
+  check_array_or_scalar(acc.mean(), m[0]);
+  check_array_or_scalar(acc.var_data(), v[0]);
 }
 
-// Test linear binning with 1 bin.
-template <typename T> void test_one_bin(const T &tmp) {
+// Test that the constructor rejects invalid (max_n_bins, bin_capacity) combinations.
+template <typename T> void test_invalid_args(const T &tmp) {
   using namespace triqs::stat;
-  lin_binning acc{tmp, 1, 1};
-  auto rng = std::mt19937{};
-  std::vector<T> data{};
-
-  // empty accumulators
-  check_state(acc, 1, 0, -1, 1, 0, 0);
-
-  // add some random samples
-  for (int i = 0; i < 10; ++i) {
-    auto sample = random_sample(tmp, rng);
-    acc << sample;
-    data.push_back(sample);
-  }
-  check_state(acc, 1, 10, -1, 1, 0, 10);
-  auto [m1, v1] = bin_data(data, 10);
-  check_vectors(acc.bins(), m1);
-  check_array_or_scalar(acc.mean(), m1[0]);
-  check_array_or_scalar(acc.var_data(), v1[0]);
-
-  // compress bins manually
-  acc.compress(2);
-  check_state(acc, 1, 10, -1, 1, 0, 10);
-
-  // add some more random samples
-  for (int i = 0; i < 10; ++i) {
-    auto sample = random_sample(tmp, rng);
-    acc << sample;
-    data.push_back(sample);
-  }
-  check_state(acc, 1, 20, -1, 1, 0, 20);
-  auto [m2, v2] = bin_data(data, 20);
-  check_vectors(acc.bins(), m2);
-  check_array_or_scalar(acc.mean(), m2[0]);
-  check_array_or_scalar(acc.var_data(), v2[0]);
+  EXPECT_THROW(lin_binning(tmp, -2, 1), std::runtime_error);
+  EXPECT_THROW(lin_binning(tmp, 0, 1), std::runtime_error);
+  EXPECT_THROW(lin_binning(tmp, 1, 1), std::runtime_error);
+  EXPECT_THROW(lin_binning(tmp, 2, 0), std::runtime_error);
+  EXPECT_THROW(lin_binning(tmp, -1, 0), std::runtime_error);
+  EXPECT_THROW(lin_binning(tmp, 2, -1), std::runtime_error);
 }
 
 // Test linear binning with unlimited number of bins.
@@ -235,17 +216,13 @@ template <typename T> void test_finite_bins(const T &tmp) {
   check_vectors(acc10.bins(), acc5.bins());
 }
 
-// zero bins
-TEST(TRIQSStat, LinBinningDoubleScalarMaxNBinsZero) { test_zero_bins(0.0); }
-TEST(TRIQSStat, LinBinningComplexDoubleScalarMaxNBinsZero) { test_zero_bins(std::complex<double>{0.0, 0.0}); }
-TEST(TRIQSStat, LinBinningDoubleArrayMaxNBinsZero) { test_zero_bins(nda::array<double, 1>(7)); }
-TEST(TRIQSStat, LinBinningComplexDouble2DArrayMaxNBinsZero) { test_zero_bins(nda::array<std::complex<double>, 2>(3, 4)); }
+// default-constructed
+TEST(TRIQSStat, LinBinningDoubleScalarDefaultConstructed) { test_default_constructed(0.0); }
+TEST(TRIQSStat, LinBinningDoubleArrayDefaultConstructed) { test_default_constructed(nda::array<double, 1>(7)); }
 
-// one bin
-TEST(TRIQSStat, LinBinningDoubleScalarMaxNBinsOne) { test_one_bin(0.0); }
-TEST(TRIQSStat, LinBinningComplexDoubleScalarMaxNBinsOne) { test_one_bin(std::complex<double>{0.0, 0.0}); }
-TEST(TRIQSStat, LinBinningDoubleArrayMaxNBinsOne) { test_one_bin(nda::array<double, 1>(7)); }
-TEST(TRIQSStat, LinBinningComplexDouble2DArrayMaxNBinsOne) { test_one_bin(nda::array<std::complex<double>, 2>(3, 4)); }
+// invalid constructor arguments
+TEST(TRIQSStat, LinBinningDoubleScalarInvalidArgs) { test_invalid_args(0.0); }
+TEST(TRIQSStat, LinBinningDoubleArrayInvalidArgs) { test_invalid_args(nda::array<double, 1>(7)); }
 
 // unlimited bins
 TEST(TRIQSStat, LinBinningDoubleScalarMaxNBinsUnlimited) { test_unlimited_bins(0.0); }

@@ -87,19 +87,21 @@ namespace triqs::stat {
    *
    * Depending on the parameter `max_n_bins`, which is given during construction, linear binning is done in the
    * following way:
-   * - `max_n_bins == 0`: Linear binning is turned off, i.e. no data is accumulated, only the count is increased.
-   * - `max_n_bins == 1`: There is only one bin, which simply accumulates the mean of the data. The `bin_capacity`
-   * parameter is set to -1 and is ignored.
-   * - `max_n_bins > 1`: The data is accumulated into a fixed number of bins with initial capacity `bin_capacity`. Once,
+   * - `max_n_bins >= 2`: The data is accumulated into a fixed number of bins with initial capacity `bin_capacity`. Once
    * all bins are full, i.e. they have accumulated `bin_capacity` data points, the bins are compressed by a factor of
    * \f$ 2 \f$. This means that the data of two adjacent bins is averaged and stored in the first `max_n_bins / 2` bins
    * and that the bin capacity is doubled. Any left over data is put into the bin with index `max_n_bins / 2`. Before
    * the compression is done, an optional callback function is called (usually to report autocorrelation times).
-   * - `max_n_bins < 0`: The data is accumulated into an unbounded number of bins with capacity `bin_capacity`. Once, a
+   * - `max_n_bins == -1`: The data is accumulated into an unbounded number of bins with capacity `bin_capacity`. Once a
    * bin is full, a new bin is created and appended.
+   *
+   * Any other value of `max_n_bins` is rejected at construction. `bin_capacity` must always be \f$ \geq 1 \f$.
    *
    * In addition to the linear bins, the accumulator further keeps track of the overall mean and the sum of the squared
    * deviations from the mean. This is used to provide an estimate for the integrated autocorrelation time.
+   *
+   * @note For an unbinned running mean and standard error, use `log_binning(sample, 1)`. To toggle accumulation on/off
+   * at runtime, wrap the accumulator in `std::optional<lin_binning>`.
    *
    * @tparam T triqs::stat::AccCompatible type.
    */
@@ -129,28 +131,22 @@ namespace triqs::stat {
      * @param callback Callback function of type lin_binning::callback_t.
      */
     lin_binning(T const &sample, long max_n_bins, long bin_capacity, callback_t callback = {})
-       : max_n_bins_(max_n_bins), bin_capacity_((max_n_bins_ == 0 || max_n_bins_ == 1) ? -max_n_bins : bin_capacity), callback_(std::move(callback)) {
-      // turn off linear binning
-      if (max_n_bins == 0) return;
+       : max_n_bins_(max_n_bins), callback_(std::move(callback)) {
+      if (max_n_bins != -1 && max_n_bins < 2) throw std::runtime_error("lin_binning: max_n_bins must be -1 (unbounded) or >= 2.");
+      if (bin_capacity < 1) throw std::runtime_error("lin_binning: bin_capacity must be >= 1.");
+      bin_capacity_ = bin_capacity;
 
-      // check the given bin capacity
-      if (max_n_bins != 1 && bin_capacity < 1) {
-        throw std::runtime_error("Linear bin capacity must be greater than 0 when max. number of bins != 1.");
-      }
-
-      // reserve space for max. number of bins
-      if (max_n_bins > 0) { mean_bins_.reserve(max_n_bins); }
-
-      // create the first bin and zero it
+      if (max_n_bins > 0) mean_bins_.reserve(max_n_bins);
       mean_bins_.emplace_back(zeroed_sample(sample));
-
-      // initialize the overall mean and sum of squared deviations from the mean
       mean_ = zeroed_sample(sample);
       var_  = make_real(zeroed_sample(sample));
     }
 
     /// Get the maximum number of bins.
     [[nodiscard]] long max_n_bins() const { return max_n_bins_; }
+
+    /// True if the accumulator was constructed with an unbounded number of bins.
+    [[nodiscard]] bool is_unbounded() const { return max_n_bins_ == -1; }
 
     /// Get the number of bins containing data including the currently active bin.
     [[nodiscard]] long n_bins() const { return mean_bins_.size(); }
@@ -199,7 +195,7 @@ namespace triqs::stat {
      *   m_n(k_n) = m_n(k_n - 1) + \frac{x_i - m_n(k_n - 1)}{k_n} \; .
      * \f]
      *
-     * The overall mean \f$ m(N) \f$ is updated similiarly, whereas the overall sum of the squared deviations is updated
+     * The overall mean \f$ m(N) \f$ is updated similarly, whereas the overall sum of the squared deviations is updated
      * as
      * \f[
      *   q(N) = q(N - 1) + \frac{N - 1}{N} \left| x_i - m(N - 1) \right|^2 \; ,
@@ -213,26 +209,26 @@ namespace triqs::stat {
     template <typename U> auto &operator<<(U &&x) {
       ++count_;
 
-      // early return if linear binning is turned off
-      if (max_n_bins_ == 0) return *this;
+      // seed shape from the first sample for default-constructed accumulators
+      if (mean_bins_.empty()) {
+        T s = x;
+        mean_bins_.emplace_back(zeroed_sample(s));
+        mean_ = zeroed_sample(s);
+        var_  = make_real(zeroed_sample(s));
+      }
 
-      // compress the bins if necessary and call the optional callback function
-      if (n_full_bins() == max_n_bins_) {
+      if (!is_unbounded() && n_full_bins() == max_n_bins_) {
         if (callback_) callback_(*this);
         compress(2);
       }
 
-      // update the overall mean and variance data
       var_ += abs_square(x - mean_) * (static_cast<double>(count_ - 1) / count_);
       mean_ += (x - mean_) / count_;
 
-      // accumulate the data point
       if (last_bin_count_ == bin_capacity_) {
-        // add a new bin if the current bin is full
         mean_bins_.emplace_back(std::forward<U>(x));
         last_bin_count_ = 1;
       } else {
-        // accumulate into the currently active bin
         ++last_bin_count_;
         mean_bins_.back() += (x - mean_bins_.back()) / last_bin_count_;
       }
@@ -255,8 +251,8 @@ namespace triqs::stat {
      * @param fac Compression factor.
      */
     void compress(int fac) {
-      // early return if linear binning is turned off, if there is only 1 bin or if the compression factor < 2
-      if (max_n_bins_ == 0 || n_bins() == 1 || fac < 2) return;
+      // early return if there is only 1 bin or if the compression factor < 2
+      if (n_bins() == 1 || fac < 2) return;
 
       // compress full bins into new full bins
       int nbins = n_full_bins() / fac;
@@ -333,16 +329,16 @@ namespace triqs::stat {
      * accumulated samples.
      */
     [[nodiscard]] auto mpi_all_reduce(mpi::communicator c) const {
-      // reduce count
       auto count_red = mpi::all_reduce(count_, c);
 
-      // reduce overall mean data
-      value_t mean_red = mean_ * (static_cast<double>(count_) / static_cast<double>(count_red));
-      mean_red         = mpi::all_reduce(mean_red, c);
+      // skip the per-rank reweighting (and its 0/0) if no rank has samples
+      if (count_red == 0) return std::make_tuple(zeroed_sample(mean_), make_real(zeroed_sample(mean_)), count_red);
 
-      // reduce overall variance data
+      value_t mean_red = mean_ * (static_cast<double>(count_) / static_cast<double>(count_red));
+      mpi::all_reduce_in_place(mean_red, c);
+
       real_t var_red = var_ + count_ * abs_square(mean_ - mean_red);
-      var_red        = mpi::all_reduce(var_red, c);
+      mpi::all_reduce_in_place(var_red, c);
 
       return std::make_tuple(mean_red, var_red, count_red);
     }
@@ -358,31 +354,20 @@ namespace triqs::stat {
      * @return `std::vector` containing the full (and compressed) bins from all processes.
      */
     [[nodiscard]] auto mpi_all_gather(mpi::communicator c, bool same_capacity = true) const {
-      // only consider full bins
       auto fbins = full_bins();
 
-      // should all bins have the same capacity?
       if (same_capacity) {
-        // get maximum bin capacity
         auto bc_max = mpi::all_reduce(bin_capacity_, c, MPI_MAX);
-
-        // if current bin capacity is not the maximum, compress bins to the maximum capacity if possible
-        if (bin_capacity_ != bc_max) {
-          auto const fac = bc_max / bin_capacity_;
-          if (fac <= fbins.size() && bc_max % bin_capacity_ == 0) {
-            // compress bins
-            fbins = compress_bins(fbins, fac);
-          } else {
-            // cannot compress to the maximum capacity --> process doesn't contribute any bins
-            fbins.clear();
-          }
-        }
+        // ranks whose capacity does not divide the max cannot align their bins and contribute nothing
+        if (bc_max % bin_capacity_ == 0)
+          fbins = compress_bins(fbins, bc_max / bin_capacity_);
+        else
+          fbins.clear();
       }
 
-      // gather bins
       auto nbins         = mpi::all_gather(fbins.size(), c);
-      auto bins_gathered = std::vector<value_t>(std::accumulate(nbins.begin(), nbins.end(), 0));
-      auto start         = 0;
+      auto bins_gathered = std::vector<value_t>(std::accumulate(nbins.begin(), nbins.end(), 0L));
+      long start         = 0;
       for (int i = 0; i < c.size(); ++i) {
         auto const end = start + nbins[i];
         if (c.rank() == i) std::copy(fbins.begin(), fbins.end(), bins_gathered.begin() + start);
@@ -432,16 +417,25 @@ namespace triqs::stat {
       h5::read(gr, "mean_bins", acc.mean_bins_);
       h5::read(gr, "mean", acc.mean_);
       h5::read(gr, "var", acc.var_);
+
+      if (acc.max_n_bins_ != -1 && (acc.max_n_bins_ < 2 || acc.bin_capacity_ < 1))
+        throw std::runtime_error("h5_read: invalid lin_binning state (max_n_bins must be -1 or >= 2, bin_capacity must be >= 1).");
     }
 
     private:
     // Get the mean, its standard error and an estimate for the integrated autocorrelation time.
     [[nodiscard]] auto calculate_error_and_tau(std::vector<value_t> const &bins, real_t const &q0, long ct) const {
+      // need at least 2 samples and 2 bins to estimate the error and tau
+      if (ct < 2 || bins.size() < 2) {
+        auto nan = nan_sample(q0);
+        return std::make_pair(nan, nan);
+      }
+
       // unbinned estimate of the error of the mean
-      real_t var0 = q0 / static_cast<double>(ct * (ct - 1));
+      real_t var0 = q0 / (static_cast<double>(ct) * static_cast<double>(ct - 1));
 
       // binned estimate of the error of the mean
-      auto [m, err] = mean_and_err(bins);
+      auto err = mean_and_err(bins).second;
 
       // estimate of the integrated autocorrelation time
       real_t tau = 0.5 * (abs_square(err) / var0 - 1.0);
@@ -449,9 +443,8 @@ namespace triqs::stat {
       return std::make_pair(err, tau);
     }
 
-    private:
-    long max_n_bins_{0};
-    long bin_capacity_{-1};
+    long max_n_bins_{-1};
+    long bin_capacity_{1};
     long last_bin_count_{0};
     long count_{0};
     std::vector<value_t> mean_bins_{};

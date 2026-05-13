@@ -27,7 +27,7 @@
 #include <complex>
 #include <random>
 
-// Test MPI reduction of logarithmic binning accumulators.
+// Test MPI reduction of linear binning accumulators.
 template <typename T> void test_mpi(const T &tmp) {
   using namespace triqs::stat;
   lin_binning acc_all{tmp, -1, 5};
@@ -64,6 +64,52 @@ TEST(TRIQSStat, LinBinningDoubleScalarMPI) { test_mpi(0.0); }
 TEST(TRIQSStat, LinBinningComplexDoubleScalarMPI) { test_mpi(std::complex<double>{0.0, 0.0}); }
 TEST(TRIQSStat, LinBinningDoubleArrayMPI) { test_mpi(nda::array<double, 1>(7)); }
 TEST(TRIQSStat, LinBinningComplexDouble2DArrayMPI) { test_mpi(nda::array<std::complex<double>, 2>(3, 4)); }
+
+// Test MPI reduction when only rank 0 contributes samples (other ranks idle).
+template <typename T> void test_mpi_idle_ranks(T const &tmp) {
+  using namespace triqs::stat;
+  mpi::communicator comm;
+  lin_binning acc_ref{tmp, -1, 5};
+  lin_binning acc_rank{tmp, -1, 5};
+  auto rng = std::mt19937{};
+
+  // generate the same sequence on every rank; only rank 0 feeds it to acc_rank
+  for (int j = 0; j < 50; ++j) {
+    auto sample = random_sample(tmp, rng);
+    acc_ref << sample;
+    if (comm.rank() == 0) acc_rank << sample;
+  }
+
+  // mpi reduce: result must equal the single-rank reference
+  auto [mean, var0, count] = acc_rank.mpi_all_reduce(comm);
+  check_array_or_scalar(mean, acc_ref.mean());
+  check_array_or_scalar(var0, acc_ref.var_data());
+  EXPECT_EQ(count, acc_ref.count());
+
+  // mpi gather: rank 0's bins on all ranks, others contribute nothing
+  auto bins     = acc_rank.mpi_all_gather(comm);
+  auto ref_bins = acc_ref.full_bins();
+  EXPECT_EQ(bins.size(), ref_bins.size());
+  for (int i = 0; i < bins.size(); ++i) check_array_or_scalar(bins[i], ref_bins[i]);
+}
+
+TEST(TRIQSStat, LinBinningDoubleScalarMPIIdleRanks) { test_mpi_idle_ranks(0.0); }
+TEST(TRIQSStat, LinBinningDoubleArrayMPIIdleRanks) { test_mpi_idle_ranks(nda::array<double, 1>(7)); }
+
+// Test MPI reduction when no rank has any samples (all-empty).
+TEST(TRIQSStat, LinBinningDoubleScalarMPIAllEmpty) {
+  using namespace triqs::stat;
+  mpi::communicator comm;
+  lin_binning acc{0.0, -1, 5};
+
+  auto [mean, var0, count] = acc.mpi_all_reduce(comm);
+  EXPECT_EQ(count, 0);
+  EXPECT_EQ(mean, 0.0);
+  EXPECT_EQ(var0, 0.0);
+
+  auto bins = acc.mpi_all_gather(comm);
+  EXPECT_EQ(bins.size(), 0);
+}
 
 // Test the mpi_all_gather method of a linear binning accumulator with enforcing the same capacity.
 TEST(TRIQSStat, LinBinningDoubleScalarMPISameCapacity) {
