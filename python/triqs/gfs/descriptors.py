@@ -23,7 +23,7 @@ r""" """
 
 from .descriptor_base import *
 from triqs.mesh import MeshImFreq, MeshDLRImFreq, MeshReFreq, MeshReFreqPts, MeshReFreqLog, MeshImTime, MeshDLRImTime
-from .semicirc import g_semicirc_iw, g_semicirc_w, g_semicirc_tau
+from .semicirc import g_semicirc_z, g_semicirc_w, g_semicirc_tau
 import warnings
 
 #######################################
@@ -89,7 +89,7 @@ semicircle
         mu = self.chem_potential
         Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
         if type(G.mesh) in [MeshImFreq, MeshDLRImFreq]:
-            vals = g_semicirc_iw(G.mesh.values() + mu, D)
+            vals = g_semicirc_z(G.mesh.values() + mu, D)
         elif type(G.mesh) in [MeshReFreq, MeshReFreqPts, MeshReFreqLog]:
             vals = g_semicirc_w(G.mesh.values().real + mu, D)
         elif type(G.mesh) in [MeshImTime, MeshDLRImTime]:

@@ -1,5 +1,5 @@
-"""Test g_semicirc_tau panel quadrature against adaptive quadrature reference,
-and SemiCircular descriptor on DLR imaginary-time meshes."""
+""" Test SemiCircular Green's function in imaginary time and Matsubara
+frequency, including chemical potential shifts. """
 
 import numpy as np
 import unittest
@@ -7,7 +7,7 @@ from scipy.integrate import quad
 
 from triqs.gfs import Gf, make_gf_dlr
 from triqs.gfs.descriptors import SemiCircular
-from triqs.gfs.semicirc import g_semicirc_tau, g_semicirc_tau_adapquad, g_semicirc_iw
+from triqs.gfs.semicirc import g_semicirc_tau, g_semicirc_tau_adapquad, g_semicirc_z
 from triqs.mesh import MeshDLRImTime, MeshDLRImFreq, MeshImFreq, MeshImTime, MeshReFreq
 
 
@@ -39,7 +39,7 @@ class test_g_semicirc_tau(unittest.TestCase):
 
         iw_mesh = MeshImFreq(beta, 'Fermion', 100)
         for iw in iw_mesh:
-            ref = g_semicirc_iw(iw.value, D)
+            ref = g_semicirc_z(iw.value, D)
             self.assertAlmostEqual(g_c(iw), ref, delta=10*eps,
                                    msg=f"tau->dlr->iw failed at {iw.value}")
 
@@ -81,7 +81,7 @@ class test_g_semicirc_tau(unittest.TestCase):
 
 class test_g_semicirc_iw_chem_potential(unittest.TestCase):
     """
-    Tests for SemiCircular/g_semicirc_iw with non-zero chem_potential.
+    Tests for SemiCircular Matsubara frequency Green's function with non-zero chemical potential.
     """
 
     def _occupation_reference(self, D, mu, beta):
