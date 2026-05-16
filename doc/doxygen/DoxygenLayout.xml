@@ -126,9 +126,14 @@
           <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
         </tab>
       </tab>
-      <tab type="usergroup" url="@ref triqs-operators" title="Many-body operators">
-      </tab>
-      <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">
+      <tab type="usergroup" url="@ref triqs-ops" title="Many-body states and operators">
+        <tab type="user" url="@ref triqs::hilbert_space::fundamental_operator_set" title="hilbert_space::fundamental_operator_set"/>
+        <tab type="user" url="@ref triqs::hilbert_space::hilbert_space" title="hilbert_space::hilbert_space"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state< HilbertSpace, ScalarType, false >" title="hilbert_space::state with nda::vector"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state< HilbertSpace, ScalarType, true >" title="hilbert_space::state with std::unordered_map"/>
+        <tab type="user" url="@ref triqs::hilbert_space::sub_hilbert_space" title="hilbert_space::sub_hilbert_space"/>
+        <tab type="user" url="@ref triqs::operators::canonical_ops_t" title="operators::canonical_ops_t"/>
+        <tab type="user" url="@ref triqs::operators::many_body_operator_generic" title="operators::many_body_operator_generic"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic diagonalization">
         <tab type="usergroup" url="@ref triqs::atom_diag::atom_diag" title="atom_diag::atom_diag">

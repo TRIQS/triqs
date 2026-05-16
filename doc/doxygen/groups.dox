@@ -271,19 +271,34 @@
  */
 
 /**
- * @defgroup triqs-operators Many-body operators
- * @brief Tools for constructing and manipulating second-quantized many-body operators.
+ * @defgroup triqs-ops Many-body states and operators
+ * @brief Tools to specify and manipulate many-body states and operators.
  *
- * @details This module provides classes and functions for working with many-body operators in second quantization,
- * including creation and annihilation operators, as well as algebraic operations on operator expressions.
- */
-
-/**
- * @defgroup triqs-hilbert Hilbert space
- * @brief Tools for representing and manipulating many-body Hilbert spaces.
+ * @details In the following, we introduce some basic concepts and notations used throughout the documentation.
  *
- * @details This module provides classes for representing Fock states and many-body Hilbert spaces,
- * including support for quantum number sectors and state indexing.
+ * Let us start by considering a single particle Hilbert space \f$ \mathcal{H}_1 \f$ of finite dimension \f$ N \f$ with
+ * a complete set of eigenstates \f$ \{ \lvert \alpha_i \rangle \}_{i=0}^{N-1} \f$.
+ * 
+ * We can construct the associated Fock space \f$ \mathcal{F} \f$ as the Hilbert space spanned by all possible 
+ * occupation number configurations of the single particle states. Since we are only considering fermions, each single 
+ * particle state \f$ \lvert \alpha_i \rangle \f$ can either be empty or singly occupied, i.e. \f$ n_{\alpha_i} \in 
+ * \{0, 1\} \f$, which implies that \f$ \dim(\mathcal{F}) = 2^N \f$. 
+ * 
+ * The occupation number basis states of the Fock space are therefore given by
+ * \f[
+ *   \lvert n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle = \prod_{i=0}^{N-1} (c_{\alpha_i}^\dagger)^{n_{
+ *   \alpha_i}} \lvert 0 \rangle \; ,
+ * \f]
+ * where \f$ c_{\alpha_i}^\dagger \f$ is the fermionic creation operator such that \f$ \lvert \alpha_i \rangle =
+ * c_{\alpha_i}^\dagger \lvert 0 \rangle \f$, and \f$ \lvert 0 \rangle \f$ is the vacuum state with no particles.
+ * 
+ * If we restrict ourselves to \f$ N < 64 \f$, we can 1-to-1 map each occupation number basis state \f$ \lvert 
+ * n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle \f$ to a single 64-bit integer
+ * \f[
+ *   f(n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}}) = \sum_{i=0}^{N-1} n_{\alpha_i} 2^i \; ,
+ * \f]
+ * where the \f$ i \f$-th bit of \f$ f \f$ is set if and only if the single particle state \f$ \lvert \alpha_i \rangle 
+ * \f$ is occupied.
  */
 
 /**
