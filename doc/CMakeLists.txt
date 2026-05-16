@@ -9,39 +9,6 @@ find_package(MathJax REQUIRED)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY)
 
-# -----------------------------------------------------------------------------
-# Create an optional target that allows us to regenerate the C++ doc with c++2rst
-# -----------------------------------------------------------------------------
-# list of namespaces selected by c++2rst
-set(NAMESPACES
-    -N triqs::gfs
-    -N triqs::det_manip
-    -N triqs::mc_tools
-    -N triqs::hilbert_space
-    -N triqs::atom_diag
-    -N triqs::stat
-    -N mpi
-    -N itertools
-)
-
-# Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
-add_custom_target(docs_cpp2rst)
-extract_flags(triqs BUILD_INTERFACE)
-separate_arguments(triqs_CXXFLAGS)
-add_custom_command(
-  TARGET docs_cpp2rst POST_BUILD
-  COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  COMMAND
-    PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH}
-    ${CPP2PY_BINARY_DIR}/bin/c++2rst
-    ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
-    ${NAMESPACES}
-    --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-    -I${PROJECT_SOURCE_DIR}
-    -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
-    --cxxflags="${triqs_CXXFLAGS}"
-)
-
 # --------------------------------------------------------
 # Build & Run the C++ doc examples and capture the output
 # --------------------------------------------------------
@@ -83,14 +50,13 @@ find_package(Sphinx)
 add_custom_target(docs_sphinx ALL)
 add_custom_command(
   TARGET docs_sphinx POST_BUILD
-  COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${h5_BINARY_DIR}/python:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j auto -b html ${CMAKE_CURRENT_SOURCE_DIR} html
+  COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/python:${h5_BINARY_DIR}/python:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j auto -b html ${CMAKE_CURRENT_SOURCE_DIR} html
 )
 
 option(Sphinx_Only "When building the documentation, skip the Python Modules and the generation of C++ Api and example outputs" OFF)
 if(NOT Sphinx_Only)
   # Autodoc usage requires the python modules to be built first
-  get_property(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
-  add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+  add_dependencies(docs_sphinx ${PROJECT_NAME}_python_modules)
 
   # Generation of Example Outputs
   add_dependencies(docs_sphinx docs_example_output docs_tutorial_notebooks)
