@@ -18,132 +18,207 @@
 //
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
-#pragma once
-#include <triqs/gfs/block/gf_struct.hpp>
-#include <triqs/utility/dressed_iterator.hpp>
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/variant_extensions.hpp>
-#include <itertools/itertools.hpp>
-#include <h5/h5.hpp>
+/**
+ * @file
+ * @brief Provides a fundamental operator set class.
+ */
 
-#include <utility>
-#include <string>
-#include <vector>
+#pragma once
+
+#include "../gfs/block/gf_struct.hpp"
+#include "../utility/dressed_iterator.hpp"
+#include "../utility/exceptions.hpp"
+#include "../utility/variant_extensions.hpp"
+
+#include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
+
+#include <algorithm>
 #include <array>
+#include <iterator>
 #include <set>
-#include <map>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
 
 namespace triqs::hilbert_space {
 
-  /// The index type of an operator
+  /**
+   * @addtogroup triqs-ops
+   * @{
+   */
+
+  /// Index type for single particle state indices \f$ \alpha_i \f$.
   using indices_t = std::vector<std::variant<long, std::string, double, std::array<long, 3>>>;
 
-  /// Type type describing the structure of a Block Green's function
+  /// Elevate triqs::gfs::gf_struct_t to the `triqs::hilbert_space` namespace.
   using triqs::gfs::gf_struct_t;
 
-  /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
   /**
-   * Every element of the set is an arbitrarily long sequence of integers/strings (types can be mixed within one sequence).
-   * The elements maintain the order they are inserted in
-   * @include triqs/hilbert_space/fundamental_operator_set.hpp
+   * @brief Class representing a fundamental operator set.
+   *
+   * @details A fundamental operator set is an ordered set of single particle state indices, \f$ A = \{ \alpha_i 
+   * \}_{i=0}^{N-1} \f$, where the corresponding states \f$ \{ \lvert \alpha_i \rangle \}_{i=0}^{N-1} \f$ span a 
+   * 1-particle Hilbert space \f$ \mathcal{H}_1 \f$ of finite dimension \f$ N \f$. By ordered, we mean that there is a
+   * strict total order imposed on the set \f$ A \f$ such that \f$ \alpha_i < \alpha_j \f$ if \f$ i < j \f$.
+   * 
+   * Each index \f$ \alpha_i \f$ can consist of an arbitrarily long sequence of integers, strings, doubles and arrays of
+   * integers. We write \f$ \alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i}) \f$, where each \f$ \beta^{(i)}_j \f$ 
+   * is either an integer, a string, a double or an array of integers.
+   * 
+   * For example, fermionic operators are often characterized by a spin index \f$ \sigma \f$ and an orbital index \f$ a
+   * \f$ such that \f$ \alpha = (\sigma, a) \f$. Considering fermions with spins \f$ \sigma \in \{ \text{"up"},
+   * \text{"down"} \} \f$ and 3 orbitals \f$ a \in \{ 0, 1, 2 \} \f$, the fundamental operator set is given by
+   * \f[
+   *   A = \{ (\text{"up"}, 0), (\text{"up"}, 1), (\text{"up"}, 2), (\text{"down"}, 0), (\text{"down"}, 1),
+   *   (\text{"down"}, 2) \} \; .
+   * \f]
    */
   class fundamental_operator_set {
     public:
-    /// Sequence of indices (`std::vector` of int/string variant objects)
+    /// Index type to represent a single \f$ \alpha_i \f$.
     using indices_t = triqs::hilbert_space::indices_t;
 
-    /// The basic container `std::vector<indices_t>`
+    /// Container type to store \f$ A = \{ \alpha_i \}_{i=0}^{N-1} \f$.
     using data_t = std::vector<indices_t>;
 
     private:
-    // internal only
+    // Constructor for a vector of vector of strings (only used in h5_read_attribute).
     fundamental_operator_set(std::vector<std::vector<std::string>> const &);
 
     public:
-    /// Construct an empty set
-    fundamental_operator_set() {}
+    /// Default constructor leaves the set of indices empty, i.e. \f$ A = \emptyset \f$.
+    fundamental_operator_set() = default;
 
-    /// Construct a set with each stored index being a pair of integers `(i,j)`
     /**
-     * @param v `i` runs from 0 to `v.size()-1`; `j` runs from 0 to `v[i].size()-1` for each `i`
+     * @brief Construct a fundamental operator set from a vector of integers \f$ \mathbf{v} = (v_1, \dots, v_k) \f$.
+     *
+     * @details The set will contain indices \f$ \alpha_i = (\beta^{(i)}_1, \beta^{(i)}_2) \f$ with \f$ \beta^{(i)}_1
+     * \in \{ 0, \dots, k-1 \} \f$ and \f$ \beta^{(i)}_2 \in \{ 0, \dots, v_{\beta^{(i)}_1} \} \f$.
+     *
+     * For example, given \f$ \mathbf{v} = (2, 1, 3) \f$, the generated fundamental operator set is
+     * \f[
+     *   A = \{ (0, 0), (0, 1), (1, 0), (2, 0), (2, 1), (2, 2) \} \; .
+     * \f]
+     *
+     * @param v Vector of integers \f$ \mathbf{v} \f$.
      */
     fundamental_operator_set(std::vector<int> const &v) {
       for (int i = 0; i < v.size(); ++i)
         for (int j = 0; j < v[i]; ++j) insert(i, j);
     }
 
-    /// Construct from a set of generic index sequences
     /**
-     * @param s Set of indices
+     * @brief Construct a fundamental operator set from a set of indices \f$ A = \{ \alpha_0, \dots, \alpha_{N-1} \} 
+     * \f$.
+     * 
+     * @note The order of the indices in the set is preserved.
+     * 
+     * @tparam IndexType Index type.
+     * @param A Set of indices \f$ A \f$.
      */
-    template <typename IndexType> fundamental_operator_set(std::set<IndexType> const &s) {
-      for (auto const &i : s) insert(i);
+    template <typename IndexType> fundamental_operator_set(std::set<IndexType> const &A) {
+      for (auto const &alpha : A) insert(alpha);
     }
 
-    /// Construct from a vector of index sequences
     /**
-     * @param v Vector of indices
+     * @brief Construct a fundamental operator set from a vector of indices \f$ \mathbf{v} = (\alpha_0, \dots, 
+     * \alpha_{N-1}) \f$.
+     * 
+     * @note The order of the indices in the vector is preserved.
+     * 
+     * @param v Vector of indices \f$ \mathbf{v} \f$.
      */
-    explicit fundamental_operator_set(data_t const &v) : idxs_(v) {}
+    explicit fundamental_operator_set(data_t v) : idxs_(std::move(v)) {}
 
-    /// Construct fundamental_operator_set on a GF structure
     /**
-     * @param gf_struct GF structure object
+     * @brief Construct a fundamental operator set from a triqs::gfs::gf_struct_t object.
+     *
+     * @details A triqs::gfs::gf_struct_t object determines the shape of a block Green's function. It is a vector of
+     * pairs, where each pair consists of a block name \f$ s \f$ and block size \f$ b_s \f$. The size of the vector \f$
+     * k \f$ corresponds to the number of blocks.
+     *
+     * The set will contain indices \f$ \alpha_i = (\beta^{(i)}_1, \beta^{(i)}_2) \f$ with \f$ \beta^{(i)}_1 \in \{ s_1,
+     * \dots, s_k \} \f$ and \f$ \beta^{(i)}_2 \in \{ 0, \dots, b_{\beta^{(i)}_1} - 1 \} \f$.
+     * 
+     * For example, given the block structure \f$\left( (\text{"up"}, 2), (\text{"down"}, 3) \right) \f$, the generated 
+     * fundamental operator set is
+     * \f[
+     *   A = \{ (\text{"up"}, 0), (\text{"up"}, 1), (\text{"down"}, 0), (\text{"down"}, 1), (\text{"down"}, 2) \} \; .
+     * \f]
+     *
+     * @param gf_struct A triqs::gfs::gf_struct_t object representing the structure of a Green's function.
      */
     fundamental_operator_set(gf_struct_t const &gf_struct) {
-      for (auto const &[block, blsize] : gf_struct)
-        for (auto idx : itertools::range(blsize)) insert(block, idx);
+      for (auto const &[blname, blsize] : gf_struct)
+        for (auto i : itertools::range(blsize)) insert(blname, i);
     }
 
-    /// Reduce to a `std::vector<indices_t>`
+    /// Explicit conversion operator to a `std::vector` of indices_t.
     explicit operator data_t() const { return idxs_; }
 
-    /// Insert a new index sequence given as `indices_t`
     /**
-     * @param ind `indices_t` object
+     * @brief Insert a new index \f$ \alpha \f$ into the set.
+     * 
+     * @details The index is inserted at end of the set such that \f$ \alpha_i < \alpha \f$ for all existing indices \f$
+     * \alpha_i \f$ in the set.
+     * 
+     * It does nothing if the index is already present.
+     * 
+     * @param alpha Index \f$ \alpha \f$ to insert.
      */
-    void insert_from_indices_t(indices_t const &ind) {
-      if (!has_indices(ind)) idxs_.push_back(ind);
+    void insert_from_indices_t(indices_t const &alpha) {
+      if (!has_indices(alpha)) idxs_.push_back(alpha);
     }
 
-    /// Insert a new index sequence given as multiple `int`/`std::string` arguments
-    template <typename... IndexType> void insert(IndexType const &...ind) { insert_from_indices_t(indices_t{ind...}); }
-
-    /// Number of elements in this set
     /**
-     * @return Size of the set
+     * @brief Insert a new index \f$ \alpha = (\beta_1, \dots, \beta_k) \f$ into the set.
+     *
+     * @details It calls insert_from_indices_t() with the index \f$ \alpha \f$ constructed from the given \f$ \beta_i 
+     * \f$.
+     *
+     * @tparam Bs Types of \f$ \beta_i \f$.
+     * @param betas \f$ \beta_1, \dots, \beta_k \f$ that form the index \f$ \alpha \f$.
      */
-    int size() const { return idxs_.size(); }
+    template <typename... Bs> void insert(Bs const &...betas) { insert_from_indices_t(indices_t{betas...}); }
 
-    /// Check if a given index sequence is in this set
-    /**
-     * @param t Index sequence to look up
-     * @return `true` if `t` is in this set
-     */
-    bool has_indices(indices_t const &t) const { return std::find(idxs_.begin(), idxs_.end(), t) != idxs_.end(); }
+    /// Get the number \f$ N \f$ of single particle state indices in the set.
+    [[nodiscard]] auto size() const { return static_cast<int>(idxs_.size()); }
 
-    /// Request position of a given index sequence
     /**
-     * @param t Index sequence to look up
-     * @return Position of the requested index sequence
+     * @brief Check if a given \f$ \alpha \f$ is in the set.
+     *
+     * @param alpha Index \f$ \alpha \f$ to look up.
+     * @return True if \f$ \alpha = \alpha_i \f$ for some \f$ \alpha_i \in A \f$, false otherwise.
      */
-    int operator[](indices_t const &t) const {
-      auto it = std::find(idxs_.begin(), idxs_.end(), t);
-      if (it == idxs_.end()) TRIQS_RUNTIME_ERROR << "Operator with indices (" << t << ") does not belong to this fundamental set!";
+    [[nodiscard]] bool has_indices(indices_t const &alpha) const { return std::ranges::find(idxs_, alpha) != idxs_.end(); }
+
+    /**
+     * @brief Subscript operator to get the position of a given index \f$ \alpha \f$ in the set.
+     *
+     * @details It throws an exception if \f$ \alpha \notin A \f$.
+     *
+     * @param alpha Index \f$ \alpha \f$ to look up.
+     * @return Position of the index \f$ \alpha \f$ in the set.
+     */
+    [[nodiscard]] auto operator[](indices_t const &alpha) const {
+      auto it = std::ranges::find(idxs_, alpha);
+      if (it == idxs_.end()) {
+        TRIQS_RUNTIME_ERROR << "Error in fundamental_operator_set::operator[]: Operator with indices (" << alpha
+                            << ") does not belong to this fundamental set!";
+      }
       return std::distance(idxs_.begin(), it);
     }
 
-    /// Comparison with another fundamental operator set
+    /// Equal-to operator compares the ordered sets of indices for equality.
     bool operator==(fundamental_operator_set const &fops) const { return idxs_ == fops.idxs_; }
 
-    /// Return the data vector: `v[int]` -> `indices_t`
-    /**
-     * @return The data vector
-     */
-    data_t const &data() const { return idxs_; }
+    /// Get the ordered set \f$ A = \{ \alpha_i \}_{i=0}^{N-1} \f$.
+    [[nodiscard]] data_t const &data() const { return idxs_; }
 
     private:
-    // Helper class for the creation of the const iterator
+    // Helper class for the creation of the const iterator.
     using _enum_iterator = decltype(itertools::enumerate(std::declval<data_t>()).cbegin());
     struct _cdress {
       indices_t const &index;
@@ -152,51 +227,43 @@ namespace triqs::hilbert_space {
     };
 
     public:
-    /// Constant bidirectional iterator over all stored index sequences. For an iterator `it`, `it->index` gives the `indices_t` object pointed by this iterator, and `it->linear_index` is its position in the set.
+    /// Constant iterator type.
     using const_iterator = triqs::utility::dressed_iterator<_enum_iterator, _cdress>;
 
-    /// Return `const_iterator` to the first element of this set
-    /**
-     * @return Iterator to the first index sequence
-     */
-    const_iterator begin() const noexcept { return itertools::enumerate(idxs_).begin(); }
+    /// Get a const iterator to the beginning of the set.
+    [[nodiscard]] const_iterator begin() const noexcept { return itertools::enumerate(idxs_).begin(); }
 
-    /// Return `const_iterator` to the past-the-end element of this set
-    /**
-     * @return Iterator to the past-the-end element
-     */
-    auto end() const noexcept { return itertools::enumerate(idxs_).end(); }
+    /// Get a const iterator to the beginning of the set.
+    [[nodiscard]] const_iterator cbegin() const noexcept { return itertools::enumerate(idxs_).cbegin(); }
 
-    /// Equivalent to [[fundamental_operator_set_begin]]
-    /**
-     * @return Iterator to the first index sequence
-     */
-    const_iterator cbegin() const noexcept { return itertools::enumerate(idxs_).cbegin(); }
+    /// Get a const iterator to the end of the set.
+    [[nodiscard]] auto end() const noexcept { return itertools::enumerate(idxs_).end(); }
 
-    /// Equivalent to [[fundamental_operator_set_end]]
-    /**
-     * @return Iterator to the past-the-end element
-     */
-    auto cend() const noexcept { return itertools::enumerate(idxs_).cend(); }
+    /// Get a const iterator to the end of the set.
+    [[nodiscard]] auto cend() const noexcept { return itertools::enumerate(idxs_).cend(); }
 
-    /// Write this set as an HDF5 attribute
     /**
-     * @param obj The HDF5 object to attach the attribute to
-     * @param name Name of the attribute
-     * @param f Fundamental set to write
+     * @brief Write a triqs::hilbert_space::fundamental_operator_set to HDF5 as an attribute.
+     *
+     * @param obj `h5::object` the attribute belongs to.
+     * @param name Name of the attribute.
+     * @param fops Fundamental operator set to be written.
      */
-    friend void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &f);
+    friend void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &fops);
 
-    /// Read a set from an HDF5 attribute
     /**
-     * @param obj The HDF5 object the attribute is attached to
-     * @param name Name of the attribute
-     * @param f Reference to a fundamental set to be read
+     * @brief Read a triqs::hilbert_space::fundamental_operator_set from an HDF5 attribute.
+     *
+     * @param obj `h5::object` the attribute belongs to.
+     * @param name Name of the attribute.
+     * @param fops Fundamental operator set to be read into.
      */
-    friend void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &f);
+    friend void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &fops);
 
     private:
     data_t idxs_ = {};
   };
+
+  /** @} */
 
 } // namespace triqs::hilbert_space
