@@ -56,8 +56,6 @@ namespace triqs::hilbert_space {
     using data_t = std::vector<indices_t>;
 
     private:
-    data_t vec = {};
-
     // internal only
     fundamental_operator_set(std::vector<std::vector<std::string>> const &);
 
@@ -86,7 +84,7 @@ namespace triqs::hilbert_space {
     /**
      * @param v Vector of indices
      */
-    explicit fundamental_operator_set(data_t const &v) : vec(v) {}
+    explicit fundamental_operator_set(data_t const &v) : idxs_(v) {}
 
     /// Construct fundamental_operator_set on a GF structure
     /**
@@ -98,14 +96,14 @@ namespace triqs::hilbert_space {
     }
 
     /// Reduce to a `std::vector<indices_t>`
-    explicit operator data_t() const { return vec; }
+    explicit operator data_t() const { return idxs_; }
 
     /// Insert a new index sequence given as `indices_t`
     /**
      * @param ind `indices_t` object
      */
     void insert_from_indices_t(indices_t const &ind) {
-      if (!has_indices(ind)) vec.push_back(ind);
+      if (!has_indices(ind)) idxs_.push_back(ind);
     }
 
     /// Insert a new index sequence given as multiple `int`/`std::string` arguments
@@ -115,14 +113,14 @@ namespace triqs::hilbert_space {
     /**
      * @return Size of the set
      */
-    int size() const { return vec.size(); }
+    int size() const { return idxs_.size(); }
 
     /// Check if a given index sequence is in this set
     /**
      * @param t Index sequence to look up
      * @return `true` if `t` is in this set
      */
-    bool has_indices(indices_t const &t) const { return std::find(vec.begin(), vec.end(), t) != vec.end(); }
+    bool has_indices(indices_t const &t) const { return std::find(idxs_.begin(), idxs_.end(), t) != idxs_.end(); }
 
     /// Request position of a given index sequence
     /**
@@ -130,19 +128,19 @@ namespace triqs::hilbert_space {
      * @return Position of the requested index sequence
      */
     int operator[](indices_t const &t) const {
-      auto it = std::find(vec.begin(), vec.end(), t);
-      if (it == vec.end()) TRIQS_RUNTIME_ERROR << "Operator with indices (" << t << ") does not belong to this fundamental set!";
-      return std::distance(vec.begin(), it);
+      auto it = std::find(idxs_.begin(), idxs_.end(), t);
+      if (it == idxs_.end()) TRIQS_RUNTIME_ERROR << "Operator with indices (" << t << ") does not belong to this fundamental set!";
+      return std::distance(idxs_.begin(), it);
     }
 
     /// Comparison with another fundamental operator set
-    bool operator==(fundamental_operator_set const &fops) const { return vec == fops.vec; }
+    bool operator==(fundamental_operator_set const &fops) const { return idxs_ == fops.idxs_; }
 
     /// Return the data vector: `v[int]` -> `indices_t`
     /**
      * @return The data vector
      */
-    data_t const &data() const { return vec; }
+    data_t const &data() const { return idxs_; }
 
     private:
     // Helper class for the creation of the const iterator
@@ -161,25 +159,25 @@ namespace triqs::hilbert_space {
     /**
      * @return Iterator to the first index sequence
      */
-    const_iterator begin() const noexcept { return itertools::enumerate(vec).begin(); }
+    const_iterator begin() const noexcept { return itertools::enumerate(idxs_).begin(); }
 
     /// Return `const_iterator` to the past-the-end element of this set
     /**
      * @return Iterator to the past-the-end element
      */
-    auto end() const noexcept { return itertools::enumerate(vec).end(); }
+    auto end() const noexcept { return itertools::enumerate(idxs_).end(); }
 
     /// Equivalent to [[fundamental_operator_set_begin]]
     /**
      * @return Iterator to the first index sequence
      */
-    const_iterator cbegin() const noexcept { return itertools::enumerate(vec).cbegin(); }
+    const_iterator cbegin() const noexcept { return itertools::enumerate(idxs_).cbegin(); }
 
     /// Equivalent to [[fundamental_operator_set_end]]
     /**
      * @return Iterator to the past-the-end element
      */
-    auto cend() const noexcept { return itertools::enumerate(vec).cend(); }
+    auto cend() const noexcept { return itertools::enumerate(idxs_).cend(); }
 
     /// Write this set as an HDF5 attribute
     /**
@@ -196,5 +194,9 @@ namespace triqs::hilbert_space {
      * @param f Reference to a fundamental set to be read
      */
     friend void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &f);
+
+    private:
+    data_t idxs_ = {};
   };
+
 } // namespace triqs::hilbert_space
