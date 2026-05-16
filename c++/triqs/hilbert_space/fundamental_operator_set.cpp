@@ -78,7 +78,7 @@ namespace triqs {
 
     // private constructor
     fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &vvs) {
-      for (auto const &vs : vvs) vec.push_back(to_indices(vs));
+      for (auto const &vs : vvs) idxs_.push_back(to_indices(vs));
     }
 
     // --- h5
