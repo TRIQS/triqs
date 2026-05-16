@@ -27,11 +27,11 @@ Python API
    triqs.atom_diag
    triqs.dos
    triqs.fit
-   triqs.gf
+   triqs.gfs
    triqs.lattice
+   triqs.mc_tools
    triqs.operators
    triqs.plot
-   triqs.random_generator
    triqs.stat
    triqs.sumk
    triqs.utility
