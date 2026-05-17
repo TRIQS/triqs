@@ -18,78 +18,87 @@
 //
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Implementation details for triqs/hilbert_space/fundamental_operator_set.hpp.
+ */
+
 #include "./fundamental_operator_set.hpp"
+#include "../utility/exceptions.hpp"
 
-namespace triqs {
-  namespace hilbert_space {
+#include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
 
-    namespace { // auxiliary functions
+#include <string>
+#include <variant>
+#include <vector>
 
-      // a little visitor for reduction to string
-      struct variant_visitor {
-        std::string operator()(long i) const { return "i" + std::to_string(i); }
-        std::string operator()(std::string const &s) const { return "s" + s; }
-        std::string operator()(double d) const { return "d" + std::to_string(d); }
-        std::string operator()(std::array<long, 3> const &a) const {
-          return "idx" + std::to_string(a[0]) + "," + std::to_string(a[1]) + "," + std::to_string(a[2]);
-        }
-      };
+namespace triqs::hilbert_space {
 
-      // decode the string
-      std::variant<long, std::string, double, std::array<long, 3>> string_to_variant(std::string const &s) {
-        if (s.substr(0, 3) == "idx") {
-          // Parse array: "idx0,1,2" -> {0, 1, 2}
-          std::array<long, 3> arr{};
-          auto rest = s.substr(3);
-          size_t pos1 = rest.find(',');
-          size_t pos2 = rest.find(',', pos1 + 1);
-          arr[0] = std::stol(rest.substr(0, pos1));
-          arr[1] = std::stol(rest.substr(pos1 + 1, pos2 - pos1 - 1));
-          arr[2] = std::stol(rest.substr(pos2 + 1));
-          return arr;
-        }
-        switch (s[0]) {
-          case 'i': return std::stol(s.c_str() + 1); // the variant is a long. Skip the first char and recover the long
-          case 's': return std::string(s.c_str() + 1); // the variant is a string. Just skip the first char
-          case 'd': return std::stod(s.c_str() + 1); // the variant is a double. Skip the first char and recover the double
-          default: TRIQS_RUNTIME_ERROR << "Unknown variant type prefix in h5 read: " << s[0];
-        }
+  namespace {
+
+    // A little visitor for reduction to string.
+    struct variant_visitor {
+      std::string operator()(long i) const { return "i" + std::to_string(i); }
+      std::string operator()(std::string const &s) const { return "s" + s; }
+      std::string operator()(double d) const { return "d" + std::to_string(d); }
+      std::string operator()(std::array<long, 3> const &a) const {
+        return "idx" + std::to_string(a[0]) + "," + std::to_string(a[1]) + "," + std::to_string(a[2]);
       }
+    };
 
-      // fundamental_operator_set --> vec vec string
-      std::vector<std::vector<std::string>> to_vec_vec_string(fundamental_operator_set const &f) {
-        std::vector<std::vector<std::string>> v(f.size());
-        for (auto const &p : f) { // loop over the couple (indices list, number)
-          if (p.linear_index >= f.size()) TRIQS_RUNTIME_ERROR << " Internal error fundamental_operator_set to vec vec string";
-          for (auto &x : p.index) v[p.linear_index].push_back(visit(variant_visitor{}, x));
-          // variants x are transformed to a string, add 'i' or 's' in front of the string
-        }
-        return v;
+    // Decode the string.
+    std::variant<long, std::string, double, std::array<long, 3>> string_to_variant(std::string const &s) {
+      if (s.substr(0, 3) == "idx") {
+        // Parse array: "idx0,1,2" -> {0, 1, 2}
+        std::array<long, 3> arr{};
+        auto rest   = s.substr(3);
+        size_t pos1 = rest.find(',');
+        size_t pos2 = rest.find(',', pos1 + 1);
+        arr[0]      = std::stol(rest.substr(0, pos1));
+        arr[1]      = std::stol(rest.substr(pos1 + 1, pos2 - pos1 - 1));
+        arr[2]      = std::stol(rest.substr(pos2 + 1));
+        return arr;
       }
-
-      fundamental_operator_set::indices_t to_indices(std::vector<std::string> const &v) {
-        fundamental_operator_set::indices_t indices; // list of indices of this C, C^+ op
-        for (auto &x : v)
-          if (!x.empty()) indices.push_back(string_to_variant(x));
-        return indices;
+      switch (s[0]) {
+        case 'i': return std::stol(s.c_str() + 1);   // the variant is a long. Skip the first char and recover the long
+        case 's': return std::string(s.c_str() + 1); // the variant is a string. Just skip the first char
+        case 'd': return std::stod(s.c_str() + 1);   // the variant is a double. Skip the first char and recover the double
+        default: TRIQS_RUNTIME_ERROR << "Unknown variant type prefix in h5 read: " << s[0];
       }
-
-    } // namespace
-
-    // private constructor
-    fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &vvs) {
-      for (auto const &vs : vvs) idxs_.push_back(to_indices(vs));
     }
 
-    // --- h5
-    void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &f) {
-      h5::write_attribute(obj, name, to_vec_vec_string(f));
+    // Turn a fundamental_operator_set into a vector of vector of strings.
+    auto to_vec_vec_string(fundamental_operator_set const &fops) {
+      std::vector<std::vector<std::string>> vvs(fops.size());
+      for (auto const &[n, alpha] : itertools::enumerate(fops.data())) {
+        for (auto const &beta : alpha) vvs[n].push_back(visit(variant_visitor{}, beta));
+      }
+      return vvs;
     }
 
-    void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &f) {
-      std::vector<std::vector<std::string>> fops1;
-      h5::read_attribute(obj, name, fops1);
-      f = fundamental_operator_set(fops1);
+    // Turn a vector of strings into an operator index.
+    fundamental_operator_set::indices_t to_indices(std::vector<std::string> const &v) {
+      fundamental_operator_set::indices_t alpha;
+      for (auto &beta : v)
+        if (!beta.empty()) alpha.push_back(string_to_variant(beta));
+      return alpha;
     }
-  } // namespace hilbert_space
-} // namespace triqs
+
+  } // anonymous namespace
+
+  fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &vvs) {
+    for (auto const &vs : vvs) idxs_.push_back(to_indices(vs));
+  }
+
+  void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &fops) {
+    h5::write_attribute(obj, name, to_vec_vec_string(fops));
+  }
+
+  void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &fops) {
+    std::vector<std::vector<std::string>> vvs;
+    h5::read_attribute(obj, name, vvs);
+    fops = fundamental_operator_set(vvs);
+  }
+
+} // namespace triqs::hilbert_space
