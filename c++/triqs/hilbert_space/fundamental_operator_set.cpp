@@ -26,10 +26,13 @@
 #include "./fundamental_operator_set.hpp"
 #include "../utility/exceptions.hpp"
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
 
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -86,6 +89,29 @@ namespace triqs::hilbert_space {
     }
 
   } // anonymous namespace
+
+  std::string format_indices(indices_t const &alpha, std::string_view sep, std::string_view prefix, std::string_view suffix) {
+    // early return for empty indices
+    if (alpha.empty()) return fmt::format("{}{}", prefix, suffix);
+
+    // converts a single variant element to its string representation (strings get single quotes)
+    auto idx_to_str = [](auto const &x) {
+      return std::visit(
+         [](auto const &v) -> std::string {
+           if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>)
+             return fmt::format("'{}'", v);
+           else
+             return fmt::format("{}", v);
+         },
+         x);
+    };
+
+    // build the final string
+    std::string str = fmt::format("{}{}", prefix, idx_to_str(alpha.front()));
+    for (int i = 1; i < alpha.size(); ++i) str += fmt::format("{}{}", sep, idx_to_str(alpha[i]));
+    str += fmt::format("{}", suffix);
+    return str;
+  }
 
   fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &vvs) {
     for (auto const &vs : vvs) idxs_.push_back(to_indices(vs));
