@@ -177,11 +177,12 @@ namespace triqs::operators::utils {
                                                                                        hilbert_space::fundamental_operator_set const &fs) {
 
     using namespace triqs::tuple;
+    using triqs::hilbert_space::format_indices;
     using matrix_t = array<ValueType, std::tuple_size<typename DictType::key_type>::value>;
 
     auto indices_to_linear = [&fs](indices_t const &indices) {
       if (!fs.has_indices(indices))
-        TRIQS_RUNTIME_ERROR << "dict_to_matrix: key [" << indices << "] of dict not in fundamental_operator_set/gf_struct";
+        TRIQS_RUNTIME_ERROR << "dict_to_matrix: key [" << format_indices(indices) << "] of dict not in fundamental_operator_set/gf_struct";
       return fs[indices];
     };
 

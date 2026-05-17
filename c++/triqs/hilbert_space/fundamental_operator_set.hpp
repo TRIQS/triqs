@@ -28,7 +28,6 @@
 #include "../gfs/block/gf_struct.hpp"
 #include "../utility/dressed_iterator.hpp"
 #include "../utility/exceptions.hpp"
-#include "../utility/variant_extensions.hpp"
 
 #include <h5/h5.hpp>
 #include <itertools/itertools.hpp>
@@ -38,6 +37,7 @@
 #include <iterator>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -54,6 +54,22 @@ namespace triqs::hilbert_space {
 
   /// Elevate triqs::gfs::gf_struct_t to the `triqs::hilbert_space` namespace.
   using triqs::gfs::gf_struct_t;
+
+  /**
+   * @brief String representation of a single particle state index \f$ \alpha_i \f$.
+   * 
+   * @details The individual index elements of \f$ \alpha_i \f$ are first converted to strings (if necessary) and then 
+   * concatenated using the given separator `sep`. String index elements are enclosed in single quotes.
+   * 
+   * Optional prefix and suffix strings can be added around the entire representation.
+   * 
+   * @param alpha Single particle state index \f$ \alpha_i \f$.
+   * @param sep Separator string inserted between individual index elements.
+   * @param prefix Optional prefix string.
+   * @param suffix Optional suffix string.
+   * @return Formatted string representation of \f$ \alpha_i \f$.
+   */
+  std::string format_indices(indices_t const &alpha, std::string_view sep = ",", std::string_view prefix = "", std::string_view suffix = "");
 
   /**
    * @brief Class representing a fundamental operator set.
@@ -205,7 +221,7 @@ namespace triqs::hilbert_space {
     [[nodiscard]] auto operator[](indices_t const &alpha) const {
       auto it = std::ranges::find(idxs_, alpha);
       if (it == idxs_.end()) {
-        TRIQS_RUNTIME_ERROR << "Error in fundamental_operator_set::operator[]: Operator with indices (" << alpha
+        TRIQS_RUNTIME_ERROR << "Error in fundamental_operator_set::operator[]: Operator with indices (" << format_indices(alpha)
                             << ") does not belong to this fundamental set!";
       }
       return std::distance(idxs_.begin(), it);

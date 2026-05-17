@@ -36,8 +36,7 @@ template <typename StateType> void check_state(StateType const &st, std::map<int
       EXPECT_EQ(it->second, a);
     else
       EXPECT_EQ(0, a);
-  })
-    ;
+  });
 }
 
 TEST(hilbert_space, fundamental_operator_set) {
@@ -60,6 +59,18 @@ TEST(hilbert_space, fundamental_operator_set) {
   for (int i = 0; i < 2; ++i) fop4.insert("down", i);
   EXPECT_EQ(2, (fop4[{"down", 0}]));
   EXPECT_EQ(4, fop4.size());
+}
+
+TEST(hilbert_space, operator_indices) {
+  EXPECT_PRINT("", format_indices(indices_t{}));
+  EXPECT_PRINT("()", format_indices(indices_t{}, ",", "(", ")"));
+  EXPECT_PRINT("'up',2", format_indices(indices_t{"up", 2}));
+  EXPECT_PRINT("1, 'two', 3, 'four'", format_indices(indices_t{1, "two", 3, "four"}, ", "));
+  EXPECT_PRINT("['up' | 'down']", format_indices(indices_t{"up", "down"}, " | ", "[", "]"));
+  EXPECT_PRINT("1.5", format_indices(indices_t{1.5}));
+  EXPECT_PRINT("'up',2,1.5", format_indices(indices_t{"up", 2, 1.5}));
+  EXPECT_PRINT("[1, 2, 3]", format_indices(indices_t{std::array<long, 3>{1, 2, 3}}));
+  EXPECT_PRINT("'up',[1, 2, 3],1.5", format_indices(indices_t{"up", std::array<long, 3>{1, 2, 3}, 1.5}));
 }
 
 TEST(hilbert_space, hilbert_space) {
