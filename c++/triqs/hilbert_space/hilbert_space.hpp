@@ -38,19 +38,19 @@ namespace triqs::hilbert_space {
   class hilbert_space {
     public:
     /// Construct a dummy Hilbert space of zero size
-    hilbert_space() : dim(0) {}
+    hilbert_space() : dim_(0) {}
 
     /// Construct from a given fundamental operator set
     /**
    @param fops Generating fundamental operator set
  */
-    hilbert_space(fundamental_operator_set const &fops) : dim(1ull << fops.size()) {}
+    hilbert_space(fundamental_operator_set const &fops) : dim_(1ull << fops.size()) {}
 
     /// Return the total number of the fermionic Fock states in this space
     /**
    @return Size of the Hilbert space
  */
-    int size() const { return dim; }
+    int size() const { return dim_; }
 
     /// Check two Hilbert spaces for equality
     /**
@@ -59,7 +59,7 @@ namespace triqs::hilbert_space {
    @param hs Another Hilbert space
    @return `true` if the two spaces are equal, `false` otherwise
  */
-    bool operator==(hilbert_space const &hs) const { return dim == hs.dim; }
+    bool operator==(hilbert_space const &hs) const { return dim_ == hs.dim_; }
 
     /// Check two Hilbert spaces for inequality
     /**
@@ -74,7 +74,7 @@ namespace triqs::hilbert_space {
    @param f Fock state in question
    @return `true` if `f` belongs to the space, `false` otherwise
  */
-    bool has_state(fock_state_t f) const { return f < dim; }
+    bool has_state(fock_state_t f) const { return f < dim_; }
 
     /// Find the index of a given Fock state within this space
     /**
@@ -82,7 +82,7 @@ namespace triqs::hilbert_space {
    @return State index
  */
     int get_state_index(fock_state_t f) const {
-      if (f >= dim) TRIQS_RUNTIME_ERROR << "This index is too big, f = " << f;
+      if (f >= dim_) TRIQS_RUNTIME_ERROR << "This index is too big, f = " << f;
       return f;
     }
 
@@ -92,7 +92,7 @@ namespace triqs::hilbert_space {
    @return Fock state
  */
     fock_state_t get_fock_state(int i) const {
-      if (i >= dim) TRIQS_RUNTIME_ERROR << "This Fock state does not exist (index too big), i = " << i;
+      if (i >= dim_) TRIQS_RUNTIME_ERROR << "This Fock state does not exist (index too big), i = " << i;
       return i;
     }
 
@@ -122,7 +122,7 @@ namespace triqs::hilbert_space {
  */
     friend void h5_write(h5::group fg, std::string const &name, hilbert_space const &hs) {
       auto gr = fg.create_group(name);
-      h5_write(gr, "dim", hs.dim);
+      h5_write(gr, "dim", hs.dim_);
     }
 
     /// Read a Hilbert space from an HDF5 group
@@ -133,11 +133,11 @@ namespace triqs::hilbert_space {
  */
     friend void h5_read(h5::group fg, std::string const &name, hilbert_space &hs) {
       auto gr = fg.open_group(name);
-      h5_read(gr, "dim", hs.dim);
+      h5_read(gr, "dim", hs.dim_);
     }
 
     private:
-    int dim; // the dimension
+    int dim_; // the dimension
   };
 
   /// Hilbert subspace, as an ordered set of basis Fock states.
@@ -151,7 +151,7 @@ namespace triqs::hilbert_space {
     /**
    @param index Index of this subspace within the full Hilbert space
  */
-    sub_hilbert_space(int index = -1) : index(index) {}
+    sub_hilbert_space(int index = -1) : m_(index) {}
 
 #ifdef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
     // Workaround needed for icc, checked with 17.0.1 20161005)
@@ -171,16 +171,16 @@ namespace triqs::hilbert_space {
    @param f Fock state to add
  */
     void add_fock_state(fock_state_t f) {
-      int ind = fock_states.size();
-      fock_states.push_back(f);
-      fock_to_index.insert(std::make_pair(f, ind));
+      int ind = fock_states_.size();
+      fock_states_.push_back(f);
+      fock_to_index_.insert(std::make_pair(f, ind));
     }
 
     /// Return the total number of the fermionic Fock states in this space
     /**
    @return Size of the Hilbert subspace
  */
-    int size() const { return fock_states.size(); }
+    int size() const { return fock_states_.size(); }
 
     /// Check two Hilbert subspaces for equality
     /**
@@ -190,7 +190,7 @@ namespace triqs::hilbert_space {
    @param hs Another Hilbert subspace
    @return `true` if the two subspaces are equal, `false` otherwise
  */
-    bool operator==(sub_hilbert_space const &hs) const { return index == hs.index && fock_states == hs.fock_states; }
+    bool operator==(sub_hilbert_space const &hs) const { return m_ == hs.m_ && fock_states_ == hs.fock_states_; }
 
     /// Check two Hilbert subspaces for inequality
     /**
@@ -207,39 +207,39 @@ namespace triqs::hilbert_space {
    @param f Fock state in question
    @return State index
  */
-    int get_state_index(fock_state_t f) const { return fock_to_index.find(f)->second; }
+    int get_state_index(fock_state_t f) const { return fock_to_index_.find(f)->second; }
 
     /// Check if a given Fock state belongs to this subspace
     /**
    @param f Fock state in question
    @return `true` if `f` belongs to the subspace, `false` otherwise
  */
-    bool has_state(fock_state_t f) const { return fock_to_index.count(f) == 1; }
+    bool has_state(fock_state_t f) const { return fock_to_index_.count(f) == 1; }
 
     /// Return the `i`-th basis element as a Fock state
     /**
    @param i Index of the basis state
    @return Fock state
  */
-    fock_state_t get_fock_state(int i) const { return fock_states[i]; }
+    fock_state_t get_fock_state(int i) const { return fock_states_[i]; }
 
     /// Return all basis Fock states in this subspace as `std::vector`
     /**
    @return Vector of all Fock states
  */
-    std::vector<fock_state_t> const &get_all_fock_states() const { return fock_states; }
+    std::vector<fock_state_t> const &get_all_fock_states() const { return fock_states_; }
 
     /// Return the index of this subspace within the full Hilbert space
     /**
    @return Index of the subspace
  */
-    int get_index() const { return index; };
+    int get_index() const { return m_; };
 
     /// Set the index of this subspace within the full Hilbert space
     /**
    @param i Index of the subspace
  */
-    void set_index(int i) { index = i; }
+    void set_index(int i) { m_ = i; }
 
     /// Return name of the HDF5 scheme
     /**
@@ -255,8 +255,8 @@ namespace triqs::hilbert_space {
  */
     friend void h5_write(h5::group fg, std::string const &name, sub_hilbert_space const &hs) {
       auto gr = fg.create_group(name);
-      h5_write(gr, "index", hs.index);
-      h5_write(gr, "fock_states", hs.fock_states);
+      h5_write(gr, "index", hs.m_);
+      h5_write(gr, "fock_states", hs.fock_states_);
     }
 
     /// Read a Hilbert subspace from an HDF5 group
@@ -268,23 +268,23 @@ namespace triqs::hilbert_space {
     friend void h5_read(h5::group fg, std::string const &name, sub_hilbert_space &hs) {
       using h5::h5_read;
       auto gr = fg.open_group(name);
-      h5_read(gr, "index", hs.index);
-      h5_read(gr, "fock_states", hs.fock_states);
-      hs.fock_to_index.clear();
-      for (auto f : hs.fock_states) hs.fock_to_index.insert(std::make_pair(f, static_cast<int>(hs.fock_to_index.size())));
+      h5_read(gr, "index", hs.m_);
+      h5_read(gr, "fock_states", hs.fock_states_);
+      hs.fock_to_index_.clear();
+      for (auto f : hs.fock_states_) hs.fock_to_index_.insert(std::make_pair(f, static_cast<int>(hs.fock_to_index_.size())));
     }
 
     private:
     // Index of this subspace, as a part of a full Hilbert space
-    int index;
+    int m_;
 
     // The list of all Fock states
-    std::vector<fock_state_t> fock_states;
+    std::vector<fock_state_t> fock_states_;
 
     // Reverse map to quickly find the index of a state.
     // The boost::container::flat_map is implemented as an ordered vector,
     // hence it is slow to insert (we don't care) but fast to look up (we do it a lot)
-    boost::container::flat_map<fock_state_t, int> fock_to_index;
+    boost::container::flat_map<fock_state_t, int> fock_to_index_;
   };
 
 } // namespace triqs::hilbert_space
