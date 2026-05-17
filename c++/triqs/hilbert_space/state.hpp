@@ -86,44 +86,44 @@ namespace triqs::hilbert_space {
     /**
    The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!**
   */
-    state() : hs_p(nullptr) {}
+    state() : hs_ptr_(nullptr) {}
     /// Construct a new state object
     /**
    @param hs Hilbert space the new state belongs to
   */
-    state(HilbertSpace const &hs) : hs_p(&hs) {}
+    state(HilbertSpace const &hs) : hs_ptr_(&hs) {}
 
     /// Construct a new state object and set the st-th amplitude to 1.
     /**
        * @param hs Hilbert space the new state belongs to
        * @param st Basis state with the unity amplitude
        */
-    state(HilbertSpace const &hs, fock_state_t st) : hs_p(&hs) { ampli[st] = value_type(1.0); }
+    state(HilbertSpace const &hs, fock_state_t st) : hs_ptr_(&hs) { map_[st] = value_type(1.0); }
 
     /// Return the dimension of the associated Hilbert space
     /**
    @return Dimension of the associated Hilbert space
   */
-    int size() const { return hs_p->size(); }
+    int size() const { return hs_ptr_->size(); }
 
     /// Number of non-vanishing amplitudes in the state
     /**
    @return Number of non-vanishing amplitudes
   */
-    int nterms() const { return ampli.size(); }
+    int nterms() const { return map_.size(); }
 
     /// Access to individual amplitudes
     /**
    @param i index of the requested amplitude
    @return Reference to the requested amplitude
   */
-    value_type &operator()(fock_state_t i) { return ampli[i]; }
+    value_type &operator()(fock_state_t i) { return map_[i]; }
     /// Access to individual amplitudes
     /**
    @param i index of the requested amplitude
    @return Constant reference to the requested amplitude
   */
-    value_type const &operator()(fock_state_t i) const { return ampli[i]; }
+    value_type const &operator()(fock_state_t i) const { return map_[i]; }
 
     /// In-place addition of another state
     /**
@@ -131,8 +131,8 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator+=(state const &s2) {
-      for (auto const &aa : s2.ampli) {
-        auto r = ampli.insert(aa);
+      for (auto const &aa : s2.map_) {
+        auto r = map_.insert(aa);
         if (!r.second) r.first->second += aa.second;
       }
       prune();
@@ -145,8 +145,8 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator-=(state const &s2) {
-      for (auto const &aa : s2.ampli) {
-        auto r = ampli.insert({aa.first, -aa.second});
+      for (auto const &aa : s2.map_) {
+        auto r = map_.insert({aa.first, -aa.second});
         if (!r.second) r.first->second -= aa.second;
       }
       prune();
@@ -159,7 +159,7 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator*=(value_type x) {
-      for (auto &a : ampli) { a.second *= x; }
+      for (auto &a : map_) { a.second *= x; }
       prune();
       return *this;
     }
@@ -179,9 +179,9 @@ namespace triqs::hilbert_space {
   */
     friend value_type dot_product(state const &s1, state const &s2) {
       value_type res(0);
-      for (auto const &a : s1.ampli) {
+      for (auto const &a : s1.map_) {
         using triqs::utility::conj;
-        if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
+        if (s2.map_.count(a.first) == 1) res += conj(a.second) * s2.map_.at(a.first);
       }
       return res;
     }
@@ -196,7 +196,7 @@ namespace triqs::hilbert_space {
   */
     template <typename w_max> friend void foreach (state const &st, w_max l) {
       const_cast<state &>(st).prune();
-      for (auto const &p : st.ampli) l(p.first, p.second);
+      for (auto const &p : st.map_) l(p.first, p.second);
     }
 
     //
@@ -207,27 +207,27 @@ namespace triqs::hilbert_space {
     /**
    @return Constant reference to the Hilbert space
   */
-    HilbertSpace const &get_hilbert() const { return *hs_p; }
+    HilbertSpace const &get_hilbert() const { return *hs_ptr_; }
     /// Reset the associated Hilbert space
     /**
    @param new_hs Constant reference to the new Hilbert space
   */
-    void set_hilbert(HilbertSpace const &new_hs) { hs_p = &new_hs; }
+    void set_hilbert(HilbertSpace const &new_hs) { hs_ptr_ = &new_hs; }
 
     private:
     void prune() {
-      for (auto it = ampli.begin(); it != ampli.end();) {
+      for (auto it = map_.begin(); it != map_.end();) {
         using triqs::utility::is_zero;
         if (is_zero(it->second))
-          it = ampli.erase(it);
+          it = map_.erase(it);
         else
           ++it;
       }
     }
 
     private:
-    const HilbertSpace *hs_p;
-    amplitude_t ampli;
+    const HilbertSpace *hs_ptr_;
+    amplitude_t map_;
   };
 
   /// State: implementation based on `nda::vector`
@@ -246,38 +246,38 @@ namespace triqs::hilbert_space {
     /**
    The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!**
   */
-    state() : hs_p(nullptr) {}
+    state() : hs_ptr_(nullptr) {}
     /// Construct a new state object
     /**
    @param hs Hilbert space the new state belongs to
   */
-    state(HilbertSpace const &hs) : hs_p(&hs), ampli(nda::zeros<ScalarType>(hs.size())) {}
+    state(HilbertSpace const &hs) : hs_ptr_(&hs), vec_(nda::zeros<ScalarType>(hs.size())) {}
 
     /// Construct a new state object and set the st-th amplitude to 1.
     /**
        * @param hs Hilbert space the new state belongs to
        * @param st Basis state with the unity amplitude
        */
-    state(HilbertSpace const &hs, fock_state_t st) : hs_p(&hs), ampli(nda::zeros<ScalarType>(hs.size())) { ampli[st] = value_type(1.0); }
+    state(HilbertSpace const &hs, fock_state_t st) : hs_ptr_(&hs), vec_(nda::zeros<ScalarType>(hs.size())) { vec_[st] = value_type(1.0); }
 
     /// Return the dimension of the associated Hilbert space
     /**
    @return Dimension of the associated Hilbert space
   */
-    int size() const { return hs_p->size(); }
+    int size() const { return hs_ptr_->size(); }
 
     /// Access to individual amplitudes
     /**
    @param i index of the requested amplitude
    @return Reference to the requested amplitude
   */
-    value_type &operator()(int i) { return ampli[i]; }
+    value_type &operator()(int i) { return vec_[i]; }
     /// Access to individual amplitudes
     /**
    @param i index of the requested amplitude
    @return Constant reference to the requested amplitude
   */
-    value_type const &operator()(int i) const { return ampli[i]; }
+    value_type const &operator()(int i) const { return vec_[i]; }
 
     /// In-place addition of another state
     /**
@@ -285,7 +285,7 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator+=(state const &s2) {
-      ampli += s2.ampli;
+      vec_ += s2.vec_;
       return *this;
     }
 
@@ -295,7 +295,7 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator-=(state const &s2) {
-      ampli -= s2.ampli;
+      vec_ -= s2.vec_;
       return *this;
     }
 
@@ -305,7 +305,7 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator*=(value_type x) {
-      ampli *= x;
+      vec_ *= x;
       return *this;
     }
 
@@ -315,7 +315,7 @@ namespace triqs::hilbert_space {
    @return Reference to this state
   */
     state &operator/=(value_type x) {
-      ampli /= x;
+      vec_ /= x;
       return *this;
     }
 
@@ -325,7 +325,7 @@ namespace triqs::hilbert_space {
    @param s2 Second state to multiply
    @return Value of the scalar product
   */
-    friend value_type dot_product(state const &s1, state const &s2) { return nda::blas::dotc(s1.ampli, s2.ampli); }
+    friend value_type dot_product(state const &s1, state const &s2) { return nda::blas::dotc(s1.vec_, s2.vec_); }
 
     /// Apply a callable object to all amplitudes of a state
     /**
@@ -348,27 +348,27 @@ namespace triqs::hilbert_space {
     /**
    @return Constant reference to the storage container
   */
-    amplitude_t const &amplitudes() const { return ampli; }
+    amplitude_t const &amplitudes() const { return vec_; }
     /// Direct access to the storage container (`nda::vector`)
     /**
    @return Reference to the storage container
   */
-    amplitude_t &amplitudes() { return ampli; }
+    amplitude_t &amplitudes() { return vec_; }
 
     /// Return a constant reference to the associated Hilbert space
     /**
    @return Constant reference to the Hilbert space
   */
-    HilbertSpace const &get_hilbert() const { return *hs_p; }
+    HilbertSpace const &get_hilbert() const { return *hs_ptr_; }
     /// Reset the associated Hilbert space
     /**
    @param new_hs Constant reference to the new Hilbert space
   */
-    void set_hilbert(HilbertSpace const &new_hs) { hs_p = &new_hs; }
+    void set_hilbert(HilbertSpace const &new_hs) { hs_ptr_ = &new_hs; }
 
     private:
-    const HilbertSpace *hs_p;
-    amplitude_t ampli;
+    const HilbertSpace *hs_ptr_;
+    amplitude_t vec_;
   };
 
   // Print state
