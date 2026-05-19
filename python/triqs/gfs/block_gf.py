@@ -200,6 +200,11 @@ class BlockGf:
                   yield  (sig,x,y)
 
     @property
+    def gf_struct(self):
+        """List of pairs (block_name, block_size) for each block"""
+        return [(name, g.target_shape[0]) for name, g in self]
+
+    @property
     def n_blocks(self):
         """ Number of blocks"""
         return len(self.__GFlist)
