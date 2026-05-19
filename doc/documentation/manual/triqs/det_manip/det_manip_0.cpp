@@ -29,9 +29,9 @@ int main() {
   std::cout << D.size() << std::endl;
   D.complete_operation();
   std::cout << D.size() << std::endl;
-  detratio = D.try_insert(0, 1, 2., 3.);
+  detratio = D.try_insert(0, 1, 3., 4.);
   D.complete_operation();
-  detratio = D.try_insert(0, 0, 4., 5.);
+  detratio = D.try_insert(0, 0, 5., 6.);
   D.complete_operation();
 
   /// removal of a line (the 3rd) and a column (the 2nd)
