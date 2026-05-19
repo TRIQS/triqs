@@ -152,26 +152,11 @@ if(TSAN)
 endif()
 
 # ---------------------------------
-# Generate Compiler Wrapper
-# ---------------------------------
-
-# Get the compiler and linktime flags of triqs and python_and_numpy
-include(${PROJECT_SOURCE_DIR}/cmake/extract_flags.cmake)
-extract_flags(triqs)
-if(PythonSupport)
- extract_flags(cpp2py::python_and_numpy)
-endif()
-
-# Generate compiler wrapper
-configure_file(triqs++.in triqs++ @ONLY)
-
-# ---------------------------------
-# Install 
+# Install
 # ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT triqs-targets)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 
