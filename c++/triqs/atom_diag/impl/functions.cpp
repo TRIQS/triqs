@@ -86,7 +86,7 @@ namespace triqs {
       // eigenbasis of atom diag. This unitary rotation should not change any of the
       // above statements (Tr is invariant under trafo) However, the eigenbasis is obtained
       // via LAPACK up to machine prec, introducing tiny imaginary elements. Here, we filter those.
-      // Note: Here it assumed that op & den mat are truely hermitian, 0 tolerance
+      // Note: Here it assumed that op & den mat are truly hermitian, 0 tolerance
       if (is_op_hermitian(op) && is_block_matrix_hermitian(density_matrix)) {
         return std::real(result);
       } else

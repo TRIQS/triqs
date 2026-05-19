@@ -89,7 +89,7 @@ class SumkDiscrete:
               Each block of X has to have the same shape as self.hopping or
               epsilon_hat(self.hopping[i]).
 
-        - field: Any k independant object to be added to the GF
+        - field: Any k independent object to be added to the GF
 
         - epsilon_hat: a function of eps_k returning a matrix with the same matrix-dimensions as each block in Sigma
 
