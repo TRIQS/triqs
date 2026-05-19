@@ -5,6 +5,47 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 3.3.3
+
+TRIQS Version 3.3.3 is a patch-release that introduces
+minor fixes and improvements.
+
+We thank all contributors: Alexander Hampel, Hugo U. R. Strand, Leonid Pourovskii, Nils Wentzell, Thomas Hahn
+
+Find below an itemized list of changes in this release.
+
+### General
+* Add missing public functions to operators/util __all__
+* Add lib/ to LD_LIBRARY_PATH in triqsvars.sh
+* Add debug mode boundary check for dlr mesh tau evaluation
+* In port_to_triqs3 script use raw strings where necessary
+* Remove redundant TRIQS_ADD_MAX_ALIGN_T_WORKAROUND
+* Fix various spelling mistakes in doc strings
+* Fix in-tree compiler warnings in tests
+
+### blockgf
+* Enforce str block_names in gf_struct constr
+
+### mc_generic
+* Fix issue of trying to call uninitialized pointer to mpi::monitor
+
+### cmake
+* Populate LINK_DIRECTORIES for triqs target and adjust extract_flags.cmake to account for it
+* Adjust extract_flags.cmake to strip out additional faulty expressions from LDFLAGS and CXXFLAGS
+* Set LD_LIBRARY_PATH for tests to prioritize build-directory libraries
+* Remove problematic LD_PRELOAD for executables that are already build for sanitization
+
+### doc
+* Add ctseg impurity solver to list of applications
+* Add MagInt to list of applications
+
+### jenkins
+* Bump Ubuntu LLVM version to 18
+
+### test
+* h5diff: ignore HDF5 group key ordering
+
+
 ## Version 3.3.2
 
 TRIQS Version 3.3.2 is a patch-release that introduces
