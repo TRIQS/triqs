@@ -25,6 +25,7 @@ class Cpp2pyInfo:
         'triqs::mesh::' : 'triqs.mesh',
         'triqs::operators::many_body_operator' : 'triqs.operators',
         'triqs::lattice' : 'triqs.lattice',
+        'triqs::experimental' : 'triqs.experimental',
         'triqs::stat::histogram' : 'triqs.stat.histograms',
         'triqs::atom_diag::' : 'triqs.atom_diag',
         'mpi::' : 'triqs.utility.mpi',

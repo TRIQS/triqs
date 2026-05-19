@@ -27,7 +27,7 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::atom_diag::atom_diag<false>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.atom_diag.atom_diag.AtomDiagReal";
-static auto _c2py_init_0                                     = c2py::dispatcher_c_kw_t{
+static const auto _c2py_init_0                               = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
                        const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
    c2py::c_constructor<_c2py_cls_0, const triqs::atom_diag::atom_diag<false>::many_body_op_t &,
@@ -285,7 +285,7 @@ finite fermionic systems of a moderate size.)DOC"
 using _c2py_cls_1                                            = triqs::atom_diag::atom_diag<true>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_1>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_1> = "triqs.atom_diag.atom_diag.AtomDiagComplex";
-static auto _c2py_init_1                                     = c2py::dispatcher_c_kw_t{
+static const auto _c2py_init_1                               = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &,
                        const triqs::hilbert_space::fundamental_operator_set &>("h", "fops"),
    c2py::c_constructor<_c2py_cls_1, const triqs::atom_diag::atom_diag<true>::many_body_op_t &, const triqs::hilbert_space::fundamental_operator_set &,

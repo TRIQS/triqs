@@ -27,7 +27,7 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::mc_tools::random_generator;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.mc_tools.random_generator.RandomGenerator";
-static auto _c2py_init_0 =
+static const auto _c2py_init_0 =
    c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(),
                            c2py::c_constructor<_c2py_cls_0, std::string, unsigned int, unsigned long>("name", "seed", "buffer_size"_a = 1000)};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;

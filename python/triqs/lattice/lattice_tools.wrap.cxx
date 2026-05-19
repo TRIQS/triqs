@@ -27,7 +27,7 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::lattice::bravais_lattice;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.lattice.lattice_tools.BravaisLattice";
-static auto _c2py_init_0                                     = c2py::dispatcher_c_kw_t{
+static const auto _c2py_init_0                               = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<_c2py_cls_0>(),
    c2py::c_constructor<_c2py_cls_0, const triqs::lattice::matrix_t &, std::vector<triqs::lattice::r_t>, std::vector<std::string>>(
       "units", "orbital_positions"_a = std::vector<triqs::lattice::r_t>{{0, 0, 0}}, "atom_orb_name"_a = std::vector<std::string>{})};
@@ -161,7 +161,7 @@ is the matrix with the basis vectors as its columns.
 using _c2py_cls_1                                            = triqs::lattice::brillouin_zone;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_1>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_1> = "triqs.lattice.lattice_tools.BrillouinZone";
-static auto _c2py_init_1 =
+static const auto _c2py_init_1 =
    c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_1>(), c2py::c_constructor<_c2py_cls_1, triqs::lattice::bravais_lattice>("bl")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1> = c2py::pyfkw_constructor<_c2py_init_1>;
 template <>
@@ -271,7 +271,7 @@ matrices containing the basis vectors as their columns and :math:`I` is the iden
 using _c2py_cls_2                                            = triqs::lattice::tight_binding;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_2>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_2> = "triqs.lattice.lattice_tools.TightBinding";
-static auto _c2py_init_2                                     = c2py::dispatcher_c_kw_t{
+static const auto _c2py_init_2                               = c2py::dispatcher_c_kw_t{
    c2py::c_constructor<
       _c2py_cls_2, triqs::lattice::bravais_lattice,
       std::vector<nda::basic_array<long, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>,
