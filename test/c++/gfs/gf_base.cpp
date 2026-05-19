@@ -195,8 +195,8 @@ TEST(Gf, TargetSpaceLoop) {
 TEST(Gf, MeshCheck) {
   double beta = 1;
 
-  auto iw_mesh     = gf_mesh<imfreq>{beta, Fermion, 5};
-  auto iw_mesh_big = gf_mesh<imfreq>{beta, Fermion, 10};
+  auto iw_mesh     = imfreq{beta, Fermion, 5};
+  auto iw_mesh_big = imfreq{beta, Fermion, 10};
 
   auto g1 = gf<imfreq>{iw_mesh, {1, 1}};
   auto g2 = gf<imfreq>{iw_mesh_big, {1, 1}};
@@ -206,7 +206,7 @@ TEST(Gf, MeshCheck) {
 }
 
 TEST(Gf, EvalSlice) {
-  auto t_mesh = gf_mesh<refreq>({-10., 10., 100});
+  auto t_mesh = refreq({-10., 10., 100});
   gf<refreq, matrix_valued> g(t_mesh, {2, 2});
 
   auto g5 = g(5.0);
@@ -217,7 +217,7 @@ TEST(Gf, EvalSlice) {
 
 TEST(Gf, TransposeComparison) {
 
-  auto m    = gf_mesh<retime>{0, 10, 99};
+  auto m    = retime{0, 10, 99};
   auto Ginv = gf<retime>{m, {2, 2}};
 
   placeholder<0> w;
