@@ -781,7 +781,7 @@ class Gf(metaclass=AddMethod):
         # In the case of an ImFreq function, old archives did store only the >0
         # frequencies, we need to duplicate it for negative freq.
         # Same code as in the C++ h5_read for gf.
-        need_unfold = isinstance(r.mesh, meshes.MeshImFreq) and r.mesh.positive_only()
+        need_unfold = isinstance(r.mesh, meshes.MeshImFreq) and r.mesh.positive_only
         return r if not need_unfold else wrapped_aux._make_gf_from_real_gf(r)
 
     # -----------------------------plot protocol -----------------------------------

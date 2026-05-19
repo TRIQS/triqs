@@ -2,3 +2,4 @@ package_name = "triqs.mesh"
 documentation = ""
 namespaces = "triqs::mesh cppdlr"
 match_names = "triqs::mesh::.*|cppdlr::statistic_t"
+wrap_no_arg_methods_as_properties = true
