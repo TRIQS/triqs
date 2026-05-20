@@ -19,9 +19,9 @@ It is our philsophy to follow the C++ language evolution closely in order to kee
 maintainable as possible. For this reason we have decided to limit the compilation of TRIQS to the rapidly evolving gcc and LLVM based compilers, including clang and IntelLLVM.
 We support the following compiler versions:
 
-* g++ 12.x and higher
+* g++ 14.x and higher
 
-* :ref:`clang 15.0<install_clang>` and higher
+* :ref:`clang 19.0<install_clang>` and higher
 
 * IntelLLVM (icx) 2023.1.0 and higher
 
@@ -70,7 +70,7 @@ If you want to build the documentation of the TRIQS library locally on your mach
 +------------------------+----------+-----------------------------------------------------------------------------+
 | numpydoc               | >= ?     | Sphinx extension to support docstrings in Numpy format                      |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| libclang               | 15.0     | C interface to clang                                                        |
+| libclang               | 19.0     | C interface to clang                                                        |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| clang                  | 15.0     | Python Package - Libclang bindings                                          |
+| clang                  | 19.0     | Python Package - Libclang bindings                                          |
 +------------------------+----------+-----------------------------------------------------------------------------+

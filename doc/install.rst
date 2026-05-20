@@ -41,7 +41,7 @@ or :ref:`compilation from source <triqs_compilation>` and be sure to enable `arc
 Ubuntu Debian packages
 ----------------------
 
-We provide Debian packages for the Ubuntu LTS Version **22.04** (jammy) and **24.04** (noble).
+We provide Debian packages for the Ubuntu LTS Version **24.04** (noble) and **26.04** (resolute).
 They are hosted in a **TRIQS 3 specific** repository that can be added with::
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https gpg-agent curl

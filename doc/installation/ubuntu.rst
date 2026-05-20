@@ -7,11 +7,11 @@
 Installing required libraries on Ubuntu
 =======================================
 
-TRIQS 3.2 has been tested on the Ubuntu LTS version 22.04. Earlier versions are not supported.
+TRIQS 3.2 has been tested on the Ubuntu LTS version 24.04. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
-  sudo apt-get install cmake g++-12 gfortran git hdf5-tools \
+  sudo apt-get install cmake g++-14 gfortran git hdf5-tools \
        libopenblas-dev libboost-dev libfftw3-dev libgfortran5 \
        libgmp-dev libhdf5-dev libopenmpi-dev \
        python3-dev python3-mako python3-matplotlib \
@@ -19,7 +19,7 @@ Install the following packages which are necessary to build TRIQS and use it::
 
 We need to further specify the compiler to be used for the TRIQS compilation using::
 
-    export CXX=g++-12
+    export CXX=g++-14
 
 If you wish to use the jupyter notebook with triqs you can install it using::
 
