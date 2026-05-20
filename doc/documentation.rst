@@ -30,6 +30,7 @@ Python API
    triqs.gfs
    triqs.lattice
    triqs.mc_tools
+   triqs.mesh
    triqs.operators
    triqs.plot
    triqs.stat
