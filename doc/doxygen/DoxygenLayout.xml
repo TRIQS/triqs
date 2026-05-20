@@ -113,6 +113,16 @@
           <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
         </tab>
       </tab>
+      <tab type="usergroup" url="@ref triqs-operators" title="Many-body operators">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic diagonalization">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-stat" title="Statistical tools">
+      </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>
     <tab type="user" url="https://triqs.github.io/triqs/latest/" title="Official TRIQS website"/>

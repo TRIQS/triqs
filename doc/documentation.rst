@@ -14,10 +14,7 @@ Manual
 C++ API
 -------
 
-.. toctree::
-   :maxdepth: 1
-
-   documentation/cpp_api/contents
+The C++ reference manual can be found `here <./doxygen/index.html>`_.
 
 Python API
 ----------

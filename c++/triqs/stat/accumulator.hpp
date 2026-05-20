@@ -258,7 +258,7 @@ namespace triqs::stat {
   /// (b) It can average groups of consecutive measurements and store the final data (so-called "linear binning").
   ///
   /// The accumulators can be configured to perform either or both of these purposes, as needed. The design is
-  /// purposefully flexible -- it is useful both where the auto-correlation time $\tau$ of the data is known as well as
+  /// purposefully flexible -- it is useful both where the auto-correlation time \f$\tau\f$ of the data is known as well as
   /// when it has to be estimated during the simulation.
   ///
   /// Logarithmic (Log) Binning
@@ -268,21 +268,21 @@ namespace triqs::stat {
   /// error of the data binned with different bin sizes. For correlated data, the error should grow as the bin size
   /// increases up to the autocorrelation time, where it saturates.
   ///
-  /// The log binning uses bin sizes that are powers of two $2, 4, 8, 16, \ldots$ up to a user-defined maximum. Note
+  /// The log binning uses bin sizes that are powers of two \f$2, 4, 8, 16, \ldots\f$ up to a user-defined maximum. Note
   /// that binning is performed only once there is at one full bin of data at a given size -- any partial accumulation
   /// is not considered. In the the end, one can obtain the list of standard errors for the different levels of binning;
   /// this should be analyzed to see if saturation with size has occurred.
   ///
   /// .. note:: Underestimating the auto-correlation time and a lack of ergodicity are common sources of systematic
   /// errors in Monte Carlo simulations. Provided the computational and memory costs are acceptable, it is advisable to
-  /// always turn on logarithmic binning to check that $\tau$ was estimated correctly and acts as expected.
+  /// always turn on logarithmic binning to check that \f$\tau\f$ was estimated correctly and acts as expected.
   ///
   /// Linear (Lin) Binning
   /// --------------------
   ///
   /// This part of the accumulator is responsible for partially averaging (binning) and storing the data. It takes in
   /// data and accumulates it in a bin up to a user-defined bin-size. At every point, a bin stores the mean value of the
-  /// data within it bin. If the bin size is larger then the auto-correlation time $\tau$ of the measurement, the bins
+  /// data within it bin. If the bin size is larger then the auto-correlation time \f$\tau\f$ of the measurement, the bins
   /// are independent statistical samples, which can be used for further analysis.
   ///
   ///
@@ -332,8 +332,8 @@ namespace triqs::stat {
     /// @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
     ///
     ///   * n_log_bins_max == 0: turns off logarithmic binning.
-    ///   * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
-    ///   * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
+    ///   * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is \f$2^{\texttt{n_log_bins_max}}\f$.
+    ///   * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity \f$2^m\f$ get created as soon as there are \f$2^m\f$ measurements available.
     ///
     /// @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
     ///
@@ -397,7 +397,7 @@ namespace triqs::stat {
     }
 
     /// Returns the standard errors for data with different power-of-two capacity.
-    /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator.
+    /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of \f$2^n\f$. The return type is deduced from nda::real(T), where T is the type defining the accumulator.
     /// @brief Get standard errors of log binned data
     [[nodiscard]] auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
@@ -421,7 +421,7 @@ namespace triqs::stat {
 
     /// Returns the standard errors for data with different power-of-two capacity, reduced from data over all MPI threads. The final answer is reduced only to the zero MPI thread (not all reduce).
     /// @param c TRIQS MPI communicator
-    /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of $2^n$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
+    /// @return std::vector, where element v[n] contains the standard error of data binned with a bin capacity of \f$2^n\f$. The return type is deduced from nda::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     ///
     [[nodiscard]] auto log_bin_errors_all_reduce(mpi::communicator c) const {
@@ -500,12 +500,12 @@ namespace triqs::stat {
     void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   };
 
-  /// Compute estimates for the auto-correlation times $\tau$ log-binned standard errors.
+  /// Compute estimates for the auto-correlation times \f$\tau\f$ log-binned standard errors.
   /// @tparam T regular type which defines element-wise multiplication and division.
-  /// @param error_with_binning standard error of measurement with binning $\Delta_n$
-  /// @param error_no_binning standard error of measurement with without binning $\Delta_0$
-  /// @return Estimate of the auto-correlation time $\tau$, using
-  /// $$\tau = \frac{1}{2}\left[\left(\frac{\Delta_n}{\Delta_0}\right)^2 - 1\right]$$
+  /// @param error_with_binning standard error of measurement with binning \f$\Delta_n\f$
+  /// @param error_no_binning standard error of measurement with without binning \f$\Delta_0\f$
+  /// @return Estimate of the auto-correlation time \f$\tau\f$, using
+  /// \f[\tau = \frac{1}{2}\left[\left(\frac{\Delta_n}{\Delta_0}\right)^2 - 1\right]\f]
   /// @brief Convert log bin errors in auto-correlation times
   template <typename T> auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) {
     // Last part is simply 1.0, but could be an array

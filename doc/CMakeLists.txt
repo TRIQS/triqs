@@ -92,9 +92,14 @@ if(NOT Sphinx_Only)
   get_property(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
   add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
 
-  # Generation of C++ Api and Example Outputs
-  add_dependencies(docs_sphinx docs_cpp2rst docs_example_output docs_tutorial_notebooks)
+  # Generation of Example Outputs
+  add_dependencies(docs_sphinx docs_example_output docs_tutorial_notebooks)
 endif()
+
+# ---------------------------------
+# Doxygen
+# ---------------------------------
+add_subdirectory(doxygen)
 
 # ---------------------------------
 # Install
