@@ -26,6 +26,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       openmpi-bin \
       openmpi-common \
       openmpi-doc \
+      doxygen \
       pandoc \
       python3-clang-${LLVM} \
       python3-dev \
