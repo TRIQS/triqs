@@ -74,7 +74,7 @@ TEST(TRIQSLattice, BravaisLatticeRectangularWithBasis) {
   // lattice points
   auto n          = std::array<long, 3>{1, 2, 0};
   auto pt         = r_t::zeros(3); // why should it be 3-dimensional?
-  pt(rg)          = A * nda::vector_view(n);
+  pt(rg)          = A * nda::vector_view(n)(rg);
   auto lattice_pt = bl.to_point(n);
   EXPECT_ARRAY_NEAR(pt, static_cast<r_t>(lattice_pt));
   for (auto i = 0; auto x : pt) EXPECT_NEAR(x, lattice_pt[i++], 1e-14);
