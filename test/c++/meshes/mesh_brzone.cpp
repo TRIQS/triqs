@@ -66,7 +66,7 @@ void check_mesh(triqs::mesh::brzone const &m) {
   for (auto idx_it = idx_rg.begin(); [[maybe_unused]] auto mp : m) {
     auto const idx_tup = *idx_it++;
     auto const idx     = std::array<long, 3>{std::get<0>(idx_tup), std::get<1>(idx_tup), std::get<2>(idx_tup)};
-    auto const val     = B(nda::range::all, nda::range(m.bz().ndim())) * nda::basic_array_view{idx};
+    auto const val     = B(nda::range::all, nda::range(m.bz().ndim())) * nda::basic_array_view{idx}(nda::range(m.bz().ndim()));
     check_mp(mp, idx, d_idx, val, m.mesh_hash());
     EXPECT_TRUE(m.is_index_valid(idx));
 
