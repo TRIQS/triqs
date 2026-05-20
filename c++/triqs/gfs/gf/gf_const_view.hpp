@@ -97,22 +97,16 @@ namespace triqs::gfs {
 
     /**
      * Data array
-     *
-     * @category Accessors
      */
     data_t &data() & { return _data; }
 
     /**
      * Data array (const)
-     *
-     * @category Accessors
      */
     data_t const &data() const & { return _data; }
 
     /**
      * Data array : move data in case of rvalue
-     *
-     * @category Accessors
      */
     data_t data() && { return std::move(_data); }
 
@@ -120,7 +114,6 @@ namespace triqs::gfs {
      * Shape of the data
      *
      * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
-     * @category Accessors
      */
     auto const &data_shape() const { return _data.shape(); }
 
@@ -128,15 +121,11 @@ namespace triqs::gfs {
 
     /**
      * Shape of the target
-     *
-     * @category Accessors
      */
     std::array<long, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
 
     /**
      * Generator for the indices of the target space
-     *
-     * @category Accessors
      */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 

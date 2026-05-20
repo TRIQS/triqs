@@ -127,6 +127,12 @@
  */
 
 /**
+ * @ingroup triqs-meshes
+ * @defgroup triqs-meshes-lattice Lattice meshes
+ * @brief %Mesh types for lattice domains like Brillouin zone and cyclic lattice.
+ */
+
+/**
  * @defgroup triqs-lattice Lattice tools
  * @brief Tools for working with Bravais lattices and Brillouin zones.
  */
@@ -174,4 +180,44 @@
  * @ingroup triqs-mc
  * @defgroup triqs-mc-simulation MC simulation
  * @brief Run and manage MC simulations.
+ */
+
+/**
+ * @defgroup triqs-operators Many-body operators
+ * @brief Tools for constructing and manipulating second-quantized many-body operators.
+ *
+ * @details This module provides classes and functions for working with many-body operators in second quantization,
+ * including creation and annihilation operators, as well as algebraic operations on operator expressions.
+ */
+
+/**
+ * @defgroup triqs-hilbert Hilbert space
+ * @brief Tools for representing and manipulating many-body Hilbert spaces.
+ *
+ * @details This module provides classes for representing Fock states and many-body Hilbert spaces,
+ * including support for quantum number sectors and state indexing.
+ */
+
+/**
+ * @defgroup triqs-atom-diag Atomic problem diagonalization
+ * @brief Exact diagonalization of atomic (local) Hamiltonians.
+ *
+ * @details This module provides tools for exact diagonalization of atomic Hamiltonians,
+ * computation of the atomic Green's function, and related quantities needed for quantum impurity solvers.
+ */
+
+/**
+ * @defgroup triqs-det-manip Determinant manipulation
+ * @brief Efficient algorithms for manipulating determinants in Monte Carlo sampling.
+ *
+ * @details This module provides optimized algorithms for computing and updating determinants,
+ * which are essential for determinantal quantum Monte Carlo methods.
+ */
+
+/**
+ * @defgroup triqs-stat Statistical tools
+ * @brief Tools for statistical analysis of Monte Carlo data.
+ *
+ * @details This module provides histograms, accumulators, and other statistical tools
+ * for analyzing and post-processing Monte Carlo simulation data.
  */

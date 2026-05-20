@@ -478,7 +478,6 @@ namespace triqs::det_manip {
        *
        * @param i
        * @param j
-       * @category Operations
        */
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
 
@@ -608,7 +607,6 @@ namespace triqs::det_manip {
        * 0 <= i0,i1,j0,j1 <= N+1, where N is the current size of the matrix.
        * Returns the ratio of det Minv_new / det Minv.
        * This routine does NOT make any modification. It has to be completed with complete_operation().
-       * @category Operations
        */
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
       TRIQS_ASSERT(last_try == NoTry);

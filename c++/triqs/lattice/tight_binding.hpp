@@ -91,13 +91,13 @@ namespace triqs::lattice {
     /**
        * Calculate the fourier transform for a given momentum vector k (or array of vectors)
        *
-       *   $$ h_k = \sum_j m_j * exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) $$
+       *   \f[ h_k = \sum_j m_j * \exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) \f]
        *
        * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
        * k needs to be represented in units of the reciprocal lattice vectors
        *
        * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
-       * @return The value for $h_k$ as a complex matrix
+       * @return The value for \f$h_k\f$ as a complex matrix
        */
     template <typename K>
       requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
@@ -149,12 +149,12 @@ namespace triqs::lattice {
       return fourier(k_mesh);
     }
 
-    /**
-       * Calculate the dispersion, i.e. the eigenvalue-spectrum of $h_k$,
+      /**
+       * Calculate the dispersion, i.e. the eigenvalue-spectrum of \f$h_k\f$,
        * for a given momentum vector k (or array of vectors).
        *
        * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
-       * @return The value for $h_k$ as a complex matrix
+       * @return The value for \f$h_k\f$ as a complex matrix
        */
     template <typename K>
     auto dispersion(K const &k) const

@@ -32,7 +32,7 @@ namespace triqs {
     struct time_segment;
 
     /**
-  * A point in imaginary time, i.e. $\tau \in [0,\beta]$, but defined on a very thin grid.
+  * A point in imaginary time, i.e. \f$\tau \in [0,\beta]\f$, but defined on a very thin grid.
   *
   * * Regular type.
   *
@@ -48,7 +48,7 @@ namespace triqs {
 
       friend struct time_segment;
 
-      /// Default constructor: $\tau=0$
+      /// Default constructor: \f$\tau=0\f$
       time_pt() {
         beta = 0;
         val  = 0;
@@ -141,25 +141,25 @@ namespace triqs {
       /// Beta
       const double beta;
 
-      /// Construction from $\beta$
+      /// Construction from \f$\beta\f$
       time_segment(double beta_) : beta(beta_) {}
 
-      /// Get a random point in $[0, tp[$
+      /// Get a random point in \f$[0, tp[\f$
       template <typename RNG> time_pt get_random_pt(RNG &rng, time_pt tp) const { return time_pt(rng(tp.n), beta); }
 
-      /// Get a random point in $[0,\beta[$
+      /// Get a random point in \f$[0,\beta[\f$
       template <typename RNG> time_pt get_random_pt(RNG &rng) const { return time_pt(rng(time_pt::Nmax), beta); }
 
-      // Get a random point in $[tp1, tp2[$
+      // Get a random point in \f$[tp1, tp2[\f$
       template <typename RNG> time_pt get_random_pt(RNG &rng, time_pt tp1, time_pt tp2) const { return time_pt(rng(tp2.n - tp1.n) + tp1.n, beta); }
 
-      /// Get maximum point (i.e. $\tau =\beta$)
+      /// Get maximum point (i.e. \f$\tau =\beta\f$)
       time_pt get_upper_pt() const { return time_pt(time_pt::Nmax, beta); }
 
-      /// Get minimum point (i.e. $\tau =0$)
+      /// Get minimum point (i.e. \f$\tau =0\f$)
       time_pt get_lower_pt() const { return time_pt(0, beta); }
 
-      /// Get epsilon, defined as $\epsilon = \beta /N_max$
+      /// Get epsilon, defined as \f$\epsilon = \beta /N_{\text{max}}\f$
       time_pt get_epsilon() const { return time_pt(1, beta); }
 
       /// ??

@@ -86,8 +86,6 @@ if(Build_Documentation AND NOT PythonSupport)
   message(FATAL_ERROR "Build_Documentation=ON requires PythonSupport to be enabled")
 endif()
 
-option(Build_Doxygen_Documentation "Build the doxygen documentation" OFF)
-
 # Benchmarks
 option(Build_Benchs "Build Benchmarks" OFF)
 
@@ -257,11 +255,6 @@ endif()
 if(Build_Documentation)
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory(doc)
-endif()
-
-if(Build_Doxygen_Documentation)
- message(STATUS "-------- Prepare doxygen documentation -------------")
- add_subdirectory(doc/doxygen)
 endif()
 
 #-----------------------------------------------
