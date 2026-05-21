@@ -38,10 +38,6 @@ include(${c2py_SOURCE_DIR}/share/cmake/clair_c2py_generate_bindings.cmake)
 
 # user option to regenerate the Python bindings
 option(Update_Python_Bindings "Optionally update the C++ Python bindings in the source directory using clair-c2py" ON)
-if(Update_Python_Bindings)
-  find_program(clair-c2py clair-c2py REQUIRED)
-  message(STATUS "clair-c2py found at ${clair-c2py}")
-endif()
 
 # add an interface target for all Python modules
 add_library(${PROJECT_NAME}_python_modules INTERFACE)
@@ -74,17 +70,6 @@ foreach(module_src ${module_sources})
 
   # optionally generate Python bindings with clair-c2py
   if(Update_Python_Bindings)
-    set(wrap_cxx "${CMAKE_CURRENT_SOURCE_DIR}/${module_dir}/${module_name}.wrap.cxx")
-    set(depfile "${CMAKE_CURRENT_BINARY_DIR}/${module_name}.cpp.d")
-
-    add_custom_command(
-      OUTPUT ${wrap_cxx} ${depfile}
-      COMMAND ${clair-c2py} -p ${PROJECT_BINARY_DIR} --generate-depfile ${depfile} ${module_src}
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPFILE ${depfile}
-    )
-
-    add_custom_target(wrap_gen_${module_name} DEPENDS ${wrap_cxx})
-    add_dependencies(${module_name} wrap_gen_${module_name})
+    clair_c2py_generate_bindings(${module_name} DIR ${module_dir})
   endif()
 endforeach()
