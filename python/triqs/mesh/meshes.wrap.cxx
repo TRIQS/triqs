@@ -21,13 +21,16 @@ using c2py::operator""_a;
 
 // ==================== enums =====================
 
+template <> constexpr bool c2py::is_wrapped<cppdlr::statistic_t> = true;
 template <>
 const std::map<cppdlr::statistic_t, str_t> c2py::enum_to_string<cppdlr::statistic_t> = {{cppdlr::statistic_t::Boson, "Boson"},
                                                                                         {cppdlr::statistic_t::Fermion, "Fermion"}};
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::statistic_enum>             = true;
 template <>
 const std::map<triqs::mesh::statistic_enum, str_t> c2py::enum_to_string<triqs::mesh::statistic_enum> = {
    {triqs::mesh::statistic_enum::Boson, "Boson"},
    {triqs::mesh::statistic_enum::Fermion, "Fermion"}};
+template <> constexpr bool c2py::is_wrapped<triqs::mesh::imfreq::option> = true;
 template <>
 const std::map<triqs::mesh::imfreq::option, str_t> c2py::enum_to_string<triqs::mesh::imfreq::option> = {
    {triqs::mesh::imfreq::option::all_frequencies, "all_frequencies"},
