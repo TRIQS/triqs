@@ -405,33 +405,28 @@ def spherical_to_cubic(l, convention='triqs'):
             T[3,1] = 1.0/sqrt(2);   T[3,3] = -1.0/sqrt(2)
             T[4,0] = 1.0/sqrt(2);   T[4,4] = 1.0/sqrt(2)
     elif l == 3:
+        # l=3 cubic orderings used here:
+        # triqs:     ("x(x^2-3y^2)", "z(x^2-y^2)", "xz^2", "z^3", "yz^2", "xyz", "y(3x^2-y^2)")
+        # vasp:      ("y(3x^2-y^2)", "xyz", "yz^2", "z^3", "xz^2", "z(x^2-y^2)", "x(x^2-3y^2)")
+        # wannier90: ("z^3", "xz^2", "yz^2", "z(x^2-y^2)", "xyz", "x(x^2-3y^2)", "y(3x^2-y^2)")
+        # qe: same as wannier90
+        T_triqs = np.zeros((size,size),dtype=complex)
+        T_triqs[0,0] = 1.0/sqrt(2);   T_triqs[0,6] = -1.0/sqrt(2)
+        T_triqs[1,1] = 1.0/sqrt(2);   T_triqs[1,5] =  1.0/sqrt(2)
+        T_triqs[2,2] = 1.0/sqrt(2);   T_triqs[2,4] = -1.0/sqrt(2)
+        T_triqs[3,3] = 1.0
+        T_triqs[4,2] = 1j/sqrt(2);    T_triqs[4,4] =  1j/sqrt(2)
+        T_triqs[5,1] = 1j/sqrt(2);    T_triqs[5,5] = -1j/sqrt(2)
+        T_triqs[6,0] = 1j/sqrt(2);    T_triqs[6,6] =  1j/sqrt(2)
+
         if convention == 'triqs':
-            cubic_names = ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)")
-            T[0,0] = 1.0/sqrt(2);   T[0,6] = -1.0/sqrt(2)
-            T[1,1] = 1.0/sqrt(2);   T[1,5] =  1.0/sqrt(2)
-            T[2,2] = 1.0/sqrt(2);   T[2,4] = -1.0/sqrt(2)
-            T[3,3] = 1.0
-            T[4,2] = 1j/sqrt(2);    T[4,4] =  1j/sqrt(2)
-            T[5,1] = 1j/sqrt(2);    T[5,5] = -1j/sqrt(2)
-            T[6,0] = 1j/sqrt(2);    T[6,6] =  1j/sqrt(2)
+            T = T_triqs
         elif convention == 'vasp':
-            cubic_names = ("y(3x^2-y^2)","xyz","yz^2","z^3","xz^2","z(x^2-y^2)","x(x^2-3y^2)")
-            T[0,0] = 1j/sqrt(2);    T[0,6] =  1j/sqrt(2)
-            T[1,1] = 1j/sqrt(2);    T[1,5] = -1j/sqrt(2)
-            T[2,2] = 1j/sqrt(2);    T[2,4] =  1j/sqrt(2)
-            T[3,3] = 1.0
-            T[4,2] = 1.0/sqrt(2);   T[4,4] = -1.0/sqrt(2)
-            T[5,1] = 1.0/sqrt(2);   T[5,5] =  1.0/sqrt(2)
-            T[6,0] = 1.0/sqrt(2);   T[6,6] = -1.0/sqrt(2)
+            row_permutation = (6, 5, 4, 3, 2, 1, 0)
+            T = T_triqs[row_permutation, :]
         elif convention in ('wannier90', 'qe'):
-            cubic_names = ("z^3","xz^2","yz^2","z(x^2-y^2)","xyz","x(x^2-3y^2)","y(3x^2-y^2)")
-            T[0,3] = 1.0
-            T[1,2] = 1.0/sqrt(2);   T[1,4] = -1.0/sqrt(2)
-            T[2,2] = 1j/sqrt(2);    T[2,4] =  1j/sqrt(2)
-            T[3,1] = 1.0/sqrt(2);   T[3,5] =  1.0/sqrt(2)
-            T[4,1] = 1j/sqrt(2);    T[4,5] = -1j/sqrt(2)
-            T[5,0] = 1.0/sqrt(2);   T[5,6] = -1.0/sqrt(2)
-            T[6,0] = 1j/sqrt(2);    T[6,6] =  1j/sqrt(2)
+            row_permutation = (3, 2, 4, 1, 5, 0, 6)
+            T = T_triqs[row_permutation, :]
     else: raise ValueError("spherical_to_cubic: implemented only for l=0,1,2,3")
 
     return T

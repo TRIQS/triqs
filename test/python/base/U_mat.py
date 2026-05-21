@@ -56,7 +56,8 @@ assert_arrays_are_close(U_ref, U)
 assert_arrays_are_close(U_p_ref, U_p)
 
 
-# test spherical_to_cubic unitarity for all supported (l, convention) pairs
+# Algebraic sanity check: spherical_to_cubic must be unitary for all supported
+# (l, convention) pairs. This does not validate convention-specific ordering.
 for l in (0, 1, 2, 3):
     for convention in ('triqs', 'vasp', 'wannier90', 'qe', 'wien2k'):
         if convention == 'wien2k' and l == 3:
@@ -65,3 +66,23 @@ for l in (0, 1, 2, 3):
         identity = numpy.eye(2*l+1)
         assert_arrays_are_close(T @ T.conj().T, identity)
         assert_arrays_are_close(T.conj().T @ T, identity)
+
+
+# For l=3, conventions are related by row permutations of the TRIQS basis.
+T_triqs = spherical_to_cubic(3, convention='triqs')
+T_vasp = spherical_to_cubic(3, convention='vasp')
+T_wannier90 = spherical_to_cubic(3, convention='wannier90')
+T_qe = spherical_to_cubic(3, convention='qe')
+
+assert_arrays_are_close(T_vasp, T_triqs[(6, 5, 4, 3, 2, 1, 0), :])
+assert_arrays_are_close(T_wannier90, T_triqs[(3, 2, 4, 1, 5, 0, 6), :])
+assert_arrays_are_close(T_qe, T_wannier90)
+
+
+got_l3_wien2k_error = False
+try:
+    spherical_to_cubic(3, convention='wien2k')
+except ValueError:
+    got_l3_wien2k_error = True
+
+assert(got_l3_wien2k_error)
