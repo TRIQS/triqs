@@ -81,19 +81,19 @@ namespace triqs::gfs {
   //   pade scalar_valued is non-template; multi-target is an abbreviated template.
   // ---------------------------------------------------------------------------
 
-  void set_from_pade(gf_view<refreq, scalar_valued> gw, gf_const_view<imfreq, scalar_valued> giw, int n_points, double freq_offset) {
+  void set_from_pade(gf_view<refreq, scalar_valued> gw, gf_const_view<imfreq, scalar_valued> giw, int n_points = 100, double freq_offset = 0.0) {
     pade(gw, giw, n_points, freq_offset);
   }
-  void set_from_pade(gf_view<refreq, tensor_valued<1>> gw, gf_const_view<imfreq, tensor_valued<1>> giw, int n_points, double freq_offset) {
+  void set_from_pade(gf_view<refreq, tensor_valued<1>> gw, gf_const_view<imfreq, tensor_valued<1>> giw, int n_points = 100, double freq_offset = 0.0) {
     pade(gw, giw, n_points, freq_offset);
   }
-  void set_from_pade(gf_view<refreq, matrix_valued> gw, gf_const_view<imfreq, matrix_valued> giw, int n_points, double freq_offset) {
+  void set_from_pade(gf_view<refreq, matrix_valued> gw, gf_const_view<imfreq, matrix_valued> giw, int n_points = 100, double freq_offset = 0.0) {
     pade(gw, giw, n_points, freq_offset);
   }
-  void set_from_pade(gf_view<refreq, tensor_valued<3>> gw, gf_const_view<imfreq, tensor_valued<3>> giw, int n_points, double freq_offset) {
+  void set_from_pade(gf_view<refreq, tensor_valued<3>> gw, gf_const_view<imfreq, tensor_valued<3>> giw, int n_points = 100, double freq_offset = 0.0) {
     pade(gw, giw, n_points, freq_offset);
   }
-  void set_from_pade(gf_view<refreq, tensor_valued<4>> gw, gf_const_view<imfreq, tensor_valued<4>> giw, int n_points, double freq_offset) {
+  void set_from_pade(gf_view<refreq, tensor_valued<4>> gw, gf_const_view<imfreq, tensor_valued<4>> giw, int n_points = 100, double freq_offset = 0.0) {
     pade(gw, giw, n_points, freq_offset);
   }
 
