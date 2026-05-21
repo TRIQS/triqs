@@ -604,4 +604,160 @@ TEST(Gf, DLR_FT_iw_to_tau) {
   for (auto tau : G0.mesh()) { EXPECT_COMPLEX_NEAR(G0[tau], onefermion(tau, -mu, beta), 10*eps_DLR); }
 }
 
+TEST(Gf, MakeGfDlrImfreqFromImfreq) {
+  using triqs::mesh::imfreq;
+
+  double beta  = 10.0;
+  long   n_iw  = 400;
+  double w_max = 10.0;
+  double eps   = 1e-10;
+  double tol   = 1e-8;
+
+  // scalar_valued
+  {
+    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+    double e = 1.42;
+    for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
+
+    auto g_dlr_iw = make_gf_dlr_imfreq(g, w_max, eps);
+    EXPECT_EQ(g_dlr_iw.mesh().w_max(), w_max);
+
+    for (auto const &mp : g_dlr_iw.mesh()) EXPECT_COMPLEX_NEAR(g_dlr_iw[mp], g[g.mesh()(mp.index())], tol);
+
+    auto g_rec = make_gf_imfreq(make_gf_dlr(g_dlr_iw), n_iw);
+    EXPECT_GF_NEAR(g_rec, g, tol);
+  }
+
+  {
+    auto g = gf<imfreq, matrix_valued>{imfreq{beta, Fermion, n_iw}, {2, 2}};
+    nda::array<double, 1> poles{1.42, -0.7};
+    for (auto iw : g.mesh())
+      for (int i = 0; i < 2; ++i) g[iw](i, i) = 1.0 / (iw - poles(i));
+
+    auto g_dlr_iw = make_gf_dlr_imfreq(g, w_max, eps);
+    auto g_rec    = make_gf_imfreq(make_gf_dlr(g_dlr_iw), n_iw);
+    EXPECT_GF_NEAR(g_rec, g, tol);
+  }
+
+  {
+    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Boson, n_iw}};
+    double e = 0.7;
+    for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
+
+    auto g_dlr_iw = make_gf_dlr_imfreq(g, w_max, eps);
+    EXPECT_EQ(g_dlr_iw.mesh().statistic(), Boson);
+    auto g_rec = make_gf_imfreq(make_gf_dlr(g_dlr_iw), n_iw);
+    EXPECT_GF_NEAR(g_rec, g, tol);
+  }
+}
+
+TEST(Gf, MakeGfDlrImfreqFromImfreqBlock) {
+  using triqs::mesh::imfreq;
+
+  double beta  = 10.0;
+  long   n_iw  = 400;
+  double w_max = 10.0;
+  double eps   = 1e-10;
+  double tol   = 1e-8;
+
+  auto make_pole = [&](double e) {
+    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+    for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
+    return g;
+  };
+  auto g_up = make_pole(1.42);
+  auto g_dn = make_pole(-0.7);
+  auto Bg   = make_block_gf({"up", "dn"}, std::vector{g_up, g_dn});
+
+  auto Bg_dlr_iw = make_gf_dlr_imfreq(Bg, w_max, eps);
+  EXPECT_EQ(Bg_dlr_iw[0].mesh().w_max(), w_max);
+
+  auto Bg_rec = make_gf_imfreq(make_gf_dlr(Bg_dlr_iw), n_iw);
+  EXPECT_GF_NEAR(Bg_rec[0], Bg[0], tol);
+  EXPECT_GF_NEAR(Bg_rec[1], Bg[1], tol);
+}
+
+TEST(Gf, FindWMaxScalar) {
+  using triqs::mesh::imfreq;
+
+  double beta = 10.0;
+  long   n_iw = 400;
+  double eps  = 1e-10;
+  double e    = 1.42;
+
+  auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+  for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
+
+  double w_max = find_w_max(g, eps);
+  EXPECT_GT(w_max, std::abs(e));
+  EXPECT_LT(w_max, 200.0);
+
+  auto g_dlr_iw = make_gf_dlr_imfreq(g, w_max, eps);
+  auto g_rec    = make_gf_imfreq(make_gf_dlr(g_dlr_iw), n_iw);
+  EXPECT_GF_NEAR(g_rec, g, 10 * eps);
+}
+
+TEST(Gf, FindWMaxBlockUsesWorstPole) {
+  using triqs::mesh::imfreq;
+
+  double beta = 10.0;
+  long   n_iw = 400;
+  double eps  = 1e-10;
+
+  auto make_pole = [&](double e) {
+    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+    for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
+    return g;
+  };
+  auto g_small = make_pole(0.2);
+  auto g_large = make_pole(5.0);
+  auto Bg      = make_block_gf({"s", "l"}, std::vector{g_small, g_large});
+
+  double w_max = find_w_max(Bg, eps);
+  EXPECT_GT(w_max, 5.0);
+
+  auto Bg_dlr_iw = make_gf_dlr_imfreq(Bg, w_max, eps);
+  auto Bg_rec    = make_gf_imfreq(make_gf_dlr(Bg_dlr_iw), n_iw);
+  EXPECT_GF_NEAR(Bg_rec[0], Bg[0], 10 * eps);
+  EXPECT_GF_NEAR(Bg_rec[1], Bg[1], 10 * eps);
+}
+
+// Failure modes: imfreq mesh too small to cover the DLR nodes; search bound below init.
+TEST(Gf, MakeGfDlrImfreqErrors) {
+  using triqs::mesh::imfreq;
+
+  double beta = 10.0;
+
+  auto g_small_grid = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, 5}};
+  for (auto iw : g_small_grid.mesh()) g_small_grid[iw] = 1.0 / (iw - 1.0);
+  EXPECT_THROW(make_gf_dlr_imfreq(g_small_grid, 100.0, 1e-10), triqs::runtime_error);
+
+  auto g_ok = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, 400}};
+  for (auto iw : g_ok.mesh()) g_ok[iw] = 1.0 / (iw - 1.42);
+  EXPECT_THROW(find_w_max(g_ok, 1e-10, true, 1.0, 0.5), triqs::runtime_error);
+}
+
+// A self-energy-like input with a non-zero high-frequency tail (constant offset) cannot be
+// represented by the DLR (which only spans sums of decaying poles). find_w_max should report
+// failure for any w_max, since the round-trip residual stays near |c| at large |iw|.
+TEST(Gf, FindWMaxConstantOffsetThrows) {
+  using triqs::mesh::imfreq;
+
+  double beta = 10.0;
+  long   n_iw = 400;
+  double eps  = 1e-10;
+  double e    = 1.42;
+  double c    = 0.7; // Hartree-Fock-like static shift
+
+  auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+  for (auto iw : g.mesh()) g[iw] = c + 1.0 / (iw - e);
+  EXPECT_THROW(find_w_max(g, eps), triqs::runtime_error);
+
+  // block_gf: a single offending block must still trigger the failure.
+  auto g_ok = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+  for (auto iw : g_ok.mesh()) g_ok[iw] = 1.0 / (iw - e);
+  auto Bg = make_block_gf({"ok", "bad"}, std::vector{g_ok, g});
+  EXPECT_THROW(find_w_max(Bg, eps), triqs::runtime_error);
+}
+
 MAKE_MAIN;
