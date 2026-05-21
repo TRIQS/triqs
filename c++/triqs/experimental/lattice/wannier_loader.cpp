@@ -34,8 +34,8 @@ namespace triqs::experimental::lattice {
 
     // read the lattice vectors
     auto latt_vec = nda::matrix<double>(3, 3);
-    for ([[maybe_unused]] auto x : {0, 1, 2})
-      for ([[maybe_unused]] auto y : {0, 1, 2}) { latt_vec(x, y) = detail::read<double>(file); }
+    for (auto x : {0, 1, 2})
+      for (auto y : {0, 1, 2}) { latt_vec(x, y) = detail::read<double>(file); }
 
     // next two lines have number of wannier centers, number of R vectors
     int n_wannier = detail::read<int>(file);
@@ -123,11 +123,9 @@ namespace triqs::experimental::lattice {
       H_r.emplace_back(n_wannier, n_wannier);
     }
 
-    std::cout << "containers for " << std::endl;
-
     // read the R vectors and the Wannier Hamiltonian -------
     std::array<long, 3> R;
-    for (auto [ir, _, _] : product(nda::range(n_r), nda::range(n_wannier), nda::range(n_wannier))) {
+    for (auto [ir, _unused1, _unused2] : product(nda::range(n_r), nda::range(n_wannier), nda::range(n_wannier))) {
 
       double re, im;
       int ii, jj; // read these from the file rather than as loop indices

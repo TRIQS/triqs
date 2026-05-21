@@ -9,7 +9,7 @@ TEST(wannier_loader_test, svo_tb_and_hr) { // NOLINT
   // Load in and test reading of hr and tb files from Wannier90
 
   // load quantities from wannier90 using test file svo_tb.dat
-  auto [R, H_R, _, latt_vec] = read_wannier90_tb_data("svo");
+  auto [R, H_R, _unused, latt_vec] = read_wannier90_tb_data("svo");
   // load in the same information using svo_hr.dat, from the same calculation
   // to confirm they give the same final answers
   auto tb_from_hr = make_tb_hk_from_w90_hr_file("svo");

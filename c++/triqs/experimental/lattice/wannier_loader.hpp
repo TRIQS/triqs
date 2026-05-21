@@ -27,7 +27,7 @@ namespace triqs::experimental::lattice {
    * @return tb_hk object, where units of energy are in eV.
    */
   inline tb_hk make_tb_hk_from_w90_tb_file(std::string const &w90_path_and_seedname) {
-    auto [Rs, hoppings, _, _] = read_wannier90_tb_data(w90_path_and_seedname);
+    auto [Rs, hoppings, _unused1, _unused2] = read_wannier90_tb_data(w90_path_and_seedname);
     return {std::move(Rs), std::move(hoppings)};
   };
 
