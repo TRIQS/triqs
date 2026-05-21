@@ -194,7 +194,7 @@ namespace triqs::mesh {
      * @param eps Error tolerance \f$ \epsilon \f$.
      * @param symmetrize Whether to choose the imaginary time points symmetrically around \f$ \tau = \beta / 2 \f$.
      */
-    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = false)
+    dlr_imtime(double beta, statistic_enum statistic, double w_max, double eps, bool symmetrize = true)
        : dlr_imtime(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
 
     /**
