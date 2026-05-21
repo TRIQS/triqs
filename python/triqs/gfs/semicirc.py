@@ -5,15 +5,15 @@ r"""Green's function for a semi-circular density of states.
     \rho(\omega) = \frac{2}{\pi D^2}\,\sqrt{D^2 - \omega^2},
     \qquad |\omega| \le D
 
-Closed-form expressions exist on the Matsubara and real-frequency axes.
+Closed-form expressions exist in the complex frequency plane.
 On the imaginary-time axis a fast panel quadrature is used.
 
 Functions
 ---------
-g_semicirc_iw            Matsubara frequency  G(iω_n)
-g_semicirc_w             Real frequency       G(ω + i0⁺)
-g_semicirc_tau           Imaginary time       G(τ)   via panel quadrature
-g_semicirc_tau_adapquad  Imaginary time       G(τ)   via adaptive quadrature
+g_semicirc_z             Complex frequency (except [-D, D])  G(z)
+g_semicirc_w             Real frequency                      G(ω + i0⁺)
+g_semicirc_tau           Imaginary time                      G(τ) via panel quadrature
+g_semicirc_tau_adapquad  Imaginary time                      G(τ) via adaptive quadrature
 """
 
 import numpy as np
@@ -23,27 +23,25 @@ from scipy.integrate import quad
 
 # ── Matsubara frequency ─────────────────────────────────────────────────────
 
-def g_semicirc_iw(iw, D):
-    r"""Semi-circular Green's function on the Matsubara axis.
+def g_semicirc_z(z, D):
+    r"""Semi-circular Green's function for complex frequency without [-D, D].
+
+    For general complex arguments :math:`z` not on the cut :math:`[-D, D]`, the Green's function is given by    
 
     .. math::
-        G(i\omega) = \frac{2}{D^2}\bigl(i\omega
-            - i\,\mathrm{sign}(\omega)\,\sqrt{D^2 + \omega^2}\bigr)
+        G(z) = \frac{2}{D^2}\bigl(z - \sqrt{z^2 - D^2}\bigr)
 
     Parameters
     ----------
-    iw : complex or array_like
-        Matsubara frequencies (purely imaginary, e.g. ``1j * wn``).
-    D  : float
-        Half-bandwidth.
+    z : complex or array_like of complex frequencies not on the cut [-D, D].
+    D  : float, half-bandwidth (D > 0)
 
     Returns
     -------
     G : complex or ndarray
     """
-    iw = np.asarray(iw, dtype=complex)
-    w = iw.imag
-    return (2.0 / D**2) * (iw - 1j * np.sign(w) * np.sqrt(D**2 + w**2))
+    z = np.asarray(z, dtype=complex)
+    return (2.0 / D**2) * (z - np.sqrt(z - D) * np.sqrt(z + D))
 
 
 # ── Real frequency ──────────────────────────────────────────────────────────
