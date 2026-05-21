@@ -718,7 +718,7 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_3>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_3> = "triqs.mesh.meshes.MeshDLR";
 static const auto _c2py_init_2 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_3>(),
                                                          c2py::c_constructor<_c2py_cls_3, double, triqs::mesh::statistic_enum, double, double, bool>(
-                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
+                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = true),
                                                          c2py::c_constructor<_c2py_cls_3, const triqs::mesh::dlr_imtime &>("m"),
                                                          c2py::c_constructor<_c2py_cls_3, const triqs::mesh::dlr_imfreq &>("m")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_3> = c2py::pyfkw_constructor<_c2py_init_2>;
@@ -1026,7 +1026,7 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_4>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_4> = "triqs.mesh.meshes.MeshDLRImTime";
 static const auto _c2py_init_3 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_4>(),
                                                          c2py::c_constructor<_c2py_cls_4, double, triqs::mesh::statistic_enum, double, double, bool>(
-                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
+                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = true),
                                                          c2py::c_constructor<_c2py_cls_4, const triqs::mesh::dlr_imfreq &>("m"),
                                                          c2py::c_constructor<_c2py_cls_4, const triqs::mesh::dlr &>("m")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_4> = c2py::pyfkw_constructor<_c2py_init_3>;
@@ -1336,7 +1336,7 @@ template <> constexpr bool c2py::is_wrapped<_c2py_cls_5>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_5> = "triqs.mesh.meshes.MeshDLRImFreq";
 static const auto _c2py_init_4 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_5>(),
                                                          c2py::c_constructor<_c2py_cls_5, double, triqs::mesh::statistic_enum, double, double, bool>(
-                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = false),
+                                                            "beta", "statistic", "w_max", "eps", "symmetrize"_a = true),
                                                          c2py::c_constructor<_c2py_cls_5, const triqs::mesh::dlr_imtime &>("m"),
                                                          c2py::c_constructor<_c2py_cls_5, const triqs::mesh::dlr &>("m")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_5> = c2py::pyfkw_constructor<_c2py_init_4>;
@@ -3102,11 +3102,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_10>[] = {
 };
 
 static constexpr auto prop_doc_62 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_63 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_64 = R"DOC(Access to Chebyshev points scaled to [0, beta].)DOC";
-static constexpr auto prop_doc_65 = R"DOC(Access to Chebyshev points on [-1, 1].)DOC";
-static constexpr auto prop_doc_66 = R"DOC(Get the particle statistics.)DOC";
-static constexpr auto prop_doc_67 = R"DOC(Access to barycentric weights.)DOC";
+static constexpr auto prop_doc_63 = R"DOC(Get the precomputed :math:`2 / \beta` for fast tau -> [-1, 1] mapping.)DOC";
+static constexpr auto prop_doc_64 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_65 = R"DOC(Access to Chebyshev points scaled to [0, beta].)DOC";
+static constexpr auto prop_doc_66 = R"DOC(Access to Chebyshev points on [-1, 1].)DOC";
+static constexpr auto prop_doc_67 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_68 = R"DOC(Access to barycentric weights.)DOC";
 
 // ----- Member and property table ----
 
@@ -3114,11 +3115,12 @@ template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_10>[] = {
 
    {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::beta)>, nullptr, prop_doc_62, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::mesh_hash)>, nullptr, prop_doc_63, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points)>, nullptr, prop_doc_64, nullptr},
-   {"points_standard", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points_standard)>, nullptr, prop_doc_65, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::statistic)>, nullptr, prop_doc_66, nullptr},
-   {"weights", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::weights)>, nullptr, prop_doc_67, nullptr},
+   {"inv_beta_x2", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::inv_beta_x2)>, nullptr, prop_doc_63, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::mesh_hash)>, nullptr, prop_doc_64, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points)>, nullptr, prop_doc_65, nullptr},
+   {"points_standard", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::points_standard)>, nullptr, prop_doc_66, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::statistic)>, nullptr, prop_doc_67, nullptr},
+   {"weights", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::chebyshev::weights)>, nullptr, prop_doc_68, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_9(PyObject *self, PyObject *key) {
@@ -3327,18 +3329,18 @@ PyMethodDef c2py::tp_methods<_c2py_cls_11>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_68 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_69 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_70 = R"DOC(Get the particle statistics.)DOC";
+static constexpr auto prop_doc_69 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
+static constexpr auto prop_doc_70 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_71 = R"DOC(Get the particle statistics.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_11>[] = {
 
-   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::beta)>, nullptr, prop_doc_68, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::mesh_hash)>, nullptr, prop_doc_69, nullptr},
-   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::statistic)>, nullptr, prop_doc_70, nullptr},
+   {"beta", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::beta)>, nullptr, prop_doc_69, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::mesh_hash)>, nullptr, prop_doc_70, nullptr},
+   {"statistic", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::legendre::statistic)>, nullptr, prop_doc_71, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_10(PyObject *self, PyObject *key) {
@@ -3603,22 +3605,22 @@ PyMethodDef c2py::tp_methods<_c2py_cls_12>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_71 = R"DOC(Get the smallest positive frequency :math:`\varepsilon`.)DOC";
-static constexpr auto prop_doc_72 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_73 = R"DOC(Get the vector of frequency point values.)DOC";
-static constexpr auto prop_doc_74 = R"DOC(Get the common ratio :math:`r` of the geometric sequence.)DOC";
-static constexpr auto prop_doc_75 = R"DOC(Get the largest frequency :math:`\omega_{\mathrm{max}}`.)DOC";
+static constexpr auto prop_doc_72 = R"DOC(Get the smallest positive frequency :math:`\varepsilon`.)DOC";
+static constexpr auto prop_doc_73 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_74 = R"DOC(Get the vector of frequency point values.)DOC";
+static constexpr auto prop_doc_75 = R"DOC(Get the common ratio :math:`r` of the geometric sequence.)DOC";
+static constexpr auto prop_doc_76 = R"DOC(Get the largest frequency :math:`\omega_{\mathrm{max}}`.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_12>[] = {
 
-   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::eps)>, nullptr, prop_doc_71, nullptr},
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::mesh_hash)>, nullptr, prop_doc_72, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::points)>, nullptr, prop_doc_73, nullptr},
-   {"ratio", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::ratio)>, nullptr, prop_doc_74, nullptr},
-   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::w_max)>, nullptr, prop_doc_75, nullptr},
+   {"eps", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::eps)>, nullptr, prop_doc_72, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::mesh_hash)>, nullptr, prop_doc_73, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::points)>, nullptr, prop_doc_74, nullptr},
+   {"ratio", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::ratio)>, nullptr, prop_doc_75, nullptr},
+   {"w_max", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_log::w_max)>, nullptr, prop_doc_76, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_11(PyObject *self, PyObject *key) {
@@ -3870,16 +3872,16 @@ PyMethodDef c2py::tp_methods<_c2py_cls_13>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_76 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_77 = R"DOC(Get the vector of frequency point values.)DOC";
+static constexpr auto prop_doc_77 = R"DOC(Get the hash value of the mesh.)DOC";
+static constexpr auto prop_doc_78 = R"DOC(Get the vector of frequency point values.)DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_13>[] = {
 
-   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::mesh_hash)>, nullptr, prop_doc_76, nullptr},
-   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::points)>, nullptr, prop_doc_77, nullptr},
+   {"mesh_hash", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::mesh_hash)>, nullptr, prop_doc_77, nullptr},
+   {"points", c2py::getter_from_method<c2py::castmc<>(&triqs::mesh::refreq_pts::points)>, nullptr, prop_doc_78, nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *getitem_12(PyObject *self, PyObject *key) {
