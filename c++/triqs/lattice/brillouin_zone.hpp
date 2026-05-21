@@ -77,14 +77,14 @@ namespace triqs::lattice {
      * @details The reciprocal basis vectors defining the BZ are given by \f$ B = 2 \pi \left( A^T \right)^{-1} \f$,
      * where \f$ A \f$ is the matrix containing the basis vectors of the given Bravais lattice as its columns.
      *
-     * @param bl triqs::lattice::bravais_lattice object.
+     * @param bl Bravais lattice.
      */
     explicit brillouin_zone(bravais_lattice bl);
 
     /// Check if a given vector \f$ \mathbf{k} \f$ is part of the domain.
     [[nodiscard]] C2PY_IGNORE bool contains(k_t const &) const { return true; }
 
-    /// Get the underlying triqs::lattice::bravais_lattice object.
+    /// Get the underlying Bravais lattice.
     [[nodiscard]] auto const &lattice() const { return lattice_; }
 
     /// Conversion to the underlying triqs::lattice::bravais_lattice object.

@@ -17,6 +17,11 @@
 //
 // Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Implementation details for triqs/lattice/brillouin_zone.hpp.
+ */
+
 #include "./bravais_lattice.hpp"
 #include "./brillouin_zone.hpp"
 
