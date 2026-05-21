@@ -235,23 +235,23 @@ static auto const _c2py_fun_7 =
    c2py::dispatcher_f_kw_t{c2py::cfun([](triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::scalar_valued> gw,
                                          triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued> giw, int n_points,
                                          double freq_offset) { return triqs::gfs::set_from_pade(gw, giw, n_points, freq_offset); },
-                                      "gw", "giw", "n_points", "freq_offset"),
+                                      "gw", "giw", "n_points"_a = 100, "freq_offset"_a = 0.0),
                            c2py::cfun([](triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<1>> gw,
                                          triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>> giw, int n_points,
                                          double freq_offset) { return triqs::gfs::set_from_pade(gw, giw, n_points, freq_offset); },
-                                      "gw", "giw", "n_points", "freq_offset"),
+                                      "gw", "giw", "n_points"_a = 100, "freq_offset"_a = 0.0),
                            c2py::cfun([](triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::matrix_valued> gw,
                                          triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued> giw, int n_points,
                                          double freq_offset) { return triqs::gfs::set_from_pade(gw, giw, n_points, freq_offset); },
-                                      "gw", "giw", "n_points", "freq_offset"),
+                                      "gw", "giw", "n_points"_a = 100, "freq_offset"_a = 0.0),
                            c2py::cfun([](triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<3>> gw,
                                          triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>> giw, int n_points,
                                          double freq_offset) { return triqs::gfs::set_from_pade(gw, giw, n_points, freq_offset); },
-                                      "gw", "giw", "n_points", "freq_offset"),
+                                      "gw", "giw", "n_points"_a = 100, "freq_offset"_a = 0.0),
                            c2py::cfun([](triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<4>> gw,
                                          triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>> giw, int n_points,
                                          double freq_offset) { return triqs::gfs::set_from_pade(gw, giw, n_points, freq_offset); },
-                                      "gw", "giw", "n_points", "freq_offset")};
+                                      "gw", "giw", "n_points"_a = 100, "freq_offset"_a = 0.0)};
 
 // tau_L2_norm
 static auto const _c2py_fun_8 =

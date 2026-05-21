@@ -48,6 +48,9 @@ add_python_test(bug_bcast_mesh)
 # Issues with the high frequency moments
 add_python_test(tail_issues)
 
+# Backwards-compat shim for triqs.gf -> triqs.gfs
+add_python_test(gf_backwd_compat)
+
 # issue with mult of Gf with different dim
 add_python_test(issue_gf_mult_dim)
 
