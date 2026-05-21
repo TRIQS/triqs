@@ -21,7 +21,10 @@
 
 #include "../../utility/factory.hpp"
 #include "../../arrays.hpp"
-#include "../../mesh.hpp"
+#include "../../mesh/concepts.hpp"
+#include "../../mesh/utils.hpp"
+#include "../../mesh/matsubara_freq.hpp"
+#include "../../mesh/prod.hpp"
 
 namespace triqs::gfs {
 
