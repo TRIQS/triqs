@@ -62,7 +62,7 @@ class test_triqs_gf_backwd_compat(unittest.TestCase):
         # Names that should resolve through both layouts.
         from triqs.gf import GfImFreq, BlockGf, MeshImFreq, MatsubaraFreq, MeshProduct  # noqa: F401
         from triqs.gf.backwd_compat.gf_imfreq import GfImFreq as GfImFreq2  # noqa: F401
-        from triqs.gf.semicirc import g_semicirc_iw  # noqa: F401
+        from triqs.gf.semicirc import g_semicirc_z  # noqa: F401
         # triqs.gf.meshes must be the Python package (exposes Python-only names like
         # MeshProduct and MatsubaraFreq), not the compiled .so submodule.
         from triqs.gf.meshes import MeshImFreq as MIF2, MeshProduct as MP2, MatsubaraFreq as MF2  # noqa: F401
