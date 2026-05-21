@@ -217,10 +217,10 @@ namespace triqs::lattice {
     /// Get the number of atomic orbitals in the unit cell.
     [[nodiscard]] long n_orbitals() const { return static_cast<long>(atom_orb_pos_.size()); }
 
-    /// Get a `std::vector<r_t>` containing the atomic orbital positions \f$ \{\mathbf{r}_1, \dots, \mathbf{r}_m\} \f$.
+    /// Get the list of atomic orbital positions \f$ \{\mathbf{r}_1, \dots, \mathbf{r}_m\} \f$.
     [[nodiscard]] auto const &orbital_positions() const { return atom_orb_pos_; }
 
-    /// Get a `std::vector<std::string>` containing the orbital names.
+    /// Get the list of orbital names.
     [[nodiscard]] auto const &orbital_names() const { return atom_orb_name_; }
 
     /**
