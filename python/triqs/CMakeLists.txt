@@ -42,34 +42,57 @@ option(Update_Python_Bindings "Optionally update the C++ Python bindings in the 
 # add an interface target for all Python modules
 add_library(${PROJECT_NAME}_python_modules INTERFACE)
 
-# build and install all Python modules
-file(GLOB_RECURSE module_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-foreach(module_src ${module_sources})
-  get_filename_component(module_name ${module_src} NAME_WE)
-  get_filename_component(module_dir ${module_src} DIRECTORY)
+# Build/install one Python module. 
+# Optionally declare bindings-generation dependencies between modules.
+#
+# Usage: add_triqs_python_module(<name> DIR <relative-dir>
+#                                [DEPENDS_ON_BINDINGS m1 m2 ...])
+macro(add_triqs_python_module module_name)
+  cmake_parse_arguments(_ARG "" "DIR" "DEPENDS_ON_BINDINGS" ${ARGN})
 
-  # add Python module
-  Python_add_library(${module_name} MODULE ${module_src})
+  Python_add_library(${module_name} MODULE ${_ARG_DIR}/${module_name}.cpp)
   add_library(${PROJECT_NAME}::${module_name} ALIAS ${module_name})
   add_dependencies(${PROJECT_NAME}_python_modules ${module_name})
 
-  # target properties
   target_link_libraries(${module_name} PRIVATE triqs c2py::c2py)
   # Python module TUs activate C2PY_INCLUDED (via <c2py/c2py.hpp>), which in turn
   # pulls triqs/<mod>/<name>.wrap.hxx from python/ via the triqs/ umbrella headers.
   # Scope the python/ include to these modules instead of exposing it on triqs itself.
   target_include_directories(${module_name} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/python>)
   set_target_properties(${module_name} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${module_dir}
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${_ARG_DIR}
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
   )
+  install(TARGETS ${module_name} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${_ARG_DIR})
 
-  # install the Python module
-  install(TARGETS ${module_name} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${module_dir})
-
-  # optionally generate Python bindings with clair-c2py
   if(Update_Python_Bindings)
-    clair_c2py_generate_bindings(${module_name} DIR ${module_dir})
+    clair_c2py_generate_bindings(${module_name} DIR ${_ARG_DIR})
+    foreach(_dep ${_ARG_DEPENDS_ON_BINDINGS})
+      add_dependencies(${module_name}_bindings_generation ${_dep}_bindings_generation)
+    endforeach()
   endif()
+endmacro()
+
+# external dependencies for the binding generation targets
+set(external_deps)
+if(TARGET _h5py_bindings_generation)
+  list(APPEND external_deps _h5py)
+endif()
+
+# basic modules that can be built before all other modules
+set(basic_mods meshes lattice_tools operators)
+add_triqs_python_module(meshes DIR mesh DEPENDS_ON_BINDINGS ${external_deps})
+add_triqs_python_module(operators DIR operators DEPENDS_ON_BINDINGS ${external_deps})
+add_triqs_python_module(lattice_tools DIR lattice DEPENDS_ON_BINDINGS meshes ${external_deps})
+
+# build/install the rest of the modules
+file(GLOB_RECURSE module_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+foreach(module_src ${module_sources})
+  get_filename_component(module_name ${module_src} NAME_WE)
+  get_filename_component(module_dir ${module_src} DIRECTORY)
+  if(module_name IN_LIST basic_mods)
+    continue()
+  endif()
+  add_triqs_python_module(${module_name} DIR ${module_dir} DEPENDS_ON_BINDINGS ${basic_mods} ${external_deps})
 endforeach()
