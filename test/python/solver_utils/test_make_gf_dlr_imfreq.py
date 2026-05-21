@@ -19,7 +19,7 @@ import unittest
 
 import numpy as np
 
-from triqs.gf import (
+from triqs.gfs import (
     Gf, BlockGf, MeshImFreq, MeshImTime, MeshDLRImFreq,
     iOmega_n, inverse, make_gf_dlr, make_gf_imfreq,
 )

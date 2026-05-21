@@ -17,7 +17,7 @@
 
 import numpy as np
 
-from triqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
+from triqs.gfs.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
 
 
 def tail_fit(

@@ -21,7 +21,7 @@ from typing import Any
 
 import numpy as np
 
-from triqs.gf import BlockGf
+from triqs.gfs import BlockGf
 
 
 @dataclass
