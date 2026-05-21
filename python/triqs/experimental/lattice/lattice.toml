@@ -1,5 +1,6 @@
 package_name = "triqs.experimental.lattice"
 documentation = "Experimental lattice tools (tight binding, BZ integration, gloc, Wannier loaders)"
 namespaces = "triqs::experimental::lattice"
-match_names = "triqs::experimental::lattice::(gloc|find_chemical_potential|superlattice|fold|tb_hk|read_wannier90_tb_data|make_tb_hk_from_w90_tb_file|read_wannier90_hr_data|make_tb_hk_from_w90_hr_file|integrate_bz|integrate_ptr|integrate_adaptive|bz_int_options)"
+# done by file to avoid wrapping fourier_polynomial
+match_files = "bz_integrators.hpp|tb_hk.hpp|gloc.hpp|superlattice.hpp|wannier_loader.hpp|root_finder.hpp"
 wrap_no_arg_methods_as_properties = true

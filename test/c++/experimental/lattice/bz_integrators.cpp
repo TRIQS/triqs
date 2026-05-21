@@ -99,6 +99,6 @@ namespace triqs::experimental::lattice {
     EXPECT_COMPLEX_NEAR(dcomplex{0.00011757400118563716, -0.4167788744251697}, result[0](0, 0), 1.e-5);
     EXPECT_COMPLEX_NEAR(dcomplex{-2.72737e-17, -0.362975}, result[1](0, 0), 1.e-5);
   }
-} // namespace triqs::experimental
+} // namespace triqs::experimental::lattice
 
 MPI_TEST_MAIN

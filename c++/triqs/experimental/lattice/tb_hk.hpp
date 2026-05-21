@@ -42,6 +42,12 @@ namespace triqs::experimental::lattice {
       return std::views::iota(0L, n_R()) | std::views::transform([this](long i) { return coeff_arr(i, nda::ellipsis{}); });
     }
 
+    /** @brief Explicitly return the std::vector of Rs; this avoids a problems where this is returned as a py_range, which is inconvenient at the python level.
+     *         Ideally can be removed/refactored later pending improvements in clair.
+     *  @return R_list list of real-space lattice vectors
+     */
+    [[nodiscard]] std::vector<std::array<long, 3>> get_R_list() const { return fourier_polynomial<2, 3>::get_R_list(); }
+
     /**
      * @brief Provide an iterator of tuples of $$(R, t_{R, ab})$$
      * @return elements : tuple of (R, t_{R,ba}) pairs

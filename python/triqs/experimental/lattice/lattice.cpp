@@ -22,16 +22,21 @@ namespace triqs::experimental::lattice {
   // explicit mesh type instantiations of gloc
 
   // with self energy
+  template gfs::gf<mesh::dlr_imfreq, gfs::matrix_valued> gloc(tb_hk const &H_k, double mu, gfs::gf<mesh::dlr_imfreq, gfs::matrix_valued> const &Sigma,
+                                                              bz_int_options const &opt);
   template gfs::gf<mesh::imfreq, gfs::matrix_valued> gloc(tb_hk const &H_k, double mu, gfs::gf<mesh::imfreq, gfs::matrix_valued> const &Sigma,
                                                           bz_int_options const &opt);
   template gfs::gf<mesh::refreq, gfs::matrix_valued> gloc(tb_hk const &H_k, double mu, gfs::gf<mesh::refreq, gfs::matrix_valued> const &Sigma,
                                                           bz_int_options const &opt);
   // with self energy, block gf
+  template gfs::block_gf<mesh::dlr_imfreq, gfs::matrix_valued>
+  gloc(tb_hk const &H_k, double mu, gfs::block_gf<mesh::dlr_imfreq, gfs::matrix_valued> const &Sigma, bz_int_options const &opt);
   template gfs::block_gf<mesh::imfreq, gfs::matrix_valued>
   gloc(tb_hk const &H_k, double mu, gfs::block_gf<mesh::imfreq, gfs::matrix_valued> const &Sigma, bz_int_options const &opt);
   template gfs::block_gf<mesh::refreq, gfs::matrix_valued>
   gloc(tb_hk const &H_k, double mu, gfs::block_gf<mesh::refreq, gfs::matrix_valued> const &Sigma, bz_int_options const &opt);
   // zero self energy, standard gf
+  template gfs::gf<mesh::dlr_imfreq, gfs::matrix_valued> gloc(mesh::dlr_imfreq const &w_mesh, tb_hk const &H_k, double mu, bz_int_options const &opt);
   template gfs::gf<mesh::imfreq, gfs::matrix_valued> gloc(mesh::imfreq const &w_mesh, tb_hk const &H_k, double mu, bz_int_options const &opt);
   template gfs::gf<mesh::refreq, gfs::matrix_valued> gloc(mesh::refreq const &w_mesh, tb_hk const &H_k, double mu, bz_int_options const &opt);
 
