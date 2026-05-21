@@ -92,6 +92,30 @@ namespace triqs::gfs {
   auto make_gf_imfreq(block2_gf_const_view<dlr_imtime, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
   auto make_gf_imfreq(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g, long n_iw) { return make_gf_imfreq<0>(g, n_iw); }
 
+  // make_gf_dlr_imfreq: sample an imfreq Gf onto a DLR imfreq mesh
+  auto make_gf_dlr_imfreq(gf_const_view<imfreq, scalar_valued> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, scalar_valued> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(gf_const_view<imfreq, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(gf_const_view<imfreq, matrix_valued> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, matrix_valued> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(gf_const_view<imfreq, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(gf_const_view<imfreq, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+  auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
+
+  // find_w_max: smallest DLR cutoff w_max with round-trip error < eps for an imfreq Gf
+  double find_w_max(gf_const_view<imfreq, scalar_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(block_gf_const_view<imfreq, scalar_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(gf_const_view<imfreq, tensor_valued<1>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(block_gf_const_view<imfreq, tensor_valued<1>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(gf_const_view<imfreq, matrix_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(block_gf_const_view<imfreq, matrix_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(gf_const_view<imfreq, tensor_valued<3>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(block_gf_const_view<imfreq, tensor_valued<3>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(gf_const_view<imfreq, tensor_valued<4>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+  double find_w_max(block_gf_const_view<imfreq, tensor_valued<4>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
+
   // make_gf_dlr_imfreq: product mesh wrappers
   auto make_gf_dlr_imfreq(gf_const_view<prod<dlr, brzone>, scalar_valued> g) { return make_gf_dlr_imfreq<0>(g); }
   auto make_gf_dlr_imfreq(gf_const_view<prod<brzone, dlr>, scalar_valued> g) { return make_gf_dlr_imfreq<1>(g); }

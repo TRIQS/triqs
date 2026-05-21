@@ -338,6 +338,28 @@ def write_dlr_imfreq(f):
                 f.write(f"  auto make_gf_imfreq({view}<{in_mesh}, {target}> const &g, long n_iw) {{ return make_gf_imfreq<0>(g, n_iw); }}\n")
     f.write("\n")
 
+    # --- make_gf_dlr_imfreq from imfreq: build mesh from w_max / eps / symmetrize, sample ---
+    # Only Gf and BlockGf — block2_gf is not supported (the C++ template uses single-index g[b]).
+    f.write("  // make_gf_dlr_imfreq: sample an imfreq Gf onto a DLR imfreq mesh\n")
+    for target in TARGETS:
+        for gf in ["gf", "block_gf"]:
+            view = GF_VIEW_TYPES[gf]
+            f.write(f"  auto make_gf_dlr_imfreq({view}<imfreq, {target}> const &g, double w_max, double eps, bool symmetrize = true) "
+                    f"{{ return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }}\n")
+    f.write("\n")
+
+    # --- find_w_max: auto-search for the smallest w_max giving DLR round-trip < eps ---
+    # Only Gf and BlockGf — block2_gf is not supported (the C++ template uses single-index g[b]).
+    f.write("  // find_w_max: smallest DLR cutoff w_max with round-trip error < eps for an imfreq Gf\n")
+    for target in TARGETS:
+        for gf in ["gf", "block_gf"]:
+            view = GF_VIEW_TYPES[gf]
+            f.write(f"  double find_w_max({view}<imfreq, {target}> const &g, "
+                    f"double eps = 1e-10, bool symmetrize = true, "
+                    f"double w_max_init = 1.0, double w_max_max = 200.0) "
+                    f"{{ return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }}\n")
+    f.write("\n")
+
     # --- make_gf_dlr_imfreq (product mesh wrappers) ---
     f.write("  // make_gf_dlr_imfreq: product mesh wrappers\n")
     for target in PROD_DLR_TARGETS:
@@ -369,7 +391,7 @@ MODULES = {
     "gf_factories_hermitian": (write_hermitian, "make_hermitian|make_real_in_tau|make_gf_dlr|fit_gf_dlr"),
     "gf_factories_fourier": (write_fourier, "make_gf_from_fourier"),
     "gf_factories_dlr_imtime": (write_dlr_imtime, "make_gf_dlr_imtime|make_gf_imtime"),
-    "gf_factories_dlr_imfreq": (write_dlr_imfreq, "make_gf_dlr_imfreq|make_gf_imfreq"),
+    "gf_factories_dlr_imfreq": (write_dlr_imfreq, "make_gf_dlr_imfreq|make_gf_imfreq|find_w_max"),
 }
 
 for name, (writer, match_names) in MODULES.items():
@@ -390,6 +412,8 @@ for name, (writer, match_names) in MODULES.items():
         f.write("#include <triqs/c2py_converters/mesh.hpp>\n")
         f.write("#include <triqs/lattice.hpp>\n")
         f.write(f'#include "./{name}.hpp"\n')
+        f.write("\n")
+        f.write(f'#include "{name}.wrap.cxx"\n')
 
     # Generate .hpp
     with open(f"{name}.hpp", "w") as f:

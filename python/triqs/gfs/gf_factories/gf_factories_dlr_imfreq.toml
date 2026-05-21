@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
 documentation = ""
 namespaces = "triqs::gfs"
-match_names = "make_gf_dlr_imfreq|make_gf_imfreq"
+match_names = "make_gf_dlr_imfreq|make_gf_imfreq|find_w_max"

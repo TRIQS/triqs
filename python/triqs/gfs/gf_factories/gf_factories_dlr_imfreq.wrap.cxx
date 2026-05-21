@@ -24,8 +24,41 @@ using c2py::operator""_a;
 
 // ==================== module functions ====================
 
-// make_gf_dlr_imfreq
+// find_w_max
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued> &g, double eps, bool symmetrize, double w_max_init,
+                 double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g, double eps,
+                 bool symmetrize, double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>> &g, double eps, bool symmetrize,
+                 double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g, double eps,
+                 bool symmetrize, double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &g, double eps, bool symmetrize, double w_max_init,
+                 double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g, double eps,
+                 bool symmetrize, double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>> &g, double eps, bool symmetrize,
+                 double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g, double eps,
+                 bool symmetrize, double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>> &g, double eps, bool symmetrize,
+                 double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g, double eps,
+                 bool symmetrize, double w_max_init, double w_max_max) { return triqs::gfs::find_w_max(g, eps, symmetrize, w_max_init, w_max_max); },
+              "g", "eps"_a = 1e-10, "symmetrize"_a = true, "w_max_init"_a = 1.0, "w_max_max"_a = 200.0)};
+
+// make_gf_dlr_imfreq
+static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued> &g) { return triqs::gfs::make_gf_dlr_imfreq(g); }, "g"),
    c2py::cfun(
       [](const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued> &g) { return triqs::gfs::make_gf_dlr_imfreq(g); }, "g"),
@@ -147,6 +180,36 @@ static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
         return triqs::gfs::make_gf_dlr_imfreq(g);
       },
       "g"),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &g, double w_max,
+                 double eps, bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>, nda::C_stride_layout, 1, true> &g, double w_max,
+                 double eps, bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &g, double w_max,
+                 double eps, bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>, nda::C_stride_layout, 1, true> &g, double w_max,
+                 double eps, bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>> &g, double w_max, double eps,
+                 bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
+   c2py::cfun([](const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 1, true> &g, double w_max,
+                 double eps, bool symmetrize) { return triqs::gfs::make_gf_dlr_imfreq(g, w_max, eps, symmetrize); },
+              "g", "w_max", "eps", "symmetrize"_a = true),
    c2py::cfun(
       [](triqs::gfs::gf_const_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::brzone>, triqs::gfs::scalar_valued> g) {
         return triqs::gfs::make_gf_dlr_imfreq(g);
@@ -221,7 +284,7 @@ static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
       "g")};
 
 // make_gf_imfreq
-static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
    c2py::cfun(
       [](const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued> &g, long n_iw) { return triqs::gfs::make_gf_imfreq(g, n_iw); },
       "g", "n_iw"),
@@ -424,11 +487,13 @@ static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC()DOC");
+static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC()DOC");
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"make_gf_dlr_imfreq", (PyCFunction)c2py::pyfkw<_c2py_fun_0>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_0.c_str()},
-   {"make_gf_imfreq", (PyCFunction)c2py::pyfkw<_c2py_fun_1>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_1.c_str()},
+   {"find_w_max", (PyCFunction)c2py::pyfkw<_c2py_fun_0>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_0.c_str()},
+   {"make_gf_dlr_imfreq", (PyCFunction)c2py::pyfkw<_c2py_fun_1>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_1.c_str()},
+   {"make_gf_imfreq", (PyCFunction)c2py::pyfkw<_c2py_fun_2>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_2.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
