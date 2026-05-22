@@ -45,26 +45,25 @@ namespace triqs::mc_tools {
    */
 
   /**
-   * @brief Wrapper that erases the type of a random number generator.
+   * @brief Random number generator with a selectable underlying engine.
    *
-   * @details The following RNGs are supported (see also triqs::mc_tools::random_generator_names() or
-   * triqs::mc_tools::random_generator_names_list()): 
-   * 
-   * - *empty string*: uses the custom Mersenne Twister RNG in triqs/mc_tools/MersenneRNG.hpp
-   * - *mt19937*: uses `boost::mt19937`
-   * - *mt11213b*: uses `boost::mt11213b`
-   * - *lagged_fibonacci607*: uses `boost::lagged_fibonacci607`
-   * - *lagged_fibonacci1279*: uses `boost::lagged_fibonacci127`
-   * - *lagged_fibonacci2281*: uses `boost::lagged_fibonacci2281`
-   * - *lagged_fibonacci3217*: uses `boost::lagged_fibonacci3217`
-   * - *lagged_fibonacci4423*: uses `boost::lagged_fibonacci4423`
-   * - *lagged_fibonacci9689*: uses `boost::lagged_fibonacci9689`
-   * - *lagged_fibonacci19937*: uses `boost::lagged_fibonacci19937`
-   * - *lagged_fibonacci23209*: uses `boost::lagged_fibonacci23209`
-   * - *lagged_fibonacci44497*: uses `boost::lagged_fibonacci44497`
-   * - *ranlux3*: uses `boost::ranlux3`
-   * 
-   * The RNG is specified in the constructor by giving its name.
+   * @details The following engine names are currently accepted by the constructor:
+   *
+   * - *empty string* -- a built-in custom Mersenne Twister RNG
+   * - *mt19937*
+   * - *mt11213b*
+   * - *lagged_fibonacci607*
+   * - *lagged_fibonacci1279*
+   * - *lagged_fibonacci2281*
+   * - *lagged_fibonacci3217*
+   * - *lagged_fibonacci4423*
+   * - *lagged_fibonacci9689*
+   * - *lagged_fibonacci19937*
+   * - *lagged_fibonacci23209*
+   * - *lagged_fibonacci44497*
+   * - *ranlux3*
+   *
+   * For non-empty names, the underlying engine is provided by boost.random.
    *
    * For performance reasons, we use a buffer for the generated random numbers to avoid some of the costs of repeated
    * function calls to the RNG.
@@ -102,17 +101,16 @@ namespace triqs::mc_tools {
     /// Default seed for the underlying RNG.
     static constexpr std::uint32_t default_seed = 198;
 
-    /// Default constructor uses Boost's Mersenne Twister 19937 RNG.
+    /// Default constructor uses the *mt19937* engine with the default seed.
     random_generator() : random_generator("mt19937", default_seed) {}
 
     /**
      * @brief Construct a random generator by wrapping the specified RNG and seeding it with the given seed.
      *
-     * @details The given name has to correspond to one of the supported RNGs (see
-     * triqs::mc_tools::random_generator_names() or triqs::mc_tools::random_generator_names_list()). If the name does
-     * not match any of the supported RNGs, a `std::runtime_error` is thrown.
+     * @details The given name has to correspond to one of the supported engines. If the name does not match any of the 
+     * supported engines, a runtime error is raised.
      *
-     * An empty name corresponds to the RNG in triqs/mc_tools/MersenneRNG.hpp.
+     * An empty name selects the built-in custom Mersenne Twister RNG.
      *
      * @param name Name of the RNG to be used.
      * @param seed Seed for the RNG.
@@ -146,7 +144,7 @@ namespace triqs::mc_tools {
     }
 
     /**
-     * @brief Look ahead at the next value that will be generated with a call to operator()().
+     * @brief Look ahead at the next value that will be generated when the generator is called.
      * @return Uniform random double from the interval \f$ [0, 1) \f$.
      */
     [[nodiscard]] double preview() {
@@ -243,11 +241,11 @@ namespace triqs::mc_tools {
   /**
    * @brief Get a string containing the names of all available RNGs.
    * @param sep Separator between the names.
-   * @return `std::string` containing the available RNGs separated by the given separator.
+   * @return String containing the available RNGs separated by the given separator.
    */
   [[nodiscard]] std::string random_generator_names(std::string const &sep = " ");
 
-  /// Get a `std::vector<std::string>` containing all available RNG names.
+  /// Get a list of all available RNG names.
   [[nodiscard]] std::vector<std::string> random_generator_names_list();
 
   /** @} */
