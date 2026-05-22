@@ -1,0 +1,4 @@
+**/*.cxx linguist-generated
+**/*.hxx linguist-generated
+**/*.h5 linguist-generated
+**/*.dat linguist-generated
