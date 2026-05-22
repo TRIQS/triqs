@@ -1,9 +1,11 @@
 #include <c2py/c2py.hpp>
 #include <nda/nda.hpp>
 #include <nda/c2py/converters.hpp>
+#include <triqs/c2py_converters/gf.hpp>
 #include <triqs/lattice/bravais_lattice.hpp>
 #include <triqs/lattice/brillouin_zone.hpp>
 #include <triqs/lattice/tight_binding.hpp>
+#include <triqs/mesh.hpp>
 
 namespace c2py {
 

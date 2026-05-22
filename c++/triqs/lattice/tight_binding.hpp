@@ -26,7 +26,7 @@
 #pragma once
 
 #include "./brillouin_zone.hpp"
-#include "../gfs.hpp"
+#include "../gfs/gf/gf.hpp"
 #include "../mesh/brzone.hpp"
 #include "../utility/macros.hpp"
 

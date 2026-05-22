@@ -69,6 +69,12 @@ namespace triqs::gfs {
     requires std::same_as<std::decay_t<decltype(g.mesh())>, M>;
   };
 
+  // Forward declarations with default arguments. The corresponding friend declarations inside `gf` and
+  // the definitions in `./mpi.hpp` may then re-declare these templates without re-introducing defaults.
+  template <MemoryGf G> void mpi_broadcast(G &&g, mpi::communicator c = {}, int root = 0);
+  template <MemoryGf G1, MemoryGf G2>
+  void mpi_reduce_into(G1 const &g_in, G2 &&g_out, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
+
   template <typename G> using get_target_t = typename std::decay_t<G>::target_t;
 
   /// ---------------------------  get_mesh  ---------------------------------
