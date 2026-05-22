@@ -115,9 +115,8 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 
 static constexpr auto prop_doc_0 = R"DOC(Get the number of atomic orbitals in the unit cell.)DOC";
 static constexpr auto prop_doc_1 = R"DOC(Get the number of dimensions of the Bravais lattice.)DOC";
-static constexpr auto prop_doc_2 = R"DOC(Get a `std::vector<std::string>` containing the orbital names.)DOC";
-static constexpr auto prop_doc_3 =
-   R"DOC(Get a `std::vector<r_t>` containing the atomic orbital positions :math:`\{\mathbf{r}_1, \dots, \mathbf{r}_m\}`.)DOC";
+static constexpr auto prop_doc_2 = R"DOC(Get the list of orbital names.)DOC";
+static constexpr auto prop_doc_3 = R"DOC(Get the list of atomic orbital positions :math:`\{\mathbf{r}_1, \dots, \mathbf{r}_m\}`.)DOC";
 static constexpr auto prop_doc_4 = R"DOC(Get the matrix :math:`\mathbf{A}^T` containing basis vectors as its rows.)DOC";
 
 // ----- Member and property table ----
@@ -183,7 +182,7 @@ where :math:`A` is the matrix containing the basis vectors of the given Bravais 
 Parameters
 ----------
 bl : {par_0}
-   triqs::lattice::bravais_lattice object.
+   Bravais lattice.
 )DOC",
                                                                     {{c2py::python_typename<triqs::lattice::bravais_lattice>()}});
 // lattice_to_real_coordinates
@@ -232,7 +231,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_5 = R"DOC(Get the underlying triqs::lattice::bravais_lattice object.)DOC";
+static constexpr auto prop_doc_5 = R"DOC(Get the underlying Bravais lattice.)DOC";
 static constexpr auto prop_doc_6 = R"DOC(Get the number of dimensions of the underlying Bravais lattice.)DOC";
 static constexpr auto prop_doc_7 = R"DOC(Get the matrix :math:`B^T` containing the reciprocal basis vectors as its rows.)DOC";
 static constexpr auto prop_doc_8 = R"DOC(Get the inverse matrix :math:`\left( B^T \right)^{-1}`.)DOC";
@@ -283,31 +282,36 @@ template <> constexpr initproc c2py::tp_init<_c2py_cls_2> = c2py::pyfkw_construc
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_2> = _c2py_init_2.doc(
    R"DOC(
-[1] Construct a tight_binding Hamiltonian on a given bravais_lattice,
-given the displacements in units of the lattice basis vectors (units)
-and the associated overlap (hopping) matrices.
-The matrix structure is w.r.t. the atoms in the unit cell.
+[1] Construct a tight-binding Hamiltonian on a given Bravais lattice from explicit displacement and overlap 
+lists.
+
+The matrix structure of each overlap matrix is with respect to the orbitals in the unit cell. The
+displacement and overlap lists must have the same length, and every overlap matrix must be square with size
+equal to the number of orbitals in the unit cell.
 
 ------
 
-[2] Construct a tight_binding Hamiltonian on a given bravais_lattice from a hopping dictionary.
+[2] Construct a tight-binding Hamiltonian on a given Bravais lattice from a hopping dictionary.
 
 ------
 
 Parameters
 ----------
 bl : {par_0}
-   The underlying bravais lattice
+   Underlying Bravais lattice.
 displ_vec : {par_1}
-   The vector of displacement vectors in units of the lattice basis vectors
+   List of displacement vectors, in units of the lattice basis vectors.
 overlap_mat_vec : {par_2}
-   The vector of overlap (hopping) matrices
+   List of overlap (hopping) matrices, one per displacement.
+hoppings : {par_3}
+   Hopping dictionary mapping displacement vectors to their overlap matrices.
 )DOC",
    {{c2py::python_typename<triqs::lattice::bravais_lattice>()},
     {c2py::python_typename<
        std::vector<nda::basic_array<long, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()},
     {c2py::python_typename<std::vector<
-       nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()}});
+       nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()},
+    {c2py::python_typename<triqs::lattice::hopping_dict>()}});
 // dispersion
 static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
@@ -354,41 +358,45 @@ static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{c2py::cmethod(
 
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(
    R"DOC(
-[1, 2] Calculate the dispersion, i.e. the eigenvalue-spectrum of $h_k$,
-for a given momentum vector k (or array of vectors).
+[1, 2] Compute the dispersion, i.e. the eigenvalue spectrum of :math:`h_{\mathbf{k}}`, for a given momentum vector
+(or array of momentum vectors).
 
 ------
 
-[3] Calculate the dispersion on a given k-mesh
-and return the associated Green-function object
+[3] Compute the dispersion on a given Brillouin zone mesh.
 
 ------
 
-[4] Calculate the dispersion on a regular k-mesh
-with n_l grid-points in each reciprocal direction.
-Return the associated Green-function object.
+[4] Compute the dispersion on a regular Brillouin zone mesh with `n_l` points per dimension.
 
 ------
 
 Parameters
 ----------
 k : {par_0}
-   The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
+   Momentum vector (or an array of momentum vectors) in units of the reciprocal lattice basis vectors.
 k_mesh : {par_1}
-   The brillouin-zone mesh
+   Brillouin zone mesh on which to evaluate the band energies.
 n_l : {par_2}
-   The number of grid-points for each dimension
+   Number of grid-points along each reciprocal direction.
 
 Returns
 -------
 [1] : {ret_0}
-   The value for $h_k$ as a complex matrix
+   Real-valued array of length `n_orbitals` containing the band energies at :math:`\mathbf{k}`, or an array
+   of such band-energy arrays when an array of momenta is passed.
 
 [2] : {ret_1}
-   The value for $h_k$ as a complex matrix
+   Real-valued array of length `n_orbitals` containing the band energies at :math:`\mathbf{k}`, or an array
+   of such band-energy arrays when an array of momenta is passed.
 
-[3, 4] : {ret_2}
-   Green function on the k_mesh initialized with the dispersion values
+[3] : {ret_2}
+   Tensor-valued Green's function defined on `k_mesh`, with its data initialised with the band energies at
+   every mesh point (one real value per orbital).
+
+[4] : {ret_3}
+   Tensor-valued Green's function defined on the regular Brillouin zone mesh, with its data initialised with
+   the band energies at every mesh point.
 )DOC",
    {{c2py::python_typename<const nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor,
                                                        nda::borrowed<nda::mem::AddressSpace::Host>> &>(),
@@ -398,48 +406,56 @@ Returns
     {c2py::python_typename<int>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
     c2py::python_typename<nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
+    c2py::python_typename<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::tensor_real_valued<1>>>(),
     c2py::python_typename<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::tensor_real_valued<1>>>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(
    R"DOC(
-[1, 2] Calculate the fourier transform for a given momentum vector k (or array of vectors)
+[1, 2] Compute the Fourier transform for a given momentum vector (or array of momentum vectors).
 
-  $$ h_k =  m_j * exp(2  i * {k} * {r}_j) $$
+The Bloch Hamiltonian is given by
 
-with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
-k needs to be represented in units of the reciprocal lattice vectors
+.. math::
+
+   h_{\mathbf{k}} = \sum_j t_{\mathbf{R}_j} \, e^{2 \pi i \, \mathbf{k} \cdot \mathbf{R}_j} \; ,
+
+with lattice displacements :math:`\{ \mathbf{R}_j \}` and associated overlap (hopping) matrices
+:math:`\{ t_{\mathbf{R}_j} \}`. The momentum :math:`\mathbf{k}` is expressed in units of the reciprocal lattice
+basis vectors.
 
 ------
 
-[3] Calculate the fourier transform on a given k-mesh
-and return the associated Green-function object
+[3] Compute the Fourier transform on a given Brillouin zone mesh.
 
 ------
 
-[4] Calculate the fourier transform on a regular k-mesh
-with n_l grid-points in each reciprocal direction.
-Return the associated Green-function object.
+[4] Compute the Fourier transform on a regular Brillouin zone mesh with `n_l` points per dimension.
 
 ------
 
 Parameters
 ----------
 k : {par_0}
-   The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
+   Momentum vector (or an array of momentum vectors) in units of the reciprocal lattice basis vectors.
 k_mesh : {par_1}
-   The brillouin-zone mesh
+   Brillouin zone mesh on which to evaluate the Bloch Hamiltonian.
 n_l : {par_2}
-   The number of grid-points for each dimension
+   Number of grid-points along each reciprocal direction.
 
 Returns
 -------
 [1] : {ret_0}
-   The value for $h_k$ as a complex matrix
+   Complex matrix :math:`h_{\mathbf{k}}` (or an array of such matrices, one per input momentum).
 
 [2] : {ret_1}
-   The value for $h_k$ as a complex matrix
+   Complex matrix :math:`h_{\mathbf{k}}` (or an array of such matrices, one per input momentum).
 
-[3, 4] : {ret_2}
-   Green function on the k_mesh initialized with the fourier transform
+[3] : {ret_2}
+   Matrix-valued Green's function defined on `k_mesh`, with its data initialised with the Fourier transform
+   :math:`h_{\mathbf{k}}` at every mesh point.
+
+[4] : {ret_3}
+   Matrix-valued Green's function defined on the regular Brillouin zone mesh, with its data initialised with
+   the Fourier transform :math:`h_{\mathbf{k}}` at every mesh point.
 )DOC",
    {{c2py::python_typename<const nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor,
                                                        nda::borrowed<nda::mem::AddressSpace::Host>> &>(),
@@ -451,11 +467,44 @@ Returns
        nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
     c2py::python_typename<
        nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
+    c2py::python_typename<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_valued>>(),
     c2py::python_typename<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_valued>>()});
-static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
-static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC(
-Transform into real coordinates.
-)DOC");
+static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC(
+Construct a tight-binding Hamiltonian by reading it from HDF5.
+
+Parameters
+----------
+g : {par_0}
+   `h5::group` to be read from.
+subgroup_name : {par_1}
+   Name of the subgroup.
+
+Returns
+-------
+{ret_0}
+   The reconstructed tight-binding Hamiltonian.
+)DOC",
+                                                {{c2py::python_typename<h5::group>()}, {c2py::python_typename<std::string>()}},
+                                                {c2py::python_typename<triqs::lattice::tight_binding>()});
+static const auto _c2py_doc_6 = _c2py_fun_6.doc(
+   R"DOC(
+Transform a vector from the lattice basis to the standard basis.
+
+Equivalent to calling lattice_to_real_coordinates() on the underlying Bravais lattice.
+
+Parameters
+----------
+x : {par_0}
+   Vector in the lattice basis.
+
+Returns
+-------
+{ret_0}
+   Vector in the standard basis.
+)DOC",
+   {{c2py::python_typename<
+      const nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()}},
+   {c2py::python_typename<triqs::lattice::r_t>()});
 
 // ----- Method table ----
 template <>
@@ -470,10 +519,10 @@ PyMethodDef c2py::tp_methods<_c2py_cls_2>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_10 = R"DOC(Return a vector containing all displacement vectors)DOC";
-static constexpr auto prop_doc_11 = R"DOC(Underlying lattice)DOC";
-static constexpr auto prop_doc_12 = R"DOC(Number of orbitals / bands, i.e. size of the matrix t(k))DOC";
-static constexpr auto prop_doc_13 = R"DOC(Return a vector containing all overlap matrices)DOC";
+static constexpr auto prop_doc_10 = R"DOC(Get the list of displacement vectors, in units of the lattice basis vectors.)DOC";
+static constexpr auto prop_doc_11 = R"DOC(Get the underlying Bravais lattice.)DOC";
+static constexpr auto prop_doc_12 = R"DOC(Number of orbitals (also the size of the Bloch Hamiltonian matrix :math:`h_{\mathbf{k}}`).)DOC";
+static constexpr auto prop_doc_13 = R"DOC(Get the list of overlap (hopping) matrices, aligned with the displacement vectors.)DOC";
 
 // ----- Member and property table ----
 
@@ -487,8 +536,21 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_2>[] = {
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_2> = R"DOC(For tightbinding Hamiltonian with fully localised orbitals
-Overlap between orbital is taken as unit matrix.)DOC"
+const std::string c2py::tp_doc<_c2py_cls_2> = R"DOC(Tight-binding Hamiltonian on a Bravais lattice with fully localised orbitals.
+
+The Hamiltonian is parametrised by a set of lattice displacements :math:`\{ \mathbf{R}_j \}` (given in 
+units of the lattice basis vectors) and the associated overlap (hopping) matrices :math:`\{ t_{\mathbf{R}_j} \}` 
+between orbitals in the unit cell. The Bloch Hamiltonian in reciprocal space is obtained by the discrete Fourier
+transform
+
+.. math::
+
+   h_{\mathbf{k}} = \sum_j t_{\mathbf{R}_j} \, e^{2 \pi i \, \mathbf{k} \cdot \mathbf{R}_j} \; ,
+
+where the momentum :math:`\mathbf{k}` is expressed in units of the reciprocal lattice basis vectors.
+
+The orbital overlap within a unit cell (the on-site block at :math:`\mathbf{R} = 0`) is the identity matrix unless
+explicitly overridden by the user-provided hoppings.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_2>;
 
 // ==================== module functions ====================
@@ -504,8 +566,67 @@ static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{c2py::cfun(
       int ndiv) { return triqs::lattice::dos_patch(TB, triangles, neps, ndiv); },
    "TB", "triangles", "neps", "ndiv")};
 
-static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC()DOC");
-static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC()DOC");
+static const auto _c2py_doc_7 = _c2py_fun_7.doc(
+   R"DOC(
+Compute the density of states of a tight-binding Hamiltonian on a regular k-grid.
+
+The Brillouin zone is sampled by a regular grid of :math:`n_\text{kpts}^d` momentum points (where :math:`d`
+is the dimension of the lattice), the dispersion is diagonalised on each grid point, and the resulting band
+energies are histogrammed into `neps` bins per orbital.
+
+Parameters
+----------
+TB : {par_0}
+   Tight-binding Hamiltonian.
+nkpts : {par_1}
+   Number of k-points along each dimension.
+neps : {par_2}
+   Number of energy bins.
+
+Returns
+-------
+{ret_0}
+   Pair `(energies, dos)`, where `energies` is a 1-D array of bin centres and `dos` is a 2-D array of shape
+   `(n_orbitals, neps)` containing one density-of-states histogram per orbital.
+)DOC",
+   {{c2py::python_typename<const triqs::lattice::tight_binding &>()}, {c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
+   {c2py::python_typename<
+      std::pair<nda::basic_array<double, 1, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
+                nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()});
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(
+   R"DOC(
+Compute the density of states of a tight-binding Hamiltonian on a triangular Brillouin zone patch.
+
+.. note::
+
+   Only supported for 2-dimensional lattices.
+
+Parameters
+----------
+TB : {par_0}
+   Tight-binding Hamiltonian.
+triangles : {par_1}
+   2-D array of shape `(n_triangles * 3, 2)` containing the vertices of the triangular patches in the
+   Brillouin zone, three rows per triangle.
+neps : {par_2}
+   Number of energy bins.
+ndiv : {par_3}
+   Number of sub-divisions of each triangle used for the sampling.
+
+Returns
+-------
+{ret_0}
+   Pair `(energies, dos)`, where `energies` is a 1-D array of bin centres and `dos` is a 1-D array of the same
+   length containing the total density of states summed over orbitals.
+)DOC",
+   {{c2py::python_typename<const triqs::lattice::tight_binding &>()},
+    {c2py::python_typename<
+       const nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<int>()}},
+   {c2py::python_typename<
+      std::pair<nda::basic_array<double, 1, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
+                nda::basic_array<double, 1, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -519,8 +640,21 @@ static PyMethodDef module_methods[] = {
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "lattice_tools",   /* name of module */
-                                        R"RAWDOC()RAWDOC", /* module documentation, may be NULL */
+                                        "lattice_tools", /* name of module */
+                                        R"RAWDOC(Bravais lattices, Brillouin zones and tight-binding Hamiltonians.
+
+The lattice tools provide classes to describe crystal lattices in real and reciprocal space, and to build tight-binding 
+Hamiltonians on top of them. The main classes are:
+
+- :class:`BravaisLattice`: A Bravais lattice in 1, 2 or 3 dimensions, defined by a set of basis vectors and the 
+  positions of (optionally named) atomic orbitals within the unit cell.
+- :class:`BrillouinZone`: The first Brillouin zone of a given Bravais lattice, defined by the corresponding 
+  reciprocal-space basis vectors.
+- :class:`TightBinding`: A tight-binding Hamiltonian on a Bravais lattice, parameterised by lattice displacements and 
+  the associated hopping (overlap) matrices between orbitals. It provides the Fourier transform to reciprocal space, 
+  dispersion (band-structure) calculations on Brillouin zone meshes and integration with the TRIQS Green's function 
+  framework.
+)RAWDOC",                                                /* module documentation, may be NULL */
                                         -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
                                         module_methods,
                                         NULL,
