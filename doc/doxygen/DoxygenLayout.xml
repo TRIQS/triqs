@@ -19,6 +19,8 @@
         </tab>
         <tab type="user" url="@ref triqs::lattice::brillouin_zone" title="lattice::brillouin_zone"/>
         <tab type="user" url="@ref triqs::lattice::grid_generator" title="lattice::grid_generator"/>
+        <tab type="user" url="@ref triqs::lattice::tight_binding" title="lattice::tight_binding"/>
+        <tab type="user" url="@ref triqs::lattice::hopping_dict" title="lattice::hopping_dict"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-meshes" title="Meshes">
         <tab type="usergroup" url="@ref triqs-meshes-concepts" title="Mesh concepts">
