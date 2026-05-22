@@ -65,19 +65,7 @@ namespace triqs::mesh {
    * @ref triqs-gfs containers that are based on this mesh use linear interpolation to evaluate
    * the function at an arbitrary frequency (see triqs::mesh::evaluate(refreq_log const &, auto const &, double)).
    *
-   * @code
-   * #include <fmt/base.h>
-   * #include <triqs/mesh.hpp>
-   *
-   * int main() {
-   *   // initialize a logarithmic mesh with eps=0.1, w_max=10, ratio=2
-   *   triqs::mesh::refreq_log m{0.1, 10, 2.0};
-   *
-   *   // loop over all mesh points and print their index, data index and value
-   *   for (int i = 0; auto mp : m)
-   *     fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-   * }
-   * @endcode
+   * @include refreq_log.cpp
    */
   class C2PY_RENAME(MeshReFreqLog) refreq_log {
     public:

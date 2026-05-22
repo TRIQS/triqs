@@ -1,4 +1,8 @@
 # ############
+# Compile the C++ examples that the doxygen docs @include
+add_subdirectory(examples)
+
+# ############
 # Doxygen
 find_package(Doxygen REQUIRED)
 
