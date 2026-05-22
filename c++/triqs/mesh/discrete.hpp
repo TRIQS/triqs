@@ -48,18 +48,7 @@ namespace triqs::mesh {
    * - There is no explicit value associated with a mesh point, i.e. it does not satisfy the
    * triqs::mesh::MeshWithValues concept.
    *
-   * @code
-   * #include <fmt/base.h>
-   * #include <triqs/mesh.hpp>
-   * 
-   * int main() {
-   *   // initialize a discrete mesh with 5 points
-   *   triqs::mesh::discrete m{5};
-   * 
-   *   // loop over all mesh points and print their index and data index
-   *   for (int i = 0; auto mp : m) fmt::println("mesh point #{}: index = {}, data index = {}", i++, mp.index(), mp.data_index());
-   * }
-   * @endcode
+   * @include discrete.cpp
    *
    * Output:
    *

@@ -12,9 +12,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 # --------------------------------------------------------
 # Build & Run the C++ doc examples and capture the output
 # --------------------------------------------------------
+# Examples under doxygen/examples/ are handled by their own
+# doxygen/examples/CMakeLists.txt (they back the doxygen @include directive
+# rather than being captured as Sphinx output), so they are excluded here to
+# avoid duplicate targets.
 
 add_custom_target(docs_example_output)
 file(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+list(FILTER ExampleList EXCLUDE REGEX "^doxygen/examples/")
 foreach(example ${ExampleList})
   get_filename_component(f ${example} NAME_WE)
   get_filename_component(d ${example} DIRECTORY)
