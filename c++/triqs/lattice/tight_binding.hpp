@@ -18,31 +18,68 @@
 //
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell, Thomas Ayral
 
+/**
+ * @file
+ * @brief Provides a tight-binding Hamiltonian class for Bravais lattices and associated utilities.
+ */
+
 #pragma once
+
 #include "./brillouin_zone.hpp"
-#include "../mesh/brzone.hpp"
 #include "../gfs.hpp"
+#include "../mesh/brzone.hpp"
 #include "../utility/macros.hpp"
-#include <itertools/itertools.hpp>
+
 #include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
 #include <nda/linalg.hpp>
+#include <nda/nda.hpp>
 #include <nda/stdutil/complex.hpp>
+
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace triqs::lattice {
 
   /**
-     * @brief An insertion-order-preserving hopping dictionary type.
-     * @details Unlike std::map, this preserves the order in which entries are added.
-     */
+   * @addtogroup triqs-lattice
+   * @{
+   */
+
+  /**
+   * @brief Ordered dictionary mapping lattice displacements to hopping (overlap) matrices.
+   *
+   * @details Entries are stored in the order in which they are inserted. The two vectors displ_vec and
+   * overlap_mat_vec are kept aligned: entry `i` describes the hopping from a reference orbital to the orbitals
+   * located at displacement `displ_vec[i]` (in units of the lattice basis vectors), and `overlap_mat_vec[i]` is the
+   * corresponding orbital-to-orbital overlap matrix.
+   */
   struct C2PY_IGNORE hopping_dict {
+    /// `std::vector` of `nda::vector<long>` displacement vectors, in units of the lattice basis vectors.
     std::vector<nda::vector<long>> displ_vec;
+
+    /// `std::vector` of `nda::matrix<dcomplex>` overlap (hopping) matrices, one per displacement.
     std::vector<nda::matrix<dcomplex>> overlap_mat_vec;
   };
 
   /**
-     * For tightbinding Hamiltonian with fully localised orbitals
-     * Overlap between orbital is taken as unit matrix.
-     */
+   * @brief Tight-binding Hamiltonian on a Bravais lattice with fully localised orbitals.
+   *
+   * @details The Hamiltonian is parametrised by a set of lattice displacements \f$ \{ \mathbf{R}_j \} \f$ (given in 
+   * units of the lattice basis vectors) and the associated overlap (hopping) matrices \f$ \{ t_{\mathbf{R}_j} \} \f$ 
+   * between orbitals in the unit cell. The Bloch Hamiltonian in reciprocal space is obtained by the discrete Fourier
+   * transform
+   * \f[
+   *   h_{\mathbf{k}} = \sum_j t_{\mathbf{R}_j} \, e^{2 \pi i \, \mathbf{k} \cdot \mathbf{R}_j} \; ,
+   * \f]
+   * where the momentum \f$ \mathbf{k} \f$ is expressed in units of the reciprocal lattice basis vectors.
+   *
+   * The orbital overlap within a unit cell (the on-site block at \f$ \mathbf{R} = 0 \f$) is the identity matrix unless
+   * explicitly overridden by the user-provided hoppings.
+   */
   class tight_binding {
 
     bravais_lattice bl_;
@@ -53,52 +90,74 @@ namespace triqs::lattice {
 
     public:
     /**
-       * Construct a tight_binding Hamiltonian on a given bravais_lattice,
-       * given the displacements in units of the lattice basis vectors (units)
-       * and the associated overlap (hopping) matrices.
-       * The matrix structure is w.r.t. the atoms in the unit cell.
-       *
-       * @param bl The underlying bravais lattice
-       * @param displ_vec The vector of displacement vectors in units of the lattice basis vectors
-       * @param overlap_mat_vec The vector of overlap (hopping) matrices
-       */
+     * @brief Construct a tight-binding Hamiltonian on a given Bravais lattice from explicit displacement and overlap 
+     * lists.
+     *
+     * @details The matrix structure of each overlap matrix is with respect to the orbitals in the unit cell. The
+     * displacement and overlap lists must have the same length, and every overlap matrix must be square with size
+     * equal to the number of orbitals in the unit cell.
+     *
+     * @param bl Underlying Bravais lattice.
+     * @param displ_vec List of displacement vectors, in units of the lattice basis vectors.
+     * @param overlap_mat_vec List of overlap (hopping) matrices, one per displacement.
+     */
     tight_binding(bravais_lattice bl, std::vector<nda::vector<long>> displ_vec, std::vector<nda::matrix<dcomplex>> overlap_mat_vec);
 
-    /// Construct a tight_binding Hamiltonian on a given bravais_lattice from a hopping dictionary.
+    /**
+     * @brief Construct a tight-binding Hamiltonian on a given Bravais lattice from a hopping dictionary.
+     *
+     * @param bl Underlying Bravais lattice.
+     * @param hoppings Hopping dictionary mapping displacement vectors to their overlap matrices.
+     */
     tight_binding(bravais_lattice bl, hopping_dict hoppings);
 
-    /// Underlying lattice
+    /// Get the underlying Bravais lattice.
     bravais_lattice const &lattice() const { return bl_; }
 
-    /// Return a vector containing all displacement vectors
+    /// Get the list of displacement vectors, in units of the lattice basis vectors.
     auto const &displ_vec() const { return displ_vec_; }
 
-    /// Return a vector containing all overlap matrices
+    /// Get the list of overlap (hopping) matrices, aligned with the displacement vectors.
     auto const &overlap_mat_vec() const { return overlap_mat_vec_; }
 
-    /// Transform into real coordinates.
+    /**
+     * @brief Transform a vector from the lattice basis to the standard basis.
+     *
+     * @details Equivalent to calling lattice_to_real_coordinates() on the underlying Bravais lattice.
+     *
+     * @param x Vector in the lattice basis.
+     * @return Vector in the standard basis.
+     */
     template <typename R> r_t lattice_to_real_coordinates(R const &x) const { return bl_.lattice_to_real_coordinates(x); }
 
-    /// Number of orbitals / bands, i.e. size of the matrix t(k)
+    /// Number of orbitals (also the size of the Bloch Hamiltonian matrix \f$ h_{\mathbf{k}} \f$).
     long n_orbitals() const { return bl_.n_orbitals(); }
 
-    // calls F(R, t(R)) for all R
+    /**
+     * @brief Apply a callable to every `(displacement, overlap matrix)` pair stored in the tight-binding Hamiltonian.
+     *
+     * @param tb Tight-binding Hamiltonian to iterate over.
+     * @param f Callable invoked as `f(R, t_R)` for each stored displacement `R` and its overlap matrix `t_R`.
+     */
     template <typename F> friend void foreach (tight_binding const &tb, F f) {
-      int n = tb.displ_vec_.size();
+      int n = static_cast<int>(tb.displ_vec_.size());
       for (int i = 0; i < n; ++i) f(tb.displ_vec_[i], tb.overlap_mat_vec_[i]);
     }
 
     /**
-       * Calculate the fourier transform for a given momentum vector k (or array of vectors)
-       *
-       *   \f[ h_k = \sum_j m_j * \exp(2 \pi i * \mathbf{k} * \mathbf{r}_j) \f]
-       *
-       * with lattice displacements {r_j} and associated overlap (hopping) matrices {m_j}.
-       * k needs to be represented in units of the reciprocal lattice vectors
-       *
-       * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
-       * @return The value for \f$h_k\f$ as a complex matrix
-       */
+     * @brief Compute the Fourier transform for a given momentum vector (or array of momentum vectors).
+     *
+     * @details The Bloch Hamiltonian is given by
+     * \f[
+     *   h_{\mathbf{k}} = \sum_j t_{\mathbf{R}_j} \, e^{2 \pi i \, \mathbf{k} \cdot \mathbf{R}_j} \; ,
+     * \f]
+     * with lattice displacements \f$ \{ \mathbf{R}_j \} \f$ and associated overlap (hopping) matrices
+     * \f$ \{ t_{\mathbf{R}_j} \} \f$. The momentum \f$ \mathbf{k} \f$ is expressed in units of the reciprocal lattice
+     * basis vectors.
+     *
+     * @param k Momentum vector (or an array of momentum vectors) in units of the reciprocal lattice basis vectors.
+     * @return Complex matrix \f$ h_{\mathbf{k}} \f$ (or an array of such matrices, one per input momentum).
+     */
     template <typename K>
       requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
     auto fourier(K const &k) const {
@@ -121,12 +180,12 @@ namespace triqs::lattice {
     }
 
     /**
-       * Calculate the fourier transform on a given k-mesh
-       * and return the associated Green-function object
-       *
-       * @param k_mesh The brillouin-zone mesh
-       * @return Green function on the k_mesh initialized with the fourier transform
-       */
+     * @brief Compute the Fourier transform on a given Brillouin zone mesh.
+     *
+     * @param k_mesh Brillouin zone mesh on which to evaluate the Bloch Hamiltonian.
+     * @return Matrix-valued Green's function defined on `k_mesh`, with its data initialised with the Fourier transform
+     * \f$ h_{\mathbf{k}} \f$ at every mesh point.
+     */
     inline auto fourier(mesh::brzone const &k_mesh) const {
       auto kvecs = nda::matrix<double>(k_mesh.size(), 3);
       for (auto [n, k] : itertools::enumerate(k_mesh)) { kvecs(n, range::all) = k.value(); }
@@ -137,25 +196,25 @@ namespace triqs::lattice {
     }
 
     /**
-       * Calculate the fourier transform on a regular k-mesh
-       * with n_l grid-points in each reciprocal direction.
-       * Return the associated Green-function object.
-       *
-       * @param n_l The number of grid-points for each dimension
-       * @return Green function on the k_mesh initialized with the fourier transform
-       */
+     * @brief Compute the Fourier transform on a regular Brillouin zone mesh with `n_l` points per dimension.
+     *
+     * @param n_l Number of grid-points along each reciprocal direction.
+     * @return Matrix-valued Green's function defined on the regular Brillouin zone mesh, with its data initialised with
+     * the Fourier transform \f$ h_{\mathbf{k}} \f$ at every mesh point.
+     */
     inline auto fourier(int n_l) const {
       auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
       return fourier(k_mesh);
     }
 
-      /**
-       * Calculate the dispersion, i.e. the eigenvalue-spectrum of \f$h_k\f$,
-       * for a given momentum vector k (or array of vectors).
-       *
-       * @param k The momentum vector (or an array thereof) in units of the reciprocal lattice vectors
-       * @return The value for \f$h_k\f$ as a complex matrix
-       */
+    /**
+     * @brief Compute the dispersion, i.e. the eigenvalue spectrum of \f$ h_{\mathbf{k}} \f$, for a given momentum vector
+     * (or array of momentum vectors).
+     *
+     * @param k Momentum vector (or an array of momentum vectors) in units of the reciprocal lattice basis vectors.
+     * @return Real-valued array of length `n_orbitals` containing the band energies at \f$ \mathbf{k} \f$, or an array
+     * of such band-energy arrays when an array of momenta is passed.
+     */
     template <typename K>
     auto dispersion(K const &k) const
       requires(nda::ArrayOfRank<K, 1> or nda::ArrayOfRank<K, 2>)
@@ -172,12 +231,12 @@ namespace triqs::lattice {
     }
 
     /**
-       * Calculate the dispersion on a given k-mesh
-       * and return the associated Green-function object
-       *
-       * @param k_mesh The brillouin-zone mesh
-       * @return Green function on the k_mesh initialized with the dispersion values
-       */
+     * @brief Compute the dispersion on a given Brillouin zone mesh.
+     *
+     * @param k_mesh Brillouin zone mesh on which to evaluate the band energies.
+     * @return Tensor-valued Green's function defined on `k_mesh`, with its data initialised with the band energies at
+     * every mesh point (one real value per orbital).
+     */
     inline auto dispersion(mesh::brzone const &k_mesh) const {
       auto h_k = fourier(k_mesh);
       auto e_k = gfs::gf<mesh::brzone, gfs::tensor_real_valued<1>>(k_mesh, {n_orbitals()});
@@ -186,13 +245,12 @@ namespace triqs::lattice {
     }
 
     /**
-       * Calculate the dispersion on a regular k-mesh
-       * with n_l grid-points in each reciprocal direction.
-       * Return the associated Green-function object.
-       *
-       * @param n_l The number of grid-points for each dimension
-       * @return Green function on the k_mesh initialized with the dispersion values
-       */
+     * @brief Compute the dispersion on a regular Brillouin zone mesh with `n_l` points per dimension.
+     *
+     * @param n_l Number of grid-points along each reciprocal direction.
+     * @return Tensor-valued Green's function defined on the regular Brillouin zone mesh, with its data initialised with
+     * the band energies at every mesh point.
+     */
     inline auto dispersion(int n_l) const {
       auto k_mesh = mesh::brzone(brillouin_zone{bl_}, n_l);
       return dispersion(k_mesh);
@@ -200,12 +258,21 @@ namespace triqs::lattice {
 
     // ------------------- Comparison -------------------
 
+    /// Equal-to comparison operator. True if the underlying lattice, displacements and overlap matrices all match.
     bool operator==(tight_binding const &tb) const { return bl_ == tb.bl_ && overlap_mat_vec_ == tb.overlap_mat_vec_ && displ_vec_ == tb.displ_vec_; }
 
+    /// Not-equal-to comparison operator (negation of operator==()).
     bool operator!=(tight_binding const &tb) const { return !(operator==(tb)); }
 
     // -------------------- print -------------------
 
+    /**
+     * @brief Write a tight-binding Hamiltonian to a `std::ostream`.
+     *
+     * @param sout `std::ostream` object.
+     * @param tb Tight-binding Hamiltonian to be written.
+     * @return Reference to `std::ostream` object.
+     */
     friend std::ostream &operator<<(std::ostream &sout, tight_binding const &tb) {
       sout << "Tight Binding Hamiltonian on " << tb.lattice() << "\nwith hoppings [";
       for (auto const &[displ, overlap_mat] : itertools::zip(tb.displ_vec(), tb.overlap_mat_vec())) sout << "\n   " << displ << " : " << overlap_mat;
@@ -214,18 +281,31 @@ namespace triqs::lattice {
 
     // ------------------- HDF5 Read / Write -------------------
 
+    /// Get the HDF5 format tag.
     [[nodiscard]] static std::string hdf5_format() { return "tight_binding"; }
 
-    // Function that writes the solver_core to hdf5 file
+    /**
+     * @brief Write a tight-binding Hamiltonian to HDF5.
+     *
+     * @param fg `h5::group` to be written to.
+     * @param subgroup_name Name of the subgroup.
+     * @param tb Tight-binding Hamiltonian to be written.
+     */
     friend void h5_write(h5::group fg, std::string subgroup_name, tight_binding const &tb) {
       auto grp = fg.create_group(subgroup_name);
-      write_hdf5_format(grp, tb);
+      write_hdf5_format(grp, tb); // NOLINT
       h5_write(grp, "bravais_lattice", tb.bl_);
       h5_write(grp, "displ_vec", tb.displ_vec_);
       h5_write(grp, "overlap_mat_vec", tb.overlap_mat_vec_);
     }
 
-    // Function to read tight_binding object from hdf5 file
+    /**
+     * @brief Construct a tight-binding Hamiltonian by reading it from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param subgroup_name Name of the subgroup.
+     * @return The reconstructed tight-binding Hamiltonian.
+     */
     CPP2PY_IGNORE
     static tight_binding h5_read_construct(h5::group g, std::string subgroup_name) {
       auto grp             = g.open_group(subgroup_name);
@@ -237,7 +317,37 @@ namespace triqs::lattice {
 
   }; // tight_binding
 
+  /**
+   * @brief Compute the density of states of a tight-binding Hamiltonian on a regular k-grid.
+   *
+   * @details The Brillouin zone is sampled by a regular grid of \f$ n_\text{kpts}^d \f$ momentum points (where \f$ d \f$
+   * is the dimension of the lattice), the dispersion is diagonalised on each grid point, and the resulting band
+   * energies are histogrammed into `neps` bins per orbital.
+   *
+   * @param TB Tight-binding Hamiltonian.
+   * @param nkpts Number of k-points along each dimension.
+   * @param neps Number of energy bins.
+   * @return Pair `(energies, dos)`, where `energies` is a 1-D array of bin centres and `dos` is a 2-D array of shape
+   * `(n_orbitals, neps)` containing one density-of-states histogram per orbital.
+   */
   std::pair<nda::array<double, 1>, nda::array<double, 2>> dos(tight_binding const &TB, int nkpts, int neps);
+
+  /**
+   * @brief Compute the density of states of a tight-binding Hamiltonian on a triangular Brillouin zone patch.
+   *
+   * @note Only supported for 2-dimensional lattices.
+   *
+   * @param TB Tight-binding Hamiltonian.
+   * @param triangles 2-D array of shape `(n_triangles * 3, 2)` containing the vertices of the triangular patches in the
+   * Brillouin zone, three rows per triangle.
+   * @param neps Number of energy bins.
+   * @param ndiv Number of sub-divisions of each triangle used for the sampling.
+   * @return Pair `(energies, dos)`, where `energies` is a 1-D array of bin centres and `dos` is a 1-D array of the same
+   * length containing the total density of states summed over orbitals.
+   */
   std::pair<nda::array<double, 1>, nda::array<double, 1>> dos_patch(tight_binding const &TB, const nda::array<double, 2> &triangles, int neps,
                                                                     int ndiv);
+
+  /** @} */
+
 } // namespace triqs::lattice

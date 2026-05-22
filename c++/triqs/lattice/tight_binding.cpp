@@ -17,10 +17,22 @@
 //
 // Authors: Thomas Ayral, Michel Ferrero, Alexander Hampel, Olivier Parcollet, Nils Wentzell
 
-#include "tight_binding.hpp"
+/**
+ * @file
+ * @brief Implementation details for triqs/lattice/tight_binding.hpp.
+ */
+
+#include "./tight_binding.hpp"
+#include "./grid_generator.hpp"
+#include "../utility/exceptions.hpp"
+
 #include <nda/algorithms.hpp>
 #include <nda/linalg/eigh.hpp>
-#include "./grid_generator.hpp"
+#include <nda/nda.hpp>
+
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace triqs::lattice {
 
@@ -70,7 +82,7 @@ namespace triqs::lattice {
 
     // loop on the BZ
     int ndim = TB.lattice().ndim();
-    int norb = TB.lattice().n_orbitals();
+    int norb = static_cast<int>(TB.lattice().n_orbitals());
     grid_generator grid(ndim, nkpts);
     array<double, 1> tempeval(norb);
     array<dcomplex, 3> evec(norb, norb, grid.size());
@@ -124,7 +136,7 @@ namespace triqs::lattice {
 
     // int ndim=TB.lattice().dim();
     // int norb=TB.lattice().n_orbitals();
-    int ntri = triangles.shape(0) / 3;
+    int ntri = static_cast<int>(triangles.shape(0)) / 3;
     array<double, 1> dos(neps);
 
     // Check consistency
@@ -144,7 +156,7 @@ namespace triqs::lattice {
     // g the center of gravity taken from a
     array<double, 1> a(ndim), b(ndim), c(ndim), g(ndim), rv(ndim);
     int pt = 0;
-    double s, t;
+    double s{}, t{};
 
     // loop over the triangles
     for (int tri = 0; tri < ntri; tri++) {
@@ -191,7 +203,7 @@ namespace triqs::lattice {
     for (int i = 0; i < neps; ++i) epsilon(i) = epsmin + i / (neps - 1.0) * (epsmax - epsmin);
 
     // bin the eigenvalues according to their energy
-    int ind;
+    int ind{};
     dos() = 0.0;
     for (int j = 0; j < nk; j++) {
       ind = int((energ(j) - epsmin) / deps);
@@ -211,7 +223,7 @@ namespace triqs::lattice {
 
   //------------------------------------------------------
   array<double, 2> energies_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
-    int norb = TB.lattice().n_orbitals();
+    int norb = static_cast<int>(TB.lattice().n_orbitals());
     int ndim = TB.lattice().ndim();
     array<double, 2> eval(norb, n_pts);
     k_t dk = (K2 - K1) / double(n_pts), k = K1;
@@ -221,7 +233,7 @@ namespace triqs::lattice {
 
   //------------------------------------------------------
   array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const &TB, k_t const &K1, k_t const &K2, int n_pts) {
-    int norb = TB.lattice().n_orbitals();
+    int norb = static_cast<int>(TB.lattice().n_orbitals());
     int ndim = TB.lattice().ndim();
     array<dcomplex, 3> eval(norb, norb, n_pts);
     k_t dk = (K2 - K1) / double(n_pts), k = K1;
@@ -232,7 +244,7 @@ namespace triqs::lattice {
   //------------------------------------------------------
   array<double, 2> energies_on_bz_grid(tight_binding const &TB, int n_pts) {
 
-    int norb = TB.lattice().n_orbitals();
+    int norb = static_cast<int>(TB.lattice().n_orbitals());
     int ndim = TB.lattice().ndim();
     grid_generator grid(ndim, n_pts);
     array<double, 2> eval(norb, grid.size());
