@@ -18,7 +18,19 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 
-from .random_generator import RandomGenerator, random_generator_names_list
+r"""
+Monte Carlo helpers from the TRIQS MC tools framework.
 
-__all__ = ['RandomGenerator','random_generator_names_list']
+This module exposes the random number generator utilities used by
+Monte Carlo simulations in TRIQS. The MC simulation driver and the
+move / measurement abstractions are not available from Python.
+
+It is imported with the command::
+
+  >>> from triqs.mc_tools import RandomGenerator, random_generator_names_list
+"""
+
+from .random_generator import RandomGenerator, random_generator_names_list, random_generator_names
+
+__all__ = ['RandomGenerator', 'random_generator_names_list', 'random_generator_names']
 

@@ -1,3 +1,3 @@
 package_name = "triqs.mc_tools"
-documentation = ""
+documentation = "Random number generator utilities for Monte Carlo simulations."
 namespaces = "triqs::mc_tools"
