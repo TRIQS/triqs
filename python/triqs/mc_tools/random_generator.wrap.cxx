@@ -34,17 +34,16 @@ template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_construc
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> =
    _c2py_init_0.doc(R"DOC(
-[1] Default constructor uses Boost's Mersenne Twister 19937 RNG.
+[1] Default constructor uses the *mt19937* engine with the default seed.
 
 ------
 
 [2] Construct a random generator by wrapping the specified RNG and seeding it with the given seed.
 
-The given name has to correspond to one of the supported RNGs (see
-triqs::mc_tools::random_generator_names() or triqs::mc_tools::random_generator_names_list()). If the name does
-not match any of the supported RNGs, a `std::runtime_error` is thrown.
+The given name has to correspond to one of the supported engines. If the name does not match any of the 
+supported engines, a runtime error is raised.
 
-An empty name corresponds to the RNG in triqs/mc_tools/MersenneRNG.hpp.
+An empty name selects the built-in custom Mersenne Twister RNG.
 
 ------
 
@@ -109,7 +108,7 @@ static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
 Get the name of the underlying RNG.
 )DOC");
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC(
-Look ahead at the next value that will be generated with a call to operator()().
+Look ahead at the next value that will be generated when the generator is called.
 
 Returns
 -------
@@ -130,26 +129,25 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 };
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Wrapper that erases the type of a random number generator.
+const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Random number generator with a selectable underlying engine.
 
-The following RNGs are supported (see also triqs::mc_tools::random_generator_names() or
-triqs::mc_tools::random_generator_names_list()): 
+The following engine names are currently accepted by the constructor:
 
-- *empty string*: uses the custom Mersenne Twister RNG in triqs/mc_tools/MersenneRNG.hpp
-- *mt19937*: uses `boost::mt19937`
-- *mt11213b*: uses `boost::mt11213b`
-- *lagged_fibonacci607*: uses `boost::lagged_fibonacci607`
-- *lagged_fibonacci1279*: uses `boost::lagged_fibonacci127`
-- *lagged_fibonacci2281*: uses `boost::lagged_fibonacci2281`
-- *lagged_fibonacci3217*: uses `boost::lagged_fibonacci3217`
-- *lagged_fibonacci4423*: uses `boost::lagged_fibonacci4423`
-- *lagged_fibonacci9689*: uses `boost::lagged_fibonacci9689`
-- *lagged_fibonacci19937*: uses `boost::lagged_fibonacci19937`
-- *lagged_fibonacci23209*: uses `boost::lagged_fibonacci23209`
-- *lagged_fibonacci44497*: uses `boost::lagged_fibonacci44497`
-- *ranlux3*: uses `boost::ranlux3`
+- *empty string* -- a built-in custom Mersenne Twister RNG
+- *mt19937*
+- *mt11213b*
+- *lagged_fibonacci607*
+- *lagged_fibonacci1279*
+- *lagged_fibonacci2281*
+- *lagged_fibonacci3217*
+- *lagged_fibonacci4423*
+- *lagged_fibonacci9689*
+- *lagged_fibonacci19937*
+- *lagged_fibonacci23209*
+- *lagged_fibonacci44497*
+- *ranlux3*
 
-The RNG is specified in the constructor by giving its name.
+For non-empty names, the underlying engine is provided by boost.random.
 
 For performance reasons, we use a buffer for the generated random numbers to avoid some of the costs of repeated
 function calls to the RNG.)DOC"
@@ -175,11 +173,11 @@ sep : {par_0}
 Returns
 -------
 {ret_0}
-   `std::string` containing the available RNGs separated by the given separator.
+   String containing the available RNGs separated by the given separator.
 )DOC",
                                                 {{c2py::python_typename<const std::string &>()}}, {c2py::python_typename<std::string>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC(
-Get a `std::vector<std::string>` containing all available RNG names.
+Get a list of all available RNG names.
 )DOC");
 //--------------------- module function table  -----------------------------
 
@@ -193,15 +191,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "random_generator", /* name of module */
-                                        R"RAWDOC()RAWDOC",  /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "random_generator",                                                              /* name of module */
+   R"RAWDOC(Random number generator utilities for Monte Carlo simulations.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 
