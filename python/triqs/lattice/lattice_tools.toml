@@ -1,4 +1,17 @@
 package_name = "triqs.lattice"
-documentation = ""
+documentation = """Tools for working with Bravais lattices, Brillouin zones and tight-binding Hamiltonians.
+
+The lattice tools provide classes to describe crystal lattices in real and reciprocal space, and to build tight-binding 
+Hamiltonians on top of them. The main classes are:
+
+- BravaisLattice: A Bravais lattice in 1, 2 or 3 dimensions, defined by a set of basis vectors and the positions of 
+  (optionally named) atomic orbitals within the unit cell.
+- BrillouinZone: The first Brillouin zone of a given Bravais lattice, defined by the corresponding reciprocal-space 
+  basis vectors.
+- TightBinding: A tight-binding Hamiltonian on a Bravais lattice, parameterised by lattice displacements and the 
+  associated hopping (overlap) matrices between orbitals. It provides the Fourier transform to reciprocal space, 
+  dispersion (band-structure) calculations on Brillouin zone meshes and integration with the TRIQS Green's function 
+  framework.
+"""
 namespaces = "triqs::lattice"
 wrap_no_arg_methods_as_properties = true

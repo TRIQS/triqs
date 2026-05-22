@@ -134,7 +134,20 @@
 
 /**
  * @defgroup triqs-lattice Lattice tools
- * @brief Tools for working with Bravais lattices and Brillouin zones.
+ * @brief Tools for working with Bravais lattices, Brillouin zones and tight-binding Hamiltonians.
+ *
+ * @details The lattice tools provide classes to describe crystal lattices in real and reciprocal space, and to build 
+ * tight-binding Hamiltonians on top of them. The main classes are:
+ * - triqs::lattice::bravais_lattice: A Bravais lattice in 1, 2 or 3 dimensions, defined by a set of basis vectors and 
+ * the positions of (optionally named) atomic orbitals within the unit cell.
+ * - triqs::lattice::brillouin_zone: The first Brillouin zone of a given Bravais lattice, defined by the corresponding 
+ * reciprocal-space basis vectors.
+ * - triqs::lattice::tight_binding: A tight-binding Hamiltonian on a Bravais lattice, parameterised by lattice 
+ * displacements and the associated hopping (overlap) matrices between orbitals. It provides the Fourier transform to 
+ * reciprocal space, dispersion (band-structure) calculations on Brillouin zone meshes and integration with the TRIQS 
+ * Green's function framework.
+ * - triqs::lattice::grid_generator: A forward iterator that produces a regular grid of points inside the d-dimensional 
+ * unit cube, useful for sampling the Brillouin zone.
  */
 
 /**
