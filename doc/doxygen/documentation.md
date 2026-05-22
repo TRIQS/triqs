@@ -20,6 +20,13 @@ If you are looking for a specific function, class, etc., try using the search ba
 
 ## MC tools
 
+The @ref triqs-mc module provides a generic, MPI-aware Markov-chain Monte Carlo framework. 
+The user supplies moves (see @ref triqs-mc-moves), measurements (see @ref triqs-mc-measures) and a sign type satisfying 
+the concepts in @ref triqs-mc-concepts.
+These are registered with a triqs::mc_tools::mc_generic instance (see @ref triqs-mc-simulation) which drives the warmup 
+and accumulation phases. 
+Random number generation and other building blocks are documented under @ref triqs-mc-utils.
+
 ## Meshes
 
 ## Operators

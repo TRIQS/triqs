@@ -150,36 +150,111 @@
 /**
  * @defgroup triqs-mc MC tools
  * @brief Tools to implement and perform Monte Carlo simulations.
+ *
+ * @details The @ref triqs-mc module provides a generic framework for writing Markov-chain Monte Carlo simulations. It 
+ * does not implement any particular physical algorithm; instead it supplies the scaffolding common to all such
+ * simulations — driving the Markov chain, dispatching user-defined updates, accumulating user-defined observables, and 
+ * aggregating results across MPI ranks.
+ *
+ * A simulation is described by three ingredients supplied by the user:
+ * - a **sign type** (real or complex, see triqs::mc_tools::DoubleOrComplex) that encodes the per-configuration weight,
+ * - a set of **moves** that propose updates of the Markov chain and report their Metropolis acceptance ratio (see 
+ * @ref triqs-mc-moves and triqs::mc_tools::MCMove),
+ * - a set of **measurements** that accumulate observables along the chain (see @ref triqs-mc-measures and 
+ * triqs::mc_tools::MCMeasure).
+ *
+ * These ingredients are plugged into a triqs::mc_tools::mc_generic instance, which manages *warmup* (equilibration, 
+ * optional move calibration) and *accumulation* (measurement) phases, organised into cycles of MC steps. The driver is 
+ * MPI-aware: random seeds, exception propagation, cycle counters and measurement reduction are all coordinated through 
+ * an `mpi::communicator`, so the same simulation code runs serially or in parallel.
  */
 
 /**
  * @ingroup triqs-mc
  * @defgroup triqs-mc-concepts MC concepts
- * @brief Concepts that specify the requirements for MC moves and measurements. 
+ * @brief Concepts that specify the requirements for MC moves and measurements.
+ *
+ * @details The MC framework is generic: any user type that satisfies the relevant concept can be plugged into 
+ * triqs::mc_tools::mc_generic. The concepts in this group spell out the minimal interface those types must expose:
+ * - triqs::mc_tools::DoubleOrComplex constrains the *sign type* to either `double` or `std::complex<double>`.
+ * - triqs::mc_tools::MCMove requires `attempt()` and `accept()` returning the sign type, with optional `reject()`, 
+ * `calibrate()` and `collect_statistics()` hooks for adaptive moves and diagnostics.
+ * - triqs::mc_tools::MCMeasure requires `accumulate(sign)` and `collect_results(mpi::communicator)`, leaving the 
+ * storage of partial accumulators entirely to the user.
+ *
+ * Because the framework relies on concepts rather than virtual inheritance, user moves and measurements remain plain, 
+ * value-semantic types; the triqs::mc_tools::mc_generic engine wraps them through type erasure internally.
  */
 
 /**
  * @ingroup triqs-mc
  * @defgroup triqs-mc-measures MC measurements
  * @brief Abstraction for Monte Carlo measurements.
+ *
+ * @details A *measurement* is any object that, given the current sign of the Markov chain, contributes to one or more 
+ * running estimators. This group provides the type-erased wrappers used by triqs::mc_tools::mc_generic to store 
+ * heterogeneous measurements together:
+ * - triqs::mc_tools::measure wraps a user object satisfying triqs::mc_tools::MCMeasure and bookkeeps the number of 
+ * measurements, optional timing and an optional `report()` callback.
+ * - triqs::mc_tools::measure_set is the container of registered measurements; it forwards `accumulate` and 
+ * `collect_results` to every measurement it owns.
+ * - triqs::mc_tools::measure_aux holds *auxiliary* callables that are run on every cycle but do not themselves 
+ * accumulate an estimator (e.g. live diagnostics or periodic state dumps).
+ *
+ * Final reduction across MPI ranks is delegated to the user code inside `collect_results`, which receives the 
+ * communicator.
  */
 
 /**
  * @ingroup triqs-mc
  * @defgroup triqs-mc-moves MC moves
  * @brief Abstraction for Monte Carlo moves.
+ *
+ * @details A *move* proposes an update of the Markov chain and returns the Metropolis acceptance ratio. The framework 
+ * supplies two type-erased containers:
+ * - triqs::mc_tools::move wraps a user object satisfying triqs::mc_tools::MCMove, tracks per-move proposal and 
+ * acceptance counters, optional timing, and forwards the optional `reject`, `calibrate` and `collect_statistics` hooks.
+ * - triqs::mc_tools::move_set combines several moves with relative weights and itself satisfies the MCMove concept: on 
+ * each step it draws one of its sub-moves with probability proportional to its weight, allowing composite update 
+ * schemes to be assembled hierarchically.
+ *
+ * Acceptance ratios and timing statistics are exposed for diagnostics and are aggregated across MPI ranks when results 
+ * are collected.
  */
 
 /**
  * @ingroup triqs-mc
  * @defgroup triqs-mc-utils MC utilities
  * @brief Various utilities used with @ref triqs-mc.
+ *
+ * @details This group collects auxiliary building blocks used by the MC framework, most prominently the random number 
+ * generator:
+ * - triqs::mc_tools::random_generator is a type-erased wrapper around a pseudo-random engine. The engine is selected at 
+ * construction by name (`"mt19937"`, several `"lagged_fibonacci..."` variants, `"ranlux3"`, and the built-in Mersenne 
+ * Twister); samples are produced in batches into an internal buffer for efficiency. Overloaded `operator()` returns
+ * either a uniform `double` in \f$ [0,1) \f$ or a uniform integer in \f$ \{0, ..., i-1 \} \f$, and the generator state 
+ * can be serialised to HDF5 for reproducible restarts.
+ *
+ * The list of available engine names is exposed at runtime via triqs::mc_tools::random_generator_names_list.
  */
 
 /**
  * @ingroup triqs-mc
  * @defgroup triqs-mc-simulation MC simulation
  * @brief Run and manage MC simulations.
+ *
+ * @details This group contains triqs::mc_tools::mc_generic, the driver that ties together moves, measurements and the 
+ * random generator. A typical lifecycle is:
+ * 1. construct an `mc_generic<S>` with a chosen engine name and seed,
+ * 2. register moves with `add_move`, measurements with `add_measure`, and any auxiliary callables with 
+ * `add_measure_aux`,
+ * 3. run `warmup` (equilibrate the chain, optionally calibrate moves), then `accumulate` (perform measurements) — or 
+ * the combined `warmup_and_accumulate` / `run`,
+ * 4. call `collect_results` to reduce per-rank estimators across an `mpi::communicator`.
+ *
+ * The driver organises work into *cycles* of MC steps separated by measurement passes, and checks for user-requested 
+ * termination and for exceptions on configurable intervals so that ranks can stop in a coordinated way even with 
+ * asymmetric workloads.
  */
 
 /**
