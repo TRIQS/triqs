@@ -17,4 +17,26 @@
 # Authors: Michel Ferrero, Olivier Parcollet
 
 
+r"""
+Matplotlib helpers and a generic plot protocol for TRIQS objects.
+
+This package is organised in two layers:
+
+* :mod:`triqs.plot.protocol` defines the *plot protocol*, a uniform
+  way for TRIQS objects to describe themselves to a plotting backend.
+  An object participates by either implementing ``_plot_(opt_dict)``
+  or by registering a free function in
+  :data:`triqs.plot.protocol.plot_function_table`.
+* :mod:`triqs.plot.mpl_interface` provides :func:`~triqs.plot.mpl_interface.oplot`,
+  a thin matplotlib wrapper that consumes the plot protocol so that
+  Green's functions, histograms, lattice objects and plain arrays can
+  all be passed to the same plotting call.
+
+Typical usage::
+
+  >>> from triqs.plot.mpl_interface import oplot, plt
+  >>> oplot(g, mode='R')
+  >>> plt.show()
+"""
+
 __all__ = []
