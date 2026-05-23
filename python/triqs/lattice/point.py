@@ -15,31 +15,37 @@
 #
 # Authors: Michel Ferrero, Nils Wentzell
 
+"""Lattice points on a Bravais lattice."""
+
 import math
 import numpy
 from operator import add, neg
 from triqs.mesh import MeshPoint
 
 class LatticePoint:
-    r""" TRIQS Lattice Point
+    """A point on a Bravais lattice, identified by its integer index vector.
 
-    Castable to array of double, arithmetic operations implemented by cast
+    Castable to a numpy array of float (the real-space coordinates in the standard
+    basis) and supports arithmetic with other lattice points, mesh points and numpy
+    arrays.
 
     Parameters
     ----------
-    index: numpy array of int
-        The lattice point index
-    lattice: BravaisLattice
-        The underlying bravais lattice
+    index : array-like of int
+        The lattice point index.
+    lattice : BravaisLattice
+        The underlying :class:`BravaisLattice`.
 
     Attributes
     ----------
-    index: numpy array of int
-        The lattice point index
-    lattice: BravaisLattice
-        The underlying bravais lattice
+    index : array-like of int
+        The lattice point index.
+    lattice : BravaisLattice
+        The underlying :class:`BravaisLattice`.
+    value : numpy.ndarray
+        Real-space coordinates of this lattice point in the standard basis.
     """
-
+    
     def __init__(self, index, lattice):
         self.index = index
         self.lattice = lattice
@@ -47,6 +53,16 @@ class LatticePoint:
 
     @property
     def value(self):
+        """Real-space coordinates of this lattice point in the standard basis.
+
+        Computed lazily on first access from :attr:`index` and :attr:`lattice`,
+        then cached for subsequent accesses.
+
+        Returns
+        -------
+        numpy.ndarray
+            Real-space coordinates of the lattice point.
+        """
         if self._value is None: self._value = self.lattice.lattice_to_real_coordinates(self.index)
         return self._value
 

@@ -17,6 +17,7 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+"""Polygonal patches of the Brillouin zone."""
 
 #from triqs import *
 import numpy
@@ -24,9 +25,29 @@ from triqs.dos import DOS
 from triqs.lattice.tight_binding import dos_patch
 
 class BZPatch:
-    """Description of a Patch of the BZ"""
+    """A polygonal patch of the Brillouin zone, triangulated for use with :func:`triqs.lattice.tight_binding.dos_patch`.
+
+    The input polygons are triangulated internally (one triangle per consecutive
+    triple of vertices, fan-style from the first vertex), and the patch area is
+    computed as the sum of triangle areas.
+
+    Parameters
+    ----------
+    name : str
+        Identifier for the patch (used to label downstream DOS results).
+    polygons : list of list of pairs of floats
+        List of polygons, each given as an ordered list of 2D vertices in the
+        Brillouin zone.
+
+    Attributes
+    ----------
+    name : str
+        Identifier for the patch.
+    weight : float
+        Total area of the patch (sum of triangle areas).
+    """
+    
     def __init__(self, name, polygons):
-        """ TO BE WRITTEN: MICHEL! """
         # Cut the patch in triangles (this is what is asked by the C-code)
         self.weight, self.name = 0, name
         self._triangles = []
@@ -45,6 +66,21 @@ class BZPatch:
                 else:
                     pnt[np%3] = point
 
-    def dos(self, TB, n_eps, n_div): 
-        """ Compute the partial dos of the Patch for the Lattice lattice"""
+    def dos(self, TB, n_eps, n_div):
+        """Compute the partial density of states of a tight-binding Hamiltonian on this patch.
+
+        Parameters
+        ----------
+        TB : TightBinding
+            The tight-binding Hamiltonian.
+        n_eps : int
+            Number of energy bins.
+        n_div : int
+            Number of sub-divisions of each triangle used for the sampling.
+
+        Returns
+        -------
+        triqs.dos.DOS
+            Partial density of states summed over orbitals on the patch.
+        """
         return dos_patch(TB, numpy.array(self._triangles), n_eps, n_div, self.name)
