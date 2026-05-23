@@ -17,25 +17,49 @@
 #
 # Authors: Thomas Ayral, Priyanka Seth, Nils Wentzell
 
+r"""
+Plot protocol registration for :class:`triqs.stat.Histogram`.
+
+This pure-Python helper is wired up in :mod:`triqs.stat`'s
+``__init__.py`` via ``plot_function_table[Histogram] = plot`` so that
+histograms can be passed to ``triqs.plot.oplot``.
+"""
+
 import numpy as np
 
 # Only the plot function, everything else is wrrapped from c++
 def plot(self, optional_dict):
     r"""
-    Plot protocol for histograms.
+    Plot protocol for Histogram objects.
+
+    Builds the keyword-argument dictionary consumed by
+    :func:`triqs.plot.protocol.plot_protocol_apply`. Registered via
+    ``plot_function_table[Histogram] = plot`` in :mod:`triqs.stat`,
+    so ``triqs.plot.oplot(h)`` dispatches here for a Histogram ``h``.
+    Bin abscissae come from :attr:`Histogram.limits` and ``len(h)``;
+    ordinates from :attr:`Histogram.data` (raw counts -- pass
+    ``pdf(h)`` or ``cdf(h)`` to plot normalised distributions).
+
+    Recognised keys in ``optional_dict`` are listed below; any
+    additional keys are forwarded unchanged to the matplotlib call.
 
     Parameters
     ----------
-    type : string
-           Mode to plot the histogram:
-           - 'XY': plot using lines, default
-           - 'bar': plot using bars
-    width : float, default bin width
-            The width of the bars in a bar plot.
+    type : str, optional
+        Drawing mode for the histogram. ``'XY'`` (default) plots bin
+        centres as a line; ``'bar'`` draws bars centred on the bin
+        centres.
+    width : float, optional
+        Bar width used when ``type='bar'``. Defaults to the bin
+        spacing ``(b - a) / (n_bins - 1)``.
+
     Returns
     -------
-    plot_data: list of dict
-               Object passed to oplot to plot the histogram.
+    plot_data : list of dict
+        Single-element list whose dictionary holds the keyword
+        arguments forwarded by ``triqs.plot.oplot``: ``xdata``,
+        ``ydata``, ``label``, ``plot_function``, and (in bar mode)
+        ``width``.
     """
 
     plot_type = optional_dict.pop('type','XY')
