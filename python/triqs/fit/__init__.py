@@ -18,6 +18,25 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 
+r"""
+Lightweight least-squares curve fitting for 1D data.
+
+This module wraps :func:`scipy.optimize.leastsq` in a small,
+plotting-friendly :class:`~triqs.fit.fit.Fit` class. A fit is
+performed at construction time, the resulting object is callable
+(``fit(x)`` returns the fitted model evaluated at ``x``) and
+stringifies to a LaTeX expression -- so it slots directly into
+:func:`triqs.plot.mpl_interface.oplot`.
+
+Two ready-made model definitions are provided as convenience
+``fitter`` tuples: :data:`~triqs.fit.fit.linear` and
+:data:`~triqs.fit.fit.quadratic`.
+
+It is imported with the command::
+
+  >>> from triqs.fit import Fit, linear, quadratic
+"""
+
 from .fit import Fit, linear, quadratic
 
 __all__ = ['Fit', 'linear', 'quadratic']
