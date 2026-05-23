@@ -18,6 +18,8 @@
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 
+r"""Density-of-states helpers and Hilbert transform."""
+
 from .dos import DOS, DOSFromFunction, dos_from_file
 from .hilbert_transform import HilbertTransform
 

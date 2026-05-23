@@ -18,38 +18,58 @@
 # Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Priyanka Seth, Nils Wentzell
 
 
+r"""
+Density-of-states classes and a text-file reader.
+
+Defines :class:`DOS` and :class:`DOSFromFunction`, plus the
+:func:`dos_from_file` helper. Both classes implement the TRIQS plot
+protocol so they can be passed directly to
+:func:`triqs.plot.mpl_interface.oplot`.
+"""
+
 import types,string,itertools
 import numpy
 
 class DOS :
     r"""
-* Stores a density of state of fermions  
+    Density of states of fermions on a 1D epsilon grid.
 
-.. math::
+    Stores a discrete representation of
 
- \rho (\epsilon) \equiv \sum'_k \delta( \epsilon - \epsilon_k)
+    .. math::
 
-* The sum is normalized 
+        \rho(\epsilon) \equiv \sum_k^{'} \delta(\epsilon - \epsilon_k),
 
-.. math::
+    normalised so that :math:`\int_{-\infty}^{\infty} d\epsilon\,
+    \rho(\epsilon) = 1`.
 
-  \int_{-\infty}^{\infty} d\epsilon \rho (\epsilon) = 1
+    Parameters
+    ----------
+    eps : array-like
+        1D array of energy values :math:`\epsilon_i`.
+    rho : array-like
+        1D array of DOS values :math:`\rho(\epsilon_i)`, same length as
+        ``eps``.
+    name : str, optional
+        Name of the DOS / orbital, used as the plot label. Default ``''``.
 
-* Implement :ref:`Plot Protocol <plotting>`.
+    Attributes
+    ----------
+    eps : numpy.ndarray
+        Energy grid.
+    rho : numpy.ndarray
+        DOS values on the grid.
+    name : str
+        Name of the DOS / orbital.
 
+    Notes
+    -----
+    The class implements the TRIQS :ref:`plot protocol <plotting>`, so
+    instances can be passed directly to
+    :func:`triqs.plot.mpl_interface.oplot`. HDF5 read/write is registered
+    via :func:`h5.formats.register_class`.
     """
     def __init__(self, eps, rho, name = ''):
-        """  
-Parameters 
-------------
-eps : 1d array-type
-    eps[i] is value of epsilon.
-rho : 1d array-type
-    The corresponding value of the dos. 
-name : string
-     Name of the dos/orbital
-
-        """
         self.name = name
         try :
             self.eps = numpy.array( eps )
@@ -82,13 +102,31 @@ name : string
         """%self.__dict__ 
 
     def copy(self):
+        """Return an independent :class:`DOS` with the same ``eps``, ``rho`` and ``name``."""
         return DOS(self.eps,self.rho,self.name)
 
-    def _plot_(self, Options) : 
+    def _plot_(self, Options) :
         return  [ {'label' : self.name, 'xlabel' :r'$\epsilon$', 'ylabel' : r'%s$(\epsilon)$'%self.name, 'xdata' : self.eps,'ydata' : self.rho } ]
 
     def density(self,mu=0):
-        """Calculates the density of free fermions for the given DOS for chemical potential mu."""
+        r"""
+        Integrated density of free fermions up to chemical potential ``mu``.
+
+        Approximates :math:`\int_{-\infty}^{\mu} d\epsilon\, \rho(\epsilon)`
+        by the trapezoidal rule on the stored ``eps`` / ``rho`` arrays,
+        with a linear interpolation across the partial bin straddling
+        ``mu``.
+
+        Parameters
+        ----------
+        mu : float, optional
+            Chemical potential. Default 0.
+
+        Returns
+        -------
+        float
+            Filling :math:`\int_{-\infty}^{\mu} \rho(\epsilon)\, d\epsilon`.
+        """
 
         dens = 0.0
         a = [ (e>mu) for e in self.eps ]
@@ -108,21 +146,33 @@ name : string
 ##########################################################################
 
 def dos_from_file(Filename, name = '', single_orbital = None):
-    """   
-    Read the DOS from a file 
+    r"""
+    Read a (multi-)orbital DOS from a whitespace-separated text file.
 
-    :param Filename:  a string  : name of the file
-    :param name: name of the DOS
-    :param single_orbital: can be None or an integer.
-                    
-    :rtype: 
-       * if single_orbital== None, returns a tuple of DOS (even if there is one dos !).
-       * If single_orbital==i, return only ONE DOS corresponding to ith orbital (starting at 1).
+    Parameters
+    ----------
+    Filename : str
+        Path to the text file containing the DOS data.
+    name : str, optional
+        Name to attach to the resulting :class:`DOS` object(s). Default
+        ``''``.
+    single_orbital : int, optional
+        If given, return only the DOS for the ``single_orbital``-th
+        column (1-based). If ``None`` (default), return one :class:`DOS`
+        per orbital column.
 
-    Format of the file :   
-        * N_orbitals +1 columns, 
-        * the first column is the value of epsilon
-        * the N_orbitals other columns are the values of the dos for various orbitals
+    Returns
+    -------
+    DOS or list of DOS
+        A single :class:`DOS` when ``single_orbital`` is set, otherwise a
+        list with one :class:`DOS` per orbital column (even when there is
+        only one orbital).
+
+    Notes
+    -----
+    The file format has ``N_orbitals + 1`` whitespace-separated columns
+    per row: the first column holds energy values :math:`\epsilon_i` and
+    the remaining columns hold the DOS values for each orbital.
     """
     f = open(Filename); s=''
     while not(s.strip()) :
@@ -146,19 +196,39 @@ def dos_from_file(Filename, name = '', single_orbital = None):
 ##########################################################################
 
 class DOSFromFunction(DOS):
-    """
-    * A DOS class, but constructed from a function.
-    
-    * The number of points can be variable and self-adjusted in the Hilbert transform to adapt precision.
+    r"""
+    :class:`DOS` constructed by sampling a callable :math:`\rho(\epsilon)`.
+
+    Evaluates ``function`` on an equispaced 1D mesh of ``n_pts`` points
+    between ``x_min`` and ``x_max`` and stores the result as a
+    :class:`DOS`. The mesh can be re-sampled at runtime to refine
+    precision -- :meth:`HilbertTransform.__call__` exploits this via its
+    ``n_points_integral`` and ``test_convergence`` arguments.
+
+    Parameters
+    ----------
+    function : callable
+        Function :math:`\epsilon \mapsto \rho(\epsilon)`. The return value
+        must be convertible to a 1D numpy array.
+    x_min : float
+        Lower bound of the mesh (domain of ``function``).
+    x_max : float
+        Upper bound of the mesh.
+    n_pts : int, optional
+        Number of points in the mesh. Default 100.
+    name : str, optional
+        Name of the DOS. Default ``''``.
+
+    Attributes
+    ----------
+    function : callable
+        The callable supplied at construction.
+    x_min : float
+        Lower mesh bound.
+    x_max : float
+        Upper mesh bound.
     """
     def __init__(self, function, x_min, x_max, n_pts=100, name=''):
-        """
-        :param function: * a function :math:`\\epsilon \\rightarrow \\rho(\\epsilon)`
-                         * The result type can be anything from which a 1d-array can be constructed by numpy
-        :param x_min,x_max: Bound of the mesh (domain of the function). 
-        :param n_pts: Number of points in the mesh.
-        :param name: Name of the DOS.
-        """
         assert callable(function), "function is not callable"
         self.function,self.x_min,self.x_max = function,x_min,x_max
         try :
