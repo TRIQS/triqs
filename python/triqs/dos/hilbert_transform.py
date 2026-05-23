@@ -18,6 +18,10 @@
 # Authors: John Bonini, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 
+r"""
+Hilbert transform of a self-energy against a density of states.
+"""
+
 from triqs.gfs import *
 import types, string, inspect, itertools
 from triqs.dos import DOS, DOSFromFunction
@@ -26,19 +30,33 @@ import numpy
 
 class HilbertTransform:
     r"""
-    Computes the Hilbert Transform from a DOS object
+    Hilbert transform of a Green's function against a density of states.
+
+    Computes the matrix-valued integral
 
     .. math::
 
-       \int_{-\infty}^\infty d \epsilon \rho(\epsilon) \Bigl(  (\omega + \mu +
-       I\eta)\mathbf{1} - \hat\varepsilon(\epsilon) - \text{field} - \Sigma(\epsilon)
-       \Bigr)^{-1}
+       \int_{-\infty}^{\infty} d\epsilon\, \rho(\epsilon)
+       \Bigl[ (\omega + \mu + i\eta)\,\mathbf{1}
+              - \hat\varepsilon(\epsilon) - \text{field} - \Sigma(\epsilon)
+       \Bigr]^{-1}
 
+    on the mesh of a supplied Green's function, given a DOS
+    :math:`\rho` and a self-energy :math:`\Sigma`.
+
+    Parameters
+    ----------
+    rho : DOS
+        Density of states used as the integration weight. May be a plain
+        :class:`DOS` or a :class:`DOSFromFunction`; the latter enables
+        adaptive grid refinement via :meth:`__call__`.
+
+    Attributes
+    ----------
+    dos : DOS
+        The DOS supplied at construction.
     """
     def __init__(self, rho):
-        """
-        :param rho: a DOS object.
-        """
         self.dos  = rho
         assert isinstance(rho, DOS),  "See Doc. rho must be a DOS"
         self.__normalize()
@@ -66,28 +84,44 @@ class HilbertTransform:
     def __call__ (self, Sigma, mu=0, eta=0, field=None, epsilon_hat=None, result=None,
                   n_points_integral=None, test_convergence=None):
         r"""
-        Compute the Hilbert Transform
+        Evaluate the Hilbert transform with the given self-energy.
 
         Parameters
-        -----------
-
-        mu: float
-        eta: float
-        Sigma: a GFBloc or a function epsilon-> GFBloc
-        field: anything that can added to the GFBloc Sigma, e.g.:
-                 * an Array_with_GFBloc_Indices (same size as Sigma)
-                 * a GBloc
-        epsilon_hat: a function that takes a 1d array eps[i] and returns 3d-array   eps[i,:,:]
-                            where the:,: has the matrix structure of Sigma. Default: eps[i] * Identity_Matrix
-                            Used only when DOS is a DOSFromFunction:
-        n_points_integral: How many points to use. If None, use the Npts of construction
-        test_convergence: If defined, it will refine the grid until CV is reached
-                          starting from n_points_integral and multiplying by 2
+        ----------
+        Sigma : Gf or callable
+            Either a Green's function block, or a single-argument callable
+            ``f(epsilon)`` returning a Green's function block.
+        mu : float, optional
+            Chemical potential. Default 0.
+        eta : float, optional
+            Imaginary broadening :math:`\eta`. Default 0.
+        field : optional
+            Anything that can be added to ``Sigma`` (e.g. a matrix-shaped
+            ndarray or another Green's function block). Default ``None``.
+        epsilon_hat : callable, optional
+            Function taking a 1D array ``eps`` and returning a 3D array
+            ``eps_hat[i, :, :]`` whose ``[:, :]`` slice matches the target
+            shape of ``Sigma``. Defaults to ``eps[i] * I``. Used only when
+            ``self.dos`` is a :class:`DOSFromFunction`.
+        result : Gf, optional
+            Pre-allocated output. If given, the result is computed in place.
+            If ``None`` (default), a fresh copy of the model is returned.
+        n_points_integral : int, optional
+            Number of mesh points to use. Defaults to the value passed at
+            :class:`DOSFromFunction` construction. Only valid when
+            ``self.dos`` is a :class:`DOSFromFunction`.
+        test_convergence : float, optional
+            Refinement tolerance. When set, the mesh is doubled iteratively
+            (up to 10 times) until the result changes by less than this
+            tolerance. Only valid when ``self.dos`` is a
+            :class:`DOSFromFunction`.
 
         Returns
-        --------
-
-        Returns the result. If provided, use result to compute the result locally.
+        -------
+        Gf
+            The Hilbert transform on the mesh of ``Sigma``. Returned as
+            ``result`` when that argument is provided, otherwise a fresh
+            copy.
         """
 
         # we suppose here that self.eps, self.rho_for_sum such that
