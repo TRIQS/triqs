@@ -19,8 +19,21 @@
 
 
 r"""
-DOC
+Statistical analysis helpers from the TRIQS stat framework.
 
+This module exposes the histogram class used to sample and bin a
+continuous random variable, together with the helpers that turn a
+histogram into a probability density function (:func:`pdf`) or a
+cumulative distribution function (:func:`cdf`).
+
+Other statistical utilities living in the C++ ``triqs::stat``
+namespace -- linear/logarithmic binning accumulators, jackknife
+resampling, mean/error analysis -- are not currently exposed to
+Python.
+
+It is imported with the command::
+
+  >>> from triqs.stat import Histogram, cdf, pdf
 """
 from .histograms import Histogram, cdf, pdf
 
