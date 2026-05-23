@@ -18,30 +18,71 @@
 # Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Nils Wentzell
 
 
+r"""Specialisation of :class:`SumkDiscrete` that builds the k-grid from a 
+:class:`triqs.lattice.tight_binding.TBLattice`."""
+
 from .sumk_discrete import SumkDiscrete
 import numpy as np
 from triqs.lattice.tight_binding import TBLattice
 
 class SumkDiscreteFromLattice (SumkDiscrete):
     r"""
-      * Computes
+    Discrete momentum sum built from a tight-binding lattice.
 
-       .. math::
-         G \leftarrow \sum_k (\omega + \mu - \epsilon_k - \Sigma(k,\omega))^{-1}
+    Specialises :class:`SumkDiscrete` by constructing the k-grid directly
+    from a :class:`triqs.lattice.tight_binding.TBLattice`. Computes
 
-       for GF functions with blocks of the size of the matrix eps_k with a discrete sum.
+    .. math::
 
-      * The object contains the discretized hoppings and points in the arrays
-        hopping, bz_points,bz_weights,mu_pattern,overlap (IF non orthogonal)
-        It can also generate a grid (ReComputeGrid) for a regular grid or a Gauss-Legendre sum
-        for the whole Brillouin Zone or a patch of the BZ.
+        G(i\omega_n) = \sum_k w_k \bigl[ (i\omega_n + \mu)\,\mathbf{1}
+                       - \epsilon_k - \Sigma(k, i\omega_n) \bigr]^{-1}
+
+    for a :class:`triqs.gfs.BlockGf` whose blocks share the orbital
+    dimension of the lattice. The grid can cover either the full Brillouin
+    zone (uniform Riemann or Gauss-Legendre sampling) or a triangulated
+    patch of it. The hoppings :math:`\epsilon_k = t(k)` are obtained via
+    :meth:`triqs.lattice.tight_binding.TBLattice.fourier`.
+
+    Parameters
+    ----------
+    lattice : triqs.lattice.tight_binding.TBLattice
+        Tight-binding lattice providing the orbital basis and :math:`t(k)`.
+    patch : optional
+        Triangulated Brillouin-zone patch on which to sum. If ``None``
+        (default), the full BZ is used.
+    n_points : int, optional
+        Number of grid points per spatial direction. Default 8.
+    method : {"Riemann", "Gauss"}, optional
+        Integration scheme. Default ``"Riemann"``. The ``"Gauss"`` branch
+        is not currently functional.
+
+    Attributes
+    ----------
+    SL : triqs.lattice.tight_binding.TBLattice
+        The lattice supplied at construction.
+    patch : object or None
+        The BZ patch supplied at construction.
+    method : str
+        The integration scheme used to build the grid.
     """
 
     def __init__(self, lattice, patch = None, n_points = 8, method = "Riemann"):
-        """
-        :param lattice: The underlying triqs.lattice or triqs.super_lattice provinding t(k)
-        :param n_points:  Number of points in the BZ in EACH direction
-        :param method: Riemann (default) or 'Gauss' (not checked)
+        r"""
+        Build the lattice-based discrete sum-k object and its k-grid.
+
+        Parameters
+        ----------
+        lattice : triqs.lattice.tight_binding.TBLattice
+            Tight-binding lattice providing :math:`t(k)` via
+            :meth:`triqs.lattice.tight_binding.TBLattice.fourier`.
+        patch : optional
+            Triangulated Brillouin-zone patch. If ``None`` (default), the
+            full BZ is sampled.
+        n_points : int, optional
+            Number of grid points per spatial direction. Default 8.
+        method : {"Riemann", "Gauss"}, optional
+            Integration scheme. Default ``"Riemann"``. The ``"Gauss"``
+            branch is not currently functional.
         """
         assert isinstance(lattice,TBLattice), "lattice must be a TBLattice instance"
         self.SL = lattice
@@ -53,17 +94,31 @@ class SumkDiscreteFromLattice (SumkDiscrete):
      #-------------------------------------------------------------
 
     def __reduce__(self):
+        """Pickle support: returns the arguments needed to reconstruct this
+        instance."""
         return self.__class__,  (self.SL, self.patch, self.bz_weights.shape[0],self.method)
 
      #-------------------------------------------------------------
 
     def Recompute_Grid (self, n_points, method="Riemann", Q=None):
-        """(Re)Computes the grid on the patch given at construction:
+        r"""
+        (Re)compute the k-grid on the patch (or full BZ) given at construction.
 
-        * n_points:  Number of points in the BZ in EACH direction
-        * method: Riemann (default) or 'Gauss' (not checked)
-        * Q: anything from which a 1d-array can be computed.
-              computes t(k+Q) instead of t(k) (useful for bare chi_0)
+        Reallocates the grid arrays via :meth:`SumkDiscrete.resize_arrays`
+        and dispatches to the patch-based or full-BZ helper depending on
+        whether :attr:`patch` is set.
+
+        Parameters
+        ----------
+        n_points : int
+            Number of grid points per spatial direction.
+        method : {"Riemann", "Gauss"}, optional
+            Integration scheme. Default ``"Riemann"``. The ``"Gauss"``
+            branch is not currently functional.
+        Q : array-like, optional
+            Momentum shift: when given, :math:`t(k + Q)` is stored instead
+            of :math:`t(k)`. Useful for evaluating quantities such as the
+            bare susceptibility :math:`\chi_0(Q)`. Default ``None``.
         """
         assert method in ["Riemann","Gauss"], "method %s is not recognized"%method
         self.method = method
@@ -76,9 +131,8 @@ class SumkDiscreteFromLattice (SumkDiscrete):
      #-------------------------------------------------------------
 
     def __Compute_Grid (self, n_bz,  method="Riemann", Q=None):
-        """
-        Internal
-        """
+        """Internal: build a uniform k-grid over the full Brillouin zone
+        (Riemann sum) and store the corresponding hoppings."""
 
         n_bz_A,n_bz_B, n_bz_C = n_bz, (n_bz if self.dim > 1 else 1), (n_bz if self.dim > 2 else 1)
         nk = n_bz_A* n_bz_B* n_bz_C
@@ -136,9 +190,9 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 
 
     def __Compute_Grid_One_patch(self, patch, n_bz, method = "Riemann", Q=None):
-        """
-        Internal
-        """
+        """Internal: build a k-grid by sampling the triangulated BZ patch
+        and store the corresponding hoppings, with weights normalised to
+        sum to one over the patch."""
 
         tritemp = np.array(patch._triangles)
         ntri = len(tritemp)/3

@@ -18,6 +18,13 @@
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
 
+r"""Momentum-sum helpers for local Green's functions on discrete k-grids.
+
+Exposes :class:`SumkDiscrete` (the base class holding a discrete k-grid and
+performing the k-sum) and :class:`SumkDiscreteFromLattice` (which builds the
+grid from a :class:`triqs.lattice.tight_binding.TBLattice`).
+"""
+
 from .sumk_discrete import SumkDiscrete
 from .sumk_discrete_from_lattice import SumkDiscreteFromLattice
 
