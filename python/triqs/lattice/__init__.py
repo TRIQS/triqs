@@ -17,6 +17,8 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+"""Tools for working with Bravais lattices, Brillouin zones and tight-binding Hamiltonians."""
+
 from .lattice_tools import BravaisLattice, BrillouinZone, TightBinding, dos, dos_patch
 from .point import LatticePoint
 

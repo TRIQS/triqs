@@ -17,6 +17,13 @@
 #
 # Authors: Michel Ferrero, Jonathan Karp, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
+"""Superlattices on top of a :class:`TBLattice`.
+
+Provides :class:`TBSuperLattice`, which builds a tight-binding superlattice from
+a base :class:`TBLattice` and an integer superlattice basis. The base-lattice
+hoppings are folded onto the superlattice; internal hoppings can optionally be
+removed, e.g. when adding Hartree-Fock terms at a cluster boundary.
+"""
 
 import numpy
 from .tight_binding import TBLattice
@@ -24,28 +31,50 @@ from .tight_binding import TBLattice
 __all__ = ['TBSuperLattice']
 
 class TBSuperLattice(TBLattice):
-    r""" Builds a superlattice on top of a base TBLattice.
+    r"""A tight-binding superlattice built on top of a base :class:`TBLattice`.
 
     Parameters
     ----------
+    tb_lattice : TBLattice
+        The base tight-binding :class:`TBLattice`.
+    super_lattice_units : numpy.ndarray
+        Two-dimensional ``(ndim, ndim)`` array giving the superlattice basis
+        vectors in the ``tb_lattice`` (integer) coordinates.
+    cluster_sites : list of array-like of int, optional
+        Coordinates of the cluster in ``tb_lattice`` coordinates. If ``None``,
+        cluster positions are computed automatically as all points whose
+        coordinates in the superlattice basis lie in ``[0, 1)`` along each
+        dimension.
+    remove_internal_hoppings : bool, default False
+        If ``True``, hopping terms inside the cluster are removed. Useful
+        e.g. when adding Hartree-Fock terms at a cluster boundary.
 
-    tb_lattice : TBLattice instance
-        The base tight binding lattice.
-
-    super_lattice_units : ndarray (2D)
-        The unit vectors of the superlattice in the ``tb_lattice`` (integer) coordinates.
-
-    cluster_sites :
-        Coordinates of the cluster in tb_lattice coordinates.
-        If ``None``, an automatic computation of cluster positions
-        is made as follows: it takes all points whose coordinates
-        in the basis of the superlattice are in [0, 1[^dimension.
-
-    remove_internal_hoppings : bool
-        If ``true``, the hopping terms are removed inside the cluster.
-        Useful to add Hartree Fock terms at the boundary of a cluster, e.g.
-
+    Attributes
+    ----------
+    bl : BravaisLattice
+        The associated Bravais lattice (of the superlattice).
+    bz : BrillouinZone
+        The associated Brillouin zone (of the superlattice).
+    tb : TightBinding
+        The folded tight-binding Hamiltonian on the superlattice.
+    Norb : int
+        Total number of orbitals in the supercell (``n_orbitals * Ncluster_sites``).
+    Ncluster_sites : int
+        Number of sites in the cluster.
+    hoppings : dict
+        Real-space hoppings on the superlattice as a ``{displacement: matrix}`` dict.
+    ndim : int
+        Number of spatial dimensions of the lattice.
+    units : numpy.ndarray
+        ``(ndim, ndim)`` array whose rows are the superlattice basis vectors.
+    n_orbitals : int
+        Number of orbitals in the supercell.
+    orbital_positions : list
+        Positions of the orbitals inside the supercell.
+    orbital_names : list of str
+        Names of the orbitals in the supercell.
     """
+    
     def __init__(self, tb_lattice, super_lattice_units, cluster_sites = None, remove_internal_hoppings = False):
 
         if not isinstance(tb_lattice, TBLattice): raise ValueError("tb_lattice should be an instance of TBLattice")
@@ -122,11 +151,25 @@ class TBSuperLattice(TBLattice):
         return tuple([getattr(self, x) for x in self.__HDF_reduction__])
 
     def fold(self, D1, remove_internal=False, create_zero = None):
-        """ Input: a function  r-> f(r) on the tb_lattice given as a dictionnary
-            Output: the function R-> F(R) folded on the superlattice.
-            Only requirement is that f(r)[orbital1, orbital2] is properly defined.
-            Hence f(r) can be a numpy, a GFBloc, etc...
-            """
+        """Fold a real-space function defined on the base lattice onto the superlattice.
+
+        Parameters
+        ----------
+        D1 : dict
+            Dictionary mapping base-lattice displacements ``r`` to an array-like
+            ``f(r)`` indexed by ``[orbital1, orbital2]`` (numpy array, GfBloc, ...).
+        remove_internal : bool, default False
+            If True, drop the on-site (``R = 0``) block of the folded result, useful
+            for adding Hartree-Fock terms at the cluster boundary.
+        create_zero : callable, optional
+            Factory returning a zero entry of the same type as ``f(r)``. Defaults to
+            a complex numpy array of shape ``(Norb, Norb)``.
+
+        Returns
+        -------
+        dict
+            Folded function ``F(R)`` on the superlattice displacements.
+        """
         #Res , norb = {} , self.__BaseLattice.n_orbitals
         Res , norb = {} , len(list(D1.values())[0])
         pack = self.pack_index_site_orbital
@@ -141,30 +184,88 @@ class TBSuperLattice(TBLattice):
         return Res
 
     def change_coordinates_SL_to_L(self, R , alpha):
-        """Given a point in the supercell R, site (number) alpha, it computes its position on the tb_lattice in lattice coordinates"""
+        """Map a superlattice point ``(R, alpha)`` to its position on the base lattice in lattice coordinates.
+
+        Parameters
+        ----------
+        R : array-like of int
+            Superlattice displacement.
+        alpha : int
+            Index of the site within the cluster.
+
+        Returns
+        -------
+        numpy.ndarray
+            Position on the base lattice in lattice coordinates.
+        """
         return numpy.dot (self._M, numpy.array(R)) + self.__cluster_sites[alpha,:]
 
     def change_coordinates_L_to_SL(self, x):
-        """Given a point on the tb_lattice in lattice coordinates, returns its coordinates (R, alpha) in the Superlattice"""
+        """Map a base-lattice point ``x`` (in lattice coordinates) to its superlattice coordinates ``(R, alpha)``.
+
+        Parameters
+        ----------
+        x : array-like of int
+            Position on the base lattice in lattice coordinates.
+
+        Returns
+        -------
+        R : tuple of int
+            Superlattice displacement.
+        alpha : int
+            Index of the site within the cluster.
+        """
         aux  = numpy.dot(self._Mtilde, numpy.array(x))
         R = aux // self.Ncluster_sites
         dx = list (x - numpy.dot (self._M, R) ) # force int ?
         return tuple(R), self.__cluster_sites.index(dx)
 
     def pack_index_site_orbital(self, n_site, n_orbital):
-        """ nsite and n_orbital must start at 0"""
+        """Combine a (site, orbital) index pair into a single superlattice orbital index.
+
+        Both ``n_site`` and ``n_orbital`` are zero-based.
+
+        Parameters
+        ----------
+        n_site : int
+            Zero-based index of the site within the cluster.
+        n_orbital : int
+            Zero-based orbital index on that site.
+
+        Returns
+        -------
+        int
+            Combined superlattice orbital index.
+        """
         return n_site + (n_orbital ) * self.Ncluster_sites
 
     def unpack_index_site_orbital (self, index):
-        """Inverse of pack_index_site_orbital"""
+        """Split a superlattice orbital index back into a ``(n_site, n_orbital)`` pair (inverse of :meth:`pack_index_site_orbital`).
+
+        Parameters
+        ----------
+        index : int
+            Combined superlattice orbital index.
+
+        Returns
+        -------
+        n_site : int
+            Zero-based index of the site within the cluster.
+        n_orbital : int
+            Zero-based orbital index on that site.
+        """
         n_orbital  =   (index)//self.Ncluster_sites
         n_site =  index - n_orbital*self.Ncluster_sites
 
         return n_site, n_orbital
 
     def cluster_sites(self):
-        """
-           Generate the position of the cluster site in the tb_lattice coordinates.
+        """Yield each cluster-site position in base-lattice coordinates.
+
+        Yields
+        ------
+        list of int
+            Position of a cluster site in base-lattice coordinates.
         """
         for pos in self.__cluster_sites:
             yield pos

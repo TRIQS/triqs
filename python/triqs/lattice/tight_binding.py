@@ -17,6 +17,16 @@
 #
 # Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Hugo U.R. Strand, Nils Wentzell
 
+"""Tight-binding Hamiltonians on Bravais lattices.
+
+Provides the higher-level Python wrapper :class:`TBLattice` that bundles a 
+:class:`BravaisLattice`, :class:`BrillouinZone` and :class:`TightBinding` from 
+:mod:`triqs.lattice.lattice_tools` together.
+
+Also exposes the density-of-states helpers :func:`dos` (over a regular k-grid)
+and :func:`dos_patch` (over a triangular Brillouin-zone patch), which wrap the
+underlying C++ routines and return :class:`triqs.dos.DOS` objects.
+"""
 
 from h5.formats import register_class
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'TBLattice']
@@ -33,69 +43,104 @@ import warnings
 
 
 def dos(tight_binding, n_kpts, n_eps, name):
-    """
-    :param tight_binding: a tight_binding object
-    :param n_kpts: the number of k points to use in each dimension
-    :param n_eps: number of points used in the binning of the energy
-    :param name: name of the resulting dos
+    """Compute the density of states of a tight-binding Hamiltonian on a regular k-grid.
 
-    :rtype: return a list of DOS, one for each band
+    Wraps the C++ :func:`triqs.lattice.lattice_tools.dos` and splits the result
+    into one :class:`triqs.dos.DOS` per band.
+
+    Parameters
+    ----------
+    tight_binding : TightBinding
+        The tight-binding Hamiltonian.
+    n_kpts : int
+        Number of k-points along each dimension of the Brillouin zone.
+    n_eps : int
+        Number of energy bins.
+    name : str
+        Name of the resulting DOS objects.
+
+    Returns
+    -------
+    list of triqs.dos.DOS
+        One density of states per band.
     """
     eps, arr = dos_c(tight_binding, n_kpts, n_eps)
     return [DOS(eps, arr[:, i], name) for i in range(arr.shape[1])]
 
 
 def dos_patch(tight_binding, triangles, n_eps, n_div, name):
-    """
-    To be written
+    """Compute the density of states of a tight-binding Hamiltonian on a triangular Brillouin-zone patch.
+
+    Only supported for 2-dimensional lattices.
+
+    Parameters
+    ----------
+    tight_binding : TightBinding
+        The tight-binding Hamiltonian.
+    triangles : numpy.ndarray
+        2-D array of shape ``(n_triangles * 3, 2)`` containing the vertices of
+        the triangular patches in the Brillouin zone, three rows per triangle.
+    n_eps : int
+        Number of energy bins.
+    n_div : int
+        Number of sub-divisions of each triangle used for the sampling.
+    name : str
+        Name of the resulting DOS object.
+
+    Returns
+    -------
+    triqs.dos.DOS
+        The density of states summed over orbitals on the given patch.
     """
     eps, arr = dos_patch_c(tight_binding, triangles, n_eps, n_div)
     return DOS(eps, arr, name)
 
 
 class TBLattice(object):
+    """A tight-binding Hamiltonian on top of a Bravais lattice.
 
-    """ Class describing a tight binding hamiltonian on top of a bravais lattice.
-    Has objects of type BravaisLattice, BrillouinZone and TightBinding as attributes,
-    and exposes part of their interfaces.
+    Bundles a :class:`BravaisLattice`, a :class:`BrillouinZone` and a
+    :class:`TightBinding` instance and exposes part of their interfaces directly.
+
+    Parameters
+    ----------
+    units : list of tuples of floats
+        Basis vectors of the real-space lattice.
+    hoppings : dict, optional
+        Dictionary mapping tuples of integers (real-space displacements in
+        multiples of the lattice basis vectors) to numpy ndarray hopping
+        matrices over the orbital indices.
+    orbital_positions : list of three-tuples of floats, optional
+        Internal orbital positions in the unit cell.
+    orbital_names : list of str, optional
+        Names for each orbital.
 
     Attributes
     ----------
-
     bl : BravaisLattice
-        The associated Bravais Lattice
-
+        The associated Bravais lattice.
     bz : BrillouinZone
-        The associated Brillouin Zone
-
+        The associated Brillouin zone.
     tb : TightBinding
-        The tight-binding Hamiltonian
+        The tight-binding Hamiltonian.
+    hoppings : dict
+        Real-space hoppings as a ``{displacement: matrix}`` dict.
+    ndim : int
+        Number of spatial dimensions of the lattice.
+    units : numpy.ndarray
+        ``(ndim, ndim)`` array whose rows are the lattice basis vectors.
+    n_orbitals : int
+        Number of orbitals in the unit cell.
+    orbital_positions : list
+        Positions of the orbitals inside the unit cell.
+    orbital_names : list of str
+        Names of the orbitals in the unit cell.
     """
-
     def __init__(self, units,
                  hoppings=dict(),
                  orbital_positions=[(0, 0, 0)],
                  orbital_names=None,
                  hopping=None):
-        """
-        Parameters
-        ----------
-
-        units : list of tuples of floats
-            Basis vectors for the real space lattice.
-
-        hoppings : dict
-            Dictionary with tuples of integers as keys,
-            describing real space hoppings in multiples of
-            the real space lattice basis vectors, and values being
-            numpy ndarray hopping matrices in the orbital indices.
-
-        orbital_positions : list of three three-tuples of floats.
-            Internal orbital positions in the unit-cell.
-
-        orbital_names : list of strings
-            Names for each orbital.
-        """
 
         if hopping is not None:
             warnings.warn(
@@ -111,36 +156,48 @@ class TBLattice(object):
 
     @property
     def hoppings(self):
+        """Real-space hoppings as a ``{displacement: matrix}`` dict.
+
+        Each key is a tuple of integers giving a real-space displacement in
+        multiples of the lattice basis vectors; the corresponding value is the
+        hopping matrix between orbitals at that displacement.
+
+        Returns
+        -------
+        dict
+            Mapping from displacement tuples to ``numpy.ndarray`` hopping
+            matrices of shape ``(n_orbitals, n_orbitals)``.
+        """
         return {tuple(displ): hop for displ, hop in zip(self.tb.displ_vec, self.tb.overlap_mat_vec)}
 
     def get_kmesh(self, n_k):
-        """Return a mesh on the Brillouin zone with a given discretization
+        """Return a mesh on the Brillouin zone with a given discretization.
 
         Parameters
         ----------
         n_k : int or three-tuple of int
-            The linear dimension(s)
+            The linear dimension(s).
 
         Returns
         -------
         MeshBrZone
-            The mesh on the Brillouin zone
+            The mesh on the Brillouin zone.
 
         """
         return MeshBrZone(self.bz, n_k)
 
     def get_rmesh(self, n_r):
-        """Return a mesh on the Bravais lattice with a given periodicity
+        """Return a mesh on the Bravais lattice with a given periodicity.
 
         Parameters
         ----------
         n_r : int or three-tuple of int
-            The periodicity in each dimension
+            The periodicity in each dimension.
 
         Returns
         -------
         MeshCycLat
-            The cyclic lattice mesh
+            The cyclic lattice mesh.
 
         """
         return MeshCycLat(self.bl, n_r)
@@ -149,27 +206,60 @@ class TBLattice(object):
 
     @property
     def ndim(self):
-        """Number of dimensions of the lattice"""
+        """Number of spatial dimensions of the lattice.
+
+        Returns
+        -------
+        int
+            Number of dimensions (1, 2 or 3).
+        """
         return self.bl.ndim
 
     @property
     def units(self):
-        """Number of dimensions of the lattice"""
+        """Lattice basis vectors as a ``(ndim, ndim)`` array in the standard basis.
+
+        Returns
+        -------
+        numpy.ndarray
+            Two-dimensional array whose rows are the basis vectors
+            :math:`\\{ \\mathbf{a}_1, \\dots, \\mathbf{a}_d \\}` of the
+            Bravais lattice.
+        """
         return self.bl.units[:self.ndim, :self.ndim]
 
     @property
     def n_orbitals(self):
-        """Number of orbitals in the unit cell"""
+        """Number of orbitals in the unit cell.
+
+        Returns
+        -------
+        int
+            Number of atomic orbitals in the unit cell.
+        """
         return self.bl.n_orbitals
 
     @property
     def orbital_positions(self):
-        """The list of orbital positions"""
+        """Positions of the orbitals inside the unit cell.
+
+        Returns
+        -------
+        list
+            Orbital positions :math:`\\{ \\mathbf{r}_1, \\dots, \\mathbf{r}_m \\}`
+            in the standard basis.
+        """
         return list(self.bl.orbital_positions)
 
     @property
     def orbital_names(self):
-        """The list of orbital names"""
+        """Names of the orbitals in the unit cell.
+
+        Returns
+        -------
+        list of str
+            One name per orbital, in the same order as :attr:`orbital_positions`.
+        """
         return list(self.bl.orbital_names)
 
     # ---- Expose TightBinding API ----

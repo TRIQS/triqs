@@ -16,6 +16,11 @@
 #
 # Authors: Sophie Beck, Michel Ferrero, Alexander Hampel, Collins Kariuki, Hugo U. R. Strand, Nils Wentzell
 
+"""Lattice utilities.
+
+Helpers for building tight-binding models and momentum-space paths.
+"""
+
 from io import StringIO
 import numpy as np
 from itertools import product as itp
@@ -25,30 +30,33 @@ __all__ = ['k_space_path', 'TB_from_wannier90']
 
 
 def k_space_path(segments, num=101, bz=None, relative_coordinates=True):
-    """ Generate an array of k-vectors along a path defined by a list of pairs of k-vectors
+    """Generate an array of k-vectors along a path defined by a list of pairs of k-vectors.
 
     Parameters
     ----------
     segments : list of pairs of three-vectors of floats
-       List of pairs of k-vectors in reciprocal units to create a path in-between.
-    num : int, default=100
-       Number of k-vectors along each segment of the overall path
-    bz : brillouin_zone, optional
-       When a Brillouin Zone is passed, calculate distance in absolute units
-    relative_coordinates : bool, optional
-        Return k-vectors in reciprocal units. (Default `True`)
+        List of pairs of k-vectors in reciprocal units to create a path in between.
+    num : int, default 101
+        Number of k-vectors along each segment of the overall path.
+    bz : BrillouinZone, optional
+        When a Brillouin Zone is passed, distances are computed in absolute units.
+    relative_coordinates : bool, default True
+        Return k-vectors in reciprocal units.
 
     Returns
     -------
-    kvecs: numpy.ndarray [shape=(len(segments)*num,3)]
-        Two-dimensional numpy array containing the path vectors (in reciprocal units) as rows
-    dist: numpy.ndarray  [shape=(kvecs.shape[0])]
-        One-dimensional numpy array containing, for each element in kvecs,
-        the distance travelled along the path. Useful for plotting.
-        If bz is provided, calculate the distance in absolute units.
-    ticks : numpy.ndarray [shape=(len(segments)+1)]
-        Array with tick points, i.e. distances at the interfaces between segment.
-        Includes the initial and final distance.
+    kvecs : numpy.ndarray
+        Two-dimensional array of shape ``(len(segments) * num, 3)`` containing
+        the path vectors (in reciprocal units by default) as rows.
+    dist : numpy.ndarray
+        One-dimensional array of shape ``(kvecs.shape[0],)`` containing the
+        distance travelled along the path for each element of ``kvecs``.
+        Useful for plotting. If ``bz`` is provided, the distance is in
+        absolute units.
+    ticks : numpy.ndarray
+        One-dimensional array of shape ``(len(segments) + 1,)`` with tick
+        points (distances at the interfaces between segments, including the
+        initial and final distance).
     """
 
     if bz is None:
@@ -76,11 +84,11 @@ def k_space_path(segments, num=101, bz=None, relative_coordinates=True):
 
 # ----------------------------------------------------------------------
 def parse_hopping_from_wannier90_hr_dat(filename):
-    r""" Wannier90 real space hopping parser of ``*_hr.dat`` files.
+    """Parse the real-space hoppings from a Wannier90 ``*_hr.dat`` file.
 
-    Returns a dictionary where the keys are the real-space hopping vectors,
-    in terms of multiples of the lattice vectors, and the values are
-    ``num_wann * num_wann`` numpy ndarrays with the hopping integrals.
+    Returns a dictionary whose keys are the real-space hopping vectors, in
+    multiples of the lattice vectors, and whose values are
+    ``(num_wann, num_wann)`` numpy arrays of hopping integrals.
 
     Parameters
     ----------
@@ -90,10 +98,9 @@ def parse_hopping_from_wannier90_hr_dat(filename):
     Returns
     -------
     hopp_dict : dict
-        Dictionary of real space hoppings.
+        Dictionary of real-space hoppings.
     num_wann : int
-        Total number of Wannier functions per unit-cell.
-
+        Total number of Wannier functions per unit cell.
     """
 
     with open(filename, 'r') as fd:
@@ -124,7 +131,7 @@ def parse_hopping_from_wannier90_hr_dat(filename):
 
 
 def parse_lattice_vectors_from_wannier90_wout(filename):
-    r""" Wannier90 real space lattice vectors parser of ``*.wout`` files.
+    """Parse the real-space lattice vectors from a Wannier90 ``*.wout`` file.
 
     Parameters
     ----------
@@ -135,7 +142,6 @@ def parse_lattice_vectors_from_wannier90_wout(filename):
     -------
     vectors : list of three three-tuples of floats
         Lattice vectors.
-
     """
 
     with open(filename, 'r') as fd:
@@ -167,33 +173,52 @@ def parse_lattice_vectors_from_wannier90_wout(filename):
 
 
 def extend_wannier90_to_spin(hopp_dict, num_wann):
+    """Extend a Wannier90 hopping dictionary with a trivial spin index.
+
+    Each ``(num_wann, num_wann)`` hopping matrix is replaced by its Kronecker
+    product with the ``2 x 2`` identity, doubling the orbital count.
+
+    Parameters
+    ----------
+    hopp_dict : dict
+        Dictionary of real-space hoppings, as returned by
+        :func:`parse_hopping_from_wannier90_hr_dat`.
+    num_wann : int
+        Number of Wannier functions per unit cell (without spin).
+
+    Returns
+    -------
+    hopp_dict_spin : dict
+        Dictionary of real-space hoppings with spin indices included.
+    num_wann_spin : int
+        Total number of Wannier functions per unit cell including spin
+        (``2 * num_wann``).
+    """
     hopp_dict_spin = {k: np.kron(np.eye(2), v) for k, v in hopp_dict.items()}
     return hopp_dict_spin, 2 * num_wann
 
 
 def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
-    r"""
-    read wannier90 output and convert to TBLattice object
+    """Read Wannier90 output and convert it to a :class:`TBLattice` object.
 
-    reads wannier90 real space lattice vectors from seed.wout file.
-    reads wannier90 hoppings from seed_hr.dat file
+    Reads the Wannier90 real-space lattice vectors from ``<seed>.wout`` and the
+    real-space hoppings from ``<seed>_hr.dat``.
 
     Parameters
     ----------
     seed : str
-        seedname of wannier90 run, name of *_hr.dat
-    path : str, default = './'
-        path to wannier90 output dir
-    extend_to_spin: bool, default= False
-        extend hopping Hamiltonian with spin indices
-    add_local: numpy array , default = None
-        add a local term to hopping[0,0,0] of shape Norb x Norb
+        Seedname of the Wannier90 run, i.e. the basename of the ``*_hr.dat`` file.
+    path : str, default './'
+        Path to the directory containing the Wannier90 output files.
+    extend_to_spin : bool, default False
+        If ``True``, extend the hopping Hamiltonian with a trivial spin index.
+    add_local : numpy.ndarray, optional
+        Local term of shape ``(Norb, Norb)`` to add to ``hopping[(0, 0, 0)]``.
 
     Returns
     -------
-    TBL : triqs TBLattice object
-        triqs tight binding object
-
+    TBL : TBLattice
+        Tight-binding lattice constructed from the Wannier90 output.
     """
 
     from triqs.lattice.tight_binding import TBLattice
@@ -214,19 +239,17 @@ def TB_from_wannier90(seed, path='./',  extend_to_spin=False, add_local=None):
     return TBL
 
 def TB_from_pythTB(ptb):
-    r"""
-    convert pythTB model to TBLattice object
+    """Convert a PythTB model to a :class:`TBLattice` object.
 
     Parameters
     ----------
     ptb : pythtb.tb_model
-        pythTB tight-binding object
+        PythTB tight-binding object.
 
     Returns
     -------
-    TBL : triqs TBLattice object
-        triqs tight binding object
-
+    TBL : TBLattice
+        Tight-binding lattice equivalent to ``ptb``.
     """
 
     from triqs.lattice.tight_binding import TBLattice
@@ -259,30 +282,27 @@ def TB_from_pythTB(ptb):
 
 
 def TB_to_sympy(TBL, analytical = True, precision = 6):
-    r"""
-    returns the analytical form of the momentum space hamiltonian of the tight-binding model
-    from a tight-binding lattice object by utilizing Fourier series
+    """Return the symbolic momentum-space Hamiltonian of a tight-binding model via a Fourier-series expansion.
 
     Parameters
     ----------
-    TBL: triqs TBLattice object
-        triqs tight binding object
-    analytical: boolean, default = True
-        whether to return the Hamiltonian in analytical (true) or numerical (false) form.
-    precision: integer, default = 6
-        specifies the number of digits in the floating point amplitudes. The default value is 6 but the user
-        can decrease it to help recognize similar hopping amplitudes, particularly for symmetrical hoppings
-        across the crystal lattice
+    TBL : TBLattice
+        Tight-binding lattice to convert.
+    analytical : bool, default True
+        If ``True``, return the Hamiltonian in analytical form; if ``False``,
+        return it in numerical form.
+    precision : int, default 6
+        Number of digits kept in the floating-point hopping amplitudes. A
+        smaller value can help recognise similar amplitudes, particularly for
+        symmetric hoppings across the lattice.
 
     Returns
     -------
-    Hk: NumPy array
-        the Hamiltonian of the tight-binding model in momentum space. It can be output in either numerical
-        form (Hk_numerical) or reduced analytical form (Hk) based on the user's choice. The default output
-        is the reduced analytical form. The numerical form depends solely on the k-space vector components
-        while the analytical form takes into account both the k-space vector components and the lattice
-        vectors
-
+    Hk : numpy.ndarray
+        Hamiltonian of the tight-binding model in momentum space. In analytical
+        form, the entries depend on both the k-space vector components and the
+        lattice vectors; in numerical form, they depend only on the k-space
+        vector components.
     """
 
     import sympy as sp
@@ -345,17 +365,19 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
         Hk[i, j] = Hk[i, j].rewrite(sp.cos)
 
     def _has_complex_exponential_sympy(matrix):
+        """Check whether a NumPy array of SymPy elements contains a complex exponential.
+
+        Parameters
+        ----------
+        matrix : numpy.ndarray
+            Input array of SymPy elements.
+
+        Returns
+        -------
+        bool
+            ``True`` if the array contains a complex exponential element,
+            ``False`` otherwise.
         """
-        Checks if a NumPy array containing SymPy elements has a complex exponential element.
-
-        Args:
-            matrix (NumPy array): The input NumPy array containing SymPy elements
-
-        Returns:
-            bool: True if the matrix array contains a complex exponential element, False otherwise.
-
-        """
-
         for sublist in matrix:
             for element in sublist:
                 if element.is_complex and element.has(sp.exp):
@@ -363,17 +385,18 @@ def TB_to_sympy(TBL, analytical = True, precision = 6):
         return False
 
     def _is_hermitian_sympy(matrix):
+        """Check whether a NumPy array of SymPy elements is Hermitian.
+
+        Parameters
+        ----------
+        matrix : numpy.ndarray
+            Input array of SymPy elements.
+
+        Returns
+        -------
+        bool
+            ``True`` if the matrix is Hermitian, ``False`` otherwise.
         """
-        Checks if a NumPy array containing SymPy elements is hermitian
-
-        Args:
-            matrix (NumPy array): The input NumPy array containing SymPy elements
-
-        Returns:
-            bool: True if the matrix is a hermitian, False otherwise
-
-        """
-
         n = matrix.shape[0]
         for i in range(n):
             for j in range(n):
