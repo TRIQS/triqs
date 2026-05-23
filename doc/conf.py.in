@@ -109,6 +109,8 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.11', None)}
 
 # configure numpydoc
 numpydoc_attributes_as_param_list = False
+# inheritance is communicated uniformly via the `Bases:` line emitted by autoclass `:show-inheritance:`
+numpydoc_show_inherited_class_members = False
 
 
 # open links in new tab instead of same window
