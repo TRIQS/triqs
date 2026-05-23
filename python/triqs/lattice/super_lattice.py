@@ -51,28 +51,10 @@ class TBSuperLattice(TBLattice):
 
     Attributes
     ----------
-    bl : BravaisLattice
-        The associated Bravais lattice (of the superlattice).
-    bz : BrillouinZone
-        The associated Brillouin zone (of the superlattice).
-    tb : TightBinding
-        The folded tight-binding Hamiltonian on the superlattice.
     Norb : int
         Total number of orbitals in the supercell (``n_orbitals * Ncluster_sites``).
     Ncluster_sites : int
         Number of sites in the cluster.
-    hoppings : dict
-        Real-space hoppings on the superlattice as a ``{displacement: matrix}`` dict.
-    ndim : int
-        Number of spatial dimensions of the lattice.
-    units : numpy.ndarray
-        ``(ndim, ndim)`` array whose rows are the superlattice basis vectors.
-    n_orbitals : int
-        Number of orbitals in the supercell.
-    orbital_positions : list
-        Positions of the orbitals inside the supercell.
-    orbital_names : list of str
-        Names of the orbitals in the supercell.
     """
     
     def __init__(self, tb_lattice, super_lattice_units, cluster_sites = None, remove_internal_hoppings = False):
