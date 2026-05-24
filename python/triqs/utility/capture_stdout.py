@@ -15,16 +15,46 @@
 #
 # Authors: Nils Wentzell
 
+"""
+Context manager that captures ``sys.stdout`` into a list of lines.
+
+Defines :class:`capture_stdout`, a ``list`` subclass usable in a
+``with`` block. Inside the block ``sys.stdout`` is redirected to an
+in-memory :class:`io.StringIO` buffer; on exit the buffered text is
+split on newlines and appended to ``self``.
+
+Only Python-level prints are captured. C++ output written to file
+descriptor ``1`` is *not* captured here -- use
+:mod:`triqs.utility.redirect` for that.
+"""
+
 from io import StringIO
 import sys
 
-# This class allows us to capture the stdout into a list of strings
 class capture_stdout(list):
+    """
+    Context manager that captures ``sys.stdout`` into a list of lines.
+
+    Subclass of :class:`list`. While the ``with`` block is active,
+    ``sys.stdout`` is redirected to an internal :class:`io.StringIO`
+    buffer. On exit the buffered text is split on newlines and the
+    resulting list of strings is appended to ``self``, so that after
+    the block iterating over the instance yields one captured line at
+    a time.
+
+    Notes
+    -----
+    Captures only Python-level writes to ``sys.stdout``. Output sent
+    by C/C++ code directly to file descriptor ``1`` is not affected
+    and requires :func:`triqs.utility.redirect.start_redirect` instead.
+    """
     def __enter__(self):
+        """Redirect ``sys.stdout`` to an internal buffer and return ``self``."""
         self._stdout = sys.stdout
         sys.stdout = self._stringio = StringIO()
         return self
     def __exit__(self, *args):
+        """Restore ``sys.stdout`` and append the captured lines to ``self``."""
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio
         sys.stdout = self._stdout

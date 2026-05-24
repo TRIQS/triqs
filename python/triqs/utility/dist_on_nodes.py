@@ -18,21 +18,46 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 
+"""
+Master / worker pattern for distributing a function evaluation over MPI.
+
+Defines :class:`DistributionOnNodes`, an abstract base class implementing
+the master-side dispatch loop, plus :class:`DistributionOnNodesOneStack`,
+a ready-to-use subclass that consumes a fixed stack of input points.
+:class:`DistributionOnNodesTest` is a minimal example used by the
+self-test at the bottom of the module.
+"""
+
 import os,sys,time,pickle
 import triqs.utility.mpi as mpi
 
 class DistributionOnNodes:
-    """
-       Distribution of the calculation of a function over the nodes.
-       Derive from it and reimplement :
-         - treate : will be called by the MASTER each time a point is computed. this function will typically
-                    store it, and possibly affect the list of points waiting to be computed, as returned by next...
-                    NB : "None" result is ignored.
-         - next : next point to compute. If it returns None (which is not the same as finished())
-                 the computation is ignored.
-         - finished() : Whether the calculation is finished
-         - the_function : function to be computed, with the argument given by next()
-       In the module  DistributionOnNodeTest is a test example
+    r"""
+    Abstract master / worker dispatcher distributing function calls over MPI.
+
+    Subclasses are expected to provide:
+
+    - ``__next__(self)`` -- return the next input to evaluate, or
+      ``None`` to skip a step. A return of ``None`` is not the same as
+      :meth:`finished` returning ``True``.
+    - ``finished(self)`` -- return ``True`` when no more inputs remain
+      to be produced.
+    - ``the_function(self, x)`` -- the actual work performed on a
+      worker rank for input ``x``.
+    - ``treate(self, value, node)`` -- called on the master rank for
+      each result returned by a worker. A ``None`` result is silently
+      ignored.
+
+    See :class:`DistributionOnNodesOneStack` for a minimal concrete
+    implementation and :class:`DistributionOnNodesTest` for a runnable
+    example.
+
+    Attributes
+    ----------
+    SleepTime : float
+        Class attribute. Seconds the master sleeps between polls of the
+        local child process when an evaluation is also running on the
+        master. Default 1.
     """
     SleepTime = 1
 
@@ -40,9 +65,19 @@ class DistributionOnNodes:
     #def next(self): return None
     #def finished(self): return True #None
     #def the_function(self,x): return x
- 
+
     def run(self):
         """
+        Run the master / worker dispatch loop until :meth:`finished`.
+
+        On a single MPI rank the function loops sequentially over
+        :meth:`__next__`, calling :meth:`the_function` and then
+        :meth:`treate` for every input. On multiple ranks the master
+        rank dispatches inputs to the workers (and to a forked child
+        on itself), asynchronously collects results, and calls
+        :meth:`treate` for each one; the workers loop on receive /
+        compute / send until the master signals completion. The call
+        is collective: every rank must enter and leave it together.
         """
         mpi.barrier()
         if mpi.size==1 : # single machine. Avoid the fork
@@ -114,26 +149,44 @@ class DistributionOnNodes:
     
 class DistributionOnNodesOneStack(DistributionOnNodes) :
     """
-    A special of distribution, when one has a given stack of points to compute
-    Reimplement just the_function
+    Concrete :class:`DistributionOnNodes` consuming a fixed stack of inputs.
+
+    Stores the inputs internally as a (reversed) list so that
+    :meth:`__next__` returns them in the original order. Each result
+    returned by a worker is collected as a ``(node, value)`` tuple and
+    can be retrieved via :meth:`result`. Subclasses only need to
+    override :meth:`the_function`.
+
+    Parameters
+    ----------
+    the_stack : list
+        Sequence of inputs to dispatch. Consumed destructively: the
+        list is reversed in place and popped from the end.
     """
     def __init__(self,the_stack) :
+        """Store ``the_stack`` (reversed) as the work list."""
         self.__l = the_stack
         self.__l.reverse()
         self.__result = []
-        
+
     def treate(self,x,node):
+        """Append the worker result as ``(node, x)`` to the result list."""
         self.__result.append((node,x))
 
     def finished(self):
+        """Return ``True`` once every input has been consumed."""
         return self.__l==[]
-    
+
     def __next__(self):
+        """Pop and return the next input from the stack."""
         return self.__l.pop()
 
-    def result(self) : return self.__result
-        
+    def result(self) :
+        """Return the collected list of ``(node, value)`` result tuples."""
+        return self.__result
+
     def run(self):
+        """Run the dispatch loop and return :meth:`result`."""
         DistributionOnNodes.run(self)
         return self.result()
 
@@ -141,8 +194,14 @@ class DistributionOnNodesOneStack(DistributionOnNodes) :
 # TEST ONLY
 class DistributionOnNodesTest(DistributionOnNodesOneStack) :
     """
+    Minimal :class:`DistributionOnNodesOneStack` used by the self-test.
+
+    Overrides :meth:`the_function` with ``x -> (x, x + 1, x + 2)`` so
+    the dispatch logic can be exercised on integer inputs without
+    pulling in any TRIQS-specific objects.
     """
     def the_function(self,x):
+        """Return ``(x, x + 1, x + 2)`` as the per-input computation."""
         return (x,x+1,x+2)
 
 if __name__ == '__main__' : 

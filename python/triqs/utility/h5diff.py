@@ -17,6 +17,25 @@
 #
 # Authors: Thomas Ayral, Olivier Parcollet, Nils Wentzell
 
+r"""
+TRIQS-aware comparison of two HDF5 archives.
+
+The module is also installed as a console entry point so that
+``python -m triqs.utility.h5diff file1.h5 file2.h5`` can be used from
+the shell.
+
+Attributes
+----------
+verbose : int
+    Module-level flag. When set to a truthy value, :func:`compare`
+    prints the key being inspected at each level of the recursion.
+    Default ``0``.
+failures : list of str
+    Module-level list to which :func:`compare` appends a human-readable
+    error message for every mismatch. :func:`h5diff` inspects it after
+    walking the archives and raises if it is non-empty.
+"""
+
 from h5 import *
 from triqs.utility.comparison_tests import *
 from triqs.gfs import *
@@ -28,7 +47,53 @@ verbose = 0
 failures = []
 
 def compare(key, a, b, level, precision):
-    """Compare two objects named key"""
+    r"""
+    Recursively compare two objects identified by ``key``.
+
+    Dispatches on the runtime type of ``a`` (and asserts that ``b``
+    has the same type):
+
+    - :class:`dict` or :class:`HDFArchiveGroup` -- compare the set of
+      keys and recurse on each value.
+    - :class:`Gf` / :class:`BlockGf` / :class:`Block2Gf` -- defer to
+      :func:`assert_gfs_are_close` /
+      :func:`assert_block_gfs_are_close` /
+      :func:`assert_block2_gfs_are_close`.
+    - :class:`Operator` -- check that ``(a - b).is_zero()``.
+    - :class:`numpy.ndarray` -- defer to
+      :func:`assert_arrays_are_close`.
+    - :class:`int`, :class:`float`, :class:`complex` -- check
+      ``abs(a - b) < 1e-10``.
+    - :class:`bool` / :class:`numpy.bool_` -- check ``a == b``.
+    - :class:`list` / :class:`tuple` -- compare length and recurse
+      element-wise.
+    - :class:`str` -- check ``a == b``.
+
+    Any mismatch is appended to the module-level ``failures`` list
+    rather than raised immediately, so that the full diff is reported
+    at the end of :func:`h5diff`.
+
+    Parameters
+    ----------
+    key : str
+        Slash-separated path of the current node inside the archive,
+        used in error messages.
+    a, b : object
+        Values to compare.
+    level : int
+        Current depth in the recursive walk, controls the indentation
+        of the optional progress output emitted when the module-level
+        ``verbose`` flag is set.
+    precision : float
+        Maximum allowed element-wise absolute difference passed to the
+        underlying array / Green's-function comparisons.
+
+    Raises
+    ------
+    NotImplementedError
+        If the type of ``a`` is not one of the supported categories
+        listed above.
+    """
 
     if verbose and key : print(level *'  ' + "Comparing %s ...."%key)
 
@@ -87,6 +152,30 @@ def compare(key, a, b, level, precision):
         failures.append("Comparison of key '%s'  has failed:\n """%key + mess)
 
 def h5diff(f1, f2, precision= 1.e-6):
+    r"""
+    Compare two HDF5 archives and raise on mismatch.
+
+    Opens both archives in read-only mode and walks them recursively
+    via :func:`compare`. Any mismatch is collected in the module-level
+    ``failures`` list. If that list is non-empty after the walk, the
+    collected messages are written to ``stderr`` and a
+    :class:`RuntimeError` is raised.
+
+    Parameters
+    ----------
+    f1, f2 : str
+        Paths to the HDF5 files to compare.
+    precision : float, optional
+        Maximum allowed element-wise absolute difference for arrays
+        and Green's-function data, passed through to the
+        :mod:`triqs.utility.comparison_tests` assertions. Default
+        ``1e-6``.
+
+    Raises
+    ------
+    RuntimeError
+        If any node of the two archives differs.
+    """
     compare('', HDFArchive(f1,'r'), HDFArchive(f2,'r'), 0, precision)
     if failures :
         print ('-'*50, file=sys.stderr )

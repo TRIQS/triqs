@@ -18,46 +18,79 @@
 # Authors: Manuel, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 
+r"""
+Dichotomy / regula-falsi solver for :math:`y = f(x)`.
+
+Provides :func:`dichotomy`, a one-dimensional root finder that brackets
+a sign change by stepping outward from an initial guess and then
+refines the root using a linear-interpolation (regula-falsi) update
+rather than plain bisection. Progress is reported through
+:mod:`triqs.utility.mpi`, so the solver is safe to call from MPI runs.
+"""
+
 import triqs.utility.mpi as mpi
 import numpy as np
 
 def dichotomy(function, x_init, y_value, precision_on_y, delta_x,
               max_loops = 1000, x_name="", y_name="", verbosity=1):
-    
-    r""" Finds :math:`x` that solves :math:`y = f(x)`.
-    
-    Starting at ``x_init``, which is used as the lower upper/bound, 
-    dichotomy finds first the upper/lower bound by adding/subtracting ``delta_x``. 
-    Then bisection is used to refine :math:`x` until
-    ``abs(f(x) - y_value) < precision_on_y`` or ``max_loops`` is reached.
-   
+
+    r"""
+    Find :math:`x` such that :math:`f(x) = y_{\mathrm{value}}`.
+
+    Starting from ``x_init`` (treated as either the lower or the upper
+    bound depending on the local sign of :math:`f - y`), the second
+    bracketing bound is found by stepping by ``delta_x`` until the sign
+    of :math:`f(x) - y_{\mathrm{value}}` changes. The root is then
+    refined by linear interpolation between the current bounds until
+    ``abs(f(x) - y_value) < precision_on_y`` or ``max_loops`` is
+    reached.
+
     Parameters
     ----------
-
-    function : function, real valued 
-        Function :math:`f(x)`. It must take only one real parameter.
-    x_init : double
-        Initial guess for x. On success, returns the new value of x.
-    y_value : double
-        Target value for y.
-    precision_on_y : double
-        Stops if ``abs(f(x) - y_value) < precision_on_y``.
-    delta_x : double
-        :math:`\Delta x` added/subtracted from ``x_init`` until the second bound is found.
-    max_loops : integer, optional
-        Maximum number of loops (default is 1000).
-    x_name : string, optional
-        Name of variable x used for printing.
-    y_name : string, optional
-        Name of variable y used for printing.
-    verbosity : integer, optional
-        Verbosity level. 
+    function : callable
+        Real-valued function :math:`f(x)` of one real argument.
+    x_init : float
+        Initial guess for :math:`x`, used as one end of the initial
+        bracket.
+    y_value : float
+        Target value :math:`y_{\mathrm{value}}` to be matched.
+    precision_on_y : float
+        Convergence tolerance: the iteration stops when
+        ``abs(f(x) - y_value) < precision_on_y``.
+    delta_x : float
+        :math:`\Delta x` added to or subtracted from ``x_init`` until
+        the second bracketing bound is found.
+    max_loops : int, optional
+        Maximum number of bracketing + bisection iterations. Default
+        1000.
+    x_name : str, optional
+        Display name for :math:`x`, used in the textual report.
+        Default ``""``.
+    y_name : str, optional
+        Display name for :math:`y`, used in the textual report.
+        Default ``""``.
+    verbosity : int, optional
+        Verbosity of the textual report emitted through
+        :mod:`triqs.utility.mpi`. ``0`` suppresses per-iteration output;
+        ``>= 1`` prints the final answer; ``>= 3`` prints every
+        intermediate :math:`x`/:math:`y` pair. Default 1.
 
     Returns
     -------
+    x : float or None
+        Solution of :math:`f(x) = y_{\mathrm{value}}`, or ``None`` if
+        the iteration did not converge within ``max_loops`` steps.
+    y : float or None
+        Function value :math:`f(x)` at the returned solution, or
+        ``None`` on failure.
 
-    (x,y) : (double, double)
-        :math:`x` and :math:`y=f(x)`. Returns (None, None) if dichotomy failed.
+    Notes
+    -----
+    On failure the function returns ``(None, None)`` rather than
+    raising; callers are expected to check the result.
+
+    The progress messages are printed via :func:`triqs.utility.mpi.report`,
+    which suppresses output on non-master MPI ranks.
     """
     
     mpi.report("Dichotomy adjustment of %(x_name)s to obtain %(y_name)s = %(y_value)f +/- %(precision_on_y)f"%locals() )
