@@ -41,6 +41,24 @@ Random number generation and other building blocks are documented under @ref tri
 
 ## Meshes
 
+@ref triqs-meshes form the basis of the @ref triqs-gfs containers in the **TRIQS** library. They define the mathematical 
+domain of the underlying function, how it is represented in memory, and how it is evaluated.
+
+- @ref triqs-meshes-concepts specify the requirements for mesh types and mesh points (triqs::mesh::Mesh, 
+triqs::mesh::MeshWithValues, triqs::mesh::MeshPoint).
+- @ref triqs-meshes-types are the concrete mesh classes provided by **TRIQS**:
+  - @ref triqs-meshes-imag for imaginary time and Matsubara frequency domains, including 
+  @ref triqs-meshes-matsubara arithmetic.
+  - @ref triqs-meshes-real for real time and frequency domains.
+  - @ref triqs-meshes-lattice for Bravais lattices and Brillouin zones, with @ref triqs-meshes-kexpr for lazy k-vector 
+  arithmetic.
+  - @ref triqs-meshes-func for function-space representations such as Legendre polynomials and DLR.
+  - @ref triqs-meshes-prod combine several meshes into a single product mesh.
+  - @ref triqs-meshes-other contain base classes and rarely used mesh types.
+- @ref triqs-meshes-utils provide common utilities used across mesh types (iteration, evaluation, helper functions).
+- @ref triqs-meshes-tailfitting fits the high- and low-frequency tails of functions on real or imaginary frequency 
+meshes.
+
 ## Operators
 
 ## Statistical analysis
