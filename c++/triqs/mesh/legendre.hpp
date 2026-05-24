@@ -49,35 +49,29 @@ namespace triqs::mesh {
   /**
    * @brief Legendre mesh type.
    *
-   * @details A Legendre mesh satisfies the triqs::mesh::Mesh concept. It is defined by the number of Legendre
-   * polynomials \f$ N \f$ used in the series expansion, an inverse temperature \f$ \beta > 0 \f$ and its particle 
-   * statistics (see triqs::mesh::statistic_enum).
+   * @details A Legendre mesh is defined by the number of Legendre polynomials \f$ N \f$ used in the series
+   * expansion, an inverse temperature \f$ \beta > 0 \f$ and its particle statistics.
    *
-   * A Legendre mesh is similar to the triqs::mesh::discrete mesh and has the following properties:
+   * A Legendre mesh is an index-only mesh (no value attached to each point) and has the following properties:
    *
    * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
    * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
-   * and vice versa.
-   * - There is no explicit value associated with a mesh point, i.e. it does not satisfy the
-   * triqs::mesh::MeshWithValues concept.
+   *   and vice versa.
+   * - There is no explicit value associated with a mesh point, i.e. it carries no value at each mesh point.
    *
-   * @ref triqs-gfs containers that are based on a Legendre mesh store the coefficients \f$ f_n \f$ of the generalized 
-   * Fourier series expansion of a function \f$ f(\tau) \f$ in terms of Legendre polynomials, which is defined on the 
+   * Green's function containers that are based on a Legendre mesh store the coefficients \f$ f_n \f$ of the generalized
+   * Fourier series expansion of a function \f$ f(\tau) \f$ in terms of Legendre polynomials, which is defined on the
    * imaginary time axis. To evaluate the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$, the GF
-   * container sums up the Fourier series to the maximum degree \f$ N-1 \f$ (see triqs::mesh::evaluate(legendre const &, 
-   * auto const &, double) for details). 
-   *
-   * @include legendre.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0
-   * mesh point #1: index = 1, data index = 1
-   * mesh point #2: index = 2, data index = 2
-   * mesh point #3: index = 3, data index = 3
-   * mesh point #4: index = 4, data index = 4
-   * ```
+   * container sums up the Fourier series to the maximum degree \f$ N-1 \f$:
+   * \f[
+   *   f(\tau) \approx \sum_{n=0}^{N-1} \frac{\sqrt{2n + 1}}{\beta} f_n P_n(x(\tau)) \; ,
+   * \f]
+   * where \f$ P_n \f$ denotes the Legendre polynomial of degree \f$ n \f$, \f$ x(\tau) = 2\tau / \beta - 1 \f$ is a
+   * linear map from \f$ [0, \beta] \f$ to \f$ [-1, 1] \f$ and
+   * \f[
+   *   f_n = \sqrt{2n + 1} \int_0^\beta d\tau \, f(\tau) P_n(x(\tau)) \; ,
+   * \f]
+   * are the expansion coefficients.
    */
   class C2PY_RENAME(MeshLegendre) legendre {
     public:
@@ -100,7 +94,7 @@ namespace triqs::mesh {
       mesh_point_t() = default;
 
       /**
-       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$ and hash value of the parent 
+       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$ and hash value of the parent
        * mesh.
        *
        * @param n Index \f$ n \f$ of the mesh point.
@@ -128,11 +122,11 @@ namespace triqs::mesh {
     legendre() = default;
 
     /**
-     * @brief Construct a mesh of Legendre polynomials with degrees \f$ n = 0, 1, \ldots, N - 1 \f$ on the interval \f$ 
+     * @brief Construct a mesh of Legendre polynomials with degrees \f$ n = 0, 1, \ldots, N - 1 \f$ on the interval \f$
      * [0, \beta] \f$ and the given particle statistics.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param statistic Particle statistics (see triqs::mesh::statistic_enum).
+     * @param statistic Particle statistics.
      * @param max_n Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
      */
     C2PY_DEPRECATED_PARAMETER_NAME(S : statistic, n_max : max_n)

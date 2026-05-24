@@ -52,7 +52,7 @@ namespace triqs::mesh {
 
   /**
    * @brief Evaluate a function \f$ f \f$ at the index of a mesh point of the given mesh.
-   * 
+   *
    * @details It simply forwards the index to the function object \f$ f \f$.
    *
    * @tparam M triqs::mesh::Mesh type.
@@ -64,7 +64,7 @@ namespace triqs::mesh {
 
   /**
    * @brief Evaluate a function \f$ f \f$ at a triqs::mesh::closest_mesh_point_t object.
-   * 
+   *
    * @details It simply forwards the given object to the function object \f$ f \f$.
    *
    * @tparam T Value type of triqs::mesh::closest_mesh_point_t.
@@ -76,7 +76,7 @@ namespace triqs::mesh {
 
   /**
    * @brief Evaluate a function \f$ f \f$ for `nda::range::all`.
-   * 
+   *
    * @details It simply calls the function object \f$ f \f$ with `nda::range::all`.
    *
    * @param f Callable object \f$ f \f$ representing the function to be evaluated.
@@ -87,8 +87,8 @@ namespace triqs::mesh {
   /**
    * @brief Evaluate a function \f$ f \f$ at a specific mesh point of the given mesh.
    *
-   * @details If the given mesh satisfies the triqs::mesh::MeshWithValues concept, it calls `evaluate` with the mesh, 
-   * the function object \f$ f \f$ and the value of the mesh point. Otherwise, it calls \f$ f \f$ with the mesh point 
+   * @details If the given mesh satisfies the triqs::mesh::MeshWithValues concept, it calls `evaluate` with the mesh,
+   * the function object \f$ f \f$ and the value of the mesh point. Otherwise, it calls \f$ f \f$ with the mesh point
    * itself.
    *
    * @tparam M triqs::mesh::Mesh type.
@@ -123,9 +123,9 @@ namespace triqs::mesh {
    * - takes an argument \f$ x_{2} \in \mathrm{D}_2 \f$ and returns a new function \f$ f_{x_n, x_{n-1}, \dots, x_2} \f$
    * that
    * - takes an argument \f$ x_1 \in \mathrm{D}_1 \f$ and returns the final result \f$ f(x_1, \dots, x_n) \f$.
-   * 
+   *
    * This is used to evaluate @ref triqs-gfs defined on product meshes.
-   * 
+   *
    * @note The intermediate functions objects \f$ f_{x_n, \dots} \f$ are hidden by nested `evaluate` calls.
    *
    * @include evaluate.cpp
@@ -163,8 +163,8 @@ namespace triqs::mesh {
   /**
    * @brief Evaluate a multivariate function \f$ f \f$ defined on the given product mesh at the given arguments.
    *
-   * @details It simply forwards the arguments and the components of the product mesh to 
-   * @ref triqs::mesh::evaluate(std::tuple<Ds...> const &tup, auto const &f, X1 const &x1, Xs const &...xs) 
+   * @details It simply forwards the arguments and the components of the product mesh to
+   * @ref triqs::mesh::evaluate(std::tuple<Ds...> const &tup, auto const &f, X1 const &x1, Xs const &...xs)
    * "triqs::mesh::evaluate".
    *
    * @tparam Ms triqs::mesh::Mesh types of the product mesh.

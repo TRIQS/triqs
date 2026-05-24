@@ -65,42 +65,32 @@ namespace triqs::mesh {
   /**
    * @brief Discrete Lehmann representation (DLR) mesh type.
    *
-   * @details A DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse temperature
-   * \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff \f$
-   * \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should be
-   * symmetric around \f$ \omega = 0 \f$.
+   * @details A DLR mesh is defined by the inverse temperature \f$ \beta > 0 \f$, the particle statistics, a DLR energy
+   * cutoff \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh
+   * should be symmetric around \f$ \omega = 0 \f$.
    *
    * A DLR mesh has the following properties:
    *
    * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
-   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$
-   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(\tau, \omega_l) \f$
-   * or \f$ K(i\omega_n, \omega_l) \f$.
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and
+   *   \f$ \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions
+   *   \f$ K(\tau, \omega_l) \f$ or \f$ K(i\omega_n, \omega_l) \f$.
    * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
-   * and vice versa.
-   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \omega_l \f$, where \f$ \omega_l \f$ is the l<sup>th
-   * </sup> DLR frequency.
+   *   and vice versa.
+   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \omega_l \f$, where \f$ \omega_l \f$ is the l-th DLR
+   *   frequency.
    *
-   * @ref triqs-gfs containers that are based on a DLR mesh store the coefficients \f$ f_l \f$ of the discrete Lehmann
+   * Green's function containers that are based on a DLR mesh store the coefficients \f$ f_l \f$ of the discrete Lehmann
    * representation of a function \f$ f(\tau) \f$ or \f$ f(i\omega_n) \f$. To evaluate the function at an arbitrary
    * imaginary time \f$ \tau \in [0, \beta] \f$ or at a specific Matsubara frequency \f$ i\omega_n \f$, the GF container
-   * calculates the DLR approximation of the function (see triqs::mesh::evaluate(dlr const &, auto const &, double) or
-   * triqs::mesh::evaluate(dlr const &, auto const &, matsubara_freq const &) for details).
-   *
-   * @include dlr.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = -4.997323654048254
-   * mesh point #1: index = 1, data index = 1, value = -3.831753911537679
-   * mesh point #2: index = 2, data index = 2, value = -2.710662984621819
-   * mesh point #3: index = 3, data index = 3, value = -1.5985695686131243
-   * mesh point #4: index = 4, data index = 4, value = 0.0013381729758728256
-   * mesh point #5: index = 5, data index = 5, value = 2.075899665814476
-   * mesh point #6: index = 6, data index = 6, value = 3.831753911537679
-   * mesh point #7: index = 7, data index = 7, value = 4.997323654048254
-   * ```
+   * calculates the DLR approximation of the function via
+   * \f[
+   *   f(\tau) \approx \sum_{l=0}^{N-1} \frac{e^{-\omega_l \tau}}{1 + e^{-\omega_l \beta}} f_l \; ,
+   * \f]
+   * or
+   * \f[
+   *   f(i\omega_n) \approx \sum_{l=0}^{N-1} \frac{1}{i\omega_n + \omega_l} f_l \; .
+   * \f]
    */
   class C2PY_RENAME(MeshDLR) dlr {
     public:
@@ -185,10 +175,10 @@ namespace triqs::mesh {
     /**
      * @brief Construct a DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error tolerance \f$
      * \epsilon \f$.
-     *                                                
-     * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
-     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
-     * `cppdlr::imfreq_ops` objects.
+     *
+     * @details It builds the DLR frequencies \f$ \omega_l \f$ from \f$ \Lambda = \omega_{\text{max}} \beta \f$ and the
+     * error tolerance \f$ \epsilon \f$, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+     * from them.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
      * @param statistic Particle statistics.
@@ -270,7 +260,7 @@ namespace triqs::mesh {
      * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \omega_l \f$.
      *
      * @param l Index \f$ l \f$ to map.
-     * @return Value of the l<sup>th</sup> DLR frequency \f$ \omega_l \f$.
+     * @return Value of the l-th DLR frequency \f$ \omega_l \f$.
      */
     [[nodiscard]] double to_value(long l) const noexcept {
       EXPECTS(is_index_valid(l));
@@ -292,7 +282,7 @@ namespace triqs::mesh {
     /// Is the mesh symmetric around \f$ \omega = 0 \f$?
     [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
-    /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
+    /// Get the array of DLR frequencies \f$ \omega_l \f$.
     [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).

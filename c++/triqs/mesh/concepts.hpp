@@ -44,7 +44,7 @@ namespace triqs::mesh {
    * @details Every mesh point `mp` of type `MP`
    * - belongs to a mesh `MP::mesh_t`,
    * - has a unique index `mp.index()` that identifies a mesh point within the mesh,
-   * - has a data index `mp.data_index()` that is used to access function values/coefficients stored in GF containers 
+   * - has a data index `mp.data_index()` that is used to access function values/coefficients stored in GF containers
    * and
    * - has a hash value `mp.mesh_hash()` that is used to check if a mesh point belongs to or is compatible with a mesh.
    *
@@ -100,8 +100,7 @@ namespace triqs::mesh {
 
     // data index type
     typename M::data_index_t;
-  }
-  and requires(M const &m, typename M::index_t index, typename M::data_index_t data_index, typename M::mesh_point_t mp) {
+  } and requires(M const &m, typename M::index_t index, typename M::data_index_t data_index, typename M::mesh_point_t mp) {
     // check validity of an index
     { m.is_index_valid(index) } -> std::same_as<bool>;
 

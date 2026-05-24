@@ -45,32 +45,29 @@ namespace triqs::mesh {
   /**
    * @brief Real frequency mesh type.
    *
-   * @details A real frequency mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size \f$ N 
-   * \geq 0 \f$ and a frequency interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$.
+   * @details A real frequency mesh is defined by its size \f$ N \geq 0 \f$ and a frequency interval
+   * \f$ [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}] \f$. It contains \f$ N \f$ equally spaced mesh points on the
+   * interval \f$ [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}] \f$ such that the distance between two consecutive mesh
+   * points (step size) is constant.
    *
-   * It is a triqs::mesh::detail::linear mesh with \f$ N \f$ equally spaced mesh points on the interval \f$ 
-   * [\omega_{\text{min}}, \omega_{\text{max}}] \f$ such that
-   * - \f$ \omega(n) = \omega_{\text{min}} + n \cdot \Delta \f$ with \f$ \Delta = \frac{\omega_{\text{max}} -
-   * \omega_{\text{min}}}{N - 1} \f$ for \f$ N > 1 \f$,
-   * - \f$ \omega(0) = \omega_{\text{min}} \f$ and
-   * - \f$ \omega(N - 1) = \omega_{\text{max}} \f$.
-   * 
-   * @ref triqs-gfs containers that are based on a real frequency mesh store the function values at the discrete 
-   * frequency points \f$ \omega(n) \f$, i.e. \f$ f_n = f(\omega(n)) \f$, and use linear interpolation to evaluate the 
-   * function at an arbitrary frequency \f$ \omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}] \f$ (see 
-   * triqs::mesh::evaluate(refreq const &, auto const &, double) for details). 
+   * A real frequency mesh has the following properties:
    *
-   * @include refreq.cpp
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding value \f$ \omega \f$ by the linear function
+   *   \f$ \omega(n) = \omega_{\mathrm{min}} + n \cdot \Delta \f$ such that \f$ \omega(0) = \omega_{\mathrm{min}} \f$
+   *   and \f$ \omega(N - 1) = \omega_{\mathrm{max}} \f$. The step size of the mesh is
+   *   \f$ \Delta = \frac{\omega_{\mathrm{max}} - \omega_{\mathrm{min}}}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is
+   *   undefined. For implementation purposes, we set \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$
+   *   and \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = \infty \f$ for \f$ N = 1 \f$.
+   * - An arbitrary value \f$ \omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}] \f$ is mapped to the closest
+   *   mesh point with index \f$ n \f$ by the function
+   *   \f$ n(\omega) = \left\lfloor \frac{\omega - \omega_{\mathrm{min}}}{\Delta} + 0.5 \right\rfloor \f$.
    *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = -5
-   * mesh point #1: index = 1, data index = 1, value = -2.5
-   * mesh point #2: index = 2, data index = 2, value = 0
-   * mesh point #3: index = 3, data index = 3, value = 2.5
-   * mesh point #4: index = 4, data index = 4, value = 5
-   * ```
+   * Green's function containers that are based on a real frequency mesh store the function values at the discrete
+   * frequency points \f$ \omega(n) \f$, i.e. \f$ f_n = f(\omega(n)) \f$, and use linear interpolation to evaluate the
+   * function at an arbitrary frequency \f$ \omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}] \f$.
    */
   class C2PY_RENAME(MeshReFreq) refreq : public detail::linear<refreq, double>, public tail_fitter_handle {
     public:
@@ -78,7 +75,7 @@ namespace triqs::mesh {
     using mesh_point_t = detail::linear<refreq, double>::mesh_point_t;
 
     /**
-     * @brief Construct a real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with 
+     * @brief Construct a real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with
      * \f$ N \geq 0 \f$ equally spaced mesh points.
      *
      * @param w_min Lower bound \f$ \omega_{\mathrm{min}} \f$ of the frequency interval.
@@ -90,9 +87,9 @@ namespace triqs::mesh {
 
     /**
      * @brief Construct a real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with
-     * \f$ N \geq 0  \f$ equally spaced mesh points.
+     * \f$ N \geq 0 \f$ equally spaced mesh points.
      *
-     * @param window `std::pair` containing the lower and upper bounds of the frequency interval.
+     * @param window Pair containing the lower and upper bounds of the frequency interval.
      * @param n_w Size of the mesh.
      */
     refreq(std::pair<double, double> window, int n_w) : refreq(window.first, window.second, n_w) {}

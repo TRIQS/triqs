@@ -51,46 +51,30 @@ namespace triqs::mesh {
   /**
    * @brief Imaginary frequency discrete Lehmann representation (DLR) mesh type.
    *
-   * @details An imaginary frequency DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the
-   * inverse temperature \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff
-   * \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should
-   * be symmetric around \f$ i\omega_n = 0 \f$ (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
-   * for Bosons).
+   * @details An imaginary frequency DLR mesh is defined by the inverse temperature \f$ \beta > 0 \f$, the particle
+   * statistics, a DLR energy cutoff \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag
+   * specifying if the mesh should be symmetric around \f$ i\omega_n = 0 \f$ (a symmetric mesh enforces the DLR rank to
+   * be even for Fermions and odd for Bosons).
    *
    * An imaginary frequency DLR mesh has the following properties:
    *
    * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
-   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$
-   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(i\omega_n,
-   * \omega_l) \f$.
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and
+   *   \f$ \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions
+   *   \f$ K(i\omega_n, \omega_l) \f$.
    * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
-   * and vice versa.
+   *   and vice versa.
    * - An index \f$ l \f$ is mapped to the corresponding value \f$ i\omega_{n_l} \f$, where \f$ i\omega_{n_l} \f$ is the
-   * l<sup>th</sup> DLR interpolation node in imaginary frequency space.
+   *   l-th DLR interpolation node in imaginary frequency space.
    *
-   * @note The index \f$ l \f$, which is used to access a certain mesh point, is different from the Matsubara index \f$
-   * n_l \f$ that is stored in the mesh point object. That means, if `m` is an instance of triqs::mesh::dlr_imfreq,
-   * then `m(l).index() != l` in general.
+   * @note The index \f$ l \f$, which is used to access a certain mesh point, is different from the Matsubara index
+   * \f$ n_l \f$ that is stored in the mesh point object. That means, if `m` is an instance of imaginary-frequency DLR
+   * mesh, then `m(l).index() != l` in general.
    *
-   * @ref triqs-gfs containers that are based on an imaginary frequency DLR mesh store the function values at the
-   * discrete frequency points \f$ i\omega_{n_l} \f$, i.e. \f$ f_l = f(i\omega_{n_l}) \f$. In contrast to
-   * triqs::mesh::dlr and triqs::mesh::imfreq, the GF container cannot evaluate the function at an arbitrary Matsubara
-   * frequency \f$ i\omega_n \f$ (see the deleted triqs::mesh::evaluate(dlr_imfreq const &, ...)).
-   *
-   * @include dlr_imfreq.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = -5, data index = 0, value = -2.827433388230814i
-   * mesh point #1: index = -3, data index = 1, value = -1.5707963267948966i
-   * mesh point #2: index = -2, data index = 2, value = -0.9424777960769379i
-   * mesh point #3: index = -1, data index = 3, value = -0.3141592653589793i
-   * mesh point #4: index = 0, data index = 4, value = 0.3141592653589793i
-   * mesh point #5: index = 1, data index = 5, value = 0.9424777960769379i
-   * mesh point #6: index = 2, data index = 6, value = 1.5707963267948966i
-   * mesh point #7: index = 4, data index = 7, value = 2.827433388230814i
-   * ```
+   * Green's function containers that are based on an imaginary frequency DLR mesh store the function values at the
+   * discrete frequency points \f$ i\omega_{n_l} \f$, i.e. \f$ f_l = f(i\omega_{n_l}) \f$. In contrast to DLR and
+   * imaginary-frequency meshes, the GF container cannot evaluate the function at an arbitrary Matsubara frequency
+   * \f$ i\omega_n \f$ (evaluation at arbitrary points is intentionally unsupported).
    */
   class C2PY_RENAME(MeshDLRImFreq) dlr_imfreq {
     public:
@@ -176,9 +160,9 @@ namespace triqs::mesh {
      * @brief Construct an imaginary frequency DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error
      * tolerance \f$ \epsilon \f$.
      *
-     * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
-     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and
-     * `cppdlr::imfreq_ops` objects.
+     * @details It builds the DLR frequencies \f$ \omega_l \f$ from \f$ \Lambda = \omega_{\text{max}} \beta \f$ and the
+     * error tolerance \f$ \epsilon \f$, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+     * from them.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
      * @param statistic Particle statistics.
@@ -260,8 +244,8 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding triqs::mesh::matsubara_freq \f$
-     * i\omega_{n_l} \f$.
+     * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding Matsubara frequency
+     * \f$ i\omega_{n_l} \f$.
      *
      * @param l Index \f$ l \f$ to map.
      * @return Matsubara frequency \f$ i\omega_{n_l}\f$.
@@ -283,10 +267,10 @@ namespace triqs::mesh {
     /// Get the DLR error tolerance \f$ \epsilon \f$.
     [[nodiscard]] C2PY_PROPERTY_GET(eps) double eps() const noexcept { return eps_; }
 
-    /// Is the mesh symmetric around \f$ i\omega_n = 0  \f$?
+    /// Is the mesh symmetric around \f$ i\omega_n = 0 \f$?
     [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
-    /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
+    /// Get the array of DLR frequencies \f$ \omega_l \f$.
     [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
@@ -298,7 +282,7 @@ namespace triqs::mesh {
     /// Get the hash value of the mesh.
     [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
-    /// Get a `std::pair` containing the smallest and largest Matsubara frequency in the mesh.
+    /// Get a pair containing the smallest and largest Matsubara frequency in the mesh.
     [[nodiscard]] auto min_max_frequencies() const noexcept {
       return std::pair<matsubara_freq, matsubara_freq>{(*this)(0).value(), (*this)(size() - 1).value()};
     }

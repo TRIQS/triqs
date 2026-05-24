@@ -71,7 +71,7 @@ namespace triqs::mesh {
    *
    * @param x Left-hand side operand \f$ x \f$ of the modulo operation.
    * @param y Right-hand side operand \f$ y \geq 0 \f$ of the modulo operation.
-   * @return 
+   * @return
    * \f[
    *   \begin{cases}
    *     x \mod y & \text{if } x \geq 0 \\
@@ -88,9 +88,9 @@ namespace triqs::mesh {
   /**
    * @brief Get the values of all mesh points in a mesh.
    *
-   * @tparam M triqs::mesh::MeshWithValues type.
-   * @param m %Mesh object.
-   * @return `nda::vector` containing the values of all mesh points.
+   * @tparam M A mesh type whose points each carry a value.
+   * @param m A mesh object.
+   * @return Array containing the values of all mesh points.
    */
   template <MeshWithValues M> [[nodiscard]] auto values(M const &m) {
     auto res = nda::vector<typename M::value_t>(m.size());
@@ -101,20 +101,20 @@ namespace triqs::mesh {
   /**
    * @brief Get a copy of a mesh (for Python bindings).
    *
-   * @tparam M triqs::mesh::Mesh type.
-   * @param m %Mesh object to copy.
+   * @tparam M A mesh type.
+   * @param m The mesh object to copy.
    * @return Copy of the given mesh.
    */
   template <Mesh M> [[nodiscard]] M copy(M const &m) { return m; }
 
   /**
    * @brief Copy one mesh into another (for Python bindings).
-   * 
+   *
    * @details Simply calls the copy assignment operator of the mesh.
    *
-   * @tparam M triqs::mesh::Mesh type.
-   * @param m1 %Mesh object to copy into.
-   * @param m2 %Mesh object to copy from.
+   * @tparam M A mesh type.
+   * @param m1 The mesh object to copy into.
+   * @param m2 The mesh object to copy from.
    */
   template <Mesh M> void copy_from(M &m1, M const &m2) { m1 = m2; }
 

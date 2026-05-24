@@ -47,18 +47,6 @@ namespace triqs::mesh {
    * and vice versa.
    * - There is no explicit value associated with a mesh point, i.e. it does not satisfy the
    * triqs::mesh::MeshWithValues concept.
-   *
-   * @include discrete.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0
-   * mesh point #1: index = 1, data index = 1
-   * mesh point #2: index = 2, data index = 2
-   * mesh point #3: index = 3, data index = 3
-   * mesh point #4: index = 4, data index = 4
-   * ```
    */
   class C2PY_IGNORE discrete {
     public:
@@ -81,7 +69,7 @@ namespace triqs::mesh {
       mesh_point_t() = default;
 
       /**
-       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$ and hash value of the parent 
+       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$ and hash value of the parent
        * mesh.
        *
        * @param n Index \f$ n \f$ of the mesh point.

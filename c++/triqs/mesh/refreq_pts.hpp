@@ -49,33 +49,21 @@ namespace triqs::mesh {
   /**
    * @brief Real frequency mesh type from arbitrary sorted frequency points.
    *
-   * @details A refreq_pts mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by
-   * a sorted vector of frequency values \f$ \{\omega_0, \omega_1, \ldots, \omega_{N-1}\} \f$ with
-   * \f$ \omega_i < \omega_{i+1} \f$.
+   * @details A real frequency mesh is defined by its size \f$ N \geq 0 \f$ and a sorted vector of frequency values
+   * \f$ \{\omega_0, \omega_1, \ldots, \omega_{N-1}\} \f$.
    *
-   * Properties:
+   * It has the following properties:
+   *
    * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
-   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity
-   *   function \f$ d(n) = n \f$ and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
    * - An index \f$ n \f$ is mapped to its corresponding value \f$ \omega_n \f$.
-   * - An arbitrary value \f$ \omega \in [\omega_0, \omega_{N-1}] \f$ is mapped to the closest mesh
-   *   point using binary search.
+   * - An arbitrary value \f$ \omega \in [\omega_0, \omega_{N-1}] \f$ is mapped to the closest mesh point using binary
+   *   search.
    *
-   * @ref triqs-gfs containers that are based on this mesh store the function values at the discrete
-   * frequency points and use linear interpolation to evaluate the function at an arbitrary frequency
-   * (see triqs::mesh::evaluate(refreq_pts const &, auto const &, double) for details).
-   *
-   * @include refreq_pts.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = -5
-   * mesh point #1: index = 1, data index = 1, value = -1
-   * mesh point #2: index = 2, data index = 2, value = 0
-   * mesh point #3: index = 3, data index = 3, value = 1
-   * mesh point #4: index = 4, data index = 4, value = 5
-   * ```
+   * Green's function containers that are based on this mesh store the function values at the discrete frequency points
+   * \f$ \omega(n) \f$, i.e. \f$ f_n = f(\omega(n)) \f$, and use linear interpolation to evaluate the function at an
+   * arbitrary frequency \f$ \omega \f$.
    */
   class C2PY_RENAME(MeshReFreqPts) refreq_pts {
     public:
@@ -91,11 +79,11 @@ namespace triqs::mesh {
     /**
      * @brief %Mesh point of a triqs::mesh::refreq_pts mesh.
      *
-     * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the
-     * parent mesh and the value \f$ \omega_n \f$ of the mesh point.
+     * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
+     * \f$ \omega_n \f$ of the mesh point.
      *
-     * Arithmetic operations are defined for mesh points and scalars. The operations are performed
-     * between the value \f$ \omega_n \f$ of the mesh point and the given scalar.
+     * Arithmetic operations are defined for mesh points and scalars. The operations are performed between the value
+     * \f$ \omega_n \f$ of the mesh point and the given scalar.
      */
     class C2PY_IGNORE mesh_point_t {
       public:
@@ -155,10 +143,9 @@ namespace triqs::mesh {
     refreq_pts() = default;
 
     /**
-     * @brief Construct a refreq_pts mesh from a sorted vector of frequency points.
+     * @brief Construct a real frequency mesh from a sorted vector of frequency points.
      *
      * @param pts Sorted vector of frequency values.
-     * @throws triqs::runtime_error if the vector is not sorted.
      */
     refreq_pts(std::vector<double> pts)
        : pts_(std::move(pts)),
@@ -168,7 +155,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Construct a refreq_pts mesh from an initializer list of frequency points.
+     * @brief Construct a real frequency mesh from an initializer list of frequency points.
      *
      * @param l Initializer list of frequency values.
      */
@@ -365,15 +352,15 @@ namespace triqs::mesh {
   };
 
   /**
-   * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::refreq_pts mesh
-   * at a real frequency \f$ \omega \f$.
+   * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::refreq_pts mesh at a real frequency
+   * \f$ \omega \f$.
    *
    * @details We find the bracketing mesh points using binary search and calculate
    * \f[
    *   f(\omega) \approx f_{i_l} \cdot w_l + f_{i_r} \cdot w_r
    * \f]
-   * where \f$ i_l \f$ and \f$ i_r \f$ are the indices of the mesh points bracketing \f$ \omega \f$,
-   * and \f$ w_l, w_r \f$ are the interpolation weights.
+   * where \f$ i_l \f$ and \f$ i_r \f$ are the indices of the mesh points bracketing \f$ \omega \f$, and \f$ w_l \f$ and
+   * \f$ w_r \f$ are the interpolation weights.
    *
    * @param m triqs::mesh::refreq_pts mesh.
    * @param f Callable object containing the function values at the mesh points.

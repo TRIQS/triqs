@@ -46,32 +46,27 @@ namespace triqs::mesh {
   /**
    * @brief Chebyshev imaginary time mesh type.
    *
-   * @details A Chebyshev mesh satisfies the triqs::mesh::MeshWithValues concept. It stores function values at
-   * Chebyshev collocation points and uses barycentric interpolation for evaluation at arbitrary imaginary times,
-   * providing exponential convergence for smooth functions.
+   * @details A Chebyshev imaginary time mesh is defined by its size \f$ N \geq 0 \f$, an inverse temperature \f$ \beta
+   * > 0 \f$ and its particle statistics. It stores function values at Chebyshev collocation points and uses
+   * barycentric interpolation for evaluation at arbitrary imaginary times, providing exponential convergence for smooth
+   * functions.
    *
-   * The mesh is defined by:
-   * - \f$ N \f$: number of Chebyshev points (polynomial order)
-   * - \f$ \beta \f$: inverse temperature (interval \f$ [0, \beta] \f$)
-   * - `stat`: particle statistics (Boson/Fermion)
+   * A Chebyshev imaginary time mesh has the following properties:
    *
-   * Chebyshev points of the first kind are used:
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding value \f$ \tau \f$ by the function
+   *   \f$ \tau(n) = \frac{\beta}{2} (x_n + 1) \f$ where \f$ x_n = \cos\left(\frac{(2n + 1) \pi}{2N}\right) \f$ is the
+   *   Chebyshev point of the first kind.
+   *
+   * Green's function containers that are based on a Chebyshev imaginary time mesh store the function values at the
+   * discrete time points \f$ \tau(n) \f$, i.e. \f$ f_n = f(\tau(n)) \f$, and use barycentric interpolation to evaluate
+   * the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$:
    * \f[
-   *   x_i = \cos\left(\frac{(2i + 1) \pi}{2N}\right) \quad \text{for } i = 0, \ldots, N-1 \text{ on } [-1, 1]
+   *   f(\tau) \approx \frac{\sum_{n=0}^{N-1} \frac{w_n}{x - x_n} f_n}{\sum_{n=0}^{N-1} \frac{w_n}{x - x_n}}
    * \f]
-   *
-   * These are scaled to \f$ [0, \beta] \f$ as:
-   * \f[
-   *   \tau_i = \frac{\beta}{2} (x_i + 1)
-   * \f]
-   *
-   * Properties:
-   * - Each mesh point has index \f$ n \in \{0, \ldots, N-1\} \f$
-   * - Identity mapping: \f$ d(n) = n \f$, \f$ n(d) = d \f$
-   * - \f$ \text{value}(n) = \tau_n \f$ (Chebyshev point scaled to \f$ [0, \beta] \f$)
-   * - Evaluation uses barycentric interpolation (numerically stable)
-   *
-   * @include chebyshev.cpp
+   * where \f$ x = 2\tau/\beta - 1 \f$ is the scaled coordinate and \f$ w_n \f$ are the barycentric weights.
    */
   class C2PY_RENAME(MeshChebyshev) chebyshev {
     public:
@@ -151,7 +146,7 @@ namespace triqs::mesh {
      * @brief Construct a Chebyshev mesh on \f$ [0, \beta] \f$ with \f$ N \f$ collocation points.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param stat Particle statistics (see triqs::mesh::statistic_enum).
+     * @param stat Particle statistics.
      * @param N Number of Chebyshev points \f$ N > 0 \f$.
      */
     chebyshev(double beta, statistic_enum stat, long N) : beta_(beta), stat_(stat), N_(N), mesh_hash_(hash(beta, stat, N)) {

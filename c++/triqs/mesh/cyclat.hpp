@@ -42,7 +42,7 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-utils
-   * @brief Bring triqs::lattice::bravais_lattice into the triqs::mesh namespace.
+   * @brief Bring Bravais lattice into the triqs::mesh namespace.
    */
   using lattice::bravais_lattice;
 
@@ -54,54 +54,36 @@ namespace triqs::mesh {
   /**
    * @brief Cyclic lattice mesh type for Bravais lattices with Born-von Karman periodic boundary conditions.
    *
-   * @details A cyclic lattice mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by an underlying
-   * triqs::lattice::bravais_lattice and the number of unit cells in each of the three dimensions, \f$ N_1 \f$, \f$ N_2
-   * \f$ and \f$ N_3 \f$, which define the supercell and the periodic boundary conditions (PBC) \f$ 
-   * f(\mathbf{R}^{\mathbf{n}}) = f(\mathbf{R}^{\mathbf{n}} + \mathbf{T}^{\mathbf{m}}) \f$. Here, \f$ 
-   * \mathbf{T}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{a}_i N_i m_i = \tilde{\mathbf{A}} \mathbf{m} \f$ is a supercell 
-   * translation vector, \f$ \mathbf{a}_i \f$ is a Bravais lattice basis vector in direction \f$ i \f$ and \f$ 
-   * \mathbf{m} = (m_1, m_2, m_3) \f$ with \f$ m_i \in \mathbb{Z} \f$. 
+   * @details A cyclic lattice mesh is defined by an underlying Bravais lattice and the number of unit cells in each of
+   * the three dimensions, \f$ N_1 \f$, \f$ N_2 \f$ and \f$ N_3 \f$, which define the supercell and the periodic
+   * boundary conditions (PBC) \f$ f(\mathbf{R}^{\mathbf{n}}) = f(\mathbf{R}^{\mathbf{n}} + \mathbf{T}^{\mathbf{m}})\f$.
+   * Here, \f$ \mathbf{T}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{a}_i N_i m_i = \tilde{\mathbf{A}} \mathbf{m} \f$ is a
+   * supercell translation vector, \f$ \mathbf{a}_i \f$ is a Bravais lattice basis vector in direction \f$ i \f$ and
+   * \f$ \mathbf{m} = (m_1, m_2, m_3) \f$ with \f$ m_i \in \mathbb{Z} \f$.
    *
    * It has the following properties:
    *
    * - Each mesh point is identified by
-   *   - an unique index in the supercell \f$ \mathbf{n} = (n_1, n_2, n_3) \f$, where \f$ 0 \leq n_i < N_i \f$, and
-   *   - an infinite set of indices due to the periodic boundary conditions, i.e. \f$ \{ \tilde{\mathbf{n}} = \mathbf{n} 
-   *   + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \} \f$.
+   *
+   *   - a unique index in the supercell \f$ \mathbf{n} = (n_1, n_2, n_3) \f$, where \f$ 0 \leq n_i < N_i \f$, and
+   *   - an infinite set of indices due to the periodic boundary conditions, i.e.
+   *     \f$ \{ \tilde{\mathbf{n}} = \mathbf{n} + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \} \f$.
+   *
    * - The size of the mesh is \f$ N = N_1 \, N_2 \, N_3 \f$, i.e. the total number of unit cells in the supercell.
-   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding data index \f$ d \f$ by the function \f$ d(\mathbf{n})
-   * = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3 \f$. The inverse map is \f$ \mathbf{n}(d) = (\lfloor d /
-   * s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 ) \f$, where \f$ s_1 = N_2 N_3 \f$ and \f$
-   * s_2 = N_3 \f$.
-   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding value (lattice point) \f$ \mathbf{R}(\mathbf{n}) 
-   * \equiv \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{a}_i n_i = \mathbf{A} \mathbf{n} \f$, where \f$ \mathbf{a}_i 
-   * \f$ is the Bravais lattice basis vectors in direction \f$ i \f$. The inverse map is then \f$ \mathbf{n}(
-   * \mathbf{R}^{\mathbf{n}}) = \mathbf{A}^{-1} \mathbf{R}^{\mathbf{n}} = \mathbf{n} \f$.
-   * 
-   * @ref triqs-gfs containers that are based on a cyclic lattice mesh store the function values at the discrete lattice
-   * points \f$ \mathbf{R}^{\mathbf{n}} \f$, i.e. \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}}) \f$. Because of the 
-   * PBC, the container only has to store values for indices with \f$ 0 \leq n_i < N_i \f$. To evaluate the function at 
-   * an arbitrary lattice point, it is first mapped to the supercell using the PBC and then the corresponding function 
-   * value is returned (see triqs::mesh::cyclat::evaluate for details).
+   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding data index \f$ d \f$ by the function
+   *   \f$ d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3 \f$. The inverse map is
+   *   \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 ) \f$,
+   *   where \f$ s_1 = N_2 N_3 \f$ and \f$ s_2 = N_3 \f$.
+   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding value (lattice point)
+   *   \f$ \mathbf{R}(\mathbf{n}) \equiv \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{a}_i n_i = \mathbf{A} \mathbf{n} \f$,
+   *   where \f$ \mathbf{a}_i \f$ is the Bravais lattice basis vectors in direction \f$ i \f$. The inverse map is then
+   *   \f$ \mathbf{n}(\mathbf{R}^{\mathbf{n}}) = \mathbf{A}^{-1} \mathbf{R}^{\mathbf{n}} = \mathbf{n} \f$.
    *
-   * @include cyclat.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = [0, 0, 0], data index = 0, value = [0, 0, 0]
-   * mesh point #1: index = [0, 0, 1], data index = 1, value = [0, 0, 0.5]
-   * mesh point #2: index = [0, 0, 2], data index = 2, value = [0, 0, 1]
-   * mesh point #3: index = [0, 1, 0], data index = 3, value = [0, 0.5, 0]
-   * mesh point #4: index = [0, 1, 1], data index = 4, value = [0, 0.5, 0.5]
-   * mesh point #5: index = [0, 1, 2], data index = 5, value = [0, 0.5, 1]
-   * mesh point #6: index = [1, 0, 0], data index = 6, value = [0.5, 0, 0]
-   * mesh point #7: index = [1, 0, 1], data index = 7, value = [0.5, 0, 0.5]
-   * mesh point #8: index = [1, 0, 2], data index = 8, value = [0.5, 0, 1]
-   * mesh point #9: index = [1, 1, 0], data index = 9, value = [0.5, 0.5, 0]
-   * mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5, 0.5, 0.5]
-   * mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5, 0.5, 1]
-   * ```
+   * Green's function containers that are based on a cyclic lattice mesh store the function values at the discrete
+   * lattice points \f$ \mathbf{R}^{\mathbf{n}} \f$, i.e. \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}}) \f$. Because
+   * of the PBC, the container only has to store values for indices with \f$ 0 \leq n_i < N_i \f$. To evaluate the
+   * function at an arbitrary lattice point, it is first mapped to the supercell using the PBC and then the
+   * corresponding function value is returned.
    */
   class C2PY_RENAME(MeshCycLat) cyclat {
     public:
@@ -116,9 +98,9 @@ namespace triqs::mesh {
 
     /**
      * @brief %Mesh point of a triqs::mesh::cyclat mesh.
-     * 
-     * @details It inherits from triqs::lattice::bravais_lattice::point_t and in addition to the index \f$ \mathbf{n} 
-     * \f$, the underlying Bravais lattice and the value \f$ \mathbf{R}^{\mathbf{n}} \f$, it also stores the data index 
+     *
+     * @details It inherits from triqs::lattice::bravais_lattice::point_t and in addition to the index \f$ \mathbf{n}
+     * \f$, the underlying Bravais lattice and the value \f$ \mathbf{R}^{\mathbf{n}} \f$, it also stores the data index
      * \f$ d \f$ and the hash value of the parent mesh.
      */
     class C2PY_IGNORE mesh_point_t : public value_t {
@@ -130,7 +112,7 @@ namespace triqs::mesh {
       mesh_point_t() = default;
 
       /**
-       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, data index \f$ d \f$, hash value of the 
+       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, data index \f$ d \f$, hash value of the
        * parent mesh and Bravais lattice to which the mesh point belongs.
        *
        * @param n Index \f$\mathbf{n} \f$ of the mesh point.
@@ -168,8 +150,8 @@ namespace triqs::mesh {
     /**
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with the given supercell dimensions.
      *
-     * @param bl triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
-     * @param dims Number of unit cells in the supercell along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3) 
+     * @param bl Bravais lattice object representing the underlying Bravais lattice.
+     * @param dims Number of unit cells in the supercell along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3)
      * \f$.
      */
     C2PY_DEPRECATED_PARAMETER_NAME(lattice : bl)
@@ -187,8 +169,8 @@ namespace triqs::mesh {
 
     /**
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with the given periodization matrix.
-     * 
-     * @note At the moment, only diagonal periodization matrices are supported. They should contain the number of unit 
+     *
+     * @note At the moment, only diagonal periodization matrices are supported. They should contain the number of unit
      * cells along each of the three dimensions on the diagonal.
      *
      * @param bl triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
@@ -202,13 +184,13 @@ namespace triqs::mesh {
     /**
      * @brief Construct a cyclic lattice mesh on a Bravais lattice with a cubic supercell.
      *
-     * @param bl triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
+     * @param bl Bravais lattice object representing the underlying Bravais lattice.
      * @param L Number of unit cells in the supercell along each of the three dimensions.
      */
     cyclat(bravais_lattice const &bl, long L) : cyclat{bl, std::array{L, (bl.ndim() >= 2 ? L : 1l), (bl.ndim() >= 3 ? L : 1)}} {}
 
     /**
-     * @brief Construct a cyclic lattice mesh on a cubic Bravais lattice with \f$ a = 1 \f$ and the given supercell 
+     * @brief Construct a cyclic lattice mesh on a cubic Bravais lattice with \f$ a = 1 \f$ and the given supercell
      * dimensions.
      *
      * @param L1 Number of unit cells in the supercell along the first dimension.
@@ -254,7 +236,7 @@ namespace triqs::mesh {
      * \f$.
      *
      * @param d Data index \f$ d \f$ to map.
-     * @return Index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) 
+     * @return Index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1)
      * \mod s_2 ) \f$.
      */
     [[nodiscard]] index_t to_index(data_index_t d) const {
@@ -275,8 +257,8 @@ namespace triqs::mesh {
      * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
      *
      * @param d Data index \f$ d \f$ of the mesh point.
-     * @return mesh_point_t with the index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 
-     * \rfloor, (d \mod s_1) \mod s_2 ) \f$, data index \f$ d \f$ and the hash value and underlying Bravais lattice of 
+     * @return mesh_point_t with the index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2
+     * \rfloor, (d \mod s_1) \mod s_2 ) \f$, data index \f$ d \f$ and the hash value and underlying Bravais lattice of
      * the current mesh.
      */
     [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), d, mesh_hash_, &bl_}; }
@@ -286,7 +268,7 @@ namespace triqs::mesh {
      * contained in a triqs::mesh::closest_mesh_point_t.
      *
      * @param cmp triqs::mesh::closest_mesh_point_t containing the lattice point.
-     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
+     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3
      * (n_2 + N_2 n_1) \f$ and the hash value and underlying Bravais lattice of the current mesh.
      */
     [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
@@ -295,7 +277,7 @@ namespace triqs::mesh {
      * @brief Function call operator to access a mesh point by its index \f$ \mathbf{n} \f$.
      *
      * @param n Index \f$ \mathbf{n} \f$ of the mesh point.
-     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
+     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3
      * (n_2 + N_2 n_1) \f$ and the hash value and underlying Bravais lattice of the current mesh.
      */
     [[nodiscard]] mesh_point_t operator()(index_t const &n) const { return {n, to_data_index(n), mesh_hash_, &bl_}; }
@@ -304,7 +286,7 @@ namespace triqs::mesh {
      * @brief Map an index \f$ \mathbf{n} \f$ to its corresponding lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
      *
      * @param n Index \f$ \mathbf{n} \f$ to map.
-     * @return triqs::lattice::bravais_lattice::point_t \f$ \mathbf{R}^{\mathbf{n}} \f$.
+     * @return Bravais lattice point \f$ \mathbf{R}^{\mathbf{n}} \f$.
      */
     [[nodiscard]] value_t to_value(index_t const &n) const {
       EXPECTS(is_index_valid(n));
@@ -315,8 +297,7 @@ namespace triqs::mesh {
     [[nodiscard]] C2PY_PROPERTY_GET(dims) auto const &dims() const { return dims_; }
 
     /**
-     * @brief Get the matrix \f$ \mathbf{A}^T \f$ containing the basis vectors of the Bravais lattice in its rows (see 
-     * triqs::lattice::bravais_lattice::units()).
+     * @brief Get the matrix \f$ \mathbf{A}^T \f$ containing the basis vectors of the Bravais lattice in its rows.
      */
     [[nodiscard]] C2PY_PROPERTY_GET(units) auto units() const { return nda::matrix_const_view<double>{units_}; }
 
@@ -353,7 +334,7 @@ namespace triqs::mesh {
     [[nodiscard]] auto cend() const { return end(); }
 
     /**
-     * @brief Equal-to comparison operator compares the underlying Bravais lattice and the number of unit cells in each 
+     * @brief Equal-to comparison operator compares the underlying Bravais lattice and the number of unit cells in each
      * of the three dimensions.
      */
     bool operator==(cyclat const &m) const { return bl_ == m.lattice() && dims_ == m.dims(); }
@@ -441,14 +422,14 @@ namespace triqs::mesh {
   };
 
   /**
-   * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::cyclat mesh at the given index \f$ 
+   * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::cyclat mesh at the given index \f$
    * \tilde{\mathbf{n}} \f$.
-   * 
+   *
    * @details The index is first mapped to the supercell using triqs::mesh::cyclat::index_modulo and then it is used
    * to access the correct function value \f$ f_{\tilde{\mathbf{n}}} = f_{\mathbf{n}} \f$.
    *
    * @param m triqs::mesh::cyclat mesh.
-   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}}) 
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}})
    * \f$ at the mesh points.
    * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ at which to evaluate the function.
    * @return Function value \f$ f_{\mathbf{n}} \f$.
@@ -458,12 +439,12 @@ namespace triqs::mesh {
   /**
    * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::cyclat mesh at the given lattice point \f$
    * \mathbf{R}^{\tilde{\mathbf{n}}} \f$.
-   * 
-   * @details The index of the lattice point is first mapped to the supercell using triqs::mesh::cyclat::index_modulo 
+   *
+   * @details The index of the lattice point is first mapped to the supercell using triqs::mesh::cyclat::index_modulo
    * and then it is used to access the correct function value \f$ f_{\tilde{\mathbf{n}}} = f_{\mathbf{n}} \f$.
    *
    * @param m triqs::mesh::cyclat mesh.
-   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}}) 
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}})
    * \f$ at the mesh points.
    * @param r_n_tilde Lattice point \f$ \mathbf{R}^{\tilde{\mathbf{n}}} \f$ at which to evaluate the function.
    * @return Function value \f$ f_{\mathbf{n}} \f$.

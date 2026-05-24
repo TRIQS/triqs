@@ -45,7 +45,7 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-utils
-   * @brief Represents an energy value to distinguish constructors in triqs::mesh::imfreq. 
+   * @brief Represents an energy value to distinguish constructors in imaginary-frequency mesh.
    */
   struct energy_t {
     /// Energy value.
@@ -63,56 +63,41 @@ namespace triqs::mesh {
   /**
    * @brief Imaginary frequency mesh type.
    *
-   * @details An imaginary frequency mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the number
-   * of positive frequencies \f$ N_{i\omega_n} \geq 0 \f$, the inverse temperature \f$ \beta > 0 \f$, its particle
-   * statistics (triqs::mesh::statistic_enum) and an triqs::mesh::imfreq::option (`all_frequencies` vs
+   * @details An imaginary frequency mesh is defined by the number of positive frequencies \f$ N_{i\omega_n} \geq 0 \f$,
+   * the inverse temperature \f$ \beta > 0 \f$, its particle statistics and an option (`all_frequencies` vs
    * `positive_frequencies_only`).
    *
    * An imaginary frequency mesh has the following properties:
    *
-   * - Each mesh point is identified by a unique index \f$ n \in \{ n_{\text{min}}, n_{\text{min}} + 1, \dots,
-   * n_{\text{max}} - 1, n_{\text{max}} \} \f$, where \f$ n_{\text{max}} = N_{i\omega_n} - 1 \f$ and
-   * \f[
-   *   n_{\text{min}} =
-   *   \begin{cases}
-   *   -N_{i\omega_n} & \text{if fermionic statistics and all frequencies} \\
-   *   -N_{i\omega_n} + 1 & \text{if bosonic statistics and all frequencies} \\
-   *   0 & \text{if positive frequencies only}
-   *   \end{cases}
-   *   \; .
-   * \f]
+   * - Each mesh point is identified by a unique index
+   *   \f$ n \in \{ n_{\text{min}}, n_{\text{min}} + 1, \dots, n_{\text{max}} - 1, n_{\text{max}} \} \f$, where
+   *   \f$ n_{\text{max}} = N_{i\omega_n} - 1 \f$ and
+   *   \f[
+   *     n_{\text{min}} =
+   *     \begin{cases}
+   *     -N_{i\omega_n} & \text{if fermionic statistics and all frequencies} \\
+   *     -N_{i\omega_n} + 1 & \text{if bosonic statistics and all frequencies} \\
+   *     0 & \text{if positive frequencies only}
+   *     \end{cases}
+   *     \; .
+   *   \f]
    * - The size of the mesh is \f$ N = n_{\text{max}} - n_{\text{min}} + 1 \f$.
-   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the function \f$ d(n) = n -
-   * n_{\text{min}} \f$. The inverse map is \f$ n(d) = d + n_{\text{min}} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the function
+   *   \f$ d(n) = n - n_{\text{min}} \f$. The inverse map is \f$ n(d) = d + n_{\text{min}} \f$.
    * - An index \f$ n \f$ is mapped to the corresponding value \f$ i\omega_n \equiv i\omega(n) \f$ by the function
-   * \f[
-   *   i\omega_n =
-   *   \begin{cases}
-   *   i\frac{2n \pi}{\beta} & \text{if fermionic statistics} \\
-   *   i\frac{(2n + 1) \pi}{\beta} & \text{if bosonic statistics}
-   *   \end{cases}
-   *   \; .
-   * \f]
-   * The inverse map is trivially \f$ n(i\omega_n) = n \f$.
-   * 
-   * @ref triqs-gfs containers that are based on an imaginary frequency mesh store the function values at the discrete 
-   * frequency points \f$ i\omega_n \f$, i.e. \f$ f_n = f(i\omega(n)) \f$, and to evaluate the function at a specific 
+   *   \f[
+   *     i\omega_n =
+   *     \begin{cases}
+   *     i\frac{2n \pi}{\beta} & \text{if fermionic statistics} \\
+   *     i\frac{(2n + 1) \pi}{\beta} & \text{if bosonic statistics}
+   *     \end{cases}
+   *     \; .
+   *   \f]
+   *
+   * Green's function containers that are based on an imaginary frequency mesh store the function values at the discrete
+   * frequency points \f$ i\omega_n \f$, i.e. \f$ f_n = f(i\omega(n)) \f$, and to evaluate the function at a specific
    * Matsubara frequency \f$ i\omega_n \f$ with \f$ n_{\text{min}} \leq n \leq n_{\text{max}} \f$ the container simply
-   * returns the corresponding \f$ f_n \f$ (see triqs::mesh::evaluate(imfreq const &, auto const &, matsubara_freq const 
-   * &) for details). 
-   *
-   * @include imfreq.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = -3, data index = 0, value = -1.5707963267948966i
-   * mesh point #1: index = -2, data index = 1, value = -0.9424777960769379i
-   * mesh point #2: index = -1, data index = 2, value = -0.3141592653589793i
-   * mesh point #3: index = 0, data index = 3, value = 0.3141592653589793i
-   * mesh point #4: index = 1, data index = 4, value = 0.9424777960769379i
-   * mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
-   * ```
+   * returns the corresponding \f$ f_n \f$.
    */
   class C2PY_RENAME(MeshImFreq) imfreq : public tail_fitter_handle {
     public:
@@ -127,7 +112,7 @@ namespace triqs::mesh {
 
     /**
      * @brief %Mesh point of a triqs::mesh::imfreq mesh.
-     * 
+     *
      * @details It inherits from triqs::mesh::matsubara_freq and in addition to the Matsubara index \f$ n \f$, the
      * inverse temperature \f$ \beta \f$ and the particle statistics, it also stores the data index \f$ d \f$ and the
      * hash value of the parent mesh.
@@ -185,7 +170,7 @@ namespace triqs::mesh {
     imfreq() = default;
 
     /**
-     * @brief Construct an imaginary frequency mesh with \f$ N_{i\omega_n} \geq 0 \f$ positive Matsubara frequencies. 
+     * @brief Construct an imaginary frequency mesh with \f$ N_{i\omega_n} \geq 0 \f$ positive Matsubara frequencies.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
      * @param statistic Particle statistics.
@@ -250,7 +235,7 @@ namespace triqs::mesh {
     /**
      * @brief Map a Matsubara frequency \f$ i\omega_n \f$ to its data index \f$ d(i\omega_n) \f$.
      *
-     * @param iw triqs::mesh::matsubara_freq to map.
+     * @param iw Matsubara frequency to map.
      * @return Data index \f$ d(i\omega_n) = n - n_{\text{min}} \f$.
      */
     [[nodiscard]] data_index_t to_data_index(matsubara_freq const &iw) const noexcept {
@@ -259,7 +244,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map a Matsubara frequency \f$ i\omega_n \f$ contained in a triqs::mesh::closest_mesh_point_t to its data 
+     * @brief Map a Matsubara frequency \f$ i\omega_n \f$ contained in a triqs::mesh::closest_mesh_point_t to its data
      * index \f$ d(i\omega_n) \f$.
      *
      * @param cmp triqs::mesh::closest_mesh_point_t containing \f$ i\omega_n \f$.
@@ -282,7 +267,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map a Matsubara frequency \f$ i\omega_n \f$ contained in a triqs::mesh::closest_mesh_point_t to its 
+     * @brief Map a Matsubara frequency \f$ i\omega_n \f$ contained in a triqs::mesh::closest_mesh_point_t to its
      * Matsubara index \f$ n(i\omega_n) \f$.
      *
      * @param cmp triqs::mesh::closest_mesh_point_t containing \f$ i\omega_n \f$.
@@ -324,7 +309,7 @@ namespace triqs::mesh {
 
     /**
      * @brief Map a Matsubara index \f$ n \in \{ n_{\text{min}}, \dots, n_{\text{max}} \} \f$ to its corresponding
-     * triqs::mesh::matsubara_freq \f$ i\omega_n \f$.
+     * Matsubara frequency \f$ i\omega_n \f$.
      *
      * @param n Matsubara index \f$ n \f$ to map.
      * @return Matsubara frequency \f$ i\omega_n \f$.
@@ -454,13 +439,13 @@ namespace triqs::mesh {
       m = imfreq{beta, stat, N_iw, opt};
     }
 
-    /// Return true if the given Matusbara index \f$ n \f$ is not valid (see is_index_valid()).
+    /// Return true if the given Matsubara index \f$ n \f$ is not valid (see is_index_valid()).
     C2PY_IGNORE bool eval_to_zero(index_t n) const { return !is_index_valid(n); }
 
-    /// Return true if the Matusbara index of the given Matsubara frequency \f$ i\omega_n \f$ is not valid.
+    /// Return true if the Matsubara index of the given Matsubara frequency \f$ i\omega_n \f$ is not valid.
     C2PY_IGNORE bool eval_to_zero(matsubara_freq iw) const { return eval_to_zero(iw.n); }
 
-    /// Return true if the Matusbara index of the given mesh point is not valid (see is_index_valid()).
+    /// Return true if the Matsubara index of the given mesh point is not valid (see is_index_valid()).
     C2PY_IGNORE bool eval_to_zero(mesh_point_t mp) const { return eval_to_zero(mp.value()); }
 
     private:

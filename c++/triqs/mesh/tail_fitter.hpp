@@ -99,7 +99,7 @@ namespace triqs::mesh::detail {
    * \f[
    *   f(z_0) \approx \sum_{n=0}^{q} \frac{A_n}{z_0^n} \; ,
    * \f]
-   * where \f$ A_n = A(n, \dots) \f$ is the \f$ R - 1 \f$ dimensional array of coefficients for the n<sup>th</sup> term
+   * where \f$ A_n = A(n, \dots) \f$ is the \f$ R - 1 \f$ dimensional array of coefficients for the n-th term
    * in the expansion.
    *
    * @tparam R Rank of the coefficient array.
@@ -138,7 +138,7 @@ namespace triqs::mesh {
    * \f[
    *   f(z) = \sum_{n=0}^{q} \frac{A_n}{z^n} + \mathcal{O}(z^{-q-1}) \; ,
    * \f]
-   * where \f$ A_n \in \mathbb{C}^{d_1 \times d_2} \f$ is a matrix containing the n<sup>th</sup> order expansion
+   * where \f$ A_n \in \mathbb{C}^{d_1 \times d_2} \f$ is a matrix containing the n-th order expansion
    * coefficients.
    *
    * Since the function is defined on discrete mesh points, its values can be stored in a data array \f$ D \f$ of rank
@@ -192,7 +192,7 @@ namespace triqs::mesh {
    *
    * This system of equations can then be solved with the linear least squares worker classes
    * `nda::lapack::gelss_worker` or `nda::lapack::gelss_worker_hermitian`. Hermitian means that the coefficient matrices
-   * \f$ A_n \f$ are required to be hermitian, i,.e. \f$ [A_n]_{ij} = [A_n]_{ji}^* \f$, which enforces the symmetry \f$
+   * \f$ A_n \f$ are required to be hermitian, i.e. \f$ [A_n]_{ij} = [A_n]_{ji}^* \f$, which enforces the symmetry \f$
    * [f(z)]_{ij} = [f(-z)]_{ji}^* \f$ in the function values.
    */
   class C2PY_IGNORE tail_fitter {
@@ -213,8 +213,8 @@ namespace triqs::mesh {
      * automatically.
      */
     tail_fitter(double r, int p_max, std::optional<int> q = {}) : r_(r), p_max_(p_max), adjust_q_(not q.has_value()), q_(adjust_q_ ? q_max_ : *q) {
-      if (r_ <= 0 or r_ > 1) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter: Fraction of mesh points must be in (0, 1]";
-      if (p_max_ <= 0) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter: Maximum number of mesh points must be > 0";
+      if (r_ <= 0 or r_ > 1) TRIQS_RUNTIME_ERROR << "Error in tail-fitter: Fraction of mesh points must be in (0, 1]";
+      if (p_max_ <= 0) TRIQS_RUNTIME_ERROR << "Error in tail-fitter: Maximum number of mesh points must be > 0";
     }
 
     /**
@@ -325,8 +325,7 @@ namespace triqs::mesh {
       }
 
       // check if we have enough data points for the least square procedure (p > n_A + 1)
-      if (n_A + 1 > V_.extent(0) / 2)
-        TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::setup_lss: Insufficient data points for least square procedure";
+      if (n_A + 1 > V_.extent(0) / 2) TRIQS_RUNTIME_ERROR << "Error in tail-fitter::setup_lss: Insufficient data points for least square procedure";
 
       // factory function for least square workers
       auto worker_factory = [&](int n) { return std::make_unique<const worker_t>(V_(nda::range::all, nda::range(n_A, n + 1))); };
@@ -355,7 +354,7 @@ namespace triqs::mesh {
       }
 
       // throw an exception if the Vandermonde matrix is ill-conditioned
-      if (!lss[n_A]) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::setup_lss: Ill-conditioned Vandermonde matrix";
+      if (!lss[n_A]) TRIQS_RUNTIME_ERROR << "Error in tail-fitter::setup_lss: Ill-conditioned Vandermonde matrix";
     }
 
     /**
@@ -401,8 +400,8 @@ namespace triqs::mesh {
       // compile-time and run-time checks
       static_assert(!enforce_hermiticity || std::is_same_v<M, imfreq>);
       if (enforce_hermiticity and not d.has_value())
-        TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Enforcing hermiticity requires an inner matrix dimension";
-      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Cannot fit on a positive_only mesh";
+        TRIQS_RUNTIME_ERROR << "Error in tail-fitter::fit: Enforcing hermiticity requires an inner matrix dimension";
+      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Error in tail-fitter::fit: Cannot fit on a positive_only mesh";
 
       // early return if the number of known coefficients is larger than the expansion order
       int const n_A = C.extent(0);
@@ -431,7 +430,7 @@ namespace triqs::mesh {
       if (n_A > 0) {
         // check the shape of C
         if (ncols != C.size() / C.shape()[0])
-          TRIQS_RUNTIME_ERROR << "Error in triqs::mesh::tail_fitter::fit: Shape of C array incompatible with the shape of the D array";
+          TRIQS_RUNTIME_ERROR << "Error in tail-fitter::fit: Shape of C array incompatible with the shape of the D array";
 
         // flatten C and scale its values by |z_max|^{-q}
         double z   = 1.0;
@@ -521,11 +520,11 @@ namespace triqs::mesh {
   class C2PY_IGNORE tail_fitter_handle {
     public:
     /**
-     * @brief Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
+     * @brief Set the pointer to a new tail-fitter object constructed with the given parameters.
      *
      * @param tail_fraction Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
      * @param n_tail_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
-     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be 
+     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be
      * adjusted automatically.
      */
     void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
@@ -551,7 +550,7 @@ namespace triqs::mesh {
      *
      * @param tail_fraction Fraction of the mesh to consider in the tail fit (\f$ 0 < r \leq 1 \f$).
      * @param n_tail_max Maximum number of points to use in the tail fit (\f$ p_\text{max} > 0 \f$).
-     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be 
+     * @param expansion_order Optional expansion order \f$ q \leq q_{\text{max}} = 9 \f$. If not set, it will be
      * adjusted automatically.
      * @return Tail fitter object.
      */

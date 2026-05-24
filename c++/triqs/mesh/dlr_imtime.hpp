@@ -50,42 +50,26 @@ namespace triqs::mesh {
   /**
    * @brief Imaginary time discrete Lehmann representation (DLR) mesh type.
    *
-   * @details An imaginary time DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse
-   * temperature \f$ \beta > 0 \f$, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff \f$
-   * \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag specifying if the mesh should be
-   * symmetric around \f$ \tau = \beta / 2 \f$ (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
-   * for Bosons).
+   * @details An imaginary time DLR mesh is defined by the inverse temperature \f$ \beta > 0 \f$, the particle
+   * statistics, a DLR energy cutoff \f$ \omega_{\text{max}} \f$, an error tolerance \f$ \epsilon \f$ and a boolean flag
+   * specifying if the mesh should be symmetric around \f$ \tau = \beta / 2 \f$ (a symmetric mesh enforces the DLR rank
+   * to be even for Fermions and odd for Bosons).
    *
    * An imaginary time DLR mesh has the following properties:
    *
    * - Each mesh point is identified by a unique index \f$ l \in \{0, 1, \ldots, N-1\} \f$.
-   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and \f$ 
-   * \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions \f$ K(\tau, \omega_l) 
-   * \f$.
+   * - The size of the mesh \f$ N \f$ depends on \f$ \beta \f$ and the choice of \f$ \omega_{\text{max}} \f$ and
+   *   \f$ \epsilon \f$. It is equal to the DLR rank \f$ r \f$ and the number of DLR basis functions
+   *   \f$ K(\tau, \omega_l) \f$.
    * - An index \f$ l \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(l) = l \f$
-   * and vice versa.
-   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \tau_l \f$, where \f$ \tau_l \f$ is the l<sup>th
-   * </sup> DLR interpolation node in imaginary time space.
-   * 
-   * @ref triqs-gfs containers that are based on an imaginary time DLR mesh store the function values at the discrete 
-   * time points \f$ \tau_l \f$, i.e. \f$ f_l = f(\tau_l) \f$. In contrast to triqs::mesh::dlr and triqs::mesh::imtime, 
-   * the GF container cannot evaluate the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$ (see the
-   * deleted triqs::mesh::evaluate(dlr_imtime const &, ...)).
+   *   and vice versa.
+   * - An index \f$ l \f$ is mapped to the corresponding value \f$ \tau_l \f$, where \f$ \tau_l \f$ is the l-th DLR
+   *   interpolation node in imaginary time space.
    *
-   * @include dlr_imtime.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = 0.012031950007446723
-   * mesh point #1: index = 1, data index = 1, value = 0.6496895210536141
-   * mesh point #2: index = 2, data index = 2, value = 2.0222028313159592
-   * mesh point #3: index = 3, data index = 3, value = 5.283961182488998
-   * mesh point #4: index = 4, data index = 4, value = 7.022202831315959
-   * mesh point #5: index = 5, data index = 5, value = 8.584483769065113
-   * mesh point #6: index = 6, data index = 6, value = 9.550004964934757
-   * mesh point #7: index = 7, data index = 7, value = 9.987968049992553
-   * ```
+   * Green's function containers that are based on an imaginary time DLR mesh store the function values at the discrete
+   * time points \f$ \tau_l \f$, i.e. \f$ f_l = f(\tau_l) \f$. In contrast to DLR and imaginary-time meshes, the GF
+   * container cannot evaluate the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$
+   * (evaluation at arbitrary points is intentionally unsupported).
    */
   class C2PY_RENAME(MeshDLRImTime) dlr_imtime {
     public:
@@ -100,7 +84,7 @@ namespace triqs::mesh {
 
     /**
      * @brief %Mesh point of a triqs::mesh::dlr_imtime mesh.
-     * 
+     *
      * @details It stores the index \f$ l \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
      * \f$ \tau_l \f$ of the mesh point.
      */
@@ -170,10 +154,10 @@ namespace triqs::mesh {
     /**
      * @brief Construct an imaginary time DLR mesh with a given energy cutoff \f$ \omega_{\text{max}} \f$ and error
      * tolerance \f$ \epsilon \f$.
-     * 
-     * @details It calls `cppdlr::build_dlr_rf` with \f$ \Lambda = \omega_{\text{max}} \beta \f$ and \f$ \epsilon \f$ to
-     * build the DLR frequencies \f$ \omega_l \f$, which are then passed to the constructors of `cppdlr::imtime_ops` and 
-     * `cppdlr::imfreq_ops` objects.
+     *
+     * @details It builds the DLR frequencies \f$ \omega_l \f$ from \f$ \Lambda = \omega_{\text{max}} \beta \f$ and the
+     * error tolerance \f$ \epsilon \f$, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+     * from them.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
      * @param statistic Particle statistics.
@@ -185,7 +169,7 @@ namespace triqs::mesh {
        : dlr_imtime(beta, statistic, w_max, eps, symmetrize, cppdlr::build_dlr_rf(w_max * beta, eps, symmetrize)) {}
 
     /**
-     * @brief Construct an imaginary frequency DLR mesh from another DLR type mesh.
+     * @brief Construct an imaginary time DLR mesh from another DLR type mesh.
      *
      * @tparam M triqs::mesh::dlr or triqs::mesh::dlr_imfreq type.
      * @param m Other mesh.
@@ -258,7 +242,7 @@ namespace triqs::mesh {
      * @brief Map an index \f$ l \in \{0, 1, \ldots, N-1\} \f$ to its corresponding value \f$ \tau_l \f$.
      *
      * @param l Index \f$ l \f$ to map.
-     * @return Value of the l<sup>th</sup> DLR interpolation node in imaginary time space, i.e. \f$ \tau_l \f$ .
+     * @return Value of the l-th DLR interpolation node in imaginary time space, i.e. \f$ \tau_l \f$ .
      */
     [[nodiscard]] double to_value(long l) const noexcept {
       EXPECTS(is_index_valid(l));
@@ -282,7 +266,7 @@ namespace triqs::mesh {
     /// Is the mesh symmetric around \f$ \tau = \beta / 2 \f$?
     [[nodiscard]] C2PY_PROPERTY_GET(symmetrize) bool symmetrize() const noexcept { return symmetrize_; }
 
-    /// Get the `nda::vector` of DLR frequencies \f$ \omega_l \f$.
+    /// Get the array of DLR frequencies \f$ \omega_l \f$.
     [[nodiscard]] C2PY_PROPERTY_GET(dlr_freq) auto const &dlr_freq() const { return dlr_->freq; }
 
     /// Get the imaginary time DLR operations object (see also `cppdlr::imtime_ops`).
