@@ -70,7 +70,7 @@ namespace triqs::mesh {
     matsubara_freq() = default;
 
     /**
-     * @brief Construct a Matsubara frequency with a given index \f$ n \f$, inverse temperature \f$ \beta \f$ and 
+     * @brief Construct a Matsubara frequency with a given index \f$ n \f$, inverse temperature \f$ \beta \f$ and
      * particle statistics.
      *
      * @param n_idx Matsubara index \f$ n \f$.

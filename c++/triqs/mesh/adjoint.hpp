@@ -37,12 +37,12 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-imag
-   * @brief Create the adjoint triqs::mesh::imfreq mesh to a given triqs::mesh::imtime mesh.
-   * 
-   * @details If \f$ N_{i\omega_n} = -1 \f$, the number of positive Matsubara frequencies is set to \f$ N_{i\omega_n} = 
+   * @brief Create the adjoint imaginary-frequency mesh to a given imaginary-time mesh.
+   *
+   * @details If \f$ N_{i\omega_n} = -1 \f$, the number of positive Matsubara frequencies is set to \f$ N_{i\omega_n} =
    * N / 6 \f$, where \f$ N \f$ is the size of the given imaginary time mesh.
-   * 
-   * @param m Input triqs::mesh::imtime mesh.
+   *
+   * @param m Input mesh.
    * @param n_iw Number of positive Matsubara frequencies, i.e. \f$ N_{i\omega_n} \f$.
    * @return Imaginary frequency mesh with the same \f$ \beta \f$ and particle statistics as the given imaginary time
    * mesh and \f$ N_{i\omega_n} \f$ positive Matsubara frequencies.
@@ -54,12 +54,12 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-imag
-   * @brief Create the adjoint triqs::mesh::imtime mesh to a given triqs::mesh::imfreq mesh.
-   * 
-   * @details If \f$ N = -1 \f$, the size of the imaginary time mesh is set to \f$ N = 6 (n_{\text{max}} + 1) + 1 \f$, 
+   * @brief Create the adjoint imaginary-time mesh to a given imaginary-frequency mesh.
+   *
+   * @details If \f$ N = -1 \f$, the size of the imaginary time mesh is set to \f$ N = 6 (n_{\text{max}} + 1) + 1 \f$,
    * where \f$ n_{\text{max}} \f$ is the largest positive Matsubara index in the given imaginary frequency mesh.
-   * 
-   * @param m Input triqs::mesh::imtime mesh.
+   *
+   * @param m Input mesh.
    * @param n_tau Size of the imaginary time mesh.
    * @return Imaginary time mesh with the same \f$ \beta \f$ and particle statistics as the given imaginary frequency
    * mesh and size \f$ N \f$.
@@ -71,40 +71,40 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-imag
-   * @brief Create the adjoint triqs::mesh::dlr_imfreq mesh to a given triqs::mesh::dlr_imtime mesh.
-   * 
-   * @details It calls triqs::mesh::dlr_imfreq::dlr_imfreq(M const &) with the given imaginary time DLR mesh.	
-   * 
-   * @param m Input triqs::mesh::dlr_imtime mesh.
+   * @brief Create the adjoint imaginary-frequency DLR mesh to a given imaginary-time DLR mesh.
+   *
+   * @details It constructs the imaginary-frequency DLR mesh from the given imaginary-time DLR mesh.
+   *
+   * @param m Input mesh.
    * @return Imaginary frequency DLR mesh.
    */
   [[nodiscard]] inline dlr_imfreq make_adjoint_mesh(dlr_imtime const &m) { return dlr_imfreq{m}; }
 
   /**
    * @ingroup triqs-meshes-imag
-   * @brief Create the adjoint triqs::mesh::dlr_imtime mesh to a given triqs::mesh::dlr_imfreq mesh.
-   * 
-   * @details It calls triqs::mesh::dlr_imtime::dlr_imtime(M const &) with the given imaginary frequency DLR mesh.	
-   * 
-   * @param m Input triqs::mesh::dlr_imfreq mesh.
+   * @brief Create the adjoint imaginary-time DLR mesh to a given imaginary-frequency DLR mesh.
+   *
+   * @details It constructs the imaginary-time DLR mesh from the given imaginary-frequency DLR mesh.
+   *
+   * @param m Input mesh.
    * @return Imaginary time DLR mesh.
    */
   [[nodiscard]] inline dlr_imtime make_adjoint_mesh(dlr_imfreq const &m) { return dlr_imtime{m}; }
 
   /**
    * @ingroup triqs-meshes-real
-   * @brief Create the adjoint triqs::mesh::refreq mesh to a given triqs::mesh::retime mesh.
-   * 
-   * @details The resulting frequency mesh is defined on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] 
-   * \f$ with \f$ \omega_{\text{max}} = \pi (N - 1) / (N \Delta) \f$ and \f$ \omega_{\text{min}} = -\omega_{\text{max}} 
-   * \f$, where \f$ N \f$ and \f$ \Delta \f$ are the size and step size of the given real time mesh, respectively. 
-   * 
+   * @brief Create the adjoint real-frequency mesh to a given real-time mesh.
+   *
+   * @details The resulting frequency mesh is defined on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}]
+   * \f$ with \f$ \omega_{\text{max}} = \pi (N - 1) / (N \Delta) \f$ and \f$ \omega_{\text{min}} = -\omega_{\text{max}}
+   * \f$, where \f$ N \f$ and \f$ \Delta \f$ are the size and step size of the given real time mesh, respectively.
+   *
    * If `shift_half_bin` is true, the frequency mesh is shifted by half a bin to the right, i.e. by \f$ \pi / (N \Delta)
    * \f$.
-   * 
-   * @param m Input triqs::mesh::retime mesh.
+   *
+   * @param m Input mesh.
    * @param shift_half_bin If true, shift the frequency mesh by half a bin to the right.
-   * @return Real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with \f$ N \f$ 
+   * @return Real frequency mesh on the interval \f$ [\omega_{\text{min}}, \omega_{\text{max}}] \f$ with \f$ N \f$
    * equally spaced mesh points.
    */
   [[nodiscard]] inline refreq make_adjoint_mesh(retime const &m, bool shift_half_bin = false) {
@@ -117,17 +117,17 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-real
-   * @brief Create the adjoint triqs::mesh::retime mesh to a given triqs::mesh::refreq mesh.
-   * 
-   * @details The resulting time mesh is defined on the interval \f$ [t_{\text{min}}, t_{\text{max}}] \f$ with \f$ 
-   * t_{\text{max}} = \pi (N - 1) / (N \Delta) \f$ and \f$ t_{\text{min}} = -t_{\text{max}} \f$, where \f$ N \f$ and 
-   * \f$ \Delta \f$ are the size and step size of the given real frequency mesh, respectively. 
-   * 
+   * @brief Create the adjoint real-time mesh to a given real-frequency mesh.
+   *
+   * @details The resulting time mesh is defined on the interval \f$ [t_{\text{min}}, t_{\text{max}}] \f$ with
+   * \f$ t_{\text{max}} = \pi (N - 1) / (N \Delta) \f$ and \f$ t_{\text{min}} = -t_{\text{max}} \f$, where \f$ N \f$ and
+   * \f$ \Delta \f$ are the size and step size of the given real frequency mesh, respectively.
+   *
    * If `shift_half_bin` is true, the time mesh is shifted by half a bin to the right, i.e. by \f$ \pi / (N \Delta) \f$.
-   * 
-   * @param m Input triqs::mesh::refreq mesh.
+   *
+   * @param m Input mesh.
    * @param shift_half_bin If true, shift the time mesh by half a bin to the right.
-   * @return Real time mesh on the interval \f$ [t_{\text{min}}, t_{\text{max}}] \f$ with \f$ N \f$ equally spaced mesh 
+   * @return Real time mesh on the interval \f$ [t_{\text{min}}, t_{\text{max}}] \f$ with \f$ N \f$ equally spaced mesh
    * points.
    */
   [[nodiscard]] inline retime make_adjoint_mesh(refreq const &m, bool shift_half_bin = false) {
@@ -140,18 +140,18 @@ namespace triqs::mesh {
 
   /**
    * @ingroup triqs-meshes-lattice
-   * @brief Create the adjoint triqs::mesh::brzone mesh to a given triqs::mesh::cyclat mesh.
-   * 
-   * @param m Input triqs::mesh::cyclat mesh.
+   * @brief Create the adjoint Brillouin-zone mesh to a given cyclic-lattice mesh.
+   *
+   * @param m Input mesh.
    * @return Brillouin zone mesh compatible with the given cyclic lattice mesh and its periodic boundary conditions.
    */
   [[nodiscard]] inline brzone make_adjoint_mesh(cyclat const &m) { return {brillouin_zone{m.lattice()}, m.dims()}; }
 
   /**
    * @ingroup triqs-meshes-lattice
-   * @brief Create the adjoint triqs::mesh::cyclat mesh to a given triqs::mesh::brzone mesh.
-   * 
-   * @param m Input triqs::mesh::brzone mesh.
+   * @brief Create the adjoint cyclic-lattice mesh to a given Brillouin-zone mesh.
+   *
+   * @param m Input mesh.
    * @return Cyclic lattice mesh compatible with the given BZ mesh and its periodic boundary conditions.
    */
   [[nodiscard]] inline cyclat make_adjoint_mesh(brzone const &m) { return {m.bz().lattice(), m.dims()}; }

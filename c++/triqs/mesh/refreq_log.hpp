@@ -46,26 +46,30 @@ namespace triqs::mesh {
   /**
    * @brief Logarithmic real frequency mesh type.
    *
-   * @details A logarithmic mesh satisfies the triqs::mesh::MeshWithValues concept and generates a
-   * symmetric set of frequency points around zero using a geometric sequence.
+   * @details A logarithmic real frequency mesh is defined by a cutoff frequency \f$ \varepsilon > 0 \f$, an upper bound
+   * \f$ \omega_{\mathrm{max}} \geq \varepsilon \f$ and a common ratio \f$ r > 1 \f$. It contains a symmetric set of
+   * \f$ N \f$ mesh points around zero, formed by mirroring the positive geometric sequence \f$ \omega_{\mathrm{max}},
+   * \omega_{\mathrm{max}} / r, \omega_{\mathrm{max}} / r^2, \ldots \f$ (taken while the sequence stays above
+   * \f$ \varepsilon \f$) to the negative axis. The mesh always has an even number of points and does not include zero.
    *
-   * The mesh is defined by three parameters:
-   * - \f$ \varepsilon > 0 \f$: the smallest positive frequency (cutoff near zero)
-   * - \f$ \omega_{\mathrm{max}} \geq \varepsilon \f$: the largest frequency
-   * - \f$ r > 1 \f$: the common ratio of the geometric sequence
+   * A logarithmic real frequency mesh has the following properties:
    *
-   * Positive frequencies are generated as \f$ \omega_{\mathrm{max}}, \omega_{\mathrm{max}}/r,
-   * \omega_{\mathrm{max}}/r^2, \ldots \f$ while \f$ \omega \geq \varepsilon \f$. Each positive
-   * frequency is mirrored to a negative one, giving a symmetric mesh:
-   * \f$ \{-\omega_{\mathrm{max}}, \ldots, -\varepsilon_{\mathrm{eff}}, \varepsilon_{\mathrm{eff}},
-   * \ldots, \omega_{\mathrm{max}}\} \f$
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding value \f$ \omega_n \f$ by
    *
-   * The mesh always has an even number of points and does not include zero.
+   *   - \f$ \omega_n = -\omega_{\mathrm{max}} / r^n \f$ for \f$ 0 \leq n < N/2 \f$ and
+   *   - \f$ \omega_n = \omega_{\mathrm{max}} / r^{N - 1 - n} \f$ for \f$ N/2 \leq n \leq N - 1 \f$,
    *
-   * @ref triqs-gfs containers that are based on this mesh use linear interpolation to evaluate
-   * the function at an arbitrary frequency (see triqs::mesh::evaluate(refreq_log const &, auto const &, double)).
+   *   such that the mesh points are sorted in ascending order with \f$ \omega_0 = -\omega_{\mathrm{max}} \f$ and
+   *   \f$ \omega_{N-1} = \omega_{\mathrm{max}} \f$.
+   * - An arbitrary value \f$ \omega \in [-\omega_{\mathrm{max}}, \omega_{\mathrm{max}}] \f$ is mapped to the closest
+   *   mesh point with index \f$ n \f$ by binary search on the sorted mesh points.
    *
-   * @include refreq_log.cpp
+   * Green's function containers that are based on a logarithmic real frequency mesh store the function values at the
+   * discrete frequency points \f$ \omega_n \f$, i.e. \f$ f_n = f(\omega_n) \f$, and use linear interpolation to
+   * evaluate the function at an arbitrary frequency \f$ \omega \in [-\omega_{\mathrm{max}}, \omega_{\mathrm{max}}] \f$.
    */
   class C2PY_RENAME(MeshReFreqLog) refreq_log {
     public:
@@ -81,11 +85,11 @@ namespace triqs::mesh {
     /**
      * @brief %Mesh point of a triqs::mesh::refreq_log mesh.
      *
-     * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the
-     * parent mesh and the value \f$ \omega_n \f$ of the mesh point.
+     * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the parent mesh and the value
+     * \f$ \omega_n \f$ of the mesh point.
      *
-     * Arithmetic operations are defined for mesh points and scalars. The operations are performed
-     * between the value \f$ \omega_n \f$ of the mesh point and the given scalar.
+     * Arithmetic operations are defined for mesh points and scalars. The operations are performed between the value
+     * \f$ \omega_n \f$ of the mesh point and the given scalar.
      */
     class C2PY_IGNORE mesh_point_t {
       public:
@@ -379,15 +383,15 @@ namespace triqs::mesh {
   };
 
   /**
-   * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::refreq_log mesh
-   * at a real frequency \f$ \omega \f$.
+   * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::refreq_log mesh at a real frequency
+   * \f$ \omega \f$.
    *
    * @details We find the bracketing mesh points using binary search and calculate
    * \f[
    *   f(\omega) \approx f_{i_l} \cdot w_l + f_{i_r} \cdot w_r
    * \f]
-   * where \f$ i_l \f$ and \f$ i_r \f$ are the indices of the mesh points bracketing \f$ \omega \f$,
-   * and \f$ w_l, w_r \f$ are the interpolation weights.
+   * where \f$ i_l \f$ and \f$ i_r \f$ are the indices of the mesh points bracketing \f$ \omega \f$, and \f$ w_l \f$ and
+   * \f$ w_r \f$ are the interpolation weights.
    *
    * @param m triqs::mesh::refreq_log mesh.
    * @param f Callable object containing the function values at the mesh points.

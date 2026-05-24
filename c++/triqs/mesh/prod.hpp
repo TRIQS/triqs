@@ -116,7 +116,7 @@ namespace triqs::mesh {
    *
    * A product mesh has the following properties:
    * - The number of meshes in the product is \f$ k \f$ and can be queried with triqs::mesh::n_variables.
-   * - Its mesh points are tuples of size \f$ k \f$. The i<sup>th</sup> element in the tuple is a mesh point \f$ \in M_i
+   * - Its mesh points are tuples of size \f$ k \f$. The i-th element in the tuple is a mesh point \f$ \in M_i
    * \f$.
    * - Each mesh point is identified by a unique tuple of indices \f$ \mathbf{n} = (n_1, n_2, \dots, n_k) \f$, where
    * \f$ n_i \f$ is a valid index of \f$ M_i \f$.
@@ -125,30 +125,11 @@ namespace triqs::mesh {
    * \dots, d_k(n_k)) \f$, where \f$ d_i \f$ is a data index of \f$ M_i \f$. The inverse map is \f$ \mathbf{n}(
    * \mathbf{d}) = (n_1(d_1), \dots, n_k(d_k)) \f$.
    *
-   * @ref triqs-gfs containers that are based on a product mesh store function values, coefficients, etc. depending on
+   * Green's function containers that are based on a product mesh store function values, coefficients, etc. depending on
    * the mesh types of its components. For example, a GF defined on a product mesh consisting of a triqs::mesh::brzone
    * and a triqs::mesh::dlr_imtime mesh stores the function values at the DLR interpolation nodes \f$ \tau_l \f$ for
    * every \f$ \mathbf{k} \f$-point. Function evaluation is done in general by calling
-   * @ref triqs::mesh::evaluate(mesh::prod<Ms...> const &m, auto const &f, Xs const &...xs) "triqs::mesh::evaluate".
-   *
-   * @include prod.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = ([0, 0, 0], -1), data index = (0, 0)
-   * mesh point #1: index = ([0, 0, 0], 0), data index = (0, 1)
-   * mesh point #2: index = ([0, 0, 0], 1), data index = (0, 2)
-   * mesh point #3: index = ([0, 1, 0], -1), data index = (1, 0)
-   * mesh point #4: index = ([0, 1, 0], 0), data index = (1, 1)
-   * mesh point #5: index = ([0, 1, 0], 1), data index = (1, 2)
-   * mesh point #6: index = ([1, 0, 0], -1), data index = (2, 0)
-   * mesh point #7: index = ([1, 0, 0], 0), data index = (2, 1)
-   * mesh point #8: index = ([1, 0, 0], 1), data index = (2, 2)
-   * mesh point #9: index = ([1, 1, 0], -1), data index = (3, 0)
-   * mesh point #10: index = ([1, 1, 0], 0), data index = (3, 1)
-   * mesh point #11: index = ([1, 1, 0], 1), data index = (3, 2)
-   * ```
+   * triqs::mesh::evaluate.
    *
    * @tparam Ms triqs::mesh::Mesh types.
    */

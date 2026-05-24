@@ -44,32 +44,26 @@ namespace triqs::mesh {
   /**
    * @brief Imaginary time mesh type.
    *
-   * @details An imaginary time mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size
-   * \f$ N \geq 0 \f$, an inverse temperature \f$ \beta > 0 \f$ and its particle statistics (see 
-   * triqs::mesh::statistic_enum).
+   * @details An imaginary time mesh is defined by its size \f$ N \geq 0 \f$, an inverse temperature \f$ \beta > 0 \f$
+   * and its particle statistics. It contains \f$ N \f$ equally spaced mesh points on the interval \f$ [0, \beta] \f$
+   * such that the distance between two consecutive mesh points (step size) is constant.
    *
-   * It is a triqs::mesh::detail::linear mesh with \f$ N \f$ equally spaced mesh points on the interval \f$ [0, \beta] 
-   * \f$ such that
-   * - \f$ \tau(n) = n \cdot \Delta \f$ with \f$ \Delta = \frac{\beta}{N - 1} \f$ for \f$ N > 1 \f$,
-   * - \f$ \tau(0) = 0 \f$ and
-   * - \f$ \tau(N - 1) = \beta \f$.
-   * 
-   * @ref triqs-gfs containers that are based on an imaginary time mesh store the function values at the discrete time 
-   * points \f$ \tau(n) \f$, i.e. \f$ f_n = f(\tau(n)) \f$, and use linear interpolation to evaluate the function at an 
-   * arbitrary imaginary time \f$ \tau \in [0, \beta] \f$ (see triqs::mesh::evaluate(imtime const &, auto const &, 
-   * double) for details). 
+   * An imaginary time mesh has the following properties:
    *
-   * @include imtime.cpp
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding value \f$ \tau \f$ by the linear function
+   *   \f$ \tau(n) = n \cdot \Delta \f$ such that \f$ \tau(0) = 0 \f$ and \f$ \tau(N-1) = \beta \f$. The step size of
+   *   the mesh is \f$ \Delta = \frac{\beta}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is undefined. For implementation
+   *   purposes, we set \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$ and \f$ \Delta = 0 \f$ and
+   *   \f$ \Delta^{-1} = \infty \f$ for \f$ N = 1 \f$.
+   * - An arbitrary value \f$ \tau \in [0, \beta] \f$ is mapped to the closest mesh point with index \f$ n \f$ by the
+   *   function \f$ n(\tau) = \left\lfloor \frac{\tau}{\Delta} + 0.5 \right\rfloor \f$.
    *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = 0
-   * mesh point #1: index = 1, data index = 1, value = 2.5
-   * mesh point #2: index = 2, data index = 2, value = 5
-   * mesh point #3: index = 3, data index = 3, value = 7.5
-   * mesh point #4: index = 4, data index = 4, value = 10
-   * ```
+   * Green's function containers that are based on an imaginary time mesh store the function values at the discrete time
+   * points \f$ \tau(n) \f$, i.e. \f$ f_n = f(\tau(n)) \f$, and use linear interpolation to evaluate the function at an
+   * arbitrary imaginary time \f$ \tau \in [0, \beta] \f$.
    */
   class C2PY_RENAME(MeshImTime) imtime : public detail::linear<imtime, double> {
     public:
@@ -81,7 +75,7 @@ namespace triqs::mesh {
      * mesh points and the given particle statistics.
      *
      * @param beta Inverse temperature \f$ \beta > 0 \f$.
-     * @param statistic Particle statistics (see triqs::mesh::statistic_enum).
+     * @param statistic Particle statistics.
      * @param n_tau Size of the mesh.
      */
     C2PY_DEPRECATED_PARAMETER_NAME(S : statistic, n_max : n_tau)

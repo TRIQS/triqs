@@ -65,59 +65,41 @@ namespace triqs::mesh {
   /**
    * @brief Brillouin zone mesh type.
    *
-   * @details A Brillouin zone (BZ) mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by an
-   * underlying triqs::lattice::brillouin_zone and the number of mesh points in the primitive reciprocal unit cell along
-   * each of the three dimensions, \f$ N_1 \f$, \f$ N_2 \f$ and \f$ N_3 \f$. The periodic boundary conditions (PBC) in
-   * real space (see triqs::mesh::cyclat) translate in reciprocal space to \f$ f(\mathbf{k}) = f(\mathbf{k} + 
-   * \mathbf{G}^{\mathbf{m}}) \f$, where \f$ \mathbf{G}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{b}_i m_i = \mathbf{B} 
-   * \mathbf{m} \f$ is a reciprocal lattice vector, \f$ \mathbf{b}_i \f$ is a reciprocal lattice basis vector in 
-   * direction \f$ i \f$ and \f$ \mathbf{m} = (m_1, m_2, m_3) \f$ with \f$ m_i \in \mathbb{Z} \f$. 
+   * @details A Brillouin zone (BZ) mesh is defined by an underlying Brillouin zone and the number of mesh points in the
+   * primitive reciprocal unit cell along each of the three dimensions, \f$ N_1 \f$, \f$ N_2 \f$ and \f$ N_3 \f$. The
+   * periodic boundary conditions (PBC) in real space (see cyclic-lattice mesh) translate in reciprocal space to
+   * \f$ f(\mathbf{k}) = f(\mathbf{k} + \mathbf{G}^{\mathbf{m}}) \f$, where \f$ \mathbf{G}^{\mathbf{m}} = \sum_{i=1}^3
+   * \mathbf{b}_i m_i = \mathbf{B} \mathbf{m} \f$ is a reciprocal lattice vector, \f$ \mathbf{b}_i \f$ is a reciprocal
+   * lattice basis vector in direction \f$ i \f$ and \f$ \mathbf{m} = (m_1, m_2, m_3) \f$ with \f$ m_i \in
+   * \mathbb{Z} \f$.
    *
    * It has the following properties:
    *
    * - Each mesh point is identified by
-   *   - an unique index in the first BZ \f$ \mathbf{n} = (n_1, n_2, n_3) \f$, where \f$ 0 \leq n_i < N_i \f$, and
-   *   - an infinite set of indices due to the periodic boundary conditions, i.e. \f$ \{ \tilde{\mathbf{n}} = \mathbf{n}
-   *   + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \} \f$.
-   * - The size of the mesh is \f$ N = N_1 \, N_2 \, N_3 \f$, i.e. the total number of mesh points in the BZ.
-   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding data index \f$ d \f$ by the function \f$ d(\mathbf{n})
-   * = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3 \f$. The inverse map is \f$ \mathbf{n}(d) = (\lfloor d /
-   * s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 ) \f$, where \f$ s_1 = N_2 N_3 \f$ and \f$
-   * s_2 = N_3 \f$.
-   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding value (\f$ \mathbf{k} \f$-vector) \f$ \mathbf{k}
-   * (\mathbf{n}) \equiv \mathbf{k}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{b}_i n_i / N_i = \tilde{\mathbf{B}} \mathbf{n} 
-   * \f$, where \f$ \mathbf{b}_i \f$ is the reciprocal lattice basis vector in direction \f$ i \f$. The inverse map is 
-   * then \f$ \mathbf{n}(\mathbf{k}^{\mathbf{n}}) = \tilde{\mathbf{B}}^{-1} \mathbf{k}^{\mathbf{n}} = \mathbf{n} \f$.
    *
-   * @ref triqs-gfs containers that are based on a BZ mesh store the function values at the discrete \f$ \mathbf{k} 
+   *   - a unique index in the first BZ \f$ \mathbf{n} = (n_1, n_2, n_3) \f$, where \f$ 0 \leq n_i < N_i \f$, and
+   *   - an infinite set of indices due to the periodic boundary conditions, i.e.
+   *     \f$ \{ \tilde{\mathbf{n}} = \mathbf{n} + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \} \f$.
+   *
+   * - The size of the mesh is \f$ N = N_1 \, N_2 \, N_3 \f$, i.e. the total number of mesh points in the BZ.
+   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding data index \f$ d \f$ by the function
+   *   \f$ d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3 \f$. The inverse map is
+   *   \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 ) \f$,
+   *   where \f$ s_1 = N_2 N_3 \f$ and \f$ s_2 = N_3 \f$.
+   * - An index \f$ \mathbf{n} \f$ is mapped to the corresponding value (\f$ \mathbf{k} \f$-vector)
+   *   \f$ \mathbf{k}(\mathbf{n}) \equiv \mathbf{k}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{b}_i n_i / N_i = \tilde{\mathbf{B}} \mathbf{n} \f$,
+   *   where \f$ \mathbf{b}_i \f$ is the reciprocal lattice basis vector in direction \f$ i \f$. The inverse map is then
+   *   \f$ \mathbf{n}(\mathbf{k}^{\mathbf{n}}) = \tilde{\mathbf{B}}^{-1} \mathbf{k}^{\mathbf{n}} = \mathbf{n} \f$.
+   *
+   * Green's function containers that are based on a BZ mesh store the function values at the discrete \f$ \mathbf{k}
    * \f$-points \f$ \mathbf{k}^{\mathbf{n}} \f$, i.e. \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) \f$.
    * Because of the PBC, the container only has to store values for indices with \f$ 0 \leq n_i < N_i \f$. To evaluate
-   * the function 
-   * - at an arbitrary \f$ \mathbf{k} \f$-vector, \f$ \mathbf{k} \f$ is first mapped to the BZ using PBC and then 
-   * trilinear interpolation is performed (see triqs::mesh::brzone::evaluate(brzone const &, auto const &, V const &) 
-   * for details).
-   * - at one of the \f$ \mathbf{k}^{\mathbf{n}} \f$, it is first mapped to the BZ using PBC and then the corresponding
-   * function value is returned (see triqs::mesh::brzone::evaluate(brzone const &, auto const &, index_t const &) for 
-   * details).
+   * the function
    *
-   * @include brzone.cpp
-   *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = [0, 0, 0], data index = 0, value = [0.0000, 0.0000, 0.0000]
-   * mesh point #1: index = [0, 0, 1], data index = 1, value = [0.0000, 0.0000, 0.3333]
-   * mesh point #2: index = [0, 0, 2], data index = 2, value = [0.0000, 0.0000, 0.6667]
-   * mesh point #3: index = [0, 1, 0], data index = 3, value = [0.0000, 0.5000, 0.0000]
-   * mesh point #4: index = [0, 1, 1], data index = 4, value = [0.0000, 0.5000, 0.3333]
-   * mesh point #5: index = [0, 1, 2], data index = 5, value = [0.0000, 0.5000, 0.6667]
-   * mesh point #6: index = [1, 0, 0], data index = 6, value = [0.5000, 0.0000, 0.0000]
-   * mesh point #7: index = [1, 0, 1], data index = 7, value = [0.5000, 0.0000, 0.3333]
-   * mesh point #8: index = [1, 0, 2], data index = 8, value = [0.5000, 0.0000, 0.6667]
-   * mesh point #9: index = [1, 1, 0], data index = 9, value = [0.5000, 0.5000, 0.0000]
-   * mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5000, 0.5000, 0.3333]
-   * mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5000, 0.5000, 0.6667]
-   * ```
+   * - at an arbitrary \f$ \mathbf{k} \f$-vector, \f$ \mathbf{k} \f$ is first mapped to the BZ using PBC and then
+   *   trilinear interpolation is performed.
+   * - at one of the \f$ \mathbf{k}^{\mathbf{n}} \f$, it is first mapped to the BZ using PBC and then the
+   *   corresponding function value is returned.
    */
   class C2PY_RENAME(MeshBrZone) brzone {
     public:
@@ -132,7 +114,7 @@ namespace triqs::mesh {
 
     /**
      * @brief %Mesh point of a triqs::mesh::brzone mesh.
-     * 
+     *
      * @details It stores the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) \f$, a pointer to and the hash
      * value of the parent mesh, and the value \f$ \mathbf{k}^{\mathbf{n}} \f$.
      */
@@ -145,8 +127,8 @@ namespace triqs::mesh {
       mesh_point_t() = default;
 
       /**
-       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, pointer to the Brillouin zone mesh the 
-       * mesh point belongs to and data index \f$ d \f$. 
+       * @brief Construct a mesh point with a given index \f$ \mathbf{n} \f$, pointer to the Brillouin zone mesh the
+       * mesh point belongs to and data index \f$ d \f$.
        *
        * @param n Index \f$\mathbf{n} \f$ of the mesh point.
        * @param m_ptr Pointer to a triqs::mesh::brzone object.
@@ -223,7 +205,7 @@ namespace triqs::mesh {
     /**
      * @brief Construct a Brillouin zone mesh with the given number of mesh points.
      *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying BZ.
+     * @param bz Brillouin zone object representing the underlying BZ.
      * @param dims Number of mesh points along each of the three dimensions, i.e. \f$ (N_1, N_2, N_3) \f$.
      */
     brzone(brillouin_zone const &bz, std::array<long, 3> const &dims)
@@ -240,11 +222,11 @@ namespace triqs::mesh {
 
     /**
      * @brief Construct a Brillouin zone mesh with the given periodization matrix.
-     * 
+     *
      * @note At the moment, only diagonal periodization matrices are supported. They should contain the number of mesh
      * points along each of the three dimensions on the diagonal.
      *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
+     * @param bz Brillouin zone object representing the underlying Bravais lattice.
      * @param M \f$ 3 \times 3 \f$ periodization matrix.
      */
     C2PY_IGNORE brzone(brillouin_zone const &bz, nda::matrix<long> const &M) : brzone(bz, std::array{M(0, 0), M(1, 1), M(2, 2)}) {
@@ -255,7 +237,7 @@ namespace triqs::mesh {
     /**
      * @brief Construct a Brillouin zone mesh with the same number of mesh points in each direction.
      *
-     * @param bz triqs::lattice::brillouin_zone object representing the underlying Bravais lattice.
+     * @param bz Brillouin zone object representing the underlying Bravais lattice.
      * @param n_k Number of mesh points along each of the three dimensions.
      */
     brzone(brillouin_zone const &bz, long n_k) : brzone(bz, std::array{n_k, (bz.ndim() >= 2 ? n_k : 1l), (bz.ndim() >= 3 ? n_k : 1)}) {}
@@ -285,7 +267,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map a \f$ \mathbf{k} \f$-vector \f$ \mathbf{k}^{\mathbf{n}} \f$ to its data index \f$ 
+     * @brief Map a \f$ \mathbf{k} \f$-vector \f$ \mathbf{k}^{\mathbf{n}} \f$ to its data index \f$
      * d(\mathbf{k}^{\mathbf{n}}) \f$.
      *
      * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
@@ -329,7 +311,7 @@ namespace triqs::mesh {
      * @brief Map a data index \f$ d \in \{0, 1, \ldots, N-1\} \f$ to the corresponding index \f$ \mathbf{n}(d) \f$.
      *
      * @param d Data index \f$ d \f$ to map.
-     * @return Index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) 
+     * @return Index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1)
      * \mod s_2 ) \f$.
      */
     [[nodiscard]] index_t to_index(data_index_t d) const {
@@ -339,7 +321,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the 
+     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the
      * first BZ and return its index \f$ \mathbf{n} \f$.
      *
      * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
@@ -352,7 +334,7 @@ namespace triqs::mesh {
      * @brief Subscript operator to access a mesh point by its data index \f$ d \in \{0, 1, \ldots, N-1\} \f$.
      *
      * @param d Data index \f$ d \f$ of the mesh point.
-     * @return mesh_point_t with the index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 
+     * @return mesh_point_t with the index \f$ \mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2
      * \rfloor, (d \mod s_1) \mod s_2 ) \f$, data index \f$ d \f$ and a pointer to the current mesh.
      */
     [[nodiscard]] mesh_point_t operator[](long d) const { return {to_index(d), this, d}; }
@@ -362,7 +344,7 @@ namespace triqs::mesh {
      * contained in a triqs::mesh::closest_mesh_point_t.
      *
      * @param cmp triqs::mesh::closest_mesh_point_t containing the \f$ \mathbf{k} \f$-point.
-     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
+     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3
      * (n_2 + N_2 n_1) \f$ and a pointer to the current mesh.
      */
     [[nodiscard]] C2PY_IGNORE mesh_point_t operator[](closest_mesh_point_t<value_t> const &cmp) const { return (*this)[this->to_data_index(cmp)]; }
@@ -371,17 +353,17 @@ namespace triqs::mesh {
      * @brief Function call operator to access a mesh point by its index \f$ \mathbf{n} \f$.
      *
      * @param n Index \f$ \mathbf{n} \f$ of the mesh point.
-     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3 
+     * @return mesh_point_t with the index \f$ \mathbf{n} \f$, data index \f$ d(\mathbf{n}) = d(\mathbf{n}) = n_3 + N_3
      * (n_2 + N_2 n_1) \f$ and a pointer to the current mesh.
      */
     [[nodiscard]] mesh_point_t operator()(index_t const &n) const { return {n, this, to_data_index(n)}; }
 
     /**
-     * @brief Map an index \f$ \mathbf{n} \f$ to its corresponding \f$ \mathbf{k} \f$-point \f$ \mathbf{k}^{\mathbf{n}} 
+     * @brief Map an index \f$ \mathbf{n} \f$ to its corresponding \f$ \mathbf{k} \f$-point \f$ \mathbf{k}^{\mathbf{n}}
      * \f$.
      *
      * @param n Index \f$ \mathbf{n} \f$ to map.
-     * @return `nda::vector<double>` \f$ \mathbf{k}^{\mathbf{n}} \f$.
+     * @return \f$ \mathbf{k} \f$-point \f$ \mathbf{k}^{\mathbf{n}} \f$.
      */
     [[nodiscard]] value_t to_value(index_t const &n) const {
       EXPECTS(is_index_valid(n));
@@ -418,7 +400,7 @@ namespace triqs::mesh {
     }
 
     /**
-     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the 
+     * @brief Map a given \f$ \mathbf{k} \f$-vector or expression to the closest \f$ \mathbf{k}^{\mathbf{n}} \f$ in the
      * first BZ and return its index \f$ \mathbf{n} \f$.
      *
      * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
@@ -478,7 +460,7 @@ namespace triqs::mesh {
     [[nodiscard]] auto cend() const { return end(); }
 
     /**
-     * @brief Equal-to comparison operator compares the underlying Brillouin zone and the number of k-points in each 
+     * @brief Equal-to comparison operator compares the underlying Brillouin zone and the number of k-points in each
      * of the three dimensions.
      */
     bool operator==(brzone const &m) const { return bz_ == m.bz() && dims_ == m.dims(); }
@@ -586,12 +568,12 @@ namespace triqs::mesh {
   /**
    * @brief Evaluate a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at the given index \f$ \tilde{
    * \mathbf{n}} \f$.
-   * 
+   *
    * @details The index is first mapped to the first BZ using triqs::mesh::brzone::index_modulo and then it is used
    * to access the correct function value \f$ f_{\tilde{\mathbf{n}}} = f_{\mathbf{n}} \f$.
    *
    * @param m triqs::mesh::brzone mesh.
-   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}})
    * \f$ at the mesh points.
    * @param n_tilde Index \f$ \tilde{\mathbf{n}} \f$ at which to evaluate the function.
    * @return Function value \f$ f_{\mathbf{n}} \f$.
@@ -599,16 +581,16 @@ namespace triqs::mesh {
   auto evaluate(brzone const &m, auto const &f, brzone::index_t const &n_tilde) { return f(m.index_modulo(n_tilde)); }
 
   /**
-   * @brief Trilinear interpolation of a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at a given \f$ 
+   * @brief Trilinear interpolation of a function \f$ f \f$ defined on a triqs::mesh::brzone mesh at a given \f$
    * \mathbf{k} \f$-vector or expression.
-   * 
-   * @details It first maps the \f$ \mathbf{k} \f$-vector back to the first BZ and then performs trilinear 
+   *
+   * @details It first maps the \f$ \mathbf{k} \f$-vector back to the first BZ and then performs trilinear
    * interpolation of the function \f$ f \f$ in the volume spanned by the \f$ \mathbf{k}^{\mathbf{n}} \f$-points that
    * enclose the mapped \f$ \mathbf{k} \f$-vector.
    *
    * @tparam V \f$ \mathbf{k} \f$-vector or expression type.
    * @param m triqs::mesh::brzone mesh.
-   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}}) 
+   * @param f Callable object \f$ f \f$ containing the function values \f$ f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}})
    * \f$ at the mesh points.
    * @param k \f$ \mathbf{k} \f$-vector or expression at which to evaluate the function.
    * @return Trilinear interpolation of \f$ f(\mathbf{k}) \f$.

@@ -44,32 +44,28 @@ namespace triqs::mesh {
   /**
    * @brief Real time mesh type.
    *
-   * @details A real time mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size \f$ N \geq 0 
-   * \f$ and a time interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$.
+   * @details A real time mesh is defined by its size \f$ N \geq 0 \f$ and a time interval \f$ [t_{\mathrm{min}},
+   * t_{\mathrm{max}}] \f$. It contains \f$ N \f$ equally spaced mesh points on the interval \f$ [t_{\mathrm{min}},
+   * t_{\mathrm{max}}] \f$ such that the distance between two consecutive mesh points (step size) is constant.
    *
-   * It is a triqs::mesh::detail::linear mesh with \f$ N \f$ equally spaced mesh points on the interval \f$ 
-   * [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ such that
-   * - \f$ t(n) = t_{\mathrm{min}} + n \cdot \Delta \f$ with \f$ \Delta = \frac{t_{\mathrm{max}} -
-   * t_{\mathrm{min}}}{N - 1} \f$ for \f$ N > 1 \f$,
-   * - \f$ t(0) = t_{\mathrm{min}} \f$ and
-   * - \f$ t(N - 1) = t_{\mathrm{max}} \f$.
-   * 
-   * @ref triqs-gfs containers that are based on a real time mesh store the function values at the discrete time points 
-   * \f$ t(n) \f$, i.e. \f$ f_n = f(t(n)) \f$, and use linear interpolation to evaluate the function at an arbitrary
-   * time \f$ t \in [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ (see triqs::mesh::evaluate(retime const &, auto const &, 
-   * double) for details). 
+   * A real time mesh has the following properties:
    *
-   * @include retime.cpp
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
+   *   and vice versa.
+   * - An index \f$ n \f$ is mapped to the corresponding value \f$ t \f$ by the linear function
+   *   \f$ t(n) = t_{\mathrm{min}} + n \cdot \Delta \f$ such that \f$ t(0) = t_{\mathrm{min}} \f$ and
+   *   \f$ t(N - 1) = t_{\mathrm{max}} \f$. The step size of
+   *   the mesh is \f$ \Delta = \frac{t_{\mathrm{max}} - t_{\mathrm{min}}}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is
+   *   undefined. For implementation purposes, we set \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$
+   *   and \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = \infty \f$ for \f$ N = 1 \f$.
+   * - An arbitrary value \f$ t \in [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ is mapped to the closest mesh point with
+   *   index \f$ n \f$ by the function
+   *   \f$ n(t) = \left\lfloor \frac{t - t_{\mathrm{min}}}{\Delta} + 0.5 \right\rfloor \f$.
    *
-   * Output:
-   *
-   * ```
-   * mesh point #0: index = 0, data index = 0, value = -5
-   * mesh point #1: index = 1, data index = 1, value = -2.5
-   * mesh point #2: index = 2, data index = 2, value = 0
-   * mesh point #3: index = 3, data index = 3, value = 2.5
-   * mesh point #4: index = 4, data index = 4, value = 5
-   * ```
+   * Green's function containers that are based on a real time mesh store the function values at the discrete time
+   * points \f$ t(n) \f$, i.e. \f$ f_n = f(t(n)) \f$, and use linear interpolation to evaluate the function at an
+   * arbitrary time \f$ t \in [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$.
    */
   class C2PY_RENAME(MeshReTime) retime : public detail::linear<retime, double> {
     public:
@@ -77,7 +73,7 @@ namespace triqs::mesh {
     using mesh_point_t = detail::linear<retime, double>::mesh_point_t;
 
     /**
-     * @brief Construct a real time mesh on the interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ with \f$ N \geq 0 
+     * @brief Construct a real time mesh on the interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ with \f$ N \geq 0
      * \f$ equally spaced mesh points.
      *
      * @param t_min Lower bound \f$ t_{\mathrm{min}} \f$ of the time interval.
@@ -88,10 +84,10 @@ namespace triqs::mesh {
     retime(double t_min = 0.0, double t_max = 0.0, long n_t = 0) : linear(t_min, t_max, n_t) {}
 
     /**
-     * @brief Construct a real time mesh on the interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ with \f$ N \geq 0 
+     * @brief Construct a real time mesh on the interval \f$ [t_{\mathrm{min}}, t_{\mathrm{max}}] \f$ with \f$ N \geq 0
      * \f$ equally spaced mesh points.
      *
-     * @param window `std::pair` containing the lower and upper bounds of the time interval.
+     * @param window Pair containing the lower and upper bounds of the time interval.
      * @param n_t Size of the mesh.
      */
     retime(std::pair<double, double> window, int n_t) : retime(window.first, window.second, n_t) {}

@@ -53,19 +53,19 @@ namespace triqs::mesh::detail {
    *
    * A linear mesh has the following properties:
    *
-   * - Each mesh point is identified by an unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
+   * - Each mesh point is identified by a unique index \f$ n \in \{0, 1, \ldots, N-1\} \f$.
    * - An index \f$ n \f$ is mapped to the corresponding data index \f$ d \f$ by the identity function \f$ d(n) = n \f$
    * and vice versa.
    * - An index \f$ n \f$ is mapped to the corresponding value \f$ m \f$ by the linear function \f$ m(n) = a + n \cdot
    * \Delta \f$ sucht that \f$ m(0) = a \f$ and \f$ m(N-1) = b \f$. The step size of the mesh is \f$ \Delta = \frac{b -
    * a}{N - 1} \f$ for \f$ N > 1 \f$, otherwise it is undefined. For implementation purposes, we set \f$ \Delta = 0 \f$
-   * and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$ and \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = \infty \f$ for 
+   * and \f$ \Delta^{-1} = 0 \f$ for \f$ N = 0 \f$ and \f$ \Delta = 0 \f$ and \f$ \Delta^{-1} = \infty \f$ for
    * \f$ N = 1 \f$.
    * - An arbitrary value \f$ x \in [a, b] \f$ is mapped to the closest mesh point with index \f$ n \f$ by the function
    * \f$ n(x) = \left\lfloor \frac{x - a}{\Delta} + 0.5 \right\rfloor \f$.
    *
    * See also triqs::mesh::imtime for an example of a derived classes.
-   * 
+   *
    * @tparam M %Mesh type that inherits from this base class.
    * @tparam T Value type of the mesh points.
    */
@@ -84,10 +84,10 @@ namespace triqs::mesh::detail {
 
     /**
      * @brief %Mesh point of a triqs::mesh::detail::linear mesh.
-     * 
+     *
      * @details It stores the index \f$ n \f$, the data index \f$ d \f$, the hash value of the parent mesh and the
      * value \f$ m \f$ of the mesh point.
-     * 
+     *
      * Arithmetic operations are defined for mesh points and scalars of the underlying value type. The operations are
      * performed between the value \f$ m \f$ of the mesh point and the given scalar.
      */
@@ -100,7 +100,7 @@ namespace triqs::mesh::detail {
       mesh_point_t() = default;
 
       /**
-       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$, hash value of the parent 
+       * @brief Construct a mesh point with a given index \f$ n \f$, data index \f$ d \f$, hash value of the parent
        * mesh and value \f$ m \f$.
        *
        * @param n Index \f$ n \f$ of the mesh point.
@@ -346,7 +346,7 @@ namespace triqs::mesh::detail {
 
     public:
     /**
-     * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::detail::linear mesh at a value \f$ 
+     * @brief Linear interpolation of a function \f$ f \f$ defined on a triqs::mesh::detail::linear mesh at a value \f$
      * x \in [a, b] \f$.
      *
      * @details We calculate
