@@ -18,6 +18,17 @@
 # Authors: Olivier Parcollet, Nils Wentzell
 
 
+"""
+General-purpose helper utilities used throughout TRIQS.
+
+This package bundles small standalone modules that support the rest of
+the TRIQS Python layer.
+
+Only :func:`triqs.utility.capture_stdout.capture_stdout` is re-exported
+at the package level; the rest is reached via the corresponding
+submodule.
+"""
+
 from .capture_stdout import capture_stdout
 
 __all__ = ['capture_stdout']

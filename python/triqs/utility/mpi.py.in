@@ -19,21 +19,48 @@
 #
 ################################################################################
 
+"""
+Runtime-dispatched MPI facade for TRIQS.
+
+On import, :func:`check_for_mpi` inspects a handful of environment
+variables set by common MPI launchers. If any of them is present, this
+module re-exports everything from :mod:`triqs.utility.mpi_mpi4py`
+(real :mod:`mpi4py`-backed implementation). Otherwise it falls back to
+:mod:`triqs.utility.mpi_nompi` (a serial stub with the same public
+interface).
+
+User code should therefore import :mod:`triqs.utility.mpi` directly and
+never one of the two backends; this guarantees the same source runs
+both inside ``mpirun -n N`` and as a plain serial Python invocation.
+"""
+
 import os
 
 
 def check_for_mpi():
-    '''
-    Simple function checking if triqs has been called with
-    mpirun or without, by checking for typical MPI environment
-    variables. To enforce the MPI init TRIQS_FORCE_MPI_INIT
-    can be set manually as env variable.
+    r"""
+    Detect whether the current process was launched under MPI.
 
-    Returns:
+    Inspects a small set of environment variables commonly exported
+    by MPI launchers:
+
+    - ``OMPI_COMM_WORLD_RANK`` -- Open MPI.
+    - ``PMI_RANK`` -- MPICH and Intel MPI.
+    - ``PMIX_RANK`` -- PMIx (used by ``srun`` / Slurm with PMIx
+      support).
+    - ``CRAY_MPICH_VERSION`` -- Cray MPICH.
+    - ``TRIQS_FORCE_MPI_INIT`` -- escape hatch: when set (to any
+      value), MPI initialisation is forced even though none of the
+      launcher variables above are present.
+    
+    Returns ``True`` if any of them is set. Otherwise, it prints a
+    warning to stdout and returns ``False``.
+
+    Returns
     -------
-    is_mpi: bool
-            True if triqs called with mpirun
-    '''
+    bool
+        ``True`` if an MPI environment is detected, ``False`` otherwise.
+    """
     is_mpi = False
 
     # for OpenMPI:
