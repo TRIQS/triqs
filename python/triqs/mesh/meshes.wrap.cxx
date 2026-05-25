@@ -57,7 +57,7 @@ Parameters
 beta : {par_0}
    Inverse temperature :math:`\beta > 0`.
 statistic : {par_1}
-   Particle statistics (see triqs::mesh::statistic_enum).
+   Particle statistics.
 n_tau : {par_2}
    Size of the mesh.
 )DOC",
@@ -116,7 +116,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -133,9 +133,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                    {{c2py::python_typename<triqs::mesh::imtime &>()}, {c2py::python_typename<const triqs::mesh::imtime &>()}});
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC(
@@ -201,12 +201,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::imtime &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -268,45 +268,26 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_0> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Imaginary time mesh type.
 
-An imaginary time mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size
-:math:`N \geq 0`, an inverse temperature :math:`\beta > 0` and its particle statistics (see 
-triqs::mesh::statistic_enum).
+An imaginary time mesh is defined by its size :math:`N \geq 0`, an inverse temperature :math:`\beta > 0`
+and its particle statistics. It contains :math:`N` equally spaced mesh points on the interval :math:`[0, \beta]`
+such that the distance between two consecutive mesh points (step size) is constant.
 
-It is a triqs::mesh::detail::linear mesh with :math:`N` equally spaced mesh points on the interval :math:`[0, \beta]`
-such that
-- :math:`\tau(n) = n \cdot \Delta` with :math:`\Delta = \frac{\beta}{N - 1}` for :math:`N > 1`,
-- :math:`\tau(0) = 0` and
-- :math:`\tau(N - 1) = \beta`.
+An imaginary time mesh has the following properties:
 
-``triqs-gfs`` containers that are based on an imaginary time mesh store the function values at the discrete time 
-points :math:`\tau(n)`, i.e. :math:`f_n = f(\tau(n))`, and use linear interpolation to evaluate the function at an 
-arbitrary imaginary time :math:`\tau \in [0, \beta]` (see triqs::mesh::evaluate(imtime const &, auto const &, 
-double) for details). 
+- Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
+- An index :math:`n` is mapped to the corresponding value :math:`\tau` by the linear function
+  :math:`\tau(n) = n \cdot \Delta` such that :math:`\tau(0) = 0` and :math:`\tau(N-1) = \beta`. The step size of
+  the mesh is :math:`\Delta = \frac{\beta}{N - 1}` for :math:`N > 1`, otherwise it is undefined. For implementation
+  purposes, we set :math:`\Delta = 0` and :math:`\Delta^{-1} = 0` for :math:`N = 0` and :math:`\Delta = 0` and
+  :math:`\Delta^{-1} = \infty` for :math:`N = 1`.
+- An arbitrary value :math:`\tau \in [0, \beta]` is mapped to the closest mesh point with index :math:`n` by the
+  function :math:`n(\tau) = \left\lfloor \frac{\tau}{\Delta} + 0.5 \right\rfloor`.
 
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a fermionic imaginary time mesh with 5 points and beta = 10
-     triqs::mesh::imtime m{10, triqs::mesh::Fermion, 5};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = 0, data index = 0, value = 0
-mesh point #1: index = 1, data index = 1, value = 2.5
-mesh point #2: index = 2, data index = 2, value = 5
-mesh point #3: index = 3, data index = 3, value = 7.5
-mesh point #4: index = 4, data index = 4, value = 10
-```)DOC"
+Green's function containers that are based on an imaginary time mesh store the function values at the discrete time
+points :math:`\tau(n)`, i.e. :math:`f_n = f(\tau(n))`, and use linear interpolation to evaluate the function at an
+arbitrary imaginary time :math:`\tau \in [0, \beta]`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 // --------- class _c2py_cls_1 -----------
 using _c2py_cls_1                                            = triqs::mesh::energy_t;
@@ -365,7 +346,7 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {c2py::getsetdef_from_mem
                                                         {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Represents an energy value to distinguish constructors in triqs::mesh::imfreq.)DOC"
+const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Represents an energy value to distinguish constructors in imaginary-frequency mesh.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 // --------- class _c2py_cls_2 -----------
 using _c2py_cls_2                                            = triqs::mesh::imfreq;
@@ -465,7 +446,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -482,9 +463,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::imfreq &>()}, {c2py::python_typename<const triqs::mesh::imfreq &>()}});
 static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
@@ -503,7 +484,7 @@ Returns
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
 static const auto _c2py_doc_12 =
    _c2py_fun_12.doc(R"DOC(
-Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
+Set the pointer to a new tail-fitter object constructed with the given parameters.
 
 Parameters
 ----------
@@ -512,7 +493,7 @@ tail_fraction : {par_0}
 n_tail_max : {par_1}
    Maximum number of points to use in the tail fit (:math:`p_\text{max} > 0`).
 expansion_order : {par_2}
-   Optional expansion order :math:`q \leq q_{\text{max}} = 9`. If not set, it will be 
+   Optional expansion order :math:`q \leq q_{\text{max}} = 9`. If not set, it will be
    adjusted automatically.
 )DOC",
                     {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}, {c2py::python_typename<std::optional<int>>()}});
@@ -531,7 +512,7 @@ Parameters
 n : {par_0}
    Matsubara index :math:`n` to map.
 iw : {par_1}
-   triqs::mesh::matsubara_freq to map.
+   Matsubara frequency to map.
 
 Returns
 -------
@@ -559,7 +540,7 @@ Returns
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
 Map a Matsubara index :math:`n \in \{ n_{\text{min}}, \dots, n_{\text{max}} \}` to its corresponding
-triqs::mesh::matsubara_freq :math:`i\omega_n`.
+Matsubara frequency :math:`i\omega_n`.
 
 Parameters
 ----------
@@ -579,12 +560,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::imfreq &>()}},
    {c2py::python_typename<
@@ -644,15 +625,16 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_2> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_2> = R"DOC(Imaginary frequency mesh type.
 
-An imaginary frequency mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the number
-of positive frequencies :math:`N_{i\omega_n} \geq 0`, the inverse temperature :math:`\beta > 0`, its particle
-statistics (triqs::mesh::statistic_enum) and an triqs::mesh::imfreq::option (`all_frequencies` vs
+An imaginary frequency mesh is defined by the number of positive frequencies :math:`N_{i\omega_n} \geq 0`,
+the inverse temperature :math:`\beta > 0`, its particle statistics and an option (`all_frequencies` vs
 `positive_frequencies_only`).
 
 An imaginary frequency mesh has the following properties:
 
-- Each mesh point is identified by a unique index :math:`n \in \{ n_{\text{min}}, n_{\text{min}} + 1, \dots,
-n_{\text{max}} - 1, n_{\text{max}} \}`, where :math:`n_{\text{max}} = N_{i\omega_n} - 1` and
+- Each mesh point is identified by a unique index
+  :math:`n \in \{ n_{\text{min}}, n_{\text{min}} + 1, \dots, n_{\text{max}} - 1, n_{\text{max}} \}`, where
+  :math:`n_{\text{max}} = N_{i\omega_n} - 1` and
+  
 
 .. math::
 
@@ -665,9 +647,10 @@ n_{\text{max}} - 1, n_{\text{max}} \}`, where :math:`n_{\text{max}} = N_{i\omega
    \; .
 
 - The size of the mesh is :math:`N = n_{\text{max}} - n_{\text{min}} + 1`.
-- An index :math:`n` is mapped to the corresponding data index :math:`d` by the function :math:`d(n) = n -
-n_{\text{min}}`. The inverse map is :math:`n(d) = d + n_{\text{min}}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the function
+  :math:`d(n) = n - n_{\text{min}}`. The inverse map is :math:`n(d) = d + n_{\text{min}}`.
 - An index :math:`n` is mapped to the corresponding value :math:`i\omega_n \equiv i\omega(n)` by the function
+  
 
 .. math::
 
@@ -678,39 +661,10 @@ n_{\text{min}}`. The inverse map is :math:`n(d) = d + n_{\text{min}}`.
    \end{cases}
    \; .
 
-The inverse map is trivially :math:`n(i\omega_n) = n`.
-
-``triqs-gfs`` containers that are based on an imaginary frequency mesh store the function values at the discrete 
-frequency points :math:`i\omega_n`, i.e. :math:`f_n = f(i\omega(n))`, and to evaluate the function at a specific 
+Green's function containers that are based on an imaginary frequency mesh store the function values at the discrete
+frequency points :math:`i\omega_n`, i.e. :math:`f_n = f(i\omega(n))`, and to evaluate the function at a specific
 Matsubara frequency :math:`i\omega_n` with :math:`n_{\text{min}} \leq n \leq n_{\text{max}}` the container simply
-returns the corresponding :math:`f_n` (see triqs::mesh::evaluate(imfreq const &, auto const &, matsubara_freq const 
-&) for details). 
-
-::
-
-   #include <fmt/std.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a fermionic imaginary frequency mesh with 3 positive frequencies and beta = 10
-     triqs::mesh::imfreq m{10, triqs::mesh::Fermion, 3};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), std::complex<double>(mp.value()));
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = -3, data index = 0, value = -1.5707963267948966i
-mesh point #1: index = -2, data index = 1, value = -0.9424777960769379i
-mesh point #2: index = -1, data index = 2, value = -0.3141592653589793i
-mesh point #3: index = 0, data index = 3, value = 0.3141592653589793i
-mesh point #4: index = 1, data index = 4, value = 0.9424777960769379i
-mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
-```)DOC"
+returns the corresponding :math:`f_n`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_2>;
 // --------- class _c2py_cls_3 -----------
 using _c2py_cls_3                                            = triqs::mesh::dlr;
@@ -732,9 +686,9 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_3> =
 [2] Construct a DLR mesh with a given energy cutoff :math:`\omega_{\text{max}}` and error tolerance :math:`\epsilon`
 .
 
-It calls `cppdlr::build_dlr_rf` with :math:`\Lambda = \omega_{\text{max}} \beta` and :math:`\epsilon` to
-build the DLR frequencies :math:`\omega_l`, which are then passed to the constructors of `cppdlr::imtime_ops` and 
-`cppdlr::imfreq_ops` objects.
+It builds the DLR frequencies :math:`\omega_l` from :math:`\Lambda = \omega_{\text{max}} \beta` and the
+error tolerance :math:`\epsilon`, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+from them.
 
 ------
 
@@ -815,7 +769,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -832,9 +786,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr &>()}, {c2py::python_typename<const triqs::mesh::dlr &>()}});
 static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC(
@@ -890,13 +844,7 @@ l : {par_0}
 Returns
 -------
 {ret_0}
-   Value of the l
-
-   .. raw:: html
-
-      <sup>th</sup>
-
-   DLR frequency :math:`\omega_l`.
+   Value of the l-th DLR frequency :math:`\omega_l`.
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
 static const auto _c2py_doc_24 = _c2py_fun_24.doc(
@@ -906,12 +854,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::dlr &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -933,7 +881,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_3>[] = {
 };
 
 static constexpr auto prop_doc_16 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_17 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_17 = R"DOC(Get the array of DLR frequencies :math:`\omega_l`.)DOC";
 static constexpr auto prop_doc_18 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
 static constexpr auto prop_doc_19 = R"DOC(Get the hash value of the mesh.)DOC";
 static constexpr auto prop_doc_20 = R"DOC(Get the particle statistics.)DOC";
@@ -964,61 +912,35 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_3> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_3> = R"DOC(Discrete Lehmann representation (DLR) mesh type.
 
-A DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse temperature
-:math:`\beta > 0`, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff :math:`\omega_{\text{max}}`
-, an error tolerance :math:`\epsilon` and a boolean flag specifying if the mesh should be
-symmetric around :math:`\omega = 0`.
+A DLR mesh is defined by the inverse temperature :math:`\beta > 0`, the particle statistics, a DLR energy
+cutoff :math:`\omega_{\text{max}}`, an error tolerance :math:`\epsilon` and a boolean flag specifying if the mesh
+should be symmetric around :math:`\omega = 0`.
 
 A DLR mesh has the following properties:
 
 - Each mesh point is identified by a unique index :math:`l \in \{0, 1, \ldots, N-1\}`.
-- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and :math:`\epsilon`
-. It is equal to the DLR rank :math:`r` and the number of DLR basis functions :math:`K(\tau, \omega_l)`
-or :math:`K(i\omega_n, \omega_l)`.
+- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and
+  :math:`\epsilon`. It is equal to the DLR rank :math:`r` and the number of DLR basis functions
+  :math:`K(\tau, \omega_l)` or :math:`K(i\omega_n, \omega_l)`.
 - An index :math:`l` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(l) = l`
-and vice versa.
-- An index :math:`l` is mapped to the corresponding value :math:`\omega_l`, where :math:`\omega_l` is the l
+  and vice versa.
+- An index :math:`l` is mapped to the corresponding value :math:`\omega_l`, where :math:`\omega_l` is the l-th DLR
+  frequency.
 
-.. raw:: html
-
-   <sup>th
-</sup>
-
-DLR frequency.
-
-``triqs-gfs`` containers that are based on a DLR mesh store the coefficients :math:`f_l` of the discrete Lehmann
+Green's function containers that are based on a DLR mesh store the coefficients :math:`f_l` of the discrete Lehmann
 representation of a function :math:`f(\tau)` or :math:`f(i\omega_n)`. To evaluate the function at an arbitrary
 imaginary time :math:`\tau \in [0, \beta]` or at a specific Matsubara frequency :math:`i\omega_n`, the GF container
-calculates the DLR approximation of the function (see triqs::mesh::evaluate(dlr const &, auto const &, double) or
-triqs::mesh::evaluate(dlr const &, auto const &, matsubara_freq const &) for details).
+calculates the DLR approximation of the function via
 
-::
+.. math::
 
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a fermionic DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
-     triqs::mesh::dlr m{10, triqs::mesh::Fermion, 0.5, 1e-6};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
+   f(\tau) \approx \sum_{l=0}^{N-1} \frac{e^{-\omega_l \tau}}{1 + e^{-\omega_l \beta}} f_l \; ,
 
-Output:
+or
 
-```
-mesh point #0: index = 0, data index = 0, value = -4.997323654048254
-mesh point #1: index = 1, data index = 1, value = -3.831753911537679
-mesh point #2: index = 2, data index = 2, value = -2.710662984621819
-mesh point #3: index = 3, data index = 3, value = -1.5985695686131243
-mesh point #4: index = 4, data index = 4, value = 0.0013381729758728256
-mesh point #5: index = 5, data index = 5, value = 2.075899665814476
-mesh point #6: index = 6, data index = 6, value = 3.831753911537679
-mesh point #7: index = 7, data index = 7, value = 4.997323654048254
-```)DOC"
+.. math::
+
+   f(i\omega_n) \approx \sum_{l=0}^{N-1} \frac{1}{i\omega_n + \omega_l} f_l \; .)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_3>;
 // --------- class _c2py_cls_4 -----------
 using _c2py_cls_4                                            = triqs::mesh::dlr_imtime;
@@ -1040,13 +962,13 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_4> =
 [2] Construct an imaginary time DLR mesh with a given energy cutoff :math:`\omega_{\text{max}}` and error
 tolerance :math:`\epsilon`.
 
-It calls `cppdlr::build_dlr_rf` with :math:`\Lambda = \omega_{\text{max}} \beta` and :math:`\epsilon` to
-build the DLR frequencies :math:`\omega_l`, which are then passed to the constructors of `cppdlr::imtime_ops` and 
-`cppdlr::imfreq_ops` objects.
+It builds the DLR frequencies :math:`\omega_l` from :math:`\Lambda = \omega_{\text{max}} \beta` and the
+error tolerance :math:`\epsilon`, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+from them.
 
 ------
 
-[3, 4] Construct an imaginary frequency DLR mesh from another DLR type mesh.
+[3, 4] Construct an imaginary time DLR mesh from another DLR type mesh.
 
 ------
 
@@ -1125,7 +1047,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -1142,9 +1064,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr_imtime &>()}, {c2py::python_typename<const triqs::mesh::dlr_imtime &>()}});
 static const auto _c2py_doc_28 = _c2py_fun_28.doc(R"DOC(
@@ -1200,13 +1122,7 @@ l : {par_0}
 Returns
 -------
 {ret_0}
-   Value of the l
-
-   .. raw:: html
-
-      <sup>th</sup>
-
-   DLR interpolation node in imaginary time space, i.e. :math:`\tau_l` .
+   Value of the l-th DLR interpolation node in imaginary time space, i.e. :math:`\tau_l` .
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<double>()});
 static const auto _c2py_doc_32 = _c2py_fun_32.doc(
@@ -1216,12 +1132,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::dlr_imtime &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -1243,7 +1159,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_4>[] = {
 };
 
 static constexpr auto prop_doc_23 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_24 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_24 = R"DOC(Get the array of DLR frequencies :math:`\omega_l`.)DOC";
 static constexpr auto prop_doc_25 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
 static constexpr auto prop_doc_26 = R"DOC(Get the hash value of the mesh.)DOC";
 static constexpr auto prop_doc_27 = R"DOC(Get the particle statistics.)DOC";
@@ -1274,61 +1190,26 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_4> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_4> = R"DOC(Imaginary time discrete Lehmann representation (DLR) mesh type.
 
-An imaginary time DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the inverse
-temperature :math:`\beta > 0`, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff :math:`\omega_{\text{max}}`
-, an error tolerance :math:`\epsilon` and a boolean flag specifying if the mesh should be
-symmetric around :math:`\tau = \beta / 2` (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
-for Bosons).
+An imaginary time DLR mesh is defined by the inverse temperature :math:`\beta > 0`, the particle
+statistics, a DLR energy cutoff :math:`\omega_{\text{max}}`, an error tolerance :math:`\epsilon` and a boolean flag
+specifying if the mesh should be symmetric around :math:`\tau = \beta / 2` (a symmetric mesh enforces the DLR rank
+to be even for Fermions and odd for Bosons).
 
 An imaginary time DLR mesh has the following properties:
 
 - Each mesh point is identified by a unique index :math:`l \in \{0, 1, \ldots, N-1\}`.
-- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and :math:`
-\epsilon`. It is equal to the DLR rank :math:`r` and the number of DLR basis functions :math:`K(\tau, \omega_l)`
-.
+- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and
+  :math:`\epsilon`. It is equal to the DLR rank :math:`r` and the number of DLR basis functions
+  :math:`K(\tau, \omega_l)`.
 - An index :math:`l` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(l) = l`
-and vice versa.
-- An index :math:`l` is mapped to the corresponding value :math:`\tau_l`, where :math:`\tau_l` is the l
+  and vice versa.
+- An index :math:`l` is mapped to the corresponding value :math:`\tau_l`, where :math:`\tau_l` is the l-th DLR
+  interpolation node in imaginary time space.
 
-.. raw:: html
-
-   <sup>th
-</sup>
-
-DLR interpolation node in imaginary time space.
-
-``triqs-gfs`` containers that are based on an imaginary time DLR mesh store the function values at the discrete 
-time points :math:`\tau_l`, i.e. :math:`f_l = f(\tau_l)`. In contrast to triqs::mesh::dlr and triqs::mesh::imtime, 
-the GF container cannot evaluate the function at an arbitrary imaginary time :math:`\tau \in [0, \beta]` (see the
-deleted triqs::mesh::evaluate(dlr_imtime const &, ...)).
-
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a fermionic imaginary time DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
-     triqs::mesh::dlr_imtime m{10, triqs::mesh::Fermion, 0.5, 1e-6};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = 0, data index = 0, value = 0.012031950007446723
-mesh point #1: index = 1, data index = 1, value = 0.6496895210536141
-mesh point #2: index = 2, data index = 2, value = 2.0222028313159592
-mesh point #3: index = 3, data index = 3, value = 5.283961182488998
-mesh point #4: index = 4, data index = 4, value = 7.022202831315959
-mesh point #5: index = 5, data index = 5, value = 8.584483769065113
-mesh point #6: index = 6, data index = 6, value = 9.550004964934757
-mesh point #7: index = 7, data index = 7, value = 9.987968049992553
-```)DOC"
+Green's function containers that are based on an imaginary time DLR mesh store the function values at the discrete
+time points :math:`\tau_l`, i.e. :math:`f_l = f(\tau_l)`. In contrast to DLR and imaginary-time meshes, the GF
+container cannot evaluate the function at an arbitrary imaginary time :math:`\tau \in [0, \beta]`
+(evaluation at arbitrary points is intentionally unsupported).)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_4>;
 // --------- class _c2py_cls_5 -----------
 using _c2py_cls_5                                            = triqs::mesh::dlr_imfreq;
@@ -1350,9 +1231,9 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_5> =
 [2] Construct an imaginary frequency DLR mesh with a given energy cutoff :math:`\omega_{\text{max}}` and error
 tolerance :math:`\epsilon`.
 
-It calls `cppdlr::build_dlr_rf` with :math:`\Lambda = \omega_{\text{max}} \beta` and :math:`\epsilon` to
-build the DLR frequencies :math:`\omega_l`, which are then passed to the constructors of `cppdlr::imtime_ops` and
-`cppdlr::imfreq_ops` objects.
+It builds the DLR frequencies :math:`\omega_l` from :math:`\Lambda = \omega_{\text{max}} \beta` and the
+error tolerance :math:`\epsilon`, then constructs the imaginary-time and imaginary-frequency DLR operator tables
+from them.
 
 ------
 
@@ -1435,7 +1316,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -1452,9 +1333,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::dlr_imfreq &>()}, {c2py::python_typename<const triqs::mesh::dlr_imfreq &>()}});
 static const auto _c2py_doc_36 = _c2py_fun_36.doc(R"DOC(
@@ -1500,8 +1381,8 @@ Returns
 )DOC",
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_39 = _c2py_fun_39.doc(R"DOC(
-Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding triqs::mesh::matsubara_freq :math:`i\omega_{n_l}`
-.
+Map an index :math:`l \in \{0, 1, \ldots, N-1\}` to its corresponding Matsubara frequency
+:math:`i\omega_{n_l}`.
 
 Parameters
 ----------
@@ -1521,12 +1402,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::dlr_imfreq &>()}},
    {c2py::python_typename<
@@ -1549,10 +1430,10 @@ PyMethodDef c2py::tp_methods<_c2py_cls_5>[] = {
 };
 
 static constexpr auto prop_doc_30 = R"DOC(Get the inverse temperature :math:`\beta`.)DOC";
-static constexpr auto prop_doc_31 = R"DOC(Get the `nda::vector` of DLR frequencies :math:`\omega_l`.)DOC";
+static constexpr auto prop_doc_31 = R"DOC(Get the array of DLR frequencies :math:`\omega_l`.)DOC";
 static constexpr auto prop_doc_32 = R"DOC(Get the DLR error tolerance :math:`\epsilon`.)DOC";
 static constexpr auto prop_doc_33 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_34 = R"DOC(Get a `std::pair` containing the smallest and largest Matsubara frequency in the mesh.)DOC";
+static constexpr auto prop_doc_34 = R"DOC(Get a pair containing the smallest and largest Matsubara frequency in the mesh.)DOC";
 static constexpr auto prop_doc_35 = R"DOC(Get the particle statistics.)DOC";
 static constexpr auto prop_doc_36 = R"DOC(Is the mesh symmetric around :math:`i\omega_n = 0`?)DOC";
 static constexpr auto prop_doc_37 = R"DOC(Get the DLR energy cutoff :math:`\omega_{\text{max}} = \Lambda / \beta`.)DOC";
@@ -1582,67 +1463,32 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_5> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_5> = R"DOC(Imaginary frequency discrete Lehmann representation (DLR) mesh type.
 
-An imaginary frequency DLR mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by the
-inverse temperature :math:`\beta > 0`, the particle statistics (triqs::mesh::statistic_enum), a DLR energy cutoff
-:math:`\omega_{\text{max}}`, an error tolerance :math:`\epsilon` and a boolean flag specifying if the mesh should
-be symmetric around :math:`i\omega_n = 0` (a symmetric mesh enforces the DLR rank to be even for Fermions and odd
-for Bosons).
+An imaginary frequency DLR mesh is defined by the inverse temperature :math:`\beta > 0`, the particle
+statistics, a DLR energy cutoff :math:`\omega_{\text{max}}`, an error tolerance :math:`\epsilon` and a boolean flag
+specifying if the mesh should be symmetric around :math:`i\omega_n = 0` (a symmetric mesh enforces the DLR rank to
+be even for Fermions and odd for Bosons).
 
 An imaginary frequency DLR mesh has the following properties:
 
 - Each mesh point is identified by a unique index :math:`l \in \{0, 1, \ldots, N-1\}`.
-- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and :math:`\epsilon`
-. It is equal to the DLR rank :math:`r` and the number of DLR basis functions :math:`K(i\omega_n,
-\omega_l)`.
+- The size of the mesh :math:`N` depends on :math:`\beta` and the choice of :math:`\omega_{\text{max}}` and
+  :math:`\epsilon`. It is equal to the DLR rank :math:`r` and the number of DLR basis functions
+  :math:`K(i\omega_n, \omega_l)`.
 - An index :math:`l` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(l) = l`
-and vice versa.
+  and vice versa.
 - An index :math:`l` is mapped to the corresponding value :math:`i\omega_{n_l}`, where :math:`i\omega_{n_l}` is the
-l
-
-.. raw:: html
-
-   <sup>th</sup>
-
-DLR interpolation node in imaginary frequency space.
+  l-th DLR interpolation node in imaginary frequency space.
 
 .. note::
 
-   The index :math:`l`, which is used to access a certain mesh point, is different from the Matsubara index :math:`n_l`
-   that is stored in the mesh point object. That means, if `m` is an instance of triqs::mesh::dlr_imfreq,
-   then `m(l).index() != l` in general.
+   The index :math:`l`, which is used to access a certain mesh point, is different from the Matsubara index
+   :math:`n_l` that is stored in the mesh point object. That means, if `m` is an instance of imaginary-frequency DLR
+   mesh, then `m(l).index() != l` in general.
 
-``triqs-gfs`` containers that are based on an imaginary frequency DLR mesh store the function values at the
-discrete frequency points :math:`i\omega_{n_l}`, i.e. :math:`f_l = f(i\omega_{n_l})`. In contrast to
-triqs::mesh::dlr and triqs::mesh::imfreq, the GF container cannot evaluate the function at an arbitrary Matsubara
-frequency :math:`i\omega_n` (see the deleted triqs::mesh::evaluate(dlr_imfreq const &, ...)).
-
-::
-
-   #include <fmt/std.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a fermionic imaginary frequency DLR mesh with beta = 10, omega_max = 0.5 and epsilon = 1e-6
-     triqs::mesh::dlr_imfreq m{10, triqs::mesh::Fermion, 0.5, 1e-6};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), std::complex<double>(mp.value()));
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = -5, data index = 0, value = -2.827433388230814i
-mesh point #1: index = -3, data index = 1, value = -1.5707963267948966i
-mesh point #2: index = -2, data index = 2, value = -0.9424777960769379i
-mesh point #3: index = -1, data index = 3, value = -0.3141592653589793i
-mesh point #4: index = 0, data index = 4, value = 0.3141592653589793i
-mesh point #5: index = 1, data index = 5, value = 0.9424777960769379i
-mesh point #6: index = 2, data index = 6, value = 1.5707963267948966i
-mesh point #7: index = 4, data index = 7, value = 2.827433388230814i
-```)DOC"
+Green's function containers that are based on an imaginary frequency DLR mesh store the function values at the
+discrete frequency points :math:`i\omega_{n_l}`, i.e. :math:`f_l = f(i\omega_{n_l})`. In contrast to DLR and
+imaginary-frequency meshes, the GF container cannot evaluate the function at an arbitrary Matsubara frequency
+:math:`i\omega_n` (evaluation at arbitrary points is intentionally unsupported).)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_5>;
 // --------- class _c2py_cls_6 -----------
 using _c2py_cls_6                                            = triqs::mesh::retime;
@@ -1667,7 +1513,7 @@ t_max : {par_1}
 n_t : {par_2}
    Size of the mesh.
 window : {par_3}
-   `std::pair` containing the lower and upper bounds of the time interval.
+   Pair containing the lower and upper bounds of the time interval.
 )DOC",
                                                                     {{c2py::python_typename<double>()},
                                                                      {c2py::python_typename<double>()},
@@ -1727,7 +1573,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -1744,9 +1590,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::retime &>()}, {c2py::python_typename<const triqs::mesh::retime &>()}});
 static const auto _c2py_doc_44 = _c2py_fun_44.doc(R"DOC(
@@ -1812,12 +1658,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::retime &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -1879,45 +1725,28 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_6> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_6> = R"DOC(Real time mesh type.
 
-A real time mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size :math:`N \geq 0`
-and a time interval :math:`[t_{\mathrm{min}}, t_{\mathrm{max}}]`.
+A real time mesh is defined by its size :math:`N \geq 0` and a time interval :math:`[t_{\mathrm{min}},
+t_{\mathrm{max}}]`. It contains :math:`N` equally spaced mesh points on the interval :math:`[t_{\mathrm{min}},
+t_{\mathrm{max}}]` such that the distance between two consecutive mesh points (step size) is constant.
 
-It is a triqs::mesh::detail::linear mesh with :math:`N` equally spaced mesh points on the interval :math:`
-[t_{\mathrm{min}}, t_{\mathrm{max}}]` such that
-- :math:`t(n) = t_{\mathrm{min}} + n \cdot \Delta` with :math:`\Delta = \frac{t_{\mathrm{max}} -
-t_{\mathrm{min}}}{N - 1}` for :math:`N > 1`,
-- :math:`t(0) = t_{\mathrm{min}}` and
-- :math:`t(N - 1) = t_{\mathrm{max}}`.
+A real time mesh has the following properties:
 
-``triqs-gfs`` containers that are based on a real time mesh store the function values at the discrete time points 
-:math:`t(n)`, i.e. :math:`f_n = f(t(n))`, and use linear interpolation to evaluate the function at an arbitrary
-time :math:`t \in [t_{\mathrm{min}}, t_{\mathrm{max}}]` (see triqs::mesh::evaluate(retime const &, auto const &, 
-double) for details). 
+- Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
+- An index :math:`n` is mapped to the corresponding value :math:`t` by the linear function
+  :math:`t(n) = t_{\mathrm{min}} + n \cdot \Delta` such that :math:`t(0) = t_{\mathrm{min}}` and
+  :math:`t(N - 1) = t_{\mathrm{max}}`. The step size of
+  the mesh is :math:`\Delta = \frac{t_{\mathrm{max}} - t_{\mathrm{min}}}{N - 1}` for :math:`N > 1`, otherwise it is
+  undefined. For implementation purposes, we set :math:`\Delta = 0` and :math:`\Delta^{-1} = 0` for :math:`N = 0`
+  and :math:`\Delta = 0` and :math:`\Delta^{-1} = \infty` for :math:`N = 1`.
+- An arbitrary value :math:`t \in [t_{\mathrm{min}}, t_{\mathrm{max}}]` is mapped to the closest mesh point with
+  index :math:`n` by the function
+  :math:`n(t) = \left\lfloor \frac{t - t_{\mathrm{min}}}{\Delta} + 0.5 \right\rfloor`.
 
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a real time mesh with 5 points on [-5, 5]
-     triqs::mesh::retime m{-5, 5, 5};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = 0, data index = 0, value = -5
-mesh point #1: index = 1, data index = 1, value = -2.5
-mesh point #2: index = 2, data index = 2, value = 0
-mesh point #3: index = 3, data index = 3, value = 2.5
-mesh point #4: index = 4, data index = 4, value = 5
-```)DOC"
+Green's function containers that are based on a real time mesh store the function values at the discrete time
+points :math:`t(n)`, i.e. :math:`f_n = f(t(n))`, and use linear interpolation to evaluate the function at an
+arbitrary time :math:`t \in [t_{\mathrm{min}}, t_{\mathrm{max}}]`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_6>;
 // --------- class _c2py_cls_7 -----------
 using _c2py_cls_7                                            = triqs::mesh::refreq;
@@ -1930,15 +1759,8 @@ static const auto _c2py_init_6 =
 template <> constexpr initproc c2py::tp_init<_c2py_cls_7> = c2py::pyfkw_constructor<_c2py_init_6>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_7> = _c2py_init_6.doc(R"DOC(
-[1] Construct a real frequency mesh on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]` with 
+Construct a real frequency mesh on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]` with
 :math:`N \geq 0` equally spaced mesh points.
-
-------
-
-[2] Construct a real frequency mesh on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]` with
-:math:`N \geq 0` equally spaced mesh points.
-
-------
 
 Parameters
 ----------
@@ -1949,7 +1771,7 @@ w_max : {par_1}
 n_w : {par_2}
    Size of the mesh.
 window : {par_3}
-   `std::pair` containing the lower and upper bounds of the frequency interval.
+   Pair containing the lower and upper bounds of the frequency interval.
 )DOC",
                                                                     {{c2py::python_typename<double>()},
                                                                      {c2py::python_typename<double>()},
@@ -2016,7 +1838,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -2033,9 +1855,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::refreq &>()}, {c2py::python_typename<const triqs::mesh::refreq &>()}});
 static const auto _c2py_doc_52 = _c2py_fun_52.doc(R"DOC(
@@ -2054,7 +1876,7 @@ Returns
                                                   {{c2py::python_typename<long>()}}, {c2py::python_typename<bool>()});
 static const auto _c2py_doc_53 =
    _c2py_fun_53.doc(R"DOC(
-Set the pointer to a new triqs::mesh::tail_fitter object constructed with the given parameters.
+Set the pointer to a new tail-fitter object constructed with the given parameters.
 
 Parameters
 ----------
@@ -2063,7 +1885,7 @@ tail_fraction : {par_0}
 n_tail_max : {par_1}
    Maximum number of points to use in the tail fit (:math:`p_\text{max} > 0`).
 expansion_order : {par_2}
-   Optional expansion order :math:`q \leq q_{\text{max}} = 9`. If not set, it will be 
+   Optional expansion order :math:`q \leq q_{\text{max}} = 9`. If not set, it will be
    adjusted automatically.
 )DOC",
                     {{c2py::python_typename<double>()}, {c2py::python_typename<int>()}, {c2py::python_typename<std::optional<int>>()}});
@@ -2116,12 +1938,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::refreq &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -2188,45 +2010,29 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_7> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_7> = R"DOC(Real frequency mesh type.
 
-A real frequency mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by its size :math:`N
-\geq 0` and a frequency interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]`.
+A real frequency mesh is defined by its size :math:`N \geq 0` and a frequency interval
+:math:`[\omega_{\mathrm{min}}, \omega_{\mathrm{max}}]`. It contains :math:`N` equally spaced mesh points on the
+interval :math:`[\omega_{\mathrm{min}}, \omega_{\mathrm{max}}]` such that the distance between two consecutive mesh
+points (step size) is constant.
 
-It is a triqs::mesh::detail::linear mesh with :math:`N` equally spaced mesh points on the interval :math:`
-[\omega_{\text{min}}, \omega_{\text{max}}]` such that
-- :math:`\omega(n) = \omega_{\text{min}} + n \cdot \Delta` with :math:`\Delta = \frac{\omega_{\text{max}} -
-\omega_{\text{min}}}{N - 1}` for :math:`N > 1`,
-- :math:`\omega(0) = \omega_{\text{min}}` and
-- :math:`\omega(N - 1) = \omega_{\text{max}}`.
+A real frequency mesh has the following properties:
 
-``triqs-gfs`` containers that are based on a real frequency mesh store the function values at the discrete 
-frequency points :math:`\omega(n)`, i.e. :math:`f_n = f(\omega(n))`, and use linear interpolation to evaluate the 
-function at an arbitrary frequency :math:`\omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}]` (see 
-triqs::mesh::evaluate(refreq const &, auto const &, double) for details). 
+- Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
+- An index :math:`n` is mapped to the corresponding value :math:`\omega` by the linear function
+  :math:`\omega(n) = \omega_{\mathrm{min}} + n \cdot \Delta` such that :math:`\omega(0) = \omega_{\mathrm{min}}`
+  and :math:`\omega(N - 1) = \omega_{\mathrm{max}}`. The step size of the mesh is
+  :math:`\Delta = \frac{\omega_{\mathrm{max}} - \omega_{\mathrm{min}}}{N - 1}` for :math:`N > 1`, otherwise it is
+  undefined. For implementation purposes, we set :math:`\Delta = 0` and :math:`\Delta^{-1} = 0` for :math:`N = 0`
+  and :math:`\Delta = 0` and :math:`\Delta^{-1} = \infty` for :math:`N = 1`.
+- An arbitrary value :math:`\omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}]` is mapped to the closest
+  mesh point with index :math:`n` by the function
+  :math:`n(\omega) = \left\lfloor \frac{\omega - \omega_{\mathrm{min}}}{\Delta} + 0.5 \right\rfloor`.
 
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a real frequency mesh with 5 points on the interval [-5, 5]
-     triqs::mesh::refreq m{-5, 5, 5};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = 0, data index = 0, value = -5
-mesh point #1: index = 1, data index = 1, value = -2.5
-mesh point #2: index = 2, data index = 2, value = 0
-mesh point #3: index = 3, data index = 3, value = 2.5
-mesh point #4: index = 4, data index = 4, value = 5
-```)DOC"
+Green's function containers that are based on a real frequency mesh store the function values at the discrete
+frequency points :math:`\omega(n)`, i.e. :math:`f_n = f(\omega(n))`, and use linear interpolation to evaluate the
+function at an arbitrary frequency :math:`\omega \in [\omega_{\mathrm{min}}, \omega_{\mathrm{max}}]`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_7>;
 // --------- class _c2py_cls_8 -----------
 using _c2py_cls_8                                            = triqs::mesh::cyclat;
@@ -2248,7 +2054,7 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_8> = _c2py_init_7.doc(R"DOC(
 
 ------
 
-[3] Construct a cyclic lattice mesh on a cubic Bravais lattice with :math:`a = 1` and the given supercell 
+[3] Construct a cyclic lattice mesh on a cubic Bravais lattice with :math:`a = 1` and the given supercell
 dimensions.
 
 ------
@@ -2256,7 +2062,7 @@ dimensions.
 Parameters
 ----------
 bl : {par_0}
-   triqs::lattice::bravais_lattice object representing the underlying Bravais lattice.
+   Bravais lattice object representing the underlying Bravais lattice.
 dims : {par_1}
    Number of unit cells in the supercell along each of the three dimensions, i.e. :math:`(N_1, N_2, N_3)`
    .
@@ -2334,7 +2140,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -2351,9 +2157,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::cyclat &>()}, {c2py::python_typename<const triqs::mesh::cyclat &>()}});
 static const auto _c2py_doc_61 =
@@ -2429,7 +2235,7 @@ n : {par_0}
 Returns
 -------
 {ret_0}
-   triqs::lattice::bravais_lattice::point_t :math:`\mathbf{R}^{\mathbf{n}}`.
+   Bravais lattice point :math:`\mathbf{R}^{\mathbf{n}}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat::index_t &>()}}, {c2py::python_typename<triqs::mesh::cyclat::value_t>()});
 static const auto _c2py_doc_66 =
@@ -2439,12 +2245,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::cyclat &>()}},
                     {c2py::python_typename<nda::basic_array<triqs::lattice::bravais_lattice::point_t, 1, nda::C_layout, 'V',
@@ -2470,8 +2276,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_8>[] = {
 static constexpr auto prop_doc_53 = R"DOC(Get the number of unit cells in each of the three dimensions.)DOC";
 static constexpr auto prop_doc_54 = R"DOC(Get the underlying Bravais lattice.)DOC";
 static constexpr auto prop_doc_55 = R"DOC(Get the hash value of the mesh.)DOC";
-static constexpr auto prop_doc_56 = R"DOC(Get the matrix :math:`\mathbf{A}^T` containing the basis vectors of the Bravais lattice in its rows (see 
-triqs::lattice::bravais_lattice::units()).)DOC";
+static constexpr auto prop_doc_56 = R"DOC(Get the matrix :math:`\mathbf{A}^T` containing the basis vectors of the Bravais lattice in its rows.)DOC";
 
 // ----- Member and property table ----
 
@@ -2494,67 +2299,36 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_8> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_8> = R"DOC(Cyclic lattice mesh type for Bravais lattices with Born-von Karman periodic boundary conditions.
 
-A cyclic lattice mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by an underlying
-triqs::lattice::bravais_lattice and the number of unit cells in each of the three dimensions, :math:`N_1`, :math:`N_2`
-and :math:`N_3`, which define the supercell and the periodic boundary conditions (PBC) :math:`
-f(\mathbf{R}^{\mathbf{n}}) = f(\mathbf{R}^{\mathbf{n}} + \mathbf{T}^{\mathbf{m}})`. Here, :math:`
-\mathbf{T}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{a}_i N_i m_i = \tilde{\mathbf{A}} \mathbf{m}` is a supercell 
-translation vector, :math:`\mathbf{a}_i` is a Bravais lattice basis vector in direction :math:`i` and :math:`
-\mathbf{m} = (m_1, m_2, m_3)` with :math:`m_i \in \mathbb{Z}`. 
+A cyclic lattice mesh is defined by an underlying Bravais lattice and the number of unit cells in each of
+the three dimensions, :math:`N_1`, :math:`N_2` and :math:`N_3`, which define the supercell and the periodic
+boundary conditions (PBC) :math:`f(\mathbf{R}^{\mathbf{n}}) = f(\mathbf{R}^{\mathbf{n}} + \mathbf{T}^{\mathbf{m}})`.
+Here, :math:`\mathbf{T}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{a}_i N_i m_i = \tilde{\mathbf{A}} \mathbf{m}` is a
+supercell translation vector, :math:`\mathbf{a}_i` is a Bravais lattice basis vector in direction :math:`i` and
+:math:`\mathbf{m} = (m_1, m_2, m_3)` with :math:`m_i \in \mathbb{Z}`.
 
 It has the following properties:
 
 - Each mesh point is identified by
-  - an unique index in the supercell :math:`\mathbf{n} = (n_1, n_2, n_3)`, where :math:`0 \leq n_i < N_i`, and
-  - an infinite set of indices due to the periodic boundary conditions, i.e. :math:`\{ \tilde{\mathbf{n}} = \mathbf{n}
-+ \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \}`.
+
+  - a unique index in the supercell :math:`\mathbf{n} = (n_1, n_2, n_3)`, where :math:`0 \leq n_i < N_i`, and
+  - an infinite set of indices due to the periodic boundary conditions, i.e.
+    :math:`\{ \tilde{\mathbf{n}} = \mathbf{n} + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \}`.
+
 - The size of the mesh is :math:`N = N_1 \, N_2 \, N_3`, i.e. the total number of unit cells in the supercell.
-- An index :math:`\mathbf{n}` is mapped to the corresponding data index :math:`d` by the function :math:`d(\mathbf{n})
-= n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3`. The inverse map is :math:`\mathbf{n}(d) = (\lfloor d /
-s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 )`, where :math:`s_1 = N_2 N_3` and :math:`s_2 = N_3`
-.
-- An index :math:`\mathbf{n}` is mapped to the corresponding value (lattice point) :math:`\mathbf{R}(\mathbf{n})
-\equiv \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{a}_i n_i = \mathbf{A} \mathbf{n}`, where :math:`\mathbf{a}_i`
-is the Bravais lattice basis vectors in direction :math:`i`. The inverse map is then :math:`\mathbf{n}(
-\mathbf{R}^{\mathbf{n}}) = \mathbf{A}^{-1} \mathbf{R}^{\mathbf{n}} = \mathbf{n}`.
+- An index :math:`\mathbf{n}` is mapped to the corresponding data index :math:`d` by the function
+  :math:`d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3`. The inverse map is
+  :math:`\mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 )`,
+  where :math:`s_1 = N_2 N_3` and :math:`s_2 = N_3`.
+- An index :math:`\mathbf{n}` is mapped to the corresponding value (lattice point)
+  :math:`\mathbf{R}(\mathbf{n}) \equiv \mathbf{R}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{a}_i n_i = \mathbf{A} \mathbf{n}`,
+  where :math:`\mathbf{a}_i` is the Bravais lattice basis vectors in direction :math:`i`. The inverse map is then
+  :math:`\mathbf{n}(\mathbf{R}^{\mathbf{n}}) = \mathbf{A}^{-1} \mathbf{R}^{\mathbf{n}} = \mathbf{n}`.
 
-``triqs-gfs`` containers that are based on a cyclic lattice mesh store the function values at the discrete lattice
-points :math:`\mathbf{R}^{\mathbf{n}}`, i.e. :math:`f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}})`. Because of the 
-PBC, the container only has to store values for indices with :math:`0 \leq n_i < N_i`. To evaluate the function at 
-an arbitrary lattice point, it is first mapped to the supercell using the PBC and then the corresponding function 
-value is returned (see triqs::mesh::cyclat::evaluate for details).
-
-::
-
-   #include <fmt/ranges.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a mesh on a cubic lattice with a = 0.5 and a 2x2x3 supercell
-     triqs::mesh::cyclat m{triqs::mesh::bravais_lattice{nda::eye<double>(3) * 0.5}, {2, 2, 3}};
-   
-     // loop over all mesh points and print their index, data index and value (lattice vector)
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), nda::vector<double>{mp.value()});
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = [0, 0, 0], data index = 0, value = [0, 0, 0]
-mesh point #1: index = [0, 0, 1], data index = 1, value = [0, 0, 0.5]
-mesh point #2: index = [0, 0, 2], data index = 2, value = [0, 0, 1]
-mesh point #3: index = [0, 1, 0], data index = 3, value = [0, 0.5, 0]
-mesh point #4: index = [0, 1, 1], data index = 4, value = [0, 0.5, 0.5]
-mesh point #5: index = [0, 1, 2], data index = 5, value = [0, 0.5, 1]
-mesh point #6: index = [1, 0, 0], data index = 6, value = [0.5, 0, 0]
-mesh point #7: index = [1, 0, 1], data index = 7, value = [0.5, 0, 0.5]
-mesh point #8: index = [1, 0, 2], data index = 8, value = [0.5, 0, 1]
-mesh point #9: index = [1, 1, 0], data index = 9, value = [0.5, 0.5, 0]
-mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5, 0.5, 0.5]
-mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5, 0.5, 1]
-```)DOC"
+Green's function containers that are based on a cyclic lattice mesh store the function values at the discrete
+lattice points :math:`\mathbf{R}^{\mathbf{n}}`, i.e. :math:`f_{\mathbf{n}} = f(\mathbf{R}^{\mathbf{n}})`. Because
+of the PBC, the container only has to store values for indices with :math:`0 \leq n_i < N_i`. To evaluate the
+function at an arbitrary lattice point, it is first mapped to the supercell using the PBC and then the
+corresponding function value is returned.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_8>;
 // --------- class _c2py_cls_9 -----------
 using _c2py_cls_9                                            = triqs::mesh::brzone;
@@ -2582,7 +2356,7 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_9> = _c2py_init_8.doc(R"DOC(
 Parameters
 ----------
 bz : {par_0}
-   triqs::lattice::brillouin_zone object representing the underlying BZ.
+   Brillouin zone object representing the underlying BZ.
 dims : {par_1}
    Number of mesh points along each of the three dimensions, i.e. :math:`(N_1, N_2, N_3)`.
 n_k : {par_2}
@@ -2652,7 +2426,7 @@ Returns
                     {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<triqs::mesh::brzone::mesh_point_t>()});
 static const auto _c2py_doc_68 =
    _c2py_fun_68.doc(R"DOC(
-Map a given :math:`\mathbf{k}`-vector or expression to the closest :math:`\mathbf{k}^{\mathbf{n}}` in the 
+Map a given :math:`\mathbf{k}`-vector or expression to the closest :math:`\mathbf{k}^{\mathbf{n}}` in the
 first BZ and return its index :math:`\mathbf{n}`.
 
 Parameters
@@ -2675,7 +2449,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -2692,9 +2466,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::brzone &>()}, {c2py::python_typename<const triqs::mesh::brzone &>()}});
 static const auto _c2py_doc_71 =
@@ -2770,7 +2544,7 @@ n : {par_0}
 Returns
 -------
 {ret_0}
-   `nda::vector<double>` :math:`\mathbf{k}^{\mathbf{n}}`.
+   :math:`\mathbf{k}`-point :math:`\mathbf{k}^{\mathbf{n}}`.
 )DOC",
                     {{c2py::python_typename<const triqs::mesh::brzone::index_t &>()}}, {c2py::python_typename<triqs::mesh::brzone::value_t>()});
 static const auto _c2py_doc_76 = _c2py_fun_76.doc(
@@ -2780,12 +2554,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::brzone &>()}},
    {c2py::python_typename<
@@ -2839,76 +2613,41 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_9> = {c2py::tpxx_size
 template <>
 const std::string c2py::tp_doc<_c2py_cls_9> = R"DOC(Brillouin zone mesh type.
 
-A Brillouin zone (BZ) mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by an
-underlying triqs::lattice::brillouin_zone and the number of mesh points in the primitive reciprocal unit cell along
-each of the three dimensions, :math:`N_1`, :math:`N_2` and :math:`N_3`. The periodic boundary conditions (PBC) in
-real space (see triqs::mesh::cyclat) translate in reciprocal space to :math:`f(\mathbf{k}) = f(\mathbf{k} +
-\mathbf{G}^{\mathbf{m}})`, where :math:`\mathbf{G}^{\mathbf{m}} = \sum_{i=1}^3 \mathbf{b}_i m_i = \mathbf{B}
-\mathbf{m}` is a reciprocal lattice vector, :math:`\mathbf{b}_i` is a reciprocal lattice basis vector in 
-direction :math:`i` and :math:`\mathbf{m} = (m_1, m_2, m_3)` with :math:`m_i \in \mathbb{Z}`. 
+A Brillouin zone (BZ) mesh is defined by an underlying Brillouin zone and the number of mesh points in the
+primitive reciprocal unit cell along each of the three dimensions, :math:`N_1`, :math:`N_2` and :math:`N_3`. The
+periodic boundary conditions (PBC) in real space (see cyclic-lattice mesh) translate in reciprocal space to
+:math:`f(\mathbf{k}) = f(\mathbf{k} + \mathbf{G}^{\mathbf{m}})`, where :math:`\mathbf{G}^{\mathbf{m}} = \sum_{i=1}^3
+\mathbf{b}_i m_i = \mathbf{B} \mathbf{m}` is a reciprocal lattice vector, :math:`\mathbf{b}_i` is a reciprocal
+lattice basis vector in direction :math:`i` and :math:`\mathbf{m} = (m_1, m_2, m_3)` with :math:`m_i \in
+\mathbb{Z}`.
 
 It has the following properties:
 
 - Each mesh point is identified by
-  - an unique index in the first BZ :math:`\mathbf{n} = (n_1, n_2, n_3)`, where :math:`0 \leq n_i < N_i`, and
-  - an infinite set of indices due to the periodic boundary conditions, i.e. :math:`\{ \tilde{\mathbf{n}} = \mathbf{n}
-+ \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \}`.
-- The size of the mesh is :math:`N = N_1 \, N_2 \, N_3`, i.e. the total number of mesh points in the BZ.
-- An index :math:`\mathbf{n}` is mapped to the corresponding data index :math:`d` by the function :math:`d(\mathbf{n})
-= n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3`. The inverse map is :math:`\mathbf{n}(d) = (\lfloor d /
-s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 )`, where :math:`s_1 = N_2 N_3` and :math:`s_2 = N_3`
-.
-- An index :math:`\mathbf{n}` is mapped to the corresponding value (:math:`\mathbf{k}`-vector) :math:`\mathbf{k}
-(\mathbf{n}) \equiv \mathbf{k}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{b}_i n_i / N_i = \tilde{\mathbf{B}} \mathbf{n}`
-, where :math:`\mathbf{b}_i` is the reciprocal lattice basis vector in direction :math:`i`. The inverse map is 
-then :math:`\mathbf{n}(\mathbf{k}^{\mathbf{n}}) = \tilde{\mathbf{B}}^{-1} \mathbf{k}^{\mathbf{n}} = \mathbf{n}`.
 
-``triqs-gfs`` containers that are based on a BZ mesh store the function values at the discrete :math:`\mathbf{k}`
+  - a unique index in the first BZ :math:`\mathbf{n} = (n_1, n_2, n_3)`, where :math:`0 \leq n_i < N_i`, and
+  - an infinite set of indices due to the periodic boundary conditions, i.e.
+    :math:`\{ \tilde{\mathbf{n}} = \mathbf{n} + \mathbf{N} \mathbf{m} : \mathbf{N} \mathbf{m} = (N_1 m_1, N_2 m_2, N_3 m_3) \in \mathbb{Z}^3 \}`.
+
+- The size of the mesh is :math:`N = N_1 \, N_2 \, N_3`, i.e. the total number of mesh points in the BZ.
+- An index :math:`\mathbf{n}` is mapped to the corresponding data index :math:`d` by the function
+  :math:`d(\mathbf{n}) = n_3 + N_3 (n_2 + N_2 n_1) = n_3 + n_2 N_3 + n_1 N_2 N_3`. The inverse map is
+  :math:`\mathbf{n}(d) = (\lfloor d / s_1 \rfloor, \lfloor (d \mod s_1) / s_2 \rfloor, (d \mod s_1) \mod s_2 )`,
+  where :math:`s_1 = N_2 N_3` and :math:`s_2 = N_3`.
+- An index :math:`\mathbf{n}` is mapped to the corresponding value (:math:`\mathbf{k}`-vector)
+  :math:`\mathbf{k}(\mathbf{n}) \equiv \mathbf{k}^{\mathbf{n}} = \sum_{i=1}^3 \mathbf{b}_i n_i / N_i = \tilde{\mathbf{B}} \mathbf{n}`,
+  where :math:`\mathbf{b}_i` is the reciprocal lattice basis vector in direction :math:`i`. The inverse map is then
+  :math:`\mathbf{n}(\mathbf{k}^{\mathbf{n}}) = \tilde{\mathbf{B}}^{-1} \mathbf{k}^{\mathbf{n}} = \mathbf{n}`.
+
+Green's function containers that are based on a BZ mesh store the function values at the discrete :math:`\mathbf{k}`
 -points :math:`\mathbf{k}^{\mathbf{n}}`, i.e. :math:`f_{\mathbf{n}} = f(\mathbf{k}^{\mathbf{n}})`.
 Because of the PBC, the container only has to store values for indices with :math:`0 \leq n_i < N_i`. To evaluate
-the function 
-- at an arbitrary :math:`\mathbf{k}`-vector, :math:`\mathbf{k}` is first mapped to the BZ using PBC and then 
-trilinear interpolation is performed (see triqs::mesh::brzone::evaluate(brzone const &, auto const &, V const &) 
-for details).
-- at one of the :math:`\mathbf{k}^{\mathbf{n}}`, it is first mapped to the BZ using PBC and then the corresponding
-function value is returned (see triqs::mesh::brzone::evaluate(brzone const &, auto const &, index_t const &) for 
-details).
+the function
 
-::
-
-   #include <fmt/ranges.h>
-   #include <triqs/mesh.hpp>
-   
-   #include <numbers>
-   
-   int main() {
-     using std::numbers::pi;
-   
-     // initialize a mesh on a cubic BZ with a = 2pi and a 2x2x3 k-point grid
-     triqs::mesh::brzone m{triqs::mesh::brillouin_zone{triqs::mesh::bravais_lattice{nda::eye<double>(3) * 2 * pi}}, {2, 2, 3}};
-   
-     // loop over all mesh points and print their index, data index and value (k-point)
-     for (int i = 0; auto mp : m) {
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {::.4f}", i++, mp.index(), mp.data_index(), mp.value());
-     }
-   }
-
-Output:
-
-```
-mesh point #0: index = [0, 0, 0], data index = 0, value = [0.0000, 0.0000, 0.0000]
-mesh point #1: index = [0, 0, 1], data index = 1, value = [0.0000, 0.0000, 0.3333]
-mesh point #2: index = [0, 0, 2], data index = 2, value = [0.0000, 0.0000, 0.6667]
-mesh point #3: index = [0, 1, 0], data index = 3, value = [0.0000, 0.5000, 0.0000]
-mesh point #4: index = [0, 1, 1], data index = 4, value = [0.0000, 0.5000, 0.3333]
-mesh point #5: index = [0, 1, 2], data index = 5, value = [0.0000, 0.5000, 0.6667]
-mesh point #6: index = [1, 0, 0], data index = 6, value = [0.5000, 0.0000, 0.0000]
-mesh point #7: index = [1, 0, 1], data index = 7, value = [0.5000, 0.0000, 0.3333]
-mesh point #8: index = [1, 0, 2], data index = 8, value = [0.5000, 0.0000, 0.6667]
-mesh point #9: index = [1, 1, 0], data index = 9, value = [0.5000, 0.5000, 0.0000]
-mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5000, 0.5000, 0.3333]
-mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5000, 0.5000, 0.6667]
-```)DOC"
+- at an arbitrary :math:`\mathbf{k}`-vector, :math:`\mathbf{k}` is first mapped to the BZ using PBC and then
+  trilinear interpolation is performed.
+- at one of the :math:`\mathbf{k}^{\mathbf{n}}`, it is first mapped to the BZ using PBC and then the
+  corresponding function value is returned.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_9>;
 // --------- class _c2py_cls_10 -----------
 using _c2py_cls_10                                            = triqs::mesh::chebyshev;
@@ -2933,7 +2672,7 @@ Parameters
 beta : {par_0}
    Inverse temperature :math:`\beta > 0`.
 stat : {par_1}
-   Particle statistics (see triqs::mesh::statistic_enum).
+   Particle statistics.
 N : {par_2}
    Number of Chebyshev points :math:`N > 0`.
 )DOC",
@@ -2990,7 +2729,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -3007,9 +2746,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::chebyshev &>()}, {c2py::python_typename<const triqs::mesh::chebyshev &>()}});
 static const auto _c2py_doc_80 = _c2py_fun_80.doc(R"DOC(
@@ -3075,12 +2814,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::chebyshev &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -3133,46 +2872,29 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_10> = {c2py::tpxx_siz
 template <>
 const std::string c2py::tp_doc<_c2py_cls_10> = R"DOC(Chebyshev imaginary time mesh type.
 
-A Chebyshev mesh satisfies the triqs::mesh::MeshWithValues concept. It stores function values at
-Chebyshev collocation points and uses barycentric interpolation for evaluation at arbitrary imaginary times,
-providing exponential convergence for smooth functions.
+A Chebyshev imaginary time mesh is defined by its size :math:`N \geq 0`, an inverse temperature :math:`\beta
+> 0` and its particle statistics. It stores function values at Chebyshev collocation points and uses
+barycentric interpolation for evaluation at arbitrary imaginary times, providing exponential convergence for smooth
+functions.
 
-The mesh is defined by:
-- :math:`N`: number of Chebyshev points (polynomial order)
-- :math:`\beta`: inverse temperature (interval :math:`[0, \beta]`)
-- `stat`: particle statistics (Boson/Fermion)
+A Chebyshev imaginary time mesh has the following properties:
 
-Chebyshev points of the first kind are used:
+- Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
+- An index :math:`n` is mapped to the corresponding value :math:`\tau` by the function
+  :math:`\tau(n) = \frac{\beta}{2} (x_n + 1)` where :math:`x_n = \cos\left(\frac{(2n + 1) \pi}{2N}\right)` is the
+  Chebyshev point of the first kind.
+
+Green's function containers that are based on a Chebyshev imaginary time mesh store the function values at the
+discrete time points :math:`\tau(n)`, i.e. :math:`f_n = f(\tau(n))`, and use barycentric interpolation to evaluate
+the function at an arbitrary imaginary time :math:`\tau \in [0, \beta]`:
 
 .. math::
 
-   x_i = \cos\left(\frac{(2i + 1) \pi}{2N}\right) \quad \text{for } i = 0, \ldots, N-1 \text{ on } [-1, 1]
+   f(\tau) \approx \frac{\sum_{n=0}^{N-1} \frac{w_n}{x - x_n} f_n}{\sum_{n=0}^{N-1} \frac{w_n}{x - x_n}}
 
-These are scaled to :math:`[0, \beta]` as:
-
-.. math::
-
-   \tau_i = \frac{\beta}{2} (x_i + 1)
-
-Properties:
-- Each mesh point has index :math:`n \in \{0, \ldots, N-1\}`
-- Identity mapping: :math:`d(n) = n`, :math:`n(d) = d`
-- :math:`\text{value}(n) = \tau_n` (Chebyshev point scaled to :math:`[0, \beta]`)
-- Evaluation uses barycentric interpolation (numerically stable)
-
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a Chebyshev mesh with beta = 10, fermionic statistics and 5 points
-     triqs::mesh::chebyshev m{10, triqs::mesh::Fermion, 5};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m)
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-   })DOC"
+where :math:`x = 2\tau/\beta - 1` is the scaled coordinate and :math:`w_n` are the barycentric weights.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_10>;
 // --------- class _c2py_cls_11 -----------
 using _c2py_cls_11                                            = triqs::mesh::legendre;
@@ -3190,8 +2912,8 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_11> =
 
 ------
 
-[2] Construct a mesh of Legendre polynomials with degrees :math:`n = 0, 1, \ldots, N - 1` on the interval :math:`
-[0, \beta]` and the given particle statistics.
+[2] Construct a mesh of Legendre polynomials with degrees :math:`n = 0, 1, \ldots, N - 1` on the interval :math:`[0, \beta]`
+and the given particle statistics.
 
 ------
 
@@ -3200,7 +2922,7 @@ Parameters
 beta : {par_0}
    Inverse temperature :math:`\beta > 0`.
 statistic : {par_1}
-   Particle statistics (see triqs::mesh::statistic_enum).
+   Particle statistics.
 max_n : {par_2}
    Size of the mesh, i.e. the number of Legendre polynomial used in the series expansion.
 )DOC",
@@ -3250,7 +2972,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -3267,9 +2989,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::legendre &>()}, {c2py::python_typename<const triqs::mesh::legendre &>()}});
 static const auto _c2py_doc_88 = _c2py_fun_88.doc(R"DOC(
@@ -3353,46 +3075,33 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_11> = {c2py::tpxx_siz
 template <>
 const std::string c2py::tp_doc<_c2py_cls_11> = R"DOC(Legendre mesh type.
 
-A Legendre mesh satisfies the triqs::mesh::Mesh concept. It is defined by the number of Legendre
-polynomials :math:`N` used in the series expansion, an inverse temperature :math:`\beta > 0` and its particle 
-statistics (see triqs::mesh::statistic_enum).
+A Legendre mesh is defined by the number of Legendre polynomials :math:`N` used in the series
+expansion, an inverse temperature :math:`\beta > 0` and its particle statistics.
 
-A Legendre mesh is similar to the triqs::mesh::discrete mesh and has the following properties:
+A Legendre mesh is an index-only mesh (no value attached to each point) and has the following properties:
 
 - Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
 - An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
-and vice versa.
-- There is no explicit value associated with a mesh point, i.e. it does not satisfy the
-triqs::mesh::MeshWithValues concept.
+  and vice versa.
+- There is no explicit value associated with a mesh point, i.e. it carries no value at each mesh point.
 
-``triqs-gfs`` containers that are based on a Legendre mesh store the coefficients :math:`f_n` of the generalized 
-Fourier series expansion of a function :math:`f(\tau)` in terms of Legendre polynomials, which is defined on the 
+Green's function containers that are based on a Legendre mesh store the coefficients :math:`f_n` of the generalized
+Fourier series expansion of a function :math:`f(\tau)` in terms of Legendre polynomials, which is defined on the
 imaginary time axis. To evaluate the function at an arbitrary imaginary time :math:`\tau \in [0, \beta]`, the GF
-container sums up the Fourier series to the maximum degree :math:`N-1` (see triqs::mesh::evaluate(legendre const &, 
-auto const &, double) for details). 
+container sums up the Fourier series to the maximum degree :math:`N-1`:
 
-::
+.. math::
 
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a Legendre mesh with beta = 10, fermionic statistics and 5 polynomials
-     triqs::mesh::legendre m{10, triqs::mesh::Fermion, 5};
-   
-     // loop over all mesh points and print their index and data index
-     for (int i = 0; auto mp : m) fmt::println("mesh point #{}: index = {}, data index = {}", i++, mp.index(), mp.data_index());
-   }
+   f(\tau) \approx \sum_{n=0}^{N-1} \frac{\sqrt{2n + 1}}{\beta} f_n P_n(x(\tau)) \; ,
 
-Output:
+where :math:`P_n` denotes the Legendre polynomial of degree :math:`n`, :math:`x(\tau) = 2\tau / \beta - 1` is a
+linear map from :math:`[0, \beta]` to :math:`[-1, 1]` and
 
-```
-mesh point #0: index = 0, data index = 0
-mesh point #1: index = 1, data index = 1
-mesh point #2: index = 2, data index = 2
-mesh point #3: index = 3, data index = 3
-mesh point #4: index = 4, data index = 4
-```)DOC"
+.. math::
+
+   f_n = \sqrt{2n + 1} \int_0^\beta d\tau \, f(\tau) P_n(x(\tau)) \; ,
+
+are the expansion coefficients.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_11>;
 // --------- class _c2py_cls_12 -----------
 using _c2py_cls_12                                            = triqs::mesh::refreq_log;
@@ -3479,7 +3188,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -3496,9 +3205,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                     {{c2py::python_typename<triqs::mesh::refreq_log &>()}, {c2py::python_typename<const triqs::mesh::refreq_log &>()}});
 static const auto _c2py_doc_94 = _c2py_fun_94.doc(R"DOC(
@@ -3578,12 +3287,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::refreq_log &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -3633,38 +3342,30 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_12> = {c2py::tpxx_siz
 template <>
 const std::string c2py::tp_doc<_c2py_cls_12> = R"DOC(Logarithmic real frequency mesh type.
 
-A logarithmic mesh satisfies the triqs::mesh::MeshWithValues concept and generates a
-symmetric set of frequency points around zero using a geometric sequence.
+A logarithmic real frequency mesh is defined by a cutoff frequency :math:`\varepsilon > 0`, an upper bound
+:math:`\omega_{\mathrm{max}} \geq \varepsilon` and a common ratio :math:`r > 1`. It contains a symmetric set of
+:math:`N` mesh points around zero, formed by mirroring the positive geometric sequence :math:`\omega_{\mathrm{max}},
+\omega_{\mathrm{max}} / r, \omega_{\mathrm{max}} / r^2, \ldots` (taken while the sequence stays above
+:math:`\varepsilon`) to the negative axis. The mesh always has an even number of points and does not include zero.
 
-The mesh is defined by three parameters:
-- :math:`\varepsilon > 0`: the smallest positive frequency (cutoff near zero)
-- :math:`\omega_{\mathrm{max}} \geq \varepsilon`: the largest frequency
-- :math:`r > 1`: the common ratio of the geometric sequence
+A logarithmic real frequency mesh has the following properties:
 
-Positive frequencies are generated as :math:`\omega_{\mathrm{max}}, \omega_{\mathrm{max}}/r,
-\omega_{\mathrm{max}}/r^2, \ldots` while :math:`\omega \geq \varepsilon`. Each positive
-frequency is mirrored to a negative one, giving a symmetric mesh:
-:math:`\{-\omega_{\mathrm{max}}, \ldots, -\varepsilon_{\mathrm{eff}}, \varepsilon_{\mathrm{eff}},
-\ldots, \omega_{\mathrm{max}}\}`
+- Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
+- An index :math:`n` is mapped to the corresponding value :math:`\omega_n` by
 
-The mesh always has an even number of points and does not include zero.
+  - :math:`\omega_n = -\omega_{\mathrm{max}} / r^n` for :math:`0 \leq n < N/2` and
+  - :math:`\omega_n = \omega_{\mathrm{max}} / r^{N - 1 - n}` for :math:`N/2 \leq n \leq N - 1`,
 
-``triqs-gfs`` containers that are based on this mesh use linear interpolation to evaluate
-the function at an arbitrary frequency (see triqs::mesh::evaluate(refreq_log const &, auto const &, double)).
+  such that the mesh points are sorted in ascending order with :math:`\omega_0 = -\omega_{\mathrm{max}}` and
+  :math:`\omega_{N-1} = \omega_{\mathrm{max}}`.
+- An arbitrary value :math:`\omega \in [-\omega_{\mathrm{max}}, \omega_{\mathrm{max}}]` is mapped to the closest
+  mesh point with index :math:`n` by binary search on the sorted mesh points.
 
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a logarithmic mesh with eps=0.1, w_max=10, ratio=2
-     triqs::mesh::refreq_log m{0.1, 10, 2.0};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m)
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-   })DOC"
+Green's function containers that are based on a logarithmic real frequency mesh store the function values at the
+discrete frequency points :math:`\omega_n`, i.e. :math:`f_n = f(\omega_n)`, and use linear interpolation to
+evaluate the function at an arbitrary frequency :math:`\omega \in [-\omega_{\mathrm{max}}, \omega_{\mathrm{max}}]`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_12>;
 // --------- class _c2py_cls_13 -----------
 using _c2py_cls_13                                            = triqs::mesh::refreq_pts;
@@ -3679,7 +3380,7 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_13> = _c2py_init_12.doc(R"DOC(
 
 ------
 
-[2] Construct a refreq_pts mesh from a sorted vector of frequency points.
+[2] Construct a real frequency mesh from a sorted vector of frequency points.
 
 ------
 
@@ -3746,7 +3447,7 @@ Get a copy of a mesh (for Python bindings).
 Parameters
 ----------
 m : {par_0}
-   %Mesh object to copy.
+   The mesh object to copy.
 
 Returns
 -------
@@ -3763,9 +3464,9 @@ Simply calls the copy assignment operator of the mesh.
 Parameters
 ----------
 m1 : {par_0}
-   %Mesh object to copy into.
+   The mesh object to copy into.
 m2 : {par_1}
-   %Mesh object to copy from.
+   The mesh object to copy from.
 )DOC",
                      {{c2py::python_typename<triqs::mesh::refreq_pts &>()}, {c2py::python_typename<const triqs::mesh::refreq_pts &>()}});
 static const auto _c2py_doc_103 = _c2py_fun_103.doc(R"DOC(
@@ -3845,12 +3546,12 @@ Get the values of all mesh points in a mesh.
 Parameters
 ----------
 m : {par_0}
-   %Mesh object.
+   A mesh object.
 
 Returns
 -------
 {ret_0}
-   `nda::vector` containing the values of all mesh points.
+   Array containing the values of all mesh points.
 )DOC",
    {{c2py::python_typename<const triqs::mesh::refreq_pts &>()}},
    {c2py::python_typename<nda::basic_array<double, 1, nda::C_layout, 'V', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
@@ -3894,45 +3595,21 @@ template <> PyMappingMethods c2py::tp_as_mapping<_c2py_cls_13> = {c2py::tpxx_siz
 template <>
 const std::string c2py::tp_doc<_c2py_cls_13> = R"DOC(Real frequency mesh type from arbitrary sorted frequency points.
 
-A refreq_pts mesh satisfies the triqs::mesh::MeshWithValues concept and is defined by
-a sorted vector of frequency values :math:`\{\omega_0, \omega_1, \ldots, \omega_{N-1}\}` with
-:math:`\omega_i < \omega_{i+1}`.
+A real frequency mesh is defined by its size :math:`N \geq 0` and a sorted vector of frequency values
+:math:`\{\omega_0, \omega_1, \ldots, \omega_{N-1}\}`.
 
-Properties:
+It has the following properties:
+
 - Each mesh point is identified by a unique index :math:`n \in \{0, 1, \ldots, N-1\}`.
-- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity
-  function :math:`d(n) = n` and vice versa.
+- An index :math:`n` is mapped to the corresponding data index :math:`d` by the identity function :math:`d(n) = n`
+  and vice versa.
 - An index :math:`n` is mapped to its corresponding value :math:`\omega_n`.
-- An arbitrary value :math:`\omega \in [\omega_0, \omega_{N-1}]` is mapped to the closest mesh
-  point using binary search.
+- An arbitrary value :math:`\omega \in [\omega_0, \omega_{N-1}]` is mapped to the closest mesh point using binary
+  search.
 
-``triqs-gfs`` containers that are based on this mesh store the function values at the discrete
-frequency points and use linear interpolation to evaluate the function at an arbitrary frequency
-(see triqs::mesh::evaluate(refreq_pts const &, auto const &, double) for details).
-
-::
-
-   #include <fmt/base.h>
-   #include <triqs/mesh.hpp>
-   
-   int main() {
-     // initialize a refreq_pts mesh from a vector of points
-     triqs::mesh::refreq_pts m{std::vector<double>{-5.0, -1.0, 0.0, 1.0, 5.0}};
-   
-     // loop over all mesh points and print their index, data index and value
-     for (int i = 0; auto mp : m)
-       fmt::println("mesh point #{}: index = {}, data index = {}, value = {}", i++, mp.index(), mp.data_index(), mp.value());
-   }
-
-Output:
-
-```
-mesh point #0: index = 0, data index = 0, value = -5
-mesh point #1: index = 1, data index = 1, value = -1
-mesh point #2: index = 2, data index = 2, value = 0
-mesh point #3: index = 3, data index = 3, value = 1
-mesh point #4: index = 4, data index = 4, value = 5
-```)DOC"
+Green's function containers that are based on this mesh store the function values at the discrete frequency points
+:math:`\omega(n)`, i.e. :math:`f_n = f(\omega(n))`, and use linear interpolation to evaluate the function at an
+arbitrary frequency :math:`\omega`.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_13>;
 
 // ==================== module functions ====================
@@ -3952,65 +3629,65 @@ static auto const _c2py_fun_109 = c2py::dispatcher_f_kw_t{
 
 static const auto _c2py_doc_109 = _c2py_fun_109.doc(
    R"DOC(
-[1] Create the adjoint triqs::mesh::imfreq mesh to a given triqs::mesh::imtime mesh.
+[1] Create the adjoint imaginary-frequency mesh to a given imaginary-time mesh.
 
 If :math:`N_{i\omega_n} = -1`, the number of positive Matsubara frequencies is set to :math:`N_{i\omega_n} =
 N / 6`, where :math:`N` is the size of the given imaginary time mesh.
 
 ------
 
-[2] Create the adjoint triqs::mesh::imtime mesh to a given triqs::mesh::imfreq mesh.
+[2] Create the adjoint imaginary-time mesh to a given imaginary-frequency mesh.
 
-If :math:`N = -1`, the size of the imaginary time mesh is set to :math:`N = 6 (n_{\text{max}} + 1) + 1`, 
+If :math:`N = -1`, the size of the imaginary time mesh is set to :math:`N = 6 (n_{\text{max}} + 1) + 1`,
 where :math:`n_{\text{max}}` is the largest positive Matsubara index in the given imaginary frequency mesh.
 
 ------
 
-[3] Create the adjoint triqs::mesh::dlr_imfreq mesh to a given triqs::mesh::dlr_imtime mesh.
+[3] Create the adjoint imaginary-frequency DLR mesh to a given imaginary-time DLR mesh.
 
-It calls triqs::mesh::dlr_imfreq::dlr_imfreq(M const &) with the given imaginary time DLR mesh.
-
-------
-
-[4] Create the adjoint triqs::mesh::dlr_imtime mesh to a given triqs::mesh::dlr_imfreq mesh.
-
-It calls triqs::mesh::dlr_imtime::dlr_imtime(M const &) with the given imaginary frequency DLR mesh.
+It constructs the imaginary-frequency DLR mesh from the given imaginary-time DLR mesh.
 
 ------
 
-[5] Create the adjoint triqs::mesh::refreq mesh to a given triqs::mesh::retime mesh.
+[4] Create the adjoint imaginary-time DLR mesh to a given imaginary-frequency DLR mesh.
+
+It constructs the imaginary-time DLR mesh from the given imaginary-frequency DLR mesh.
+
+------
+
+[5] Create the adjoint real-frequency mesh to a given real-time mesh.
 
 The resulting frequency mesh is defined on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]`
 with :math:`\omega_{\text{max}} = \pi (N - 1) / (N \Delta)` and :math:`\omega_{\text{min}} = -\omega_{\text{max}}`
-, where :math:`N` and :math:`\Delta` are the size and step size of the given real time mesh, respectively. 
+, where :math:`N` and :math:`\Delta` are the size and step size of the given real time mesh, respectively.
 
 If `shift_half_bin` is true, the frequency mesh is shifted by half a bin to the right, i.e. by :math:`\pi / (N \Delta)`
 .
 
 ------
 
-[6] Create the adjoint triqs::mesh::retime mesh to a given triqs::mesh::refreq mesh.
+[6] Create the adjoint real-time mesh to a given real-frequency mesh.
 
-The resulting time mesh is defined on the interval :math:`[t_{\text{min}}, t_{\text{max}}]` with :math:`
-t_{\text{max}} = \pi (N - 1) / (N \Delta)` and :math:`t_{\text{min}} = -t_{\text{max}}`, where :math:`N` and 
-:math:`\Delta` are the size and step size of the given real frequency mesh, respectively. 
+The resulting time mesh is defined on the interval :math:`[t_{\text{min}}, t_{\text{max}}]` with
+:math:`t_{\text{max}} = \pi (N - 1) / (N \Delta)` and :math:`t_{\text{min}} = -t_{\text{max}}`, where :math:`N` and
+:math:`\Delta` are the size and step size of the given real frequency mesh, respectively.
 
 If `shift_half_bin` is true, the time mesh is shifted by half a bin to the right, i.e. by :math:`\pi / (N \Delta)`.
 
 ------
 
-[7] Create the adjoint triqs::mesh::brzone mesh to a given triqs::mesh::cyclat mesh.
+[7] Create the adjoint Brillouin-zone mesh to a given cyclic-lattice mesh.
 
 ------
 
-[8] Create the adjoint triqs::mesh::cyclat mesh to a given triqs::mesh::brzone mesh.
+[8] Create the adjoint cyclic-lattice mesh to a given Brillouin-zone mesh.
 
 ------
 
 Parameters
 ----------
 m : {par_0}
-   Input triqs::mesh::imtime mesh.
+   Input mesh.
 n_iw : {par_1}
    Number of positive Matsubara frequencies, i.e. :math:`N_{i\omega_n}`.
 n_tau : {par_2}
@@ -4035,11 +3712,11 @@ Returns
    Imaginary time DLR mesh.
 
 [5] : {ret_4}
-   Real frequency mesh on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]` with :math:`N` 
+   Real frequency mesh on the interval :math:`[\omega_{\text{min}}, \omega_{\text{max}}]` with :math:`N`
    equally spaced mesh points.
 
 [6] : {ret_5}
-   Real time mesh on the interval :math:`[t_{\text{min}}, t_{\text{max}}]` with :math:`N` equally spaced mesh 
+   Real time mesh on the interval :math:`[t_{\text{min}}, t_{\text{max}}]` with :math:`N` equally spaced mesh
    points.
 
 [7] : {ret_6}
@@ -4048,7 +3725,10 @@ Returns
 [8] : {ret_7}
    Cyclic lattice mesh compatible with the given BZ mesh and its periodic boundary conditions.
 )DOC",
-   {{c2py::python_typename<const triqs::mesh::imtime &>(), c2py::python_typename<const triqs::mesh::imfreq &>()},
+   {{c2py::python_typename<const triqs::mesh::imtime &>(), c2py::python_typename<const triqs::mesh::imfreq &>(),
+     c2py::python_typename<const triqs::mesh::dlr_imtime &>(), c2py::python_typename<const triqs::mesh::dlr_imfreq &>(),
+     c2py::python_typename<const triqs::mesh::retime &>(), c2py::python_typename<const triqs::mesh::refreq &>(),
+     c2py::python_typename<const triqs::mesh::cyclat &>(), c2py::python_typename<const triqs::mesh::brzone &>()},
     {c2py::python_typename<long>()},
     {c2py::python_typename<long>()},
     {c2py::python_typename<bool>()}},
@@ -4067,8 +3747,24 @@ static PyMethodDef module_methods[] = {
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "meshes",          /* name of module */
-                                        R"RAWDOC()RAWDOC", /* module documentation, may be NULL */
+                                        "meshes", /* name of module */
+                                        R"RAWDOC(Different mesh types provided by the **TRIQS** library.
+
+Each mesh class discretises a one-dimensional (or, for :class:`MeshBrZone` and :class:`MeshCycLat`, multi-dimensional)
+domain and provides the index ↔ data-index ↔ value mappings used by the TRIQS Green's function containers.
+
+The mesh classes may be categorised as follows:
+
+- Function space meshes: :class:`MeshDLR`, :class:`MeshLegendre`.
+- Imaginary time and frequency meshes: :class:`MeshImTime`, :class:`MeshImFreq`, :class:`MeshDLRImTime`,
+  :class:`MeshDLRImFreq`, :class:`MeshChebyshev`.
+- Real time and frequency meshes: :class:`MeshReTime`, :class:`MeshReFreq`, :class:`MeshReFreqLog`,
+  :class:`MeshReFreqPts`.
+- Lattice meshes: :class:`MeshBrZone`, :class:`MeshCycLat`.
+
+These classes are wrapped from their C++ counterparts in ``triqs::mesh`` and are re-exported at the package level under
+:mod:`triqs.mesh`.
+)RAWDOC",                                         /* module documentation, may be NULL */
                                         -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
                                         module_methods,
                                         NULL,
