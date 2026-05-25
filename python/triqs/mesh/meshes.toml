@@ -1,5 +1,21 @@
 package_name = "triqs.mesh"
-documentation = ""
+documentation = """Different mesh types provided by the **TRIQS** library.
+
+Each mesh class discretises a one-dimensional (or, for :class:`MeshBrZone` and :class:`MeshCycLat`, multi-dimensional)
+domain and provides the index ↔ data-index ↔ value mappings used by the TRIQS Green's function containers.
+
+The mesh classes may be categorised as follows:
+
+- Function space meshes: :class:`MeshDLR`, :class:`MeshLegendre`.
+- Imaginary time and frequency meshes: :class:`MeshImTime`, :class:`MeshImFreq`, :class:`MeshDLRImTime`,
+  :class:`MeshDLRImFreq`, :class:`MeshChebyshev`.
+- Real time and frequency meshes: :class:`MeshReTime`, :class:`MeshReFreq`, :class:`MeshReFreqLog`,
+  :class:`MeshReFreqPts`.
+- Lattice meshes: :class:`MeshBrZone`, :class:`MeshCycLat`.
+
+These classes are wrapped from their C++ counterparts in ``triqs::mesh`` and are re-exported at the package level under
+:mod:`triqs.mesh`.
+"""
 namespaces = "triqs::mesh cppdlr"
 match_names = "triqs::mesh::.*|cppdlr::statistic_t"
 wrap_no_arg_methods_as_properties = true
