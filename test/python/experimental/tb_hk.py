@@ -14,7 +14,7 @@ class TbTests(unittest.TestCase):
     overlap_mat_vec = np.array([np.eye(2) for _ in range(displ_vec.shape[0])])
     self.tb_H = TbHk(displ_vec, overlap_mat_vec)
 
-  def gloc_single_orbital(self):
+  def test_get_R_idx(self):
 
       Ridx = self.tb_H.get_R_idx([0, 1, 0])
 

@@ -20,7 +20,7 @@ class SuperlatticeTests(unittest.TestCase):
 
       # Call the fold function
       result = fold(SL, tb)
-      Rs           = result.get_R_list
+      Rs    = result.get_R_list
       coefs = result.hoppings
 
       t_SL_0   = np.array([[0, t, t, 0], [t, 0, 0, t], [t, 0, 0, t], [0, t, t, 0]], dtype=complex)
@@ -37,7 +37,7 @@ class SuperlatticeTests(unittest.TestCase):
         np.testing.assert_allclose(np.array(R1), R2)
       self.assertAlmostEqual(-0.097887 + 0j, tb([0.25, 0.5, 0.05])[0, 0], places=5)
 
-      for c1,c2 in zip(coefs,expected_coeffs):
+      for c1, c2 in zip(coefs, expected_coeffs):
         np.testing.assert_allclose(c1, c2)
 
   def test_2x2SquareLattice3d_with_gloc(self):
@@ -58,14 +58,12 @@ class SuperlatticeTests(unittest.TestCase):
       # set up tb_hk object
       t = 1.
       displ_vec       = np.array([[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]])
-      overlap_mat_vec = np.array([np.eye(1) for _ in range(displ_vec.shape[0])])
+      overlap_mat_vec = np.array([t*np.eye(1) for _ in range(displ_vec.shape[0])])
       tb = TbHk(displ_vec, overlap_mat_vec)
       SL = Superlattice([[2, 0, 0], [0, 2, 0], [0, 0, 1]], [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
 
       # Call the fold function
       tb_AF = fold(SL, tb)
-      Rs           = tb_AF.get_R_list
-      coefs = tb_AF.hoppings
 
       Sigma1 = make_random_self(tb.n_orbitals)
       M = tb_AF.n_orbitals

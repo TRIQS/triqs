@@ -10,8 +10,8 @@ class WannierTests(unittest.TestCase):
 
   def test_wannier_loader(self):
 
-    R, H_R, _, latt_vec = read_wannier90_tb_data("../../c++/experimental/lattice/svo")
-    tb_from_hr = make_tb_hk_from_w90_hr_file("../../c++/experimental/lattice/svo")
+    R, H_R, _, latt_vec = read_wannier90_tb_data("svo")
+    tb_from_hr = make_tb_hk_from_w90_hr_file("svo")
 
     # confirm the lattice vectors are read in correctly
     for i in [0, 1, 2]:
