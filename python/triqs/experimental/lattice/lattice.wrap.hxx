@@ -2,6 +2,9 @@
 
 #ifndef C2PY_HXX_DECLARATION_lattice_GUARDS
 #define C2PY_HXX_DECLARATION_lattice_GUARDS
+template <> constexpr bool c2py::is_wrapped<triqs::experimental::lattice::adaptive_options> = true;
+template <>
+inline constexpr auto c2py::tp_name<triqs::experimental::lattice::adaptive_options>           = "triqs.experimental.lattice.lattice.AdaptiveOptions";
 template <> constexpr bool c2py::is_wrapped<triqs::experimental::lattice::bz_int_options>     = true;
 template <> inline constexpr auto c2py::tp_name<triqs::experimental::lattice::bz_int_options> = "triqs.experimental.lattice.lattice.BzIntOptions";
 template <> constexpr bool c2py::is_wrapped<triqs::experimental::lattice::superlattice>       = true;
