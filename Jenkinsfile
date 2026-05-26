@@ -45,7 +45,9 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       else if (platform == "sanitize")
         args += ' -DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
       def uid = sh(returnStdout: true, script: "id -u").trim()
-      def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} .")
+      /* Pin clair SHA into the build args so Docker re-runs the clone when unstable moves. */
+      def clairRef = sh(returnStdout: true, script: "git ls-remote https://github.com/flatironinstitute/clair unstable | cut -f1").trim()
+      def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' --build-arg BUILDUID=${uid} --build-arg CLAIR_REF=${clairRef} .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {
           sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
