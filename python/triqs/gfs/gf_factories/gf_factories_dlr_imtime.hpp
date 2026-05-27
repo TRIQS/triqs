@@ -14,6 +14,21 @@ using namespace triqs::mesh;
 namespace triqs::gfs {
 
   // make_gf_dlr_imtime: from dlr and dlr_imfreq
+  /**
+   * @brief Build a DLR imaginary-time Green's function from a DLR-coefficient or DLR-Matsubara input.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient mesh or DLR Matsubara frequency mesh, or on a
+   * product mesh pairing a DLR axis with a lattice axis. Block and
+   * block-of-block Green's function containers are handled
+   * component-wise, and product meshes are handled axis-wise. All
+   * target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. The output lives on the DLR imaginary-time mesh
+   * associated with the input's DLR grid.
+   *
+   * @param g A Green's function on a DLR coefficient or DLR Matsubara frequency mesh.
+   * @return The Green's function evaluated on the DLR imaginary-time mesh.
+   */
   auto make_gf_dlr_imtime(gf_const_view<dlr, scalar_valued> const &g) { return make_gf_dlr_imtime<0>(g); }
   auto make_gf_dlr_imtime(gf_const_view<dlr_imfreq, scalar_valued> const &g) { return make_gf_dlr_imtime<0>(g); }
   auto make_gf_dlr_imtime(block_gf_const_view<dlr, scalar_valued> const &g) { return make_gf_dlr_imtime<0>(g); }
@@ -46,6 +61,23 @@ namespace triqs::gfs {
   auto make_gf_dlr_imtime(block2_gf_const_view<dlr_imfreq, tensor_valued<4>> const &g) { return make_gf_dlr_imtime<0>(g); }
 
   // make_gf_imtime: from dlr, dlr_imtime, dlr_imfreq
+  /**
+   * @brief Build a uniform imaginary-time Green's function from any DLR representation.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency
+   * mesh, or on a product mesh pairing a DLR axis with a lattice
+   * axis. Block and block-of-block Green's function containers are
+   * handled component-wise, and product meshes are handled axis-wise.
+   * All target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. Inputs on a DLR imaginary-time or DLR Matsubara
+   * frequency mesh are first converted to DLR coefficients
+   * internally.
+   *
+   * @param g A Green's function on a DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency mesh.
+   * @param n_tau Number of points of the output imaginary-time mesh.
+   * @return The Green's function on a uniform imaginary-time mesh.
+   */
   auto make_gf_imtime(gf_const_view<dlr, scalar_valued> const &g, long n_tau) { return make_gf_imtime<0>(g, n_tau); }
   auto make_gf_imtime(gf_const_view<dlr_imtime, scalar_valued> const &g, long n_tau) { return make_gf_imtime<0>(g, n_tau); }
   auto make_gf_imtime(gf_const_view<dlr_imfreq, scalar_valued> const &g, long n_tau) { return make_gf_imtime<0>(g, n_tau); }

@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Factories that symmetrize a Green's function and that build a Green's function on the DLR mesh."
 namespaces = "triqs::gfs"
 match_names = "make_hermitian|make_real_in_tau|make_gf_dlr|fit_gf_dlr"

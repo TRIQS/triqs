@@ -128,7 +128,7 @@ for rank in range(5):
     # Generate .toml
     with open(f"wrapped_aux_target_rank_{rank}.toml", "w") as f:
         f.write('package_name = "triqs.gfs"\n')
-        f.write('documentation = ""\n')
+        f.write(f'documentation = "Internal ``CallProxy`` dispatchers that implement ``Gf.__call__`` for target rank {rank}. Not intended for direct use."\n')
         f.write('namespaces = "triqs::gfs"\n')
         f.write('match_names = "gf_proxy"\n')
 

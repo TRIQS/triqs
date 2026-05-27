@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Factory that builds a Green's function on the conjugate mesh by a Fourier transform."
 namespaces = "triqs::gfs"
 match_names = "make_gf_from_fourier"

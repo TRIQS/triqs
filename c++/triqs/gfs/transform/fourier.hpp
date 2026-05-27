@@ -93,6 +93,31 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @brief Build a new Green's function on the conjugate mesh by Fourier transforming an input Green's function.
+   *
+   * @details Supports the standard pairs of conjugate meshes:
+   *
+   * - imaginary time \f$ \tau \in [0, \beta] \f$ \f$ \leftrightarrow \f$ Matsubara frequencies \f$ i\omega_n \f$,
+   * - real time \f$ t \f$ \f$ \leftrightarrow \f$ real frequencies \f$ \omega \f$,
+   * - imaginary-time DLR \f$ \leftrightarrow \f$ Matsubara-frequency DLR,
+   * - cyclic lattice \f$ \leftrightarrow \f$ Brillouin zone.
+   *
+   * The output mesh may be supplied explicitly; if omitted, the conjugate mesh of the input is used. For 
+   * Matsubara/real-frequency pairs an optional integer (\f$ n_{\tau} or \f$ n_{i\omega} \f$) controls the size of the
+   * generated mesh. Known high-frequency moments may be passed to improve accuracy near the tail.
+   *
+   * For block Green's functions, the transform is applied block by block.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam M1 Mesh type of the input Green's function.
+   * @tparam M2 Mesh type of the output Green's function.
+   * @tparam T Target type of the input Green's function.
+   * @param gin The input Green's function.
+   * @param mesh The output mesh on the conjugate variable.
+   * @param opt_args Optional arguments (e.g. known high-frequency moments).
+   * @return A new Green's function on the conjugate mesh.
+   */
   template <int N = 0, typename M1, typename M2, typename T, typename... OptArgs>
   auto make_gf_from_fourier(gf_const_view<M1, T> gin, M2 const &mesh, OptArgs const &...opt_args) {
     static_assert(N >= 0 && N < n_variables<M1>, "Mesh index exceeds Gf Mesh Rank");

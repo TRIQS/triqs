@@ -7,6 +7,26 @@
 namespace triqs::gfs {
 
   // scalar_valued
+  /**
+   * @brief Fourier transform a Green's function in place from one mesh to its conjugate.
+   *
+   * @details Applies to every overload. The supported conjugate mesh
+   * pairs are imaginary time and Matsubara frequencies, real time and
+   * real frequency, and cyclic lattice and Brillouin zone. Block and
+   * block-of-block Green's function containers are transformed block
+   * by block. All target ranks (scalar, vector, matrix, rank-3,
+   * rank-4) are supported. The output and input meshes are taken from
+   * the two arguments; both containers must already have compatible
+   * target shapes.
+   *
+   * For the imaginary-time and Matsubara and the real-time and
+   * real-frequency pairs, an optional trailing array of high-frequency
+   * moments (``known_moments``) may be passed; the known-moment tail
+   * correction improves accuracy at high frequency.
+   *
+   * @param g_out The output Green's function on the conjugate mesh; modified in place.
+   * @param g_in The input Green's function.
+   */
   void set_from_fourier(gf_view<imfreq, scalar_valued> g_out, gf_const_view<imtime, scalar_valued> g_in) { g_out = fourier(g_in); }
   void set_from_fourier(block_gf_view<imfreq, scalar_valued> g_out, block_gf_const_view<imtime, scalar_valued> g_in) { g_out = fourier(g_in); }
   void set_from_fourier(block2_gf_view<imfreq, scalar_valued> g_out, block2_gf_const_view<imtime, scalar_valued> g_in) { g_out = fourier(g_in); }

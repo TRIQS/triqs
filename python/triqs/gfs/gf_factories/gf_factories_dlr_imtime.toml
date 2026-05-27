@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Factories that build a Green's function on the DLR imaginary-time mesh or on a standard imtime mesh from a DLR representation."
 namespaces = "triqs::gfs"
 match_names = "make_gf_dlr_imtime|make_gf_imtime"

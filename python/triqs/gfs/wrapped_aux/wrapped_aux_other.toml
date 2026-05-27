@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Internal helpers used by the ``Gf`` Python class (``_set_from_gf_data_mul_LR``, ``_make_gf_from_real_gf``). Not intended for direct use."
 namespaces = "triqs::gfs"
 match_names = "_set_from_gf_data_mul_LR|_make_gf_from_real_gf"

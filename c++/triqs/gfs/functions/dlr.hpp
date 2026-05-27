@@ -53,7 +53,20 @@ namespace triqs::gfs {
     }
   }
 
-  /// Transform a DLR imaginary time or Matsubara Green's function to it's DLR coefficient representation
+  /**
+   * @brief Transform a DLR imaginary-time or DLR Matsubara Green's function to its DLR-coefficient representation.
+   *
+   * @details The input must live on an imaginary-time or frequency DLR mesh. The output lives on the corresponding 
+   * DLR (coefficient) mesh. 
+   * 
+   * For block Green's functions the transform is applied block-wise. 
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g The DLR imaginary-time or DLR Matsubara Green's function.
+   * @return The same Green's function expressed in DLR coefficients.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_dlr(G const &g) {
@@ -76,7 +89,22 @@ namespace triqs::gfs {
     }
   }
 
-  /// Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
+  /**
+   * @brief Fit an imaginary-time Green's function with a Discrete Lehmann Representation.
+   *
+   * @details Builds a DLR coefficient Green's function by least-squares fitting the input Green's function (on a 
+   * uniform imaginary-time mesh) on a DLR grid specified by the spectral cutoff \f$ \omega_{\max} \f$ and tolerance
+   * \f$ \epsilon \f$.
+   *
+   * @tparam N Index of the mesh component to fit (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g The imaginary-time Green's function to fit.
+   * @param w_max Maximum real frequency captured by the DLR basis.
+   * @param eps Target accuracy of the DLR representation.
+   * @param symmetrize If true, the DLR grid is symmetric about \f$ \omega = 0 \f$.
+   * @return A Green's function on the DLR coefficient mesh.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto fit_gf_dlr(G const &g, double w_max, double eps, bool symmetrize = true) {
@@ -96,8 +124,18 @@ namespace triqs::gfs {
     }
   }
 
-  /// Transform a DLR coefficient or DLR Matsubara Green's function
-  /// to it's DLR imaginary time representation
+  /**
+   * @brief Build a DLR imaginary-time Green's function from a DLR-coefficient or DLR-Matsubara input.
+   *
+   * @details The output lives on the imaginary-time DLR mesh associated with the input's DLR grid. Block and product 
+   * meshes are handled recursively.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g A Green's function on a Matsubara or coefficient DLR mesh. 
+   * @return The Green's function evaluated on the imaginary-time DLR mesh.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_dlr_imtime(G const &g) {
@@ -106,7 +144,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_dlr_imtime<N, Ns...>(gbl); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_dlr_imtime(gfl); }, g);
-    } else if constexpr(std::is_same_v<M, dlr_imfreq>) {
+    } else if constexpr (std::is_same_v<M, dlr_imfreq>) {
       return make_gf_dlr_imtime(make_gf_dlr(g));
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -117,8 +155,18 @@ namespace triqs::gfs {
     }
   }
 
-  /// Transform a DLR coefficient or DLR imaginary time Green's function
-  /// to it's DLR Matsubara frequency representation
+  /**
+   * @brief Build a DLR Matsubara Green's function from a DLR-coefficient or DLR-imaginary-time input.
+   *
+   * @details The output lives on the Matsubara DLR mesh associated with the input's DLR grid. Block and product meshes 
+   * are handled recursively.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g A Green's function on an imaginary-time or coefficient DLR mesh.
+   * @return The Green's function evaluated on the Matsubara DLR mesh.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_dlr_imfreq(G const &g) {
@@ -127,7 +175,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_dlr_imfreq<N, Ns...>(gbl); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_dlr_imfreq(gfl); }, g);
-    } else if constexpr(std::is_same_v<M, dlr_imtime>) {
+    } else if constexpr (std::is_same_v<M, dlr_imtime>) {
       return make_gf_dlr_imfreq(make_gf_dlr(g));
     } else {
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -265,7 +313,19 @@ namespace triqs::gfs {
     TRIQS_RUNTIME_ERROR << "find_w_max: no w_max <= " << w_max_max << " yields round-trip error < eps = " << eps;
   }
 
-  /// Transform any DLR Green's function to a imaginary time Green's function
+  /**
+   * @brief Build a uniform imaginary-time Green's function from any DLR representation.
+   *
+   * @details Evaluates the DLR Green's function on a regular imaginary-time mesh of size \f$ n_{\tau} \f$. Inputs on 
+   * imaginary-time or Matsubara DLR meshes are first converted to DLR coefficients internally.
+   * 
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g A Green's function on any DLR mesh.
+   * @param n_tau Number of points of the output imaginary-time mesh.
+   * @return The Green's function evaluated on a uniform imaginary-time mesh.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_imtime(G const &g, long n_tau) {
@@ -274,7 +334,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_imtime<N, Ns...>(gbl, n_tau); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imtime(gfl, n_tau); }, g);
-    } else if constexpr(nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
+    } else if constexpr (nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return make_gf_imtime(make_gf_dlr(g), n_tau);
     } else { // M == dlr
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -285,7 +345,19 @@ namespace triqs::gfs {
     }
   }
 
-  /// Transform any DLR Green's function to a Matsubara frequency Green's function
+  /**
+   * @brief Build a uniform Matsubara Green's function from any DLR representation.
+   *
+   * @details Evaluates the DLR Green's function on a regular Matsubara mesh with \f$ n_{i\omega} \f$ positive Matsubara 
+   * frequencies. Input on imaginary-time or Matsubara DLR meshes are first converted to DLR coefficients internally.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g A Green's function on any DLR mesh.
+   * @param n_iw Number of positive Matsubara frequencies in the output mesh.
+   * @return The Green's function evaluated on a uniform Matsubara mesh.
+   */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto make_gf_imfreq(G const &g, long n_iw) {
@@ -294,7 +366,7 @@ namespace triqs::gfs {
       return map_block_gf([&](auto const &gbl) { return make_gf_imfreq<N, Ns...>(gbl, n_iw); }, g);
     } else if constexpr (mesh::is_product<M>) {
       return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return make_gf_imfreq(gfl, n_iw); }, g);
-    } else if constexpr(nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
+    } else if constexpr (nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return make_gf_imfreq(make_gf_dlr(g), n_iw);
     } else { // M == dlr
       static_assert(N == 0, "N must be 0 for non-product meshes");
@@ -305,7 +377,14 @@ namespace triqs::gfs {
     }
   }
 
-  /// L2 tau norm of DLR Green's function
+  /**
+   * @brief Calculate the \f$ L^2 \f$ norm of a DLR Green's function.
+   *
+   * @tparam G The type of the input Green's function.
+   * @param g A Green's function on any DLR mesh.
+   * @return The \f$ L^2 \f$ norm of the input Green's function, either as a scalar (if target rank is 0) or as an 
+   * array of norms for each element in the target domain (if target rank is greater than 0). 
+   */
   template <typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto tau_L2_norm(G const &g) {
