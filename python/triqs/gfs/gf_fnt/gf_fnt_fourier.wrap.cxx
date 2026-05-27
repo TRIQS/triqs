@@ -799,7 +799,33 @@ static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
       },
       "g_out", "g_in")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
+static const auto _c2py_doc_0 =
+   _c2py_fun_0.doc(R"DOC(
+Fourier transform a Green's function in place from one mesh to its conjugate.
+
+Applies to every overload. The supported conjugate mesh
+pairs are imaginary time and Matsubara frequencies, real time and
+real frequency, and cyclic lattice and Brillouin zone. Block and
+block-of-block Green's function containers are transformed block
+by block. All target ranks (scalar, vector, matrix, rank-3,
+rank-4) are supported. The output and input meshes are taken from
+the two arguments; both containers must already have compatible
+target shapes.
+
+For the imaginary-time and Matsubara and the real-time and
+real-frequency pairs, an optional trailing array of high-frequency
+moments (``known_moments``) may be passed; the known-moment tail
+correction improves accuracy at high frequency.
+
+Parameters
+----------
+g_out : {par_0}
+   The output Green's function on the conjugate mesh; modified in place.
+g_in : {par_1}
+   The input Green's function.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>>()},
+                    {c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued>>()}});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -811,15 +837,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_fnt_fourier",  /* name of module */
-                                        R"RAWDOC()RAWDOC", /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_fnt_fourier",                                                           /* name of module */
+   R"RAWDOC(In-place Fourier transforms between conjugate mesh pairs.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 

@@ -422,8 +422,59 @@ static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
          long n_tau) { return triqs::gfs::make_gf_imtime(g, n_tau); },
       "g", "n_tau")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
-static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC()DOC");
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(
+   R"DOC(
+Build a DLR imaginary-time Green's function from a DLR-coefficient or DLR-Matsubara input.
+
+Applies to every overload. The input lives on a single
+DLR coefficient mesh or DLR Matsubara frequency mesh, or on a
+product mesh pairing a DLR axis with a lattice axis. Block and
+block-of-block Green's function containers are handled
+component-wise, and product meshes are handled axis-wise. All
+target ranks (scalar, vector, matrix, rank-3, rank-4) are
+supported. The output lives on the DLR imaginary-time mesh
+associated with the input's DLR grid.
+
+Parameters
+----------
+g : {par_0}
+   A Green's function on a DLR coefficient or DLR Matsubara frequency mesh.
+
+Returns
+-------
+{ret_0}
+   The Green's function evaluated on the DLR imaginary-time mesh.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued> &>()}},
+   {c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr_imtime, typename triqs::gfs::_target_from_type_rank<std::complex<double>, 0>::type>>()});
+static const auto _c2py_doc_1 = _c2py_fun_1.doc(
+   R"DOC(
+Build a uniform imaginary-time Green's function from any DLR representation.
+
+Applies to every overload. The input lives on a single
+DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency
+mesh, or on a product mesh pairing a DLR axis with a lattice
+axis. Block and block-of-block Green's function containers are
+handled component-wise, and product meshes are handled axis-wise.
+All target ranks (scalar, vector, matrix, rank-3, rank-4) are
+supported. Inputs on a DLR imaginary-time or DLR Matsubara
+frequency mesh are first converted to DLR coefficients
+internally.
+
+Parameters
+----------
+g : {par_0}
+   A Green's function on a DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency mesh.
+n_tau : {par_1}
+   Number of points of the output imaginary-time mesh.
+
+Returns
+-------
+{ret_0}
+   The Green's function on a uniform imaginary-time mesh.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued> &>()}, {c2py::python_typename<long>()}},
+   {c2py::python_typename<triqs::gfs::gf<triqs::mesh::imtime, typename triqs::gfs::_target_from_type_rank<std::complex<double>, 0>::type>>()});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -436,15 +487,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_factories_dlr_imtime", /* name of module */
-                                        R"RAWDOC()RAWDOC",         /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_factories_dlr_imtime", /* name of module */
+   R"RAWDOC(Factories that build a Green's function on the DLR imaginary-time mesh or on a standard imtime mesh from a DLR representation.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 

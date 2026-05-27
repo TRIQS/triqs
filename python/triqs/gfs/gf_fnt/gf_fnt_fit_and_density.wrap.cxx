@@ -283,63 +283,119 @@ static auto const _c2py_fun_6 =
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(
    R"DOC(
-[1] Density
+[1, 2] Compute the density from a Green's function.
 
-Computes the density of the Gf g, i.e $g(=0^-)$
-Uses tail moments n=1, 2, and 3
+The density is reconstructed from the imaginary-frequency data using the high-frequency tail moments 
+:math:`n = 1, 2, 3`. Known moments may be passed explicitly; if omitted, they are obtained by tail fitting.
 
 ------
 
-[5, 6] Computes the density $$- G( = ) $$
+[3, 4] Compute the density from a Green's function.
+
+The density is obtained directly from the Legendre coefficients.
+
+------
+
+[5, 6, 7, 8, 9, 10] Compute the density from a Green's function.
+
+------
+
+[11, 12] Compute the density from a Green's function.
+
+Obtained by integrating the spectral function weighted by the Fermi function at temperature :math:`T =
+1/\beta`.
+
+------
+
+[13, 14] Compute the zero-temperature density from a real-frequency Green's function.
+
+Obtained by integrating the spectral function over the negative real axis (:math:`T = 0` Fermi 
+function).
 
 ------
 
 Parameters
 ----------
 g : {par_0}
-   The Green function
+   Input Green's function.
+known_moments : {par_1}
+   Array of known high-frequency moments.
+beta : {par_2}
+   Inverse temperature.
 
 Returns
 -------
-[5] : {ret_0}
-   auto A tensor/matrix or a scalar, depending on the target
+[1, 3, 11, 13] : {ret_0}
+   The density matrix.
 
-[6] : {ret_1}
-   auto A tensor/matrix or a scalar, depending on the target
+[2, 4, 12, 14] : {ret_1}
+   The scalar density.
+
+[5, 7, 9] : {ret_2}
+   The density (matrix).
+
+[6, 8, 10] : {ret_3}
+   The density (matrix).
 )DOC",
-   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
-     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued, nda::C_stride_layout> &>()}},
+   {{c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq>>(),
+     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>>(),
+     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre>>(),
+     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::scalar_valued>>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::refreq>>(),
+     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::refreq, triqs::gfs::scalar_valued>>()},
+    {},
+    {c2py::python_typename<double>()}},
    {c2py::python_typename<
+       nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
+    c2py::python_typename<triqs::gfs::dcomplex>(),
+    c2py::python_typename<
        nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
     c2py::python_typename<std::complex<double>>()});
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(
    R"DOC(
-[1, 2] Fit the tail of a Green function using a least-squares fitting procedure
-imposing the symmetry :math:`G[i](i,j) = G[-i](j,i)^*`
+[1, 2] Fit the high-frequency tail of a Green's function, imposing hermitian symmetry on the fitted moments.
+
+The symmetry constraint is :math:`G_{i,j}(i\omega) = G_{j,i}^*(-i\omega)`.
 
 ------
 
-[3, 4] Fit the tail of a Block Green function using a least-squares fitting procedure
-imposing the symmetry :math:`G[i](i,j) = G[-i](j,i)^*` for each block
+[3, 4] Fit the high-frequency tail of a block Green's function, imposing hermitian symmetry block by block.
+
+The symmetry constraint is :math:`G_{i,j}(i\omega) = G_{j,i}^*(-i\omega)`.
+
+Each block is fitted independently with the same symmetry constraint. The returned error is the maximum across 
+blocks.
 
 ------
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to fit the tail for
+   The Green's function whose tail is to be fitted.
 known_moments : {par_1}
-   The object containing the known high-frequency moments
+   Array of known high-frequency moments to constrain the fit.
 bg : {par_2}
-   The Block Green function object to fit the tail for
+   The block Green's function whose tail is to be fitted.
 
 Returns
 -------
 [1] : {ret_0}
-   A pair of the tail object and the fitting error
+   A pair containing the fitted tail moments and the fitting error.
 
 [2] : {ret_1}
-   A pair of the tail object and the fitting error
+   A pair containing the fitted tail moments and the fitting error.
+
+[3] : {ret_2}
+   A pair containing the per-block fitted tail moments and the worst-block fitting error.
+
+[4] : {ret_3}
+   A pair containing the per-block fitted tail moments and the worst-block fitting error.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>()},
@@ -350,34 +406,83 @@ Returns
     {c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>()}},
    {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>(),
-    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>()});
-static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC()DOC");
+    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>(),
+    c2py::python_typename<
+       std::pair<std::vector<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type>, double>>(),
+    c2py::python_typename<
+       std::pair<std::vector<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type>, double>>()});
+static const auto _c2py_doc_2 = _c2py_fun_2.doc(
+   R"DOC(
+Fit the high-frequency tail on a restricted window, imposing hermitian moment matrices.
+
+Behaves like ``fit_tail_on_window`` but enforces the symmetry :math:`G_{i,j}(i\omega) =
+G_{j,i}^*(-i\omega)` on the fitted moments.
+
+Parameters
+----------
+g : {par_0}
+   The Matsubara Green's function whose tail is to be fitted.
+n_min : {par_1}
+   Minimum Matsubara index of the fit window.
+n_max : {par_2}
+   Maximum Matsubara index of the fit window (:math:`-1` means use the last index of the mesh).
+known_moments : {par_3}
+   Array of known high-frequency moments to constrain the fit.
+n_tail_max : {par_4}
+   Maximum frequency index used internally by the tail fitter.
+expansion_order : {par_5}
+   Order of the tail expansion to fit.
+
+Returns
+-------
+{ret_0}
+   A pair containing the fitted tail moments and the fitting error.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                 nda::borrowed<nda::mem::AddressSpace::Host>>>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<int>()}},
+   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>()});
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(
    R"DOC(
-[1, 2, 3, 4] Fit the tail of a Green function using a least-squares fitting procedure
+[1, 2, 3, 4] Fit the high-frequency tail of a Green's function using a least-squares procedure.
+
+The result is the set of expansion moments that best reproduces the high-frequency behavior of :math:`G` 
+on the configured tail-fit window. Known moments, when provided, are treated as exact constraints on the fit.
 
 ------
 
-[5, 6, 7, 8] Fit the tail of a Block Green function using a least-squares fitting procedure
+[5, 6, 7, 8] Fit the high-frequency tail of a block Green's function using a least-squares procedure.
+
+Each block is fitted independently using ``fit_tail``. The returned error is the maximum across blocks.
 
 ------
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to fit the tail for
+   The Green's function whose tail is to be fitted.
 known_moments : {par_1}
-   The object containing the known high-frequency moments
+   Array of known high-frequency moments to constrain the fit.
 bg : {par_2}
-   The Block Green function object to fit the tail for
+   The block Green's function whose tail is to be fitted.
 
 Returns
 -------
 [1, 3] : {ret_0}
-   A pair of the tail object and the fitting error
+   A pair containing the fitted tail moments and the fitting error.
 
 [2, 4] : {ret_1}
-   A pair of the tail object and the fitting error
+   A pair containing the fitted tail moments and the fitting error.
+
+[5, 7] : {ret_2}
+   A pair containing the per-block fitted tail moments and the worst-block fitting error.
+
+[6, 8] : {ret_3}
+   A pair containing the per-block fitted tail moments and the worst-block fitting error.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
@@ -392,10 +497,84 @@ Returns
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::refreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::refreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>()}},
    {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>(),
-    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>()});
-static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC()DOC");
-static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
-static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC()DOC");
+    c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type, double>>(),
+    c2py::python_typename<
+       std::pair<std::vector<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type>, double>>(),
+    c2py::python_typename<
+       std::pair<std::vector<typename nda::basic_array_view<const std::complex<double>, 1, nda::C_stride_layout>::regular_type>, double>>()});
+static const auto _c2py_doc_4 = _c2py_fun_4.doc(
+   R"DOC(
+Fit the high-frequency tail of a Matsubara Green's function on a restricted frequency window.
+
+The fit is performed on the window :math:`[n_{\min}, n_{\max}]` of the Matsubara mesh (:math:`n_{\max} =
+-1` selects the last index of the mesh). The tail fitter is configured from ``n_tail_max`` and 
+``expansion_order``, and the fit is delegated to ``fit_tail``.
+
+Parameters
+----------
+g : {par_0}
+   The Matsubara Green's function whose tail is to be fitted.
+n_min : {par_1}
+   Minimum Matsubara index of the fit window.
+n_max : {par_2}
+   Maximum Matsubara index of the fit window (:math:`-1` means use the last index of the mesh).
+known_moments : {par_3}
+   Array of known high-frequency moments to constrain the fit.
+n_tail_max : {par_4}
+   Maximum frequency index used internally by the tail fitter.
+expansion_order : {par_5}
+   Order of the tail expansion to fit.
+
+Returns
+-------
+{ret_0}
+   A pair containing the fitted tail moments and the fitting error.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                 nda::borrowed<nda::mem::AddressSpace::Host>>>()},
+    {c2py::python_typename<int>()},
+    {c2py::python_typename<int>()}},
+   {c2py::python_typename<std::pair<typename nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>::regular_type, double>>()});
+static const auto _c2py_doc_5 =
+   _c2py_fun_5.doc(R"DOC(
+Overwrite the high-frequency tail of a Matsubara Green's function.
+
+For every Matsubara index with :math:`|n| \geq n_{\min}`, the value of the Green's function is replaced by 
+the tail expansion evaluated at that frequency. Values at lower indices are left unchanged.
+
+Parameters
+----------
+g : {par_0}
+   The Matsubara Green's function to modify in place.
+tail : {par_1}
+   The high-frequency moments used to build the tail.
+n_min : {par_2}
+   Minimum absolute Matsubara index from which to apply the tail.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>()},
+                    {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>>()},
+                    {c2py::python_typename<int>()}});
+static const auto _c2py_doc_6 =
+   _c2py_fun_6.doc(R"DOC(
+Overwrite the high-frequency portion of a Matsubara Green's function with the tail expansion.
+
+The cutoff :math:`n_{\min}` is first set automatically from the tail-fit window of the mesh. Then the 
+function delegates to ``replace_by_tail``.
+
+Parameters
+----------
+g : {par_0}
+   The Matsubara Green's function to modify in place.
+tail : {par_1}
+   The high-frequency moments used to build the tail.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>()},
+                    {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>>()}});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -413,15 +592,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_fnt_fit_and_density", /* name of module */
-                                        R"RAWDOC()RAWDOC",        /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_fnt_fit_and_density", /* name of module */
+   R"RAWDOC(High-frequency tail fitting and density evaluation for Green's functions on Matsubara and real-frequency meshes.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 

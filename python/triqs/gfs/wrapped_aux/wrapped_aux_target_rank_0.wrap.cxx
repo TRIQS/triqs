@@ -2522,15 +2522,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "wrapped_aux_target_rank_0", /* name of module */
-                                        R"RAWDOC()RAWDOC",           /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "wrapped_aux_target_rank_0", /* name of module */
+   R"RAWDOC(Internal ``CallProxy`` dispatchers that implement ``Gf.__call__`` for target rank 0. Not intended for direct use.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 
