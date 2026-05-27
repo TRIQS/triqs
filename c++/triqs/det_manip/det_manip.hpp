@@ -18,1341 +18,1621 @@
 //
 // Authors: Michel Ferrero, JaksaVucicevic, Igor Krivenko, Henri Menke, Laura Messio, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the triqs::det_manip::det_manip class to manipulate determinants efficiently.
+ */
+
 #pragma once
 
-#include <triqs/utility/first_include.hpp>
-#include <vector>
+#include "./concepts.hpp"
+#include "./utils.hpp"
+#include "./work_data.hpp"
+#include "../utility/exceptions.hpp"
+
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <h5/h5.hpp>
+#include <nda/h5.hpp>
+#include <nda/nda.hpp>
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <complex>
+#include <concepts>
+#include <cstdint>
+#include <cstdio>
 #include <iterator>
 #include <numeric>
-#include <cmath>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/callable_traits.hpp>
-#include <nda/linalg/det.hpp>
-#include <nda/linalg/inv.hpp>
+#include <ranges>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace triqs::det_manip {
 
   namespace blas = nda::blas;
 
-  // ================ Work Data Types =====================
-
-  // For single-row/column operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type1 {
-    x_type x;
-    y_type y;
-    long i, j, ireal, jreal;
-    // MB = A^(-1)*B,
-    // MC = C*A^(-1)
-    nda::vector<value_type> MB, MC, B, C;
-    // ksi = newdet/det
-    value_type ksi;
-    void resize(long N) {
-      MB.resize(N);
-      MC.resize(N);
-      B.resize(N);
-      C.resize(N);
-    }
-  };
-
-  // For multiple-row/column operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_typek {
-    std::vector<x_type> x;
-    std::vector<y_type> y;
-    std::vector<long> i, j, ireal, jreal;
-    // MB = A^(-1)*B,
-    // MC = C*A^(-1)
-    nda::matrix<value_type> MB, MC, B, C, ksi;
-    void resize(long N, long k) {
-      if (k < 2) return;
-      x.resize(k);
-      y.resize(k);
-      i.resize(k);
-      j.resize(k);
-      ireal.resize(k);
-      jreal.resize(k);
-      MB.resize(N, k);
-      MC.resize(k, N);
-      B.resize(N, k);
-      C.resize(k, N);
-      ksi.resize(k, k);
-    }
-    value_type det_ksi(long k) const {
-      if (k == 2) {
-        return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
-      } else if (k == 3) {
-        return                                 // Rule of Sarrus
-           ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
-           ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
-           ksi(0, 2) * ksi(1, 0) * ksi(2, 1) - //
-           ksi(2, 0) * ksi(1, 1) * ksi(0, 2) - //
-           ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
-           ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
-      } else {
-        auto Rk = range(k);
-        return nda::linalg::det(ksi(Rk, Rk));
-      };
-    }
-  };
-
-  // For refill operations
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type_refill {
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    nda::matrix<value_type> M;
-    void reserve(long N) {
-      x_values.reserve(N);
-      y_values.reserve(N);
-      M.resize(N, N);
-    }
-  };
-
-  // ================ det_manip implementation =====================
-
   /**
-     * @brief Standard matrix/det manipulations used in several QMC.
-     */
-  template <typename FunctionType> class det_manip {
-    private:
-    using f_tr = utility::callable_traits<FunctionType>;
-    static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
-
+   * @ingroup triqs-detmanip
+   * @brief Manipulate determinants and ratios of determinants for CTQMC solvers.
+   *
+   * @details The code and the following documentation uses the notation introduced in @ref triqs-detmanip.
+   *
+   * The determinant \f$ \det(F^{(n)}) \f$ or the underlying matrix \f$ F^{(n)} \f$ is manipulated by performing
+   * operations. Most of those operations are split into a `try` and a `complete` function. While the `try` functions
+   * only produce intermediate results that are necessary to calculate the ratio of the new to the old determinant, the
+   * `complete` functions actually perform the operation and update the matrix and the determinant.
+   *
+   * The following operations are supported:
+   * - Swap two rows (see swap_row()).
+   * - Swap two columns (see swap_col()).
+   * - Circular shift of rows or columns (see roll_matrix()).
+   * - Insert one row and column (see try_insert()).
+   * - Insert \f$ k \f$ rows and columns (see try_insert_k() and try_insert2()).
+   * - Remove one row and column (see try_remove()).
+   * - Remove \f$ k \f$ rows and columns (see try_remove_k() and try_remove2()).
+   * - Change one column (see try_change_col()).
+   * - Change one row (see try_change_row()).
+   * - Change one row and column (see try_change_col_row()).
+   * - Build a completely new matrix (see try_refill()).
+   *
+   * @tparam F triqs::det_manip::MatrixBuilder.
+   */
+  template <MatrixBuilder F> class det_manip {
     public:
-    using x_type     = typename f_tr::template decay_arg_t<0>;
-    using y_type     = typename f_tr::template decay_arg_t<1>;
-    using value_type = typename f_tr::result_type;
-    using det_type   = value_type;
-    static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
-                  "det_manip : the function must return a floating number or a complex number");
+    /// Type of the first argument that the triqs::det_manip::MatrixBuilder takes.
+    using x_type = detail::get_xarg_t<F>;
 
+    /// Type of the second argument that the triqs::det_manip::MatrixBuilder takes.
+    using y_type = detail::get_yarg_t<F>;
+
+    /// Value type of the matrix, i.e. the return type of the triqs::det_manip::MatrixBuilder.
+    using value_type = detail::get_result_t<F>;
+
+    /// Type of the matrix.
     using matrix_type = nda::matrix<value_type>;
 
-    protected: // the data
-    FunctionType f;
-
-    det_type det;
-    long Nmax{0}, N;
-    long kmax{1}, k;
-    enum {
-      NoTry,
-      Insert,
-      Remove,
-      ChangeCol,
-      ChangeRow,
-      ChangeRowCol,
-      InsertK,
-      RemoveK,
-      Refill
-    } last_try = NoTry; // keep in memory the last operation not completed
-    std::vector<long> row_num, col_num;
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    int sign = 1;
-    matrix_type mat_inv;
-    uint64_t n_opts                  = 0;   // count the number of operation
-    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
-    double singular_threshold = -1;    // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
-    double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
-    double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
-
-    /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
-      auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "N", g.N);
-      h5_write(gr, "mat_inv", g.mat_inv);
-      h5_write(gr, "det", g.det);
-      h5_write(gr, "sign", g.sign);
-      h5_write(gr, "row_num", g.row_num);
-      h5_write(gr, "col_num", g.col_num);
-      h5_write(gr, "x_values", g.x_values);
-      h5_write(gr, "y_values", g.y_values);
-      h5_write(gr, "n_opts", g.n_opts);
-      h5_write(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_write(gr, "singular_threshold", g.singular_threshold);
-    }
-
-    /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
-      auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "N", g.N);
-      h5_read(gr, "mat_inv", g.mat_inv);
-      g.Nmax     = first_dim(g.mat_inv); // restore Nmax
-      g.last_try = NoTry;
-      h5_read(gr, "det", g.det);
-      h5_read(gr, "sign", g.sign);
-      h5_read(gr, "row_num", g.row_num);
-      h5_read(gr, "col_num", g.col_num);
-      h5_read(gr, "x_values", g.x_values);
-      h5_read(gr, "y_values", g.y_values);
-      h5_read(gr, "n_opts", g.n_opts);
-      h5_read(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_read(gr, "singular_threshold", g.singular_threshold);
-    }
-
-    private:
-    work_data_type1<x_type, y_type, value_type> w1;
-    work_data_typek<x_type, y_type, value_type> wk;
-    work_data_type_refill<x_type, y_type, value_type> w_refill;
-    det_type newdet;
-    int newsign;
-
-    private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
-    void swap_but_f(det_manip &rhs) noexcept {
-      using std::swap;
-#define SW(a) swap(this->a, rhs.a)
-      SW(det);
-      SW(Nmax);
-      SW(N);
-      SW(last_try);
-      SW(row_num);
-      SW(col_num);
-      SW(x_values);
-      SW(y_values);
-      SW(sign);
-      SW(mat_inv);
-      SW(n_opts);
-      SW(n_opts_max_before_check);
-      SW(w1);
-      SW(wk);
-      SW(newdet);
-      SW(newsign);
-#undef SW
-    }
-
-    friend void swap(det_manip &lhs, det_manip &rhs) noexcept {
-      using std::swap;
-      swap(lhs.f, rhs.f);
-      lhs.swap_but_f(rhs);
-    }
-
     public:
     /**
-       * Like for std::vector, reserve memory for a bigger size.
-       * Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
-       * between a try_XXX and a complete_operation
-       *
-       * @param new_N The new size of the reserved memory
-       */
-    void reserve(long new_N, long new_k = 1) {
-      if (new_k > kmax) {
-        kmax = new_k;
-        if (new_N <= Nmax) wk.resize(Nmax, kmax);
-      }
-      if (new_N > Nmax) {
-        Nmax = 2 * new_N;
-
-        matrix_type mcpy(mat_inv);
-        mat_inv.resize(Nmax, Nmax);
-        auto Rcpy           = range(mcpy.extent(0));
-        mat_inv(Rcpy, Rcpy) = mcpy;
-
-        row_num.reserve(Nmax);
-        col_num.reserve(Nmax);
-        x_values.reserve(Nmax);
-        y_values.reserve(Nmax);
-
-        w1.resize(Nmax);
-        wk.resize(Nmax, kmax);
-      }
-    }
-
-    /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
-    double get_singular_threshold() const { return singular_threshold; }
-
-    /// Sets the number below which abs(det) is considered 0. Cf get_is_singular_threshold
-    void set_singular_threshold(double threshold) { singular_threshold = threshold; }
-
-    /// Gets the number of operations done before a check in the dets.
-    double get_n_operations_before_check() const { return n_opts_max_before_check; }
-
-    /// Sets the number of operations done before a check in the dets.
-    void set_n_operations_before_check(uint64_t n) { n_opts_max_before_check = n; }
-
-    /// Get the bound for warning messages in the singular tests
-    double get_precision_warning() const { return precision_warning; }
-
-    /// Set the bound for warning messages in the singular tests
-    void set_precision_warning(double threshold) { precision_warning = threshold; }
-
-    /// Get the bound for throwing error in the singular tests
-    double get_precision_error() const { return precision_error; }
-
-    /// Set the bound for throwing error in the singular tests
-    void set_precision_error(double threshold) { precision_error = threshold; }
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and an initial capacity for the data
+     * storages.
+     *
+     * @param f triqs::det_manip::MatrixBuilder object.
+     * @param cap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     */
+    det_manip(F f, long cap) : f_(std::move(f)) { reserve(cap); }
 
     /**
-       * @brief Constructor.
-       *
-       * @param F         The function (NB : a copy is made of the F object in this class).
-       * @param init_size The maximum size of the matrix before a resize (like reserve in std::vector).
-       *                  Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
-       *                  if it happens too often.
-       */
-    det_manip(FunctionType F, long init_size) : f(std::move(F)), Nmax(0), N(0) {
-      reserve(init_size);
-      mat_inv() = 0;
-      det       = 1;
-    }
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and two ranges containing the
+     * arguments for the matrix builder.
+     *
+     * @tparam X triqs::det_manip::MatrixBuilderXRange.
+     * @tparam Y triqs::det_manip::MatrixBuilderYRange.
+     * @param f triqs::det_manip::MatrixBuilder object.
+     * @param x_rg Range containing the first arguments.
+     * @param y_rg Range containing the second arguments.
+     */
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    det_manip(F f, X &&x_rg, Y &&y_rg) : f_(std::move(f)) { // NOLINT (ranges need not be forwarded)
+      // check input sizes
+      auto const sz = std::ranges::size(x_rg);
+      if (sz != std::ranges::size(y_rg)) TRIQS_RUNTIME_ERROR << "Error in det_manip::det_manip: Argument ranges have different sizes";
 
-    /**
-       * @brief Constructor.
-       *
-       * @param F         The function (NB : a copy is made of the F object in this class).
-       * @tparam ArgumentContainer
-       * @param X, Y : container for X,Y.
-       */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)), Nmax(0) {
-      if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
-      N = X.size();
-      if (N == 0) {
-        det = 1;
+      // early return if the argument ranges are empty
+      if (sz == 0) {
         reserve(30);
         return;
       }
-      reserve(N);
-      std::copy(X.begin(), X.end(), std::back_inserter(x_values));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(y_values));
-      mat_inv() = 0;
-      for (long i = 0; i < N; ++i) {
-        row_num.push_back(i);
-        col_num.push_back(i);
-        for (long j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
+
+      // reserve memory and fill the data storages
+      reserve(sz * 2);
+      set_xy(x_rg, y_rg);
+
+      // determinant and inverse matrix
+      auto M_v = M_(nda::range(sz), nda::range(sz));
+      nda::for_each(M_v.shape(), [this, &M_v](auto i, auto j) { M_v(i, j) = f_(x_[i], y_[j]); });
+      det_ = nda::linalg::det(M_v);
+      M_v  = nda::linalg::inv(M_v);
+    }
+
+    /**
+     * @brief Reserve memory and resize the data storages.
+     *
+     * @details It only reserves/resizes if the current capacity is smaller than the new capacity. It does not reserve
+     * memory for the working data (this is done in the `try` functions if necessary).
+     *
+     * @param cap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     */
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        matrix_type M_copy(M_);
+        M_.resize(cap, cap);
+        auto rg    = nda::range(M_copy.extent(0));
+        M_(rg, rg) = M_copy;
+
+        row_perm_.reserve(cap);
+        col_perm_.reserve(cap);
+        x_.reserve(cap);
+        y_.reserve(cap);
       }
-      range RN(N);
-      det             = nda::linalg::det(mat_inv(RN, RN));
-      mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
     }
 
-    det_manip(det_manip const &) = default;
-    det_manip(det_manip &&rhs) noexcept : f(std::move(rhs.f)) {
-      this->swap_but_f(rhs);
-    } // f need not have a default constructor and we dont swap the temp data...
-    //det_manip& operator=(const det_manip&) = default;
-    det_manip &operator=(const det_manip &) = delete;
-    det_manip &operator=(det_manip &&rhs) noexcept {
-      assert((last_try == NoTry) && (rhs.last_try == NoTry));
-      swap(*this, rhs);
-      return *this;
-    }
-
-    /// Put to size 0 : like a vector
+    /// Clear the data storages and reset the matrix to size zero.
     void clear() {
-      N        = 0;
-      sign     = 1;
-      det      = 1;
-      last_try = NoTry;
-      row_num.clear();
-      col_num.clear();
-      x_values.clear();
-      y_values.clear();
+      sign_     = 1;
+      det_      = 1;
+      last_try_ = try_tag::NoTry;
+      row_perm_.clear();
+      col_perm_.clear();
+      x_.clear();
+      y_.clear();
     }
 
-    //----------------------- READ ACCESS TO DATA ----------------------------------
+    /**
+     * @brief Set the threshold being used when testing for a singular matrix (default: -1).
+     *
+     * @details The threshold \f$ \epsilon \f$ determines when a matrix \f$ M \f$ is considered singular. A matrix is
+     * considered to be singular if \f$ |\det(M)| < \epsilon \f$.
+     *
+     * If \f$ \epsilon \f$ is negative, it simply checks if the determinant is not `std::isnormal`.
+     *
+     * @param eps Threshold value.
+     */
+    void set_singular_threshold(double eps) { singular_threshold_ = eps; }
 
-    /// Current size of the matrix
-    long size() const { return N; }
+    /**
+     * @brief Set the number of operations before a consistency check is performed (default: 100). See 
+     * regenerate_and_check().
+     * @param nops Number of operations.
+     */
+    void set_n_operations_before_check(std::uint64_t nops) { nops_before_check_ = nops; }
 
-    /// Returns the i-th values of x
-    x_type const &get_x(long i) const { return x_values[row_num[i]]; }
+    /**
+     * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
+     *
+     * @details In case we compare two matrices \f$ A \f$ and \f$ B \f$, a warning is printed when \f$ 2 \lVert A - B
+     * \rVert >= \epsilon \left( \lVert A \rVert + \lVert B \rVert \right) \f$, where \f$ \lVert \cdot \rVert \f$ is the 
+     * max norm.
+     *
+     * In case we compare two scalar values \f$ a \f$ and \f$ b \f$, a warning is printed when \f$ 2 |a - b| >= \epsilon
+     * (|a| + |b|) \f$.
+     *
+     * @param eps Threshold value.
+     */
+    void set_precision_warning(double eps) { precision_warning_ = eps; }
 
-    /// Returns the j-th values of y
-    y_type const &get_y(long j) const { return y_values[col_num[j]]; }
+    /**
+     * @brief Set the precision threshold that determines when to throw an exception (default: 1e-5).
+     * @details See set_precision_warning() for details.
+     * @param eps Threshold value.
+     */
+    void set_precision_error(double eps) { precision_error_ = eps; }
 
-    /// Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines
-    std::vector<x_type> get_x() const {
+    /// Get the current size of the matrix.
+    [[nodiscard]] auto size() const { return static_cast<long>(x_.size()); }
+
+    /// Get current capacity of the data storages.
+    [[nodiscard]] auto capacity() const { return M_.shape()[0]; }
+
+    /**
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ x_i \f$ that determines the elements of the
+     * i<sup>th</sup> row in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @param i Argument index.
+     * @return Argument value \f$ x_i \f$.
+     */
+    [[nodiscard]] auto const &get_x(long i) const {
+      EXPECTS(0 <= i and i < size());
+      return x_[row_perm_[i]];
+    }
+
+    /**
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ y_j \f$ that determines the elements of the
+     * j<sup>th</sup> column in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @param j Argument index.
+     * @return Argument value \f$ y_j \f$.
+     */
+    [[nodiscard]] auto const &get_y(long j) const {
+      EXPECTS(0 <= j and j < size());
+      return y_[col_perm_[j]];
+    }
+
+    /// Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$.
+    [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
-      res.reserve(N);
-      for (int i : range(N)) res.emplace_back(x_values[row_num[i]]);
+      res.reserve(size());
+      for (auto i : nda::range{size()}) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
-    /// Returns a vector with all y_values. Warning : this is slow, since it creates a new copy, and reorders the cols
-    std::vector<y_type> get_y() const {
+    /// Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$.
+    [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
-      res.reserve(N);
-      for (int i : range(N)) res.emplace_back(y_values[col_num[i]]);
+      res.reserve(size());
+      for (auto i : nda::range{size()}) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
     /**
-       * Advanced: Returns the vector of x_values using the INTERNAL STORAGE ORDER,
-       * which differs by some permutation from the one given by the user.
-       * Useful for some performance-critical loops.
-       * To be used together with other *_internal_order functions.
-       */
-    std::vector<x_type> const &get_x_internal_order() const { return x_values; }
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
+     *
+     * @return `std::vector` containing the arguments \f$ x_i \f$.
+     */
+    [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
 
     /**
-       * Advanced: Returns the vector of y_values using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    std::vector<y_type> const &get_y_internal_order() const { return y_values; }
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
+     *
+     * @return `std::vector` containing the arguments \f$ y_j \f$.
+     */
+    [[nodiscard]] auto const &get_y_internal_order() const { return y_; }
 
-    /// Returns the function f
-    FunctionType const &get_function() const { return f; }
+    /// Get the derminant of the original matrix \f$ F^{(n)} \f$.
+    [[nodiscard]] auto determinant() const { return sign_ * det_; }
 
-    /** det M of the current state of the matrix.  */
-    det_type determinant() {
-      if (is_singular()) regenerate();
-      return sign * det;
+    /**
+     * @brief Get an element of the inverse matrix.
+     *
+     * @details The inverse matrix is given by
+     * \f[
+     *   [F^{(n)}]^{-1} = (P^{(n)}_r G^{(n)} P^{(n)}_c)^{-1} = [P^{(n)}_c]^T [G^{(n)}]^{-1} [P^{(n)}_r]^T \; .
+     * \f]
+     *
+     * @param i Row index.
+     * @param j Column index.
+     * @return The matrix element \f$ [F^{(n)}]^{-1}_{ij} \f$.
+     */
+    [[nodiscard]] auto inverse_matrix(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(col_perm_[i], row_perm_[j]);
     }
 
-    /** Returns M^{-1}(i,j) */
-    // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
-    value_type inverse_matrix(int i, int j) const { return mat_inv(col_num[i], row_num[j]); }
-
-    /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
-    matrix_type inverse_matrix() const {
-      matrix_type res(N, N);
-      for (long i = 0; i < N; i++)
-        for (long j = 0; j < N; j++) res(i, j) = inverse_matrix(i, j);
+    /// Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$. See inverse_matrix() for details.
+    [[nodiscard]] auto inverse_matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = this->inverse_matrix(i, j); });
       return res;
     }
 
     /**
-       * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    value_type inverse_matrix_internal_order(int i, int j) const { return mat_inv(i, j); }
+     * @brief Get an element of the matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
+     *
+     * @param i Row index.
+     * @param j Column index.
+     * @return The matrix element \f$ M^{(n)}_{ij} \f$.
+     */
+    [[nodiscard]] auto inverse_matrix_internal_order(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(i, j);
+    }
 
-    /**
-       * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER.
-       * See doc of get_x_internal_order.
-       */
-    nda::matrix_const_view<value_type> inverse_matrix_internal_order() const { return mat_inv(range(N), range(N)); }
+    /// Get the full inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
+    [[nodiscard]] auto inverse_matrix_internal_order() const {
+      return nda::matrix_const_view<value_type>{M_(nda::range(size()), nda::range(size()))};
+    }
 
-    /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
-    matrix_type matrix() const {
-      matrix_type res(N, N);
-      for (long i = 0; i < N; i++)
-        for (long j = 0; j < N; j++) res(i, j) = f(get_x(i), get_y(j));
+    /// Get the original matrix \f$ F^{(n)} \f$.
+    [[nodiscard]] auto matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = f_(get_x(i), get_y(j)); });
       return res;
     }
 
-    // Given a lambda fn : x,y,M, it calls fn(x_i,y_j,M_ji) for all i,j
-    // Order of iteration is NOT fixed, it is optimised (for memory traversal)
-    template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &fn) {
-      nda::for_each(std::array{d.N, d.N}, [&fn, &d](int i, int j) { return fn(d.x_values[i], d.y_values[j], d.mat_inv(j, i)); });
+    /**
+     * @brief For-each implementation for triqs::det_manip::det_manip objects.
+     *
+     * @details It loops over all elements of the matrix \f$ M^{(n)} \f$ and calls the given callable object for each
+     * element together with the corresponding arguments \f$ x_i \f$ and \f$ y_j \f$.
+     *
+     * @tparam L Callable type.
+     * @param dm triqs::det_manip::det_manip object.
+     * @param fn Callable object that takes three arguments: \f$ x_i \f$, \f$ y_j \f$, and \f$ M_{ji} \f$.
+     */
+    friend void foreach (det_manip const &dm, auto const &fn) {
+      nda::for_each(std::array{dm.size(), dm.size()}, [&fn, &dm](auto i, auto j) { return fn(dm.x_[i], dm.y_[j], dm.M_(j, i)); });
     }
 
-    // ------------------------- OPERATIONS -----------------------------------------------
-
-    /** Simply swap two lines
-         NB very quick, we just change the permutation table internally
-	 This operation is so simple that it has no try, complete.
-       */
+    /**
+     * @brief Swap two rows.
+     *
+     * @details It simply performs the transposition in the row permutation vector and changes the sign \f$ s^{(n)} \f$
+     * associated with the permutation matrices.
+     *
+     * Since we are only changing the matrix \f$ P^{(n)}_r \f$, the matrix \f$ G^{(n)} \f$ and its determinant remains
+     * unchanged.
+     *
+     * @param i Index of the first row to swap.
+     * @param j Index of the second row to swap.
+     */
     void swap_row(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       if (i == j) return;
-      std::swap(row_num[i], row_num[j]);
-      sign = -sign;
-      // we do not need to change the det, or the matrix, just the permutation
-    }
-
-    /** Simply swap two lines and cols.
-         NB very quick, we just change the permutation table internally
-	 This operation is so simple that it has no try, complete.
-       */
-    void swap_col(long i, long j) {
-      if (i == j) return;
-      std::swap(col_num[i], col_num[j]);
-      sign = -sign;
+      std::swap(row_perm_[i], row_perm_[j]);
+      sign_ = -sign_;
     }
 
     /**
-       * Insert operation at column j0 and row i0.
-       *
-       * The operation consists in adding :
-       *
-       *    * a column  f(x_i,    y_{j0})
-       *    * and a row f(x_{i0}, x_j)
-       *
-       * The new column/row will be at col j0, row i0.
-       *
-       * 0 <= i0,j0 <= N, where N is the current size of the matrix.
-       * The current column j0 (resp. row i0) will become column j0+1 (resp. row i0+1).
-       * Inserting at N simply add the new col at the end.
+     * @brief Swap two columns.
+     *
+     * @details It simply performs the transposition in the column permutation vector and changes the sign \f$ s^{(n)}
+     * \f$ associated with the permutation matrices.
+     *
+     * Since we are only changing the matrix \f$ P^{(n)}_c \f$, the matrix \f$ G^{(n)} \f$ and its determinant remains
+     * unchanged.
+     *
+     * @param i Index of the first column to swap.
+     * @param j Index of the second column to swap.
+     */
+    void swap_col(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      if (i == j) return;
+      std::swap(col_perm_[i], col_perm_[j]);
+      sign_ = -sign_;
+    }
 
-       * Returns the ratio of det Minv_new / det Minv.
-       *
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       *
-       * @param i
-       * @param j
-       * @category Operations
-       */
+    /**
+     * @brief Direction of the roll_matrix() operation.
+     *
+     * @details It specifies the direction of the circular shift performed on either the rows or columns of the matrix
+     * \f$ F^{(n)} \f$. The following directions are supported:
+     *
+     * - `None`: No roll operation is performed.
+     * - `Up`: Roll the rows up.
+     * - `Down`: Roll the rows down.
+     * - `Left`: Roll the columns to the left.
+     * - `Right`: Roll the columns to the right.
+     */
+    enum RollDirection { None, Up, Down, Left, Right };
+
+    /**
+     * @brief Perform a circular shift permutation on the rows or columns of the matrix \f$ F^{(n)} \f$.
+     *
+     * @details See RollDirection for the supported directions.
+     *
+     * A circular shift permutation of a finite set is equivalent to \f$ N \f$ transpositions, where \f$ N \f$ is the
+     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{n-1} \f$.
+     *
+     * @param dir Direction of the roll operation.
+     * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
+     */
+    int roll_matrix(RollDirection dir) {
+      // early return for matrices of size 0 or 1
+      if (size() < 2) return 1;
+
+      // perform the circular shift permutation
+      switch (dir) {
+        case (None): return 1;
+        case (Down): std::ranges::rotate(row_perm_, row_perm_.end() - 1); break;
+        case (Up): std::ranges::rotate(row_perm_, row_perm_.begin() + 1); break;
+        case (Right): std::ranges::rotate(col_perm_, col_perm_.end() - 1); break;
+        case (Left): std::ranges::rotate(col_perm_, col_perm_.begin() + 1); break;
+        default: TRIQS_RUNTIME_ERROR << "Error in det_manip::roll_matrix: Invalid roll direction";
+      }
+
+      // update the sign and return the sign change
+      if ((size() - 1) % 2 == 1) {
+        sign_ = -sign_;
+        return -1;
+      }
+      return 1;
+    }
+
+    /**
+     * @brief Try to insert one row and column.
+     *
+     * @details The row is inserted at position \f$ i \f$ and the column at position \f$ j \f$ in the original matrix
+     * \f$ F^{(n)} \f$. Their elements are determined by the given triqs::det_manip::MatrixBuilder arguments \f$ x \f$
+     * and \f$ y \f$.
+     *
+     * This is a special case of try_insert_k() with \f$ k = 1 \f$.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param j Position of the column to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param x Argument to the matrix builder that determines the elements of the new row.
+     * @param y Argument to the matrix builder that determines the elements of the new column.
+     * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i <= size());
+      EXPECTS(0 <= j and j <= size());
+      std::tie(wins_.i, wins_.j, wins_.x, wins_.y) = std::make_tuple(i, j, x, y);
 
-      // check input and store it for complete_operation
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(0 <= i and i <= N);
-      TRIQS_ASSERT(0 <= j and j <= N);
-      reserve(N + 1);
-      last_try = Insert;
-      w1.i     = i;
-      w1.j     = j;
-      w1.x     = x;
-      w1.y     = y;
+      // set the try tag
+      last_try_ = try_tag::Insert;
 
-      // treat empty matrix separately
-      if (N == 0) {
-        newdet  = f(x, y);
-        newsign = 1;
-        return value_type(newdet);
+      // early return if the current matrix is empty
+      if (size() == 0) {
+        newdet_  = f_(x, y);
+        newsign_ = 1;
+        return newdet_;
       }
 
-      // I add the row and col and the end. If the move is rejected,
-      // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
-      for (long l = 0; l < N; l++) {
-        w1.B(l) = f(x_values[l], y);
-        w1.C(l) = f(x, y_values[l]);
+      // reserve memory for the working data
+      if (size() + 1 > wins_.capacity()) wins_.reserve(2 * (size() + 1));
+
+      // calculate the new column B and the new row C of the matrix G (except for the element D)
+      for (long k = 0; k < size(); ++k) {
+        wins_.B(k) = f_(x_[k], y);
+        wins_.C(k) = f_(x, y_[k]);
       }
-      range RN(N);
-      //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, mat_inv(RN, RN), w1.B(RN), 0.0, w1.MB(RN));
-      w1.ksi  = f(x, y) - nda::blas::dot(w1.C(RN), w1.MB(RN));
-      newdet  = det * w1.ksi;
-      newsign = ((i + j) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0  = i0+j0 [2]
-      return w1.ksi * (newsign * sign);            // sign is unity, hence 1/sign == sign
+
+      // calculate S^{-1} = D - C * M * B
+      auto rg_n = nda::range(size());
+      nda::blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
+      wins_.S_inv = f_(x, y) - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
+
+      // calculate the new determinant = det(G^{(n)}) * S^{-1} and the new sign = old sign * (-1)^{i + j}
+      newdet_  = det_ * wins_.S_inv;
+      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
+
+      return wins_.S_inv * newsign_ * sign_;
     }
 
-    //fx gives the new line coefficients, fy gives the new column coefficients and ksi is the last coeff (at the intersection of the line and the column).
-    template <typename Fx, typename Fy> value_type try_insert_from_function(long i, long j, Fx fx, Fy fy, value_type const ksi) {
-
-      // check input and store it for complete_operation
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(0 <= i and i <= N);
-      TRIQS_ASSERT(0 <= j and j <= N);
-      reserve(N + 1);
-      last_try = Insert;
-      w1.i     = i;
-      w1.j     = j;
-
-      // treat empty matrix separately
-      if (N == 0) {
-        newdet  = ksi;
-        newsign = 1;
-        return newdet;
-      }
-
-      // I add the row and col and the end. If the move is rejected,
-      // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
-      for (long l = 0; l < N; l++) {
-        w1.B(l) = fx(x_values[l]);
-        w1.C(l) = fy(y_values[l]);
-      }
-      range RN(N);
-      //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, mat_inv(RN, RN), w1.B(RN), 0.0, w1.MB(RN));
-      w1.ksi  = ksi - nda::blas::dot(w1.C(RN), w1.MB(RN));
-      newdet  = det * w1.ksi;
-      newsign = ((i + j) % 2 == 0 ? sign : -sign); // since N-i0 + N-j0  = i0+j0 [2]
-      return w1.ksi * (newsign * sign);            // sign is unity, hence 1/sign == sign
-    }
-
-    //------------------------------------------------------------------------------------------
     private:
+    // Complete the insert operation.
     void complete_insert() {
-      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-      x_values.push_back(w1.x);
-      y_values.push_back(w1.y);
-      row_num.push_back(0);
-      col_num.push_back(0);
+      auto const new_size = size() + 1;
+      auto const old_size = size();
 
-      // special empty case again
-      if (N == 0) {
-        N             = 1;
-        mat_inv(0, 0) = 1 / value_type(newdet);
+      // reserve data storages
+      if (new_size > capacity()) reserve(2 * new_size);
+
+      // copy the matrix builder arguments
+      x_.push_back(wins_.x);
+      y_.push_back(wins_.y);
+
+      // early return if the new matrix is size 1
+      if (new_size == 1) {
+        M_(0, 0) = 1 / newdet_;
+        row_perm_.push_back(0);
+        col_perm_.push_back(0);
         return;
       }
 
-      range RN(N);
-      //w1.MC(R1) = transpose(mat_inv(R1,R1)) * w1.C(R1); //OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.C(RN), 0.0, w1.MC(RN));
-      w1.MC(N) = -1;
-      w1.MB(N) = -1;
+      // update the permutation vectors: only rows and cols with k > i or l > j are affected
+      row_perm_.push_back(old_size);
+      std::rotate(row_perm_.begin() + wins_.i, row_perm_.begin() + old_size, row_perm_.begin() + new_size);
+      col_perm_.push_back(old_size);
+      std::rotate(col_perm_.begin() + wins_.j, col_perm_.begin() + old_size, col_perm_.begin() + new_size);
 
-      N++;
-      RN = range(N);
+      // calculate C^T M by computing its transpose, i.e. M^T C
+      auto rg_n = nda::range(old_size);
+      nda::blas::gemv(1.0, transpose(M_(rg_n, rg_n)), wins_.C(rg_n), 0.0, wins_.CM(rg_n));
 
-      // keep the real position of the row/col
-      // since we insert a col/row, we have first to push the col at the right
-      // and then say that col w1.i is stored in N, the last col.
-      // same for rows
-      for (long i = N - 2; i >= w1.i; i--) row_num[i + 1] = row_num[i];
-      row_num[w1.i] = N - 1;
-      for (long i = N - 2; i >= w1.j; i--) col_num[i + 1] = col_num[i];
-      col_num[w1.j] = N - 1;
-
-      // Minv is ok, we need to complete
-      w1.ksi = 1 / w1.ksi;
-
-      // compute the change to the inverse
-      // M += w1.ksi w1.MB w1.MC with BLAS. first put the 0
-      mat_inv(RN, N - 1) = 0;
-      mat_inv(N - 1, RN) = 0;
-      //mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)// OPTIMIZE BELOW
-      blas::ger(w1.ksi, w1.MB(RN), w1.MC(RN), mat_inv(RN, RN));
+      // calculate M^{(n+1)} using the update formula
+      auto rg_n1          = nda::range{new_size};
+      auto const S        = 1 / wins_.S_inv;
+      wins_.CM(old_size)  = -1;
+      wins_.MB(old_size)  = -1;
+      M_(rg_n1, old_size) = 0;
+      M_(old_size, rg_n1) = 0;
+      nda::blas::ger(S, wins_.MB(rg_n1), wins_.CM(rg_n1), M_(rg_n1, rg_n1));
     }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
-       * Double Insert operation at colum j0,j1 and row i0,i1.
-       *
-       * The operation consists in adding :
-       *    * two columns  f(x_i,    y_{j0}), f(x_i,    y_{j1})
-       *    * and two rows f(x_{i0}, x_j),    f(x_{i1}, x_j)
-       * The new colums/rows will be at col j0, j1, row i0, i1.
-       *
-       * 0 <= i0,i1,j0,j1 <= N+1, where N is the current size of the matrix.
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       * @category Operations
-       */
+     * @brief Try to insert \f$ k \f$ rows and columns.
+     *
+     * @details The positions of the new rows and columns in the original matrix \f$ F^{(n+k)} \f$ are specified in the
+     * tuples \f$ \mathbf{i} \f$ and \f$ \mathbf{j} \f$, respectively. Their elements are determined by the given
+     * triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
+     *
+     * Since we are working with \f$ G^{(n)} \f$, we are free to insert the rows and columns at the bottom and right of
+     * the matrix and use the update formulas presented in @ref triqs-detmanip.
+     *
+     * We use the following order for the rows and columns to be inserted:
+     * - The first row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the smallest index in the
+     * matrix \f$ F^{(n)} \f$.
+     * - The second row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the second smallest index
+     * in the matrix \f$ F^{(n)} \f$.
+     * - And so on.
+     *
+     * The expression for the new determinant \f$ \det(G^{(n+k)}) \f$ can be found at @ref triqs-detmanip and the new 
+     * sign associated with the permutation matrices can be written as
+     * \f[
+     *   s^{(n+k)} = \det(P^{(n)}_r) \det(P^{(n)}_c) \det(P1) \det(P2) = s^{(n)} \det(P1) \det(P2) \; ,
+     * \f]
+     * where \f$ P1 \f$ and \f$ P2 \f$ are permutation matrices that move the inserted rows and columns to their
+     * respective positions in the original matrix \f$ F^{(n)} \f$.
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(F^{(n+k)})}{\det(F^{(n)})} = \frac{\det(G^{(n+k)}) s^{(n+k)}}{\det(G^{(n)}) s^{(n)}} =
+     *   \det(D - C M^{(n)} B) s^{(n+k)} s^{(n)} = \det(S^{-1}) s^{(n+k)} s^{(n)} \; ,
+     * \f]
+     * where we used the fact that \f$ s^{(n)} = 1 / s^{(n)} \f$.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Positions of the rows to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param j Positions of the columns to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param x Arguments to the matrix builder that determines the elements of the new rows.
+     * @param y Arguments to the matrix builder that determines the elements of the new columns.
+     * @return Determinant ratio \f$ \det(F^{(n+k)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(i.size() == j.size());
-      TRIQS_ASSERT(j.size() == x.size());
-      TRIQS_ASSERT(x.size() == y.size());
+      // check input argument sizes
+      auto const k = static_cast<long>(i.size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(k > 0);
+      EXPECTS(j.size() == k);
+      EXPECTS(x.size() == k);
+      EXPECTS(y.size() == k);
 
-      k = i.size();
-      reserve(N + k, k);
-      last_try = InsertK;
+      // move the input arguments to the working data
+      winsk_.i = std::move(i);
+      winsk_.j = std::move(j);
+      winsk_.x = std::move(x);
+      winsk_.y = std::move(y);
 
-      auto const argsort = [](auto const &vec) {
-        std::vector<long> idx(vec.size());
-        std::iota(idx.begin(), idx.end(), static_cast<long>(0));
-        std::stable_sort(idx.begin(), idx.end(), [&vec](long const lhs, long const rhs) { return vec[lhs] < vec[rhs]; });
-        return idx;
-      };
-      std::vector<long> idx = argsort(i);
-      std::vector<long> idy = argsort(j);
+      // sort input arguments and check for duplicates and out-of-bounds indices
+      auto comp = [](auto const &a, auto const &b) { return std::get<0>(a) < std::get<0>(b); };
+      std::ranges::sort(std::ranges::zip_view(winsk_.i, winsk_.x), comp);
+      std::ranges::sort(std::ranges::zip_view(winsk_.j, winsk_.y), comp);
+      EXPECTS(std::ranges::adjacent_find(winsk_.i) == winsk_.i.end());
+      EXPECTS(winsk_.i.front() >= 0 && winsk_.i.back() < size() + k);
+      EXPECTS(std::ranges::adjacent_find(winsk_.j) == winsk_.j.end());
+      EXPECTS(winsk_.j.front() >= 0 && winsk_.j.back() < size() + k);
 
-      // store it for complete_operation
-      for (long l = 0; l < k; ++l) {
-        wk.i[l] = i[idx[l]];
-        wk.x[l] = x[idx[l]];
-        wk.j[l] = j[idy[l]];
-        wk.y[l] = y[idy[l]];
-      };
+      // set the try tag
+      last_try_ = try_tag::InsertK;
 
-      // check consistency
-      for (int l = 0; l < k - 1; ++l) {
-        TRIQS_ASSERT(wk.i[l] != wk.i[l + 1] and 0 <= wk.i[l] and wk.i[l] < N + k);
-        TRIQS_ASSERT(wk.j[l] != wk.j[l + 1] and 0 <= wk.j[l] and wk.j[l] < N + k);
+      // reserve memory for the working data
+      auto const [n_cap, k_cap] = winsk_.capacity();
+      if (size() + k > n_cap || k > k_cap) winsk_.reserve(2 * (size() + k), k);
+
+      // build the matrix D as part of S^{-1} = D - C M B
+      nda::for_each(std::array{k, k}, [this](auto l, auto m) { winsk_.S_inv(l, m) = f_(winsk_.x[l], winsk_.y[m]); });
+
+      // early return if the current matrix is empty
+      if (size() == 0) {
+        newdet_  = detail::determinant(winsk_.S_inv, k);
+        newsign_ = 1;
+        return newdet_;
       }
 
-      // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
-      for (long m = 0; m < k; ++m) {
-        for (long n = 0; n < k; ++n) { wk.ksi(m, n) = f(wk.x[m], wk.y[n]); }
-      }
-
-      // treat empty matrix separately
-      if (N == 0) {
-        newdet  = wk.det_ksi(k);
-        newsign = 1;
-        return value_type(newdet);
-      }
-
-      // I add the rows and cols and the end. If the move is rejected,
-      // no effect since N will not be changed : inv_mat(i,j) for i,j>=N has no meaning.
-      for (long n = 0; n < N; n++) {
-        for (long l = 0; l < k; ++l) {
-          wk.B(n, l) = f(x_values[n], wk.y[l]);
-          wk.C(l, n) = f(wk.x[l], y_values[n]);
+      // calculate the new columns B and the new rows C of the matrix G (except for the block matrix D)
+      for (long l = 0; l < size(); ++l) {
+        for (long m = 0; m < k; ++m) {
+          winsk_.B(l, m) = f_(x_[l], winsk_.y[m]);
+          winsk_.C(m, l) = f_(winsk_.x[m], y_[l]);
         }
       }
-      range RN(N), Rk(k);
-      //wk.MB(RN,Rk) = mat_inv(RN,N) * wk.B(RN,Rk); // OPTIMIZE BELOW
-      blas::gemm(1.0, mat_inv(RN, RN), wk.B(RN, Rk), 0.0, wk.MB(RN, Rk));
-      //ksi -= wk.C (Rk, RN) * wk.MB(RN, Rk); // OPTIMIZE BELOW
-      blas::gemm(-1.0, wk.C(Rk, RN), wk.MB(RN, Rk), 1.0, wk.ksi(Rk, Rk));
-      auto ksi     = wk.det_ksi(k);
-      newdet       = det * ksi;
-      long idx_sum = 0;
-      for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
-      newsign = (idx_sum % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
-      return ksi * (newsign * sign);               // sign is unity, hence 1/sign == sign
+
+      // calculate S^{-1} = D - C M B and its determinant
+      auto rg_n = nda::range(size());
+      auto rg_k = nda::range(k);
+      nda::blas::gemm(1.0, M_(rg_n, rg_n), winsk_.B(rg_n, rg_k), 0.0, winsk_.MB(rg_n, rg_k));
+      nda::blas::gemm(-1.0, winsk_.C(rg_k, rg_n), winsk_.MB(rg_n, rg_k), 1.0, winsk_.S_inv(rg_k, rg_k));
+      auto const det_S_inv = detail::determinant(winsk_.S_inv, k);
+
+      // calculate the new determinant = det(G^{(n)}) * det(S^{-1}) and sign = old sign * (-1)^{\sum_l i_l + j_l}
+      newdet_      = det_ * det_S_inv;
+      auto idx_sum = std::accumulate(winsk_.i.begin(), winsk_.i.end(), 0l) + std::accumulate(winsk_.j.begin(), winsk_.j.end(), 0l);
+      newsign_     = (idx_sum % 2 == 0 ? sign_ : -sign_);
+
+      return det_S_inv * newsign_ * sign_;
     }
+
+    /**
+     * @brief Try to insert two rows and columns.
+     *
+     * @details The rows are inserted at the positions \f$ i_0 \f$ and \f$ i_1 \f$ and the columns at the positions
+     * \f$ j_0 \f$ and \f$ j_1 \f$ in the original matrix \f$ F^{(n)} \f$. Their elements are determined by the given
+     * triqs::det_manip::MatrixBuilder arguments \f$ x_0 \f$, \f$ x_1 \f$, \f$ y_0 \f$ and \f$ y_1 \f$.
+     *
+     * It simply calls the more general try_insert_k().
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i0 Position of the first row to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param i1 Position of the second row to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param j0 Position of the first column to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param j1 Position of the second column to be inserted in the original matrix \f$ F^{(n)} \f$.
+     * @param x0 Argument to the matrix builder that determines the elements of the first new row.
+     * @param x1 Argument to the matrix builder that determines the elements of the second new row.
+     * @param y0 Argument to the matrix builder that determines the elements of the first new column.
+     * @param y1 Argument to the matrix builder that determines the elements of the second new column.
+     * @return Determinant ratio \f$ \det(F^{(n+2)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_insert2(long i0, long i1, long j0, long j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       return try_insert_k({i0, i1}, {j0, j1}, {x0, x1}, {y0, y1});
     }
 
-    //------------------------------------------------------------------------------------------
     private:
+    // Complete the insert_k operation.
     void complete_insert_k() {
+      auto const k        = static_cast<long>(winsk_.i.size());
+      auto const new_size = size() + k;
+      auto const old_size = size();
 
-      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-      for (int l = 0; l < k; ++l) {
-        x_values.push_back(wk.x[l]);
-        y_values.push_back(wk.y[l]);
-        row_num.push_back(0);
-        col_num.push_back(0);
-      }
+      // reserve data storages
+      if (new_size > capacity()) reserve(2 * new_size);
 
-      range Rk(0, k);
-      // treat empty matrix separately
-      if (N == 0) {
-        N               = k;
-        mat_inv(Rk, Rk) = nda::linalg::inv(wk.ksi(Rk, Rk));
-        for (long l = 0; l < k; ++l) {
-          row_num[wk.i[l]] = l;
-          col_num[wk.j[l]] = l;
-        }
+      // append to matrix builder arguments and permutation vectors
+      std::ranges::copy(winsk_.x, std::back_inserter(x_));
+      std::ranges::copy(winsk_.y, std::back_inserter(y_));
+      std::ranges::copy(std::ranges::iota_view(old_size, new_size), std::back_inserter(row_perm_));
+      std::ranges::copy(std::ranges::iota_view(old_size, new_size), std::back_inserter(col_perm_));
+
+      // early return if the old matrix was empty
+      auto rg_k = nda::range(k);
+      if (old_size == 0) {
+        M_(rg_k, rg_k) = nda::linalg::inv(winsk_.S_inv(rg_k, rg_k));
         return;
       }
 
-      range RN(N);
-      //wk.MC(Rk,RN) = wk.C(Rk,RN) * mat_inv(RN,RN);// OPTIMIZE BELOW
-      blas::gemm(1.0, wk.C(Rk, RN), mat_inv(RN, RN), 0.0, wk.MC(Rk, RN));
-      wk.MC(Rk, range(N, N + k)) = -1; // -identity matrix
-      wk.MB(range(N, N + k), Rk) = -1; // -identity matrix !
-
-      // keep the real position of the row/col
-      // since we insert a col/row, we have first to push the col at the right
-      // and then say that col wk.i[0] is stored in N, the last col.
-      // same for rows
-      for (int l = 0; l < k; ++l) {
-        N++;
-        for (long i = N - 2; i >= wk.i[l]; i--) row_num[i + 1] = row_num[i];
-        row_num[wk.i[l]] = N - 1;
-        for (long i = N - 2; i >= wk.j[l]; i--) col_num[i + 1] = col_num[i];
-        col_num[wk.j[l]] = N - 1;
+      // update the permutation vectors
+      for (auto tmp_sz = old_size + 1; auto l : rg_k) {
+        std::rotate(row_perm_.begin() + winsk_.i[l], row_perm_.begin() + tmp_sz - 1, row_perm_.begin() + tmp_sz);
+        std::rotate(col_perm_.begin() + winsk_.j[l], col_perm_.begin() + tmp_sz - 1, col_perm_.begin() + tmp_sz);
+        ++tmp_sz;
       }
-      RN = range(N);
 
-      wk.ksi(Rk, Rk)               = nda::linalg::inv(wk.ksi(Rk, Rk));
-      mat_inv(RN, range(N - k, N)) = 0;
-      mat_inv(range(N - k, N), RN) = 0;
-      //mat_inv(RN,RN) += wk.MB(RN,Rk) * (wk.ksi(Rk, Rk) * wk.MC(Rk,RN)); // OPTIMIZE BELOW
-      blas::gemm(1.0, wk.MB(RN, Rk), (wk.ksi(Rk, Rk) * wk.MC(Rk, RN)), 1.0, mat_inv(RN, RN));
+      // calculate the matrix product C M and the matrix S
+      auto rg_n = nda::range(old_size);
+      nda::blas::gemm(1.0, winsk_.C(rg_k, rg_n), M_(rg_n, rg_n), 0.0, winsk_.CM(rg_k, rg_n));
+      nda::linalg::inv_in_place(winsk_.S_inv(rg_k, rg_k)); // S_inv contains S now
+
+      // calculate M^{(n+k)} using the update formula
+      auto rg_nk               = nda::range(new_size);
+      auto rg_n_nk             = nda::range(old_size, new_size);
+      winsk_.CM(rg_k, rg_n_nk) = -1;
+      winsk_.MB(rg_n_nk, rg_k) = -1;
+      M_(rg_nk, rg_n_nk)       = 0;
+      M_(rg_n_nk, rg_nk)       = 0;
+      nda::blas::gemm(1.0, winsk_.MB(rg_nk, rg_k), (winsk_.S_inv(rg_k, rg_k) * winsk_.CM(rg_k, rg_nk)), 1.0, M_(rg_nk, rg_nk));
     }
+
+    // Complete the insert2 operation.
     void complete_insert2() { complete_insert_k(); }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
-       * Consider the removal the colj0 and row i0 from the matrix.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to remove one row and column.
+     *
+     * @details The row to be removed is at position \f$ \mathbf{i} \f$ and the column at position \f$ \mathbf{j} \f$ in
+     * the original matrix \f$ F^{(n)} \f$.
+     *
+     * This is a special case of try_remove_k() with \f$ k = 1 \f$.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Position of the column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-1)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_remove(long i, long j) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(0 <= i and i < N);
-      TRIQS_ASSERT(0 <= j and j < N);
-      w1.i     = i;
-      w1.j     = j;
-      last_try = Remove;
-      w1.jreal = col_num[w1.j];
-      w1.ireal = row_num[w1.i];
-      // compute the newdet
-      // first we resolve the w1.ireal,w1.jreal, with the permutation of the Minv, then we pick up what
-      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
-      w1.ksi   = mat_inv(w1.jreal, w1.ireal);
-      auto ksi = w1.ksi;
-      newdet   = det * ksi;
-      newsign  = ((i + j) % 2 == 0 ? sign : -sign);
-      return ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(i >= 0 and i < size());
+      EXPECTS(j >= 0 and j < size());
+      std::tie(wrem_.i, wrem_.j, wrem_.ip, wrem_.jp) = std::make_tuple(i, j, row_perm_[i], col_perm_[j]);
+
+      // set the try tag
+      last_try_ = try_tag::Remove;
+
+      // early return if new matrix is empty
+      if (size() == 1) {
+        newdet_  = 1;
+        newsign_ = 1;
+        return 1 / (sign_ * det_);
+      }
+
+      // calculate the signs associated with P1, P2, P3 and P4
+      int s_p1p2 = (wrem_.ip == size() - 1 ? 1 : -1);
+      s_p1p2     = (wrem_.jp == size() - 1 ? s_p1p2 : -s_p1p2);
+      int s_p3p4 = ((i + j) % 2 == 0 ? 1 : -1);
+
+      // set the diagonal element S
+      wrem_.S = M_(wrem_.jp, wrem_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrem_.S * s_p1p2;
+      newsign_ = sign_ * s_p1p2 * s_p3p4;
+
+      return wrem_.S * s_p3p4;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the remove operation.
     void complete_remove() {
-      if (N == 1) {
+      // early return if the resulting matrix is empty
+      if (size() == 1) {
         clear();
         return;
       }
 
-      // Move rows and cols to be removed to the end.
-      // Adjust the x_values and y_values vector accordingly and
-      // swap the associated row_num and col_num elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(N);
-      if (w1.ireal != N - 1) {
-        deep_swap(mat_inv(RN, w1.ireal), mat_inv(RN, N - 1));
-        x_values[w1.ireal] = x_values[N - 1];
-        auto iitr          = std::find(row_num.begin(), row_num.end(), w1.ireal);
-        auto titr          = std::find(row_num.begin(), row_num.end(), N - 1);
-        std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the row and column to be removed with the last row and column
+      auto const old_size = size();
+      auto const new_size = old_size - 1;
+      auto rg_n           = nda::range{old_size};
+      if (wrem_.ip != new_size) {
+        // for M, we have to apply P1^T to the columns
+        deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, new_size));
+        // update the x arguments and the row permutation vector
+        x_[wrem_.ip] = x_[new_size];
+        auto it1     = std::ranges::find(row_perm_, wrem_.ip);
+        auto it2     = std::ranges::find(row_perm_, new_size);
+        std::swap(*it1, *it2);
       }
-      if (w1.jreal != N - 1) {
-        deep_swap(mat_inv(w1.jreal, RN), mat_inv(N - 1, RN));
-        y_values[w1.jreal] = y_values[N - 1];
-        auto jitr          = std::find(col_num.begin(), col_num.end(), w1.jreal);
-        auto titr          = std::find(col_num.begin(), col_num.end(), N - 1);
-        std::swap(*jitr, *titr);
+      if (wrem_.jp != new_size) {
+        // for M, we have to apply P2^T to the rows
+        deep_swap(M_(wrem_.jp, rg_n), M_(new_size, rg_n));
+        // update the y arguments and the column permutation vector
+        y_[wrem_.jp] = y_[new_size];
+        auto it1     = std::ranges::find(col_perm_, wrem_.jp);
+        auto it2     = std::ranges::find(col_perm_, new_size);
+        std::swap(*it1, *it2);
       }
-      N--;
-      RN = range(N);
 
-      auto it1 [[maybe_unused]] = std::remove(row_num.begin(), row_num.end(), N);
-      auto it2 [[maybe_unused]] = std::remove(col_num.begin(), col_num.end(), N);
+      // update the size of the matrix
+      rg_n = nda::range{new_size};
 
-      row_num.pop_back();
-      col_num.pop_back();
-      x_values.pop_back();
-      y_values.pop_back();
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      std::ignore = std::ranges::remove(row_perm_, new_size);
+      std::ignore = std::ranges::remove(col_perm_, new_size);
+      row_perm_.pop_back();
+      col_perm_.pop_back();
+      x_.pop_back();
+      y_.pop_back();
 
-      // M <- a - d^-1 b c with BLAS
-      w1.ksi = -1 / mat_inv(N, N);
-      ASSERT(std::isfinite(std::abs(w1.ksi)));
+      // calculate -S^{-1}
+      auto mS_inv = -1 / wrem_.S;
+      ASSERT(std::isfinite(std::abs(mS_inv)));
 
-      //mat_inv(RN,RN) += w1.ksi, * mat_inv(RN,N) * mat_inv(N,RN);
-      blas::ger(w1.ksi, mat_inv(RN, N), mat_inv(N, RN), mat_inv(RN, RN));
+      // solve P = \widetilde{M}^{(n-1)} + \widetilde{M}^{(n-1)} B S C \widetilde{M}^{(n-1)} for \widetilde{M}^{(n-1)}
+      // by using the fact that we know -\widetilde{M}^{(n-1)} B S, -S C \widetilde{M}^{(n-1)} and S^{-1}
+      blas::ger(mS_inv, M_(rg_n, new_size), M_(new_size, rg_n), M_(rg_n, rg_n));
     }
 
     public:
-    //------------------------------------------------------------------------------------------
+    /**
+     * @brief Try to remove \f$ k \f$ rows and columns.
+     *
+     * @details The rows to be removed are specified in the tuple \f$ \mathbf{i} \f$ and the columns in the tuple
+     * \f$ \mathbf{j} \f$. The positions are given w.r.t. the original matrix \f$ F^{(n)} \f$. The corresponding
+     * positions in the matrix \f$ G^{(n)} \f$ are denoted by \f$ \mathbf{i}_p \f$ and \f$ \mathbf{j}_p \f$,
+     * respectively.
+     *
+     * Since we are working with \f$ G^{(n)} \f$, we are free to first move the rows and columns to the bottom and to
+     * the right of the matrix and use the update formulas presented in @ref triqs-detmanip.
+     *
+     * More specifically, we introduce the matrix
+     * \f[
+     *   \widetilde{G}^{(n)} = P_1 G^{(n)} P_2 =  \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & D \end{bmatrix} \; ,
+     * \f]
+     * where \f$ P_1 \f$ and \f$ P_2 \f$ are permutation matrices that swap the rows and columns to be removed
+     * (contained in the matrices \f$ B \f$, \f$ C \f$ and \f$ D \f$) with the bottom rows and the right most columns of
+     * the matrix. \f$ \widetilde{G}^{(n-k)} \f$ is the resulting matrix after the remove operation.
+     *
+     * We use the following order for the rows and columns to be removed:
+     * - The first row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the smallest index in the
+     * matrix \f$ F^{(n)} \f$.
+     * - The second row (column) in \f$ C \f$ (\f$ B \f$) corresponds to the row (column) with the second smallest index
+     * in the matrix \f$ F^{(n)} \f$.
+     * - And so on.
+     *
+     * The original matrix can be written as
+     * \f[
+     *   \begin{split}
+     *   F^{(n)} &= P^{(n)}_r G^{(n)} P^{(n)}_c = P^{(n)}_r P_1^{-1} [P_1 G^{(n)} P_2] P_2^{-1} P^{(n)}_c =
+     *   \widetilde{P}^{(n)}_r \widetilde{G}^{(n)} \widetilde{P}^{(n)}_c \\
+     *   &= P_3 \begin{bmatrix} P^{(n-k)}_r & 0 \\ 0 & I \end{bmatrix} \begin{bmatrix} \widetilde{G}^{(n-k)} & B \\ C & 
+     *   D \end{bmatrix} \begin{bmatrix} P^{(n-k)}_c & 0 \\ 0 & I \end{bmatrix} P_4 \; ,
+     *   \end{split}
+     * \f]
+     * where \f$ P_3 \f$ and \f$ P_4 \f$ are permutation matrices that move the rows and columns in \f$ B \f$, \f$ C \f$
+     * and \f$ D \f$ back to their original positions in the matrix \f$ F^{(n)} \f$.
+     *
+     * We can therefore write the determinant of the resulting matrix \f$ \widetilde{G}^{(n-k)} \f$ in terms of the
+     * determinant of the current matrix \f$ G^{(n)} \f$
+     * \f[
+     *   \det(\widetilde{G}^{(n-k)}) = \det(\widetilde{G}^{(n)}) \det(S) = \det(P_1) \det(G^{(n)}) \det(P_2) \det(S)
+     *   \; ,
+     * \f]
+     * and the new sign \f$ \widetilde{s}^{(n-k)} \f$ in terms of the current sign \f$ s^{(n)} \f$:
+     * \f[
+     *   \begin{split}
+     *   \widetilde{s}^{(n-k)} &= \det(\widetilde{P}^{(n-k)}_r) \det(\widetilde{P}^{(n-k)}_c) =
+     *   \det(P_3) \det(\widetilde{P}^{(n)}_r) \det(\widetilde{P}^{(n)}_c) \det(P_4) \\
+     *   &= \det(P_3) \det(P^{(n)}_r) \det(P_1) \det(P_2) \det(P^{(n)}_c) \det(P_4) =
+     *   s^{(n)} \det(P_1) \det(P_2) \det(P_3) \det(P_4) \; .
+     *   \end{split}
+     * \f]
+     * Here, we used the fact that \f$ \det(P) = \det(P^{-1}) \f$ for a permutation matrix \f$ P \f$.
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(F^{(n-k)})}{\det(F^{(n)})} = \frac{\det(\widetilde{G}^{(n-k)}) \widetilde{s}^{(n-k)}}{
+     *   \det(G^{(n)}) s^{(n)}} = \det(S) \det(P_3) \det(P_4) \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Positions of the rows to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Positions of the columns to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-k)}) / \det(F^{(n)}) \f$.
+     */
+    value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
+      // check input argument sizes
+      auto const k = static_cast<long>(i.size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(k > 0 && k <= size());
+      EXPECTS(j.size() == k);
+
+      // sort and check input arguments
+      std::ranges::sort(i);
+      std::ranges::sort(j);
+      EXPECTS(std::ranges::adjacent_find(i) == i.end() && i.front() >= 0 && i.back() < size());
+      EXPECTS(std::ranges::adjacent_find(j) == j.end() && j.front() >= 0 && j.back() < size());
+
+      // set the try tag
+      last_try_ = try_tag::RemoveK;
+
+      // reserve memory for the working data
+      wremk_.reserve(k);
+
+      // move input arguments to the working data and get the corresponding row/column positions in the matrix G
+      wremk_.i = std::move(i);
+      wremk_.j = std::move(j);
+      for (long l = 0; l < k; ++l) {
+        wremk_.ip[l] = row_perm_[wremk_.i[l]];
+        wremk_.jp[l] = col_perm_[wremk_.j[l]];
+      }
+
+      // early return if new matrix is empty
+      if (size() == k) {
+        newdet_  = 1;
+        newsign_ = 1;
+        return 1 / (sign_ * det_);
+      }
+
+      // compute the signs of the permutations P1, P2, P3, P4 and set the matrix S
+      int s_p1p2   = 1;
+      long idx_sum = 0;
+      long target  = size() - k;
+      for (long l = 0; l < k; ++l) {
+        // the combined sign of P3 and P4 is simply (-1)^{\sum i_k + j_k}
+        idx_sum += wremk_.i[l] + wremk_.j[l];
+
+        // check if the current position of the row in G is where we want it
+        if (wremk_.ip[l] != target) {
+          // if not, P1 has to swap it with the corresponding row
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the row is swapped with another row that we want to remove
+          auto it = std::find(wremk_.ip.begin() + l + 1, wremk_.ip.begin() + k, target);
+          if (it != wremk_.ip.begin() + k) {
+            std::swap(wremk_.ip[l], *it);
+          } else {
+            wremk_.ip[l] = target;
+          }
+        }
+
+        // check if the current position of the column in G is where we want it
+        if (wremk_.jp[l] != target) {
+          // if not, P2 has to swap it with the corresponding column
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the column is swapped with another column that we want to remove
+          auto it = std::find(wremk_.jp.begin() + l + 1, wremk_.jp.begin() + k, target);
+          if (it != wremk_.jp.begin() + k) {
+            std::swap(wremk_.jp[l], *it);
+          } else {
+            wremk_.jp[l] = target;
+          }
+        }
+        ++target;
+
+        // set the elements of the matrix S
+        for (long m = 0; m < k; ++m) { wremk_.S(l, m) = M_(col_perm_[wremk_.j[l]], row_perm_[wremk_.i[m]]); }
+      }
+      int s_p3p4 = (idx_sum % 2 == 0 ? 1 : -1);
+
+      // compute the new determinant and sign
+      auto det_S = detail::determinant(wremk_.S, k);
+      newdet_    = det_ * det_S * s_p1p2;
+      newsign_   = sign_ * s_p1p2 * s_p3p4;
+
+      return det_S * s_p3p4;
+    }
 
     /**
-       * Double Removal operation of cols j0,j1 and rows i0,i1
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
-    value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
-
-      std::sort(i.begin(), i.end());
-      std::sort(j.begin(), j.end());
-
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(N >= 2);
-      TRIQS_ASSERT(i.size() == j.size());
-
-      k = i.size();
-      reserve(N - k, k);
-      last_try = RemoveK;
-
-      // check inputs
-      for (int l = 0; l < k - 1; ++l) {
-        TRIQS_ASSERT(i[l] != i[l + 1] and 0 <= i[l] and i[l] < N);
-        TRIQS_ASSERT(j[l] != j[l + 1] and 0 <= j[l] and j[l] < N);
-      }
-
-      for (long l = 0; l < k; ++l) {
-        wk.i[l]     = i[l];
-        wk.j[l]     = j[l];
-        wk.ireal[l] = row_num[wk.i[l]];
-        wk.jreal[l] = col_num[wk.j[l]];
-      }
-
-      // compute the newdet
-      for (long l1 = 0; l1 < k; ++l1) {
-        for (long l2 = 0; l2 < k; ++l2) { wk.ksi(l1, l2) = mat_inv(wk.jreal[l1], wk.ireal[l2]); }
-      }
-      auto det_ksi = wk.det_ksi(k);
-      newdet       = det * det_ksi;
-      long idx_sum = 0;
-      for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
-      newsign = (idx_sum % 2 == 0 ? sign : -sign);
-
-      return det_ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
-    }
+     * @brief Try to remove two rows and two columns.
+     *
+     * @details The rows to be removed are specified by the indices \f$ i_0 \f$ and \f$ i_1 \f$, and the columns by the
+     * indices \f$ j_0 \f$ and \f$ j_1 \f$. The positions are given w.r.t. the original matrix \f$ F^{(n)} \f$.
+     *
+     * It simply calls the more general try_remove_k().
+     *
+     * @param i0 Position of the first row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param i1 Position of the second row to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j0 Position of the first column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @param j1 Position of the second column to be removed in the original matrix \f$ F^{(n)} \f$.
+     * @return Determinant ratio \f$ \det(F^{(n-2)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_remove2(long i0, long i1, long j0, long j1) { return try_remove_k({i0, i1}, {j0, j1}); }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the remove_k operation.
     void complete_remove_k() {
-      if (N == k) {
+      auto const k        = static_cast<long>(wremk_.i.size());
+      auto const new_size = size() - k;
+      auto const old_size = size();
+
+      // early return if the resulting matrix is empty
+      if (new_size == 0) {
         clear();
         return;
-      } // put the sign to 1 also .... Change complete_remove...
+      }
 
-      std::vector<long> ireal = wk.ireal;
-      std::vector<long> jreal = wk.jreal;
-      std::sort(ireal.begin(), ireal.begin() + k);
-      std::sort(jreal.begin(), jreal.begin() + k);
-
-      // Move rows and cols to be removed to the end, starting from the right.
-      // Adjust the x_values and y_values vector accordingly and
-      // swap the associated row_num and col_num elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(N);
-      for (long m = k - 1, target = N - 1; m >= 0; --m, --target) {
-        if (ireal[m] != target) {
-          deep_swap(mat_inv(RN, ireal[m]), mat_inv(RN, target));
-          x_values[ireal[m]] = x_values[target];
-          auto iitr          = std::find(row_num.begin(), row_num.end(), ireal[m]);
-          auto titr          = std::find(row_num.begin(), row_num.end(), target);
-          std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the rows and columns accordingly
+      auto rg_n = nda::range{old_size};
+      for (long m = 0, target = new_size; m < k; ++m, ++target) {
+        if (row_perm_[wremk_.i[m]] != target) {
+          // for M, we have to apply P1^T to the columns
+          deep_swap(M_(rg_n, row_perm_[wremk_.i[m]]), M_(rg_n, target));
+          // update the x arguments and the row permutation vector
+          x_[row_perm_[wremk_.i[m]]] = x_[target];
+          auto it1                   = std::ranges::find(row_perm_, row_perm_[wremk_.i[m]]);
+          auto it2                   = std::ranges::find(row_perm_, target);
+          std::swap(*it1, *it2);
         }
-        if (jreal[m] != target) {
-          deep_swap(mat_inv(jreal[m], RN), mat_inv(target, RN));
-          y_values[jreal[m]] = y_values[target];
-          auto jitr          = std::find(col_num.begin(), col_num.end(), jreal[m]);
-          auto titr          = std::find(col_num.begin(), col_num.end(), target);
+        if (col_perm_[wremk_.j[m]] != target) {
+          // for M, we have to apply P2^T to the rows
+          deep_swap(M_(col_perm_[wremk_.j[m]], rg_n), M_(target, rg_n));
+          // update the y arguments and the column permutation vector
+          y_[col_perm_[wremk_.j[m]]] = y_[target];
+          auto jitr                  = std::ranges::find(col_perm_, col_perm_[wremk_.j[m]]);
+          auto titr                  = std::ranges::find(col_perm_, target);
           std::swap(*jitr, *titr);
         }
       }
-      N -= k;
-      RN = range(N);
 
-      // Clean up removed elements from row_num and col_num
-      auto gtN = [&](auto i) { return i >= N; };
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      auto ge_n   = [new_size](auto i) { return i >= new_size; };
+      std::ignore = std::ranges::remove_if(row_perm_, ge_n);
+      std::ignore = std::ranges::remove_if(col_perm_, ge_n);
+      row_perm_.resize(new_size);
+      col_perm_.resize(new_size);
+      x_.resize(new_size);
+      y_.resize(new_size);
 
-      auto it1 [[maybe_unused]] = std::remove_if(row_num.begin(), row_num.end(), gtN);
-      auto it2 [[maybe_unused]] = std::remove_if(col_num.begin(), col_num.end(), gtN);
+      // calculate S^{-1}
+      auto rg_nk   = nda::range{new_size};
+      auto rg_k    = nda::range{k};
+      auto rg_nk_n = nda::range{new_size, old_size};
+      nda::linalg::inv_in_place(wremk_.S(rg_k, rg_k));
 
-      row_num.resize(N);
-      col_num.resize(N);
-      x_values.resize(N);
-      y_values.resize(N);
-
-      // M <- a - d^-1 b c with BLAS
-      range Rl(N, N + k), Rk(k);
-      wk.ksi(Rk, Rk) = nda::linalg::inv(mat_inv(Rl, Rl));
-
-      // write explicitely the second product on ksi for speed ?
-      //mat_inv(RN,RN) -= mat_inv(RN,Rl) * (wk.ksi * mat_inv(Rl,RN)); // OPTIMIZE BELOW
-      blas::gemm(-1.0, mat_inv(RN, Rl), wk.ksi(Rk, Rk) * mat_inv(Rl, RN), 1.0, mat_inv(RN, RN));
+      // solve P = \widetilde{M}^{(n-k)} + \widetilde{M}^{(n-k)} B S C \widetilde{M}^{(n-k)} for \widetilde{M}^{(n-k)}
+      // by using the fact that we know -\widetilde{M}^{(n-k)} B S, -S C \widetilde{M}^{(n-k)} and S^{-1}
+      blas::gemm(-1.0, M_(rg_nk, rg_nk_n), wremk_.S(rg_k, rg_k) * M_(rg_nk_n, rg_nk), 1.0, M_(rg_nk, rg_nk));
     }
+
+    // Complete the remove2 operation.
     void complete_remove2() { complete_remove_k(); }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
-       * Consider the change the column j and the corresponding y.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one column in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The column to be changed is at position \f$ j \f$ in the original matrix \f$ F^{(n)} \f$. The new
+     * elements of the columns are determined by the given triqs::det_manip::MatrixBuilder argument \f$ y \f$.
+     *
+     * Let \f$ j_p \f$ be the position of the column in the matrix \f$ G^{(n)} \f$. We can write the new matrix as
+     * \f[
+     *   \widetilde{G}^{(n)} = G^{(n)} + \mathbf{u} \mathbf{v}^T \; ,
+     * \f]
+     * where \f$ u_i = f(x_i, y) - f(x_i, y_{j_p}) \f$ and \f$ \mathbf{v} = \mathbf{e}_{j_p} \f$ is a cartesian basis
+     * vector.
+     *
+     * The new inverse matrix \f$ \widetilde{M}^{(n)} \f$ is then given by the Sherman-Morrison formula
+     * \f[
+     *   \widetilde{M}^{(n)} = M^{(n)} - \frac{M^{(n)} \mathbf{u} \mathbf{v}^T M^{(n)}}{1 + \mathbf{v}^T M^{(n)}
+     *   \mathbf{u}} \; ,
+     * \f]
+     * and the new determinant by the matrix determinant lemma
+     * \f[
+     *   \det(\widetilde{G}^{(n)}) = \det(G^{(n)}) \left( 1 + \mathbf{v}^T M^{(n)} \mathbf{u} \right) = \det(G^{(n)})
+     *   \xi \; .
+     * \f]
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(\widetilde{F}^{(n)})}{\det(F^{(n)})} =  \left( 1 + \mathbf{v}^T M^{(n)} \mathbf{u} \right) \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param y Argument to the matrix builder that determines the new elements of the column.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_change_col(long j, y_type const &y) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(0 <= j and j < N);
-      w1.j     = j;
-      last_try = ChangeCol;
-      w1.jreal = col_num[j];
-      w1.y     = y;
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= j and j < size());
+      std::tie(wcol_.j, wcol_.jp, wcol_.y) = std::make_tuple(j, col_perm_[j], y);
 
-      // Compute the col B.
-      for (long i = 0; i < N; i++) w1.MC(i) = f(x_values[i], w1.y) - f(x_values[i], y_values[w1.jreal]);
-      range RN(N);
-      //w1.MB(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, mat_inv(RN, RN), w1.MC(RN), 0.0, w1.MB(RN));
+      // set the try tag
+      last_try_ = try_tag::ChangeCol;
 
-      // compute the newdet
-      w1.ksi   = (1 + w1.MB(w1.jreal));
-      auto ksi = w1.ksi;
-      newdet   = det * ksi;
-      newsign  = sign;
+      // reserve memory for the working data
+      if (size() > wcol_.capacity()) wcol_.reserve(2 * size());
 
-      return ksi; // newsign/sign is unity
+      // calculate the vector u, the product M u and the factor xi = 1 + v^T M u = 1 + (M u)_{j_p}
+      auto rg = nda::range(size());
+      for (auto i : rg) wcol_.u(i) = f_(x_[i], wcol_.y) - f_(x_[i], y_[wcol_.jp]);
+      nda::blas::gemv(1.0, M_(rg, rg), wcol_.u(rg), 0.0, wcol_.Mu(rg));
+      wcol_.xi = 1 + wcol_.Mu(wcol_.jp);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wcol_.xi;
+      newsign_ = sign_;
+
+      return wcol_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change column operation.
     void complete_change_col() {
-      range RN(N);
-      y_values[w1.jreal] = w1.y;
+      // change the matrix builder argument
+      y_[wcol_.jp] = wcol_.y;
 
-      // modifying M : Mij += w1.ksi Bi Mnj
-      // using Shermann Morrison formula.
-      // implemented in 2 times : first Bn=0 so that Mnj is not modified ! and then change Mnj
-      // Cf notes : simply multiply by -w1.ksi
-      w1.ksi          = -1 / w1.ksi;
-      w1.MB(w1.jreal) = 0;
-      //mat_inv(R,R) += w1.ksi * w1.MB(R) * mat_inv(w1.jreal,R)); // OPTIMIZE BELOW
-      blas::ger(w1.ksi, w1.MB(RN), mat_inv(w1.jreal, RN), mat_inv(RN, RN));
-      mat_inv(w1.jreal, RN) *= -w1.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg       = nda::range(size());
+      wcol_.vTM(rg) = M_(wcol_.jp, rg);
+      nda::blas::ger(-1 / wcol_.xi, wcol_.Mu(rg), wcol_.vTM(rg), M_(rg, rg));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
-       * Consider the change the row i and the corresponding x.
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one row in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The row to be changed is at position \f$ i \f$ in the original matrix \f$ F^{(n)} \f$. The new
+     * elements of the row are determined by the given triqs::det_manip::MatrixBuilder argument \f$ x \f$.
+     *
+     * We follow the same procedure as in try_change_col(), except that we use \f$ v_i = f(x, y_j) - f(x_{i_p}, y_j) \f$
+     * and \f$ \mathbf{u} = \mathbf{e}_{i_p} \f$ is a cartesian basis vector.
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param x Argument to the matrix builder that determines the new elements of the row.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_change_row(long i, x_type const &x) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(i < N);
-      w1.i     = i;
-      last_try = ChangeRow;
-      w1.ireal = row_num[i];
-      w1.x     = x;
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      std::tie(wrow_.i, wrow_.ip, wrow_.x) = std::make_tuple(i, row_perm_[i], x);
 
-      // Compute the col B.
-      for (long idx = 0; idx < N; idx++) w1.MB(idx) = f(w1.x, y_values[idx]) - f(x_values[w1.ireal], y_values[idx]);
-      range RN(N);
-      //w1.MC(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.MB(RN), 0.0, w1.MC(RN));
+      // set the try tag
+      last_try_ = try_tag::ChangeRow;
 
-      // compute the newdet
-      w1.ksi   = (1 + w1.MC(w1.ireal));
-      auto ksi = w1.ksi;
-      newdet   = det * ksi;
-      newsign  = sign;
-      return ksi; // newsign/sign is unity
+      // reserve memory for the working data
+      if (size() > wrow_.capacity()) wrow_.reserve(2 * size());
+
+      // calculate the vector v^T, the product v^T M and the factor xi = 1 + v^T M u = 1 + (v^T M)_{i_p}
+      auto rg = nda::range(size());
+      for (auto j : rg) wrow_.vT(j) = f_(wrow_.x, y_[j]) - f_(x_[wrow_.ip], y_[j]);
+      nda::blas::gemv(1.0, nda::transpose(M_(rg, rg)), wrow_.vT(rg), 0.0, wrow_.vTM(rg));
+      wrow_.xi = 1 + wrow_.vTM(wrow_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrow_.xi;
+      newsign_ = sign_;
+
+      return wrow_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change row operation.
     void complete_change_row() {
-      range RN(N);
-      x_values[w1.ireal] = w1.x;
+      // change the matrix builder argument
+      x_[wrow_.ip] = wrow_.x;
 
-      // modifying M : M ij += w1.ksi Min Cj
-      // using Shermann Morrison formula.
-      // impl. Cf case 3
-      w1.ksi          = -1 / w1.ksi;
-      w1.MC(w1.ireal) = 0;
-      //mat_inv(R,R) += w1.ksi * mat_inv(R,w1.ireal) * w1.MC(R);
-      blas::ger(w1.ksi, mat_inv(RN, w1.ireal), w1.MC(RN), mat_inv(RN, RN));
-      mat_inv(RN, w1.ireal) *= -w1.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg      = nda::range(size());
+      wrow_.Mu(rg) = M_(rg, wrow_.ip);
+      nda::blas::ger(-1 / wrow_.xi, wrow_.Mu(rg), wrow_.vTM(rg), M_(rg, rg));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
-       * Consider the change the row i and column j and the corresponding x and y
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
+     * @brief Try to change one column and one row in the original matrix \f$ F^{(n)} \f$.
+     *
+     * @details The row and column to be changed are at positions \f$ i \f$ and \f$ j \f$ in the original matrix
+     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given
+     * triqs::det_manip::MatrixBuilder arguments \f$ x \f$ and \f$ y \f$.
+     *
+     * Let \f$ i_p \f$ and \f$ j_p \f$ be the positions of the row and the column in the matrix \f$ G^{(n)} \f$. We can
+     * write the new matrix as
+     * \f[
+     *   \widetilde{G}^{(n)} = G^{(n)} + \mathbf{r} \mathbf{s}^T + \mathbf{u} \mathbf{v}^T \; ,
+     * \f]
+     * where
+     * - \f$ \mathbf{r} = \mathbf{e}_{i_p} \f$,
+     * - \f$ s_k = f(x, y_k) - f(x_{i_p}, y_k) \f$ except for \f$ s_{j_p} = f(x, y) - f(x_{i_p}, y_{j_p}) \f$,
+     * - \f$ u_l = f(x_l, y) - f(x_l, y_{j_p}) \f$ except for \f$ u_{i_p} = 0 \f$, and
+     * - \f$ \mathbf{v} = \mathbf{e}_{j_p} \f$.
+     *
+     * By using the matrix determinant lemma twice and once the Sherman-Morrison formula, we find for the new
+     * determinant
+     * \f[
+     *   \det(\widetilde{G}^{(n)}) = \det(G^{(n)}) \left[ (1 + \mathbf{s}^T M^{(n)} \mathbf{r}) (1 + \mathbf{v}^T
+     *   M^{(n)} \mathbf{u}) - M^{(n)}_{j_p i_p} \mathbf{s}^T M^{(n)} \mathbf{u} \right] =
+     *   \det(G^{(n)}) \left[ (1 + \alpha)(1 + \beta) - M^{(n)}_{j_p i_p} \gamma \right] =
+     *   \det(G^{(n)}) \xi \; .
+     * \f]
+     *
+     * The new inverse matrix \f$ \widetilde{M}^{(n)} \f$ can be obtained by applying the Sherman-Morrison formula
+     * twice:
+     * \f[
+     *   \widetilde{M}^{(n)} = H^{-1} - \frac{H^{-1} \mathbf{u} \mathbf{v}^T H^{-1}}{1 + \mathbf{v}^T H^{-1}
+     *   \mathbf{u}} \; ,
+     * \f]
+     * where
+     * \f[
+     *   H^{-1} = M^{(n)} - \frac{M^{(n)} \mathbf{r} \mathbf{s}^T M^{(n)}}{1 + \mathbf{s}^T M^{(n)} \mathbf{r}} \; .
+     * \f]
+     * After some algebra, we find for its elements
+     * \f[
+     *   \widetilde{M}^{(n)}_{ab} = M^{(n)}_{ab} - \frac{(1 + \alpha) (M^{(n)} \mathbf{u})_a M^{(n)}_{j_p b}}{\xi} +
+     *   \frac{M^{(n)}_{j_p i_p} (M^{(n)} \mathbf{u})_a (\mathbf{s}^T M^{(n)})_b}{\xi} +
+     *   \frac{\gamma M^{(n)}_{a i_p} M^{(n)}_{j_p b}}{\xi} -
+     *   \frac{(1 + \beta) (\mathbf{s}^T M^{(n)})_b M^{(n)}_{a i_p}}{\xi}
+     *   \; .
+     * \f]
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(\widetilde{F}^{(n)})}{\det(F^{(n)})} = \xi \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
+     * @param x Argument to the matrix builder that determines the new elements of the row.
+     * @param y Argument to the matrix builder that determines the new elements of the column.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
+     */
     value_type try_change_col_row(long i, long j, x_type const &x, y_type const &y) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(0 <= i and i < N);
-      TRIQS_ASSERT(0 <= j and j < N);
+      // check input arguments and copy them to the working data
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      std::tie(wrc_.i, wrc_.j, wrc_.ip, wrc_.jp, wrc_.x, wrc_.y) = std::make_tuple(i, j, row_perm_[i], col_perm_[j], x, y);
 
-      last_try = ChangeRowCol;
-      w1.i     = i;
-      w1.j     = j;
-      w1.ireal = row_num[i];
-      w1.jreal = col_num[j];
-      w1.x     = x;
-      w1.y     = y;
+      // set the try tag
+      last_try_ = try_tag::ChangeRowCol;
 
-      // Compute the col B.
-      for (long idx = 0; idx < N; idx++) { // MC :  delta_x, MB : delta_y
-        w1.MC(idx) = f(x_values[idx], y) - f(x_values[idx], y_values[w1.jreal]);
-        w1.MB(idx) = f(x, y_values[idx]) - f(x_values[w1.ireal], y_values[idx]);
+      // reserve memory for the working data
+      if (size() > wrc_.capacity()) wrc_.reserve(2 * size());
+
+      // calculate the vectors s^T and u
+      for (long k = 0; k < size(); ++k) {
+        wrc_.sT(k) = f_(x, y_[k]) - f_(x_[wrc_.ip], y_[k]);
+        wrc_.u(k)  = f_(x_[k], y) - f_(x_[k], y_[wrc_.jp]);
       }
-      w1.MC(w1.ireal) = f(x, y) - f(x_values[w1.ireal], y_values[w1.jreal]);
-      w1.MB(w1.jreal) = 0;
+      wrc_.sT(wrc_.jp) = f_(x, y) - f_(x_[wrc_.ip], y_[wrc_.jp]);
+      wrc_.u(wrc_.ip)  = 0;
 
-      range RN(N);
-      // C : X, B : Y
-      //w1.C(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, mat_inv(RN, RN), w1.MC(RN), 0.0, w1.C(RN));
-      //w1.B(R) = transpose(mat_inv(R,R)) * w1.MB(R); // OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(mat_inv(RN, RN)), w1.MB(RN), 0.0, w1.B(RN));
+      // calculate the products s^T M, M u and gamma = s^T M u
+      auto rg = nda::range(size());
+      blas::gemv(1.0, M_(rg, rg), wrc_.u(rg), 0.0, wrc_.Mu(rg));
+      blas::gemv(1.0, transpose(M_(rg, rg)), wrc_.sT(rg), 0.0, wrc_.sTM(rg));
+      wrc_.gamma = nda::blas::dot(wrc_.sT(rg), wrc_.Mu(rg));
 
-      // compute the det_ratio
-      auto Xn        = w1.C(w1.jreal);
-      auto Yn        = w1.B(w1.ireal);
-      auto Z         = nda::blas::dot(w1.MB(RN), w1.C(RN));
-      auto Mnn       = mat_inv(w1.jreal, w1.ireal);
-      auto det_ratio = (1 + Xn) * (1 + Yn) - Mnn * Z;
-      w1.ksi         = det_ratio;
-      newdet         = det * det_ratio;
-      newsign        = sign;
-      return det_ratio; // newsign/sign is unity
+      // calculate the new determinant and sign
+      auto const alpha = wrc_.sTM(wrc_.ip);
+      auto const beta  = wrc_.Mu(wrc_.jp);
+      wrc_.xi          = (1 + alpha) * (1 + beta) - M_(wrc_.jp, wrc_.ip) * wrc_.gamma;
+      newdet_          = det_ * wrc_.xi;
+      newsign_         = sign_;
+
+      return wrc_.xi;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
+    // Complete the change row and column operation.
     void complete_change_col_row() {
-      range RN(N);
-      x_values[w1.ireal] = w1.x;
-      y_values[w1.jreal] = w1.y;
+      // change the matrix builder arguments
+      x_[wrc_.ip] = wrc_.x;
+      y_[wrc_.jp] = wrc_.y;
 
-      // FIXME : Use blas for this ? Is it better
-      auto Xn  = w1.C(w1.jreal);
-      auto Yn  = w1.B(w1.ireal);
-      auto Mnn = mat_inv(w1.jreal, w1.ireal);
-
-      auto D    = w1.ksi;        // get back
-      auto a    = -(1 + Yn) / D; // D in the notes
-      auto b    = -(1 + Xn) / D;
-      auto Z    = nda::blas::dot(w1.MB(RN), w1.C(RN));
-      Z         = Z / D;
-      Mnn       = Mnn / D;
-      w1.MB(RN) = mat_inv(w1.jreal, RN); // Mnj
-      w1.MC(RN) = mat_inv(RN, w1.ireal); // Min
-
-      for (long i = 0; i < N; ++i)
-        for (long j = 0; j < N; ++j) {
-          auto Xi  = w1.C(i);
-          auto Yj  = w1.B(j);
-          auto Mnj = w1.MB(j);
-          auto Min = w1.MC(i);
-          mat_inv(i, j) += a * Xi * Mnj + b * Min * Yj + Mnn * Xi * Yj + Z * Min * Mnj;
+      // set the elements of the new inverse matrix
+      auto rg              = nda::range(size());
+      auto const alpha_fac = (1 + wrc_.sTM(wrc_.ip)) / wrc_.xi;
+      auto const beta_fac  = (1 + wrc_.Mu(wrc_.jp)) / wrc_.xi;
+      auto const gamma_fac = wrc_.gamma / wrc_.xi;
+      auto const M_fac     = M_(wrc_.jp, wrc_.ip) / wrc_.xi;
+      wrc_.mT_jp(rg)       = M_(wrc_.jp, rg);
+      wrc_.m_ip(rg)        = M_(rg, wrc_.ip);
+      for (long a = 0; a < size(); ++a) {
+        for (long b = 0; b < size(); ++b) {
+          M_(a, b) = M_(a, b) - alpha_fac * wrc_.Mu(a) * wrc_.mT_jp(b) + M_fac * wrc_.Mu(a) * wrc_.sTM(b) + gamma_fac * wrc_.m_ip(a) * wrc_.mT_jp(b)
+             - beta_fac * wrc_.sTM(b) * wrc_.m_ip(a);
         }
+      }
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
-       * Refill determinant with new values
-       *
-       * New values are calculated as f(x_i, y_i)
-       *
-       * Returns the ratio of det Minv_new / det Minv.
-       *
-       * This routine does NOT make any modification. It has to be completed with complete_operation().
-       */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    value_type try_refill(ArgumentContainer1 const &X, ArgumentContainer2 const &Y) {
-      TRIQS_ASSERT(last_try == NoTry);
-      TRIQS_ASSERT(X.size() == Y.size());
+     * @brief Try to fill the original matrix \f$ F^{(n)} \f$ with new elements.
+     *
+     * @details This function tries to build a completely new matrix \f$ \widetilde{F}^{(\widetilde{n})} \f$ using the
+     * given triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ and \f$ \mathbf{y} \f$.
+     *
+     * The function returns the ratio
+     * \f[
+     *   R = \frac{\det(\widetilde{F}^{(\widetilde{n})})}{\det(F^{(n)})} \; .
+     * \f]
+     *
+     * @warning This routine does not make any modification. It has to be completed with complete_operation().
+     *
+     * @tparam X triqs::det_manip::MatrixBuilderXRange.
+     * @tparam Y triqs::det_manip::MatrixBuilderYRange.
+     * @param x_rg Range containing the first matrix builder arguments.
+     * @param y_rg Range containing the second matrix builder arguments.
+     * @return Determinant ratio \f$ \det(\widetilde{F}^{(\widetilde{n})}) / \det(F^{(n)}) \f$.
+     */
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    value_type try_refill(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
+      // check input arguments
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(std::ranges::size(x_rg) == std::ranges::size(y_rg));
+      auto const sz = std::ranges::size(x_rg);
 
-      last_try = Refill;
+      // set the try tag
+      last_try_ = try_tag::Refill;
 
-      long s = X.size();
-      // treat empty matrix separately
-      if (s == 0) {
-        w_refill.x_values.clear();
-        w_refill.y_values.clear();
-        return 1 / (sign * det);
+      // reserve and clear working data
+      if (sz > wref_.capacity()) wref_.reserve(2 * sz);
+      wref_.x.clear();
+      wref_.y.clear();
+
+      // early return if the new matrix is empty
+      if (sz == 0) {
+        newdet_  = 1;
+        newsign_ = 1;
+        return 1 / (sign_ * det_);
       }
 
-      w_refill.reserve(s);
-      w_refill.x_values.clear();
-      w_refill.y_values.clear();
-      std::copy(X.begin(), X.end(), std::back_inserter(w_refill.x_values));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(w_refill.y_values));
+      // copy x and y arguments to the working data
+      std::ranges::copy(x_rg, std::back_inserter(wref_.x));
+      std::ranges::copy(y_rg, std::back_inserter(wref_.y));
 
-      for (long i = 0; i < s; ++i)
-        for (long j = 0; j < s; ++j) w_refill.M(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
-      range R(s);
-      newdet  = nda::linalg::det(w_refill.M(R, R));
-      newsign = 1;
+      // build new G matrix and calculate its determinant
+      auto G_v = wref_.G(nda::range(sz), nda::range(sz));
+      nda::for_each(G_v.shape(), [this, &G_v](auto i, auto j) { G_v(i, j) = f_(wref_.x[i], wref_.y[j]); });
+      newdet_  = nda::linalg::det(G_v);
+      newsign_ = 1;
 
-      return newdet / (sign * det);
+      return newdet_ / (sign_ * det_);
     }
 
-    //------------------------------------------------------------------------------------------
     private:
+    // Complete the refill operation.
     void complete_refill() {
-      N = w_refill.x_values.size();
-
-      // special empty case again
-      if (N == 0) {
+      // early return if the new matrix is size 0
+      if (wref_.size() == 0) {
         clear();
-        newdet  = 1;
-        newsign = 1;
         return;
       }
 
-      reserve(N);
-      std::swap(x_values, w_refill.x_values);
-      std::swap(y_values, w_refill.y_values);
+      // reserve memory and reset the data storages and permutation vectors
+      if (wref_.size() > capacity()) reserve(2 * wref_.size());
+      set_xy(wref_.x, wref_.y);
 
-      row_num.resize(N, 0); // Zero Initialization avoids ASAN false positive
-      col_num.resize(N, 0);
-      std::iota(row_num.begin(), row_num.end(), 0);
-      std::iota(col_num.begin(), col_num.end(), 0);
-
-      range RN(N);
-      mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
+      // set the new inverse matrix M
+      auto rg    = nda::range(size());
+      M_(rg, rg) = nda::linalg::inv(wref_.G(rg, rg));
     }
-
-    //------------------------------------------------------------------------------------------
-    private:
-    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
-      if (N == 0) {
-        det  = 1;
-        sign = 1;
-        return;
-      }
-
-      range RN(N);
-      matrix_type res(N, N);
-      for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
-      det = nda::linalg::det(res);
-
-      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = nda::linalg::inv(res);
-
-      if (do_check) { // check that mat_inv is close to res
-        const bool relative = true;
-        double r            = max_element(abs(res - mat_inv(RN, RN)));
-        double r2           = max_element(abs(res + mat_inv(RN, RN)));
-        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
-        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
-        if (err || war) {
-          std::cerr << "matrix  = " << matrix() << std::endl;
-          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-        }
-        if (war)
-          std::cerr << "Warning : det_manip deviation above warning threshold "
-                    << "check "
-                    << "N = " << N << "  "
-                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
-        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
-      }
-
-      // since we have the proper inverse, replace the matrix and the det
-      mat_inv(RN, RN) = res;
-      n_opts          = 0;
-
-      // find the sign (there must be a better way...)
-      double s = 1.0;
-      nda::matrix<double> m(N, N);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      sign = (s > 0 ? 1 : -1);
-    }
-
-    void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
-
-    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
-    bool is_singular() const { return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)); }
-
-    //------------------------------------------------------------------------------------------
-    public:
-    void regenerate() { _regenerate_with_check(false, 0, 0); }
 
     public:
     /**
-       *  Finish the move of the last try_xxx called.
-       *  Throws if no try_xxx has been done or if the last operation was complete_operation.
-       */
+     * @brief Complete the last try-operation.
+     *
+     * @details It completes the last try-operation by calling the correct completion function depending on the try tag
+     * set in the last try function call.
+     *
+     * If the number of operations exceeds a certain threshold (see set_n_operations_before_check()), the inverse
+     * matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign \f$ s^{(n)} \f$ are regenerated using
+     * the matrix builder (see regenerate_and_check()).
+     *
+     * A possible warning is emitted or an exception is thrown if the current objects are not consistent with the
+     * regenerated ones.
+     */
     void complete_operation() {
-      switch (last_try) {
-        case (Insert): complete_insert(); break;
-        case (Remove): complete_remove(); break;
-        case (ChangeCol): complete_change_col(); break;
-        case (ChangeRow): complete_change_row(); break;
-        case (ChangeRowCol): complete_change_col_row(); break;
-        case (InsertK): complete_insert_k(); break;
-        case (RemoveK): complete_remove_k(); break;
-        case (Refill): complete_refill(); break;
-        case (NoTry): return; break;
-        default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
+      switch (last_try_) {
+        case (try_tag::Insert): complete_insert(); break;
+        case (try_tag::Remove): complete_remove(); break;
+        case (try_tag::ChangeCol): complete_change_col(); break;
+        case (try_tag::ChangeRow): complete_change_row(); break;
+        case (try_tag::ChangeRowCol): complete_change_col_row(); break;
+        case (try_tag::InsertK): complete_insert_k(); break;
+        case (try_tag::RemoveK): complete_remove_k(); break;
+        case (try_tag::Refill): complete_refill(); break;
+        default: return;
       }
 
-      det  = newdet;
-      sign = newsign;
-      ++n_opts;
-      if (n_opts > n_opts_max_before_check) check_mat_inv();
-      last_try = NoTry;
+      det_  = newdet_;
+      sign_ = newsign_;
+      ++nops_;
+      if (nops_ > nops_before_check_) regenerate_and_check();
+      last_try_ = try_tag::NoTry;
     }
 
-    /**
-       *  Reject the previous try_xxx called.
-       *  All try_xxx have to be either accepted (complete_operation) or rejected.
-       */
-    void reject_last_try() { last_try = NoTry; }
+    /// Reject the last try-operation.
+    void reject_last_try() { last_try_ = try_tag::NoTry; }
 
-    // ----------------- A few short cuts   -----------------
-
-    public:
-    /// Insert (try_insert + complete)
+    /// Wrapper for try_insert() followed by a complete_operation() call. Returns the determinant ratio.
     value_type insert(long i, long j, x_type const &x, y_type const &y) {
       auto r = try_insert(i, j, x, y);
       complete_operation();
       return r;
     }
 
-    /// Insert_at_end (try_insert + complete)
-    value_type insert_at_end(x_type const &x, y_type const &y) { return insert(N, N, x, y); }
+    /// Same as insert() but with `i` and `j` set to size().
+    value_type insert_at_end(x_type const &x, y_type const &y) { return insert(size(), size(), x, y); }
 
-    /// Insert2 (try_insert2 + complete)
+    /// Wrapper for try_insert2() followed by a complete_operation() call. Returns the determinant ratio.
     value_type insert2(long i0, long i1, long j0, long j1, x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
       auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
       complete_operation();
       return r;
     }
 
-    /// Insert2_at_end (try_insert2 + complete)
+    /// Same as insert2() but with `i0` and `j0` set to size() and `i1` and `j1` set to size() + 1.
     value_type insert2_at_end(x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
-      return insert2(N, N + 1, N, N + 1, x0, x1, y0, y1);
+      return insert2(size(), size() + 1, size(), size() + 1, x0, x1, y0, y1);
     }
 
-    /// Remove (try_remove + complete)
+    /// Wrapper for try_remove() followed by a complete_operation() call. Returns the determinant ratio.
     value_type remove(long i, long j) {
       auto r = try_remove(i, j);
       complete_operation();
       return r;
     }
 
-    /// Remove_at_end (try_remove + complete)
-    value_type remove_at_end() { return remove(N - 1, N - 1); }
+    /// Same as remove() but with `i` and `j` set to size() - 1.
+    value_type remove_at_end() { return remove(size() - 1, size() - 1); }
 
-    /// Remove2 (try_remove2 + complete)
+    /// Wrapper for try_remove2() followed by a complete_operation() call. Returns the determinant ratio.
     value_type remove2(long i0, long i1, long j0, long j1) {
       auto r = try_remove2(i0, i1, j0, j1);
       complete_operation();
       return r;
     }
 
-    /// Remove2_at_end (try_remove2 + complete)
-    value_type remove2_at_end() { return remove2(N - 1, N - 2, N - 1, N - 2); }
+    /// Same as remove2() but with `i0` and `j0` set to size() - 1 and `i1` and `j1` set to size() - 2.
+    value_type remove2_at_end() { return remove2(size() - 1, size() - 2, size() - 1, size() - 2); }
 
-    /// change_col (try_change_col + complete)
+    /// Wrapper for try_change_col() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_col(long j, y_type const &y) {
       auto r = try_change_col(j, y);
       complete_operation();
       return r;
     }
 
-    /// change_row (try_change_row + complete)
+    /// Wrapper for try_change_row() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_row(long i, x_type const &x) {
       auto r = try_change_row(i, x);
       complete_operation();
       return r;
     }
 
+    /// Wrapper for try_change_col_row() followed by a complete_operation() call. Returns the determinant ratio.
     value_type change_one_row_and_one_col(long i, long j, x_type const &x, y_type const &y) {
       auto r = try_change_col_row(i, j, x, y);
       complete_operation();
       return r;
     }
 
-    ///
-    enum RollDirection { None, Up, Down, Left, Right };
+    /**
+     * @brief Regenerate the inverse matrix, determinant and sign and check the consistency of the current
+     * values/objects.
+     *
+     * @details It uses the triqs::det_manip::MatrixBuilder to regenerate the matrix \f$ G^{(n)} \f$. Then it calculates
+     * its inverse \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with
+     * `nda::linalg::det`. The sign \f$ s^{(n)} \f$ associated with the permutation matrices is also recalculated.
+     *
+     * If the stored objects are not consistent with the regenerated ones, a warning is emitted or an exception is
+     * thrown.
+     *
+     * See also set_precision_warning(), set_precision_error() and set_singular_threshold().
+     */
+    void regenerate_and_check() {
+      nops_ = 0;
+
+      // lambda to write a complex or real number to a string
+      auto str = [](auto x) {
+        if constexpr (std::same_as<std::decay_t<decltype(x)>, std::complex<double>>)
+          return fmt::format("({},{})", std::real(x), std::imag(x));
+        else
+          return fmt::format("{}", x);
+      };
+
+      // early return if the matrix is empty
+      if (size() == 0) {
+        // empty matrices always have its determinant and sign set to exactly 1
+        if (std::abs(det_ - 1) > 1e-14)
+          TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Determinant of empty matrix: {} != 1\n", str(det_));
+        if (sign_ != 1) TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Sign of empty matrix: {} != 1\n", sign_);
+        return;
+      }
+
+      // regenerate G and its determinant
+      auto mat = matrix_type{size(), size()};
+      nda::for_each(mat.shape(), [this, &mat](auto i, auto j) { mat(i, j) = f_(x_[i], y_[j]); });
+      auto const det_G = nda::linalg::det(mat);
+
+      // check G and compare determinants
+      if (is_singular(det_G))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Matrix G is singular: det(G) = {}\n", str(det_G));
+      auto const det_diff = detail::rel_diff(det_, det_G);
+      if (det_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      if (det_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      det_ = det_G;
+
+      // check the inverse matrix
+      nda::linalg::inv_in_place(mat);
+      auto M_v            = M_(nda::range(size()), nda::range(size()));
+      auto const mat_diff = detail::rel_diff(mat, M_v);
+      if (mat_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      if (mat_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      M_v = mat;
+
+      // regenerate and check the sign of the permutation matrices
+      double exp_sign = 1.0;
+      auto P          = nda::matrix<double>::zeros(size(), size());
+      for (int i = 0; i < size(); i++) P(i, row_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      P() = 0.0;
+      for (int i = 0; i < size(); i++) P(i, col_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      if ((exp_sign > 0) != (sign_ > 0))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent signs: {} != {}\n", sign_, exp_sign);
+      sign_ = (exp_sign > 0 ? 1 : -1);
+    }
 
     /**
-       * "Cyclic Rolling" of the determinant.
-       *
-       * Right : Move the Nth col to the first col cyclically.
-       * Left  : Move the first col to the Nth, cyclically.
-       * Up    : Move the first row to the Nth, cyclically.
-       * Down  : Move the Nth row to the first row cyclically.
-       *
-       * Returns -1 is the roll changes the sign of the det, 1 otherwise
-       * NB : this routine is not a try_xxx : it DOES make the modification and does not need to be completed...
-       * WHY is it like this ???? : try_roll : return det +1/-1.
-       */
-    int roll_matrix(RollDirection roll) {
-      long tmp;
-      const long NN = N;
-      switch (roll) {
-        case (None): return 1;
-        case (Down):
-          tmp = row_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
-          row_num[0] = tmp;
-          break;
-        case (Up):
-          tmp = row_num[0];
-          for (long i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
-          row_num[N - 1] = tmp;
-          break;
-        case (Right):
-          tmp = col_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
-          col_num[0] = tmp;
-          break;
-        case (Left):
-          tmp = col_num[0];
-          for (long i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
-          col_num[N - 1] = tmp;
-          break;
-        default: assert(0);
-      }
-      // signature of the cycle of order N : (-1)^(N-1)
-      if ((N - 1) % 2 == 1) {
-        sign *= -1;
-        return -1;
-      }
-      return 1;
+     * @brief Write a triqs::det_manip::det_manip object to HDF5.
+     *
+     * @param g `h5::group` containing the subgroup to be written to.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be written.
+     */
+    friend void h5_write(h5::group g, std::string name, det_manip const &dm) {
+      auto gr = g.create_group(name);
+      h5::write(gr, "x", dm.x_);
+      h5::write(gr, "y", dm.y_);
+      h5::write(gr, "M", dm.M_);
+      h5::write(gr, "det", dm.det_);
+      h5::write(gr, "row_perm", dm.row_perm_);
+      h5::write(gr, "col_perm", dm.col_perm_);
+      h5::write(gr, "sign", dm.sign_);
+      h5::write(gr, "nops_before_check", dm.nops_before_check_);
+      h5::write(gr, "singular_threshold", dm.singular_threshold_);
+      h5::write(gr, "precision_warning", dm.precision_warning_);
+      h5::write(gr, "precision_error", dm.precision_error_);
+      h5::write(gr, "nops", dm.nops_);
     }
+
+    /**
+     * @brief Read a triqs::det_manip::det_manip object from HDF5.
+     *
+     * @param g `h5::group` containing the subgroup to be read from.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be read into.
+     */
+    friend void h5_read(h5::group g, std::string name, det_manip &dm) {
+      auto gr = g.open_group(name);
+      h5::read(gr, "x", dm.x_);
+      h5::read(gr, "y", dm.y_);
+      h5::read(gr, "M", dm.M_);
+      h5::read(gr, "det", dm.det_);
+      h5::read(gr, "row_perm", dm.row_perm_);
+      h5::read(gr, "col_perm", dm.col_perm_);
+      h5::read(gr, "sign", dm.sign_);
+      h5::read(gr, "nops_before_check", dm.nops_before_check_);
+      h5::read(gr, "singular_threshold", dm.singular_threshold_);
+      h5::read(gr, "precision_warning", dm.precision_warning_);
+      h5::read(gr, "precision_error", dm.precision_error_);
+      h5::read(gr, "nops", dm.nops_);
+      dm.x_.reserve(dm.capacity());
+      dm.y_.reserve(dm.capacity());
+      dm.row_perm_.reserve(dm.capacity());
+      dm.col_perm_.reserve(dm.capacity());
+      dm.last_try_ = try_tag::NoTry;
+    }
+
+    private:
+    // Enumerate the different operations supported by the det_manip class that have a try - complete step.
+    enum class try_tag { NoTry, Insert, Remove, ChangeCol, ChangeRow, ChangeRowCol, InsertK, RemoveK, Refill };
+
+    // Set the matrix builder arguments to the given ranges and reset the permutation vectors.
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    void set_xy(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
+      x_.clear();
+      y_.clear();
+      row_perm_.clear();
+      col_perm_.clear();
+      for (long i = 0; auto const &[x, y] : std::views::zip(x_rg, y_rg)) {
+        x_.push_back(x);
+        y_.push_back(y);
+        row_perm_.push_back(i);
+        col_perm_.push_back(i);
+        ++i;
+      }
+    }
+
+    // Check if the given determinant is considered to be singular.
+    [[nodiscard]] bool is_singular(value_type det) const {
+      return (singular_threshold_ < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold_));
+    }
+
+    private:
+    // matrix builder: G_{ij} = f_(x_[i], y_[j]) or F_{ij} = f_(x_[row_perm_[i]], y_[col_perm_[j]])
+    F f_;
+    std::vector<x_type> x_;
+    std::vector<y_type> y_;
+
+    // matrix M such that G^{-1} = M(nda::range(size()), nda::range(size())) and det(G)
+    matrix_type M_;
+    value_type det_{1};
+
+    // permutation vectors: row (column) i in the original matrix F corresponds to the row (column) row_perm[i]
+    // (col_perm[i]) in the matrix G
+    std::vector<long> row_perm_;
+    std::vector<long> col_perm_;
+    int sign_{1};
+
+    // working data for the try-complete operations
+    detail::work_data_insert<x_type, y_type, value_type> wins_;
+    detail::work_data_insert_k<x_type, y_type, value_type> winsk_;
+    detail::work_data_remove<value_type> wrem_;
+    detail::work_data_remove_k<value_type> wremk_;
+    detail::work_data_change_col<y_type, value_type> wcol_;
+    detail::work_data_change_row<x_type, value_type> wrow_;
+    detail::work_data_change_col_row<x_type, y_type, value_type> wrc_;
+    detail::work_data_refill<x_type, y_type, value_type> wref_;
+    value_type newdet_{1};
+    int newsign_{1};
+
+    // parameters
+    std::uint64_t nops_before_check_{100};
+    double singular_threshold_{-1};
+    double precision_warning_{1.e-8};
+    double precision_error_{1.e-5};
+
+    // tag and operation counter
+    try_tag last_try_{try_tag::NoTry};
+    std::uint64_t nops_{0};
   };
+
 } // namespace triqs::det_manip

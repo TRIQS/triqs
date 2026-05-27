@@ -16,6 +16,10 @@
 // Authors: Olivier Parcollet
 
 #include <nda/nda.hpp>
+#include <triqs/utility/exceptions.hpp>
+
+#include <cmath>
+#include <complex>
 
 namespace nda {
 
@@ -53,4 +57,5 @@ namespace nda {
   void assert_is_false(bool b) {
     if (b) TRIQS_RUNTIME_ERROR << "Test assert_is_false : failed";
   }
+
 } // namespace nda
