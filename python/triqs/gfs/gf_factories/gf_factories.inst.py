@@ -122,7 +122,7 @@ def write_hermitian(f):
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
-            f.write(f"  auto fit_gf_dlr({view}<imtime, {target}> const &g, double w_max, double eps, bool symmetrize = false) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
+            f.write(f"  auto fit_gf_dlr({view}<imtime, {target}> const &g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
     f.write("\n")
 
     # --- make_gf_dlr (product mesh wrappers) ---
@@ -142,8 +142,8 @@ def write_hermitian(f):
         for gf in ["gf", "block_gf"]:
             view = GF_VIEW_TYPES[gf]
             for M in LATTICE_MESHES:
-                f.write(f"  auto fit_gf_dlr({view}<prod<imtime, {M}>, {target}> g, double w_max, double eps, bool symmetrize = false) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
-                f.write(f"  auto fit_gf_dlr({view}<prod<{M}, imtime>, {target}> g, double w_max, double eps, bool symmetrize = false) {{ return fit_gf_dlr<1>(g, w_max, eps, symmetrize); }}\n")
+                f.write(f"  auto fit_gf_dlr({view}<prod<imtime, {M}>, {target}> g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
+                f.write(f"  auto fit_gf_dlr({view}<prod<{M}, imtime>, {target}> g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<1>(g, w_max, eps, symmetrize); }}\n")
     f.write("\n")
 
     f.write("} // namespace triqs::gfs\n")

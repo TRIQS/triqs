@@ -79,7 +79,7 @@ namespace triqs::gfs {
   /// Perform a least square fit of a imaginary time Green's function to obtain a DLR coefficient representation
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
-  auto fit_gf_dlr(G const &g, double w_max, double eps, bool symmetrize = false) {
+  auto fit_gf_dlr(G const &g, double w_max, double eps, bool symmetrize = true) {
     using M = typename G::mesh_t;
     if constexpr (is_block_gf_v<G>) {
       return map_block_gf([&](auto const &gbl) { return fit_gf_dlr<N, Ns...>(gbl, w_max, eps, symmetrize); }, g);
