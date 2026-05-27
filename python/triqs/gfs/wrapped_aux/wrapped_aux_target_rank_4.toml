@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Internal ``CallProxy`` dispatchers that implement ``Gf.__call__`` for target rank 4. Not intended for direct use."
 namespaces = "triqs::gfs"
 match_names = "gf_proxy"

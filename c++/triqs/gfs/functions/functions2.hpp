@@ -35,17 +35,17 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   /**
-   * Fit the tail of a Green function using a least-squares fitting procedure
+   * @brief Fit the high-frequency tail of a Green's function using a least-squares procedure.
    *
-   * @tparam N The position of the frequency mesh in case of a product mesh [default: 0]
-   * @tparam G The type of the Green function (gf, gf_view, gf_const_view)
-   * @tparam A The type of the high-frequency moment array (array, array_view, array_const_view)
+   * @details The result is the set of expansion moments that best reproduces the high-frequency behavior of \f$ G \f$ 
+   * on the configured tail-fit window. Known moments, when provided, are treated as exact constraints on the fit. 
    *
-   * @param g The Green function object to fit the tail for 
-   * @param known_moments The object containing the known high-frequency moments
-   *
-   * @return A pair of the tail object and the fitting error
-   * @example triqs/gfs/fit_tail.cpp
+   * @tparam N Position of the frequency mesh in a product mesh (default \f$ 0 \f$).
+   * @tparam G The type of the Green's function.
+   * @tparam A The type of the array of known high-frequency moments.
+   * @param g The Green's function whose tail is to be fitted.
+   * @param known_moments Array of known high-frequency moments to constrain the fit.
+   * @return A pair containing the fitted tail moments and the fitting error.
    */
   template <int N = 0, typename G, typename A = typename G::const_view_type::data_t>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {})
@@ -56,12 +56,16 @@ namespace triqs::gfs {
   }
 
   /**
-   * Fit the tail of a Block Green function using a least-squares fitting procedure
+   * @brief Fit the high-frequency tail of a block Green's function using a least-squares procedure.
    *
-   * @tparam BG The type of the Block Green function (block_gf, block_gf_view, block_gf_const_view)
-   * @tparam AG The type of the high-frequecy moments for Block Green functions (e.g. std::vector<array>)
+   * @details Each block is fitted independently using ``fit_tail``. The returned error is the maximum across blocks.
    *
-   * @param bg The Block Green function object to fit the tail for 
+   * @tparam N Position of the frequency mesh in a product mesh (default \f$ 0 \f$).
+   * @tparam BG The type of the block Green's function.
+   * @tparam BA The type of the per-block known-moment array.
+   * @param bg The block Green's function whose tail is to be fitted.
+   * @param known_moments Per-block array of known high-frequency moments.
+   * @return A pair containing the per-block fitted tail moments and the worst-block fitting error.
    */
   template <int N = 0, typename BG, typename BA = std::vector<typename BG::g_t::data_t::regular_type>>
   std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_tail(BG const &bg, BA const &known_moments = {})
@@ -78,18 +82,16 @@ namespace triqs::gfs {
   }
 
   /**
-   * Fit the tail of a Green function using a least-squares fitting procedure
-   * imposing the symmetry :math:`G[i\omega](i,j) = G[-i\omega](j,i)^*`
+   * @brief Fit the high-frequency tail of a Green's function, imposing hermitian symmetry on the fitted moments.
    *
-   * @param g The Green function object to fit the tail for 
-   * @param known_moments The object containing the known high-frequency moments
+   * @details The symmetry constraint is \f$ G_{i,j}(i\omega) = G_{j,i}^*(-i\omega) \f$.
    *
-   * @tparam N The position of the frequency mesh in case of a product mesh [default: 0]
-   * @tparam G The type of the Green function object
-   * @tparam A The type of the high-frequency moments
-   *
-   * @return A pair of the tail object and the fitting error
-   * @example triqs/gfs/fit_hermitian_tail.cpp
+   * @tparam N Position of the frequency mesh in a product mesh (default \f$ 0 \f$).
+   * @tparam G The type of the Green's function.
+   * @tparam A The type of the array of known high-frequency moments.
+   * @param g The Green's function whose tail is to be fitted.
+   * @param known_moments Array of known high-frequency moments to constrain the fit.
+   * @return A pair containing the fitted tail moments and the fitting error.
    */
   template <int N = 0, typename G, typename A = typename G::data_t>
   std::pair<typename A::regular_type, double> fit_hermitian_tail(G const &g, A const &known_moments = {})
@@ -110,13 +112,19 @@ namespace triqs::gfs {
   }
 
   /**
-   * Fit the tail of a Block Green function using a least-squares fitting procedure
-   * imposing the symmetry :math:`G[i\omega](i,j) = G[-i\omega](j,i)^*` for each block
+   * @brief Fit the high-frequency tail of a block Green's function, imposing hermitian symmetry block by block.
    *
-   * @tparam BG The type of the Block Green function (block_gf, block_gf_view, block_gf_const_view)
-   * @tparam AG The type of the high-frequecy moments for Block Green functions (e.g. std::vector<array>)
+   * @details The symmetry constraint is \f$ G_{i,j}(i\omega) = G_{j,i}^*(-i\omega) \f$.
+   * 
+   * Each block is fitted independently with the same symmetry constraint. The returned error is the maximum across 
+   * blocks.
    *
-   * @param bg The Block Green function object to fit the tail for 
+   * @tparam N Position of the frequency mesh in a product mesh (default \f$ 0 \f$).
+   * @tparam BG The type of the block Green's function.
+   * @tparam A The type of the per-block known-moment array.
+   * @param bg The block Green's function whose tail is to be fitted.
+   * @param known_moments Per-block array of known high-frequency moments.
+   * @return A pair containing the per-block fitted tail moments and the worst-block fitting error.
    */
   template <int N = 0, typename BG, typename A = std::vector<typename BG::g_t::data_t::regular_type>>
   std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_hermitian_tail(BG const &bg, A const &known_moments = {})
@@ -141,15 +149,12 @@ namespace triqs::gfs {
   }
 
   /**
-   * Create a zero-initialized tail object for a given Green function object
+   * @brief Create a zero-initialized tail object for a given Green function object.
    *
-   * @param g The Green function object to create the tail object for
-   * @param n_moments The number of high-frequency moments to provide (including the zeroth moment)
-   *
-   * @tparam N The mesh position of the frequency or time mesh [default: 0]
-   * @tparam G The type of the Green function (gf, gf_view, block_gf, ...)
-   *
-   * @example triqs/gfs/make_zero_tail.cpp
+   * @tparam N The mesh position of the frequency or time mesh [default: 0].
+   * @tparam G The type of the Green function (gf, gf_view, block_gf, ...).
+   * @param g The Green function object to create the tail object for.
+   * @param n_moments The number of high-frequency moments to provide (including the zeroth moment).
    */
   template <int N = 0, typename G> auto make_zero_tail(G const &g, int n_moments = 10) {
     if constexpr (is_gf_v<G>) { // gf[_const][_view]<V, T>

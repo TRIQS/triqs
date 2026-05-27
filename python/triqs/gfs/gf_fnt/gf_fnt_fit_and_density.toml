@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "High-frequency tail fitting and density evaluation for Green's functions on Matsubara and real-frequency meshes."
 namespaces = "triqs::gfs"
 match_names = "fit_tail|fit_hermitian_tail|fit_tail_on_window|fit_hermitian_tail_on_window|replace_by_tail|replace_by_tail_in_fit_window|density"

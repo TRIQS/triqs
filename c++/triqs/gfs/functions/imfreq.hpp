@@ -62,21 +62,23 @@ namespace triqs::gfs {
   }
 
   /**
-   * Test if a Green function object fullfills the fundamental property mentioned below up to a fixed tolerance $\epsilon$
-   * Depending on the mesh and target rank one of the following properties is checked
-   * $G[i\omega] == \frac{1}{2} ( G[i\omega] + conj(G[-i\omega]) )$
-   * $G[\tau] == \frac{1}{2} ( G[\tau] + conj(G[\tau]) )$
-   * $G[i\omega](i,j) == \frac{1}{2} ( G[i\omega](i,j) + conj(G[-i\omega](j,i)) )$
-   * $G[\tau](i,j) == \frac{1}{2} ( G[\tau](i,j) + conj(G[\tau](j,i)) )$
-   * $G[i\omega](i,j,k,l) == \frac{1}{2} ( G[i\omega](i,j,k,l) + conj(G[-i\omega](k,l,i,j)) )$
-   * $G[\tau](i,j,k,l) == \frac{1}{2} ( G[\tau](i,j,k,l) + conj(G[\tau](k,l,i,j)) )$
+   * @brief Test whether a Green's function satisfies the hermitian symmetry up to a tolerance \f$ \epsilon \f$.
    *
-   * @param g The Green function object to check the symmetry for
-   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-12]
+   * @details Depending on the mesh and target rank, one of the following relations is checked:
    *
-   * @tparam The Green function type
+   * - \f$ G(i\omega) \approx \frac{1}{2} [ G(i\omega) + G^*(-i\omega) ] \f$
+   * - \f$ G(\tau) \approx \frac{1}{2} [ G(\tau) + G^*(\tau) ] \f$
+   * - \f$ G_{i,j}(i\omega) \approx \frac{1}{2} [ G_{i,j}(i\omega) + G_{j,i}^*(i\omega) ] \f$
+   * - \f$ G_{i,j}(\tau) \approx \frac{1}{2} [ G_{i,j}(\tau) + G_{j,i}^*(\tau) ] \f$
+   * - \f$ G_{i,j,k,l}(i\omega) \approx \frac{1}{2} [ G_{i,j,k,l}(i\omega)] + G_{k,l,i,j}^*(i\omega) ] \f$
+   * - \f$ G_{i,j,k,l}(\tau) \approx \frac{1}{2} [ G_{i,j,k,l}(\tau) + G_{k,l,i,j}(\tau) ] \f$
+   * 
+   * For block Green's functions, the check is applied block-wise.
    *
-   * @return true iif the fundamental property holds for all points of the mesh
+   * @tparam G The type of the Green's function.
+   * @param g The Green's function to check.
+   * @param tolerance Tolerance \f$ \epsilon \f$ for the check (default \f$ 10^{-12} \f$).
+   * @return True if the property holds at every point of the mesh.
    */
   template <typename G>
   bool is_gf_hermitian(G const &g, double tolerance = 1.e-12)
@@ -85,8 +87,8 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>
-                       or std::is_same_v<mesh_t, mesh::dlr_imfreq> or std::is_same_v<mesh_t, mesh::dlr_imtime>,
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime> or std::is_same_v<mesh_t, mesh::dlr_imfreq>
+                       or std::is_same_v<mesh_t, mesh::dlr_imtime>,
                     "is_gf_hermitian requires an imfreq, imtime, dlr_imfreq or dlr_imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "is_gf_hermitian requires a Green function with a target rank of 0, 2 or 4.");
@@ -154,17 +156,17 @@ namespace triqs::gfs {
   }
 
   /**
-   * Test if a Matsubara Green function object has an associated imaginary-time Green function
-   * with an imaginary part below a fixed tolerance $\epsilon$
-   * The following property is checked
-   * $G[i\omega](...) == conj(G[-i\omega](...))$
+   * @brief Test whether a Matsubara Green's function corresponds to a real imaginary-time Green's function.
    *
-   * @param g The Green function object to check the property for
-   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-12]
+   * @details The criterion checked, up to tolerance \f$ \epsilon \f$, is \f$ G_{i,j,\dots}(i\omega) \approx 
+   * G_{i,j,\dots}^*(-i\omega) \f$ for every element of the target space and for every Matsubara frequency.
+   * 
+   * For block Green's functions, the check is applied block-wise.
    *
-   * @tparam The Green function type
-   *
-   * @return true iif the property holds for all points of the mesh
+   * @tparam G The type of the Green's function.
+   * @param g The Matsubara Green's function to check.
+   * @param tolerance Tolerance \f$ \epsilon \f$ for the check (default \f$ 10^{-12} \f$).
+   * @return True if the property holds at every point of the mesh.
    */
   template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-12) {
     if constexpr (is_gf_v<G>) {
@@ -187,20 +189,22 @@ namespace triqs::gfs {
   }
 
   /**
-   * Symmetrize a Green function object to fullfill fundamental Green function properties.
-   * Depending on the mesh and target rank one of the following transformations is performed
-   * $G[i\omega] \rightarrow \frac{1}{2} ( G[i\omega] + conj(G[-i\omega]) )$
-   * $G[\tau] \rightarrow \frac{1}{2} ( G[\tau] + conj(G[\tau]) )$
-   * $G[i\omega](i,j) \rightarrow \frac{1}{2} ( G[i\omega](i,j) + conj(G[-i\omega](j,i)) )$
-   * $G[\tau](i,j) \rightarrow \frac{1}{2} ( G[\tau](i,j) + conj(G[\tau](j,i)) )$
-   * $G[i\omega](i,j,k,l) \rightarrow \frac{1}{2} ( G[i\omega](i,j,k,l) + conj(G[-i\omega](k,l,i,j)) )$
-   * $G[\tau](i,j,k,l) \rightarrow \frac{1}{2} ( G[\tau](i,j,k,l) + conj(G[\tau](k,l,i,j)) )$
+   * @brief Symmetrize a Green's function so that it satisfies the hermitian symmetry.
    *
-   * @param g The Green function object to symmetrize
+   * @details Depending on the mesh and target rank, one of the following transformations is applied:
    *
-   * @tparam The Green function type
+   * - \f$ G(i\omega) \rightarrow \frac{1}{2} [ G(i\omega) + G^*(-i\omega) ] \f$
+   * - \f$ G(\tau) \rightarrow \frac{1}{2} [ G(\tau) + G^*(\tau) ] \f$
+   * - \f$ G_{i,j}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j}(i\omega) + G_{j,i}^*(i\omega) ] \f$
+   * - \f$ G_{i,j}(\tau) \rightarrow \frac{1}{2} [ G_{i,j}(\tau) + G_{j,i}^*(\tau) ] \f$
+   * - \f$ G_{i,j,k,l}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j,k,l}(i\omega)] + G_{k,l,i,j}^*(i\omega) ] \f$
+   * - \f$ G_{i,j,k,l}(\tau) \rightarrow \frac{1}{2} [ G_{i,j,k,l}(\tau) + G_{k,l,i,j}(\tau) ] \f$
+   * 
+   * For block Green's functions, the symmetrization is applied block-wise.
    *
-   * @return The symmetrized Green function object
+   * @tparam G The type of the Green's function.
+   * @param g The Green's function to symmetrize.
+   * @return The symmetrized Green's function.
    */
   template <typename G>
   typename G::regular_type make_hermitian(G const &g)
@@ -209,8 +213,8 @@ namespace triqs::gfs {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
       using mesh_t   = typename std::decay_t<G>::mesh_t;
-      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>
-                       or std::is_same_v<mesh_t, mesh::dlr_imfreq> or std::is_same_v<mesh_t, mesh::dlr_imtime>,
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime> or std::is_same_v<mesh_t, mesh::dlr_imfreq>
+                       or std::is_same_v<mesh_t, mesh::dlr_imtime>,
                     "make_hermitian requires an imfreq, imtime, dlr_imfreq or dlr_imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "make_hermitian requires a Green function with a target rank of 0, 2 or 4.");
@@ -262,22 +266,23 @@ namespace triqs::gfs {
   }
 
   /**
-   * Symmetrize a Matsubara Green function object such that the associated imaginary-time
-   * propagator is fully real-valued. The following transformation is performed
-   * $G[i\omega](...) \rightarrow \frac{1}{2} ( G[i\omega](...) + conj(G[-i\omega](...)) )$
+   * @brief Symmetrize a Matsubara Green's function so that its imaginary-time partner is real-valued.
    *
-   * @param g The Green function object to symmetrize
+   * @details The transformation applied is \f$ G_{i,j,\dots}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j,\dots}(i\omega) 
+   * + G_{i,j,\dots}^*(-i\omega) ] \f$.
+   * 
+   * For block Green's functions, the symmetrization is applied block-wise.
    *
-   * @tparam The Green function type
-   *
-   * @return The symmetrized Green function object
+   * @tparam G The type of the Green's function.
+   * @param g The Matsubara Green's function to symmetrize.
+   * @return The symmetrized Green's function.
    */
   template <typename G>
   typename G::regular_type make_real_in_tau(G const &g)
     requires(is_gf_v<G> or is_block_gf_v<G>)
   {
     if constexpr (is_gf_v<G>) {
-      using mesh_t   = typename std::decay_t<G>::mesh_t;
+      using mesh_t = typename std::decay_t<G>::mesh_t;
       static_assert(std::is_same_v<mesh_t, mesh::imfreq>, "make_real_in_tau requires an imfreq Green function");
 
       if (g.mesh().positive_only()) return typename G::regular_type{g};
@@ -302,18 +307,55 @@ namespace triqs::gfs {
     return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};
   }
 
+  /**
+   * @brief Overwrite the high-frequency tail of a Matsubara Green's function.
+   *
+   * @details For every Matsubara index with \f$ |n| \geq n_{\min} \f$, the value of the Green's function is replaced by 
+   * the tail expansion evaluated at that frequency. Values at lower indices are left unchanged.
+   *
+   * @tparam T The target type of the Green's function.
+   * @param g The Matsubara Green's function to modify in place.
+   * @param tail The high-frequency moments used to build the tail.
+   * @param n_min Minimum absolute Matsubara index from which to apply the tail.
+   */
   template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
     for (auto iw : g.mesh())
       if (iw.n >= n_min or iw.n < -n_min) g[iw] = mesh::detail::tail_eval(tail, iw);
   }
 
+  /**
+   * @brief Overwrite the high-frequency portion of a Matsubara Green's function with the tail expansion.
+   *
+   * @details The cutoff \f$ n_{\min} \f$ is first set automatically from the tail-fit window of the mesh. Then the 
+   * function delegates to ``replace_by_tail``.
+   *
+   * @tparam T The target type of the Green's function.
+   * @param g The Matsubara Green's function to modify in place.
+   * @param tail The high-frequency moments used to build the tail.
+   */
   template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
     int n_pts_in_fit_range = int(std::round(g.mesh().get_tail_fitter().get_tail_fraction() * g.mesh().size() / 2));
     int n_min              = g.mesh().last_index() - n_pts_in_fit_range;
     replace_by_tail(g, tail, n_min);
   }
 
-  // Fit_tail on a window
+  /**
+   * @brief Fit the high-frequency tail of a Matsubara Green's function on a restricted frequency window.
+   *
+   * @details The fit is performed on the window \f$ [n_{\min}, n_{\max}] \f$ of the Matsubara mesh (\f$ n_{\max} = 
+   * -1 \f$ selects the last index of the mesh). The tail fitter is configured from ``n_tail_max`` and 
+   * ``expansion_order``, and the fit is delegated to ``fit_tail``.
+   *
+   * @tparam G The Green's function container template.
+   * @tparam T The target type of the Green's function.
+   * @param g The Matsubara Green's function whose tail is to be fitted.
+   * @param n_min Minimum Matsubara index of the fit window.
+   * @param n_max Maximum Matsubara index of the fit window (\f$ -1 \f$ means use the last index of the mesh).
+   * @param known_moments Array of known high-frequency moments to constrain the fit.
+   * @param n_tail_max Maximum frequency index used internally by the tail fitter.
+   * @param expansion_order Order of the tail expansion to fit.
+   * @return A pair containing the fitted tail moments and the fitting error.
+   */
   template <template <typename, typename, typename...> typename G, typename T>
   auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
@@ -324,7 +366,22 @@ namespace triqs::gfs {
     return fit_tail(g_rview, known_moments);
   }
 
-  // Fit_tail on a window with the constraint of hermitian moment matrices
+  /**
+   * @brief Fit the high-frequency tail on a restricted window, imposing hermitian moment matrices.
+   *
+   * @details Behaves like ``fit_tail_on_window`` but enforces the symmetry \f$ G_{i,j}(i\omega) = 
+   * G_{j,i}^*(-i\omega) \f$ on the fitted moments.
+   *
+   * @tparam G The Green's function container template.
+   * @tparam T The target type of the Green's function.
+   * @param g The Matsubara Green's function whose tail is to be fitted.
+   * @param n_min Minimum Matsubara index of the fit window.
+   * @param n_max Maximum Matsubara index of the fit window (\f$ -1 \f$ means use the last index of the mesh).
+   * @param known_moments Array of known high-frequency moments to constrain the fit.
+   * @param n_tail_max Maximum frequency index used internally by the tail fitter.
+   * @param expansion_order Order of the tail expansion to fit.
+   * @return A pair containing the fitted tail moments and the fitting error.
+   */
   template <template <typename, typename...> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {

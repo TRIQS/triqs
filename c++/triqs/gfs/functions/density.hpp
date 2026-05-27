@@ -26,15 +26,48 @@ namespace triqs {
     // For Imaginary Matsubara Frequency functions
     // ------------------------------------------------------
 
-    /// Density
     /**
-     * Computes the density of the Gf g, i.e $g(\tau=0^-)$
-     * Uses tail moments n=1, 2, and 3
+     * @brief Compute the density from a Green's function.
+     *
+     * @details The density is reconstructed from the imaginary-frequency data using the high-frequency tail moments 
+     * \f$ n = 1, 2, 3 \f$. Known moments may be passed explicitly; if omitted, they are obtained by tail fitting.
+     *
+     * @param g Input Green's function.
+     * @param known_moments Array of known high-frequency moments.
+     * @return The density matrix.
      */
     nda::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> = {});
+
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @details The density is reconstructed from the imaginary-frequency data using the high-frequency tail moments 
+     * \f$ n = 1, 2, 3 \f$. Known moments may be passed explicitly; if omitted, they are obtained by tail fitting.
+     *
+     * @param g Input Green's function.
+     * @param known_moments Array of known high-frequency moments.
+     * @return The scalar density.
+     */
     dcomplex density(gf_const_view<mesh::imfreq, scalar_valued> g, array_const_view<dcomplex, 1> = {});
 
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @details The density is obtained directly from the Legendre coefficients.
+     *
+     * @param g Input Green's function.
+     * @return The density matrix.
+     */
     nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> g);
+
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @details The density is obtained directly from the Legendre coefficients.
+     *
+     * @param g Input Green's function.
+     * @return The scalar density.
+     */
     dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g);
 
     //-------------------------------------------------------
@@ -42,10 +75,10 @@ namespace triqs {
     // ------------------------------------------------------
 
     /**
-     * @brief Computes the density $$- G(\tau = \beta) $$
+     * @brief Compute the density from a Green's function.
      *
-     * @param g The Green function
-     * @return auto A tensor/matrix or a scalar, depending on the target
+     * @param g Input Green's function.
+     * @return The density (matrix).
      */
     auto density(MemoryGf<mesh::dlr> auto const &g) {
       auto res = make_regular(-g(g.mesh().beta()));
@@ -57,27 +90,87 @@ namespace triqs {
         return res;
     }
 
-    auto density(MemoryGf<mesh::dlr_imtime> auto const &g) {
-      return density(make_gf_dlr(g));
-    }
-    auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) {
-      return density(make_gf_dlr(g));
-    }
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @param g Input Green's function.
+     * @return The density (matrix).
+     */
+    auto density(MemoryGf<mesh::dlr_imtime> auto const &g) { return density(make_gf_dlr(g)); }
+
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @param g Input Green's function.
+     * @return The density (matrix).
+     */
+    auto density(MemoryGf<mesh::dlr_imfreq> auto const &g) { return density(make_gf_dlr(g)); }
 
     //-------------------------------------------------------
     // For Real Frequency functions
     // ------------------------------------------------------
 
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @details Obtained by integrating the spectral function weighted by the Fermi function at temperature \f$ T = 
+     * 1/\beta \f$.
+     *
+     * @param g Input Green's function.
+     * @param beta Inverse temperature.
+     * @return The density matrix.
+     */
     nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g, double beta);
+
+    /**
+     * @brief Compute the density from a Green's function.
+     *
+     * @details Obtained by integrating the spectral function weighted by the Fermi function at temperature \f$ T = 
+     * 1/\beta \f$.
+     *
+     * @param g Input Green's function.
+     * @param beta Inverse temperature.
+     * @return The scalar density.
+     */
     dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g, double beta);
 
+    /**
+     * @brief Compute the zero-temperature density from a real-frequency Green's function.
+     *
+     * @details Obtained by integrating the spectral function over the negative real axis (\f$ T = 0 \f$ Fermi 
+     * function).
+     *
+     * @param g Input Green's function.
+     * @return The density matrix.
+     */
     nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g);
+
+    /**
+     * @brief Compute the zero-temperature density from a real-frequency Green's function.
+     *
+     * @details Obtained by integrating the spectral function over the negative real axis (\f$ T = 0 \f$ Fermi 
+     * function).
+     *
+     * @param g Input Green's function.
+     * @return The scalar density.
+     */
     dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g);
 
     //-------------------------------------------------------
     // General Version for Block Gf
     // ------------------------------------------------------
 
+    /**
+     * @brief Compute the density block-wise from a block Green's function on a Matsubara or real-frequency mesh.
+     *
+     * @details The density of each block is evaluated with its own known high-frequency moments.
+     *
+     * @tparam BGf The type of the block Green's function.
+     * @tparam R The rank of the per-block known-moment arrays.
+     * @param gin The block Green's function.
+     * @param known_moments Array of known high-frequency moments.
+     * @return A vector of per-block densities (matrix or scalar depending on the target shape of each block).
+     */
     template <typename BGf, int R>
     auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments)
       requires(is_block_gf_v<BGf>)

@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "In-place Fourier transforms between conjugate mesh pairs."
 namespaces = "triqs::gfs"
 match_names = "set_from_fourier"

@@ -18,6 +18,39 @@ namespace triqs::gfs {
   // imtime -> imfreq
   template gf<imfreq, scalar_valued> make_gf_from_fourier(gf_const_view<imtime, scalar_valued>, int);
   template gf<imfreq, scalar_valued> make_gf_from_fourier(gf_const_view<imtime, scalar_real_valued>, int);
+  /**
+   * @brief Build a Green's function on the conjugate mesh by Fourier transform.
+   *
+   * @details Applies to every overload. The supported conjugate mesh
+   * pairs are imaginary time and Matsubara frequencies, real time and
+   * real frequency, cyclic lattice and Brillouin zone, and DLR
+   * imaginary time and DLR Matsubara frequencies. Product meshes
+   * pairing one of these Fourier axes with a lattice axis, as well as
+   * block and block-of-block Green's function containers, are
+   * transformed block- and component-wise. All target ranks (scalar,
+   * vector, matrix, rank-3, rank-4) are supported.
+   *
+   * Beyond the input Green's function, the following optional
+   * positional arguments may be passed; which one applies depends on
+   * the input mesh.
+   *
+   *   - ``n_iw``: the number of positive Matsubara frequencies in
+   *     the output mesh, when the input lives on imaginary time
+   *     (default is -1, which selects the default size from the input).
+   *   - ``n_tau``: the number of imaginary-time points in the output
+   *     mesh, when the input lives on Matsubara frequencies
+   *     (default is -1, which selects the default size from the input).
+   *   - ``shift_half_bin``: a half-bin shift flag for the output
+   *     mesh, for the real-time and real-frequency pair (default is false).
+   *   - ``mesh`` and ``known_moments``: an explicit output mesh
+   *     together with an array of high-frequency moments, for the
+   *     imaginary-time and Matsubara and the real-time and
+   *     real-frequency pairs. The known-moment tail correction
+   *     improves accuracy at high frequency.
+   *
+   * @param g The input Green's function.
+   * @return A new Green's function on the conjugate mesh.
+   */
   auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &g) { return make_gf_from_fourier<0>(g); }
   auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_real_valued> const &g) { return make_gf_from_fourier<0>(g); }
   auto make_gf_from_fourier(block_gf_const_view<imtime, scalar_valued> const &g, int const &x) { return make_gf_from_fourier<0>(g, x); }

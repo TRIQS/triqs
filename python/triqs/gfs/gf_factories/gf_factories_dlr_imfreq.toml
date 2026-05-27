@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Factories that build a Green's function on the DLR Matsubara mesh or on a standard imfreq mesh from a DLR representation."
 namespaces = "triqs::gfs"
 match_names = "make_gf_dlr_imfreq|make_gf_imfreq|find_w_max"

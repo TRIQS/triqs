@@ -26,8 +26,27 @@ namespace triqs {
     // For Legendre functions
     // ------------------------------------------------------
 
+    /**
+     * @brief Extract the leading high-frequency moments of a Legendre Green's function.
+     *
+     * @details Returns the array of moments \f$ c_n \f$ such that the corresponding Matsubara Green's function behaves 
+     * as \f$ G(i\omega) \sim \sum_n c_n / (i\omega)^n \f$ at large frequency.
+     *
+     * @param gl The Legendre Green's function.
+     * @return An array of high-frequency moments.
+     */
     array<dcomplex, 3> get_tail(gf_const_view<mesh::legendre> gl);
 
+    /**
+     * @brief Enforce a prescribed jump at \f$ \tau = 0 \f$ for a Legendre Green's function.
+     *
+     * @details The Legendre coefficients are adjusted in place so that the corresponding imaginary-time Green's 
+     * function has the specified discontinuity \f$ G(0^+) - G(0^-) \f$ at \f$ \tau = 0 \f$ (which equals \f$ -1 \f$ for 
+     * a fermionic propagator). Coefficients above the constrained subspace are left unchanged.
+     *
+     * @param gl Legendre Green's function modified in place.
+     * @param disc Target discontinuity at \f$ \tau = 0 \f$.
+     */
     void enforce_discontinuity(gf_view<mesh::legendre> gl, nda::array_const_view<double, 2> disc);
   } // namespace gfs
 } // namespace triqs

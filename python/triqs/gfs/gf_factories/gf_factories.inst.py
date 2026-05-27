@@ -81,6 +81,157 @@ using namespace triqs::mesh;
 
 """
 
+# Doxygen blocks emitted ONCE before the first overload of each function.
+# The block is picked up by clair-c2py and forms the merged Python
+# docstring shared by all overloads of that function. Each block makes
+# this explicit ("Applies to all overloads...") so a reader of the
+# generated .hpp understands the scope.
+DOCS = {
+    "make_gf_dlr": """\
+  /**
+   * @brief Transform a DLR imaginary-time or DLR Matsubara Green's function to its DLR-coefficient representation.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR imaginary-time or DLR Matsubara frequency mesh, or on a
+   * product mesh pairing a DLR axis with a lattice axis. Block and
+   * block-of-block Green's function containers are handled
+   * component-wise, and product meshes are handled axis-wise. All
+   * target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported.
+   *
+   * @param g The input Green's function.
+   * @return The Green's function expressed in DLR coefficients.
+   */
+""",
+    "fit_gf_dlr": """\
+  /**
+   * @brief Fit an imaginary-time Green's function with a Discrete Lehmann Representation.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * imaginary-time mesh or on a product mesh pairing an
+   * imaginary-time axis with a lattice axis. Block and block-of-block
+   * Green's function containers are handled component-wise, and
+   * product meshes are handled axis-wise. All target ranks (scalar,
+   * vector, matrix, rank-3, rank-4) are supported. The DLR grid is
+   * specified by the spectral cutoff ``w_max`` and the tolerance
+   * ``eps``.
+   *
+   * @param g The imaginary-time Green's function to fit.
+   * @param w_max Maximum real frequency captured by the DLR basis.
+   * @param eps Target accuracy of the DLR representation.
+   * @param symmetrize If true, the DLR grid is symmetric about zero frequency.
+   * @return A Green's function on the DLR coefficient mesh.
+   */
+""",
+    "make_gf_from_fourier": """\
+  /**
+   * @brief Build a Green's function on the conjugate mesh by Fourier transform.
+   *
+   * @details Applies to every overload. The supported conjugate mesh
+   * pairs are imaginary time and Matsubara frequencies, real time and
+   * real frequency, cyclic lattice and Brillouin zone, and DLR
+   * imaginary time and DLR Matsubara frequencies. Product meshes
+   * pairing one of these Fourier axes with a lattice axis, as well as
+   * block and block-of-block Green's function containers, are
+   * transformed block- and component-wise. All target ranks (scalar,
+   * vector, matrix, rank-3, rank-4) are supported.
+   *
+   * Beyond the input Green's function, the following optional
+   * positional arguments may be passed; which one applies depends on
+   * the input mesh.
+   *
+   *   - ``n_iw``: the number of positive Matsubara frequencies in
+   *     the output mesh, when the input lives on imaginary time
+   *     (default is -1, which selects the default size from the input).
+   *   - ``n_tau``: the number of imaginary-time points in the output
+   *     mesh, when the input lives on Matsubara frequencies
+   *     (default is -1, which selects the default size from the input).
+   *   - ``shift_half_bin``: a half-bin shift flag for the output
+   *     mesh, for the real-time and real-frequency pair (default is false).
+   *   - ``mesh`` and ``known_moments``: an explicit output mesh
+   *     together with an array of high-frequency moments, for the
+   *     imaginary-time and Matsubara and the real-time and
+   *     real-frequency pairs. The known-moment tail correction
+   *     improves accuracy at high frequency.
+   *
+   * @param g The input Green's function.
+   * @return A new Green's function on the conjugate mesh.
+   */
+""",
+    "make_gf_dlr_imtime": """\
+  /**
+   * @brief Build a DLR imaginary-time Green's function from a DLR-coefficient or DLR-Matsubara input.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient mesh or DLR Matsubara frequency mesh, or on a
+   * product mesh pairing a DLR axis with a lattice axis. Block and
+   * block-of-block Green's function containers are handled
+   * component-wise, and product meshes are handled axis-wise. All
+   * target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. The output lives on the DLR imaginary-time mesh
+   * associated with the input's DLR grid.
+   *
+   * @param g A Green's function on a DLR coefficient or DLR Matsubara frequency mesh.
+   * @return The Green's function evaluated on the DLR imaginary-time mesh.
+   */
+""",
+    "make_gf_dlr_imfreq": """\
+  /**
+   * @brief Build a DLR Matsubara Green's function from a DLR-coefficient or DLR-imaginary-time input.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient mesh or DLR imaginary-time mesh, or on a product
+   * mesh pairing a DLR axis with a lattice axis. Block and
+   * block-of-block Green's function containers are handled
+   * component-wise, and product meshes are handled axis-wise. All
+   * target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. The output lives on the DLR Matsubara frequency mesh
+   * associated with the input's DLR grid.
+   *
+   * @param g A Green's function on a DLR coefficient or DLR imaginary-time mesh.
+   * @return The Green's function evaluated on the DLR Matsubara frequency mesh.
+   */
+""",
+    "make_gf_imtime": """\
+  /**
+   * @brief Build a uniform imaginary-time Green's function from any DLR representation.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency
+   * mesh, or on a product mesh pairing a DLR axis with a lattice
+   * axis. Block and block-of-block Green's function containers are
+   * handled component-wise, and product meshes are handled axis-wise.
+   * All target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. Inputs on a DLR imaginary-time or DLR Matsubara
+   * frequency mesh are first converted to DLR coefficients
+   * internally.
+   *
+   * @param g A Green's function on a DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency mesh.
+   * @param n_tau Number of points of the output imaginary-time mesh.
+   * @return The Green's function on a uniform imaginary-time mesh.
+   */
+""",
+    "make_gf_imfreq": """\
+  /**
+   * @brief Build a uniform Matsubara Green's function from any DLR representation.
+   *
+   * @details Applies to every overload. The input lives on a single
+   * DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency
+   * mesh, or on a product mesh pairing a DLR axis with a lattice
+   * axis. Block and block-of-block Green's function containers are
+   * handled component-wise, and product meshes are handled axis-wise.
+   * All target ranks (scalar, vector, matrix, rank-3, rank-4) are
+   * supported. Inputs on a DLR imaginary-time or DLR Matsubara
+   * frequency mesh are first converted to DLR coefficients
+   * internally.
+   *
+   * @param g A Green's function on a DLR coefficient, DLR imaginary-time, or DLR Matsubara frequency mesh.
+   * @param n_iw Number of positive Matsubara frequencies in the output mesh.
+   * @return The Green's function on a uniform Matsubara frequency mesh.
+   */
+""",
+}
+
 
 # ---------------------------------------------------------------------------
 # Generate gf_factories_hermitian.hpp
@@ -110,6 +261,7 @@ def write_hermitian(f):
 
     # --- make_gf_dlr (single mesh) ---
     f.write("  // make_gf_dlr: single mesh DLR conversions\n")
+    f.write(DOCS["make_gf_dlr"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -119,6 +271,7 @@ def write_hermitian(f):
 
     # --- fit_gf_dlr (single mesh) ---
     f.write("  // fit_gf_dlr: imtime -> dlr\n")
+    f.write(DOCS["fit_gf_dlr"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -158,6 +311,7 @@ def write_fourier(f):
     f.write(HEADER)
     f.write("namespace triqs::gfs {\n\n")
 
+    first_overload = True
     for target in TARGETS:
         real_t = real_valued(target)
         rank = TARGET_RANK[target]
@@ -184,7 +338,12 @@ def write_fourier(f):
             # block_gf / block2_gf: variadic template (uses auto) needs wrapper functions for GCC compat
             for gf in BLOCK_GF_TYPES:
                 view = GF_VIEW_TYPES[gf]
-                # No extra args
+                # No extra args (DOC attached here so clair-c2py binds it
+                # to a real non-template overload; template instantiations
+                # above don't carry doc comments through.)
+                if first_overload:
+                    f.write(DOCS["make_gf_from_fourier"])
+                    first_overload = False
                 f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {target}> const &g) {{ return make_gf_from_fourier<0>(g); }}\n")
                 if has_real:
                     f.write(f"  auto make_gf_from_fourier({view}<{m_in}, {real_t}> const &g) {{ return make_gf_from_fourier<0>(g); }}\n")
@@ -272,6 +431,7 @@ def write_dlr_imtime(f):
 
     # --- make_gf_dlr_imtime (single mesh) ---
     f.write("  // make_gf_dlr_imtime: from dlr and dlr_imfreq\n")
+    f.write(DOCS["make_gf_dlr_imtime"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -281,6 +441,7 @@ def write_dlr_imtime(f):
 
     # --- make_gf_imtime (single mesh) ---
     f.write("  // make_gf_imtime: from dlr, dlr_imtime, dlr_imfreq\n")
+    f.write(DOCS["make_gf_imtime"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -322,6 +483,7 @@ def write_dlr_imfreq(f):
 
     # --- make_gf_dlr_imfreq (single mesh) ---
     f.write("  // make_gf_dlr_imfreq: from dlr and dlr_imtime\n")
+    f.write(DOCS["make_gf_dlr_imfreq"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -331,6 +493,7 @@ def write_dlr_imfreq(f):
 
     # --- make_gf_imfreq (single mesh) ---
     f.write("  // make_gf_imfreq: from dlr, dlr_imtime, dlr_imfreq\n")
+    f.write(DOCS["make_gf_imfreq"])
     for target in TARGETS:
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
@@ -388,17 +551,33 @@ def write_dlr_imfreq(f):
 # ---------------------------------------------------------------------------
 
 MODULES = {
-    "gf_factories_hermitian": (write_hermitian, "make_hermitian|make_real_in_tau|make_gf_dlr|fit_gf_dlr"),
-    "gf_factories_fourier": (write_fourier, "make_gf_from_fourier"),
-    "gf_factories_dlr_imtime": (write_dlr_imtime, "make_gf_dlr_imtime|make_gf_imtime"),
-    "gf_factories_dlr_imfreq": (write_dlr_imfreq, "make_gf_dlr_imfreq|make_gf_imfreq|find_w_max"),
+    "gf_factories_hermitian": (
+        write_hermitian,
+        "make_hermitian|make_real_in_tau|make_gf_dlr|fit_gf_dlr",
+        "Factories that symmetrize a Green's function and that build a Green's function on the DLR mesh.",
+    ),
+    "gf_factories_fourier": (
+        write_fourier,
+        "make_gf_from_fourier",
+        "Factory that builds a Green's function on the conjugate mesh by a Fourier transform.",
+    ),
+    "gf_factories_dlr_imtime": (
+        write_dlr_imtime,
+        "make_gf_dlr_imtime|make_gf_imtime",
+        "Factories that build a Green's function on the DLR imaginary-time mesh or on a standard imtime mesh from a DLR representation.",
+    ),
+    "gf_factories_dlr_imfreq": (
+        write_dlr_imfreq,
+        "make_gf_dlr_imfreq|make_gf_imfreq|find_w_max",
+        "Factories that build a Green's function on the DLR Matsubara mesh or on a standard imfreq mesh from a DLR representation.",
+    ),
 }
 
-for name, (writer, match_names) in MODULES.items():
+for name, (writer, match_names, doc) in MODULES.items():
     # Generate .toml
     with open(f"{name}.toml", "w") as f:
         f.write('package_name = "triqs.gfs"\n')
-        f.write('documentation = ""\n')
+        f.write(f'documentation = "{doc}"\n')
         f.write('namespaces = "triqs::gfs"\n')
         f.write(f'match_names = "{match_names}"\n')
 

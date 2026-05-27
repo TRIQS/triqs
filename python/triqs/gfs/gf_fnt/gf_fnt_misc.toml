@@ -1,4 +1,4 @@
 package_name = "triqs.gfs"
-documentation = ""
+documentation = "Auxiliary Green's function helpers: mesh-conversion setters, Pade continuation, imaginary-time tools, and symmetry predicates."
 namespaces = "triqs::gfs"
 match_names = "tau_L2_norm|rebinning_tau|enforce_discontinuity|is_gf_real_in_tau|is_gf_hermitian|set_from*"
