@@ -109,21 +109,21 @@ namespace triqs::gfs {
    * @param symmetrize If true, the DLR grid is symmetric about zero frequency.
    * @return A Green's function on the DLR coefficient mesh.
    */
-  auto fit_gf_dlr(gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block2_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block2_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
-  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = false) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, scalar_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<1>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, matrix_valued> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<3>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
+  auto fit_gf_dlr(block2_gf_const_view<imtime, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }
 
   // make_gf_dlr: product mesh wrappers
   auto make_gf_dlr(gf_const_view<prod<dlr_imtime, brzone>, scalar_valued> g) { return make_gf_dlr<0>(g); }

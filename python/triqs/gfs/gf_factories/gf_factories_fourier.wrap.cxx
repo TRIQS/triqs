@@ -1388,7 +1388,49 @@ static auto const _c2py_fun_0 =
          },
          "g_in")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(
+   R"DOC(
+Build a Green's function on the conjugate mesh by Fourier transform.
+
+Applies to every overload. The supported conjugate mesh
+pairs are imaginary time and Matsubara frequencies, real time and
+real frequency, cyclic lattice and Brillouin zone, and DLR
+imaginary time and DLR Matsubara frequencies. Product meshes
+pairing one of these Fourier axes with a lattice axis, as well as
+block and block-of-block Green's function containers, are
+transformed block- and component-wise. All target ranks (scalar,
+vector, matrix, rank-3, rank-4) are supported.
+
+Beyond the input Green's function, the following optional
+positional arguments may be passed; which one applies depends on
+the input mesh.
+
+  - ``n_iw``: the number of positive Matsubara frequencies in
+    the output mesh, when the input lives on imaginary time
+    (default is -1, which selects the default size from the input).
+  - ``n_tau``: the number of imaginary-time points in the output
+    mesh, when the input lives on Matsubara frequencies
+    (default is -1, which selects the default size from the input).
+  - ``shift_half_bin``: a half-bin shift flag for the output
+    mesh, for the real-time and real-frequency pair (default is false).
+  - ``mesh`` and ``known_moments``: an explicit output mesh
+    together with an array of high-frequency moments, for the
+    imaginary-time and Matsubara and the real-time and
+    real-frequency pairs. The known-moment tail correction
+    improves accuracy at high frequency.
+
+Parameters
+----------
+g : {par_0}
+   The input Green's function.
+
+Returns
+-------
+{ret_0}
+   A new Green's function on the conjugate mesh.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>()}},
+   {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_layout>>()});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -1400,15 +1442,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_factories_fourier", /* name of module */
-                                        R"RAWDOC()RAWDOC",      /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_factories_fourier",                                                                                /* name of module */
+   R"RAWDOC(Factory that builds a Green's function on the conjugate mesh by a Fourier transform.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 

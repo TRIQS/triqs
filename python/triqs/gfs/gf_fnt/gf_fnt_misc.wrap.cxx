@@ -321,29 +321,50 @@ static auto const _c2py_fun_8 =
          },
          "g")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(
+   R"DOC(
+Enforce a prescribed jump at :math:`\tau = 0` for a Legendre Green's function.
+
+The Legendre coefficients are adjusted in place so that the corresponding imaginary-time Green's 
+function has the specified discontinuity :math:`G(0^+) - G(0^-)` at :math:`\tau = 0` (which equals :math:`-1` for 
+a fermionic propagator). Coefficients above the constrained subspace are left unchanged.
+
+Parameters
+----------
+gl : {par_0}
+   Legendre Green's function modified in place.
+disc : {par_1}
+   Target discontinuity at :math:`\tau = 0`.
+)DOC",
+   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre>>()},
+    {c2py::python_typename<
+       nda::basic_array_view<const double, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>>()}});
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(
    R"DOC(
-Test if a Green function object fullfills the fundamental property mentioned below up to a fixed tolerance $$
-Depending on the mesh and target rank one of the following properties is checked
-$G[i] == {1}{2} ( G[i] + conj(G[-i]) )$
-$G[] == {1}{2} ( G[] + conj(G[]) )$
-$G[i](i,j) == {1}{2} ( G[i](i,j) + conj(G[-i](j,i)) )$
-$G[](i,j) == {1}{2} ( G[](i,j) + conj(G[](j,i)) )$
-$G[i](i,j,k,l) == {1}{2} ( G[i](i,j,k,l) + conj(G[-i](k,l,i,j)) )$
-$G[](i,j,k,l) == {1}{2} ( G[](i,j,k,l) + conj(G[](k,l,i,j)) )$
+Test whether a Green's function satisfies the hermitian symmetry up to a tolerance :math:`\epsilon`.
+
+Depending on the mesh and target rank, one of the following relations is checked:
+
+- :math:`G(i\omega) \approx \frac{1}{2} [ G(i\omega) + G^*(-i\omega) ]`
+- :math:`G(\tau) \approx \frac{1}{2} [ G(\tau) + G^*(\tau) ]`
+- :math:`G_{i,j}(i\omega) \approx \frac{1}{2} [ G_{i,j}(i\omega) + G_{j,i}^*(i\omega) ]`
+- :math:`G_{i,j}(\tau) \approx \frac{1}{2} [ G_{i,j}(\tau) + G_{j,i}^*(\tau) ]`
+- :math:`G_{i,j,k,l}(i\omega) \approx \frac{1}{2} [ G_{i,j,k,l}(i\omega)] + G_{k,l,i,j}^*(i\omega) ]`
+- :math:`G_{i,j,k,l}(\tau) \approx \frac{1}{2} [ G_{i,j,k,l}(\tau) + G_{k,l,i,j}(\tau) ]`
+
+For block Green's functions, the check is applied block-wise.
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to check the symmetry for
+   The Green's function to check.
 tolerance : {par_1}
-   The tolerance $$ for the check [default=1e-12]
+   Tolerance :math:`\epsilon` for the check (default :math:`10^{-12}`).
 
 Returns
 -------
 {ret_0}
-   true iif the fundamental property holds for all points of the mesh
+   True if the property holds at every point of the mesh.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
@@ -367,22 +388,24 @@ Returns
    {c2py::python_typename<bool>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(
    R"DOC(
-Test if a Matsubara Green function object has an associated imaginary-time Green function
-with an imaginary part below a fixed tolerance $$
-The following property is checked
-$G[i](...) == conj(G[-i](...))$
+Test whether a Matsubara Green's function corresponds to a real imaginary-time Green's function.
+
+The criterion checked, up to tolerance :math:`\epsilon`, is :math:`G_{i,j,\dots}(i\omega) \approx
+G_{i,j,\dots}^*(-i\omega)` for every element of the target space and for every Matsubara frequency.
+
+For block Green's functions, the check is applied block-wise.
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to check the property for
+   The Matsubara Green's function to check.
 tolerance : {par_1}
-   The tolerance $$ for the check [default=1e-12]
+   Tolerance :math:`\epsilon` for the check (default :math:`10^{-12}`).
 
 Returns
 -------
 {ret_0}
-   true iif the property holds for all points of the mesh
+   True if the property holds at every point of the mesh.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
@@ -390,14 +413,174 @@ Returns
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>()},
     {c2py::python_typename<double>()}},
    {c2py::python_typename<bool>()});
-static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC()DOC");
-static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC()DOC");
-static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
-static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC()DOC");
-static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC()DOC");
-static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC(
-L2 tau norm of DLR Green's function
-)DOC");
+static const auto _c2py_doc_3 =
+   _c2py_fun_3.doc(R"DOC(
+Rebin an imaginary-time Green's function onto a coarser uniform mesh.
+
+The new mesh has ``new_n_tau`` points covering the same :math:`[0, \beta]` interval. Each output point 
+is an average of the input values whose :math:`\tau` falls in the corresponding bin.
+
+Parameters
+----------
+g : {par_0}
+   The imaginary-time Green's function to rebin.
+new_n_tau : {par_1}
+   Number of points of the output mesh.
+
+Returns
+-------
+{ret_0}
+   A new imaginary-time Green's function on a mesh of size ``new_n_tau``.
+)DOC",
+                   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imtime> &>()}, {c2py::python_typename<unsigned long>()}},
+                   {c2py::python_typename<triqs::gfs::gf<triqs::mesh::imtime>>()});
+static const auto _c2py_doc_4 =
+   _c2py_fun_4.doc(R"DOC(
+Project a Matsubara Green's function onto the Legendre basis of the output.
+
+Parameters
+----------
+gl : {par_0}
+   The output Legendre Green's function modified in place.
+gw : {par_1}
+   The input Matsubara Green's function.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>>>()}});
+static const auto _c2py_doc_5 =
+   _c2py_fun_5.doc(R"DOC(
+Project an imaginary-time Green's function onto the Legendre basis of the output.
+
+Parameters
+----------
+gl : {par_0}
+   The output Legendre Green's function modified in place.
+gt : {par_1}
+   The input imaginary-time Green's function.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>>>()}});
+static const auto _c2py_doc_6 =
+   _c2py_fun_6.doc(R"DOC(
+[1, 2, 3, 4, 5] Project a Legendre Green's function onto the Matsubara mesh of the output.
+
+------
+
+[6, 7, 8, 9, 10] Project a Legendre Green's function onto the imaginary-time mesh of the output.
+
+------
+
+Parameters
+----------
+gw : {par_0}
+   The output Matsubara Green's function modified in place.
+gl : {par_1}
+   The input Legendre Green's function.
+gt : {par_2}
+   The output imaginary-time Green's function modified in place.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::legendre, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imtime, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imtime, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>>>()}});
+static const auto _c2py_doc_7 =
+   _c2py_fun_7.doc(R"DOC(
+Analytically continue a Matsubara Green's function to the real-frequency axis using a Pade approximant.
+
+Parameters
+----------
+gw : {par_0}
+   The output real-frequency Green's function modified in place.
+giw : {par_1}
+   The input Matsubara Green's function.
+n_points : {par_2}
+   Number of Matsubara points used to build the Pade approximant.
+freq_offset : {par_3}
+   Imaginary shift :math:`\eta` applied to real frequencies.
+)DOC",
+                   {{c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_view<triqs::mesh::refreq, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<1>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<3>>>(),
+                     c2py::python_typename<triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::tensor_valued<4>>>()},
+                    {c2py::python_typename<int>()},
+                    {c2py::python_typename<double>()}});
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(
+   R"DOC(
+Calculate the :math:`L^2` norm of a DLR Green's function.
+
+Parameters
+----------
+g : {par_0}
+   A Green's function on any DLR mesh.
+
+Returns
+-------
+[1, 3, 5] : {ret_0}
+   The :math:`L^2` norm of the input Green's function, either as a scalar (if target rank is 0) or as an 
+   array of norms for each element in the target domain (if target rank is greater than 0).
+
+[2, 4, 6] : {ret_1}
+   The :math:`L^2` norm of the input Green's function, either as a scalar (if target rank is 0) or as an 
+   array of norms for each element in the target domain (if target rank is greater than 0).
+
+[7, 9, 11] : {ret_2}
+   The :math:`L^2` norm of the input Green's function, either as a scalar (if target rank is 0) or as an 
+   array of norms for each element in the target domain (if target rank is greater than 0).
+
+[8, 10, 12] : {ret_3}
+   The :math:`L^2` norm of the input Green's function, either as a scalar (if target rank is 0) or as an 
+   array of norms for each element in the target domain (if target rank is greater than 0).
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
+     c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime, triqs::gfs::matrix_valued, nda::C_stride_layout, 1, true> &>()}},
+   {c2py::python_typename<double>(),
+    c2py::python_typename<nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>(),
+    c2py::python_typename<std::vector<double>>(),
+    c2py::python_typename<
+       std::vector<nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -417,15 +600,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_fnt_misc",     /* name of module */
-                                        R"RAWDOC()RAWDOC", /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_fnt_misc", /* name of module */
+   R"RAWDOC(Auxiliary Green's function helpers: mesh-conversion setters, Pade continuation, imaginary-time tools, and symmetry predicates.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 

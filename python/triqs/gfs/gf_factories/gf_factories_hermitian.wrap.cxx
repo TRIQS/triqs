@@ -558,79 +558,139 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
       },
       "g")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
-static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC()DOC");
-static const auto _c2py_doc_2 = _c2py_fun_2.doc(
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(
    R"DOC(
-Symmetrize a Green function object to fullfill fundamental Green function properties.
-Depending on the mesh and target rank one of the following transformations is performed
-$G[i]  {1}{2} ( G[i] + conj(G[-i]) )$
-$G[]  {1}{2} ( G[] + conj(G[]) )$
-$G[i](i,j)  {1}{2} ( G[i](i,j) + conj(G[-i](j,i)) )$
-$G[](i,j)  {1}{2} ( G[](i,j) + conj(G[](j,i)) )$
-$G[i](i,j,k,l)  {1}{2} ( G[i](i,j,k,l) + conj(G[-i](k,l,i,j)) )$
-$G[](i,j,k,l)  {1}{2} ( G[](i,j,k,l) + conj(G[](k,l,i,j)) )$
+Fit an imaginary-time Green's function with a Discrete Lehmann Representation.
+
+Applies to every overload. The input lives on a single
+imaginary-time mesh or on a product mesh pairing an
+imaginary-time axis with a lattice axis. Block and block-of-block
+Green's function containers are handled component-wise, and
+product meshes are handled axis-wise. All target ranks (scalar,
+vector, matrix, rank-3, rank-4) are supported. The DLR grid is
+specified by the spectral cutoff ``w_max`` and the tolerance
+``eps``.
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to symmetrize
+   The imaginary-time Green's function to fit.
+w_max : {par_1}
+   Maximum real frequency captured by the DLR basis.
+eps : {par_2}
+   Target accuracy of the DLR representation.
+symmetrize : {par_3}
+   If true, the DLR grid is symmetric about zero frequency.
+
+Returns
+-------
+{ret_0}
+   A Green's function on the DLR coefficient mesh.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imtime, triqs::gfs::scalar_valued> &>()},
+    {c2py::python_typename<double>()},
+    {c2py::python_typename<double>()},
+    {c2py::python_typename<bool>()}},
+   {c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr, typename triqs::gfs::_target_from_type_rank<std::complex<double>, 0>::type>>()});
+static const auto _c2py_doc_1 = _c2py_fun_1.doc(
+   R"DOC(
+Transform a DLR imaginary-time or DLR Matsubara Green's function to its DLR-coefficient representation.
+
+Applies to every overload. The input lives on a single
+DLR imaginary-time or DLR Matsubara frequency mesh, or on a
+product mesh pairing a DLR axis with a lattice axis. Block and
+block-of-block Green's function containers are handled
+component-wise, and product meshes are handled axis-wise. All
+target ranks (scalar, vector, matrix, rank-3, rank-4) are
+supported.
+
+Parameters
+----------
+g : {par_0}
+   The input Green's function.
+
+Returns
+-------
+{ret_0}
+   The Green's function expressed in DLR coefficients.
+)DOC",
+   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr_imtime, triqs::gfs::scalar_valued> &>()}},
+   {c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr, typename triqs::gfs::_target_from_type_rank<std::complex<double>, 0>::type>>()});
+static const auto _c2py_doc_2 = _c2py_fun_2.doc(
+   R"DOC(
+Symmetrize a Green's function so that it satisfies the hermitian symmetry.
+
+Depending on the mesh and target rank, one of the following transformations is applied:
+
+- :math:`G(i\omega) \rightarrow \frac{1}{2} [ G(i\omega) + G^*(-i\omega) ]`
+- :math:`G(\tau) \rightarrow \frac{1}{2} [ G(\tau) + G^*(\tau) ]`
+- :math:`G_{i,j}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j}(i\omega) + G_{j,i}^*(i\omega) ]`
+- :math:`G_{i,j}(\tau) \rightarrow \frac{1}{2} [ G_{i,j}(\tau) + G_{j,i}^*(\tau) ]`
+- :math:`G_{i,j,k,l}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j,k,l}(i\omega)] + G_{k,l,i,j}^*(i\omega) ]`
+- :math:`G_{i,j,k,l}(\tau) \rightarrow \frac{1}{2} [ G_{i,j,k,l}(\tau) + G_{k,l,i,j}(\tau) ]`
+
+For block Green's functions, the symmetrization is applied block-wise.
+
+Parameters
+----------
+g : {par_0}
+   The Green's function to symmetrize.
 
 Returns
 -------
 [1] : {ret_0}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [2] : {ret_1}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [3] : {ret_2}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [4] : {ret_3}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [5] : {ret_4}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [6] : {ret_5}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [7] : {ret_6}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [8] : {ret_7}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [9] : {ret_8}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [10] : {ret_9}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [11] : {ret_10}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [12] : {ret_11}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [13] : {ret_12}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [14] : {ret_13}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [15] : {ret_14}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [16] : {ret_15}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [17] : {ret_16}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [18] : {ret_17}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
@@ -682,43 +742,46 @@ Returns
        typename triqs::gfs::block_gf_view<triqs::mesh::imtime, triqs::gfs::tensor_valued<4>, nda::C_stride_layout, 2, true>::regular_type>()});
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(
    R"DOC(
-Symmetrize a Matsubara Green function object such that the associated imaginary-time
-propagator is fully real-valued. The following transformation is performed
-$G[i](...)  {1}{2} ( G[i](...) + conj(G[-i](...)) )$
+Symmetrize a Matsubara Green's function so that its imaginary-time partner is real-valued.
+
+The transformation applied is :math:`G_{i,j,\dots}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j,\dots}(i\omega)
++ G_{i,j,\dots}^*(-i\omega) ]`.
+
+For block Green's functions, the symmetrization is applied block-wise.
 
 Parameters
 ----------
 g : {par_0}
-   The Green function object to symmetrize
+   The Matsubara Green's function to symmetrize.
 
 Returns
 -------
 [1] : {ret_0}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [2] : {ret_1}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [3] : {ret_2}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [4] : {ret_3}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [5] : {ret_4}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [6] : {ret_5}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [7] : {ret_6}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [8] : {ret_7}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 
 [9] : {ret_8}
-   The symmetrized Green function object
+   The symmetrized Green's function.
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout> &>(),
      c2py::python_typename<const triqs::gfs::block_gf_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued, nda::C_stride_layout, 1, true> &>(),
@@ -758,15 +821,16 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "gf_factories_hermitian", /* name of module */
-                                        R"RAWDOC()RAWDOC",        /* module documentation, may be NULL */
-                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-                                        module_methods,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
+static struct PyModuleDef module_def = {
+   PyModuleDef_HEAD_INIT,
+   "gf_factories_hermitian",                                                                                         /* name of module */
+   R"RAWDOC(Factories that symmetrize a Green's function and that build a Green's function on the DLR mesh.)RAWDOC", /* module documentation, may be NULL */
+   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+   module_methods,
+   NULL,
+   NULL,
+   NULL,
+   NULL};
 
 //--------------------- module init function -----------------------------
 
