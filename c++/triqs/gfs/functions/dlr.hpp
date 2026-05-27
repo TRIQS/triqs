@@ -391,7 +391,22 @@ namespace triqs::gfs {
     using M = typename G::mesh_t;
     static_assert(nda::AnyOf<M, dlr, dlr_imfreq, dlr_imtime>, "Input mesh must be one of dlr, dlr_imfreq, dlr_imtime");
     if constexpr (is_block_gf_v<G>) {
-      return map_block_gf([&](auto const &gbl) { return tau_L2_norm(gbl); }, g);
+      // Manual loop with a concrete element type. map_block_gf would deduce
+      // std::vector<std::invoke_result_t<lambda, gf>> (the lambda is local),
+      // and a function-scoped `using elem_t = ...` alias would also leak its
+      // spelling -- in both cases clair-c2py fails to render the type.
+      constexpr int rank = std::decay_t<G>::g_t::target_t::rank;
+      if constexpr (rank == 0) {
+        std::vector<double> result;
+        result.reserve(g.data().size());
+        for (auto const &gbl : g.data()) result.push_back(tau_L2_norm(gbl));
+        return result;
+      } else {
+        std::vector<nda::array<double, rank>> result;
+        result.reserve(g.data().size());
+        for (auto const &gbl : g.data()) result.push_back(tau_L2_norm(gbl));
+        return result;
+      }
     } else if constexpr (nda::AnyOf<M, dlr_imtime, dlr_imfreq>) {
       return tau_L2_norm(make_gf_dlr(g));
     } else { // M == dlr
