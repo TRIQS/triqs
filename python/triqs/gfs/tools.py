@@ -111,7 +111,12 @@ def inverse(x):
         return lazy_expressions.lazy_function("inverse", inverse) (x)
     if hasattr(x,'inverse'):
         return x.inverse()
-    return 1.0 / x
+    try:
+        return 1.0 / x
+    except TypeError as e:
+        raise TypeError(
+            f"inverse(): cannot invert object of type {type(x).__name__}: {x!r}"
+        ) from e
 
 def conjugate(x):
     r"""Complex conjugate with lazy-expression support.

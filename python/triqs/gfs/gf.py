@@ -824,7 +824,10 @@ class Gf(metaclass=AddMethod):
         elif descriptors.is_scalar(A):  # in the case it is a scalar ....
             self << lazy_expressions.LazyExpr(A)
         else:
-            raise NotImplemented
+            raise TypeError(
+                f"Gf.__lshift__: unsupported right-hand side of type "
+                f"{type(A).__name__}: {A!r}"
+            )
         return self
 
     # -------------- call -------------------------------------
@@ -903,7 +906,9 @@ class Gf(metaclass=AddMethod):
             elif not isinstance(arg, np.ndarray):
                 self._data[:] += arg
             else:
-                raise NotImplemented
+                raise TypeError(
+                    f"Gf.__iadd__: cannot add operand of type {type(arg).__name__}"
+                )
         return self
 
     def __add__(self, y):
@@ -966,7 +971,9 @@ class Gf(metaclass=AddMethod):
             elif not isinstance(arg, np.ndarray):
                 self._data[:] -= arg
             else:
-                raise NotImplemented
+                raise TypeError(
+                    f"Gf.__isub__: cannot subtract operand of type {type(arg).__name__}"
+                )
         return self
 
     def __sub__(self, y):
