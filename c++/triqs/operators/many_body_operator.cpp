@@ -17,6 +17,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Implementation details for triqs/operators/many_body_operator.hpp.
+ */
+
 #include "./many_body_operator.hpp"
 #include <h5/h5.hpp>
 #include <hdf5.h>
