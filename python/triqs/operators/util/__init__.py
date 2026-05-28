@@ -18,6 +18,14 @@
 #
 # Authors: Michel Ferrero, Alexander Hampel, Igor Krivenko, Priyanka Seth, Nils Wentzell
 
+"""Utilities built on top of :class:`~triqs.operators.operators.Operator`.
+
+Bundles the model Hamiltonians (:mod:`triqs.operators.util.hamiltonians`),
+common observables (:mod:`triqs.operators.util.observables`), Coulomb-tensor
+constructors (:mod:`triqs.operators.util.U_matrix`), block/index helpers
+(:mod:`triqs.operators.util.op_struct`) and coefficient extractors
+(:mod:`triqs.operators.util.extractors`).
+"""
 
 from .hamiltonians import *
 from .observables import *

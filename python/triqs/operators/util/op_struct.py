@@ -17,29 +17,31 @@
 #
 # Authors: Michel Ferrero, Priyanka Seth, Nils Wentzell
 
+"""Block/index helpers for many-body operators and Green's functions."""
+
 from itertools import product
 
 # Set function to make index for GF blocks given spin sn and orbital name on
-def get_mkind(off_diag,map_operator_structure):
-    r"""
-    Set function that makes the index for operators and GF blocks for a given
-    spin and orbital name.
+def get_mkind(off_diag, map_operator_structure):
+    """Build the index function that maps a (spin, orbital) pair to an operator/GF-block index.
 
     Parameters
     ----------
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'), otherwise by ('spin_orbital',0).
-    map_operator_structure : dict 
-                             Mapping of names of GF blocks names from one convention to another, 
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+    off_diag : bool
+        If ``True``, the operators and Green's-function blocks are denoted by
+        ``('spin', 'orbital')``; otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks are labelled by the image of
+        ``('spin', 'orbital')`` under this mapping.
 
     Returns
     -------
-    mkind : lambda
-            The function mapping spin and orbital names to a tuple.
-
+    callable
+        Function ``mkind(spin_name, orbital_name)`` returning a tuple suitable
+        for indexing :func:`~triqs.operators.operators.c` / 
+        :func:`~triqs.operators.operators.c_dag` and the GF blocks.
     """
 
     if (off_diag is None) and (map_operator_structure is None):
@@ -56,27 +58,28 @@ def get_mkind(off_diag,map_operator_structure):
     return mkind
 
 # Set block structure of GF
-def set_operator_structure(spin_names,n_orb,off_diag):
-    r"""
-    Set the operator_structure for given spin and orbital names, according to
-    whether or not the Green's functions contain off-diagonal blocks.
+def set_operator_structure(spin_names, n_orb, off_diag):
+    """Build the operator block structure for the given spin and orbital names.
+
+    The shape of the structure follows the same convention as
+    :func:`get_mkind`: one block per spin when ``off_diag`` is ``True``, one
+    block per (spin, orbital) pair otherwise.
 
     Parameters
     ----------
-    spin_names : list of strings
-                 Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-            Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
+        Number of orbitals.
+    off_diag : bool
+        If ``True``, blocks carry orbital off-diagonal elements; otherwise the
+        blocks are pure ``('spin_orbital', 0)`` blocks of size one.
 
     Returns
     -------
-    op_struct : list
-                The structure of the operators [block:[inner], ... ].
-
+    list
+        Block structure of the operators in the form
+        ``[[block_name, block_size], ...]``.
     """
 
     if isinstance(n_orb, list):

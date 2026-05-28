@@ -1,3 +1,19 @@
 package_name = "triqs.operators"
-documentation = ""
+documentation = """Second-quantization operators and many-body operator algebra.
+
+The :class:`Operator` class represents an element of the fermionic operator algebra: a linear combination of normally
+ordered monomials in creation and annihilation operators, with real or complex coefficients. It supports the full set of
+arithmetic operations (``+``, ``-``, ``*``, ``/`` by a scalar) and preserves normal ordering as terms are combined.
+
+Operators are built from the canonical factories:
+
+- :func:`c` — annihilation operator :math:`\\hat{c}_\\alpha`,
+- :func:`c_dag` — creation operator :math:`\\hat{c}_\\alpha^\\dagger`,
+- :func:`n` — number operator :math:`\\hat{n}_\\alpha = \\hat{c}_\\alpha^\\dagger \\hat{c}_\\alpha`.
+
+The single-particle state index :math:`\\alpha` is an arbitrary sequence of integers, strings or floats; new indices are
+introduced on the fly as expressions are constructed. The Hermitian conjugate is computed by the free function
+:func:`dagger`. Higher-level utilities (model Hamiltonians, observables, Coulomb tensors, coefficient extractors) are
+provided in :mod:`triqs.operators.util`.
+"""
 namespaces = "triqs::operators"

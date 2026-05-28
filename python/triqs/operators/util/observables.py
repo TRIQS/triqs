@@ -32,8 +32,36 @@ pauli_matrix = {'x' : np.array([[0,1],[1,0]]),
                 '+' : np.array([[0,2],[0,0]]),
                 '-' : np.array([[0,0],[2,0]])}
 
-# Helper function for backward compat and improved error messages
-def check_backward_compat(fname,n_orb,orb_names):
+def check_backward_compat(fname, n_orb, orb_names):
+    """Validate and normalize the orbital count for backward compatibility.
+
+    Raises if the removed ``orb_names`` argument is supplied, and converts a
+    list passed in place of ``n_orb`` into its length while emitting a
+    ``UserWarning``.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the calling function, used in the warning message.
+    n_orb : int or list
+        Number of orbitals. A list is accepted for backward compatibility and
+        replaced by its length.
+    orb_names : object
+        Removed argument retained for error reporting. Must be ``None``;
+        otherwise a ``RuntimeError`` is raised.
+
+    Returns
+    -------
+    int
+        The (normalized) number of orbitals.
+
+    Examples
+    --------
+    >>> check_backward_compat('N_op', 5, None)
+    5
+    >>> check_backward_compat('N_op', ['s', 'p_x', 'p_y'], None)  # doctest: +SKIP
+    3
+    """
     if orb_names is not None:
         raise RuntimeError("Argument orb_names is no longer supported. Please provide n_orb instead.")
     if isinstance(n_orb, list):
@@ -43,31 +71,29 @@ def check_backward_compat(fname,n_orb,orb_names):
     return n_orb
 
 def N_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
-    r"""
-    Create an operator of the total number of particles.
+    r"""Create the total particle-number operator.
 
-    .. math:: \hat N = \sum_{i\sigma} a_{i\sigma}^\dagger a_{i\sigma}.
+    .. math:: \hat{N} = \sum_{i\sigma} \hat{c}_{i\sigma}^\dagger \hat{c}_{i\sigma}.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
 
     Returns
     -------
-    N : Operator
-        The total number of particles.
-
+    Operator
+        The total particle-number operator :math:`\hat{N}`.
     """
     n_orb = check_backward_compat("N_op",n_orb,orb_names)
     mkind = get_mkind(off_diag,map_operator_structure)
@@ -76,35 +102,34 @@ def N_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_
     return N
 
 def S_op(component, spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
-    r"""
-    Create a component of the spin vector operator.
+    r"""Create a component of the spin vector operator.
 
     .. math::
-        \hat S_{x,y,z} = \frac{1}{2}\sum_{i\sigma\sigma'} a^\dagger_{i\sigma} \mathbf{\tau}^{x,y,z}_{\sigma\sigma'} a_{i\sigma'},
-        \quad\hat S_\pm = \hat S_x \pm i \hat S_y.
+        \hat{S}_{x,y,z} = \frac{1}{2}\sum_{i\sigma\sigma'} \hat{c}^\dagger_{i\sigma} \mathbf{\tau}^{x,y,z}_{\sigma\sigma'} \hat{c}_{i\sigma'},
+        \quad\hat{S}_\pm = \hat{S}_x \pm i \hat{S}_y.
 
     Parameters
     ----------
-    component : string
-               Component to be created, one of 'x', 'y', 'z', '+', or '-'.
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    component : str
+        Component to be created, one of ``'x'``, ``'y'``, ``'z'``, ``'+'`` or
+        ``'-'``.
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
 
     Returns
     -------
-    S : Operator
-        The component of the spin vector operator.
-
+    Operator
+        The requested component of the spin vector operator.
     """
     n_orb = check_backward_compat("S_op",n_orb,orb_names)
     mkind  = get_mkind(off_diag,map_operator_structure)
@@ -118,80 +143,78 @@ def S_op(component, spin_names, n_orb, off_diag = None, map_operator_structure =
     return S
 
 def S2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, orb_names = None):
-    r"""
-    Create the square of the total spin operator.
+    r"""Create the square of the total spin operator.
 
-    .. math:: \hat S^2 = \hat S_x^2 + \hat S_y^2 + \hat S_z^2.
+    .. math:: \hat{S}^2 = \hat{S}_x^2 + \hat{S}_y^2 + \hat{S}_z^2.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
 
     Returns
     -------
-    S2 : Operator
-        The square of the total spin operator.
-
+    Operator
+        The square of the total spin operator :math:`\hat{S}^2`.
     """
     n_orb = check_backward_compat("S2_op",n_orb,orb_names)
     Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
     return Sz*Sz + 0.5*(Sp*Sm + Sm*Sp)
 
 def L_op(component, spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
-    r"""
-    Create a component of the orbital momentum vector operator.
+    r"""Create a component of the orbital angular-momentum vector operator.
 
     .. math::
-        \hat L_{z,+,-} &= \sum_{ii'\sigma} a^\dagger_{i\sigma} L^{z,+,-}_{ii'} a_{i'\sigma},\\
-        \hat L_x &= \frac{1}{2}(\hat L_+ + \hat L_-),\ \hat L_y = \frac{1}{2i}(\hat L_+ - \hat L_-),\\
+        \hat{L}_{z,+,-} &= \sum_{ii'\sigma} \hat{c}^\dagger_{i\sigma} L^{z,+,-}_{ii'} \hat{c}_{i'\sigma},\\
+        \hat{L}_x &= \frac{1}{2}(\hat{L}_+ + \hat{L}_-),\ \hat{L}_y = \frac{1}{2i}(\hat{L}_+ - \hat{L}_-),\\
         L^z_{ii'} &= i\delta_{i,i'}, \
         L^+_{ii'} = \delta_{i,i'+1}\sqrt{l(l+1)-i'(i'+1)}, \
         L^+_{ii'} = \delta_{i,i'-1}\sqrt{l(l+1)-i'(i'-1)}.
 
     Parameters
     ----------
-    component : string
-               Component to be created, one of 'x', 'y', 'z', '+', or '-'.
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    component : str
+        Component to be created, one of ``'x'``, ``'y'``, ``'z'``, ``'+'`` or
+        ``'-'``.
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    basis : string, optional
-            The basis in which the interaction matrix should be computed.
-            Takes the values
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    basis : str, optional
+        Basis in which the interaction matrix is computed. One of:
 
-            - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
-            - 'other': other basis type as given by the transformation matrix T.
-
-    T : real/complex numpy array, optional
-        Transformation matrix for basis change.
-        Must be provided if basis='other'.
+        - ``'spherical'``: spherical harmonics (default),
+        - ``'cubic'``: cubic harmonics (valid only for integer orbital momenta,
+          i.e. odd ``n_orb``),
+        - ``'other'``: arbitrary basis specified by the transformation matrix
+          :math:`T`.
+    T : numpy.ndarray, optional
+        Transformation matrix for the basis change. Required when
+        ``basis='other'``.
 
     Returns
     -------
-    L : Operator
-        The component of the orbital momentum vector operator.
-
+    Operator
+        The requested component of the orbital angular-momentum vector
+        operator.
     """
     n_orb = check_backward_compat("L_op",n_orb,orb_names)
     l = (n_orb-1)/2.0
@@ -220,82 +243,81 @@ def L_op(component, spin_names, n_orb, off_diag = None, map_operator_structure =
     return L
 
 def L2_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
-    r"""
-    Create the square of the orbital momentum operator.
+    r"""Create the square of the orbital angular-momentum operator.
 
-    .. math:: \hat L^2 = \hat L_x^2 + \hat L_y^2 + \hat L_z^2.
+    .. math:: \hat{L}^2 = \hat{L}_x^2 + \hat{L}_y^2 + \hat{L}_z^2.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    basis : string, optional
-            The basis in which the interaction matrix should be computed.
-            Takes the values
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    basis : str, optional
+        Basis in which the interaction matrix is computed. One of:
 
-            - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
-            - 'other': other basis type as given by the transformation matrix T.
-
-    T : real/complex numpy array, optional
-        Transformation matrix for basis change.
-        Must be provided if basis='other'.
+        - ``'spherical'``: spherical harmonics (default),
+        - ``'cubic'``: cubic harmonics (valid only for integer orbital momenta,
+          i.e. odd ``n_orb``),
+        - ``'other'``: arbitrary basis specified by the transformation matrix
+          :math:`T`.
+    T : numpy.ndarray, optional
+        Transformation matrix for the basis change. Required when
+        ``basis='other'``.
 
     Returns
     -------
-    L2 : Operator
-        The square of the orbital momentum operator.
+    Operator
+        The square of the orbital angular-momentum operator :math:`\hat{L}^2`.
     """
     n_orb = check_backward_compat("L2_op",n_orb,orb_names)
     Lz, Lp, Lm = [L_op(k,spin_names,n_orb,off_diag, map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Lz + 0.5*(Lp*Lm + Lm*Lp)
 
 def LS_op(spin_names, n_orb, off_diag = None, map_operator_structure = None, basis='spherical', T=None, orb_names = None):
-    r"""
-    Create a spin-orbital coupling operator.
+    r"""Create the spin-orbital coupling operator.
 
-    .. math:: \mathbf{\hat L\cdot\hat S} = \hat L_x \hat S_x  + \hat L_y \hat S_y + \hat L_z \hat S_z.
+    .. math:: \mathbf{\hat{L}\cdot\hat{S}} = \hat{L}_x \hat{S}_x  + \hat{L}_y \hat{S}_y + \hat{L}_z \hat{S}_z.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    basis : string, optional
-            The basis in which the interaction matrix should be computed.
-            Takes the values
+        Number of orbitals.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    basis : str, optional
+        Basis in which the interaction matrix is computed. One of:
 
-            - 'spherical': spherical harmonics,
-            - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd values of n_orb),
-            - 'other': other basis type as given by the transformation matrix T.
-
-    T : real/complex numpy array, optional
-        Transformation matrix for basis change.
-        Must be provided if basis='other'.
+        - ``'spherical'``: spherical harmonics (default),
+        - ``'cubic'``: cubic harmonics (valid only for integer orbital momenta,
+          i.e. odd ``n_orb``),
+        - ``'other'``: arbitrary basis specified by the transformation matrix
+          :math:`T`.
+    T : numpy.ndarray, optional
+        Transformation matrix for the basis change. Required when
+        ``basis='other'``.
 
     Returns
     -------
-    LS : Operator
-        The spin-orbital coupling operator.
+    Operator
+        The spin-orbital coupling operator
+        :math:`\mathbf{\hat{L}\cdot\hat{S}}`.
     """
     n_orb = check_backward_compat("LS_op",n_orb,orb_names)
     Sz, Sp, Sm = [S_op(k,spin_names,n_orb,off_diag,map_operator_structure) for k in ('z','+','-')]
