@@ -42,39 +42,64 @@ template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_construc
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> =
    _c2py_init_0.doc(R"DOC(
-[1] Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
+[1] Reduce a Hamiltonian to a block-diagonal form using auto-partitioning, then diagonalize the blocks.
 
-This constructor calls the auto-partition procedure, and the QR algorithm
-to diagonalize the blocks. The invariant subspaces of the Hamiltonian are
-chosen such that all creation and annihilation operators from the provided
-fundamental operator set map one subspace to one subspace.
-
-.. note::
-
-   See :ref:`space_partition` for more details on the auto-partition scheme.
+Uses the auto-partition procedure to detect the invariant subspaces of the Hamiltonian, and the QR
+algorithm to diagonalize each block. The invariant subspaces are chosen such that every fundamental creation
+and annihilation operator from the provided fundamental operator set maps each subspace to a single subspace
+(or annihilates it).
 
 ------
 
-[4] Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
+[2] Reduce a Hamiltonian to a block-diagonal form using auto-partitioning refined by a hybridization term.
 
-This constructor uses quantum number operators to partition the Hilbert space into
-invariant subspaces, and the QR algorithm to diagonalize the blocks of the Hamiltonian.
-The quantum numbers must be chosen such that all creation and annihilation operators from
-the provided fundamental operator set map one subspace to one subspace.
+Behaves like the two-argument auto-partition constructor, but the partition is required to remain
+invariant under the additional many-body operator :math:`\hat V` as well. This is useful when the Hamiltonian 
+on its own would yield invariant subspaces that mix when an extra (e.g. hybridization) operator acts, leading 
+to matrix blocks that are coarser than what :math:`\hat H` alone would suggest.
+
+------
+
+[3] Diagonalize a Hamiltonian restricted to a particle-number window.
+
+Builds the invariant subspaces by total particle number and keeps only those whose number of particles
+lies in the inclusive window :math:`[n_{\text{min}}, n_{\text{max}}]`. The blocks are then diagonalized with
+the QR algorithm. Convenient when only a few sectors of fixed occupation are physically relevant.
+
+------
+
+[4] Reduce a Hamiltonian to a block-diagonal form using user-supplied quantum numbers, then diagonalize the
+blocks.
+
+Partitions the Hilbert space into common eigenspaces of the provided quantum-number operators. The
+quantum numbers must be chosen such that every fundamental creation and annihilation operator from the provided
+fundamental operator set maps each common eigenspace to a single common eigenspace (or annihilates it). Each
+block of the Hamiltonian is then diagonalized with the QR algorithm.
 
 ------
 
 Parameters
 ----------
 h : {par_0}
-   Hamiltonian operator to be diagonalized.
+   Many-body Hamiltonian :math:`\hat H` to be diagonalized.
 fops : {par_1}
-   Fundamental operator set; Must at least contain all fundamental operators met in `h`.
-qn_vector : {par_2}
-   Vector of quantum number operators.
+   Fundamental operator set; must at least contain every fundamental operator appearing in 
+   :math:`\hat H`.
+hyb : {par_2}
+   Additional many-body operator :math:`\hat V` that the auto-partition must respect; every fundamental 
+   operator appearing in :math:`\hat V` must also belong to the fundamental operator set.
+n_min : {par_3}
+   Minimum total particle number to keep.
+n_max : {par_4}
+   Maximum total particle number to keep.
+qn_vector : {par_5}
+   List of quantum-number operators.
 )DOC",
                     {{c2py::python_typename<const triqs::atom_diag::atom_diag<false>::many_body_op_t &>()},
                      {c2py::python_typename<const triqs::hilbert_space::fundamental_operator_set &>()},
+                     {c2py::python_typename<const triqs::atom_diag::atom_diag<false>::many_body_op_t &>()},
+                     {c2py::python_typename<int>()},
+                     {c2py::python_typename<int>()},
                      {c2py::python_typename<const std::vector<triqs::atom_diag::atom_diag<false>::many_body_op_t> &>()}});
 // c_connection
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{c2py::cmethod(
@@ -117,109 +142,175 @@ static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
-Subspace-to-subspace connections for fundamental operator :math:`C`
+Get the target subspace :math:`B'` of the annihilation operator :math:`\hat c_i` acting on subspace
+:math:`B`.
+
+.. math::
+
+   \hat c_i\, S_B \subseteq S_{B'} \; ,
+
+with :math:`B' = -1` if :math:`\hat c_i` annihilates :math:`B`. The operator :math:`\hat c_i` is identified by
+its linear index :math:`i` in the fundamental operator set provided at construction.
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the annihilation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-Matrix block for fundamental operator :math:`C`
+Get the matrix block of the annihilation operator :math:`\hat c_i` acting on subspace :math:`B`.
+
+The returned matrix is the representation of :math:`\hat c_i` in the eigenbasis of :math:`\hat H`, 
+i.e. :math:`\bigl[\hat c_i\bigr]_{B' \leftarrow B}`, with shape :math:`\dim(B') \times \dim(B)` (not 
+necessarily square).
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the annihilation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Matrix block of the annihilation operator from subspace :math:`B` to subspace :math:`B'`.
 )DOC",
                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                 {c2py::python_typename<const triqs::atom_diag::atom_diag<false>::matrix_t &>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC(
-Subspace-to-subspace connections for fundamental operator :math:`C^`
-*
+Get the target subspace :math:`B'` of the creation operator :math:`\hat c^\dagger_i` acting on subspace
+:math:`B`.
+
+.. math::
+
+   \hat c^\dagger_i\, S_B \subseteq S_{B'} \; ,
+
+with :math:`B' = -1` if :math:`\hat c^\dagger_i` annihilates :math:`B`. The operator :math:`\hat c^\dagger_i`
+is identified by its linear index :math:`i` in the fundamental operator set provided at construction.
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the creation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC(
-Matrix block for fundamental operator :math:`C^`
+Get the matrix block of the creation operator :math:`\hat c^\dagger_i` acting on subspace :math:`B`.
+
+The returned matrix is the representation of :math:`\hat c^\dagger_i` in the eigenbasis of
+:math:`\hat H`, i.e. :math:`\bigl[\hat c^\dagger_i\bigr]_{B' \leftarrow B}`, with shape :math:`\dim(B') \times
+\dim(B)` (not necessarily square).
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the creation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Matrix block of the creation operator from subspace :math:`B` to subspace :math:`B'`.
 )DOC",
                                                 {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                 {c2py::python_typename<const triqs::atom_diag::atom_diag<false>::matrix_t &>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC(
-Returns the state index in the full Hilbert space given a subspace index and an inner index
+Map a subspace-local pair :math:`(B, i)` to its linear index in the full Hilbert space.
+
+The full-Hilbert-space eigenstate index is
+
+.. math::
+
+   d(B, i) = \mathtt{first\_eigenstate\_of\_subspace}[B] + i,
+   \quad 0 \le i < \dim(B), \quad 0 \le d < N.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
 i : {par_1}
-   State index within the subspace.
+   Eigenstate index inside subspace :math:`B`, with :math:`0 \le i < \dim(B)`.
+
+Returns
+-------
+{ret_0}
+   Linear eigenstate index :math:`d(B, i)` in the eigenbasis of the full Hilbert space.
 )DOC",
-                                                {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
+                                                {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
 static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC(
-Get the i-th eigenvalue of subspace sp_index
+Get the eigenvalue :math:`E_{B,i}` of the Hamiltonian.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
 i : {par_1}
-   State index within the subspace.
+   Eigenstate index inside subspace :math:`B`, with :math:`0 \le i < \dim(B)`.
+
+Returns
+-------
+{ret_0}
+   Eigenvalue :math:`E_{B,i}`, with the global ground-state energy subtracted.
 )DOC",
-                                                {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
+                                                {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<double>()});
 static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC(
-The dimension of a subspace
+Get the dimension :math:`\dim(B)` of invariant subspace :math:`B`.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
+
+Returns
+-------
+{ret_0}
+   Number of eigenstates in subspace :math:`B`.
 )DOC",
-                                                {{c2py::python_typename<int>()}});
+                                                {{c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
 static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC(
-Get the dimensions of all subspaces
-)DOC");
-static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC(
-Unitary matrix for given subspace that transform from Fock states to eigenstates
-)DOC");
+Get the dimensions :math:`\dim(B)` of all invariant subspaces.
+
+Returns
+-------
+{ret_0}
+   List of subspace dimensions, indexed by subspace index :math:`B`.
+)DOC",
+                                                {}, {c2py::python_typename<std::vector<int>>()});
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(
+   R"DOC(
+Get the unitary matrix :math:`U_B` mapping the Fock basis of subspace :math:`B` to its eigenbasis.
+
+Parameters
+----------
+sp_index : {par_0}
+   Subspace index :math:`B`.
+
+Returns
+-------
+{ret_0}
+   Unitary matrix :math:`U_B` such that :math:`H_B = U_B\, \mathrm{diag}(E_B)\, U_B^\dagger`
+   within the subspace.
+)DOC",
+   {{c2py::python_typename<int>()}},
+   {c2py::python_typename<
+      const nda::basic_array<double, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()});
 
 // ----- Method table ----
 template <>
@@ -239,19 +330,19 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_0  = R"DOC(A vector of all the energies, grouped by subspace)DOC";
-static constexpr auto prop_doc_1  = R"DOC(The list of Fock states for each subspace)DOC";
+static constexpr auto prop_doc_0  = R"DOC(Get all eigenvalues :math:`E_{B,i}` grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_1  = R"DOC(Get the Fock states of every invariant subspace.)DOC";
 static constexpr auto prop_doc_2  = R"DOC(Get the data of the fundamental operator set used at construction.)DOC";
-static constexpr auto prop_doc_3  = R"DOC(Dimension of the full Hilbert space)DOC";
-static constexpr auto prop_doc_4  = R"DOC(Ground state energy (i.e. min of all subspaces))DOC";
-static constexpr auto prop_doc_5  = R"DOC(Get the Hamiltonian used at construction as a triqs::operators::many_body_operator.)DOC";
-static constexpr auto prop_doc_6  = R"DOC(Number of invariant subspaces)DOC";
-static constexpr auto prop_doc_7  = R"DOC(A vector of all the quantum numbers, grouped by subspace)DOC";
-static constexpr auto prop_doc_8  = R"DOC(Unitary matrices that transform from Fock states to eigenstates)DOC";
-static constexpr auto prop_doc_9  = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
+static constexpr auto prop_doc_3  = R"DOC(Get the dimension of the full Hilbert space.)DOC";
+static constexpr auto prop_doc_4  = R"DOC(Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.)DOC";
+static constexpr auto prop_doc_5  = R"DOC(Get the Hamiltonian used at construction as a generic many-body operator.)DOC";
+static constexpr auto prop_doc_6  = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
+static constexpr auto prop_doc_7  = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_8  = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
+static constexpr auto prop_doc_9  = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
 
-This vector is written in the eigenbasis of the Hamiltonian.)DOC";
-static constexpr auto prop_doc_10 = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
+The returned vector is expressed in the eigenbasis of the Hamiltonian.)DOC";
+static constexpr auto prop_doc_10 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
 
 // ----- Member and property table ----
 
@@ -276,10 +367,23 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Lightweight exact diagonalization solver
+const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Lightweight exact diagonalization solver for finite fermionic Hamiltonians.
 
-This class is provided as a simple tool to diagonalize Hamiltonians of
-finite fermionic systems of a moderate size.)DOC"
+Perform exact diagonalization of a many-body Hamiltonian :math:`\hat H` acting on the Fock space of a 
+finite set of fermionic single-particle states. The Hilbert space is split into invariant subspaces of 
+:math:`\hat H`, each of which is diagonalized independently.
+
+After construction the solver exposes
+
+- the eigenvalues :math:`E_B` and unitary matrix :math:`U_B` of every invariant subspace :math:`B`,
+- the matrix blocks of every fundamental creation/annihilation operator :math:`\hat c_i, \hat c^\dagger_i` in the
+  eigenbasis, where :math:`i` is the linear index of the operator in the fundamental operator set,
+- the subspace-to-subspace connections induced by every fundamental creation/annihilation operator, i.e. the
+  index of the subspace that each operator maps a given subspace to (or :math:`-1` if it annihilates it),
+- convenience routines that turn a generic many-body operator into a block-matrix representation in the
+  eigenbasis.
+
+Two specializations are provided, one for real-valued and one for complex-valued Hamiltonians.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 // --------- class _c2py_cls_1 -----------
 using _c2py_cls_1                                            = triqs::atom_diag::atom_diag<true>;
@@ -298,39 +402,64 @@ template <> constexpr initproc c2py::tp_init<_c2py_cls_1> = c2py::pyfkw_construc
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_1> =
    _c2py_init_1.doc(R"DOC(
-[1] Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
+[1] Reduce a Hamiltonian to a block-diagonal form using auto-partitioning, then diagonalize the blocks.
 
-This constructor calls the auto-partition procedure, and the QR algorithm
-to diagonalize the blocks. The invariant subspaces of the Hamiltonian are
-chosen such that all creation and annihilation operators from the provided
-fundamental operator set map one subspace to one subspace.
-
-.. note::
-
-   See :ref:`space_partition` for more details on the auto-partition scheme.
+Uses the auto-partition procedure to detect the invariant subspaces of the Hamiltonian, and the QR
+algorithm to diagonalize each block. The invariant subspaces are chosen such that every fundamental creation
+and annihilation operator from the provided fundamental operator set maps each subspace to a single subspace
+(or annihilates it).
 
 ------
 
-[4] Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
+[2] Reduce a Hamiltonian to a block-diagonal form using auto-partitioning refined by a hybridization term.
 
-This constructor uses quantum number operators to partition the Hilbert space into
-invariant subspaces, and the QR algorithm to diagonalize the blocks of the Hamiltonian.
-The quantum numbers must be chosen such that all creation and annihilation operators from
-the provided fundamental operator set map one subspace to one subspace.
+Behaves like the two-argument auto-partition constructor, but the partition is required to remain
+invariant under the additional many-body operator :math:`\hat V` as well. This is useful when the Hamiltonian 
+on its own would yield invariant subspaces that mix when an extra (e.g. hybridization) operator acts, leading 
+to matrix blocks that are coarser than what :math:`\hat H` alone would suggest.
+
+------
+
+[3] Diagonalize a Hamiltonian restricted to a particle-number window.
+
+Builds the invariant subspaces by total particle number and keeps only those whose number of particles
+lies in the inclusive window :math:`[n_{\text{min}}, n_{\text{max}}]`. The blocks are then diagonalized with
+the QR algorithm. Convenient when only a few sectors of fixed occupation are physically relevant.
+
+------
+
+[4] Reduce a Hamiltonian to a block-diagonal form using user-supplied quantum numbers, then diagonalize the
+blocks.
+
+Partitions the Hilbert space into common eigenspaces of the provided quantum-number operators. The
+quantum numbers must be chosen such that every fundamental creation and annihilation operator from the provided
+fundamental operator set maps each common eigenspace to a single common eigenspace (or annihilates it). Each
+block of the Hamiltonian is then diagonalized with the QR algorithm.
 
 ------
 
 Parameters
 ----------
 h : {par_0}
-   Hamiltonian operator to be diagonalized.
+   Many-body Hamiltonian :math:`\hat H` to be diagonalized.
 fops : {par_1}
-   Fundamental operator set; Must at least contain all fundamental operators met in `h`.
-qn_vector : {par_2}
-   Vector of quantum number operators.
+   Fundamental operator set; must at least contain every fundamental operator appearing in 
+   :math:`\hat H`.
+hyb : {par_2}
+   Additional many-body operator :math:`\hat V` that the auto-partition must respect; every fundamental 
+   operator appearing in :math:`\hat V` must also belong to the fundamental operator set.
+n_min : {par_3}
+   Minimum total particle number to keep.
+n_max : {par_4}
+   Maximum total particle number to keep.
+qn_vector : {par_5}
+   List of quantum-number operators.
 )DOC",
                     {{c2py::python_typename<const triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
                      {c2py::python_typename<const triqs::hilbert_space::fundamental_operator_set &>()},
+                     {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
+                     {c2py::python_typename<int>()},
+                     {c2py::python_typename<int>()},
                      {c2py::python_typename<const std::vector<triqs::atom_diag::atom_diag<true>::many_body_op_t> &>()}});
 // c_connection
 static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
@@ -373,109 +502,176 @@ static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_1 const &self, int sp_index) -> decltype(auto) { return self.get_unitary_matrix(sp_index); }, "self", "sp_index")};
 
 static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC(
-Subspace-to-subspace connections for fundamental operator :math:`C`
+Get the target subspace :math:`B'` of the annihilation operator :math:`\hat c_i` acting on subspace
+:math:`B`.
+
+.. math::
+
+   \hat c_i\, S_B \subseteq S_{B'} \; ,
+
+with :math:`B' = -1` if :math:`\hat c_i` annihilates :math:`B`. The operator :math:`\hat c_i` is identified by
+its linear index :math:`i` in the fundamental operator set provided at construction.
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the annihilation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC(
-Matrix block for fundamental operator :math:`C`
+Get the matrix block of the annihilation operator :math:`\hat c_i` acting on subspace :math:`B`.
+
+The returned matrix is the representation of :math:`\hat c_i` in the eigenbasis of :math:`\hat H`, 
+i.e. :math:`\bigl[\hat c_i\bigr]_{B' \leftarrow B}`, with shape :math:`\dim(B') \times \dim(B)` (not 
+necessarily square).
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the annihilation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Matrix block of the annihilation operator from subspace :math:`B` to subspace :math:`B'`.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                   {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
 static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC(
-Subspace-to-subspace connections for fundamental operator :math:`C^`
-*
+Get the target subspace :math:`B'` of the creation operator :math:`\hat c^\dagger_i` acting on subspace
+:math:`B`.
+
+.. math::
+
+   \hat c^\dagger_i\, S_B \subseteq S_{B'} \; ,
+
+with :math:`B' = -1` if :math:`\hat c^\dagger_i` annihilates :math:`B`. The operator :math:`\hat c^\dagger_i`
+is identified by its linear index :math:`i` in the fundamental operator set provided at construction.
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the creation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Target subspace index :math:`B'`, or :math:`-1` if the operator annihilates the source subspace.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<long>()});
 static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC(
-Matrix block for fundamental operator :math:`C^`
+Get the matrix block of the creation operator :math:`\hat c^\dagger_i` acting on subspace :math:`B`.
+
+The returned matrix is the representation of :math:`\hat c^\dagger_i` in the eigenbasis of
+:math:`\hat H`, i.e. :math:`\bigl[\hat c^\dagger_i\bigr]_{B' \leftarrow B}`, with shape :math:`\dim(B') \times
+\dim(B)` (not necessarily square).
 
 Parameters
 ----------
 op_linear_index : {par_0}
-   The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+   Linear index :math:`i` of the creation operator.
 sp_index : {par_1}
-   The index of the initial subspace.
+   Source subspace index :math:`B`.
 
 Returns
 -------
 {ret_0}
-   The index of the final subspace.
+   Matrix block of the creation operator from subspace :math:`B` to subspace :math:`B'`.
 )DOC",
                                                   {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}},
                                                   {c2py::python_typename<const triqs::atom_diag::atom_diag<true>::matrix_t &>()});
 static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC(
-Returns the state index in the full Hilbert space given a subspace index and an inner index
+Map a subspace-local pair :math:`(B, i)` to its linear index in the full Hilbert space.
+
+The full-Hilbert-space eigenstate index is
+
+.. math::
+
+   d(B, i) = \mathtt{first\_eigenstate\_of\_subspace}[B] + i,
+   \quad 0 \le i < \dim(B), \quad 0 \le d < N.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
 i : {par_1}
-   State index within the subspace.
+   Eigenstate index inside subspace :math:`B`, with :math:`0 \le i < \dim(B)`.
+
+Returns
+-------
+{ret_0}
+   Linear eigenstate index :math:`d(B, i)` in the eigenbasis of the full Hilbert space.
 )DOC",
-                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
-static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC(
-Get the i-th eigenvalue of subspace sp_index
+                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
+static const auto _c2py_doc_14 =
+   _c2py_fun_14.doc(R"DOC(
+Get the eigenvalue :math:`E_{B,i}` of the Hamiltonian.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
 i : {par_1}
-   State index within the subspace.
+   Eigenstate index inside subspace :math:`B`, with :math:`0 \le i < \dim(B)`.
+
+Returns
+-------
+{ret_0}
+   Eigenvalue :math:`E_{B,i}`, with the global ground-state energy subtracted.
 )DOC",
-                                                  {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}});
+                    {{c2py::python_typename<int>()}, {c2py::python_typename<int>()}}, {c2py::python_typename<double>()});
 static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
-The dimension of a subspace
+Get the dimension :math:`\dim(B)` of invariant subspace :math:`B`.
 
 Parameters
 ----------
 sp_index : {par_0}
-   Index of the invariant subspace.
+   Subspace index :math:`B`.
+
+Returns
+-------
+{ret_0}
+   Number of eigenstates in subspace :math:`B`.
 )DOC",
-                                                  {{c2py::python_typename<int>()}});
+                                                  {{c2py::python_typename<int>()}}, {c2py::python_typename<int>()});
 static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC(
-Get the dimensions of all subspaces
-)DOC");
-static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC(
-Unitary matrix for given subspace that transform from Fock states to eigenstates
-)DOC");
+Get the dimensions :math:`\dim(B)` of all invariant subspaces.
+
+Returns
+-------
+{ret_0}
+   List of subspace dimensions, indexed by subspace index :math:`B`.
+)DOC",
+                                                  {}, {c2py::python_typename<std::vector<int>>()});
+static const auto _c2py_doc_17 = _c2py_fun_17.doc(
+   R"DOC(
+Get the unitary matrix :math:`U_B` mapping the Fock basis of subspace :math:`B` to its eigenbasis.
+
+Parameters
+----------
+sp_index : {par_0}
+   Subspace index :math:`B`.
+
+Returns
+-------
+{ret_0}
+   Unitary matrix :math:`U_B` such that :math:`H_B = U_B\, \mathrm{diag}(E_B)\, U_B^\dagger`
+   within the subspace.
+)DOC",
+   {{c2py::python_typename<int>()}},
+   {c2py::python_typename<
+      const nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>> &>()});
 
 // ----- Method table ----
 template <>
@@ -495,19 +691,19 @@ PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_11 = R"DOC(A vector of all the energies, grouped by subspace)DOC";
-static constexpr auto prop_doc_12 = R"DOC(The list of Fock states for each subspace)DOC";
+static constexpr auto prop_doc_11 = R"DOC(Get all eigenvalues :math:`E_{B,i}` grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_12 = R"DOC(Get the Fock states of every invariant subspace.)DOC";
 static constexpr auto prop_doc_13 = R"DOC(Get the data of the fundamental operator set used at construction.)DOC";
-static constexpr auto prop_doc_14 = R"DOC(Dimension of the full Hilbert space)DOC";
-static constexpr auto prop_doc_15 = R"DOC(Ground state energy (i.e. min of all subspaces))DOC";
-static constexpr auto prop_doc_16 = R"DOC(Get the Hamiltonian used at construction as a triqs::operators::many_body_operator.)DOC";
-static constexpr auto prop_doc_17 = R"DOC(Number of invariant subspaces)DOC";
-static constexpr auto prop_doc_18 = R"DOC(A vector of all the quantum numbers, grouped by subspace)DOC";
-static constexpr auto prop_doc_19 = R"DOC(Unitary matrices that transform from Fock states to eigenstates)DOC";
-static constexpr auto prop_doc_20 = R"DOC(Returns the vacuum state as a vector in the full Hilbert space
+static constexpr auto prop_doc_14 = R"DOC(Get the dimension of the full Hilbert space.)DOC";
+static constexpr auto prop_doc_15 = R"DOC(Get the ground-state energy, i.e. the minimum eigenvalue across all invariant subspaces.)DOC";
+static constexpr auto prop_doc_16 = R"DOC(Get the Hamiltonian used at construction as a generic many-body operator.)DOC";
+static constexpr auto prop_doc_17 = R"DOC(Get the number of invariant subspaces produced by the chosen partitioning scheme.)DOC";
+static constexpr auto prop_doc_18 = R"DOC(Get the values of all quantum-number operators, grouped by invariant subspace.)DOC";
+static constexpr auto prop_doc_19 = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
+static constexpr auto prop_doc_20 = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
 
-This vector is written in the eigenbasis of the Hamiltonian.)DOC";
-static constexpr auto prop_doc_21 = R"DOC(Returns invariant subspace containing the vacuum state)DOC";
+The returned vector is expressed in the eigenbasis of the Hamiltonian.)DOC";
+static constexpr auto prop_doc_21 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
 
 // ----- Member and property table ----
 
@@ -532,10 +728,23 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Lightweight exact diagonalization solver
+const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Lightweight exact diagonalization solver for finite fermionic Hamiltonians.
 
-This class is provided as a simple tool to diagonalize Hamiltonians of
-finite fermionic systems of a moderate size.)DOC"
+Perform exact diagonalization of a many-body Hamiltonian :math:`\hat H` acting on the Fock space of a 
+finite set of fermionic single-particle states. The Hilbert space is split into invariant subspaces of 
+:math:`\hat H`, each of which is diagonalized independently.
+
+After construction the solver exposes
+
+- the eigenvalues :math:`E_B` and unitary matrix :math:`U_B` of every invariant subspace :math:`B`,
+- the matrix blocks of every fundamental creation/annihilation operator :math:`\hat c_i, \hat c^\dagger_i` in the
+  eigenbasis, where :math:`i` is the linear index of the operator in the fundamental operator set,
+- the subspace-to-subspace connections induced by every fundamental creation/annihilation operator, i.e. the
+  index of the subspace that each operator maps a given subspace to (or :math:`-1` if it annihilates it),
+- convenience routines that turn a generic many-body operator into a block-matrix representation in the
+  eigenbasis.
+
+Two specializations are provided, one for real-valued and one for complex-valued Hamiltonians.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 
 // ==================== module functions ====================
@@ -656,24 +865,33 @@ static auto const _c2py_fun_27 = c2py::dispatcher_f_kw_t{
 
 static const auto _c2py_doc_18 = _c2py_fun_18.doc(
    R"DOC(
-Act with operator `op` on state `st`
+Act with a many-body operator on a state vector, :math:`|\psi'\rangle = \hat O\, |\psi\rangle`.
+
+Both the input and the output state are vectors in the full Hilbert space expressed in the eigenbasis
+of the Hamiltonian. The operator is converted internally into its block-matrix representation in the eigenbasis
+before being applied to the state. Block-wise, for every source subspace :math:`B` with target subspace
+:math:`B'`,
+
+.. math::
+
+   \psi'_{B'} \mathrel{+}= O_{B' \leftarrow B}\, \psi_{B}.
 
 Parameters
 ----------
 op : {par_0}
-   Operator to act on the state.
+   Many-body operator to apply.
 st : {par_1}
-   Initial state vector in the full Hilbert space, written in the eigenbasis of the Hamiltonian.
+   Input state vector in the full Hilbert space, expressed in the eigenbasis of the Hamiltonian.
 atom : {par_2}
-   Solved diagonalization problem.
+   Solved diagonalization problem providing the eigenbasis.
 
 Returns
 -------
 [1] : {ret_0}
-   Final state vector in the full Hilbert space.
+   Output state vector in the full Hilbert space, expressed in the eigenbasis of the Hamiltonian.
 
 [2] : {ret_1}
-   Final state vector in the full Hilbert space.
+   Output state vector in the full Hilbert space, expressed in the eigenbasis of the Hamiltonian.
 )DOC",
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
@@ -684,22 +902,30 @@ Returns
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::full_hilbert_space_state_t>()});
 static const auto _c2py_doc_19 = _c2py_fun_19.doc(
    R"DOC(
-The atomic density matrix
+Compute the atomic density matrix at inverse temperature :math:`\beta`.
+
+Returns the Gibbs density matrix
+:math:`\hat\rho = e^{-\beta \hat H} / Z` as a block-diagonal matrix, with one diagonal block per invariant
+subspace :math:`B`. The density matrix is expressed in the eigenbasis, hence each block is itself diagonal,
+
+.. math::
+
+   \rho_B = \mathrm{diag}\!\Bigl( e^{-\beta E_{B,i}} / Z \Bigr)_{i=0}^{\dim(B)-1}.
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 
 Returns
 -------
 [1] : {ret_0}
-   Gibbs' density matrix of the system.
+   Gibbs density matrix of the system, as a list of diagonal blocks indexed by subspace index :math:`B`.
 
 [2] : {ret_1}
-   Gibbs' density matrix of the system.
+   Gibbs density matrix of the system, as a list of diagonal blocks indexed by subspace index :math:`B`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()}},
@@ -707,25 +933,33 @@ Returns
     c2py::python_typename<typename triqs::atom_diag::atom_diag<true>::block_matrix_t>()});
 static const auto _c2py_doc_20 = _c2py_fun_20.doc(
    R"DOC(
-The atomic Matsubara Green's function, possibly with excluded states (none by default)
+Build the atomic Matsubara Green's function directly from a solved diagonalization problem.
+
+Internally builds the Lehmann representation and evaluates
+
+.. math::
+
+   G(i\omega) = \sum_p \frac{r_p}{i\omega - p}
+
+on the requested mesh.
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 gf_struct : {par_2}
-   Block structure of the Green's function, block name -> list of inner indices.
+   Block structure of the Green's function: block name -> list of inner indices.
 n_iw : {par_3}
-   Number of Matsubara frequencies.
+   Number of positive Matsubara frequencies.
 excluded_states : {par_4}
-   Excluded eigenstates as pairs (subspace index, inner index).
+   Eigenstates to exclude from the Lehmann sum, as :math:`(B, i)` pairs.
 
 Returns
 -------
 {ret_0}
-   Atomic Green's function :math:`G_{at}(i)`.
+   Atomic Green's function :math:`G_{ab}(i\omega)`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()},
@@ -735,25 +969,31 @@ Returns
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imfreq>>()});
 static const auto _c2py_doc_21 = _c2py_fun_21.doc(
    R"DOC(
-The atomic Green's function in Legendre basis, possibly with excluded states (none by default)
+Build the atomic Green's function in the Legendre basis directly from a solved diagonalization problem.
+
+Internally builds the Lehmann representation and evaluates the corresponding Legendre coefficients
+
+.. math::
+
+   G_\ell = \sqrt{2\ell + 1}\, \int_0^\beta d\tau\, P_\ell(2\tau/\beta - 1)\, G(\tau) \;.
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 gf_struct : {par_2}
-   Block structure of the Green's function, block name -> list of inner indices.
+   Block structure of the Green's function: block name -> list of inner indices.
 n_l : {par_3}
-   Number of Legendre coefficients.
+   Number of Legendre coefficients to compute.
 excluded_states : {par_4}
-   Excluded eigenstates as pairs (subspace index, inner index).
+   Eigenstates to exclude from the Lehmann sum, as :math:`(B, i)` pairs.
 
 Returns
 -------
 {ret_0}
-   Atomic Green's function :math:`G_{at}()`.
+   Atomic Green's function :math:`G_{ab}(\ell)`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()},
@@ -763,25 +1003,31 @@ Returns
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::legendre>>()});
 static const auto _c2py_doc_22 = _c2py_fun_22.doc(
    R"DOC(
-The atomic imaginary time Green's function, possibly with excluded states (none by default)
+Build the atomic imaginary-time Green's function directly from a solved diagonalization problem.
+
+Internally builds the Lehmann representation and evaluates it on the requested mesh,
+
+.. math::
+
+   G(\tau) = \sum_p r_p \, \frac{-e^{-\tau p}}{1 + e^{-\beta p}}, \quad \tau \in [0, \beta].
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 gf_struct : {par_2}
-   Block structure of the Green's function, block name -> list of inner indices.
+   Block structure of the Green's function: block name -> list of inner indices.
 n_tau : {par_3}
-   Number of imaginary time points.
+   Number of imaginary-time points.
 excluded_states : {par_4}
-   Excluded eigenstates as pairs (subspace index, inner index).
+   Eigenstates to exclude from the Lehmann sum, as :math:`(B, i)` pairs.
 
 Returns
 -------
 {ret_0}
-   Atomic Green's function :math:`G_{at}()`
+   Atomic Green's function :math:`G_{ab}(\tau)`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()},
@@ -791,29 +1037,40 @@ Returns
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imtime>>()});
 static const auto _c2py_doc_23 = _c2py_fun_23.doc(
    R"DOC(
-The atomic retarded Green's function, possibly with excluded states (none by default)
+Build the atomic retarded Green's function on a real-frequency mesh directly from a solved
+diagonalization problem.
+
+Internally builds the Lehmann representation, constructs a real-frequency mesh from the requested energy 
+window and number of frequency points, and evaluates 
+
+.. math::
+
+   G(\omega) = \sum_p \frac{r_p}{\omega + i\eta - p} \; ,
+
+with the broadening :math:`\eta`.
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 gf_struct : {par_2}
-   Block structure of the Green's function, block name -> list of inner indices.
+   Block structure of the Green's function: block name -> list of inner indices.
 energy_window : {par_3}
-   Energy window :math:`({min}, {max})`.
+   Energy window :math:`(\omega_{\text{min}}, \omega_{\text{max}})` of the real-frequency
+   mesh.
 n_w : {par_4}
    Number of frequency points.
 broadening : {par_5}
-   Lorentian broadening of the spectrum (imaginary frequency shift).
+   Lorentzian broadening :math:`\eta` of the spectrum (small positive imaginary-frequency shift).
 excluded_states : {par_6}
-   Excluded eigenstates as pairs (subspace index, inner index).
+   Eigenstates to exclude from the Lehmann sum, as :math:`(B, i)` pairs.
 
 Returns
 -------
 {ret_0}
-   Atomic Green's function :math:`G_{at}()`.
+   Atomic Green's function :math:`G_{ab}(\omega)`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()},
@@ -825,38 +1082,52 @@ Returns
    {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::refreq>>()});
 static const auto _c2py_doc_24 = _c2py_fun_24.doc(
    R"DOC(
-The atomic partition function
+Compute the atomic partition function at inverse temperature :math:`\beta`.
+
+Sums the Boltzmann weights of all eigenstates of the Hamiltonian,
+
+.. math::
+
+   Z = \sum_{B} \sum_{i=0}^{\dim(B)-1} e^{-\beta E_{B,i}},
+
+where the eigenvalues :math:`E_{B,i}` are taken with respect to the ground-state energy as zero.
 
 Parameters
 ----------
 atom : {par_0}
    Solved diagonalization problem.
 beta : {par_1}
-   Inverse temperature.
+   Inverse temperature :math:`\beta > 0`.
 
 Returns
 -------
 {ret_0}
-   Value of the partition function.
+   Value of the partition function :math:`Z`.
 )DOC",
    {{c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<double>()}},
    {c2py::python_typename<double>()});
 static const auto _c2py_doc_25 = _c2py_fun_25.doc(
    R"DOC(
-Compute values of a given quantum number for all eigenstates
+Tabulate the eigenvalues :math:`q_{B,i} = \langle B,i\,|\,\hat Q\,|\,B,i\rangle` of a quantum-number
+operator :math:`\hat Q` over all eigenstates of the Hamiltonian.
+
+Assumes that :math:`\hat Q` is a quantum number, i.e. that it commutes with :math:`\hat H` and is 
+therefore block-diagonal in the eigenbasis with diagonal blocks. The diagonal entries are returned, grouped by 
+invariant subspace :math:`B`. Use `quantum_number_eigenvalues_checked` for a variant that explicitly verifies the
+block-diagonal property.
 
 Parameters
 ----------
 op : {par_0}
-   Observable operator; supposed to be a quantum number (if not -> exception).
+   Observable operator; expected to be a quantum number (otherwise an exception is raised).
 atom : {par_1}
    Solved diagonalization problem.
 
 Returns
 -------
 {ret_0}
-   The eigenvalues by block
+   Eigenvalues :math:`q_{B,i}` grouped by invariant subspace :math:`B`.
 )DOC",
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
@@ -864,22 +1135,24 @@ Returns
    {c2py::python_typename<std::vector<std::vector<double>>>()});
 static const auto _c2py_doc_26 = _c2py_fun_26.doc(
    R"DOC(
-Compute values of a given quantum number for all eigenstates
+Tabulate the eigenvalues :math:`q_{B,i}` of a quantum-number operator :math:`\hat Q`, also checking that 
+the operator is diagonal in the eigenbasis.
 
-This function is similar to :ref:`quantum_number_eigenvalues()` except it checks that
-the quantum number operator is diagonal in the eigenbasis.
+Same as `quantum_number_eigenvalues`, but also verifies that the supplied operator is diagonal in the
+eigenbasis of the Hamiltonian. If it is not, an exception is raised. Useful when constructing a quantum number
+from scratch and one wants to confirm that it really is a conserved quantity of `atom`.
 
 Parameters
 ----------
 op : {par_0}
-   Observable operator; supposed to be a quantum number (if not -> exception).
+   Observable operator; expected to be a quantum number (otherwise an exception is raised).
 atom : {par_1}
    Solved diagonalization problem.
 
 Returns
 -------
 {ret_0}
-   The eigenvalues by block
+   Eigenvalues :math:`q_{B,i}` grouped by invariant subspace :math:`B`.
 )DOC",
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
@@ -887,12 +1160,22 @@ Returns
    {c2py::python_typename<std::vector<std::vector<double>>>()});
 static const auto _c2py_doc_27 = _c2py_fun_27.doc(
    R"DOC(
-Compute Tr (op * density_matrix)
+Compute the trace of a many-body operator weighted by a block-diagonal density matrix.
+
+Evaluates
+
+.. math::
+
+   \mathrm{Tr}\,(\hat\rho\, \hat O) = \sum_{B} \mathrm{Tr}\,(\rho_B\, O_{BB}),
+
+where :math:`\hat\rho` is provided as a list of diagonal blocks (one per invariant subspace of `atom`) and only
+the diagonal blocks :math:`O_{BB}` of :math:`\hat O` contribute. Useful for computing expectation values of
+arbitrary observables once a density matrix has been built.
 
 Parameters
 ----------
 density_matrix : {par_0}
-   Density matrix as a list of diagonal blocks for all invariant subspaces in `atom`.
+   Density matrix as a list of diagonal blocks, indexed by subspace index :math:`B`.
 op : {par_1}
    Operator to be averaged.
 atom : {par_2}
@@ -901,10 +1184,10 @@ atom : {par_2}
 Returns
 -------
 [1] : {ret_0}
-   Operator `op` averaged over the density matrix.
+   Expectation value of :math:`\hat O` under the given density matrix.
 
 [2] : {ret_1}
-   Operator `op` averaged over the density matrix.
+   Expectation value of :math:`\hat O` under the given density matrix.
 )DOC",
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::block_matrix_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::block_matrix_t &>()},
@@ -933,8 +1216,22 @@ static PyMethodDef module_methods[] = {
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "atom_diag",                                               /* name of module */
-                                        R"RAWDOC(Lightweight exact diagonalization solver)RAWDOC", /* module documentation, may be NULL */
+                                        "atom_diag", /* name of module */
+                                        R"RAWDOC(Exact diagonalization of finite fermionic Hamiltonians.
+
+This module exposes a lightweight exact diagonalization solver for the atomic (local) problem of a quantum impurity,
+together with helpers that build derived quantities from a solved eigensystem. The main classes are:
+
+- :class:`AtomDiagReal` and :class:`AtomDiagComplex`: hold the block-diagonal Hamiltonian, its eigensystem, and the
+  matrix representations of the fundamental creation/annihilation operators in the eigenbasis. The
+  :func:`AtomDiag` factory dispatches between the real and complex variant based on the Hamiltonian.
+
+A second group of free functions takes a solved :class:`AtomDiagReal` / :class:`AtomDiagComplex` and produces derived
+quantities: thermodynamic averages (:func:`partition_function`, :func:`atomic_density_matrix`,
+:func:`trace_rho_op`), application of an operator to a state (:func:`act`), tabulation of conserved-quantity
+eigenvalues (:func:`quantum_number_eigenvalues`, :func:`quantum_number_eigenvalues_checked`), and the atomic Green's
+function on different meshes (:func:`atomic_g_tau`, :func:`atomic_g_iw`, :func:`atomic_g_l`, :func:`atomic_g_w`).
+)RAWDOC",                                            /* module documentation, may be NULL */
                                         -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
                                         module_methods,
                                         NULL,
