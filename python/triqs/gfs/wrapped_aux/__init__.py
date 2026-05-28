@@ -7,7 +7,7 @@ target rank to keep template-instantiation cost manageable) together
 with a few low-level helpers used internally by the pure-Python
 :class:`~triqs.gfs.gf.Gf` class.
 
-User code should access these features through :class:`triqs.gfs.gf.Gf`
+User code should access these features through :class:`~triqs.gfs.gf.Gf`
 and the functions in :mod:`triqs.gfs.gf_fnt` / :mod:`triqs.gfs.gf_factories`.
 """
 

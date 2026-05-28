@@ -17,12 +17,41 @@
 #
 # Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+r"""Plot helpers for Green's functions on a product mesh 
+``BZ x (frequency / time)``.
+
+Used to produce ``omega`` vs. ``k``-along-a-path color maps from
+two-variable Green's functions.
+"""
+
 from .select_indices import *
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 from scipy.interpolate import griddata
 import numpy as np
 
 def plottable_slice_along_path(self,path, method="cubic"):
+     '''Build a 2D ``(k_index, omega)`` grid for ``contourf`` plotting.
+
+     Parameters
+     ----------
+     path : sequence of (float, float)
+         Vertices of the piecewise-linear path through the first
+         (Brillouin-zone) mesh component.
+     method : {'cubic', 'linear', 'nearest'}, optional
+         Interpolation method for :func:`scipy.interpolate.griddata`.
+         Default ``'cubic'``.
+
+     Returns
+     -------
+     xi, yi : numpy.ndarray
+         Regular grid axes (k index and frequency / time).
+     zi : numpy.ndarray
+         Interpolated data on the grid (complex).
+     zmin, zmax : complex
+         Min / max of the data over the path.
+     high_sym : list
+         Indices in ``xi`` corresponding to the path vertices.
+     '''
 
      indices,high_sym=select_path_indices(path,self.mesh.components[0],True)
 
@@ -50,8 +79,25 @@ def plottable_slice_along_path(self,path, method="cubic"):
      return xi,yi,zi,zmin,zmax,high_sym
 
 def plot(self, opt_dict):
-    r"""
-    Plot protocol for GfBrillouinZone objects.
+    r"""Plot-protocol implementation for product ``BZ x (frequency / time)`` 
+    Green's functions.
+
+    Parameters
+    ----------
+    opt_dict : dict
+        Plot options:
+
+        * ``type`` — only ``'contourf'`` (default) is supported.
+        * ``method`` — interpolation method. Default ``'nearest'``.
+        * ``mode`` — ``'R'`` or ``'I'``. Default ``'R'``.
+        * ``path`` — required, a list of BZ coordinates defining the
+          k-cut.
+
+    Returns
+    -------
+    list of dict
+        Contour descriptor consumed by
+        :func:`~triqs.plot.mpl_interface.oplot`.
     """
 
     plot_type = opt_dict.pop('type','contourf')

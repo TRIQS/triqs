@@ -18,20 +18,94 @@
 #
 # Authors: Michel Ferrero, Alexander Hampel, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
+r"""Pure-Python utilities operating on :class:`~triqs.gfs.gf.Gf` and 
+:class:`~triqs.gfs.block_gf.BlockGf`."""
+
 from . import lazy_expressions, descriptors, gf_fnt
 from triqs.mesh import MeshImFreq, MeshLegendre, MeshImTime, MeshReFreq, MeshReTime
 from .block_gf import BlockGf
+from .block2_gf import Block2Gf
 from .gf import Gf
 from .gf_factories import make_hermitian
 import numpy as np
 from itertools import product
 from .backwd_compat.gf_refreq import GfReFreq
-from .map_block import map_block
 from timeit import default_timer as timer
 
-def inverse(x):
+
+def map_block(fun, G):
+    r"""Apply ``fun`` to every block of ``G`` and return the result.
+
+    Parameters
+    ----------
+    fun : callable
+        Function with signature ``fun(g) -> Gf`` (or returning any
+        object — see "Returns" below).
+    G : BlockGf or Block2Gf
+        Container whose blocks ``fun`` is applied to.
+
+    Returns
+    -------
+    BlockGf or Block2Gf or list
+        - If ``fun`` returns :class:`~triqs.gfs.gf.Gf` instances, the 
+          result is a new :class:`~triqs.gfs.block_gf.BlockGf` / 
+          :class:`~triqs.gfs.block2_gf.Block2Gf` with the same block
+          structure as ``G``.
+        - Otherwise the per-block results are returned as a plain list
+          (or list of lists for :class:`~triqs.gfs.block2_gf.Block2Gf`).
+
+    Raises
+    ------
+    Exception
+        If ``G`` is neither a :class:`~triqs.gfs.block_gf.BlockGf` nor a 
+        :class:`~triqs.gfs.block2_gf.Block2Gf`.
+
+    Examples
+    --------
+    >>> from triqs.gfs import map_block, inverse
+    >>> G_inv = map_block(inverse, G_block)
     """
-    Return the inverse of its argument, with proper treatement of lazy expressions.
+    if isinstance(G, BlockGf):
+        block_list = [fun(bl) for name, bl in G]
+        if isinstance(block_list[0], Gf):
+            return BlockGf(name_list=list(G.indices), block_list=block_list)
+        else:
+            return block_list
+
+    elif isinstance(G, Block2Gf):
+        block_list = []
+        for bn1 in G.indices1:
+            block_list.append([fun(G[bn1, bn2]) for bn2 in G.indices2])
+        if isinstance(block_list[0][0], Gf):
+            return Block2Gf(name_list1=list(G.indices1), name_list2=list(G.indices2), block_list=block_list)
+        else:
+            return block_list
+
+    else:
+        raise Exception('map_block only applicable for BlockGf and Block2Gf')
+
+
+def inverse(x):
+    r"""Element-wise inverse with lazy-expression support.
+
+    Parameters
+    ----------
+    x : Gf, BlockGf, LazyExpr or numeric
+        Object to invert. For a :class:`~triqs.gfs.gf.Gf` / 
+        :class:`~triqs.gfs.block_gf.BlockGf` this calls ``x.inverse()`` 
+        (target-space matrix inverse at every mesh point); for a lazy 
+        expression a new lazy node is returned; for a plain scalar 
+        ``1.0 / x``.
+
+    Returns
+    -------
+    Same type as ``x``
+        The inverse.
+
+    Examples
+    --------
+    >>> from triqs.gfs import inverse, iOmega_n
+    >>> Sigma << iOmega_n - inverse(G_iw)
     """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("inverse", inverse) (x)
@@ -40,8 +114,18 @@ def inverse(x):
     return 1.0 / x
 
 def conjugate(x):
-    """
-    Return the conjugate of a Green's function
+    r"""Complex conjugate with lazy-expression support.
+
+    Parameters
+    ----------
+    x : Gf, BlockGf or LazyExpr
+        Object to conjugate. Must expose a ``conjugate()`` method
+        unless it is a lazy expression.
+
+    Returns
+    -------
+    Same type as ``x``
+        :math:`G^*`.
     """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("conjugate", conjugate) (x)
@@ -49,8 +133,18 @@ def conjugate(x):
     return x.conjugate()
 
 def transpose(x):
-    """
-    Return the transpose of a Green's function
+    r"""Transpose in target space with lazy-expression support.
+
+    Parameters
+    ----------
+    x : Gf, BlockGf or LazyExpr
+        Object to transpose. Must expose a ``transpose()`` method
+        unless it is a lazy expression.
+
+    Returns
+    -------
+    Same type as ``x``
+        :math:`G^T` (mesh axes untouched).
     """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("transpose", transpose) (x)
@@ -59,21 +153,38 @@ def transpose(x):
 
 
 def delta(g):
-    """
-    Compute Delta_iw from G0_iw.
-    CAUTION: This function assumes the following properties of g
-      * The diagonal components of g should decay as 1/iOmega
-      * g should fullfill the property g[iw][i,j] = conj(g[-iw][j,i])
+    r"""Hybridization function :math:`\Delta(i\omega_n)` extracted from 
+    a non-interacting Green's function.
+
+    Computes :math:`\Delta = i\omega_n - G_0^{-1}` and removes the
+    fitted constant tail so that :math:`\Delta(i\omega_n) \to 0` at
+    large frequencies.
 
     Parameters
     ----------
-    g : BlockGf (of GfImFreq) or GfImFreq
-        Non-interacting Green's function.
+    g : Gf or BlockGf
+        Non-interacting Green's function :math:`G_0` on a Matsubara
+        mesh, either matrix-valued or scalar-valued.
 
     Returns
     -------
-    delta_iw : BlockGf (of GfImFreq) or GfImFreq
-               Hybridization function.
+    Gf or BlockGf
+        Hybridization function on the same mesh as :math:`G_0`.
+
+    Notes
+    -----
+    Assumes:
+
+    * the diagonal components of :math:`G_0` decay as :math:`1/i\omega_n`;
+    * :math:`G_0` is Hermitian, i.e.
+      :math:`G_0(i\omega_n)_{ij} = \overline{G_0(-i\omega_n)_{ji}}`.
+
+    Prints a warning if the tail fit residual exceeds ``1e-5``.
+
+    Examples
+    --------
+    >>> from triqs.gfs import delta
+    >>> Delta_iw = delta(G0_iw)
     """
 
     if isinstance(g, BlockGf):
@@ -93,17 +204,40 @@ def delta(g):
 
 # Determine one of G0_iw, G_iw and Sigma_iw from other two using Dyson's equation
 def dyson(**kwargs):
-    """
-    Solve Dyson's equation for given two of G0_iw, G_iw and Sigma_iw to yield the third.
+    r"""Solve Dyson's equation for the missing quantity.
+
+    Given exactly two of :math:`G_0`, :math:`G` and :math:`\Sigma`,
+    return the third using
+
+    .. math::
+
+        G^{-1} = G_0^{-1} - \Sigma.
 
     Parameters
     ----------
-    G0_iw : Gf, optional
-            Non-interacting Green's function.
-    G_iw : Gf, optional
-           Interacting Green's function.
-    Sigma_iw : Gf, optional
-               Self-energy.
+    G0_iw : Gf or BlockGf, optional
+        Non-interacting Green's function.
+    G_iw : Gf or BlockGf, optional
+        Interacting Green's function.
+    Sigma_iw : Gf or BlockGf, optional
+        Self-energy.
+
+    Returns
+    -------
+    Gf or BlockGf
+        The remaining quantity, of the same type as the inputs.
+
+    Raises
+    ------
+    ValueError
+        If fewer or more than two of the three keyword arguments are
+        provided.
+
+    Examples
+    --------
+    >>> from triqs.gfs import dyson
+    >>> Sigma_iw = dyson(G0_iw=G0_iw, G_iw=G_iw)
+    >>> G_iw    = dyson(G0_iw=G0_iw, Sigma_iw=Sigma_iw)
     """
     if not (len(kwargs)==2 and set(kwargs.keys())<set(['G0_iw','G_iw', 'Sigma_iw'])):
         raise ValueError('dyson: Two (and only two) of G0_iw, G_iw and Sigma_iw must be provided to determine the third.')
@@ -118,29 +252,39 @@ def dyson(**kwargs):
         return Sigma_iw
 
 def read_gf_from_txt(block_txtfiles, block_name):
-    """
-    Read a GfReFreq from text files with the format (w, Re(G), Im(G)) for a single block.
+    r"""Read a real-frequency Green's function block from text files.
 
-    Notes
-    -----
-    A BlockGf must be constructed from multiple GfReFreq objects if desired.
-    The mesh must be the same for all files read in.
-    Non-uniform meshes are not supported.
+    Each text file must have three columns ``(w, Re(G), Im(G))``;
+    multiple files are combined into a matrix-valued
+    :class:`~triqs.gfs.backwd_compat.gf_refreq.GfReFreq`.
 
     Parameters
     ----------
-    block_txtfiles: Rank 2 square np.array(str) or list[list[str]]
-        The text files containing the GF data that need to read for the block.
-        e.g. [['up_eg1.dat']] for a one-dimensional block and
-             [['up_eg1_1.dat','up_eg2_1.dat'],
-              ['up_eg1_2.dat','up_eg2_2.dat']] for a 2x2 block.
-    block_name: str
-        Name of the block.
+    block_txtfiles : 2D array-like of str
+        Rank-2 array of file names, one per matrix element of the
+        target space, e.g. ``[['up_eg1.dat']]`` for a 1x1 block or
+        ``[['11.dat', '12.dat'], ['21.dat', '22.dat']]`` for a 2x2
+        block.
+    block_name : str
+        Name attached to the returned Green's function.
 
     Returns
     -------
-    g: GfReFreq
-        The real frequency Green's function read in.
+    GfReFreq
+        Matrix-valued real-frequency Green's function read from disk.
+
+    Notes
+    -----
+    * The mesh must be identical across files.
+    * Non-uniform meshes are not supported.
+    * A :class:`~triqs.gfs.block_gf.BlockGf` must be assembled manually 
+      from multiple :class:`~triqs.gfs.backwd_compat.gf_refreq.GfReFreq` 
+      objects if desired.
+
+    Examples
+    --------
+    >>> g_up = read_gf_from_txt([['up_11.dat', 'up_12.dat'],
+    ...                          ['up_21.dat', 'up_22.dat']], 'up')
     """
     block_txtfiles = np.array(block_txtfiles) # Must be an array to use certain functions
     N1,N2 = block_txtfiles.shape
@@ -153,13 +297,24 @@ def read_gf_from_txt(block_txtfiles, block_name):
 
 
 def write_gf_to_txt(g):
-    """
-    Write a GfReFreq or GfImFreq to in the format (w/iw, Re(G), Im(G)) for a single block.
+    r"""Write a frequency Green's function to text files.
+
+    Writes one file per matrix element of the target space with three
+    columns ``(w, Re(G), Im(G))`` (real frequency) or
+    ``(omega_n, Re(G), Im(G))`` (Matsubara). File names follow the
+    pattern ``"{g.name}_{i}_{j}.dat"``.
 
     Parameters
     ----------
-    g: GfReFreq or GfImFreq
-        The real/imaginary frequency Green's function to be written out.
+    g : Gf
+        Real- or Matsubara-frequency Green's function with a
+        matrix-valued target space.
+
+    Raises
+    ------
+    ValueError
+        If ``g.mesh`` is neither :class:`~triqs.mesh.meshes.MeshReFreq` 
+        nor :class:`~triqs.mesh.meshes.MeshImFreq`.
     """
     if isinstance(g.mesh, MeshReFreq):
         mesh = np.array([w.real for w in g.mesh]).reshape(-1,1)
@@ -176,15 +331,28 @@ def write_gf_to_txt(g):
 
 
 def make_zero_tail(g, n_moments=10):
-    """
-    Return a container for the high-frequency coefficients of a given Green function initialized to zero.
+    r"""Container for high-frequency tail coefficients, initialized to zero.
 
     Parameters
     ----------
-    g: GfImFreq or GfReFreq or GfImTime or GfReTime
-        The real/imaginary frequency/time Green's function that we create the tail-array for.
+    g : Gf or BlockGf
+        Green's function on a frequency or time mesh for which the tail
+        is constructed.
+    n_moments : int, optional
+        Number of tail moments :math:`G_n` (orders ``0 ... n_moments-1``).
+        Default ``10``.
 
-    n_moments [default=10]: The number of high-frequency moments in the tail (starting from order 0).
+    Returns
+    -------
+    numpy.ndarray or BlockGf-like
+        Zero array of shape ``(n_moments, *g.target_shape)`` for a
+        single :class:`~triqs.gfs.gf.Gf`; a block-wise container for a
+        :class:`~triqs.gfs.block_gf.BlockGf`.
+
+    Raises
+    ------
+    RuntimeError
+        If ``g`` is not a frequency or time Green's function.
     """
     if isinstance(g, Gf) and isinstance(g.mesh, (MeshImFreq, MeshReFreq, MeshImTime, MeshReTime)):
         n_moments = max(1, n_moments)
@@ -196,28 +364,30 @@ def make_zero_tail(g, n_moments=10):
 
 
 def fit_legendre(g_t, order=10):
-    """ General fit of a noisy imaginary time Green's function
-    to a low order Legendre expansion in imaginary time.
-
-    Only Hermiticity is imposed on the fit, so discontinuities has
-    to be fixed separately (see the method enforce_discontinuity)
-
-    Author: Hugo U.R. Strand
+    r"""Fit a (possibly noisy) imaginary-time Green's function to a 
+    Legendre expansion.
 
     Parameters
     ----------
-
-    g_t : TRIQS imaginary time Green's function (matrix valued)
-          Imaginary time Green's function to fit (possibly noisy binned data)
-
-    order : int
-            Maximal order of the fitted Legendre expansion
+    g_t : Gf or BlockGf
+        Matrix-valued imaginary-time Green's function (typically the
+        binned output of a QMC solver).
+    order : int, optional
+        Maximal order of the Legendre expansion (number of coefficients
+        used). Default ``10``.
 
     Returns
     -------
+    Gf or BlockGf
+        Legendre Green's function with ``order`` coefficients.
 
-    g_l : TRIQS Legendre polynomial Green's function (matrix valued)
-          Fitted Legendre Green's function with order `order`
+    Notes
+    -----
+    Only Hermiticity is imposed during the fit; discontinuities at
+    :math:`\tau = 0^+` and :math:`\tau = \beta^-` must be enforced
+    separately via :func:`triqs.gfs.enforce_discontinuity`.
+
+    Original author: Hugo U.R. Strand.
     """
 
     import numpy.polynomial.legendre as leg
@@ -266,32 +436,39 @@ def fit_legendre(g_t, order=10):
 
 
 def make_delta(V, eps, mesh, block_names=None):
-    r"""
-    Create a hybridization function from given hoppings and bath energies
-    as
-    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{j=1}^{Nb} V_{kj} S V_{jl}^* .
-    where S is either
-    .. math:: [i \omega_n - eps_j]^{-1}
-    for MeshImFreq or
-    .. math:: - exp(-tau * eps_j) / (1 + exp(-\beta * eps_j) )
-    for MeshImTime
+    r"""Hybridization function built from bath hoppings and energies.
+
+    .. math::
+
+        \Delta_{kl}(i\omega_n) = \sum_{j=1}^{N_b} V_{kj}\, S_j\, V_{jl}^*,
+
+    where the bath propagator is
+
+    .. math::
+
+        S_j = \frac{1}{i\omega_n - \varepsilon_j}
+        \qquad \text{(Matsubara)}
+        \qquad\text{or}\qquad
+        S_j = -\frac{e^{-\tau\varepsilon_j}}{1 + e^{-\beta\varepsilon_j}}
+        \qquad \text{(imaginary time).}
 
     Parameters
-    -----------
-    V : np.array (shape Norb x NB) or list thereof
-            Bath hopping matrix or matrix for each Gf block
-    eps : list(float) or list(list(float))
-            Bath energies or energies for each Gf block
+    ----------
+    V : numpy.ndarray, or list thereof
+        Bath hopping matrix. A list of arrays produces a
+        :class:`~triqs.gfs.block_gf.BlockGf`, one block per array.
+    eps : list of float, or list of list of float
+        Bath energies. Must match ``V`` block-by-block.
     mesh : MeshImFreq or MeshImTime
-            Mesh of the hybridization function
-    block_names : list(str)
-            List of block names, used if V, eps are lists
+        Mesh of the resulting hybridization function.
+    block_names : list of str, optional
+        Names used to label the blocks when ``V`` / ``eps`` are lists.
+        Defaults to ``['0', '1', ...]``.
 
     Returns
     -------
-    delta : Gf or BlockGf
-            Hybridization function on given mesh
-
+    Gf or BlockGf
+        Hybridization function on ``mesh``.
     """
 
     if isinstance(V, list):
@@ -325,58 +502,70 @@ def make_delta(V, eps, mesh, block_names=None):
 
 def discretize_bath(delta_in, Nb, eps0=3, V0=None, tol=1e-15, maxiter=10000,
                     cmplx=False, method='BFGS'):
-    r"""
-    Discretize a given hybridization function using Nb bath sites.
+    r"""Fit a hybridization function with ``Nb`` discrete bath sites.
 
-    The discretized hybridization is constructed as
-    .. math:: \Delta_{kl}^{disc} (i \omega_n) = \sum_{j=1}^{Nb} V_{kj} S  V_{jl}^* .
-    where S is either:
-    .. math:: [i \omega_n - eps_j]^{-1}
-    for MeshImFreq or
-    .. math:: - exp(-tau * eps_j) / (1 + exp(-\beta * eps_j) )
-    for MeshImTime.
+    The discretized hybridization
 
-    The hoppings V and energies eps are chosen to minimize the norm
-    .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{i \omega_n}^{N} | \Delta^{disc} (i \omega_n) - \Delta (i \omega_n) |^2 \right]^{\frac{1}{2}}
-    and for MeshImTime
-    .. math:: \left[ \frac{1}{\sqrt(N)} \sum_{\tau}^{N} | \Delta^{disc} (\tau) - \Delta (\tau) |^2 \right]^{\frac{1}{2}}
-    This minimization is performed with the given tolerance using scipy.optimize.minimize
-    or the scipy.optimize.basinhopping frontend.
+    .. math::
+
+        \Delta_{kl}^{\mathrm{disc}}(i\omega_n)
+        = \sum_{j=1}^{N_b} V_{kj}\, S_j\, V_{jl}^*,
+        \qquad
+        S_j = \begin{cases}
+            (i\omega_n - \varepsilon_j)^{-1}, & \text{Matsubara} \\
+            -e^{-\tau\varepsilon_j}/(1+e^{-\beta\varepsilon_j}), &
+                \text{imaginary time}
+        \end{cases}
+
+    is fitted to ``delta_in`` by minimizing the norm
+
+    .. math::
+
+        \biggl[\frac{1}{N}
+            \sum_{n=1}^{N}
+            \bigl|\Delta^{\mathrm{disc}}(i\omega_n) - \Delta(i\omega_n)\bigr|^2
+        \biggr]^{1/2}
+
+    (or the analogous imaginary-time expression) using
+    :func:`scipy.optimize.minimize` /
+    :func:`scipy.optimize.basinhopping`.
 
     Parameters
     ----------
     delta_in : Gf or BlockGf
-        Matsubara or imaginary-time hybridization function to discretize
+        Matsubara or imaginary-time hybridization function to discretize.
     Nb : int
-        Number of bath sites per Gf block
-    eps0: float or list(float), default=3.0
-        Approximate bandwith or initial guesses for bath energies.
-    V0 : float or np.ndarray (shape norb X Nb), optional
-        If float: initial guess used for all hopping values.
-        If np.ndarray: initial guess for V.
-        Otherwise use the cholesky decomposition of
-        .. math:: \lim_{\omega->\infty} i\omega*\Delta(i\omega)
-        or
-        .. math:: -\Delta(\tau=0^+) - \Delta(\tau=\beta^-)
-        to obtain an initial guess for V.
-    tol : float, default=1e-15
-        Tolerance for scipy minimize on data to optimize (xatol / ftol)
-    maxiter : int, default=10000
-        Maximum number of optimization steps
-    complx : bool, default=False
-        Allow the hoppings V to be complex
-    method : string, default=BFGS
-        Method for minimizing the function.
-        Should be one of 'BFGS', 'Nelder-Mead' and 'basinhopping'.
+        Number of bath sites per Gf block.
+    eps0 : float or list of float, optional
+        Approximate bandwidth (used to seed bath energies on a linspace)
+        or explicit initial guess for the bath energies. Default ``3.0``.
+    V0 : float, complex or numpy.ndarray, optional
+        Initial guess for ``V``:
+
+        * scalar — broadcast to every element of ``V``.
+        * 2D array — used as is.
+        * ``None`` (default) — derive from the Cholesky factor of the
+          leading moment of ``delta_in``
+          (:math:`\lim_{\omega\to\infty} i\omega\,\Delta(i\omega)`, or
+          :math:`-\Delta(0^+) - \Delta(\beta^-)` for imaginary time).
+    tol : float, optional
+        Optimizer tolerance (``ftol`` / ``xatol``). Default ``1e-15``.
+    maxiter : int, optional
+        Maximum number of optimization steps. Default ``10000``.
+    cmplx : bool, optional
+        If ``True``, optimize complex hoppings. Default ``False``.
+    method : {'BFGS', 'Nelder-Mead', 'basinhopping'}, optional
+        Optimization method. Default ``'BFGS'`` (uses ``L-BFGS-B``
+        internally).
 
     Returns
     -------
-    V_opt : np.array (shape norb x Nb) or list thereof
-        Optimized bath hoppings
-    eps_opt : list(float) or list(list(float)
-        Optimized bath energies (sorted)
+    V_opt : numpy.ndarray or list thereof
+        Optimized bath hoppings.
+    eps_opt : list of float or list of list of float
+        Optimized bath energies, sorted in ascending order.
     delta_disc : Gf or BlockGf
-        Discretized hybridization function
+        Discretized hybridization function on the mesh of ``delta_in``.
     """
     from scipy.optimize import minimize, basinhopping
     if isinstance(delta_in, BlockGf):

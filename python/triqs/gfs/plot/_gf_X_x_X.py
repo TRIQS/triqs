@@ -16,12 +16,30 @@
 #
 # Authors: Thomas Ayral, Michel Ferrero
 
+r"""Plot helper for Green's functions on a product of two single-variable 
+meshes (e.g. ``MeshImFreq x MeshImFreq``)."""
+
 import numpy as np
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 
 def plot(self, opt_dict):
-    r"""
-    Plot protocol for GfBrillouinZone objects.
+    r"""Plot-protocol implementation for two-variable Green's functions.
+
+    Parameters
+    ----------
+    opt_dict : dict
+        Plot options:
+
+        * ``type`` — only ``'contourf'`` (default) is supported.
+        * ``method`` — interpolation method (currently unused).
+          Default ``'nearest'``.
+        * ``mode`` — ``'R'`` (real part, default) or ``'I'``.
+
+    Returns
+    -------
+    list of dict
+        Contour descriptor for
+        :func:`~triqs.plot.mpl_interface.oplot`.
     """
 
     plot_type = opt_dict.pop('type','contourf')

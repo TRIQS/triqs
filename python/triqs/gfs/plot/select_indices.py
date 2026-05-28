@@ -17,22 +17,73 @@
 #
 # Authors: Thomas Ayral, Michel Ferrero, Nils Wentzell
 
+r"""Helpers to select a path of mesh points through a 
+Brillouin-zone-like mesh.
+
+Used by :mod:`.bz` and :mod:`.bz_x_x` to draw band-structure-style 
+plots along a piecewise-linear path through k-space.
+"""
+
 import numpy as np
 import math
 def dist(x,y):
- '''return the 2D distance between x and y'''
+ '''Euclidean 2D distance between ``x`` and ``y``.
+
+ Parameters
+ ----------
+ x, y : sequence of float of length 2
+     ``(x0, x1)`` coordinates.
+
+ Returns
+ -------
+ float
+     :math:`\\sqrt{(x_0 - y_0)^2 + (x_1 - y_1)^2}`.
+ '''
  return math.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2)
 
 
 def pick_selection_vec(data, stride):
- Nmomentum = len(data) 
+ """Return ``data[::stride]`` (every ``stride``-th element).
+
+ Parameters
+ ----------
+ data : sequence
+     Input sequence.
+ stride : int
+     Decimation factor.
+
+ Returns
+ -------
+ list
+     Selected elements.
+ """
+ Nmomentum = len(data)
  data_selected=[]
  for k in range(0,Nmomentum,stride): data_selected.append(data[k])
  return data_selected
 
 
 def closest_point_in_line( x, L):
- '''return the index of the closest point to x in the list of points L'''
+ '''Return the indices of the points in ``L`` closest to ``x`` 
+ (ties returned in order).
+
+ Parameters
+ ----------
+ x : sequence of float of length 2
+     Query point.
+ L : sequence of points
+     Candidate points to compare against.
+
+ Returns
+ -------
+ list of int
+     Indices in ``L`` whose distance to ``x`` equals the minimum.
+
+ Raises
+ ------
+ Exception
+     If ``L`` is empty.
+ '''
 
  mins=[]
  dists=[]
@@ -56,7 +107,23 @@ def closest_point_in_line( x, L):
 
 
 def closest_to(A,B, L, verbose=False):
- '''returns list of indices of the points in list L (or mesh!) that are closest to the oriented line A->B'''
+ '''Return the indices of the points in ``L`` that lie closest to 
+ the oriented segment ``A -> B``.
+
+ Parameters
+ ----------
+ A, B : sequence of float of length 2
+     End-points of the segment.
+ L : sequence of points
+     Candidate points (e.g. a mesh).
+ verbose : bool, optional
+     If ``True``, print the discretised line during the refinement.
+
+ Returns
+ -------
+ list of int
+     Indices in ``L`` along the segment.
+ '''
  A = np.array(A) 
  B = np.array(B) 
  closest_indices=[]
@@ -87,6 +154,27 @@ def closest_to(A,B, L, verbose=False):
  return closest_indices_final;
 
 def select_path_indices(path,mesh,verbose=False):
+  '''Return mesh indices tracing a piecewise-linear ``path`` 
+  through ``mesh``.
+
+  Parameters
+  ----------
+  path : sequence of points
+      Vertices of the path, in order.
+  mesh : iterable of points
+      Available mesh points.
+  verbose : bool, optional
+      If ``True``, also return a list of ``(path_index, mesh_index)``
+      pairs marking the high-symmetry points.
+
+  Returns
+  -------
+  list of int
+      Mesh indices along the path.
+  list of (int, int), optional
+      Only returned when ``verbose=True``: ``(path_index, mesh_index)``
+      pairs at each high-symmetry point.
+  '''
   path_indices=[]
   closest_indices=[]
   high_sym_pts_indices=[]

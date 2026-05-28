@@ -18,42 +18,57 @@
 #
 # Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Priyanka Seth, Nils Wentzell
 
+r"""Shared backend for the per-mesh plot functions in :mod:`.one_var`."""
+
 import numpy
 from warnings import warn
 from triqs.plot.protocol import clip_array
 
 def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
-    r"""
-    Plot protocol for Green's function objects.
+    r"""Build the curve dictionaries consumed by 
+    :func:`~triqs.plot.mpl_interface.oplot`.
+
+    The following plotting options are consumed by this function:
+
+    - ``name`` — label prefix for the legend (defaults to
+      ``self.name``).
+    - ``mode`` — one of ``'R'`` (real), ``'I'`` (imaginary),
+      ``'S'`` (spectral function) or empty (both real and
+      imaginary). Default ``''``.
+    - ``x_window`` — ``(xmin, xmax)`` clipping window on the
+      mesh axis.
+
+    Any other entries are forwarded to every curve dictionary.
 
     Parameters
     ----------
-    opt_dict: dictionary
-              MUST contain:
-              - name: str
-                      Name for the plotting label
-              
-              Can contain:
-              - mode: string, default None
-                      Mode to plot the Green's function in:
-                      -- 'R': real part only
-                      -- 'I': imaginary part only
-                      -- 'S': spectral function
-              - x_window: tuple, default None
-                          (xmin,xmax)
-    xlabel: str
-            Label to apply to the x axis.
-    ylabel: lambda : str -> str
-            Label to apply to the y axis.
-    X: list
-       The x values the object can take, i.e. the mesh.
-    allow_spectral_mode: boolean, default False
-                         Can the spectral function be measured for this type of Green's function?
+    self : Gf
+        Green's function being plotted.
+    opt_dict : dict
+        Plot options.
+    xlabel : str
+        ``xlabel`` for the plot.
+    ylabel : callable
+        ``ylabel(name) -> str`` producing the y-axis label from the
+        Green's function name.
+    X : array-like
+        Mesh values for the x axis.
+    allow_spectral_mode : bool, optional
+        If ``True``, ``mode='S'`` is accepted and returns
+        :math:`-\frac{1}{\pi}\,\mathrm{Im}\, G`. Default ``False``.
 
     Returns
     -------
-    plot_data: list of dict
-               Object passed to oplot to plot.
+    list of dict
+        One dictionary per target-space element to be plotted, with
+        keys ``xlabel``, ``ylabel``, ``xdata``, ``ydata``, ``label`` 
+        and any pass-through options from ``opt_dict``.
+
+    Raises
+    ------
+    ValueError
+        For an unknown ``mode`` value, or for ``mode='S'`` when
+        ``allow_spectral_mode`` is ``False``.
     """
 
     assert 'name_prefix' not in opt_dict, "name_prefix is deprecated"

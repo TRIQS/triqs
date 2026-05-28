@@ -17,12 +17,33 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+r"""Plot-protocol back-end for Green's functions."""
+
 from . import one_var
 from triqs.mesh import *
 from triqs.mesh import MeshProduct
 
 def dispatcher(g) :
-    """ given g, pick up the right plotting function"""
+    """Return the plot function in :mod:`.one_var` matching ``g.mesh``.
+
+    Parameters
+    ----------
+    g : Gf
+        Green's function being plotted.
+
+    Returns
+    -------
+    callable
+        ``f(g, opt_dict) -> list of dict`` returning per-curve plot
+        data in the format expected by
+        :func:`~triqs.plot.mpl_interface.oplot`.
+
+    Raises
+    ------
+    NotImplementedError
+        If ``g.mesh`` is a :class:`~triqs.mesh.mesh_product.MeshProduct` 
+        (multi-variable plots are not handled here).
+    """
 
     if not isinstance(g.mesh, MeshProduct):
         m= g.mesh

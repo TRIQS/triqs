@@ -19,10 +19,11 @@
 
 
 r"""
-This is the base module for all common operations with Green's functions.
-It is imported with the command::
+Backward-compatibility aliases for legacy Green's function type names.
 
-  >>> from triqs.gfs import *
+This subpackage exists only to keep older user code importing the old
+``Gf*`` class names working; new code should use the canonical types
+from :mod:`triqs.gfs` directly.
 """
 
 __all__ = []

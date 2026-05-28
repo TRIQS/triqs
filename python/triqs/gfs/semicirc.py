@@ -39,6 +39,7 @@ def g_semicirc_z(z, D):
     Returns
     -------
     G : complex or ndarray
+        Value of the Green's function at the supplied frequencies.
     """
     z = np.asarray(z, dtype=complex)
     return (2.0 / D**2) * (z - np.sqrt(z - D) * np.sqrt(z + D))
@@ -50,6 +51,7 @@ def g_semicirc_w(w, D):
     r"""Retarded semi-circular Green's function on the real-frequency axis.
 
     .. math::
+
         G^R(\omega) = \frac{2}{D^2}
         \begin{cases}
             \omega - i\sqrt{D^2 - \omega^2}, & |\omega| < D \\
@@ -66,6 +68,7 @@ def g_semicirc_w(w, D):
     Returns
     -------
     G : complex or ndarray
+        Value of the retarded Green's function at the supplied frequencies.
     """
     w = np.atleast_1d(np.asarray(w, dtype=float))
     G = np.empty(w.shape, dtype=complex)
@@ -83,6 +86,7 @@ def g_semicirc_tau(tau, beta, D, p=12, n_levels=None):
     Evaluates
 
     .. math::
+
         G(\tau) = -\frac{2}{\pi}\int_0^1
             \frac{e^{-\tau D\omega} + e^{(\tau-\beta)D\omega}}
                  {1 + e^{-\beta D\omega}}\,
@@ -97,13 +101,13 @@ def g_semicirc_tau(tau, beta, D, p=12, n_levels=None):
 
     Parameters
     ----------
-    tau      : float or array_like
+    tau : float or array_like
         Imaginary time(s), :math:`0 \le \tau \le \beta`.
-    beta     : float
+    beta : float
         Inverse temperature.
-    D        : float
+    D : float
         Half-bandwidth.
-    p        : int
+    p : int
         Quadrature order per panel (default 12).
     n_levels : int or None
         Number of dyadic refinement levels.  Default
@@ -113,6 +117,7 @@ def g_semicirc_tau(tau, beta, D, p=12, n_levels=None):
     Returns
     -------
     G : float or ndarray
+        Value of the Green's function at the supplied imaginary times.
     """
     tau = np.atleast_1d(np.asarray(tau, dtype=float))
 
@@ -152,12 +157,12 @@ def g_semicirc_tau(tau, beta, D, p=12, n_levels=None):
 # ── Imaginary time (adaptive quadrature reference) ──────────────────────────
 
 def g_semicirc_tau_adapquad(tau, beta, D, epsabs=0.0, epsrel=1e-13):
-    r"""Semi-circular Green's function on the imaginary-time axis via
-    adaptive quadrature (scipy.integrate.quad).
+    r"""Semi-circular Green's function on the imaginary-time axis via adaptive quadrature.
 
-    Evaluates the original integral
+    Uses :func:`scipy.integrate.quad` to evaluate the original integral
 
     .. math::
+
         G(\tau) = -\int_{-D}^{D}
             \frac{e^{-\tau\omega}}{1 + e^{-\beta\omega}}\,\rho(\omega)\,d\omega
 
@@ -165,11 +170,11 @@ def g_semicirc_tau_adapquad(tau, beta, D, epsabs=0.0, epsrel=1e-13):
 
     Parameters
     ----------
-    tau    : float or array_like
+    tau : float or array_like
         Imaginary time(s), :math:`0 \le \tau \le \beta`.
-    beta   : float
+    beta : float
         Inverse temperature.
-    D      : float
+    D : float
         Half-bandwidth.
     epsabs : float
         Absolute error tolerance (default 0).
@@ -179,6 +184,7 @@ def g_semicirc_tau_adapquad(tau, beta, D, epsabs=0.0, epsrel=1e-13):
     Returns
     -------
     G : float or ndarray
+        Value of the Green's function at the supplied imaginary times.
     """
     tau = np.atleast_1d(np.asarray(tau, dtype=float))
     G = np.zeros_like(tau)
