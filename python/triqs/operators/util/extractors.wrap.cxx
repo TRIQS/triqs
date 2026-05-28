@@ -129,25 +129,34 @@ static auto const _c2py_fun_7 = c2py::dispatcher_f_kw_t{c2py::cfun(
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(
    R"DOC(
-Convert the quadratic operator
+Convert a block-diagonal quadratic operator into its block-matrix representation.
 
-.. math:: { ij} h_{ ij} c_{, i}^ c_{, j}.
+Assumes that :math:`\hat{h}` has the form
 
-into its block-matrix representation
+.. math::
+
+   \hat{h} = \sum_{\sigma ij} h_{\sigma ij} \hat{c}_{\sigma, i}^\dagger \hat{c}_{\sigma, j} \; ,
+
+where the first element of each canonical operator's index is interpreted as the block label :math:`\sigma` (a 
+string) and the second element as the in-block integer index :math:`i`.
+
+If a term that is not of this form is encountered, an exception is thrown unless ``ignore_irrelevant`` is `true`, 
+in which case the offending term is silently skipped.
 
 Parameters
 ----------
 h : {par_0}
-   subject operator
+   Many-body operator :math:`\hat{h}`.
 gf_struct : {par_1}
-   The object defining the block-structure
+   Block structure specifying the block labels and the size of each block.
 ignore_irrelevant : {par_2}
-   do not throw exception if an irrelevant term is met in `h`.
+   If `true`, terms that do not match the expected form are skipped instead of triggering an 
+   exception.
 
 Returns
 -------
 {ret_0}
-   The block-matrix representation h_{ ij}
+   One matrix per block, packaged as a one-dimensional array of matrices.
 )DOC",
    {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()},
     {c2py::python_typename<const triqs::gfs::gf_struct_t &>()},
@@ -157,28 +166,19 @@ Returns
       1, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(
    R"DOC(
-[1] Convert a 2-index coefficient dictionary to a matrix, given a GF structure.
-
-------
-
-[2] Convert a 4-index coefficient dictionary to a tensor, given a GF structure.
-
-------
+Convert a coefficient dictionary to a matrix, given a GF structure.
 
 Parameters
 ----------
 d : {par_0}
-   The 2-index dictionary.
+   The 2-index/4-index dictionary.
 gf_struct : {par_1}
    The Green's function block structure.
 
 Returns
 -------
-[1] : {ret_0}
-   A real or complex matrix (as variant).
-
-[2] : {ret_1}
-   A real or complex rank-4 tensor (as variant).
+{ret_0}
+   A real or complex matrix/rank-4 tensor (as variant).
 )DOC",
    {{c2py::python_typename<
        std::map<std::tuple<std::vector<std::variant<long, std::string, double, std::array<long, 3>>,
@@ -197,21 +197,19 @@ Returns
                                          triqs::utility::real_or_complex>>>>()},
     {c2py::python_typename<triqs::gfs::gf_struct_t>()}},
    {c2py::python_typename<std::variant<
-       nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
-       nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>(),
-    c2py::python_typename<std::variant<
-       nda::basic_array<double, 4, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
-       nda::basic_array<std::complex<double>, 4, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()});
+      nda::basic_array<double, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
+      nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(
    R"DOC(
-Extract the density-density interaction :math:`\frac{1}{2}\sum_{ij} U_{ij} n_i n_j` from a Hamiltonian.
+Extract the density-density interaction :math:`\frac{1}{2} \sum_{ij} U_{ij} \hat{n}_i \hat{n}_j` from a
+many-body operator.
 
 Parameters
 ----------
 H : {par_0}
    The many-body operator.
 ignore_irrelevant : {par_1}
-   If true, silently skip irrelevant terms.
+   If `true`, silently skip irrelevant terms.
 
 Returns
 -------
@@ -223,14 +221,15 @@ Returns
       std::map<std::tuple<triqs::operators::utils::py::idx_tup, triqs::operators::utils::py::idx_tup>, triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_3 =
    _c2py_fun_3.doc(R"DOC(
-Extract the interaction part :math:`\frac{1}{2}\sum_{ijkl} U_{ijkl} c^\dagger_i c^\dagger_j c_l c_k` from a Hamiltonian.
+Extract the interaction part :math:`\frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j
+\hat{c}_l \hat{c}_k` from a many-body operator.
 
 Parameters
 ----------
 H : {par_0}
    The many-body operator.
 ignore_irrelevant : {par_1}
-   If true, silently skip irrelevant terms.
+   If `true`, silently skip irrelevant terms.
 
 Returns
 -------
@@ -243,14 +242,14 @@ Returns
                                                    triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(
    R"DOC(
-Extract the quadratic part :math:`\sum_{ij}h_{ij} c^\dagger_i c_j` from a Hamiltonian.
+Extract the quadratic part :math:`\sum_{ij} h_{ij} \hat{c}^\dagger_i \hat{c}_j` from a many-body operator.
 
 Parameters
 ----------
 H : {par_0}
    The many-body operator.
 ignore_irrelevant : {par_1}
-   If true, silently skip non-quadratic terms.
+   If `true`, silently skip non-quadratic terms.
 
 Returns
 -------
@@ -262,21 +261,26 @@ Returns
       std::map<std::tuple<triqs::operators::utils::py::idx_tup, triqs::operators::utils::py::idx_tup>, triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_5 = _c2py_fun_5.doc(
    R"DOC(
-Convert the block-matrix h_{ ij} into the associated operator
+Build a block-diagonal quadratic operator from its block-matrix representation.
 
-.. math:: { ij} h_{ ij} c_{, i}^ c_{, j}.
+Given the block matrices :math:`h_{\sigma ij}` and the block structure, returns
+
+.. math::
+
+   \hat{h} = \sum_{\sigma ij} h_{\sigma ij} \hat{c}_{\sigma, i}^\dagger \hat{c}_{\sigma, j} \; .
 
 Parameters
 ----------
 bl_mat : {par_0}
-   subject block_matrix
+   One matrix :math:`h_{\sigma ij}` per block :math:`\sigma`, packaged as a one-dimensional array of 
+   matrices.
 gf_struct : {par_1}
-   The object defining the block-structure
+   Block structure.
 
 Returns
 -------
 {ret_0}
-   The associated operator
+   Many-body operator :math:`\hat{h}`.
 )DOC",
    {{c2py::python_typename<const nda::basic_array<
        nda::basic_array<triqs::utility::real_or_complex, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>,
@@ -285,39 +289,35 @@ Returns
    {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_6 =
    _c2py_fun_6.doc(R"DOC(
-Filter out quadratic terms from an operator
+Keep only the quadratic terms of a many-body operator :math:`\hat{h}`.
 
 Parameters
 ----------
 h : {par_0}
-   subject operator
-ignore_irrelevant : {par_1}
-   do not throw exception if an irrelevant term is met in `h`.
+   Many-body operator :math:`\hat{h}`.
 
 Returns
 -------
 {ret_0}
-   Operator containing only the quadratic terms
+   Many-body operator containing only the quadratic terms.
 )DOC",
-                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()}, {}},
+                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()}},
                    {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_7 =
    _c2py_fun_7.doc(R"DOC(
-Filter out quartic terms from an operator
+Keep only the quartic terms of a many-body operator :math:`\hat{h}`.
 
 Parameters
 ----------
 h : {par_0}
-   subject operator
-ignore_irrelevant : {par_1}
-   do not throw exception if an irrelevant term is met in `h`.
+   Many-body operator :math:`\hat{h}`.
 
 Returns
 -------
 {ret_0}
-   Operator containing only the quartic terms
+   Many-body operator containing only the quartic terms.
 )DOC",
-                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()}, {}},
+                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()}},
                    {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 //--------------------- module function table  -----------------------------
 
@@ -337,16 +337,29 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {
-   PyModuleDef_HEAD_INIT,
-   "extractors",                                                                /* name of module */
-   R"RAWDOC(Functions to extract coefficients from many-body operators)RAWDOC", /* module documentation, may be NULL */
-   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-   module_methods,
-   NULL,
-   NULL,
-   NULL,
-   NULL};
+static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
+                                        "extractors", /* name of module */
+                                        R"RAWDOC(Extract coefficients (matrices and tensors) from many-body operators.
+
+Given a :class:`~triqs.operators.operators.Operator`, the ``extract_*`` functions recover 
+the coefficient dictionaries of a normally ordered operator that matches a specific structural pattern:
+
+- :func:`extract_h_dict` — quadratic part :math:`\sum_{ij} h_{ij} \hat{c}_i^\dagger \hat{c}_j`,
+- :func:`extract_U_dict2` — density-density interaction :math:`\frac{1}{2} \sum_{ij} U_{ij} \hat{n}_i \hat{n}_j`,
+- :func:`extract_U_dict4` — general two-body interaction
+  :math:`\frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}_i^\dagger \hat{c}_j^\dagger \hat{c}_l \hat{c}_k`.
+
+The returned dictionaries map tuples of single-particle indices to the corresponding coefficient, and can be converted
+to dense arrays via :func:`dict_to_matrix` (given a Green's-function block structure). The companion functions
+:func:`quadratic_terms`, :func:`quartic_terms`, :func:`block_matrix_from_op` and :func:`op_from_block_matrix` filter and
+round-trip block-diagonal quadratic operators between the operator and matrix representations.
+)RAWDOC",                                             /* module documentation, may be NULL */
+                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+                                        module_methods,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL};
 
 //--------------------- module init function -----------------------------
 

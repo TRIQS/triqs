@@ -70,8 +70,9 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-constexpr auto _c2py_doc_member_0 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_1 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_0 = R"DOC(True for creation (:math:`\hat{c}_{\alpha_i}^{\dagger}`), false for annihilation 
+(:math:`\hat{c}_{\alpha_i}`) operators.)DOC";
+constexpr auto _c2py_doc_member_1 = R"DOC(Single particle state index :math:`\alpha_i`.)DOC";
 static PyObject *prop_get_dict_0(PyObject *self, void *) {
   auto &self_c = *(((c2py::wrap<_c2py_cls_0> *)self)->_c);
   c2py::pydict dic;
@@ -90,8 +91,15 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_0> =
-   R"DOC(The canonical operator: a dagger and some indices)DOC" + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
+const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Second quantization creation/annihilation operator.
+
+A canonical second quantization operator, :math:`\hat{c}_{\alpha_i}` or 
+:math:`\hat{c}_{\alpha_i}^\dagger`, is defined by
+
+- a single particle state index :math:`\alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i})`, where each 
+  :math:`\beta^{(i)}_j` is an integer, a string, a double or an array of integers, and
+- a boolean flag `dagger` indicating whether it is a creation (true) or annihilation (false) operator.)DOC"
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 // --------- class _c2py_cls_1 -----------
 using _c2py_cls_1                                            = triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_1>     = true;
@@ -101,8 +109,31 @@ static const auto _c2py_init_0                               = c2py::dispatcher_
    c2py::c_constructor<_c2py_cls_1, const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>::scalar_t &>("x"),
    c2py::c_constructor<_c2py_cls_1, const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>::scalar_t &,
                        triqs::operators::monomial_t>("x", "monomial")};
-template <> constexpr initproc c2py::tp_init<_c2py_cls_1>    = c2py::pyfkw_constructor<_c2py_init_0>;
-template <> const std::string c2py::tp_ctor_doc<_c2py_cls_1> = _c2py_init_0.doc(R"DOC()DOC");
+template <> constexpr initproc c2py::tp_init<_c2py_cls_1> = c2py::pyfkw_constructor<_c2py_init_0>;
+template <>
+const std::string c2py::tp_ctor_doc<_c2py_cls_1> =
+   _c2py_init_0.doc(R"DOC(
+[1] Default constructor creates a zero many-body operator, i.e. with no terms.
+
+------
+
+[2] Construct a many-body operator :math:`\hat{O} = a \hat{I}`.
+
+------
+
+[3] Construct a many-body operator :math:`\hat{O} = a \hat{m}`.
+
+------
+
+Parameters
+----------
+x : {par_0}
+   Coefficient :math:`a` of the identity operator :math:`\hat{I}`.
+monomial : {par_1}
+   Monomial :math:`\hat{m}`.
+)DOC",
+                    {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>::scalar_t &>()},
+                     {c2py::python_typename<triqs::operators::monomial_t>()}});
 // get_monomials
 static auto const _c2py_fun_0 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.get_monomials(); }, "self")};
@@ -123,17 +154,61 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
 static auto const _c2py_fun_4 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.make_fundamental_operator_set(); }, "self")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
+static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
+Get the map/dictionary of monomials and their coefficients.
+)DOC");
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-Check if the operator is close to zero
-)DOC");
+Check if the current operator :math:`\hat{O}` is close to zero.
+
+Parameters
+----------
+precision : {par_0}
+   Tolerance :math:`\epsilon` for considering a coefficient to be zero.
+
+Returns
+-------
+{ret_0}
+   True if :math:`|a_i| < \epsilon` for all coefficients :math:`a_i`, false otherwise.
+)DOC",
+                                                {{c2py::python_typename<double>()}}, {c2py::python_typename<bool>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC(
-Check if the operator is identically zero
-)DOC");
-static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC()DOC");
+Check if the current operator :math:`\hat{O}` is exactly zero.
+
+Returns
+-------
+{ret_0}
+   True if the operator has no terms, false otherwise.
+)DOC",
+                                                {}, {c2py::python_typename<bool>()});
+static const auto _c2py_doc_3 =
+   _c2py_fun_3.doc(R"DOC(
+Create a many-body operator that represents a single canonical operator :math:`\hat{c}_{\alpha}` or
+:math:`\hat{c}_{\alpha}^{\dagger}`.
+
+Parameters
+----------
+is_dag : {par_0}
+   Boolean flag indicating whether to create a creation (true) or annihilation (false) operator.
+indices : {par_1}
+   Single particle state index :math:`\alpha`.
+
+Returns
+-------
+{ret_0}
+   Many-body operator :math:`\hat{O} = \hat{c}_{\alpha}^{\dagger}` or :math:`\hat{O} = \hat{c}_{\alpha}`.
+)DOC",
+                   {{c2py::python_typename<bool>()}, {c2py::python_typename<triqs::operators::indices_t>()}},
+                   {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC(
-Make a minimal fundamental_operator_set with all the canonical operators of this
-)DOC");
+Create a minimal fundamental operator set with all single particle state indices :math:`\alpha_i` that
+appear in the monomials of this operator.
+
+Returns
+-------
+{ret_0}
+   Fundamental operator set :math:`A = \{ \alpha_i \}_{i=0}^{N-1}`.
+)DOC",
+                                                {}, {c2py::python_typename<triqs::hilbert_space::fundamental_operator_set>()});
 
 // ----- Method table ----
 template <>
@@ -149,8 +224,10 @@ PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-static constexpr auto prop_doc_0 = R"DOC(Get a copy of the operator with the real parts of all monomial coefficients set to zero.)DOC";
-static constexpr auto prop_doc_1 = R"DOC(Get a copy of the operator with the imaginary parts of all monomial coefficients set to zero.)DOC";
+static constexpr auto prop_doc_0 =
+   R"DOC(Get a copy of the operator :math:`\hat{O}` with the real parts of all monomial coefficients set to zero.)DOC";
+static constexpr auto prop_doc_1 =
+   R"DOC(Get a copy of the operator :math:`\hat{O}` with the imaginary parts of all monomial coefficients set to zero.)DOC";
 
 // ----- Member and property table ----
 
@@ -228,7 +305,23 @@ struct c2py::arithmetic<_c2py_cls_1, c2py::OpName::IDiv>
 template <> constexpr PyNumberMethods *c2py::tp_as_number<_c2py_cls_1> = &c2py::tp_as_number_impl<_c2py_cls_1>;
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(The generic class)DOC" + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
+const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Generic many-body operator.
+
+A generic many-body operator :math:`\hat{O}` is defined as a linear combination of monomials 
+:math:`\hat{m}_i` such that
+
+.. math::
+
+   \hat{O} = \sum_{i} a_i \hat{m}_i \; ,
+
+where :math:`a_i` are real or complex coefficients.
+
+Under the hood, we simply store all individual terms in a map/dictionary with the monomials as keys and the
+coefficients as values.
+
+Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over 
+the field of real/complex numbers with an extra addition operation between operators and scalars.)DOC"
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 
 // ==================== module functions ====================
 
@@ -344,11 +437,95 @@ static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{
       },
       "indices0", "indices1", "indices2", "indices3")};
 
-static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
-static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC()DOC");
-static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC()DOC");
-static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC()DOC");
-static const auto _c2py_doc_9 = _c2py_fun_9.doc(R"DOC()DOC");
+static const auto _c2py_doc_5 =
+   _c2py_fun_5.doc(R"DOC(
+Create an annihilation operator :math:`\hat{c}_{\alpha}`.
+
+Parameters
+----------
+indices : {par_0}
+   :math:`\beta_1, \dots, \beta_k` that form the index :math:`\alpha`.
+
+Returns
+-------
+{ret_0}
+   Many-body operator :math:`\hat{O} = \hat{c}_{\alpha}`.
+)DOC",
+                   {{c2py::python_typename<std::variant<long, std::string, double, std::array<long, 3>>>()}},
+                   {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
+static const auto _c2py_doc_6 =
+   _c2py_fun_6.doc(R"DOC(
+Create a creation operator :math:`\hat{c}_{\alpha}^{\dagger}`.
+
+Parameters
+----------
+indices : {par_0}
+   :math:`\beta_1, \dots, \beta_k` that form the index :math:`\alpha`.
+
+Returns
+-------
+{ret_0}
+   Many-body operator :math:`\hat{O} = \hat{c}_{\alpha}^{\dagger}`.
+)DOC",
+                   {{c2py::python_typename<std::variant<long, std::string, double, std::array<long, 3>>>()}},
+                   {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
+static const auto _c2py_doc_7 =
+   _c2py_fun_7.doc(R"DOC(
+Compute the Hermitian conjugate (dagger) of the many-body operator :math:`\hat{O}`.
+
+Computes the Hermitian conjugate by reversing the order of the canonical operators in each monomial
+and flipping their `dagger` flag. The coefficients are complex conjugated.
+
+Parameters
+----------
+op : {par_0}
+   Many-body operator :math:`\hat{O}`.
+
+Returns
+-------
+{ret_0}
+   Many-body operator :math:`\hat{O}^{\dagger}`.
+)DOC",
+                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()}},
+                   {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
+static const auto _c2py_doc_8 =
+   _c2py_fun_8.doc(R"DOC(
+Check if a many-body operator is Hermitian within a given precision.
+
+Checks whether the difference :math:`\hat{O}^{\dagger} - \hat{O}` is close to zero within the given
+tolerance :math:`\epsilon`.
+
+Parameters
+----------
+op : {par_0}
+   Many-body operator :math:`\hat{O}`.
+tolerance : {par_1}
+   Tolerance :math:`\epsilon`.
+
+Returns
+-------
+{ret_0}
+   True if :math:`\hat{O}` is Hermitian within the given precision, false otherwise.
+)DOC",
+                   {{c2py::python_typename<const triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex> &>()},
+                    {c2py::python_typename<double>()}},
+                   {c2py::python_typename<bool>()});
+static const auto _c2py_doc_9 =
+   _c2py_fun_9.doc(R"DOC(
+Create a number operator :math:`\hat{n}_{\alpha} = \hat{c}_{\alpha}^{\dagger} \hat{c}_{\alpha}`.
+
+Parameters
+----------
+indices : {par_0}
+   :math:`\beta_1, \dots, \beta_k` that form the index :math:`\alpha`.
+
+Returns
+-------
+{ret_0}
+   Many-body operator :math:`\hat{O} = \hat{n}_{\alpha} = \hat{c}_{\alpha}^{\dagger} \hat{c}_{\alpha}`.
+)DOC",
+                   {{c2py::python_typename<std::variant<long, std::string, double, std::array<long, 3>>>()}},
+                   {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
@@ -365,8 +542,24 @@ static PyMethodDef module_methods[] = {
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
-                                        "operators",       /* name of module */
-                                        R"RAWDOC()RAWDOC", /* module documentation, may be NULL */
+                                        "operators", /* name of module */
+                                        R"RAWDOC(Second-quantization operators and many-body operator algebra.
+
+The :class:`Operator` class represents an element of the fermionic operator algebra: a linear combination of normally
+ordered monomials in creation and annihilation operators, with real or complex coefficients. It supports the full set of
+arithmetic operations (``+``, ``-``, ``*``, ``/`` by a scalar) and preserves normal ordering as terms are combined.
+
+Operators are built from the canonical factories:
+
+- :func:`c` — annihilation operator :math:`\hat{c}_\alpha`,
+- :func:`c_dag` — creation operator :math:`\hat{c}_\alpha^\dagger`,
+- :func:`n` — number operator :math:`\hat{n}_\alpha = \hat{c}_\alpha^\dagger \hat{c}_\alpha`.
+
+The single-particle state index :math:`\alpha` is an arbitrary sequence of integers, strings or floats; new indices are
+introduced on the fly as expressions are constructed. The Hermitian conjugate is computed by the free function
+:func:`dagger`. Higher-level utilities (model Hamiltonians, observables, Coulomb tensors, coefficient extractors) are
+provided in :mod:`triqs.operators.util`.
+)RAWDOC",                                            /* module documentation, may be NULL */
                                         -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
                                         module_methods,
                                         NULL,
