@@ -25,7 +25,7 @@ install(DIRECTORY . DESTINATION include/triqs
 
 # ---------------------------------------------
 
-# fetch c2py
+# fetch c2py (provides c2py_add_module)
 include(FetchContent)
 FetchContent_Declare(
   c2py
@@ -34,15 +34,11 @@ FetchContent_Declare(
   EXCLUDE_FROM_ALL # exclude from all so that c2py is NOT installed.
 )
 FetchContent_MakeAvailable(c2py)
-include(${c2py_SOURCE_DIR}/share/cmake/clair_c2py_generate_bindings.cmake)
-
-# user option to regenerate the Python bindings
-option(Update_Python_Bindings "Optionally update the C++ Python bindings in the source directory using clair-c2py" ON)
 
 # add an interface target for all Python modules
 add_library(${PROJECT_NAME}_python_modules INTERFACE)
 
-# Build/install one Python module. 
+# Build/install one Python module.
 # Optionally declare bindings-generation dependencies between modules.
 #
 # Usage: add_triqs_python_module(<name> DIR <relative-dir>
@@ -50,33 +46,22 @@ add_library(${PROJECT_NAME}_python_modules INTERFACE)
 macro(add_triqs_python_module module_name)
   cmake_parse_arguments(_ARG "" "DIR" "DEPENDS_ON_BINDINGS" ${ARGN})
 
-  Python_add_library(${module_name} MODULE WITH_SOABI ${_ARG_DIR}/${module_name}.cpp)
+  c2py_add_module(${module_name}
+    DIR ${_ARG_DIR}
+    LINK_LIBRARIES triqs
+    DEPENDS_ON_BINDINGS ${_ARG_DEPENDS_ON_BINDINGS})
   add_library(${PROJECT_NAME}::${module_name} ALIAS ${module_name})
   add_dependencies(${PROJECT_NAME}_python_modules ${module_name})
-
-  target_link_libraries(${module_name} PRIVATE triqs c2py::c2py)
   # Python module TUs activate C2PY_INCLUDED (via <c2py/c2py.hpp>), which in turn
   # pulls triqs/<mod>/<name>.wrap.hxx from python/ via the triqs/ umbrella headers.
   # Scope the python/ include to these modules instead of exposing it on triqs itself.
   target_include_directories(${module_name} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/python>)
-  set_target_properties(${module_name} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${_ARG_DIR}
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN ON
-  )
   install(TARGETS ${module_name} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${_ARG_DIR})
-
-  if(Update_Python_Bindings)
-    clair_c2py_generate_bindings(${module_name} DIR ${_ARG_DIR})
-    foreach(_dep ${_ARG_DEPENDS_ON_BINDINGS})
-      add_dependencies(${module_name}_bindings_generation ${_dep}_bindings_generation)
-    endforeach()
-  endif()
 endmacro()
 
 # external dependencies for the binding generation targets
 set(external_deps)
-if(TARGET _h5py_bindings_generation)
+if(TARGET _h5py)
   list(APPEND external_deps _h5py)
 endif()
 
