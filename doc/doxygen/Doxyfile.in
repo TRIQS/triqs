@@ -2536,7 +2536,15 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = __attribute__(x)= \
-                         explicit(x)=explicit
+                         explicit(x)=explicit \
+                         C2PY_IGNORE= \
+                         C2PY_WRAP_AS_METHOD= \
+                         C2PY_RENAME(x)= \
+                         C2PY_PROPERTY_GET(x)= \
+                         C2PY_PROPERTY_SET(x)= \
+                         C2PY_DEPRECATED_PARAMETER_NAME(...)= \
+                         ATOM_DIAG_CONSTRUCTOR(args)=template <bool Complex> atom_diag<Complex>::atom_diag args \
+                         ATOM_DIAG_METHOD(ret,f)=template <bool Complex> ret atom_diag<Complex>::f
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

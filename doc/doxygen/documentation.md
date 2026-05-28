@@ -8,7 +8,24 @@ The following provides a detailed reference documentation grouped into logical u
 
 If you are looking for a specific function, class, etc., try using the search bar in the top left corner.
 
-## Atom Diag
+## Atomic problem diagonalization
+
+@ref triqs-atom-diag provides a lightweight exact diagonalization solver for finite fermionic Hamiltonians,
+together with helpers that build derived quantities from a solved eigensystem:
+
+- @ref triqs::atom_diag::atom_diag holds the block-diagonal Hamiltonian, its eigensystem, and the matrix
+representations of the fundamental creation/annihilation operators in the eigenbasis. The Hilbert space is
+partitioned into invariant subspaces by auto-partitioning, by user-supplied quantum numbers, or by a
+particle-number window, and each block is then diagonalized with the QR algorithm.
+- Thermodynamic averages of an observable are computed via triqs::atom_diag::partition_function,
+triqs::atom_diag::atomic_density_matrix and triqs::atom_diag::trace_rho_op, and the action of an operator on a
+state vector is provided by triqs::atom_diag::act.
+- Eigenvalues of conserved quantities can be tabulated with triqs::atom_diag::quantum_number_eigenvalues and
+triqs::atom_diag::quantum_number_eigenvalues_checked.
+- The atomic Green's function on an imaginary-time, Matsubara, Legendre or real-frequency mesh is built by
+triqs::atom_diag::atomic_g_tau, triqs::atom_diag::atomic_g_iw, triqs::atom_diag::atomic_g_l and
+triqs::atom_diag::atomic_g_w, all of which derive from the Lehmann representation exposed by
+triqs::atom_diag::atomic_g_lehmann.
 
 ## Determinant manipulation
 

@@ -288,10 +288,60 @@
 
 /**
  * @defgroup triqs-atom-diag Atomic problem diagonalization
- * @brief Exact diagonalization of atomic (local) Hamiltonians.
+ * @brief Exact diagonalization of atomic (local) Hamiltonians and their atomic Green's function.
  *
- * @details This module provides tools for exact diagonalization of atomic Hamiltonians,
- * computation of the atomic Green's function, and related quantities needed for quantum impurity solvers.
+ * @details The @ref triqs-atom-diag module performs exact diagonalization of a many-body Hamiltonian \f$ \hat H \f$
+ * acting on the Fock space of a finite set of fermionic single-particle states. The Hilbert space is split into
+ * invariant subspaces of \f$ \hat H \f$, each of which is diagonalized independently:
+ * \f[
+ *   H_B = U_B \, \mathrm{diag}(E_B) \, U^{\dagger}_B \; ,
+ * \f]
+ * where \f$ B \f$ indexes the subspaces, \f$ H_B \f$ is the Hamiltonian restricted to the subspace, \f$ U_B \f$ is the 
+ * unitary matrix mapping the Fock basis of the subspace to the eigenbasis of the Hamiltonian, and \f$ E_B \f$ is the 
+ * vector of eigenvalues. By convention the global ground-state energy is subtracted at construction, so that the 
+ * smallest eigenvalue across all subspaces is zero.
+ *
+ * The invariant subspaces are built either by an auto-partition procedure, by an explicit list of quantum-number
+ * operators, or by a particle-number window, and each block is then diagonalized with the QR algorithm.
+ *
+ * **Notation used throughout the API:**
+ *
+ * - \f$ B,\, B' \f$ : subspace index (parameter `sp_index`),
+ * - \f$ \dim(B) \f$ : dimension of subspace \f$ B \f$, returned by triqs::atom_diag::atom_diag::get_subspace_dim,
+ * - \f$ E_{B,i} \f$ : the \f$ i \f$-th eigenvalue inside subspace \f$ B \f$,
+ * - \f$ N \f$ : dimension of the full Hilbert space.
+ *
+ * **Atomic Green's function.**
+ *
+ * Derived from a solved diagonalization problem, the atomic Green's function is built in the Lehmann (spectral)
+ * representation,
+ * \f[
+ *   G_{ab}(z) = \frac{1}{Z} \sum_{B, B'} \sum_{i=0}^{\dim(B)-1} \sum_{j=0}^{\dim(B')-1} \Bigl( e^{-\beta E_{B,i}} + 
+ *   \eta\, e^{-\beta E_{B',j}} \Bigr) \frac{\langle B, i\,|\, \hat c_a \,|\, B', j\rangle \, \langle B', j\,|\, 
+ *   \hat c_b^\dagger \,|\, B, i\rangle} {z + E_{B,i} - E_{B',j}} \; ,
+ * \f]
+ * where \f$ \eta = +1 \f$ for fermionic and \f$ \eta = -1 \f$ for bosonic statistics, \f$ Z \f$ is the partition
+ * function, \f$ B, B' \f$ are subspace indices, and \f$ i, j \f$ are eigenstate indices inside the corresponding
+ * subspaces with \f$ 0 \le i < \dim(B) \f$ and \f$ 0 \le j < \dim(B') \f$. The orbital indices \f$ a, b \f$ run over
+ * one Green's-function block and are mapped to fundamental-operator linear indices through the fundamental operator 
+ * set. The only non-zero contributions come from \f$ (B, B') \f$ pairs that are connected by the application of a
+ * creation/annihilation operator, i.e. for which the corresponding matrix block is non-zero.
+ *
+ * The poles 
+ * \f[
+ *   p = E_{B',j} - E_{B,i} 
+ * \f] 
+ * and the residues 
+ * \f[
+ *   r_p = \bigl(e^{-\beta E_{B,i}} + \eta\, e^{-\beta E_{B',j}}\bigr)
+ *   \langle B, i\,|\, \hat c_a \,|\, B', j\rangle \langle B', j\,|\, \hat c_b^\dagger \,|\, B, i\rangle / Z
+ * \f] 
+ * are first stored in the Lehmann data structure, then evaluated on the requested target mesh (imaginary time, 
+ * Matsubara, Legendre, or real frequency).
+ *
+ * The solver itself is exposed through triqs::atom_diag::atom_diag (with real- and complex-valued specializations);
+ * a set of free functions builds thermodynamic averages, quantum-number tables and the atomic Green's function on
+ * different meshes from a solved instance.
  */
 
 /**
