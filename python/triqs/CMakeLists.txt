@@ -50,7 +50,7 @@ add_library(${PROJECT_NAME}_python_modules INTERFACE)
 macro(add_triqs_python_module module_name)
   cmake_parse_arguments(_ARG "" "DIR" "DEPENDS_ON_BINDINGS" ${ARGN})
 
-  Python_add_library(${module_name} MODULE ${_ARG_DIR}/${module_name}.cpp)
+  Python_add_library(${module_name} MODULE WITH_SOABI ${_ARG_DIR}/${module_name}.cpp)
   add_library(${PROJECT_NAME}::${module_name} ALIAS ${module_name})
   add_dependencies(${PROJECT_NAME}_python_modules ${module_name})
 
