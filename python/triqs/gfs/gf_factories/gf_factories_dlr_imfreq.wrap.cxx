@@ -485,7 +485,51 @@ static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
          long n_iw) { return triqs::gfs::make_gf_imfreq(g, n_iw); },
       "g", "n_iw")};
 
-static const auto _c2py_doc_0 = _c2py_fun_0.doc(
+static const auto _c2py_doc_0 =
+   _c2py_fun_0.doc(R"DOC(
+Find the smallest DLR energy cutoff that reproduces a Matsubara Green's function within a target accuracy.
+
+Applies to every overload. Starting from ``w_max_init``, the
+cutoff is grown by a factor of 1.5 per iteration. For each
+candidate cutoff, the function builds a DLR Matsubara mesh from
+(``w_max``, ``eps``, ``symmetrize``), samples ``g`` on that DLR mesh, reconstructs
+the Green's function on the original Matsubara mesh via the DLR
+coefficients, and measures the worst-case round-trip error across
+Matsubara indices and target indices. The smallest ``w_max`` not
+exceeding ``w_max_max`` whose round-trip error is below ``eps`` is
+returned.
+
+Candidate cutoffs whose DLR frequency range exceeds the Matsubara
+range of the input are skipped. For a block Green's function, the
+reported per-iteration error is the worst case across all blocks.
+An exception is raised if ``w_max_init`` exceeds ``w_max_max``, or if no
+candidate cutoff up to ``w_max_max`` achieves an error below ``eps``.
+
+Parameters
+----------
+g : {par_0}
+   Input Green's function on a Matsubara frequency mesh.
+eps : {par_1}
+   Target DLR accuracy and round-trip error tolerance.
+symmetrize : {par_2}
+   If `true`, use particle-hole symmetric DLR meshes.
+w_max_init : {par_3}
+   Initial value of the DLR cutoff to try (must not exceed ``w_max_max``).
+w_max_max : {par_4}
+   Maximum DLR cutoff to try before giving up.
+
+Returns
+-------
+{ret_0}
+   The smallest ``w_max`` not exceeding ``w_max_max`` for which the round-trip error is below ``eps``.
+)DOC",
+                   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imfreq, triqs::gfs::scalar_valued> &>()},
+                    {c2py::python_typename<double>()},
+                    {c2py::python_typename<bool>()},
+                    {c2py::python_typename<double>()},
+                    {c2py::python_typename<double>()}},
+                   {c2py::python_typename<double>()});
+static const auto _c2py_doc_1 = _c2py_fun_1.doc(
    R"DOC(
 Build a DLR Matsubara Green's function from a DLR-coefficient or DLR-imaginary-time input.
 
@@ -510,7 +554,7 @@ Returns
 )DOC",
    {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::dlr, triqs::gfs::scalar_valued> &>()}},
    {c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr_imfreq, typename triqs::gfs::_target_from_type_rank<std::complex<double>, 0>::type>>()});
-static const auto _c2py_doc_1 = _c2py_fun_1.doc(
+static const auto _c2py_doc_2 = _c2py_fun_2.doc(
    R"DOC(
 Build a uniform Matsubara Green's function from any DLR representation.
 

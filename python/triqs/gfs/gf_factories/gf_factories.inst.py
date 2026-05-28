@@ -211,6 +211,34 @@ DOCS = {
    * @return The Green's function on a uniform imaginary-time mesh.
    */
 """,
+    "find_w_max": """\
+  /**
+   * @brief Find the smallest DLR energy cutoff that reproduces a Matsubara Green's function within a target accuracy.
+   *
+   * @details Applies to every overload. Starting from ``w_max_init``, the
+   * cutoff is grown by a factor of 1.5 per iteration. For each
+   * candidate cutoff, the function builds a DLR Matsubara mesh from
+   * (``w_max``, ``eps``, ``symmetrize``), samples ``g`` on that DLR mesh, reconstructs
+   * the Green's function on the original Matsubara mesh via the DLR
+   * coefficients, and measures the worst-case round-trip error across
+   * Matsubara indices and target indices. The smallest ``w_max`` not
+   * exceeding ``w_max_max`` whose round-trip error is below ``eps`` is
+   * returned.
+   *
+   * Candidate cutoffs whose DLR frequency range exceeds the Matsubara
+   * range of the input are skipped. For a block Green's function, the
+   * reported per-iteration error is the worst case across all blocks.
+   * An exception is raised if ``w_max_init`` exceeds ``w_max_max``, or if no
+   * candidate cutoff up to ``w_max_max`` achieves an error below ``eps``.
+   *
+   * @param g Input Green's function on a Matsubara frequency mesh.
+   * @param eps Target DLR accuracy and round-trip error tolerance.
+   * @param symmetrize If `true`, use particle-hole symmetric DLR meshes.
+   * @param w_max_init Initial value of the DLR cutoff to try (must not exceed ``w_max_max``).
+   * @param w_max_max Maximum DLR cutoff to try before giving up.
+   * @return The smallest ``w_max`` not exceeding ``w_max_max`` for which the round-trip error is below ``eps``.
+   */
+""",
     "make_gf_imfreq": """\
   /**
    * @brief Build a uniform Matsubara Green's function from any DLR representation.
@@ -514,6 +542,7 @@ def write_dlr_imfreq(f):
     # --- find_w_max: auto-search for the smallest w_max giving DLR round-trip < eps ---
     # Only Gf and BlockGf — block2_gf is not supported (the C++ template uses single-index g[b]).
     f.write("  // find_w_max: smallest DLR cutoff w_max with round-trip error < eps for an imfreq Gf\n")
+    f.write(DOCS["find_w_max"])
     for target in TARGETS:
         for gf in ["gf", "block_gf"]:
             view = GF_VIEW_TYPES[gf]
