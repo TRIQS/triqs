@@ -41,10 +41,6 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    //////////////////////////////
-    /// Lehmann representation ///
-    //////////////////////////////
-
     // Generate Lehmann representation of GF defined by gf_struct
     // passing every term to proc(int bl, int n1, int n2, double pole, scalar_t residue)
     template <bool Complex, typename ProcessTerm>
@@ -126,7 +122,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// In debug mode, check that Lehmann representation object is compatible with gf_struct
+    // In debug mode, check that Lehmann representation object is compatible with gf_struct
     template <bool Complex, typename T> inline void check_lehmann_struct([[maybe_unused]] gf_lehmann_t<Complex> const &lehmann, [[maybe_unused]] block_gf_view<T> g) {
 #ifndef NDEBUG
       assert(lehmann.size() == g.size());
@@ -140,7 +136,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// Fill block_gf<T> object using precomputed Lehmann representation
+    // Fill block_gf<T> object using precomputed Lehmann representation
     template <bool Complex, typename T, typename ProcessTerm>
     inline void fill_block_gf_from_lehmann(block_gf_view<T> g, gf_lehmann_t<Complex> const &lehmann, ProcessTerm proc) {
       check_lehmann_struct<Complex>(lehmann, g);
@@ -158,10 +154,6 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    //////////////////////////
-    /// GF: Imaginary time ///
-    //////////////////////////
-
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
     template <bool Complex> auto make_term_proc(double beta, block_gf_view<imtime> gf) {
@@ -177,7 +169,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(\tau) from Lehmann representation
+    // G(\tau) from Lehmann representation
     template <bool Complex>
     block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh) {
       double beta = mesh.beta();
@@ -190,7 +182,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(\tau) from atom_diag
+    // G(\tau) from atom_diag
     template <bool Complex>
     block_gf<imtime> atomic_g_tau(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_tau,
                                   excluded_states_t const &excluded_states) {
@@ -202,10 +194,6 @@ namespace triqs {
     template block_gf<imtime> atomic_g_tau(ATOM_DIAG_C const &, double, gf_struct_t const &, int, excluded_states_t const &);
 
     // -----------------------------------------------------------------
-
-    /////////////////////////////////
-    /// GF: Matsubara frequencies ///
-    /////////////////////////////////
 
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
@@ -220,7 +208,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(i\omega) from Lehmann representation
+    // G(i\omega) from Lehmann representation
     template <bool Complex>
     block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imfreq const &mesh) {
       auto g = block_gf{mesh, gf_struct};
@@ -232,7 +220,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(i\omega) from atom_diag
+    // G(i\omega) from atom_diag
     template <bool Complex>
     block_gf<imfreq> atomic_g_iw(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_iw,
                                  excluded_states_t const &excluded_states) {
@@ -244,10 +232,6 @@ namespace triqs {
     template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_C const &, double, gf_struct_t const &, int, excluded_states_t const &);
 
     // -----------------------------------------------------------------
-
-    /////////////////////////////////
-    /// GF: Legendre coefficients ///
-    /////////////////////////////////
 
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
@@ -267,7 +251,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G_\ell from Lehmann representation
+    // G_\ell from Lehmann representation
     template <bool Complex>
     block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh) {
       double beta = mesh.beta();
@@ -280,7 +264,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G_\ell from atom_diag
+    // G_\ell from atom_diag
     template <bool Complex>
     block_gf<legendre> atomic_g_l(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, int n_l,
                                   excluded_states_t const &excluded_states) {
@@ -292,10 +276,6 @@ namespace triqs {
     template block_gf<legendre> atomic_g_l(ATOM_DIAG_C const &, double, gf_struct_t const &, int, excluded_states_t const &);
 
     // -----------------------------------------------------------------
-
-    ////////////////////////////
-    /// GF: Real frequencies ///
-    ////////////////////////////
 
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
@@ -310,7 +290,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(\omega) from Lehmann representation
+    // G(\omega) from Lehmann representation
     template <bool Complex>
     block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh, double broadening) {
       auto g = block_gf{mesh, gf_struct};
@@ -322,7 +302,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    /// G(\omega) from atom_diag
+    // G(\omega) from atom_diag
     template <bool Complex>
     block_gf<refreq> atomic_g_w(ATOM_DIAG const &atom, double beta, gf_struct_t const &gf_struct, std::pair<double, double> const &energy_window,
                                 int n_w, double broadening, excluded_states_t const &excluded_states) {

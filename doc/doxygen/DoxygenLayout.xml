@@ -131,6 +131,10 @@
       <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">
       </tab>
       <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic diagonalization">
+        <tab type="usergroup" url="@ref triqs::atom_diag::atom_diag" title="atom_diag::atom_diag">
+          <tab type="user" url="@ref triqs::atom_diag::atom_diag::eigensystem_t" title="atom_diag::atom_diag::eigensystem_t"/>
+          <tab type="user" url="@ref triqs::atom_diag::atom_diag::op_block_mat_t" title="atom_diag::atom_diag::op_block_mat_t"/>
+        </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
       </tab>
