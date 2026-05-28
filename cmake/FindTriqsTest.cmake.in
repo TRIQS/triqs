@@ -1,4 +1,4 @@
-set(PYTHON_EXECUTABLE @Python_EXECUTABLE@)
+set(PYTHON_EXECUTABLE @CPP2PY_PYTHON_EXECUTABLE@)
 
 include(@CMAKE_INSTALL_PREFIX@/share/cmake/Modules/extract_flags.cmake)
 
@@ -75,7 +75,7 @@ function(triqs_add_python_test)
 
   set(testfile ${ARGV0}.py)
   set(testname py_${ARGV0})
-  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_MODULE_DIR}:${CPP2PY_BINARY_DIR}:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
   if(SANITIZER_RT_PRELOAD)
     list(APPEND testenv ${SANITIZER_RT_PRELOAD})
   endif()

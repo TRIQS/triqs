@@ -222,16 +222,13 @@ add_subdirectory(deps)
 add_subdirectory(c++/triqs)
 
 #---------------------------------------------------------------------
-# Python modules
+# Python modules 
 #---------------------------------------------------------------------
 
 if(PythonSupport)
-  set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
-  find_package(Python REQUIRED COMPONENTS Interpreter Development.Module NumPy)
-  string(REGEX REPLACE "/.*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${Python_SITEARCH})
-  set(TRIQS_PYTHON_LIB_DEST_ROOT ${TRIQS_PYTHON_LIB_DEST_ROOT} CACHE PATH "Python module install dir, relative to CMAKE_INSTALL_PREFIX")
-  message( STATUS "-------- Preparing python extension modules  -------------")
-  add_subdirectory(python/triqs)
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
+ message( STATUS "-------- Preparing python extension modules  -------------")
+ add_subdirectory(python/triqs)
 endif()
 
 #------------------------
@@ -334,6 +331,7 @@ if(BUILD_DEBIAN_PACKAGE)
   set(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs")
   execute_process(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "python3, python3-numpy, python3-mako, python3-mpi4py, python3-matplotlib, python3-scipy, libopenmpi-dev")
+  set(CPACK_DEBIAN_PACKAGE_CONFLICTS "cpp2py")
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   INCLUDE(CPack)

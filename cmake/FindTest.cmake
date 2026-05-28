@@ -66,17 +66,17 @@ function(add_python_test)
 
   set(testfile ${ARGV0}.py)
   set(testname py_${ARGV0})
-  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
+  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CPP2PY_MODULE_DIR}:${CPP2PY_BINARY_DIR}:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
   if(SANITIZER_RT_PRELOAD)
     list(APPEND testenv ${SANITIZER_RT_PRELOAD})
   endif()
 
   foreach(NP ${ARG_MPI_NUMPROC})
-    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+    add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${CPP2PY_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
     set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT ${testenv})
   endforeach()
 
-  add_test(${testname} ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
+  add_test(${testname} ${CPP2PY_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
   set_property(TEST ${testname} PROPERTY ENVIRONMENT ${testenv})
 
 endfunction(add_python_test)
