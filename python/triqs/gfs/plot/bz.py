@@ -17,14 +17,43 @@
 #
 # Authors: Thomas Ayral, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+r"""Plot helpers for Green's functions on a 2D Brillouin-zone or 
+cyclic-lattice mesh.
+
+Provides
+
+* :func:`~triqs.gfs.plot.bz.make_plottable` — interpolate the data 
+  on a regular ``nk x nk`` grid suitable for ``contourf`` / heatmaps.
+* :func:`~triqs.gfs.plot.bz.slice_on_path` — sample the Green's 
+  function along a piecewise-linear path through k-space 
+  (band-structure-style plots).
+* :func:`~triqs.gfs.plot.bz.plot` — TRIQS plot-protocol dispatcher 
+  consumed by :func:`~triqs.plot.mpl_interface.oplot`.
+"""
+
 from scipy.interpolate import griddata
 import numpy as np
 
 def make_plottable(self, method="cubic", nk=50):
-   ''' 
-   :param method: cubic|nearest|linear
-   :param nk: number of k points
-   :return: x,y,z, zmin, zmax
+   '''Interpolate ``self`` on a regular ``nk x nk`` k-grid for plotting.
+
+   Parameters
+   ----------
+   method : {'cubic', 'linear', 'nearest'}, optional
+       Interpolation method passed to :func:`scipy.interpolate.griddata`.
+       Default ``'cubic'``.
+   nk : int, optional
+       Resolution of the regular grid. Default ``50``.
+
+   Returns
+   -------
+   x, y : numpy.ndarray
+       1D arrays defining the regular grid.
+   z : numpy.ndarray
+       Interpolated values, shape ``(n_orb1, n_orb2, nk, nk)``.
+   zmin, zmax : numpy.ndarray
+       Per-orbital element min/max (complex), shape
+       ``(n_orb1, n_orb2)``.
    '''
    pl = np.zeros((len(self.mesh), 2))
    ik=0
@@ -50,18 +79,82 @@ def make_plottable(self, method="cubic", nk=50):
 
 from scipy import interpolate
 import itertools
-def dist(A,B):
+def dist(A, B):
+    """Euclidean distance between two 2D points.
+
+    Parameters
+    ----------
+    A, B : sequence of float
+        Points ``(x, y)`` in the plane.
+
+    Returns
+    -------
+    float
+        :math:`\\sqrt{(A_x - B_x)^2 + (A_y - B_y)^2}`.
+    """
     return np.sqrt((A[0]-B[0])**2+(A[1]-B[1])**2)
+
 def length(path):
+    """Total Euclidean length of a piecewise-linear path.
+
+    Parameters
+    ----------
+    path : sequence of (float, float)
+        Vertices of the path in order.
+
+    Returns
+    -------
+    float
+        Sum of segment lengths between consecutive vertices.
+    """
     return sum([dist(path[i],path[i+1]) for i in range(len(path)-1)])
-def generate_points(A,B, n_points):
-        pts=[]
-        for i in range(n_points):
-            x=A[0]+(B[0]-A[0])/(n_points-1)*i
-            y=A[1]+(B[1]-A[1])/(n_points-1)*i
-            pts.append((x, y))
-        return pts
+
+def generate_points(A, B, n_points):
+    """Sample ``n_points`` evenly-spaced points on the segment ``[A, B]``.
+
+    Parameters
+    ----------
+    A, B : sequence of float
+        Endpoints ``(x, y)`` of the segment. ``A`` and ``B`` are
+        included as the first and last returned points.
+    n_points : int
+        Number of points along the segment (must be ``>= 2``).
+
+    Returns
+    -------
+    list of (float, float)
+        The sampled points, in order from ``A`` to ``B``.
+    """
+    pts=[]
+    for i in range(n_points):
+        x=A[0]+(B[0]-A[0])/(n_points-1)*i
+        y=A[1]+(B[1]-A[1])/(n_points-1)*i
+        pts.append((x, y))
+    return pts
+
 def generate_points_on_path(path, n_points):
+    """Distribute ``n_points`` samples along a piecewise-linear path.
+
+    Points are distributed segment-by-segment proportionally to each
+    segment's length, so the sampling density is approximately uniform
+    along the whole path.
+
+    Parameters
+    ----------
+    path : sequence of (float, float)
+        Vertices of the path in order.
+    n_points : int
+        Total number of points to distribute across all segments.
+
+    Returns
+    -------
+    l_points : list of (float, float)
+        The sampled points along the path.
+    high_sym : list of int
+        Indices in ``l_points`` corresponding to the input vertices
+        (the first entry is always ``0``; useful for placing
+        high-symmetry-point ticks on band-structure plots).
+    """
     n_segs = len(path)-1
     l_path = length(path)
     l_points=[]
@@ -70,19 +163,33 @@ def generate_points_on_path(path, n_points):
     for i in range(len(path)-1):
         n_seg = int(n_points*dist(path[i],path[i+1])/l_path)
         pts=generate_points(path[i],path[i+1],n_seg)
-        
+
         l_points=list(itertools.chain(l_points,pts))
         high_sym.append(len(l_points))
     return l_points, high_sym
 
 def slice_on_path(self, path, n_pts=100, method="cubic"):
- ''' 
- :param path: a list of points defining a path in the BZ [array(x,y), ...]
- :param n_pts: the number of points on the path
- :param method: interpolation method (cubic|linear|nearest)
- :return: L,Ltot
-  with L: list of momenta on path
-  and Ltot: Ltot[0][0] : list of eps(k)(0,0) for each k
+ '''Sample the (0, 0) component of ``self`` along a path in the BZ.
+
+ Parameters
+ ----------
+ path : sequence of (float, float)
+     Vertices of the piecewise-linear path in the BZ.
+ n_pts : int, optional
+     Total number of sampling points distributed across the path.
+     Default ``100``.
+ method : {'cubic', 'linear', 'nearest'}, optional
+     Interpolation method used to build the dense grid. Default
+     ``'cubic'``.
+
+ Returns
+ -------
+ L : list of (float, float)
+     Momenta visited along the path.
+ Lz_on_path : numpy.ndarray
+     Interpolated values at those momenta.
+ high_sym : list of int
+     Indices in ``L`` corresponding to the input path vertices.
  '''
  x,y,z,zmin,zmax = make_plottable(self, method=method)
  #print z
@@ -101,8 +208,28 @@ def slice_on_path(self, path, n_pts=100, method="cubic"):
 
 
 def plot(self, opt_dict):
-    r"""
-    Plot protocol for GfBrillouinZone objects.
+    r"""Plot-protocol implementation for Green's functions on a 2D BZ / 
+    cyclic-lattice mesh.
+
+    Parameters
+    ----------
+    opt_dict : dict
+        Plot options, e.g.
+
+        * ``type`` — ``'XY'`` (default; band-structure style along
+          ``path``) or ``'contourf'`` (2D heat map).
+        * ``method`` — interpolation method for
+          :func:`~triqs.gfs.plot.bz.make_plottable`. Default ``'nearest'``.
+        * ``mode`` — ``'R'`` for the real part (default) or ``'I'``
+          for the imaginary part.
+        * ``path`` — required for ``type='XY'``, a list of BZ
+          coordinates defining the cut.
+
+    Returns
+    -------
+    list of dict
+        Curve / contour descriptors consumed by
+        :func:`~triqs.plot.mpl_interface.oplot`.
     """
 
     plot_type = opt_dict.pop('type','XY')

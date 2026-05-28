@@ -15,6 +15,21 @@
 #
 # Authors: Alexander Hampel, Harrison LaBollita, Nils Wentzell
 
+r"""Constrained-residual minimization (CRM) Dyson solver for DLR Green's functions.
+
+Provides :func:`~triqs.gfs.dlr_crm_dyson_solver.minimize_dyson`, which solves Dyson's equation
+
+.. math::
+
+    G - G_0 - G_0\,\Sigma\,G = 0
+
+as an optimization problem in the DLR (discrete Lehmann representation)
+basis. The solver optimizes only the dynamic part of the self-energy
+:math:`\Sigma_{\mathrm{dyn}}(i\nu) = \Sigma(i\nu) - \Sigma_0` and, when
+available, uses higher-frequency moments as non-linear constraints. The
+method is described in https://arxiv.org/abs/2310.01266.
+"""
+
 import numpy as np
 
 from scipy.optimize import minimize, NonlinearConstraint
@@ -42,58 +57,86 @@ def minimize_dyson(
     options=dict(maxiter=5000, disp=True, gtol=1e-32, xtol=1e-100, finite_diff_rel_step=1e-20),
     **kwargs,
 ):
-    """
-    Contrained Residual Minimization Dyson solver as described in https://arxiv.org/abs/2310.01266
+    r"""Solve Dyson's equation in the DLR basis by constrained residual minimization.
 
-    Defines the Dysons equation as an optimization problem:
+    Defines Dyson's equation as an optimization problem,
 
-        G - G0 - G0*Σ*G = 0
+    .. math::
 
-    and solves it using scipy.optimize.minimize using the DLR representation for the Green's functions.
+        G - G_0 - G_0\,\Sigma\,G = 0,
 
-    The solver optimizes only the dynamic part of the self-energy Σ_dyn(iν)= Σ(iν) - Σ_0.
-    Here, Σ_0 is the Hartree shift. If provided the second moment Σ_1 is used as a non-linear constraint in the solver.
+    and solves it on the DLR (discrete Lehmann representation) nodes
+    via :func:`scipy.optimize.minimize`. The solver optimizes only the
+    dynamic part of the self-energy
+    :math:`\Sigma_{\mathrm{dyn}}(i\nu) = \Sigma(i\nu) - \Sigma_0`,
+    where :math:`\Sigma_0` is the Hartree shift. When the second moment
+    :math:`\Sigma_1` is supplied, it is enforced as a non-linear
+    constraint on the optimizer.
 
-    The moments can be explicitly calculated in the impurity solver, see for example the `cthyb high frequency moments tutorial <https://triqs.github.io/cthyb/latest/guide/high_freq_moments.html>`_ .
-
-    Alternatively the moments can be approximated by fitting the tail of the self-energy calculated via normal Dyson equation first:
-
-    >>> S_iw = inverse(G0_iw) - inverse(G_iw)
-    >>> tail, err = S_iw.fit_hermitian_tail()
-
-    and then used as input for the Dyson solver:
-
-    >>> S_iw_dlr, Sigma_HF, residual = minimize_dyson(G0_dlr=G0_dlr, G_dlr=G_dlr, Sigma_moments=tail[0:1])
-
-    The input G_dlr can for example obtained via `fit_gf_dlr` from a noisy imaginary time Green's function or by directly setting the DLR mesh points from a full `MeshImFreq` G_iw object:
-
-    >>> for iwn in G_dlr_iw.mesh:
-    >>>     G_dlr_iw[iwn] = G_full_iw(iwn)
+    When ``G_dlr`` / ``G0_dlr`` are :class:`~triqs.gfs.block_gf.BlockGf`, the
+    solve is dispatched block by block.
 
     Parameters
     ----------
-    G0_dlr : triqs.gfs.Gf or triqs.gfs.BlockGf
-        non-interacting Green's function defined on a DLR, DLRImTime, or DLRImFreq mesh
-    G_dlr : triqs.gfs.Gf or triqs.gfs.BlockGf
-        interacting Green's function defined on a DLR, DLRImTime, or DLRImFreq mesh
-    Sigma_moments : list of numpy.ndarray or dict of list of numpy.ndarray
-        moments of Σ. The first moment is the Hartree shift, i.e. the constant part of Σ.
-        If provdided, use the second moment as a non-linear constraint for the Dyson solver.
+    G0_dlr : Gf or BlockGf
+        Non-interacting Green's function defined on a
+        :class:`~triqs.mesh.meshes.MeshDLR`, :class:`~triqs.mesh.meshes.MeshDLRImTime`
+        or :class:`~triqs.mesh.meshes.MeshDLRImFreq` mesh.
+    G_dlr : Gf or BlockGf
+        Interacting Green's function on the same mesh family as
+        ``G0_dlr``.
+    Sigma_moments : list of numpy.ndarray, or dict of list of numpy.ndarray
+        High-frequency moments of :math:`\Sigma`. ``Sigma_moments[0]``
+        is the Hartree shift :math:`\Sigma_0` (the constant part of
+        :math:`\Sigma`). When supplied, ``Sigma_moments[1]`` is used as
+        a non-linear constraint on the optimizer. For a
+        :class:`~triqs.gfs.block_gf.BlockGf` input, a dict keyed by block name is expected.
     method : str, optional
-        optimization method, defaults to 'trust-constr'
-        Note: For non-linear constraints this is one of the few available methods
+        Optimization method forwarded to
+        :func:`scipy.optimize.minimize`. Default ``'trust-constr'`` —
+        one of the few methods that supports non-linear constraints.
     options : dict, optional
-        optimization options, defaults to dict(maxiter=5000, disp=True, gtol=1e-32, xtol=1e-100, finite_diff_rel_step=1e-20)
+        Options forwarded to :func:`scipy.optimize.minimize`. Default
+        ``dict(maxiter=5000, disp=True, gtol=1e-32, xtol=1e-100,
+        finite_diff_rel_step=1e-20)``.
 
     Returns
     -------
-    Sigma_DLR : triqs.gfs.Gf or triqs.gfs.BlockGf
-        optimized self-energy defined on a DLRImFreq mesh
-    Sigma_0 : numpy.ndarray
-        Hartree shift
-    residual : float
-        L2 norm of residual (G-G₀-G₀ΣG)
+    Sigma_DLR : Gf or BlockGf
+        Optimized self-energy defined on a
+        :class:`~triqs.mesh.meshes.MeshDLRImFreq` mesh.
+    Sigma_0 : numpy.ndarray or dict of numpy.ndarray
+        Hartree shift (per block when the input is a :class:`~triqs.gfs.block_gf.BlockGf`).
+    residual : float or dict of float
+        :math:`L_2` norm of the Dyson residual
+        :math:`G - G_0 - G_0\,\Sigma\,G` (per block when the input is a
+        :class:`~triqs.gfs.block_gf.BlockGf`).
 
+    Notes
+    -----
+    The method is described in https://arxiv.org/abs/2310.01266. The
+    moments can be computed directly in the impurity solver (see the
+    `cthyb high frequency moments tutorial
+    <https://triqs.github.io/cthyb/latest/guide/high_freq_moments.html>`_)
+    or approximated by fitting the tail of the self-energy obtained
+    from the usual Dyson equation.
+
+    Examples
+    --------
+    Approximate the moments from a tail fit and pass them to the
+    solver:
+
+    >>> S_iw = inverse(G0_iw) - inverse(G_iw)
+    >>> tail, err = S_iw.fit_hermitian_tail()
+    >>> S_iw_dlr, Sigma_HF, residual = minimize_dyson(
+    ...     G0_dlr=G0_dlr, G_dlr=G_dlr, Sigma_moments=tail[0:1])
+
+    The input ``G_dlr`` can be obtained via ``fit_gf_dlr`` from a noisy
+    imaginary-time Green's function, or by directly sampling the DLR
+    mesh points from a full ``MeshImFreq`` ``G_iw`` object:
+
+    >>> for iwn in G_dlr_iw.mesh:
+    ...     G_dlr_iw[iwn] = G_full_iw(iwn)
     """
 
     # recursive call for BlockGf, could be MPI parallelized
@@ -156,8 +199,20 @@ def minimize_dyson(
     else:  # len(Sigma_moments) >= 2, use only the second moment
 
         def constraint_func(x):
-            """
-            constraint condition: ∑σk =  Σ_1
+            r"""Non-linear constraint :math:`\sum_k \sigma_k = \Sigma_1` enforced on the solver.
+
+            Parameters
+            ----------
+            x : numpy.ndarray
+                Flattened real view of the dynamic self-energy DLR
+                coefficients.
+
+            Returns
+            -------
+            numpy.ndarray
+                Flattened real view of :math:`\sum_k \sigma_k`, which
+                the optimizer is constrained to equal the supplied
+                second moment.
             """
             temp = Gf(mesh=mesh_iw, data=unflatten(x))
             sig = make_gf_dlr(temp)
@@ -170,8 +225,20 @@ def minimize_dyson(
 
     # target function for minimization
     def dyson_difference(x):
-        """
-        target function for minimize
+        r"""Objective function passed to :func:`scipy.optimize.minimize`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Flattened real view of the dynamic self-energy DLR
+            coefficients.
+
+        Returns
+        -------
+        float
+            Frobenius norm of the Dyson residual
+            :math:`G - G_0 - G_0\,\Sigma\,G` evaluated on the DLR
+            nodes.
         """
         sig_iwaa = Gf(mesh=mesh_iw, data=unflatten(x))
         sig_iwaa += Sigma_moments[0]

@@ -19,17 +19,46 @@
 
 
 r"""
-This is the base module for all common operations with Green's functions.
-It is imported with the command::
+Green's function containers, descriptors and utilities for TRIQS.
 
-  >>> from triqs.gfs import *
+This package gathers the user-facing API for working with Green's
+functions in TRIQS. It is imported with::
+
+    >>> from triqs.gfs import *
+
+The main classes provided by the package are:
+
+:class:`~triqs.gfs.gf.Gf`
+    Generic Green's function: a numpy array indexed by a mesh and an
+    optional target space.
+:class:`~triqs.gfs.block_gf.BlockGf`
+    Block-diagonal Green's function: a named collection of
+    :class:`~triqs.gfs.gf.Gf` blocks (e.g. spin-up / spin-down).
+:class:`~triqs.gfs.block2_gf.Block2Gf`
+    Two-index block-diagonal Green's function, indexed by a pair of
+    block names.
+
+It also re-exports the mesh classes from :mod:`triqs.mesh`.
+
+In addition, the package provides                                                  
+                                                                                     
+* lazy initializers used on the right-hand side of ``g << ...``                      
+  (frequency placeholders, semicircular and flat DOS, Fourier and                    
+  Legendre transforms),                                                            
+* utilities for inverting Green's functions, solving Dyson's equation                
+  and computing hybridization functions,                     
+* block-wise mapping over :class:`~triqs.gfs.block_gf.BlockGf` / 
+  :class:`~triqs.gfs.block2_gf.Block2Gf`,
+* high-frequency tail fitting and replacement,                      
+* enforcement of Hermiticity and time-reversal symmetries,                 
+* transforms between meshes, and                           
+* DLR representation factories.
 """
 
 from triqs.mesh import MeshPoint, MeshValueGenerator, MeshProduct, MatsubaraFreq
 from .gf import *
 from .block_gf import BlockGf, fix_gf_struct_type
 from .block2_gf import Block2Gf
-from .map_block import map_block
 from .descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, LegendreToMatsubara, MatsubaraToLegendre
 from .tools import *
 

@@ -17,41 +17,42 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+r"""Deprecated :class:`~triqs.gfs.backwd_compat.gf_refreq.GfReFreq` alias 
+for :class:`~triqs.gfs.gf.Gf` with a :class:`~triqs.mesh.meshes.MeshReFreq` 
+mesh."""
+
 import warnings, numpy as np
 from triqs.gfs.gf import Gf
 from triqs.mesh import MeshReFreq
 
-class GfReFreq(Gf) : 
-    """
-    Parameters (KEYWORD argument ONLY)
+class GfReFreq(Gf) :
+    r"""Deprecated backward-compatibility alias for :class:`~triqs.gfs.gf.Gf` 
+    with a :class:`~triqs.mesh.meshes.MeshReFreq` mesh.
+
+    Use ``Gf(mesh=MeshReFreq(...), target_shape=...)`` instead.
+    Constructing a :class:`~triqs.gfs.backwd_compat.gf_refreq.GfReFreq` emits 
+    a :class:`FutureWarning`.
+
+    Parameters
     ----------
-    mesh: MeshReFreq, optional
-          The mesh of the Green function
-          If not present, it will be constructed from 
-          the parameters beta, [n_points], [statistic]
-
-    data: numpy.array, optional
-          The data of the Gf.
-          Must be of dimension mesh.rank + target_rank.
-          Incompatible with target_shape
-
-    target_shape: list of int, optional
-                  Shape of the target space.
-                  Incompatible with data
-
-    is_real: bool
-             Is the Green function real valued ?
-             If true, and target_shape is set, the data will be real.
-             No effect with the parameter data.
-
-    name: str
-          The name of the Green function. For plotting.
-
+    mesh : MeshReFreq, optional
+        Mesh of the Green's function. If omitted, built from
+        ``window`` and ``n_points``.
+    data : numpy.ndarray, optional
+        Storage of shape ``(*mesh_sizes, *target_shape)``. Mutually
+        exclusive with ``target_shape``.
+    target_shape : list of int, optional
+        Shape of the target space. Mutually exclusive with ``data``.
+    window : tuple of float, optional
+        ``(omega_min, omega_max)`` for the implicit mesh.
+    n_points : int, optional
+        Number of frequency points. Default ``10000``.
+    is_real : bool, optional
+        Allocate real-valued storage.
+    name : str, optional
+        Plot label.
     """
-    def __init__(self, **kw): # enforce keyword only policy 
-        """
-          Same as Gf, but can rebuild the  mesh for backward compatibility
-        """
+    def __init__(self, **kw): # enforce keyword only policy
         warnings.warn("Please use Gf(mesh=MeshReFreq(..), ..) instead of GfReFreq", FutureWarning)
 
         def delegate(self, mesh=None, data = None, target_shape=None, name='', n_points = 10000, window = None, indices=None):
