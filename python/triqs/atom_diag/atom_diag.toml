@@ -1,3 +1,17 @@
 package_name = "triqs.atom_diag"
-documentation = "Lightweight exact diagonalization solver"
+documentation = """Exact diagonalization of finite fermionic Hamiltonians.
+
+This module exposes a lightweight exact diagonalization solver for the atomic (local) problem of a quantum impurity,
+together with helpers that build derived quantities from a solved eigensystem. The main classes are:
+
+- :class:`AtomDiagReal` and :class:`AtomDiagComplex`: hold the block-diagonal Hamiltonian, its eigensystem, and the
+  matrix representations of the fundamental creation/annihilation operators in the eigenbasis. The
+  :func:`AtomDiag` factory dispatches between the real and complex variant based on the Hamiltonian.
+
+A second group of free functions takes a solved :class:`AtomDiagReal` / :class:`AtomDiagComplex` and produces derived
+quantities: thermodynamic averages (:func:`partition_function`, :func:`atomic_density_matrix`,
+:func:`trace_rho_op`), application of an operator to a state (:func:`act`), tabulation of conserved-quantity
+eigenvalues (:func:`quantum_number_eigenvalues`, :func:`quantum_number_eigenvalues_checked`), and the atomic Green's
+function on different meshes (:func:`atomic_g_tau`, :func:`atomic_g_iw`, :func:`atomic_g_l`, :func:`atomic_g_w`).
+"""
 namespaces = "triqs::atom_diag"
