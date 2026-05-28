@@ -18,6 +18,11 @@
 //
 // Authors: Thomas Ayral, Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides utilities to extract coefficients (matrices and tensors) from many-body operators.
+ */
+
 #pragma once
 #include <variant>
 #include <triqs/utility/first_include.hpp>
@@ -28,34 +33,48 @@
 
 namespace triqs::operators::utils {
 
+  /**
+   * @addtogroup triqs-ops
+   * @{
+   */
+
+  // Elevate `nda::array` to the `triqs::operators::utils` namespace.
   using nda::array;
 
+  // Single particle state index type (see triqs::hilbert_space::fundamental_operator_set::indices_t).
   using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
-  // Shorthand for many_body_operator_generic
+  /// Shorthand for triqs::operators::many_body_operator_generic.
   template <typename scalar_t> using op_t = operators::many_body_operator_generic<scalar_t>;
 
-  // Mapping index pair -> coefficient of T
+  /// Map from an index pair \f$ (\alpha_i, \alpha_j) \f$ to a coefficient of type `T`.
   template <typename T> using dict2_t = std::map<std::tuple<indices_t, indices_t>, T>;
-  // Mapping quadruple -> coefficient of T
+
+  /// Map from an index quadruple \f$ (\alpha_i, \alpha_j, \alpha_k, \alpha_l) \f$ to a coefficient of type `T`.
   template <typename T> using dict4_t = std::map<std::tuple<indices_t, indices_t, indices_t, indices_t>, T>;
 
+  /// Rank-`N` array with `real_or_complex` element type, stored as a `std::variant`.
   template <int N> using real_or_complex_array = std::variant<array<double, N>, array<std::complex<double>, N>>;
 
-  /// Extract coefficients from an operator assuming it is a normal quadratic form of canonical operators
   /**
- * The normal quadratic form of canonical operators is defined as
- *
- * .. math:: \sum_{ij} h_{ij} c_i^\dagger c_j.
- *
- * An exception will be thrown if a term of a different form is met,
- * unless `ignore_irrelevant` argument is set to `true`.
- *
- * @param h subject operator for coefficient extraction.
- * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
- * @return All non-vanishing coefficients :math:`h_{ij}` as dictionary object.
- * @include triqs/operators/util/extractors.hpp
- */
+   * @brief Extract the coefficients of a normal-ordered quadratic operator.
+   *
+   * @details Assumes that the operator \f$ \hat{h} \f$ has the normal-ordered quadratic form
+   * \f[
+   *   \hat{h} = \sum_{ij} h_{ij} \hat{c}_i^\dagger \hat{c}_j \; .
+   * \f]
+   * The coefficients \f$ h_{ij} \f$ are returned as a map from the index pair \f$ (\alpha_i,
+   * \alpha_j) \f$ to the value \f$ h_{ij} \f$.
+   *
+   * If a term that is not of this form is encountered, an exception is thrown unless
+   * `ignore_irrelevant` is `true`, in which case the offending term is silently skipped.
+   *
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @param ignore_irrelevant If `true`, terms that do not match the expected form are skipped
+   * instead of triggering an exception.
+   * @return Dictionary of non-vanishing coefficients \f$ h_{ij} \f$.
+   */
   template <typename scalar_t> dict2_t<scalar_t> extract_h_dict(op_t<scalar_t> const &h, bool ignore_irrelevant = false) {
 
     auto h_dict = dict2_t<scalar_t>{};
@@ -78,20 +97,27 @@ namespace triqs::operators::utils {
     return h_dict;
   }
 
-  /// Extract coefficients from a density-density interaction operator
   /**
- * The density-density interaction operator is defined as
- *
- * .. math:: \frac{1}{2} \sum_{ij} U_{ij} n_i n_j.
- *
- * An exception will be thrown if a term of a different form is met,
- * unless `ignore_irrelevant` argument is set to `true`.
- *
- * @param h subject operator for coefficient extraction.
- * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
- * @return All non-vanishing coefficients :math:`U_{ij}` as dictionary object.
- * @include triqs/operators/util/extractors.hpp
- */
+   * @brief Extract the coefficients of a density-density interaction operator.
+   *
+   * @details Assumes that the operator \f$ \hat{h} \f$ has the density-density form
+   * \f[
+   *   \hat{h} = \frac{1}{2} \sum_{ij} U_{ij} \hat{n}_i \hat{n}_j \; ,
+   * \f]
+   * with \f$ \hat{n}_i = \hat{c}_i^\dagger \hat{c}_i \f$. Internally each input term is matched against the
+   * canonical normal-ordered pattern \f$ \hat{c}_i^\dagger \hat{c}_j^\dagger \hat{c}_j \hat{c}_i \f$ and both \f$ (i, j)
+   * \f$ and \f$ (j, i) \f$ entries are written to the output map, so that the returned dictionary
+   * is symmetric in its index pair.
+   *
+   * If a term that is not of this form is encountered, an exception is thrown unless
+   * `ignore_irrelevant` is `true`, in which case the offending term is silently skipped.
+   *
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @param ignore_irrelevant If `true`, terms that do not match the expected form are skipped
+   * instead of triggering an exception.
+   * @return Dictionary of non-vanishing coefficients \f$ U_{ij} \f$.
+   */
   template <typename scalar_t> dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const &h, bool ignore_irrelevant = false) {
 
     auto U_dict = dict2_t<scalar_t>{};
@@ -115,20 +141,28 @@ namespace triqs::operators::utils {
     return U_dict;
   }
 
-  /// Extract coefficients from a two-particle interaction operator
   /**
- * The two-particle interaction operator is defined as
- *
- * .. math:: \frac{1}{2} \sum_{ijkl} U_{ijkl} c_i^\dagger c_j^\dagger c_l c_k
- *
- * An exception will be thrown if a term of a different form is met,
- * unless `ignore_irrelevant` argument is set to `true`.
- *
- * @param h subject operator for coefficient extraction.
- * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
- * @return All non-vanishing coefficients :math:`U_{ijkl}` as dictionary object.
- * @include triqs/operators/util/extractors.hpp
- */
+   * @brief Extract the coefficients of a general two-particle interaction operator.
+   *
+   * @details Assumes that the operator \f$ \hat{h} \f$ has the two-particle form
+   * \f[
+   *   \hat{h} = \frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}_i^\dagger \hat{c}_j^\dagger \hat{c}_l \hat{c}_k \; .
+   * \f]
+   * Each input term is matched against the canonical normal-ordered pattern \f$ \hat{c}_i^\dagger
+   * \hat{c}_j^\dagger \hat{c}_l \hat{c}_k \f$ and the four index permutations equivalent under fermionic
+   * antisymmetry are written to the output map with the appropriate sign, so that the returned
+   * dictionary respects the antisymmetry of \f$ U_{ijkl} \f$ in \f$ (i, j) \f$ and in \f$ (k, l)
+   * \f$.
+   *
+   * If a term that is not of this form is encountered, an exception is thrown unless
+   * `ignore_irrelevant` is `true`, in which case the offending term is silently skipped.
+   *
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @param ignore_irrelevant If `true`, terms that do not match the expected form are skipped
+   * instead of triggering an exception.
+   * @return Dictionary of non-vanishing coefficients \f$ U_{ijkl} \f$.
+   */
   template <typename scalar_t> dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const &h, bool ignore_irrelevant = false) {
 
     auto U_dict = dict4_t<scalar_t>{};
@@ -154,24 +188,25 @@ namespace triqs::operators::utils {
     return U_dict;
   }
 
-  /// Convert dictionary of coefficients to matrix/tensor, given a fundamental operator set
   /**
- * For a given dictionary `dict: (ind_1,ind_2,...,ind_N) -> x` returns an array of rank `N`
- * with elements of type `ValueType`. Each key `(ind_1,ind_2,...,ind_N)` is mapped to a
- * tuple of integers `(i_1,i_2,...,i_N)` using a given fundamental operator set `fs`.
- * The element of the resulting array addressed by `(i_1,i_2,...,i_N)` is then set to `x`.
- * The rest of elements, which have no corresponding keys in `dict`, are value-initialized
- * (set to `ValueType{}`).
- *
- * An exception is thrown if some index `ind_n` is missing from `fs`.
- *
- * @tparam ValueType element type of the resulting matrix/tensor
- * @tparam DictType type of the dictionary to convert
- * @param dict dictionary to convert
- * @param fs fundamental operator set used for conversion
- * @return Matrix/tensor, result of conversion
- * @include triqs/operators/util/extractors.hpp
- */
+   * @brief Convert a coefficient dictionary into a dense rank-`N` array indexed by integers from a
+   * fundamental operator set.
+   *
+   * @details For a dictionary mapping each key tuple \f$ (\alpha_{i_1}, \dots, \alpha_{i_N}) \f$ to
+   * a value \f$ x \f$, the result is a rank-`N` array of element type `ValueType` whose entry at
+   * \f$ (\mathtt{fs}[\alpha_{i_1}], \dots, \mathtt{fs}[\alpha_{i_N}]) \f$ is set to \f$ x \f$. All
+   * other entries are value-initialized to `ValueType{}`.
+   *
+   * The dimension along every axis is `fs.size()`. The function throws if any index from `dict` is
+   * not present in `fs`.
+   *
+   * @tparam ValueType Element type of the resulting array.
+   * @tparam DictType Type of the input dictionary; its `key_type` must be a `std::tuple` of
+   * triqs::operators::utils::indices_t.
+   * @param dict Coefficient dictionary to convert.
+   * @param fs Fundamental operator set used to map each index to an integer.
+   * @return Dense rank-`N` array containing the converted coefficients.
+   */
   template <typename ValueType = double, typename DictType>
   array<ValueType, std::tuple_size<typename DictType::key_type>::value> dict_to_matrix(DictType const &dict,
                                                                                        hilbert_space::fundamental_operator_set const &fs) {
@@ -199,10 +234,19 @@ namespace triqs::operators::utils {
   // Functions for scalar_t = real_or_complex only //
   ///////////////////////////////////////////////////
 
-  /// Convert dictionary of real_or_complex coefficients to variant of real/complex matrix, given a fundamental operator set
-  ///
-  /// dict: dictionary to convert
-  /// fs: fundamental operator set used for conversion
+  /**
+   * @brief Convert a `real_or_complex`-valued coefficient dictionary into a `std::variant` of a real
+   * and a complex dense array.
+   *
+   * @details If every value in `dict` is purely real, the result holds a `array<double, N>`;
+   * otherwise it holds a `array<std::complex<double>, N>`. The shape of the array follows the same
+   * convention as triqs::operators::utils::dict_to_matrix().
+   *
+   * @tparam DictType Type of the input dictionary.
+   * @param dict Coefficient dictionary to convert.
+   * @param fs Fundamental operator set used to map each index to an integer.
+   * @return Variant containing either a real or a complex dense array, depending on `dict`.
+   */
   template <typename DictType>
   real_or_complex_array<std::tuple_size<typename DictType::key_type>::value>
   dict_to_variant_matrix(DictType const &dict, hilbert_space::fundamental_operator_set const &fs) {
@@ -214,13 +258,15 @@ namespace triqs::operators::utils {
   }
 
   /**
-   * Filter out terms of given length from an operator
+   * @brief Keep only the terms of a given length from a many-body operator.
    *
-   * @param h subject operator
-   * @param The length of the operator terms to filter
-   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
-   * @return Operator containing only the terms of given length
-   * @include triqs/operators/util/extractors.hpp
+   * @details Returns a copy of \f$ \hat{h} \f$ consisting of those monomials whose length (number
+   * of canonical operators) is exactly `len`.
+   *
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @param len Required monomial length.
+   * @return Many-body operator containing only the matching terms.
    */
   template <typename scalar_t> op_t<scalar_t> filter_op(op_t<scalar_t> const &h, long len) {
 
@@ -234,37 +280,42 @@ namespace triqs::operators::utils {
   }
 
   /**
-   * Filter out quadratic terms from an operator
+   * @brief Keep only the quadratic terms of a many-body operator \f$ \hat{h} \f$.
    *
-   * @param h subject operator
-   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
-   * @return Operator containing only the quadratic terms
-   * @include triqs/operators/util/extractors.hpp
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @return Many-body operator containing only the quadratic terms.
    */
   template <typename scalar_t> op_t<scalar_t> quadratic_terms(op_t<scalar_t> const &h) { return filter_op(h, 2); }
 
   /**
-   * Filter out quartic terms from an operator
+   * @brief Keep only the quartic terms of a many-body operator \f$ \hat{h} \f$.
    *
-   * @param h subject operator
-   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
-   * @return Operator containing only the quartic terms
-   * @include triqs/operators/util/extractors.hpp
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @return Many-body operator containing only the quartic terms.
    */
   template <typename scalar_t> op_t<scalar_t> quartic_terms(op_t<scalar_t> const &h) { return filter_op(h, 4); }
 
   /**
-   * Convert the quadratic operator
+   * @brief Convert a block-diagonal quadratic operator into its block-matrix representation.
    *
-   * .. math:: \sum_{\sigma ij} h_{\sigma ij} c_{\sigma, i}^\dagger c_{\sigma, j}.
+   * @details Assumes that \f$ \hat{h} \f$ has the form
+   * \f[
+   *   \hat{h} = \sum_{\sigma ij} h_{\sigma ij} \hat{c}_{\sigma, i}^\dagger \hat{c}_{\sigma, j} \; ,
+   * \f]
+   * where the first element of each canonical operator's index is interpreted as the block label \f$ \sigma \f$ (a 
+   * string) and the second element as the in-block integer index \f$ i \f$.
    *
-   * into its block-matrix representation
+   * If a term that is not of this form is encountered, an exception is thrown unless ``ignore_irrelevant`` is `true`, 
+   * in which case the offending term is silently skipped.
    *
-   * @param h subject operator
-   * @param gf_struct The object defining the block-structure
-   * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
-   * @return The block-matrix representation h_{\sigma ij}
-   * @include triqs/operators/util/extractors.hpp
+   * @tparam scalar_t Scalar type of the coefficients.
+   * @param h Many-body operator \f$ \hat{h} \f$.
+   * @param gf_struct Block structure specifying the block labels and the size of each block.
+   * @param ignore_irrelevant If `true`, terms that do not match the expected form are skipped instead of triggering an 
+   * exception.
+   * @return One matrix per block, packaged as a one-dimensional array of matrices.
    */
   template <typename scalar_t>
   nda::array<nda::matrix<scalar_t>, 1> block_matrix_from_op(op_t<scalar_t> const &h, hilbert_space::gf_struct_t const &gf_struct,
@@ -304,14 +355,18 @@ namespace triqs::operators::utils {
   }
 
   /**
-   * Convert the block-matrix h_{\sigma ij} into the associated operator
+   * @brief Build a block-diagonal quadratic operator from its block-matrix representation.
    *
-   * .. math:: \sum_{\sigma ij} h_{\sigma ij} c_{\sigma, i}^\dagger c_{\sigma, j}.
+   * @details Given the block matrices \f$ h_{\sigma ij} \f$ and the block structure, returns
+   * \f[
+   *   \hat{h} = \sum_{\sigma ij} h_{\sigma ij} \hat{c}_{\sigma, i}^\dagger \hat{c}_{\sigma, j} \; .
+   * \f]
    *
-   * @param bl_mat subject block_matrix
-   * @param gf_struct The object defining the block-structure
-   * @return The associated operator
-   * @include triqs/operators/util/extractors.hpp
+   * @tparam scalar_t Scalar type of the matrices and of the resulting operator.
+   * @param bl_mat One matrix \f$ h_{\sigma ij} \f$ per block \f$ \sigma \f$, packaged as a one-dimensional array of 
+   * matrices.
+   * @param gf_struct Block structure.
+   * @return Many-body operator \f$ \hat{h} \f$.
    */
   template <typename scalar_t>
   op_t<scalar_t> op_from_block_matrix(nda::array<nda::matrix<scalar_t>, 1> const &bl_mat, hilbert_space::gf_struct_t const &gf_struct) {
@@ -332,5 +387,7 @@ namespace triqs::operators::utils {
 
     return h;
   }
+
+  /** @} */
 
 } // namespace triqs::operators::utils
