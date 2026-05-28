@@ -1,3 +1,17 @@
 package_name = "triqs.operators.util"
-documentation = "Functions to extract coefficients from many-body operators"
+documentation = """Extract coefficients (matrices and tensors) from many-body operators.
+
+Given a :class:`~triqs.operators.operators.Operator`, the ``extract_*`` functions recover 
+the coefficient dictionaries of a normally ordered operator that matches a specific structural pattern:
+
+- :func:`extract_h_dict` — quadratic part :math:`\\sum_{ij} h_{ij} \\hat{c}_i^\\dagger \\hat{c}_j`,
+- :func:`extract_U_dict2` — density-density interaction :math:`\\frac{1}{2} \\sum_{ij} U_{ij} \\hat{n}_i \\hat{n}_j`,
+- :func:`extract_U_dict4` — general two-body interaction
+  :math:`\\frac{1}{2} \\sum_{ijkl} U_{ijkl} \\hat{c}_i^\\dagger \\hat{c}_j^\\dagger \\hat{c}_l \\hat{c}_k`.
+
+The returned dictionaries map tuples of single-particle indices to the corresponding coefficient, and can be converted
+to dense arrays via :func:`dict_to_matrix` (given a Green's-function block structure). The companion functions
+:func:`quadratic_terms`, :func:`quartic_terms`, :func:`block_matrix_from_op` and :func:`op_from_block_matrix` filter and
+round-trip block-diagonal quadratic operators between the operator and matrix representations.
+"""
 namespaces = "triqs::operators::utils::py triqs::operators::utils"

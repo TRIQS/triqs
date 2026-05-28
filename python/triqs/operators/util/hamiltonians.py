@@ -18,6 +18,14 @@
 #
 # Authors: Michel Ferrero, Gernot Kraberger, Igor Krivenko, Priyanka Seth, Nils Wentzell
 
+"""Standard local interaction Hamiltonians as :class:`~triqs.operators.operators.Operator` objects.
+
+Provides factory functions for the most common interaction Hamiltonians used in
+multi-orbital impurity problems (Slater, Kanamori, density-density), together
+with utilities for extracting their density part and converting them to a
+purely real operator.
+"""
+
 import operator
 from triqs.operators import c, c_dag, n, Operator
 from .op_struct import get_mkind
@@ -25,8 +33,29 @@ from itertools import product
 from functools import reduce
 
 
-# Helper function for backward compat and improved error messages
 def backward_compat(fname, n_orb, orb_names):
+    """Validate and normalize the orbital count for backward compatibility.
+
+    Raises if the removed ``orb_names`` argument is supplied, and converts a
+    list passed in place of ``n_orb`` into its length while emitting a
+    ``UserWarning``.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the calling function, used in the warning message.
+    n_orb : int or list
+        Number of orbitals. A list is accepted for backward compatibility and
+        replaced by its length.
+    orb_names : object
+        Removed argument retained for error reporting. Must be ``None``;
+        otherwise a ``RuntimeError`` is raised.
+
+    Returns
+    -------
+    int
+        The (normalized) number of orbitals.
+    """
     if orb_names is not None:
         raise RuntimeError('Argument orb_names is no longer supported. Please provide n_orb instead.')
     if isinstance(n_orb, list):
@@ -39,38 +68,37 @@ def backward_compat(fname, n_orb, orb_names):
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 def h_int_slater(spin_names, n_orb, U_matrix, off_diag=None, map_operator_structure=None, H_dump=None, complex=False, orb_names=None):
-    r"""
-    Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
+    r"""Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions.
 
-    .. math:: H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
+    .. math:: \hat{H} = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} \hat{c}_{i \sigma}^\dagger \hat{c}_{j \sigma'}^\dagger \hat{c}_{l \sigma'} \hat{c}_{k \sigma}.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    U_matrix : 4D matrix or array
-               The fully rotationally-invariant 4-index interaction :math:`U_{ijkl}`.
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-                             Mapping of names of GF blocks names from one convention to another,
-                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    H_dump : string
-             Name of the file to which the Hamiltonian should be written.
-    complex : bool
-             Whether there are complex values in the interaction. If False, passing a complex U will
-             cause an error.
+        Number of orbitals.
+    U_matrix : numpy.ndarray
+        The fully rotationally-invariant 4-index interaction :math:`U_{ijkl}`.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    H_dump : str, optional
+        Name of a file to which a textual dump of the generated terms is
+        written.
+    complex : bool, optional
+        Whether the interaction is allowed to be complex. If ``False`` and
+        ``U_matrix`` carries complex elements, an exception is raised.
 
     Returns
     -------
-    H : Operator
-        The Hamiltonian.
-
+    Operator
+        The Slater interaction Hamiltonian :math:`\hat{H}`.
     """
     n_orb = backward_compat('h_int_slater', n_orb, orb_names)
 
@@ -120,46 +148,47 @@ def h_int_kanamori(
     H_dump=None,
     orb_names=None,
 ):
-    r"""
-    Create a Kanamori Hamiltonian using the density-density, spin-fip and pair-hopping interactions.
+    r"""Create a Kanamori Hamiltonian with density-density, spin-flip and pair-hopping interactions.
 
     .. math::
-        H = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} n_{i \sigma} n_{j \sigma'}
-            - \sum_{i \neq j} J a^\dagger_{i \uparrow} a_{i \downarrow} a^\dagger_{j \downarrow} a_{j \uparrow}
-            + \sum_{i \neq j} J a^\dagger_{i \uparrow} a^\dagger_{i \downarrow} a_{j \downarrow} a_{j \uparrow}.
+        \hat{H} = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} \hat{n}_{i \sigma} \hat{n}_{j \sigma'}
+            - \sum_{i \neq j} J \hat{c}^\dagger_{i \uparrow} \hat{c}_{i \downarrow} \hat{c}^\dagger_{j \downarrow} \hat{c}_{j \uparrow}
+            + \sum_{i \neq j} J \hat{c}^\dagger_{i \uparrow} \hat{c}^\dagger_{i \downarrow} \hat{c}_{j \downarrow} \hat{c}_{j \uparrow}.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    U : 2D matrix or array
-               :math:`U_{ij}^{\sigma \sigma} (same spins)`
-    Uprime : 2D matrix or array
-               :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
-    J_hund : scalar
-               :math:`J`
-    spin_flip : boolean
-                include spin-flip terms
-    pair_hopping : boolean
-                include pair-hopping terms
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-               Mapping of names of GF blocks names from one convention to another,
-               e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-               If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    H_dump : string
-               Name of the file to which the Hamiltonian should be written.
+        Number of orbitals.
+    U : numpy.ndarray
+        Two-index interaction matrix :math:`U_{ij}^{\sigma \sigma}` for parallel
+        spins.
+    Uprime : numpy.ndarray
+        Two-index interaction matrix :math:`U_{ij}^{\sigma \bar{\sigma}}` for
+        anti-parallel spins.
+    J_hund : float
+        Hund's coupling :math:`J`.
+    spin_flip : bool, optional
+        Include the spin-flip terms (default ``True``).
+    pair_hopping : bool, optional
+        Include the pair-hopping terms (default ``True``).
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    H_dump : str, optional
+        Name of a file to which a textual dump of the generated terms is
+        written.
 
     Returns
     -------
-    H : Operator
-        The Hamiltonian.
-
+    Operator
+        The Kanamori interaction Hamiltonian :math:`\hat{H}`.
     """
     n_orb = backward_compat('h_int_kanamori', n_orb, orb_names)
 
@@ -231,38 +260,39 @@ def h_int_kanamori(
 
 
 def h_int_density(spin_names, n_orb, U, Uprime, off_diag=None, map_operator_structure=None, H_dump=None, orb_names=None):
-    r"""
-    Create a density-density Hamiltonian.
+    r"""Create a density-density Hamiltonian.
 
     .. math::
-        H = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} n_{i \sigma} n_{j \sigma'}.
+        \hat{H} = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} \hat{n}_{i \sigma} \hat{n}_{j \sigma'}.
 
     Parameters
     ----------
-    spin_names : list of strings
-               Names of the spins, e.g. ['up','down'].
+    spin_names : list of str
+        Names of the spins, e.g. ``['up', 'down']``.
     n_orb : int
-               Number of orbitals.
-    U : 2D matrix or array
-               :math:`U_{ij}^{\sigma \sigma} (same spins)`
-    Uprime : 2D matrix or array
-               :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
-    off_diag : boolean
-               Do we have (orbital) off-diagonal elements?
-               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
-               otherwise by ('spin_orbital',0).
-    map_operator_structure : dict
-               Mapping of names of GF blocks names from one convention to another,
-               e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
-               If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
-    H_dump : string
-               Name of the file to which the Hamiltonian should be written.
+        Number of orbitals.
+    U : numpy.ndarray
+        Two-index interaction matrix :math:`U_{ij}^{\sigma \sigma}` for parallel
+        spins.
+    Uprime : numpy.ndarray
+        Two-index interaction matrix :math:`U_{ij}^{\sigma \bar{\sigma}}` for
+        anti-parallel spins.
+    off_diag : bool, optional
+        If ``True``, operators and blocks are labelled by ``('spin', 'orbital')``;
+        otherwise by ``('spin_orbital', 0)``.
+    map_operator_structure : dict, optional
+        Mapping of GF-block names from one convention to another, e.g.
+        ``{('up', 0): ('up_0', 0), ('down', 0): ('down_0', 0)}``. If provided,
+        the operators and blocks use the image of ``('spin', 'orbital')``
+        under this map.
+    H_dump : str, optional
+        Name of a file to which a textual dump of the generated terms is
+        written.
 
     Returns
     -------
-    H : Operator
-        The Hamiltonian.
-
+    Operator
+        The density-density interaction Hamiltonian :math:`\hat{H}`.
     """
     n_orb = backward_compat('h_int_density', n_orb, orb_names)
 
@@ -294,11 +324,11 @@ def h_int_density(spin_names, n_orb, U, Uprime, off_diag=None, map_operator_stru
 
 
 def diagonal_part(H):
-    r"""
-    Extract the density part from an operator H.
+    r"""Extract the density part from a many-body operator.
 
-    The density part is a sum of all those monomials of H that are
-    products of occupation number operators :math:`n_1 n_2 n_3 \ldots`.
+    The density part is the sum of all monomials of :math:`\hat{H}` that are
+    products of occupation number operators
+    :math:`\hat{n}_1 \hat{n}_2 \hat{n}_3 \ldots`.
 
     Parameters
     ----------
@@ -307,8 +337,8 @@ def diagonal_part(H):
 
     Returns
     -------
-    n_part : Operator
-             The density part of H.
+    Operator
+        The density part of :math:`\hat{H}`.
     """
     n_part = Operator()
     for indices, coeff in H:
@@ -323,22 +353,21 @@ def diagonal_part(H):
 
 
 def make_operator_real(H, tol=0):
-    r"""
-    Return the real part of a given operator H checking that its
-    imaginary part is below tolerance.
+    """Return the real part of an operator, checking that its imaginary part is below tolerance.
 
     Parameters
     ----------
     H : Operator
         The operator to be converted.
-
-    tol : float
-          Tolerance threshold for the imaginary part of the operator's coefficients.
+    tol : float, optional
+        Tolerance on the magnitude of the imaginary part of every coefficient.
+        An exception is raised if any coefficient has an imaginary part larger
+        than ``tol``.
 
     Returns
     -------
-    H_real : Operator
-             The real part of H.
+    Operator
+        The real part of :math:`\hat{H}`.
     """
     if any(abs(term[-1].imag) > tol for term in H):
         raise RuntimeError('A coefficient of the operator has an imaginary part above tolerance')

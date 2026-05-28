@@ -25,12 +25,12 @@ namespace triqs::operators::utils::py {
   C2PY_IGNORE static auto v2t(indices_t const &v) { return std::make_tuple(v[0], v[1]); }
 
   /**
-     * @brief Extract the quadratic part \f$\sum_{ij}h_{ij} c^\dagger_i c_j\f$ from a Hamiltonian.
-     *
-     * @param H The many-body operator.
-     * @param ignore_irrelevant If true, silently skip non-quadratic terms.
-     * @return Dictionary mapping index pairs to coefficients.
-     */
+   * @brief Extract the quadratic part \f$ \sum_{ij} h_{ij} \hat{c}^\dagger_i \hat{c}_j \f$ from a many-body operator.
+   *
+   * @param H The many-body operator.
+   * @param ignore_irrelevant If `true`, silently skip non-quadratic terms.
+   * @return Dictionary mapping index pairs to coefficients.
+   */
   std::map<std::tuple<idx_tup, idx_tup>, roc> extract_h_dict(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup>, roc> result;
     for (auto const &kv : utils::extract_h_dict(H, ignore_irrelevant)) result[triqs::tuple::map(v2t, kv.first)] = kv.second;
@@ -38,12 +38,13 @@ namespace triqs::operators::utils::py {
   }
 
   /**
-     * @brief Extract the density-density interaction \f$\frac{1}{2}\sum_{ij} U_{ij} n_i n_j\f$ from a Hamiltonian.
-     *
-     * @param H The many-body operator.
-     * @param ignore_irrelevant If true, silently skip irrelevant terms.
-     * @return Dictionary mapping index pairs to coefficients.
-     */
+   * @brief Extract the density-density interaction \f$ \frac{1}{2} \sum_{ij} U_{ij} \hat{n}_i \hat{n}_j \f$ from a
+   * many-body operator.
+   *
+   * @param H The many-body operator.
+   * @param ignore_irrelevant If `true`, silently skip irrelevant terms.
+   * @return Dictionary mapping index pairs to coefficients.
+   */
   std::map<std::tuple<idx_tup, idx_tup>, roc> extract_U_dict2(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup>, roc> result;
     for (auto const &kv : utils::extract_U_dict2(H, ignore_irrelevant)) result[triqs::tuple::map(v2t, kv.first)] = kv.second;
@@ -51,12 +52,13 @@ namespace triqs::operators::utils::py {
   }
 
   /**
-     * @brief Extract the interaction part \f$\frac{1}{2}\sum_{ijkl} U_{ijkl} c^\dagger_i c^\dagger_j c_l c_k\f$ from a Hamiltonian.
-     *
-     * @param H The many-body operator.
-     * @param ignore_irrelevant If true, silently skip irrelevant terms.
-     * @return Dictionary mapping index quadruples to coefficients.
-     */
+   * @brief Extract the interaction part \f$ \frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j 
+   * \hat{c}_l \hat{c}_k \f$ from a many-body operator.
+   *
+   * @param H The many-body operator.
+   * @param ignore_irrelevant If `true`, silently skip irrelevant terms.
+   * @return Dictionary mapping index quadruples to coefficients.
+   */
   std::map<std::tuple<idx_tup, idx_tup, idx_tup, idx_tup>, roc> extract_U_dict4(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup, idx_tup, idx_tup>, roc> result;
     for (auto const &kv : utils::extract_U_dict4(H, ignore_irrelevant)) result[triqs::tuple::map(v2t, kv.first)] = kv.second;
@@ -64,23 +66,16 @@ namespace triqs::operators::utils::py {
   }
 
   /**
-     * @brief Convert a 2-index coefficient dictionary to a matrix, given a GF structure.
-     *
-     * @param d The 2-index dictionary.
-     * @param gf_struct The Green's function block structure.
-     * @return A real or complex matrix (as variant).
-     */
+   * @brief Convert a coefficient dictionary to a matrix, given a GF structure.
+   *
+   * @param d The 2-index/4-index dictionary.
+   * @param gf_struct The Green's function block structure.
+   * @return A real or complex matrix/rank-4 tensor (as variant).
+   */
   real_or_complex_array<2> dict_to_matrix(dict2_t<roc> d, gfs::gf_struct_t gf_struct) {
     return utils::dict_to_variant_matrix(std::move(d), hilbert_space::fundamental_operator_set{gf_struct});
   }
 
-  /**
-     * @brief Convert a 4-index coefficient dictionary to a tensor, given a GF structure.
-     *
-     * @param d The 4-index dictionary.
-     * @param gf_struct The Green's function block structure.
-     * @return A real or complex rank-4 tensor (as variant).
-     */
   real_or_complex_array<4> dict_to_matrix(dict4_t<roc> d, gfs::gf_struct_t gf_struct) {
     return utils::dict_to_variant_matrix(std::move(d), hilbert_space::fundamental_operator_set{gf_struct});
   }

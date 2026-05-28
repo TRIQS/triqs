@@ -17,6 +17,14 @@
 #
 # Authors: Michel Ferrero, Olivier Parcollet, Priyanka Seth, Nils Wentzell
 
+"""Second-quantization operators and many-body operator algebra.
+
+Provides the :class:`Operator` class together with the canonical factories
+:func:`c` (annihilation), :func:`c_dag` (creation) and :func:`n` (number
+operator), as well as the Hermitian-conjugate function :func:`dagger`. Higher-
+level helpers — model Hamiltonians, observables, interaction tensors and
+coefficient extractors — live in :mod:`triqs.operators.util`.
+"""
 
 from .operators import *
 
