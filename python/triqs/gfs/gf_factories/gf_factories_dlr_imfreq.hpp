@@ -137,6 +137,32 @@ namespace triqs::gfs {
   auto make_gf_dlr_imfreq(block_gf_const_view<imfreq, tensor_valued<4>> const &g, double w_max, double eps, bool symmetrize = true) { return make_gf_dlr_imfreq<0>(g, w_max, eps, symmetrize); }
 
   // find_w_max: smallest DLR cutoff w_max with round-trip error < eps for an imfreq Gf
+  /**
+   * @brief Find the smallest DLR energy cutoff that reproduces a Matsubara Green's function within a target accuracy.
+   *
+   * @details Applies to every overload. Starting from ``w_max_init``, the
+   * cutoff is grown by a factor of 1.5 per iteration. For each
+   * candidate cutoff, the function builds a DLR Matsubara mesh from
+   * (``w_max``, ``eps``, ``symmetrize``), samples ``g`` on that DLR mesh, reconstructs
+   * the Green's function on the original Matsubara mesh via the DLR
+   * coefficients, and measures the worst-case round-trip error across
+   * Matsubara indices and target indices. The smallest ``w_max`` not
+   * exceeding ``w_max_max`` whose round-trip error is below ``eps`` is
+   * returned.
+   *
+   * Candidate cutoffs whose DLR frequency range exceeds the Matsubara
+   * range of the input are skipped. For a block Green's function, the
+   * reported per-iteration error is the worst case across all blocks.
+   * An exception is raised if ``w_max_init`` exceeds ``w_max_max``, or if no
+   * candidate cutoff up to ``w_max_max`` achieves an error below ``eps``.
+   *
+   * @param g Input Green's function on a Matsubara frequency mesh.
+   * @param eps Target DLR accuracy and round-trip error tolerance.
+   * @param symmetrize If `true`, use particle-hole symmetric DLR meshes.
+   * @param w_max_init Initial value of the DLR cutoff to try (must not exceed ``w_max_max``).
+   * @param w_max_max Maximum DLR cutoff to try before giving up.
+   * @return The smallest ``w_max`` not exceeding ``w_max_max`` for which the round-trip error is below ``eps``.
+   */
   double find_w_max(gf_const_view<imfreq, scalar_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
   double find_w_max(block_gf_const_view<imfreq, scalar_valued> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
   double find_w_max(gf_const_view<imfreq, tensor_valued<1>> const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) { return find_w_max<0>(g, eps, symmetrize, w_max_init, w_max_max); }
