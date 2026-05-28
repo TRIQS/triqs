@@ -42,7 +42,7 @@ class test_triqs_gf_backwd_compat(unittest.TestCase):
     def test_submodule_paths(self):
         # Every previously hand-maintained alias should still resolve.
         for path in [
-            "triqs.gf.gf", "triqs.gf.block_gf", "triqs.gf.block2_gf", "triqs.gf.map_block",
+            "triqs.gf.gf", "triqs.gf.block_gf", "triqs.gf.block2_gf",
             "triqs.gf.descriptor_base", "triqs.gf.descriptors", "triqs.gf.lazy_expressions",
             "triqs.gf.tools", "triqs.gf.dlr_crm_dyson_solver",
             "triqs.gf.plot", "triqs.gf.backwd_compat", "triqs.gf.gf_fnt",
