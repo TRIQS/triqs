@@ -125,7 +125,8 @@ namespace triqs::hilbert_space {
     }
 
     /**
-     * @brief Get the Fock state \f$ \lvert f \rangle = \prod_{j=1}^k c^\dagger_{\alpha_{i_j}} \lvert 0 \rangle \f$.
+     * @brief Get the Fock state \f$ \lvert f \rangle = \prod_{j=1}^k \hat{c}^\dagger_{\alpha_{i_j}} \lvert 0 
+     * \rangle \f$.
      *
      * @param fops triqs::hilbert_space::fundamental_operator_set object that defines the Hilbert (Fock) space \f$ 
      * \mathcal{F} \f$.

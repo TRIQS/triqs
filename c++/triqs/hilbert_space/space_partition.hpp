@@ -18,6 +18,11 @@
 //
 // Authors: Maxime Charlebois, Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the automatic partitioning algorithm of a Hilbert (Fock) space into invariant subspaces.
+ */
+
 #pragma once
 
 #include <set>
@@ -29,41 +34,72 @@
 namespace triqs {
   namespace hilbert_space {
 
-    /// Implementation of the automatic partitioning algorithm
     /**
-  Partitions a Hilbert space into a set of subspaces invariant under action of a given Hermitian operator (Hamiltonian).
-  Optionally modifies the partition so that a given operator generates only one-to-one connections between the subspaces.
-  For a detailed description of the algorithm see
-  `Computer Physics Communications 200, March 2016, 274-284 <http://dx.doi.org/10.1016/j.cpc.2015.10.023>`_ (section 4.2).
+     * @addtogroup triqs-ops
+     * @{
+     */
 
-  @tparam StateType Many-body state type, must model [[statevector_concept]]
-  @tparam OperatorType Imperative operator type, must provide `StateType operator()(StateType const&)`
- */
+    /**
+     * @brief Automatic partitioning of a Hilbert (Fock) space into invariant subspaces of a Hermitian operator.
+     *
+     * @details Given a Hamiltonian \f$ \hat{H} \f$, the class partitions the Hilbert (Fock) space \f$ \mathcal{F} \f$
+     * (see triqs::hilbert_space::hilbert_space) into a set of invariant subspaces \f$ \{ \mathcal{F}_k \} \f$ such
+     * that \f$ \hat{H} \mathcal{F}_k \subseteq \mathcal{F}_k \f$ for every \f$ k \f$. The partition is built in two
+     * phases:
+     * - Phase I (the constructor) discovers the invariant subspaces of \f$ \hat{H} \f$ by acting with \f$ \hat{H}
+     *   \f$ on every basis Fock state \f$ \lvert f \rangle \f$ and merging subspaces that are connected by non-zero
+     *   matrix elements. An optional second operator (typically a hybridization) may be supplied to also be
+     *   respected by the partition.
+     * - Phase II (merge_subspaces()) optionally merges subspaces further so that a given operator \f$ \hat{C}^\dagger
+     *   \f$ and its Hermitian conjugate \f$ \hat{C} \f$ generate only one-to-one connections between the resulting
+     *   subspaces.
+     *
+     * The algorithm is described in detail in
+     * <a href="http://dx.doi.org/10.1016/j.cpc.2015.10.023">Computer Physics Communications 200, March 2016,
+     * 274-284</a> (section 4.2).
+     *
+     * @tparam StateType Many-body state type; must model `statevector_concept`.
+     * @tparam OperatorType Imperative operator type; must provide `StateType operator()(StateType const&) const`
+     * (see triqs::hilbert_space::imperative_operator).
+     */
     template <typename StateType, typename OperatorType> class space_partition {
 
       public:
-      /// Index of a basis Fock state/subspace
+      /// Index type used for basis Fock states and for invariant subspaces.
       using idx_t = uint32_t;
-      /// Accessor to `StateType` template parameter
+
+      /// Many-body state type (template parameter `StateType`).
       using state_t = StateType;
-      /// Accessor to `OperatorType` template parameter
+
+      /// Imperative operator type (template parameter `OperatorType`).
       using operator_t = OperatorType;
-      /// Amplitude type of the state
+
+      /// Amplitude type of the many-body states.
       using amplitude_t = typename state_t::value_type;
-      /// Connections between subspaces represented as a set of (from-index,to-index) pair
+
+      /// Subspace-to-subspace connections, stored as a set of `(from-index, to-index)` pairs.
       using block_mapping_t = std::set<std::pair<idx_t, idx_t>>;
-      /// Non-zero matrix elements of an operator represented as a mapping (from-state,to-state) -> value
+
+      /// Non-zero matrix elements of an operator, stored as a map `(from-state, to-state) -> amplitude`.
       using matrix_element_map_t = std::map<std::pair<idx_t, idx_t>, typename state_t::value_type>;
 
-      /// Perform Phase I of the automatic partition algorithm
       /**
-   Partitions a Hilbert space into invariant subspaces of the Hamiltonian.
-
-   @param st Sample many-body state to be used internally by the algorithm
-   @param H Hamiltonian as an imperative operator
-   @param store_matrix_elements Should we store the non-vanishing matrix elements of the Hamiltonian?
-   @param H Hyb as an additionnal optional imperative operator
-  */
+       * @brief Run Phase I of the automatic partition algorithm.
+       *
+       * @details Partitions the Hilbert (Fock) space spanned by `st` into invariant subspaces of the Hamiltonian
+       * `H`. If `Hyb` is non-empty, the resulting partition is additionally constrained so that `Hyb` maps each
+       * subspace into a union of subspaces of the partition (typical use case: `Hyb` is a hybridization operator
+       * that must respect the symmetries used to block-diagonalize the Hamiltonian).
+       *
+       * @note `st` is used only as a "template" zero state to deduce the dimension and Hilbert (Fock) space; its
+       * amplitudes are irrelevant. It is internally cleared to zero.
+       *
+       * @param st Sample many-body state defining the Hilbert (Fock) space to partition.
+       * @param H Hamiltonian \f$ \hat{H} \f$ as a triqs::hilbert_space::imperative_operator.
+       * @param store_matrix_elements If `true`, store all non-vanishing matrix elements of `H` (see
+       * get_matrix_elements()).
+       * @param Hyb Optional additional operator whose action must be respected by the partition.
+       */
       space_partition(state_t const &st, operator_t const &H, bool store_matrix_elements = true, operator_t const &Hyb = operator_t())
          : tmp_state(make_zero_state(st)), subspaces(st.size()) {
         auto size = tmp_state.size();
@@ -100,19 +136,24 @@ namespace triqs {
         _update_index();
       }
 
-      /// Copy-constructor
+      /// Defaulted copy constructor.
       space_partition(space_partition const &) = default;
 
-      /// Perform Phase II of the automatic partition algorithm
       /**
-   Merge some of the invariant subspaces together, to ensure that a given operator `Cd`
-   and its Hermitian conjugate `C` generate only one-to-one connections between the subspaces.
-
-   @param Cd Subject operator `Cd`, normally a creation operator
-   @param C Conjugate of `Cd`, normally an annihilation operator
-   @param store_matrix_elements Should we store the non-vanishing matrix elements of `Cd`?
-   @return Non-vanishing matrix elements of `Cd` and `C`, if `store_matrix_elements = true`
-  */
+       * @brief Run Phase II of the automatic partition algorithm.
+       *
+       * @details Merges invariant subspaces from Phase I until a given operator `Cd` and its Hermitian conjugate
+       * `C` generate only one-to-one connections between the resulting subspaces. The underlying "zigzag" traversal
+       * of \f$ \hat{C}^\dagger \hat{C} \hat{C}^\dagger \dots \f$ products is described in section 4.2 of the
+       * algorithm paper referenced in the class description.
+       *
+       * @param Cd Operator \f$ \hat{C}^\dagger \f$ (typically a creation operator).
+       * @param C Hermitian conjugate \f$ \hat{C} \f$ of `Cd` (typically an annihilation operator).
+       * @param store_matrix_elements If `true`, the non-vanishing matrix elements of `Cd` and `C` are collected
+       * during the traversal and returned.
+       * @return Pair of maps containing the non-vanishing matrix elements of `Cd` and `C` respectively; both maps
+       * are empty if `store_matrix_elements = false`.
+       */
       std::pair<matrix_element_map_t, matrix_element_map_t> merge_subspaces(operator_t const &Cd, operator_t const &C,
                                                                             bool store_matrix_elements = true) {
 
@@ -188,44 +229,54 @@ namespace triqs {
         return std::make_pair(Cd_elements, C_elements);
       }
 
-      /// Return the number of subspaces in the partition
       /**
-   @return Number of invariant subspaces
-  */
+       * @brief Get the number of invariant subspaces in the current partition.
+       * @return Number of invariant subspaces \f$ \{ \mathcal{F}_k \} \f$.
+       */
       idx_t n_subspaces() const { return representative_to_index.size(); }
 
-      /// Apply a callable object to all basis Fock states in a given space partition
       /**
-  The callable must take two arguments, 1) index of the basis Fock state in the considered full Hilbert space,
-  and 2) index of the subspace this basis state belongs to.
-
-  @tparam w_max Type of the callable object
-  @param SP Subject space partition
-  @param L Callable object
-  */
+       * @brief Apply a callable object to every basis Fock state in the partitioned Hilbert (Fock) space.
+       *
+       * @details For each basis Fock state index \f$ f \in \{ 0, \dots, \dim(\mathcal{F}) - 1 \} \f$ the callable
+       * is invoked with two arguments: \f$ f \f$ itself, and the index of the invariant subspace this basis state
+       * belongs to.
+       *
+       * @tparam w_max Type of the callable object; must be invocable with `(idx_t, idx_t)`.
+       * @param SP Space partition to iterate over.
+       * @param L Callable object.
+       */
       template <typename w_max> friend void foreach (space_partition &SP, w_max L) {
         for (idx_t n = 0; n < SP.tmp_state.size(); ++n) L(n, SP.lookup_basis_state(n));
       }
 
-      /// Find what invariant subspace a given Fock state belongs to
       /**
-   @param basis_state Index of a basis Fock state
-   @return Index of the found invariant subspace
-  */
+       * @brief Look up the invariant subspace containing a given basis Fock state.
+       *
+       * @param basis_state Index \f$ f \f$ of the basis Fock state.
+       * @return Index of the invariant subspace \f$ \mathcal{F}_k \f$ that contains \f$ \lvert f \rangle \f$.
+       */
       idx_t lookup_basis_state(idx_t basis_state) { return representative_to_index[subspaces.find_set(basis_state)]; }
 
-      /// Access to matrix elements of the Hamiltonian
       /**
-   @return Stored matrix elements of the Hamiltonian
-  */
+       * @brief Get the stored non-vanishing matrix elements of the Hamiltonian.
+       *
+       * @details Only populated if Phase I was constructed with `store_matrix_elements = true`.
+       *
+       * @return Map of \f$ (i, j) \mapsto \langle j | \hat{H} | i \rangle \f$ for every non-vanishing matrix element.
+       */
       matrix_element_map_t const &get_matrix_elements() const { return matrix_elements; }
 
-      /// Find all subspace-to-subspace connections generated by a given operator
       /**
-   @param op Subject imperative operator
-   @param diagonal_only Find only the 'diagonal' connections (each subspace connected to itself)
-   @return Connections between subspaces
-  */
+       * @brief Find all subspace-to-subspace connections generated by a given operator.
+       *
+       * @details The connections are returned in terms of the indices of the invariant subspaces
+       * \f$ \{ \mathcal{F}_k \} \f$ of the current partition.
+       *
+       * @param op Imperative operator to analyze.
+       * @param diagonal_only If `true`, only retain self-connections \f$ \mathcal{F}_k \to \mathcal{F}_k \f$.
+       * @return Set of `(from-subspace, to-subspace)` index pairs.
+       */
       block_mapping_t find_mappings(operator_t const &op, bool diagonal_only = false) {
 
         block_mapping_t mapping;
@@ -274,5 +325,8 @@ namespace triqs {
       // Map representative basis state to subspace index
       std::map<idx_t, idx_t> representative_to_index;
     };
+
+    /** @} */
+
   } // namespace hilbert_space
 } // namespace triqs
