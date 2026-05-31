@@ -368,44 +368,104 @@
  */
 
 /**
- * @defgroup triqs-stat Statistical tools
- * @brief Tools for statistical analysis of Monte Carlo data.
- *
- * @details This module provides histograms, accumulators, and other statistical tools
- * for analyzing and post-processing Monte Carlo simulation data.
- */
-
-/**
  * @defgroup triqs-stat Statistical analysis tools
- * @brief Tools to perform statistical analysis on data.
+ * @brief Tools for the statistical analysis of Monte Carlo data and other sampled observables.
+ *
+ * @details The @ref triqs-stat module is a small, header-mostly toolkit for analysing samples produced by Monte Carlo
+ * (or any other) simulations. It is built around two ideas: *streaming* accumulators that update mean, error and
+ * autocorrelation estimates on the fly without storing the full sample stream, and *standalone* functions that operate
+ * on a range of pre-collected samples.
+ *
+ * Every component has an MPI-aware variant — either an `*_mpi` overload (e.g. triqs::stat::mean_mpi,
+ * triqs::stat::jackknife_mpi) or a member function taking an `mpi::communicator` (e.g. 
+ * triqs::stat::lin_binning::mean_error_and_tau, triqs::stat::log_binning::mean_errors_and_taus). The same client code 
+ * therefore runs serially or in parallel, and per-rank partial results are combined into a single estimator on all 
+ * ranks.
  */
 
 /**
  * @defgroup triqs-stat-concepts Concepts
  * @ingroup triqs-stat
- * @brief Various concepts for the @ref triqs-stat.
+ * @brief C++20 concepts that constrain the value and range types accepted by @ref triqs-stat.
+ *
+ * @details The statistics module is generic in its sample type: it accepts plain scalars as well as `nda` arrays, but
+ * only for a restricted set of element types. The three concepts in this group spell out those restrictions:
+ * - triqs::stat::StatCompatible — a single sample value. Either a `double` / `std::complex<double>` scalar, or an
+ * `nda::Array` whose value type is `double` / `std::complex<double>` and whose algebra is `'A'` (i.e. it behaves as a
+ * generic array under elementwise operations).
+ * - triqs::stat::AccCompatible — additionally required by the streaming accumulators (triqs::stat::lin_binning,
+ * triqs::stat::log_binning). It refines triqs::stat::StatCompatible by also requiring scalars or *regular* array types,
+ * so that bins can own their storage.
+ * - triqs::stat::StatCompatibleRange — a sized forward range whose value type is triqs::stat::StatCompatible. This is
+ * the type of input accepted by triqs::stat::mean, triqs::stat::mean_and_err and triqs::stat::jackknife.
  */
 
 /**
  * @defgroup triqs-stat-accs Accumulators
  * @ingroup triqs-stat
- * @brief Linear and logarithmic binning accumulators.
+ * @brief Streaming binning accumulators that estimate mean, error and autocorrelation time on the fly.
+ *
+ * @details An *accumulator* receives samples one at a time via `operator<<` and maintains running estimators without
+ * storing the full sample stream. Two flavours are provided:
+ * - triqs::stat::lin_binning groups consecutive samples into equally sized bins. The bin data is kept and can be 
+ * accessed after the run, which makes it the natural input for downstream resampling (see
+ * @ref triqs-stat-resampling). It can run either with a fixed maximum number of bins (bins are compressed by a factor
+ * of two and the bin capacity is doubled whenever the maximum is reached) or with an unbounded number of bins of fixed
+ * capacity.
+ * - triqs::stat::log_binning is the canonical *autocorrelation* diagnostic: it maintains one bin per power-of-two bin
+ * size and reports the standard error \f$ s_n \f$ and integrated autocorrelation time \f$ \tau_n \f$ for each binning
+ * level. \f$ s_n \f$ and \f$ \tau_n \f$ are expected to grow with the bin size and saturate once the bin size exceeds
+ * the autocorrelation time of the underlying chain.
+ *
+ * Both accumulators provide MPI-aware variants of their estimator methods and HDF5 serialisation for checkpointing long 
+ * runs. The free function triqs::stat::compress_bins merges adjacent bins of a `std::vector<T>` by a given
+ * compression factor and is used by triqs::stat::lin_binning when aligning bin capacities across MPI ranks.
  */
 
 /**
  * @defgroup triqs-stat-meanerr Mean and error estimation
  * @ingroup triqs-stat
- * @brief Calculate mean and error estimates.
+ * @brief Free functions that compute the mean / sum and a corresponding error estimate from a range of samples.
+ *
+ * @details Given a range of samples \f$ \{ x_i : i = 1, \ldots, N \} \f$, this group provides:
+ * - triqs::stat::mean and its MPI-aware counterpart triqs::stat::mean_mpi, which return either the simple sum \f$ 
+ * \sum_i x_i \f$ or the arithmetic mean \f$ \overline{x} \f$ depending on the triqs::stat::mean_tag template parameter.
+ * - triqs::stat::mean_and_err and triqs::stat::mean_and_err_mpi, which return both the mean / sum and an error 
+ * estimate. The flavour of error is selected through the triqs::stat::error_tag enum: sum of squared deviations from
+ * the mean, variance of the data, variance of the mean, standard error of the data, standard error of the mean, or
+ * jackknife error.
+ * - triqs::stat::tau_estimate_from_errors, which computes an estimate of the integrated autocorrelation time \f$ \tau 
+ * = \frac{1}{2} (s_n^2 / s_0^2 - 1) \f$ from a binned and an unbinned standard error.
+ *
+ * The two MPI variants accept a `std::optional<mpi::communicator>` and fall back to the serial implementation when no
+ * communicator is provided; otherwise per-rank partial results are combined with a numerically careful reweighting so
+ * that the reduced mean and sum of squared deviations match what a serial run on the concatenated data would have
+ * produced.
  */
 
 /**
  * @defgroup triqs-stat-resampling Resampling techniques
  * @ingroup triqs-stat
- * @brief Resampling algorithms such as jackknife.
+ * @brief Resampling algorithms for bias-corrected estimates of functions of averages.
+ *
+ * @details Many physical observables of interest are *non-linear* functions of statistical averages, for which the
+ * naive estimate \f$ f(\overline{x}_1, \overline{x}_2, \ldots) \f$ carries a bias of order \f$ 1/N \f$ that has to be
+ * corrected.
+ *
+ * triqs::stat::jackknife performs the delete-one jackknife resampling on one or more sample ranges and returns a tuple 
+ * containing:
+ * - the bias-corrected estimate \f$ f_{\mathrm{corr}} = N \overline{f} - (N - 1) \overline{f}_{\mathrm{JK}} \f$,
+ * - the jackknife error estimate \f$ s_f \f$,
+ * - the jackknife function estimate \f$ \overline{f}_{\mathrm{JK}} \f$, and
+ * - the naive estimate \f$ \overline{f} = f(\overline{x}_1, \overline{x}_2, \ldots) \f$.
+ *
+ * The MPI-aware variant triqs::stat::jackknife_mpi performs the same calculation on samples distributed across multiple 
+ * ranks; results are made available on all ranks. Both functions accept any callable and any number of 
+ * triqs::stat::StatCompatibleRange inputs.
  */
 
 /**
  * @defgroup triqs-stat-utils Utilities
  * @ingroup triqs-stat
- * @brief Various utilities for the @ref triqs-stat.
+ * @brief Histograms and small helpers shared by the rest of the @ref triqs-stat module.
  */

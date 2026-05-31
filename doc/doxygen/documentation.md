@@ -78,7 +78,26 @@ meshes.
 
 ## Operators
 
-## Statical analysis tools
+## Statistical analysis tools
+
+@ref triqs-stat is a header-mostly toolkit for the statistical analysis of Monte Carlo data and other sampled
+observables:
+
+- @ref triqs-stat-accs provide streaming binning accumulators: @ref triqs::stat::lin_binning groups consecutive
+samples into equally sized bins and keeps the bin data for downstream resampling, while @ref triqs::stat::log_binning
+maintains one bin per power-of-two bin size and reports the standard error and integrated autocorrelation time at each
+binning level.
+- @ref triqs-stat-meanerr offers standalone functions triqs::stat::mean, triqs::stat::mean_and_err and their MPI
+counterparts. The flavour of mean (sum vs arithmetic mean) and error (variance, standard error of data, standard error
+of mean, jackknife error) is selected through the triqs::stat::mean_tag and triqs::stat::error_tag enums.
+- @ref triqs-stat-resampling provides triqs::stat::jackknife for bias-corrected estimates and jackknife errors of an
+arbitrary function of the averages of one or more sampled observables.
+- @ref triqs-stat-utils contains triqs::stat::histogram for counting samples into equally spaced bins on a closed
+interval, plus small helpers shared by the rest of the module.
+- @ref triqs-stat-concepts specify the value and range types accepted by the API (triqs::stat::StatCompatible,
+triqs::stat::AccCompatible, triqs::stat::StatCompatibleRange).
+
+Every component has an MPI-aware variant so the same client code runs serially or in parallel.
 
 ## Testing tools
 
