@@ -32,7 +32,7 @@ static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
-[1] Default constructor.
+[1] Default constructor leaves the histogram in a valid but unusable state.
 
 ------
 
@@ -77,13 +77,7 @@ static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
 Reset the histogram to its initial state, i.e. with no data points added to it.
 )DOC");
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-Get the position of the center of the n
-
-.. raw:: html
-
-   <sup>th</sup>
-
-bin.
+Get the position of the center of the n-th bin.
 
 Parameters
 ----------
@@ -93,13 +87,7 @@ n : {par_0}
 Returns
 -------
 {ret_0}
-   Position of the n
-
-   .. raw:: html
-
-      <sup>th</sup>
-
-   bin center, i.e. :math:`a + n h`.
+   Position of the n-th bin center, i.e. :math:`a + n h`.
 )DOC",
                                                 {{c2py::python_typename<int>()}}, {c2py::python_typename<double>()});
 
@@ -117,7 +105,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 static constexpr auto prop_doc_0 = R"DOC(Get the data stored in the histogram.)DOC";
 static constexpr auto prop_doc_1 = R"DOC(Get the domain on which the histogram is defined.)DOC";
 static constexpr auto prop_doc_2 = R"DOC(Get the number of data points that have been added to the histogram.)DOC";
-static constexpr auto prop_doc_3 = R"DOC(Get the number of data point that fell outside of the interval and were discarded.)DOC";
+static constexpr auto prop_doc_3 = R"DOC(Get the number of data points that fell outside of the interval and were discarded.)DOC";
 
 // ----- Member and property table ----
 
@@ -151,8 +139,11 @@ bins:
 Here, :math:`N` is the number of bins in the histogram, :math:`h` is the bin size and :math:`n = 0, 1, \ldots, N - 1`
 is the index of the bin.
 
-That means that each bin is of the same size :math:`h`, except for the first and last bin, which have a size of
+That means that each bin is of the same size :math:`h`, except for the first and last bins, which have a size of
 :math:`h / 2`.
+
+Values are added to the histogram using the streaming operator `<<`. For example, `hist << 1.5` adds the value
+`1.5` to the histogram `hist`.
 
 When a value is added to the histogram, it first determines into which bin the value falls and then increases the
 count of that bin. If the value is outside of the interval, it is discarded. Additionally, the histogram keeps
@@ -162,10 +153,10 @@ track of the total number of data points as well as the number of lost points th
 // ==================== module functions ====================
 
 // cdf
-static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{c2py::cfun([](const triqs::stat::histogram &h) { return triqs::stat::cdf(h); }, "h")};
+static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{c2py::cfun([](const triqs::stat::histogram &h) { return cdf(h); }, "h")};
 
 // pdf
-static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cfun([](const triqs::stat::histogram &h) { return triqs::stat::pdf(h); }, "h")};
+static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cfun([](const triqs::stat::histogram &h) { return pdf(h); }, "h")};
 
 static const auto _c2py_doc_2 =
    _c2py_fun_2.doc(R"DOC(
@@ -174,8 +165,8 @@ Normalize and integrate a histogram.
 It simply performs partial summation of the bin counts and then divides by the number of in-range data
 points (lost points are excluded).
 
-This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
-probabilities from triqs::stat::pdf.
+This does not return the CDF of the underlying continuous distribution but rather the CDF of the 
+discrete probabilities that a data point falls into a certain bin.
 
 Parameters
 ----------
