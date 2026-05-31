@@ -26,7 +26,6 @@
 
 #include "./concepts.hpp"
 #include "./mean_error.hpp"
-#include "./utils.hpp"
 
 #include <mpi/mpi.hpp>
 #include <nda/nda.hpp>

@@ -116,7 +116,12 @@ namespace triqs::stat {
     /// Type of the callback function that is called when bins are compressed.
     using callback_t = std::function<void(lin_binning const &)>;
 
-    /// Default constructor creates a turned off accumulator.
+    /**
+     * @brief Default construct a linear binning accumulator.
+     *
+     * @details The accumulator is unbounded (`max_n_bins` is set to \f$ -1 \f$) with a bin capacity of \f$ 1 \f$ and no 
+     * callback function. No memory is allocated for the bins until the first sample is added to the accumulator.
+     */
     lin_binning() = default;
 
     /**

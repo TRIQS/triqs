@@ -82,7 +82,12 @@ namespace triqs::stat {
     /// Real type of the accumulated data type.
     using real_t = get_real_t<T>;
 
-    /// Default constructor creates a turned off accumulator.
+    /**
+     * @brief Default construct a logarithmic binning accumulator.
+     *
+     * @details The accumulator is unbounded (`max_n_bins` is set to \f$ -1 \f$). No memory is allocated for the bins 
+     * until the first sample is added to the accumulator.
+     */
     log_binning() = default;
 
     /**
@@ -258,8 +263,8 @@ namespace triqs::stat {
      * \f$ \tau_n \f$ and \f$ s_n \f$ are expected to increase with \f$ n \f$ and saturate for large enough bin sizes.
      * At this point, the effective samples in the bins become statistically independent.
      *
-     * Only bins with at least `min_samples` effective samples are considered for error and autcorrelation time
-     * esimation.
+     * Only bins with at least `min_samples` effective samples are considered for error and autocorrelation time
+     * estimation.
      *
      * @param min_samples Minimum number of effective samples required (\f$ \geq 2 \f$).
      * @return `std::tuple` containing the overall mean as well as the standard errors, integrated autocorrelation times
@@ -277,7 +282,7 @@ namespace triqs::stat {
      * the overall mean, standard error and integrated autocorrelation time are calculated for the reduced bins.
      *
      * Only bins with at least `min_samples` effective samples after the reduction are considered for error and
-     * autcorrelation time esimation.
+     * autocorrelation time estimation.
      *
      * The results will be available on all MPI processes.
      *
@@ -337,7 +342,7 @@ namespace triqs::stat {
     /**
      * @brief Write a triqs::stat::log_binning accumulator to HDF5.
      *
-     * @param g h5::group in which the subgroup is created.
+     * @param g `h5::group` in which the subgroup is created.
      * @param name Name of the subgroup to which the accumulator will be written.
      * @param acc Accumulator to be written.
      */
@@ -355,7 +360,7 @@ namespace triqs::stat {
     /**
      * @brief Read a triqs::stat::log_binning accumulator from HDF5.
      *
-     * @param g h5::group containing the subgroup.
+     * @param g `h5::group` containing the subgroup.
      * @param name Name of the subgroup from which the accumulator will be read.
      * @param acc Accumulator to be read into.
      */

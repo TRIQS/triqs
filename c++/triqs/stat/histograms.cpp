@@ -15,7 +15,7 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 //
-// Authors: Philipp D, Igor Krivenko, Nils Wentzell
+// Authors: Philipp Dumitrescu, Igor Krivenko, Nils Wentzell
 
 /**
  * @file

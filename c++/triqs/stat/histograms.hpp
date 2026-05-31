@@ -56,8 +56,11 @@ namespace triqs::stat {
    * Here, \f$ N \f$ is the number of bins in the histogram, \f$ h \f$ is the bin size and \f$ n = 0, 1, \ldots, N - 1
    * \f$ is the index of the bin.
    *
-   * That means that each bin is of the same size \f$ h \f$, except for the first and last bin, which have a size of
+   * That means that each bin is of the same size \f$ h \f$, except for the first and last bins, which have a size of
    * \f$ h / 2 \f$.
+   *
+   * Values are added to the histogram using the streaming operator `<<`. For example, `hist << 1.5` adds the value
+   * `1.5` to the histogram `hist`.
    *
    * When a value is added to the histogram, it first determines into which bin the value falls and then increases the
    * count of that bin. If the value is outside of the interval, it is discarded. Additionally, the histogram keeps
@@ -116,10 +119,10 @@ namespace triqs::stat {
     }
 
     /**
-     * @brief Get the position of the center of the n<sup>th</sup> bin.
+     * @brief Get the position of the center of the n-th bin.
      *
      * @param n Index of the bin.
-     * @return Position of the n<sup>th</sup> bin center, i.e. \f$ a + n h \f$.
+     * @return Position of the n-th bin center, i.e. \f$ a + n h \f$.
      */
     auto mesh_point(int n) const { return a_ + n * binsize_; }
 
@@ -159,7 +162,7 @@ namespace triqs::stat {
      * @details It simply adds the data vector, the number of accumulated data points and the number of discarded data
      * points together.
      *
-     * It throws an expception, if the domains or the number of bins of the two histograms are not equal.
+     * It throws an exception if the domains or the number of bins of the two histograms are not equal.
      *
      * @param h1 Left-hand side histogram operand.
      * @param h2 Right-hand side histogram operand.
@@ -275,8 +278,8 @@ namespace triqs::stat {
      * @details It simply performs partial summation of the bin counts and then divides by the number of in-range data
      * points (lost points are excluded).
      *
-     * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the discrete
-     * probabilities from pdf(histogram const &).
+     * @details This does not return the CDF of the underlying continuous distribution but rather the CDF of the 
+     * discrete probabilities that a data point falls into a certain bin.
      *
      * @param h Histogram to be normalized and integrated.
      * @return Normalized and integrated histogram.
