@@ -353,7 +353,7 @@ def diagonal_part(H):
 
 
 def make_operator_real(H, tol=0):
-    """Return the real part of an operator, checking that its imaginary part is below tolerance.
+    r"""Return the real part of an operator, checking that its imaginary part is below tolerance.
 
     Parameters
     ----------

@@ -17,7 +17,7 @@
 #
 # Authors: Hugo U. R. Strand, Nils Wentzell
 
-""" Regression test and playgound for the preservation of second order moment
+r""" Regression test and playgound for the preservation of second order moment
 in G0_iw in a DMFT lattice self consistency.
 
 G = 1/N \sum_k [ i\omega_n - e_k - Sigma ]
