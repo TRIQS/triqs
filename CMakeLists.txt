@@ -108,6 +108,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Disable compiler extensions
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# TRIQS uses no C++20 modules. Disable module scanning (default ON for C++20+ with Ninja):
+# it injects transient @<obj>.modmap flags into compile_commands.json that break clair-c2py
+# binding generation when it replays those commands. No-op on CMake < 3.28.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 #---------------------------------------------------------------------
 # log info
 #---------------------------------------------------------------------
