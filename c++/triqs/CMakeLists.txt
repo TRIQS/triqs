@@ -84,6 +84,9 @@ target_link_libraries(triqs PUBLIC fmt::fmt-header-only)
 # cppdlr (discrete Lehmann representation library)
 target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 
+# cppdlr2d (2D discrete Lehmann representation library)
+target_link_libraries(triqs PUBLIC cppdlr2d::cppdlr2d_c)
+
 # ---------------------------------
 # Boost
 # ---------------------------------

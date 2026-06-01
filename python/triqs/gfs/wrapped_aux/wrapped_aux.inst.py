@@ -23,6 +23,7 @@ VALID_ARGS = {
     'retime':   ['long', 'double'],
     'legendre': ['long', 'double'],
     'dlr':      ['long', 'double', 'matsubara_freq'],
+    'dlr2d':    ['std::pair<matsubara_freq, matsubara_freq>'],
     'chebyshev':['long', 'double'],
     'brzone':   ['std::array<long,3>', 'std::array<double, 3>'],
     'cyclat':   ['std::array<long,3>', 'triqs::lattice::bravais_lattice::point_t'],
@@ -43,7 +44,7 @@ LATTICE_MESHES = {'brzone', 'cyclat'}
 # C++ mesh name -> Python class name component (e.g. 'imfreq' -> 'ImFreq')
 MESH_TO_PYNAME = {
     'imfreq': 'ImFreq', 'imtime': 'ImTime', 'refreq': 'ReFreq', 'retime': 'ReTime',
-    'legendre': 'Legendre', 'dlr': 'DLR', 'chebyshev': 'Chebyshev',
+    'legendre': 'Legendre', 'dlr': 'DLR', 'dlr2d': 'DLR2D', 'chebyshev': 'Chebyshev',
     'brzone': 'BrZone', 'cyclat': 'CycLat',
 }
 
@@ -87,8 +88,13 @@ for rank, target, return_t in TARGETS:
         if m1 == 'imtime':
             calls_by_rank[rank].append((m1, [return_t] * len(xs), rank, real_valued(target), xs))
 
-        # Product-mesh entries: exactly one of (m1, m2) must be a lattice mesh
+        # Product-mesh entries: exactly one of (m1, m2) must be a lattice mesh.
+        # Skip dlr2d from product meshes — evaluation on product meshes is not yet supported.
+        if m1 == 'dlr2d':
+            continue
         for m2 in meshes:
+            if m2 == 'dlr2d':
+                continue
             m1_is_lat = m1 in LATTICE_MESHES
             m2_is_lat = m2 in LATTICE_MESHES
             if not (m1_is_lat ^ m2_is_lat):

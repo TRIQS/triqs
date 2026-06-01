@@ -144,6 +144,12 @@ inline constexpr auto c2py::tp_name<triqs::gfs::gf_proxy<
    triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::dlr, triqs::mesh::cyclat>, triqs::gfs::matrix_valued, nda::C_stride_layout>>> =
    "triqs.gfs.wrapped_aux_target_rank_2.CallProxyDLR_x_CycLat_2";
 template <>
+constexpr bool c2py::is_wrapped<triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::dlr2d, triqs::gfs::matrix_valued, nda::C_stride_layout>>> =
+   true;
+template <>
+inline constexpr auto c2py::tp_name<triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::dlr2d, triqs::gfs::matrix_valued, nda::C_stride_layout>>> =
+   "triqs.gfs.wrapped_aux_target_rank_2.CallProxyDLR2D_2";
+template <>
 constexpr bool c2py::is_wrapped<triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::chebyshev, triqs::gfs::matrix_valued, nda::C_stride_layout>>> =
    true;
 template <>

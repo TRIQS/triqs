@@ -79,6 +79,39 @@ namespace cpp2py {
   };
 
   // -----------------------------------
+  //   channel_enum
+  // -----------------------------------
+
+  template <> struct py_converter<triqs::mesh::channel_enum> {
+
+    static constexpr char *tp_name = "Channel (\"PH\" | \"PP\")";
+
+    static PyObject *c2py(triqs::mesh::channel_enum x) {
+      if (x == triqs::mesh::PP) return PyUnicode_FromString("PP");
+      return PyUnicode_FromString("PH");
+    }
+    static triqs::mesh::channel_enum py2c(PyObject *ob) {
+      std::string s = PyUnicode_AsUTF8(ob);
+      if (s == "PP") return triqs::mesh::PP;
+      return triqs::mesh::PH;
+    }
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      if (!PyUnicode_Check(ob)) {
+        if (raise_exception) PyErr_SetString(PyExc_ValueError, "Convertion of C++ enum channel_enum : the object is not a string");
+        return false;
+      }
+      std::string s = PyUnicode_AsUTF8(ob);
+      if (s == "PH") return true;
+      if (s == "PP") return true;
+      if (raise_exception) {
+        auto err = "Convertion of C++ enum channel_enum : \nThe string \"" + s + "\" is not in [PH,PP]";
+        PyErr_SetString(PyExc_ValueError, err.c_str());
+      }
+      return false;
+    }
+  };
+
+  // -----------------------------------
   //   matsubara_freq
   // -----------------------------------
 

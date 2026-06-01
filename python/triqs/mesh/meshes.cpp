@@ -12,6 +12,8 @@
 #include <triqs/mesh/dlr_imfreq.hpp>
 #include <triqs/mesh/dlr_imtime.hpp>
 #include <triqs/mesh/dlr.hpp>
+#include <triqs/mesh/dlr2d.hpp>
+#include <triqs/mesh/dlr2d_imfreq.hpp>
 #include <triqs/mesh/imfreq.hpp>
 #include <triqs/mesh/imtime.hpp>
 #include <triqs/mesh/legendre.hpp>
@@ -57,6 +59,14 @@ namespace triqs::mesh {
   template C2PY_WRAP_AS_METHOD void copy_from(dlr &, dlr const &);
   template dlr::dlr(dlr_imtime const &);
   template dlr::dlr(dlr_imfreq const &);
+
+  // dlr2d
+  template C2PY_WRAP_AS_METHOD dlr2d copy(dlr2d const &);
+  template C2PY_WRAP_AS_METHOD void copy_from(dlr2d &, dlr2d const &);
+
+  // dlr2d_imfreq
+  template C2PY_WRAP_AS_METHOD dlr2d_imfreq copy(dlr2d_imfreq const &);
+  template C2PY_WRAP_AS_METHOD void copy_from(dlr2d_imfreq &, dlr2d_imfreq const &);
 
   // imtime
   template C2PY_WRAP_AS_METHOD auto values(imtime const &);

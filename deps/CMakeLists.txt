@@ -133,3 +133,10 @@ external_dependency(cppdlr
   VERSION 1.1
   GIT_TAG main
 )
+
+# -- cppdlr2d --
+external_dependency(cppdlr2d
+  GIT_REPO https://github.com/jasonkaye/cppdlr2d
+  VERSION 0.1
+  GIT_TAG mc_fit
+)

@@ -71,6 +71,7 @@ find_dep(mpi 1.0)
 find_dep(h5 1.0)
 find_dep(nda 0.8)
 find_dep(cppdlr)
+find_dep(cppdlr2d)
 find_dep(fmt)
 
 # Keep triqs_py as alias for backward compatability

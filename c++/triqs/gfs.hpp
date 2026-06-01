@@ -43,6 +43,8 @@ namespace triqs::gfs {
   using mesh::chebyshev;
   using mesh::cyclat;
   using mesh::dlr;
+  using mesh::dlr2d;
+  using mesh::dlr2d_imfreq;
   using mesh::dlr_imfreq;
   using mesh::dlr_imtime;
   using mesh::imfreq;
@@ -92,6 +94,7 @@ namespace triqs::gfs {
 #include "./gfs/functions/legendre.hpp"
 #include "./gfs/functions/density.hpp"
 #include "./gfs/functions/dlr.hpp"
+#include "./gfs/functions/dlr2d.hpp"
 
 // fourier
 #include "./gfs/transform/fourier.hpp"

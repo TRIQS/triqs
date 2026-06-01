@@ -1,0 +1,4 @@
+package_name = "triqs.gfs"
+documentation = ""
+namespaces = "triqs::gfs"
+match_names = "make_gf_dlr2d|make_gf_dlr2d_imfreq"

@@ -180,6 +180,15 @@ namespace triqs::mesh {
   [[nodiscard]] C2PY_IGNORE inline auto operator*(statistic_enum s1, statistic_enum s2) { return (s1 == s2 ? Boson : Fermion); }
 
   /**
+   * @brief Enum to specify a two-particle channel.
+   *
+   * @details The following channels are supported:
+   * - `PP` (particle-particle) and
+   * - `PH` (particle-hole).
+   */
+  enum channel_enum { PP = 1, PH = 2 };
+
+  /**
    * @brief Lazy struct used in various function overloads as a placeholder for the closest mesh point to a given value.
    * @tparam T Value type of the mesh.
    */

@@ -60,6 +60,9 @@
 #include "./mesh/dlr_imtime.hpp"
 #include "./mesh/dlr_imfreq.hpp"
 
+#include "./mesh/dlr2d.hpp"
+#include "./mesh/dlr2d_imfreq.hpp"
+
 #include "./mesh/brzone.hpp"
 #include "./mesh/cyclat.hpp"
 

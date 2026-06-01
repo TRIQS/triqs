@@ -1313,27 +1313,20 @@ PyMethodDef c2py::tp_methods<_c2py_cls_20>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_20> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_20>;
 // --------- class _c2py_cls_21 -----------
-using _c2py_cls_21 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::chebyshev, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_21 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::dlr2d, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_21>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_21> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_21> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyDLR2D_2";
 static const auto _c2py_init_21                               = c2py::dispatcher_c_kw_t{
-   c2py::c_constructor<_c2py_cls_21, triqs::gfs::gf_view<triqs::mesh::chebyshev, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+   c2py::c_constructor<_c2py_cls_21, triqs::gfs::gf_view<triqs::mesh::dlr2d, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_21>    = c2py::pyfkw_constructor<_c2py_init_21>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_21> = _c2py_init_21.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{
-   c2py::cmethod(
-      [](_c2py_cls_21 &self, const long &x1) -> decltype(auto) {
-        return self.template
-        operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>, const long &>(x1);
-      },
-      "self", "x1"),
-   c2py::cmethod(
-      [](_c2py_cls_21 &self, const double &x1) -> decltype(auto) {
-        return self.template
-        operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>, const double &>(x1);
-      },
-      "self", "x1")};
+static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_21 &self, const std::pair<triqs::mesh::matsubara_freq, triqs::mesh::matsubara_freq> &x1) -> decltype(auto) {
+     return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                     const std::pair<triqs::mesh::matsubara_freq, triqs::mesh::matsubara_freq> &>(x1);
+   },
+   "self", "x1")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_21> = c2py::pyfkw<_c2py_fun_21>;
 
@@ -1348,64 +1341,27 @@ PyMethodDef c2py::tp_methods<_c2py_cls_21>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_21> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_21>;
 // --------- class _c2py_cls_22 -----------
-using _c2py_cls_22 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_22 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::chebyshev, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_22>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_22> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_x_BrZone_2";
-static const auto _c2py_init_22                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_22,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_22> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_2";
+static const auto _c2py_init_22                               = c2py::dispatcher_c_kw_t{
+   c2py::c_constructor<_c2py_cls_22, triqs::gfs::gf_view<triqs::mesh::chebyshev, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_22>    = c2py::pyfkw_constructor<_c2py_init_22>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_22> = _c2py_init_22.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_22 =
-   c2py::dispatcher_f_kw_t{
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const long &x1, const std::array<long, 3> &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const long &, const std::array<long, 3> &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const long &x1, const std::array<double, 3> &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const long &, const std::array<double, 3> &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const double &x1, const std::array<long, 3> &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const double &, const std::array<long, 3> &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const double &x1, const std::array<double, 3> &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const double &, const std::array<double, 3> &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const itertools::range::all_t &x1, const std::array<long, 3> &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &, const std::array<long, 3> &>(x1,
-                                                                                                                                                 x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const itertools::range::all_t &x1, const std::array<double, 3> &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &, const std::array<double, 3> &>(
-              x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const long &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const long &, const itertools::range::all_t &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_22 &self, const double &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const double &, const itertools::range::all_t &>(x1, x2);
-         },
-         "self", "x1", "x2")};
+static auto const _c2py_fun_22 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod(
+      [](_c2py_cls_22 &self, const long &x1) -> decltype(auto) {
+        return self.template
+        operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>, const long &>(x1);
+      },
+      "self", "x1"),
+   c2py::cmethod(
+      [](_c2py_cls_22 &self, const double &x1) -> decltype(auto) {
+        return self.template
+        operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>, const double &>(x1);
+      },
+      "self", "x1")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_22> = c2py::pyfkw<_c2py_fun_22>;
 
@@ -1421,12 +1377,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_22>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_22> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_22>;
 // --------- class _c2py_cls_23 -----------
 using _c2py_cls_23 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_23>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_23> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_x_CycLat_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_23> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_x_BrZone_2";
 static const auto _c2py_init_23                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
    _c2py_cls_23,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::brzone>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_23>    = c2py::pyfkw_constructor<_c2py_init_23>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_23> = _c2py_init_23.doc(R"DOC()DOC");
 // __call__
@@ -1439,9 +1395,9 @@ static auto const _c2py_fun_23 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_23 &self, const long &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
+         [](_c2py_cls_23 &self, const long &x1, const std::array<double, 3> &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const long &, const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+                                           const long &, const std::array<double, 3> &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -1451,9 +1407,9 @@ static auto const _c2py_fun_23 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_23 &self, const double &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
+         [](_c2py_cls_23 &self, const double &x1, const std::array<double, 3> &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const double &, const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+                                           const double &, const std::array<double, 3> &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -1463,19 +1419,19 @@ static auto const _c2py_fun_23 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_23 &self, const itertools::range::all_t &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &,
-                                           const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+         [](_c2py_cls_23 &self, const itertools::range::all_t &x1, const std::array<double, 3> &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &, const std::array<double, 3> &>(
+              x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_23 &self, const long &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const long &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const long &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_23 &self, const double &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const double &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const double &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -1492,27 +1448,64 @@ PyMethodDef c2py::tp_methods<_c2py_cls_23>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_23> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_23>;
 // --------- class _c2py_cls_24 -----------
-using _c2py_cls_24 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::brzone, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_24 = triqs::gfs::gf_proxy<
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_24>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_24> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_2";
-static const auto _c2py_init_24                               = c2py::dispatcher_c_kw_t{
-   c2py::c_constructor<_c2py_cls_24, triqs::gfs::gf_view<triqs::mesh::brzone, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_24> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyChebyshev_x_CycLat_2";
+static const auto _c2py_init_24                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
+   _c2py_cls_24,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::chebyshev, triqs::mesh::cyclat>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_24>    = c2py::pyfkw_constructor<_c2py_init_24>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_24> = _c2py_init_24.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{
-   c2py::cmethod(
-      [](_c2py_cls_24 &self, const std::array<long, 3> &x1) -> decltype(auto) {
-        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                        const std::array<long, 3> &>(x1);
-      },
-      "self", "x1"),
-   c2py::cmethod(
-      [](_c2py_cls_24 &self, const std::array<double, 3> &x1) -> decltype(auto) {
-        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                        const std::array<double, 3> &>(x1);
-      },
-      "self", "x1")};
+static auto const _c2py_fun_24 =
+   c2py::dispatcher_f_kw_t{
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const long &x1, const std::array<long, 3> &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const long &, const std::array<long, 3> &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const long &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const long &, const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const double &x1, const std::array<long, 3> &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const double &, const std::array<long, 3> &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const double &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const double &, const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const itertools::range::all_t &x1, const std::array<long, 3> &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &, const std::array<long, 3> &>(x1,
+                                                                                                                                                 x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const itertools::range::all_t &x1, const triqs::lattice::bravais_lattice::point_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const itertools::range::all_t &,
+                                           const triqs::lattice::bravais_lattice::point_t &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const long &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const long &, const itertools::range::all_t &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_24 &self, const double &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const double &, const itertools::range::all_t &>(x1, x2);
+         },
+         "self", "x1", "x2")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_24> = c2py::pyfkw<_c2py_fun_24>;
 
@@ -1527,64 +1520,27 @@ PyMethodDef c2py::tp_methods<_c2py_cls_24>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_24> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_24>;
 // --------- class _c2py_cls_25 -----------
-using _c2py_cls_25 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_25 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::brzone, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_25>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_25> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImFreq_2";
-static const auto _c2py_init_25                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_25, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
-   "gv")};
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_25> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_2";
+static const auto _c2py_init_25                               = c2py::dispatcher_c_kw_t{
+   c2py::c_constructor<_c2py_cls_25, triqs::gfs::gf_view<triqs::mesh::brzone, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_25>    = c2py::pyfkw_constructor<_c2py_init_25>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_25> = _c2py_init_25.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_25 =
-   c2py::dispatcher_f_kw_t{
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<long, 3> &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<double, 3> &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<double, 3> &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<double, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<double, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
-              x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_25 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                x2);
-         },
-         "self", "x1", "x2")};
+static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod(
+      [](_c2py_cls_25 &self, const std::array<long, 3> &x1) -> decltype(auto) {
+        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                        const std::array<long, 3> &>(x1);
+      },
+      "self", "x1"),
+   c2py::cmethod(
+      [](_c2py_cls_25 &self, const std::array<double, 3> &x1) -> decltype(auto) {
+        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                        const std::array<double, 3> &>(x1);
+      },
+      "self", "x1")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_25> = c2py::pyfkw<_c2py_fun_25>;
 
@@ -1600,11 +1556,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_25>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_25> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_25>;
 // --------- class _c2py_cls_26 -----------
 using _c2py_cls_26 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_26>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_26> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImTime_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_26> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImFreq_2";
 static const auto _c2py_init_26                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_26, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_26, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_26>    = c2py::pyfkw_constructor<_c2py_init_26>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_26> = _c2py_init_26.doc(R"DOC()DOC");
@@ -1618,9 +1574,9 @@ static auto const _c2py_fun_26 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_26 &self, const std::array<long, 3> &x1, const double &x2) -> decltype(auto) {
+         [](_c2py_cls_26 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const double &>(x1, x2);
+                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -1630,9 +1586,9 @@ static auto const _c2py_fun_26 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_26 &self, const std::array<double, 3> &x1, const double &x2) -> decltype(auto) {
+         [](_c2py_cls_26 &self, const std::array<double, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<double, 3> &, const double &>(x1, x2);
+                                           const std::array<double, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -1641,18 +1597,19 @@ static auto const _c2py_fun_26 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_26 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const double &>(x1, x2);
+         [](_c2py_cls_26 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
+              x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_26 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_26 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
                                                                                                                                                 x2);
          },
          "self", "x1", "x2")};
@@ -1671,12 +1628,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_26>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_26> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_26>;
 // --------- class _c2py_cls_27 -----------
 using _c2py_cls_27 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_27>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_27> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImTime_2_R";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_27> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImTime_2";
 static const auto _c2py_init_27                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_27,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>("gv")};
+   _c2py_cls_27, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_27>    = c2py::pyfkw_constructor<_c2py_init_27>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_27> = _c2py_init_27.doc(R"DOC()DOC");
 // __call__
@@ -1708,26 +1665,23 @@ static auto const _c2py_fun_27 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_27 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const long &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const long &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_27 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const double &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const double &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_27 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<long, 3> &,
-                                           const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_27 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<double, 3> &,
-                                           const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                x2);
          },
          "self", "x1", "x2")};
 
@@ -1745,12 +1699,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_27>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_27> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_27>;
 // --------- class _c2py_cls_28 -----------
 using _c2py_cls_28 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_28>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_28> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ReFreq_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_28> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ImTime_2_R";
 static const auto _c2py_init_28                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_28, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
-   "gv")};
+   _c2py_cls_28,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_28>    = c2py::pyfkw_constructor<_c2py_init_28>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_28> = _c2py_init_28.doc(R"DOC()DOC");
 // __call__
@@ -1782,23 +1736,26 @@ static auto const _c2py_fun_28 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_28 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const long &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const long &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_28 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const double &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::brzone, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const double &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_28 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<long, 3> &,
+                                           const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_28 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<double, 3> &,
+                                           const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -1816,11 +1773,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_28>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_28> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_28>;
 // --------- class _c2py_cls_29 -----------
 using _c2py_cls_29 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_29>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_29> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ReTime_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_29> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ReFreq_2";
 static const auto _c2py_init_29                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_29, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_29, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_29>    = c2py::pyfkw_constructor<_c2py_init_29>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_29> = _c2py_init_29.doc(R"DOC()DOC");
@@ -1863,12 +1820,12 @@ static auto const _c2py_fun_29 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_29 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_29 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
                                                                                                                                                 x2);
          },
          "self", "x1", "x2")};
@@ -1887,11 +1844,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_29>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_29> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_29>;
 // --------- class _c2py_cls_30 -----------
 using _c2py_cls_30 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_30>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_30> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_Legendre_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_30> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_ReTime_2";
 static const auto _c2py_init_30                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_30, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_30, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_30>    = c2py::pyfkw_constructor<_c2py_init_30>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_30> = _c2py_init_30.doc(R"DOC()DOC");
@@ -1934,14 +1891,13 @@ static auto const _c2py_fun_30 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_30 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_30 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                  x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                x2);
          },
          "self", "x1", "x2")};
 
@@ -1959,11 +1915,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_30>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_30> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_30>;
 // --------- class _c2py_cls_31 -----------
 using _c2py_cls_31 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_31>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_31> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_DLR_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_31> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_Legendre_2";
 static const auto _c2py_init_31                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_31, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_31, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_31>    = c2py::pyfkw_constructor<_c2py_init_31>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_31> = _c2py_init_31.doc(R"DOC()DOC");
@@ -1983,12 +1939,6 @@ static auto const _c2py_fun_31 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_31 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
          [](_c2py_cls_31 &self, const std::array<double, 3> &x1, const long &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const std::array<double, 3> &, const long &>(x1, x2);
@@ -1998,12 +1948,6 @@ static auto const _c2py_fun_31 =
          [](_c2py_cls_31 &self, const std::array<double, 3> &x1, const double &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const std::array<double, 3> &, const double &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_31 &self, const std::array<double, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<double, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2017,19 +1961,15 @@ static auto const _c2py_fun_31 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_31 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
-              x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
          [](_c2py_cls_31 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_31 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<double, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<double, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                  x2);
          },
          "self", "x1", "x2")};
 
@@ -2047,12 +1987,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_31>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_31> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_31>;
 // --------- class _c2py_cls_32 -----------
 using _c2py_cls_32 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_32>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_32> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_Chebyshev_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_32> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_DLR_2";
 static const auto _c2py_init_32                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_32,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+   _c2py_cls_32, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_32>    = c2py::pyfkw_constructor<_c2py_init_32>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_32> = _c2py_init_32.doc(R"DOC()DOC");
 // __call__
@@ -2071,6 +2011,12 @@ static auto const _c2py_fun_32 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
+         [](_c2py_cls_32 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
          [](_c2py_cls_32 &self, const std::array<double, 3> &x1, const long &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const std::array<double, 3> &, const long &>(x1, x2);
@@ -2080,6 +2026,12 @@ static auto const _c2py_fun_32 =
          [](_c2py_cls_32 &self, const std::array<double, 3> &x1, const double &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const std::array<double, 3> &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_32 &self, const std::array<double, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<double, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2093,15 +2045,19 @@ static auto const _c2py_fun_32 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
+         [](_c2py_cls_32 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
+              x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
          [](_c2py_cls_32 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                 x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_32 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<double, 3> &, const itertools::range::all_t &>(
-              x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<double, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2118,27 +2074,64 @@ PyMethodDef c2py::tp_methods<_c2py_cls_32>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_32> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_32>;
 // --------- class _c2py_cls_33 -----------
-using _c2py_cls_33 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::cyclat, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_33 = triqs::gfs::gf_proxy<
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_33>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_33> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_2";
-static const auto _c2py_init_33                               = c2py::dispatcher_c_kw_t{
-   c2py::c_constructor<_c2py_cls_33, triqs::gfs::gf_view<triqs::mesh::cyclat, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_33> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyBrZone_x_Chebyshev_2";
+static const auto _c2py_init_33                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
+   _c2py_cls_33,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::brzone, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_33>    = c2py::pyfkw_constructor<_c2py_init_33>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_33> = _c2py_init_33.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_33 = c2py::dispatcher_f_kw_t{
-   c2py::cmethod(
-      [](_c2py_cls_33 &self, const std::array<long, 3> &x1) -> decltype(auto) {
-        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                        const std::array<long, 3> &>(x1);
-      },
-      "self", "x1"),
-   c2py::cmethod(
-      [](_c2py_cls_33 &self, const triqs::lattice::bravais_lattice::point_t &x1) -> decltype(auto) {
-        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                        const triqs::lattice::bravais_lattice::point_t &>(x1);
-      },
-      "self", "x1")};
+static auto const _c2py_fun_33 =
+   c2py::dispatcher_f_kw_t{
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<long, 3> &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<long, 3> &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<double, 3> &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<double, 3> &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<double, 3> &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<double, 3> &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::brzone>, const itertools::range::all_t &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                 x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_33 &self, const std::array<double, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<double, 3> &, const itertools::range::all_t &>(
+              x1, x2);
+         },
+         "self", "x1", "x2")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_33> = c2py::pyfkw<_c2py_fun_33>;
 
@@ -2153,64 +2146,27 @@ PyMethodDef c2py::tp_methods<_c2py_cls_33>[] = {
 
 template <> const std::string c2py::tp_doc<_c2py_cls_33> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_33>;
 // --------- class _c2py_cls_34 -----------
-using _c2py_cls_34 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+using _c2py_cls_34 = triqs::gfs::gf_proxy<triqs::gfs::gf_view<triqs::mesh::cyclat, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_34>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_34> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImFreq_2";
-static const auto _c2py_init_34                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_34, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
-   "gv")};
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_34> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_2";
+static const auto _c2py_init_34                               = c2py::dispatcher_c_kw_t{
+   c2py::c_constructor<_c2py_cls_34, triqs::gfs::gf_view<triqs::mesh::cyclat, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_34>    = c2py::pyfkw_constructor<_c2py_init_34>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_34> = _c2py_init_34.doc(R"DOC()DOC");
 // __call__
-static auto const _c2py_fun_34 =
-   c2py::dispatcher_f_kw_t{
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const std::array<long, 3> &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const triqs::lattice::bravais_lattice::point_t &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const triqs::lattice::bravais_lattice::point_t &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const triqs::lattice::bravais_lattice::point_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const triqs::lattice::bravais_lattice::point_t &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const long &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
-              x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_34 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
-         },
-         "self", "x1", "x2")};
+static auto const _c2py_fun_34 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod(
+      [](_c2py_cls_34 &self, const std::array<long, 3> &x1) -> decltype(auto) {
+        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                        const std::array<long, 3> &>(x1);
+      },
+      "self", "x1"),
+   c2py::cmethod(
+      [](_c2py_cls_34 &self, const triqs::lattice::bravais_lattice::point_t &x1) -> decltype(auto) {
+        return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                        const triqs::lattice::bravais_lattice::point_t &>(x1);
+      },
+      "self", "x1")};
 
 template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_34> = c2py::pyfkw<_c2py_fun_34>;
 
@@ -2226,11 +2182,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_34>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_34> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_34>;
 // --------- class _c2py_cls_35 -----------
 using _c2py_cls_35 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_35>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_35> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImTime_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_35> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImFreq_2";
 static const auto _c2py_init_35                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_35, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_35, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imfreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_35>    = c2py::pyfkw_constructor<_c2py_init_35>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_35> = _c2py_init_35.doc(R"DOC()DOC");
@@ -2244,9 +2200,9 @@ static auto const _c2py_fun_35 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_35 &self, const std::array<long, 3> &x1, const double &x2) -> decltype(auto) {
+         [](_c2py_cls_35 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const double &>(x1, x2);
+                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2256,9 +2212,9 @@ static auto const _c2py_fun_35 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_35 &self, const triqs::lattice::bravais_lattice::point_t &x1, const double &x2) -> decltype(auto) {
+         [](_c2py_cls_35 &self, const triqs::lattice::bravais_lattice::point_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const triqs::lattice::bravais_lattice::point_t &, const double &>(x1, x2);
+                                           const triqs::lattice::bravais_lattice::point_t &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2267,19 +2223,20 @@ static auto const _c2py_fun_35 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_35 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const double &>(x1, x2);
+         [](_c2py_cls_35 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
+              x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_35 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_35 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
            return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::imtime>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
+           operator()<triqs::gfs::gf<triqs::mesh::imfreq>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2297,12 +2254,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_35>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_35> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_35>;
 // --------- class _c2py_cls_36 -----------
 using _c2py_cls_36 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_36>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_36> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImTime_2_R";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_36> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImTime_2";
 static const auto _c2py_init_36                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_36,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>("gv")};
+   _c2py_cls_36, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_36>    = c2py::pyfkw_constructor<_c2py_init_36>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_36> = _c2py_init_36.doc(R"DOC()DOC");
 // __call__
@@ -2334,26 +2291,23 @@ static auto const _c2py_fun_36 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_36 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::cyclat, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const long &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const long &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_36 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::cyclat, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const double &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const double &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_36 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<long, 3> &,
-                                           const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_36 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>,
-                                           const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::imtime>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2371,12 +2325,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_36>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_36> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_36>;
 // --------- class _c2py_cls_37 -----------
 using _c2py_cls_37 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_37>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_37> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ReFreq_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_37> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ImTime_2_R";
 static const auto _c2py_init_37                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_37, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
-   "gv")};
+   _c2py_cls_37,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::imtime>, triqs::gfs::matrix_real_valued, nda::C_stride_layout>>("gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_37>    = c2py::pyfkw_constructor<_c2py_init_37>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_37> = _c2py_init_37.doc(R"DOC()DOC");
 // __call__
@@ -2408,23 +2362,26 @@ static auto const _c2py_fun_37 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_37 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const long &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::cyclat, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const long &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_37 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const double &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::cyclat, triqs::gfs::matrix_real_valued>, const itertools::range::all_t &, const double &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_37 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>, const std::array<long, 3> &,
+                                           const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_37 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::refreq>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::imtime, triqs::gfs::matrix_real_valued>,
+                                           const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2442,11 +2399,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_37>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_37> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_37>;
 // --------- class _c2py_cls_38 -----------
 using _c2py_cls_38 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_38>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_38> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ReTime_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_38> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ReFreq_2";
 static const auto _c2py_init_38                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_38, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_38, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::refreq>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_38>    = c2py::pyfkw_constructor<_c2py_init_38>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_38> = _c2py_init_38.doc(R"DOC()DOC");
@@ -2489,13 +2446,13 @@ static auto const _c2py_fun_38 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_38 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::refreq>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_38 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
            return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::retime>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
+           operator()<triqs::gfs::gf<triqs::mesh::refreq>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2513,11 +2470,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_38>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_38> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_38>;
 // --------- class _c2py_cls_39 -----------
 using _c2py_cls_39 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_39>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_39> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_Legendre_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_39> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_ReTime_2";
 static const auto _c2py_init_39                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_39, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_39, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::retime>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_39>    = c2py::pyfkw_constructor<_c2py_init_39>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_39> = _c2py_init_39.doc(R"DOC()DOC");
@@ -2560,14 +2517,13 @@ static auto const _c2py_fun_39 =
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_39 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::retime>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_39 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const triqs::lattice::bravais_lattice::point_t &,
-                                           const itertools::range::all_t &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::retime>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2585,11 +2541,11 @@ PyMethodDef c2py::tp_methods<_c2py_cls_39>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_39> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_39>;
 // --------- class _c2py_cls_40 -----------
 using _c2py_cls_40 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_40>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_40> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_DLR_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_40> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_Legendre_2";
 static const auto _c2py_init_40                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_40, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   _c2py_cls_40, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::legendre>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
    "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_40>    = c2py::pyfkw_constructor<_c2py_init_40>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_40> = _c2py_init_40.doc(R"DOC()DOC");
@@ -2609,12 +2565,6 @@ static auto const _c2py_fun_40 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_40 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
          [](_c2py_cls_40 &self, const triqs::lattice::bravais_lattice::point_t &x1, const long &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const triqs::lattice::bravais_lattice::point_t &, const long &>(x1, x2);
@@ -2624,12 +2574,6 @@ static auto const _c2py_fun_40 =
          [](_c2py_cls_40 &self, const triqs::lattice::bravais_lattice::point_t &x1, const double &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const triqs::lattice::bravais_lattice::point_t &, const double &>(x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
-         [](_c2py_cls_40 &self, const triqs::lattice::bravais_lattice::point_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
-                                           const triqs::lattice::bravais_lattice::point_t &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2643,20 +2587,15 @@ static auto const _c2py_fun_40 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
-         [](_c2py_cls_40 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
-              x1, x2);
-         },
-         "self", "x1", "x2"),
-      c2py::cmethod(
          [](_c2py_cls_40 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_40 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template
-           operator()<triqs::gfs::gf<triqs::mesh::dlr>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::legendre>, const triqs::lattice::bravais_lattice::point_t &,
+                                           const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2674,12 +2613,12 @@ PyMethodDef c2py::tp_methods<_c2py_cls_40>[] = {
 template <> const std::string c2py::tp_doc<_c2py_cls_40> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_40>;
 // --------- class _c2py_cls_41 -----------
 using _c2py_cls_41 = triqs::gfs::gf_proxy<
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_41>     = true;
-template <> inline constexpr auto c2py::tp_name<_c2py_cls_41> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_Chebyshev_2";
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_41> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_DLR_2";
 static const auto _c2py_init_41                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
-   _c2py_cls_41,
-   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+   _c2py_cls_41, triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::dlr>, triqs::gfs::matrix_valued, nda::C_stride_layout>>(
+   "gv")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_41>    = c2py::pyfkw_constructor<_c2py_init_41>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_41> = _c2py_init_41.doc(R"DOC()DOC");
 // __call__
@@ -2698,6 +2637,12 @@ static auto const _c2py_fun_41 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
+         [](_c2py_cls_41 &self, const std::array<long, 3> &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const triqs::mesh::matsubara_freq &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
          [](_c2py_cls_41 &self, const triqs::lattice::bravais_lattice::point_t &x1, const long &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const triqs::lattice::bravais_lattice::point_t &, const long &>(x1, x2);
@@ -2707,6 +2652,12 @@ static auto const _c2py_fun_41 =
          [](_c2py_cls_41 &self, const triqs::lattice::bravais_lattice::point_t &x1, const double &x2) -> decltype(auto) {
            return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
                                            const triqs::lattice::bravais_lattice::point_t &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_41 &self, const triqs::lattice::bravais_lattice::point_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const triqs::lattice::bravais_lattice::point_t &, const triqs::mesh::matsubara_freq &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
@@ -2720,15 +2671,20 @@ static auto const _c2py_fun_41 =
          },
          "self", "x1", "x2"),
       c2py::cmethod(
+         [](_c2py_cls_41 &self, const itertools::range::all_t &x1, const triqs::mesh::matsubara_freq &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const triqs::mesh::matsubara_freq &>(
+              x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
          [](_c2py_cls_41 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
-                                                                                                                                                 x2);
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::dlr>, const std::array<long, 3> &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2"),
       c2py::cmethod(
          [](_c2py_cls_41 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
-           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const triqs::lattice::bravais_lattice::point_t &,
-                                           const itertools::range::all_t &>(x1, x2);
+           return self.template
+           operator()<triqs::gfs::gf<triqs::mesh::dlr>, const triqs::lattice::bravais_lattice::point_t &, const itertools::range::all_t &>(x1, x2);
          },
          "self", "x1", "x2")};
 
@@ -2744,6 +2700,78 @@ PyMethodDef c2py::tp_methods<_c2py_cls_41>[] = {
 };
 
 template <> const std::string c2py::tp_doc<_c2py_cls_41> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_41>;
+// --------- class _c2py_cls_42 -----------
+using _c2py_cls_42 = triqs::gfs::gf_proxy<
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_42>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_42> = "triqs.gfs.wrapped_aux_target_rank_2.CallProxyCycLat_x_Chebyshev_2";
+static const auto _c2py_init_42                               = c2py::dispatcher_c_kw_t{c2py::c_constructor<
+   _c2py_cls_42,
+   triqs::gfs::gf_view<triqs::mesh::prod<triqs::mesh::cyclat, triqs::mesh::chebyshev>, triqs::gfs::matrix_valued, nda::C_stride_layout>>("gv")};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_42>    = c2py::pyfkw_constructor<_c2py_init_42>;
+template <> const std::string c2py::tp_ctor_doc<_c2py_cls_42> = _c2py_init_42.doc(R"DOC()DOC");
+// __call__
+static auto const _c2py_fun_42 =
+   c2py::dispatcher_f_kw_t{
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const std::array<long, 3> &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const std::array<long, 3> &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const std::array<long, 3> &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const triqs::lattice::bravais_lattice::point_t &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const triqs::lattice::bravais_lattice::point_t &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const triqs::lattice::bravais_lattice::point_t &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'M', nda::heap_basic<nda::mem::mallocator<>>>,
+                                           const triqs::lattice::bravais_lattice::point_t &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const itertools::range::all_t &x1, const long &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const long &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const itertools::range::all_t &x1, const double &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::cyclat>, const itertools::range::all_t &, const double &>(x1, x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const std::array<long, 3> &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const std::array<long, 3> &, const itertools::range::all_t &>(x1,
+                                                                                                                                                 x2);
+         },
+         "self", "x1", "x2"),
+      c2py::cmethod(
+         [](_c2py_cls_42 &self, const triqs::lattice::bravais_lattice::point_t &x1, const itertools::range::all_t &x2) -> decltype(auto) {
+           return self.template operator()<triqs::gfs::gf<triqs::mesh::chebyshev>, const triqs::lattice::bravais_lattice::point_t &,
+                                           const itertools::range::all_t &>(x1, x2);
+         },
+         "self", "x1", "x2")};
+
+template <> inline constexpr ternaryfunc c2py::tp_call<_c2py_cls_42> = c2py::pyfkw<_c2py_fun_42>;
+
+static const auto _c2py_doc_42 = _c2py_fun_42.doc(R"DOC()DOC");
+
+// ----- Method table ----
+template <>
+PyMethodDef c2py::tp_methods<_c2py_cls_42>[] = {
+
+   {nullptr, nullptr, 0, nullptr} // Sentinel
+};
+
+template <> const std::string c2py::tp_doc<_c2py_cls_42> = R"DOC()DOC" + c2py::tp_ctor_doc<_c2py_cls_42>;
 
 // ==================== module functions ====================
 
@@ -2824,6 +2852,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_wrapped_aux_t
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_39>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_40>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_41>) < 0) return NULL;
+  if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_42>) < 0) return NULL;
 
   m = PyModule_Create(&module_def);
   if (m == NULL) return NULL;
@@ -2853,27 +2882,28 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit_wrapped_aux_t
   _add_type(_c2py_cls_18, "CallProxyDLR_2");
   _add_type(_c2py_cls_19, "CallProxyDLR_x_BrZone_2");
   _add_type(_c2py_cls_20, "CallProxyDLR_x_CycLat_2");
-  _add_type(_c2py_cls_21, "CallProxyChebyshev_2");
-  _add_type(_c2py_cls_22, "CallProxyChebyshev_x_BrZone_2");
-  _add_type(_c2py_cls_23, "CallProxyChebyshev_x_CycLat_2");
-  _add_type(_c2py_cls_24, "CallProxyBrZone_2");
-  _add_type(_c2py_cls_25, "CallProxyBrZone_x_ImFreq_2");
-  _add_type(_c2py_cls_26, "CallProxyBrZone_x_ImTime_2");
-  _add_type(_c2py_cls_27, "CallProxyBrZone_x_ImTime_2_R");
-  _add_type(_c2py_cls_28, "CallProxyBrZone_x_ReFreq_2");
-  _add_type(_c2py_cls_29, "CallProxyBrZone_x_ReTime_2");
-  _add_type(_c2py_cls_30, "CallProxyBrZone_x_Legendre_2");
-  _add_type(_c2py_cls_31, "CallProxyBrZone_x_DLR_2");
-  _add_type(_c2py_cls_32, "CallProxyBrZone_x_Chebyshev_2");
-  _add_type(_c2py_cls_33, "CallProxyCycLat_2");
-  _add_type(_c2py_cls_34, "CallProxyCycLat_x_ImFreq_2");
-  _add_type(_c2py_cls_35, "CallProxyCycLat_x_ImTime_2");
-  _add_type(_c2py_cls_36, "CallProxyCycLat_x_ImTime_2_R");
-  _add_type(_c2py_cls_37, "CallProxyCycLat_x_ReFreq_2");
-  _add_type(_c2py_cls_38, "CallProxyCycLat_x_ReTime_2");
-  _add_type(_c2py_cls_39, "CallProxyCycLat_x_Legendre_2");
-  _add_type(_c2py_cls_40, "CallProxyCycLat_x_DLR_2");
-  _add_type(_c2py_cls_41, "CallProxyCycLat_x_Chebyshev_2");
+  _add_type(_c2py_cls_21, "CallProxyDLR2D_2");
+  _add_type(_c2py_cls_22, "CallProxyChebyshev_2");
+  _add_type(_c2py_cls_23, "CallProxyChebyshev_x_BrZone_2");
+  _add_type(_c2py_cls_24, "CallProxyChebyshev_x_CycLat_2");
+  _add_type(_c2py_cls_25, "CallProxyBrZone_2");
+  _add_type(_c2py_cls_26, "CallProxyBrZone_x_ImFreq_2");
+  _add_type(_c2py_cls_27, "CallProxyBrZone_x_ImTime_2");
+  _add_type(_c2py_cls_28, "CallProxyBrZone_x_ImTime_2_R");
+  _add_type(_c2py_cls_29, "CallProxyBrZone_x_ReFreq_2");
+  _add_type(_c2py_cls_30, "CallProxyBrZone_x_ReTime_2");
+  _add_type(_c2py_cls_31, "CallProxyBrZone_x_Legendre_2");
+  _add_type(_c2py_cls_32, "CallProxyBrZone_x_DLR_2");
+  _add_type(_c2py_cls_33, "CallProxyBrZone_x_Chebyshev_2");
+  _add_type(_c2py_cls_34, "CallProxyCycLat_2");
+  _add_type(_c2py_cls_35, "CallProxyCycLat_x_ImFreq_2");
+  _add_type(_c2py_cls_36, "CallProxyCycLat_x_ImTime_2");
+  _add_type(_c2py_cls_37, "CallProxyCycLat_x_ImTime_2_R");
+  _add_type(_c2py_cls_38, "CallProxyCycLat_x_ReFreq_2");
+  _add_type(_c2py_cls_39, "CallProxyCycLat_x_ReTime_2");
+  _add_type(_c2py_cls_40, "CallProxyCycLat_x_Legendre_2");
+  _add_type(_c2py_cls_41, "CallProxyCycLat_x_DLR_2");
+  _add_type(_c2py_cls_42, "CallProxyCycLat_x_Chebyshev_2");
 #undef _add_type
 
   return m;

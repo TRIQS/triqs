@@ -31,6 +31,7 @@ using CallProxyLegendre_x_CycLat_0 = triqs::gfs::gf_proxy<gf_view<prod<legendre,
 using CallProxyDLR_0 = triqs::gfs::gf_proxy<gf_view<dlr,scalar_valued>>;
 using CallProxyDLR_x_BrZone_0 = triqs::gfs::gf_proxy<gf_view<prod<dlr,brzone>,scalar_valued>>;
 using CallProxyDLR_x_CycLat_0 = triqs::gfs::gf_proxy<gf_view<prod<dlr,cyclat>,scalar_valued>>;
+using CallProxyDLR2D_0 = triqs::gfs::gf_proxy<gf_view<dlr2d,scalar_valued>>;
 using CallProxyChebyshev_0 = triqs::gfs::gf_proxy<gf_view<chebyshev,scalar_valued>>;
 using CallProxyChebyshev_x_BrZone_0 = triqs::gfs::gf_proxy<gf_view<prod<chebyshev,brzone>,scalar_valued>>;
 using CallProxyChebyshev_x_CycLat_0 = triqs::gfs::gf_proxy<gf_view<prod<chebyshev,cyclat>,scalar_valued>>;
@@ -190,6 +191,7 @@ template gf<dlr, scalar_valued> gf_proxy<gf_view<prod<dlr,cyclat>,scalar_valued>
 template gf<cyclat, scalar_valued> gf_proxy<gf_view<prod<dlr,cyclat>,scalar_valued>>::operator()<gf<cyclat, scalar_valued>>(long const&, all_t const&);
 template gf<cyclat, scalar_valued> gf_proxy<gf_view<prod<dlr,cyclat>,scalar_valued>>::operator()<gf<cyclat, scalar_valued>>(double const&, all_t const&);
 template gf<cyclat, scalar_valued> gf_proxy<gf_view<prod<dlr,cyclat>,scalar_valued>>::operator()<gf<cyclat, scalar_valued>>(matsubara_freq const&, all_t const&);
+template dcomplex gf_proxy<gf_view<dlr2d,scalar_valued>>::operator()<dcomplex>(std::pair<matsubara_freq, matsubara_freq> const&);
 template dcomplex gf_proxy<gf_view<chebyshev,scalar_valued>>::operator()<dcomplex>(long const&);
 template dcomplex gf_proxy<gf_view<chebyshev,scalar_valued>>::operator()<dcomplex>(double const&);
 template dcomplex gf_proxy<gf_view<prod<chebyshev,brzone>,scalar_valued>>::operator()<dcomplex>(long const&, std::array<long,3> const&);

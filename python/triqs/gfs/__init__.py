@@ -68,13 +68,13 @@ from .backwd_compat.gf_refreq import *
 from .backwd_compat.gf_retime import *
 from .backwd_compat.gf_legendre import *
 
-from triqs.mesh import MeshImTime, MeshImFreq, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, MeshReFreq, MeshReTime, MeshReFreqPts, MeshReFreqLog, MeshBrZone, MeshCycLat, make_adjoint_mesh
+from triqs.mesh import MeshImTime, MeshImFreq, MeshLegendre, MeshDLR, MeshDLRImFreq, MeshDLRImTime, MeshDLR2D, MeshDLR2DImFreq, MeshReFreq, MeshReTime, MeshReFreqPts, MeshReFreqLog, MeshBrZone, MeshCycLat, make_adjoint_mesh
 MeshBrillouinZone = MeshBrZone
 MeshCyclicLattice = MeshCycLat
 
 from .gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity
 
-from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau, make_gf_dlr, fit_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, make_gf_imtime, make_gf_imfreq, find_w_max
+from .gf_factories import make_gf_from_fourier, make_hermitian, make_real_in_tau, make_gf_dlr, fit_gf_dlr, make_gf_dlr_imtime, make_gf_dlr_imfreq, make_gf_imtime, make_gf_imfreq, find_w_max, make_gf_dlr2d, make_gf_dlr2d_imfreq
 
 import warnings
 
@@ -91,6 +91,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'MeshBrZone', 'MeshBrillouinZone',
             'MeshCycLat', 'MeshCyclicLattice',
             'MeshDLR', 'MeshDLRImFreq', 'MeshDLRImTime',
+            'MeshDLR2D', 'MeshDLR2DImFreq',
             'BlockGf', 'fix_gf_struct_type',
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
@@ -106,6 +107,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Legend
             'set_from_legendre', 'set_from_imfreq', 'set_from_imtime',
             'make_gf_dlr', 'fit_gf_dlr', 'make_gf_dlr_imtime', 'make_gf_dlr_imfreq',
             'make_gf_imtime', 'make_gf_imfreq', 'find_w_max',
+            'make_gf_dlr2d', 'make_gf_dlr2d_imfreq',
             'rebinning_tau', 'enforce_discontinuity',
             'density',
             'make_adjoint_mesh',

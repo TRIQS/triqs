@@ -111,6 +111,19 @@ namespace triqs::gfs {
     template <typename G> decltype(auto) operator()(G const &g, int n) const { return g(matsubara_freq(n, g.mesh().beta(), g.mesh().statistic())); }
   };
 
+  /*----------------------------------------------------------
+   *  mesh::dlr2d
+   *--------------------------------------------------------*/
+
+  template <> struct gf_evaluator<mesh::dlr2d> {
+
+    // Handle pair of matsubara_freq: G({iw1, iw2})
+    template <typename G> auto operator()(G const &g, std::pair<matsubara_freq, matsubara_freq> const &iw_pair) const {
+      auto l = [&g](auto i) -> decltype(auto) { return g[i]; };
+      return make_regular(evaluate(g.mesh(), l, iw_pair));
+    }
+  };
+
   /** @} */
 
 } // namespace triqs::gfs
