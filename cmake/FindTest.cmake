@@ -23,7 +23,7 @@ function(add_cpp_test testname)
   add_test(${testname_}
    ${CMAKE_COMMAND}
    -Dname=${testname_}${ARGN}
-   -Dcmd=${testcmd}
+   "-Dcmd=${testcmd}"
    -Dreference=${testref}
    -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )

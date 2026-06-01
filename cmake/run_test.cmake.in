@@ -1,6 +1,6 @@
 set (COMPARE ${CMAKE_COMMAND} -E compare_files ${name}.out ${reference})
 
-message("Command for the test: ${cmd} ${input}")
+message("Command for the test: ${cmd}")
 
 # Strip ${CMAKE_INSTALL_PREFIX}/lib from LD_LIBRARY_PATH & DYLD_LIBRARY_PATH
 if(ENV{LD_LIBRARY_PATH})
@@ -12,7 +12,7 @@ if(ENV{DYLD_LIBRARY_PATH})
     set(ENV{DYLD_LIBRARY_PATH} ${replace_output})
 endif()
 
-separate_arguments(cmd UNIX_COMMAND "${cmd} ${input}")
+# Pass ${cmd} as a CMake list so paths containing spaces are preserved
 execute_process(
  COMMAND ${cmd}
   RESULT_VARIABLE not_successful
