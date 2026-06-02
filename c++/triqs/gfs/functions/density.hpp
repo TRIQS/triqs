@@ -36,7 +36,7 @@ namespace triqs {
      * @param known_moments Array of known high-frequency moments.
      * @return The density matrix.
      */
-    nda::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> = {});
+    nda::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> known_moments = {});
 
     /**
      * @brief Compute the density from a Green's function.
@@ -48,7 +48,7 @@ namespace triqs {
      * @param known_moments Array of known high-frequency moments.
      * @return The scalar density.
      */
-    dcomplex density(gf_const_view<mesh::imfreq, scalar_valued> g, array_const_view<dcomplex, 1> = {});
+    dcomplex density(gf_const_view<mesh::imfreq, scalar_valued> g, array_const_view<dcomplex, 1> known_moments = {});
 
     /**
      * @brief Compute the density from a Green's function.

@@ -28,17 +28,18 @@ beta = 50.0
 # -- Test Matsubara frequency density for free Gf
 
 iw_mesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=1000)
-g_iw = GfImFreq(mesh=iw_mesh, target_shape=[1,1])
 
 print("==============================================")
 
 for eps in np.random.random(10):
-    g_iw << inverse(iOmega_n - eps)
-    km = make_zero_tail(g_iw, 2)
-    km[1] = np.eye(g_iw.target_shape[0])
-    n = np.squeeze(g_iw.density(km))
-    n_ref = fermi(eps, beta)
-    np.testing.assert_almost_equal(n, n_ref)
+    for ts in [[], [1,1]]:
+        g_iw = GfImFreq(mesh=iw_mesh, target_shape=ts)
+        g_iw << inverse(iOmega_n - eps)
+        km = make_zero_tail(g_iw, 2)
+        km[1] = np.eye(ts[0]) if ts else 1.0
+        n = g_iw.density(known_moments=km)
+        np.testing.assert_almost_equal(n, g_iw.density(km))  # keyword matches positional
+        np.testing.assert_almost_equal(np.squeeze(n), fermi(eps, beta))
 
 
 print("==============================================")
