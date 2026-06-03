@@ -442,8 +442,8 @@ namespace triqs::stat {
       // binned estimate of the error of the mean
       auto err = mean_and_err(bins).second;
 
-      // estimate of the integrated autocorrelation time
-      real_t tau = 0.5 * (abs_square(err) / var0 - 1.0);
+      // estimate of the integrated autocorrelation time - avoid division by zero
+      real_t tau = nda::map([](auto v, auto v0) { return (v0 == 0.0) ? nan_sample(v0) : 0.5 * (v / v0 - 1.0); })(abs_square(err), var0);
 
       return std::make_pair(err, tau);
     }
