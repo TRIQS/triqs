@@ -47,6 +47,15 @@
 namespace triqs::mc_tools {
 
   /**
+   * @brief Phase of a Monte Carlo simulation.
+   *
+   * @details Determines whether the elapsed time of a run() is attributed to the warmup or the accumulation timer.
+   * This is deliberately decoupled from run_param_t::enable_measures so that a warmup phase can still take
+   * measurements (e.g. to report running averages) while remaining timed as warmup.
+   */
+  enum class mc_phase { warmup, accumulation };
+
+  /**
    * @ingroup triqs-mc-simulation
    * @brief Generic Monte Carlo class.
    *
@@ -124,6 +133,10 @@ namespace triqs::mc_tools {
 
       /// Should we calibrate the moves during the simulation? Usually false during the accumulation phase.
       bool enable_calibration = false;
+
+      /// Simulation phase, selecting whether the elapsed time is recorded as warmup or accumulation time.
+      /// Decoupled from enable_measures so that a measuring run() can still be timed as warmup.
+      mc_phase phase = mc_phase::accumulation;
 
       /**
        * @brief Should we continue the simulation on the current rank after the given number of cycles is done and wait
