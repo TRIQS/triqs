@@ -29,6 +29,18 @@ namespace triqs::gfs {
   using mesh::dlr2d;
   using mesh::dlr2d_imfreq;
 
+  namespace detail {
+    // Replace element N of a tuple with two new elements r1, r2.
+    // E.g. tuple<A, B, C> with N=1 becomes tuple<A, R1, R2, C>.
+    template <size_t N, typename... Ms, typename R1, typename R2> auto tuple_replace_expand(std::tuple<Ms...> const &t, R1 const &r1, R2 const &r2) {
+      auto before = [&]<size_t... Is>(std::index_sequence<Is...>) { return std::make_tuple(std::get<Is>(t)...); }(std::make_index_sequence<N>{});
+      auto after  = [&]<size_t... Is>(std::index_sequence<Is...>) {
+        return std::make_tuple(std::get<N + 1 + Is>(t)...);
+      }(std::make_index_sequence<sizeof...(Ms) - N - 1>{});
+      return std::tuple_cat(before, std::make_tuple(r1, r2), after);
+    }
+  } // namespace detail
+
   //-------------------------------------------------------
   // Transformation of 2D DLR Green's functions
   // ------------------------------------------------------
@@ -138,11 +150,50 @@ namespace triqs::gfs {
     if constexpr (is_block_gf_v<G>) {
       return map_block_gf([&](auto const &gbl) { return make_gf_imfreq<N, Ns...>(gbl, n_iw); }, g);
     } else if constexpr (mesh::is_product<M>) {
-      // Product mesh not supported: dlr2d -> prod<imfreq, imfreq> is a 1D->2D expansion.
-      // This would transform prod<A, dlr2d, B> into prod<A, imfreq, imfreq, B>,
-      // which apply_to_mesh cannot handle.
-      static_assert(!mesh::is_product<M>, "Product mesh not supported for make_gf_imfreq(dlr2d): "
-                                          "dlr2d->prod<imfreq,imfreq> is a 1D->2D transformation");
+      static_assert(sizeof...(Ns) == 0, "Multiple DLR2D index expansion not supported");
+      static_assert(std::is_same_v<detail::mesh_at_t<N, M>, dlr2d>, "Mesh at position N must be dlr2d");
+
+      auto const &dlr2d_m = get_mesh<N>(g);
+      long n_coefs        = dlr2d_m.size();
+
+      if (n_iw == 0) n_iw = dlr2d_imfreq{dlr2d_m}.max_n() + 1;
+      mesh::imfreq iw_mesh{dlr2d_m.beta(), dlr2d_m.statistic(), n_iw};
+      long n_iw_size = iw_mesh.size();
+
+      // Build output mesh: splice (imfreq, imfreq) at position N
+      auto out_mesh = mesh::prod{detail::tuple_replace_expand<N>(g.mesh().components(), iw_mesh, iw_mesh)};
+      auto result   = gf{out_mesh, g.target_shape()};
+
+      // Reshape data: group dims before N, dim N (coefs), dims after N + target dims
+      auto shape    = g.data().shape();
+      long n_before = 1;
+      for (int d = 0; d < N; ++d) n_before *= shape[d];
+      long n_after = 1;
+      for (size_t d = N + 1; d < shape.size(); ++d) n_after *= shape[d];
+      long nrhs = n_before * n_after;
+
+      // Pack: (n_before, n_coefs, n_after) -> (n_coefs, nrhs) transposed for cppdlr2d
+      auto data_3d = nda::reshape(g.data(), n_before, n_coefs, n_after);
+      auto gc      = nda::matrix<dcomplex>(n_coefs, nrhs);
+      for (long ib = 0; ib < n_before; ++ib)
+        for (long c = 0; c < n_coefs; ++c)
+          for (long ia = 0; ia < n_after; ++ia) gc(c, ib * n_after + ia) = data_3d(ib, c, ia);
+
+      // Evaluate on imfreq grid
+      int idx_min = -static_cast<int>(n_iw);
+      int idx_max = static_cast<int>(n_iw) - 1;
+      auto vals   = ::cppdlr2d::coefs2eval_if_grid(dlr2d_m.beta(), dlr2d_m.dlr_rf(), gc, dlr2d_m.dlr2d_rf(), idx_min, idx_max, idx_min, idx_max,
+                                                   dlr2d_m.channel());
+      // vals: (nrhs, n_iw_size, n_iw_size)
+
+      // Unpack: (nrhs, niw, niw) -> (n_before, niw, niw, n_after)
+      auto result_4d = nda::reshape(result.data(), n_before, n_iw_size, n_iw_size, n_after);
+      for (long ib = 0; ib < n_before; ++ib)
+        for (long i1 = 0; i1 < n_iw_size; ++i1)
+          for (long i2 = 0; i2 < n_iw_size; ++i2)
+            for (long ia = 0; ia < n_after; ++ia) result_4d(ib, i1, i2, ia) = vals(ib * n_after + ia, i1, i2);
+
+      return result;
     } else {
       static_assert(N == 0 and sizeof...(Ns) == 0);
       static_assert(std::is_same_v<M, dlr2d>, "Input mesh must be dlr2d");
@@ -152,7 +203,7 @@ namespace triqs::gfs {
       if (n_iw == 0) n_iw = dlr2d_imfreq{m}.max_n() + 1;
 
       // Build target product mesh
-      mesh::imfreq iw_mesh{m.beta(), Fermion, n_iw};
+      mesh::imfreq iw_mesh{m.beta(), m.statistic(), n_iw};
       mesh::prod<mesh::imfreq, mesh::imfreq> prod_mesh{iw_mesh, iw_mesh};
       auto result = gf{prod_mesh, g.target_shape()};
 

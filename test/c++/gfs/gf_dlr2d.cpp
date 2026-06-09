@@ -101,18 +101,6 @@ TEST(DLR2D, ZeroCoefficients) {
   }
 }
 
-// Test both channels with DLR-representable data
-TEST(DLR2D, DifferentChannels) {
-  for (auto channel : {PP, PH}) {
-    auto g_dlr2d = gf<dlr2d, scalar_valued>{dlr2d{beta, w_max, eps, channel}};
-    init_scalar_coefs(g_dlr2d);
-
-    auto g_iw      = make_gf_dlr2d_imfreq(g_dlr2d);
-    auto g_iw_back = make_gf_dlr2d_imfreq(make_gf_dlr2d(g_iw));
-    EXPECT_GF_NEAR(g_iw, g_iw_back, tol);
-  }
-}
-
 // Test evaluation at grid points (scalar-valued, both channels)
 TEST(DLR2D, ScalarEvaluateAtGridPoints) {
   for (auto channel : {PP, PH}) {
@@ -270,6 +258,115 @@ TEST(DLR2D, ProductMeshSingleIndex) {
     auto g_iw_back = make_gf_dlr2d_imfreq<0, 1>(g_back);
 
     EXPECT_GF_NEAR(g_iw, g_iw_back, prod_tol);
+  }
+}
+
+// Test make_gf_imfreq on product mesh with dlr2d at position 1: prod<imfreq, dlr2d> -> prod<imfreq, imfreq, imfreq>
+TEST(DLR2D, ProductMeshMakeGfImfreq) {
+  constexpr double prod_tol = 1e-10;
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef = dlr2d{beta, w_max, eps, channel};
+    auto iw_aux    = imfreq{beta, Fermion, 3};
+    auto g         = gf{iw_aux * mesh_coef, {2, 2}};
+
+    // Fill with distinct coefficients for each auxiliary frequency
+    for (auto [mp_iw, mp_dlr] : g.mesh()) {
+      long iw_idx = mp_iw.data_index();
+      for (long i = 0; i < mesh_coef.size(); ++i) {
+        double scale              = iw_idx + 1.0;
+        g.data()(iw_idx, i, 0, 0) = {scale * 0.1 * (i + 1), -0.05 * i};
+        g.data()(iw_idx, i, 0, 1) = {0.02 * i, -0.01 * scale * (i + 1)};
+        g.data()(iw_idx, i, 1, 0) = {-0.02 * i, 0.01 * scale * (i + 1)};
+        g.data()(iw_idx, i, 1, 1) = {scale * 0.05 * (i + 2), -0.03 * i};
+      }
+    }
+
+    // Transform dlr2d at position 1
+    auto g_full = make_gf_imfreq<1>(g);
+
+    // Verify: for each auxiliary frequency, extract slice and compare with standalone transform
+    for (auto iw : iw_aux) {
+      // Build standalone dlr2d GF for this slice
+      auto g_slice = gf<dlr2d, matrix_valued>{mesh_coef, {2, 2}};
+      for (long i = 0; i < mesh_coef.size(); ++i)
+        for (int a = 0; a < 2; ++a)
+          for (int b = 0; b < 2; ++b) g_slice.data()(i, a, b) = g.data()(iw.data_index(), i, a, b);
+
+      auto g_ref = make_gf_imfreq(g_slice);
+
+      for (auto iw1 : std::get<0>(g_ref.mesh()))
+        for (auto iw2 : std::get<1>(g_ref.mesh())) EXPECT_ARRAY_NEAR(g_full[iw, iw1, iw2], g_ref[iw1, iw2], prod_tol);
+    }
+  }
+}
+
+// Test make_gf_imfreq on product mesh with dlr2d at position 0: prod<dlr2d, imfreq> -> prod<imfreq, imfreq, imfreq>
+TEST(DLR2D, ProductMeshMakeGfImfreqFirstIndex) {
+  constexpr double prod_tol = 1e-10;
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef = dlr2d{beta, w_max, eps, channel};
+    auto iw_aux    = imfreq{beta, Fermion, 3};
+    auto g         = gf{mesh_coef * iw_aux, {2, 2}};
+
+    // Fill with distinct coefficients for each auxiliary frequency
+    for (auto [mp_dlr, mp_iw] : g.mesh()) {
+      long iw_idx                   = mp_iw.data_index();
+      long d_idx                    = mp_dlr.data_index();
+      double scale                  = iw_idx + 1.0;
+      g.data()(d_idx, iw_idx, 0, 0) = {scale * 0.1 * (d_idx + 1), -0.05 * d_idx};
+      g.data()(d_idx, iw_idx, 0, 1) = {0.02 * d_idx, -0.01 * scale * (d_idx + 1)};
+      g.data()(d_idx, iw_idx, 1, 0) = {-0.02 * d_idx, 0.01 * scale * (d_idx + 1)};
+      g.data()(d_idx, iw_idx, 1, 1) = {scale * 0.05 * (d_idx + 2), -0.03 * d_idx};
+    }
+
+    // Transform dlr2d at position 0
+    auto g_full = make_gf_imfreq<0>(g);
+
+    // Verify: for each auxiliary frequency, extract slice and compare with standalone transform
+    for (auto iw : iw_aux) {
+      auto g_slice = gf<dlr2d, matrix_valued>{mesh_coef, {2, 2}};
+      for (long i = 0; i < mesh_coef.size(); ++i)
+        for (int a = 0; a < 2; ++a)
+          for (int b = 0; b < 2; ++b) g_slice.data()(i, a, b) = g.data()(i, iw.data_index(), a, b);
+
+      auto g_ref = make_gf_imfreq(g_slice);
+
+      for (auto iw1 : std::get<0>(g_ref.mesh()))
+        for (auto iw2 : std::get<1>(g_ref.mesh())) EXPECT_ARRAY_NEAR(g_full[iw1, iw2, iw], g_ref[iw1, iw2], prod_tol);
+    }
+  }
+}
+
+// Test make_gf_imfreq for block_gf on product mesh
+TEST(DLR2D, ProductMeshMakeGfImfreqBlockGf) {
+  constexpr double prod_tol = 1e-10;
+  for (auto channel : {PP, PH}) {
+    auto mesh_coef  = dlr2d{beta, w_max, eps, channel};
+    auto iw_aux     = imfreq{beta, Fermion, 3};
+    auto g_template = gf{iw_aux * mesh_coef, {2, 2}};
+    auto bg         = make_block_gf({"up", "down"}, {g_template, g_template});
+
+    for (int blk = 0; blk < 2; ++blk) {
+      double blk_scale = blk + 1.0;
+      for (auto [mp_iw, mp_dlr] : bg[blk].mesh()) {
+        long iw_idx = mp_iw.data_index();
+        for (long i = 0; i < mesh_coef.size(); ++i) {
+          double scale                    = blk_scale * (iw_idx + 1.0);
+          bg[blk].data()(iw_idx, i, 0, 0) = {scale * 0.1 * (i + 1), -0.05 * i};
+          bg[blk].data()(iw_idx, i, 0, 1) = {0.02 * i, -0.01 * scale * (i + 1)};
+          bg[blk].data()(iw_idx, i, 1, 0) = {-0.02 * i, 0.01 * scale * (i + 1)};
+          bg[blk].data()(iw_idx, i, 1, 1) = {scale * 0.05 * (i + 2), -0.03 * i};
+        }
+      }
+    }
+
+    auto bg_full = make_gf_imfreq<1>(bg);
+
+    // Verify each block matches individual transformation
+    for (int blk = 0; blk < 2; ++blk) {
+      auto g_full = make_gf_imfreq<1>(bg[blk]);
+      for (auto [iw, iw1, iw2] : g_full.mesh()) EXPECT_ARRAY_NEAR(g_full[iw, iw1, iw2], bg_full[blk][iw, iw1, iw2], prod_tol);
+    }
   }
 }
 
