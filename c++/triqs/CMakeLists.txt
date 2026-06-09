@@ -87,6 +87,23 @@ target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 # cppdlr2d (2D discrete Lehmann representation library)
 target_link_libraries(triqs PUBLIC cppdlr2d::cppdlr2d_c)
 
+# NFFT buffer support (finufft + xsimd + poet)
+if(TRIQS_WITH_NFFT)
+  target_link_libraries(triqs PUBLIC finufft xsimd poet::poet)
+  target_compile_definitions(triqs PUBLIC TRIQS_WITH_NFFT)
+  install(TARGETS finufft xsimd poet EXPORT triqs-targets)
+  # finufft privately links ducc0 and finufft_common static libraries; consumers need them at link time
+  install(FILES $<TARGET_FILE:ducc0> $<TARGET_FILE:finufft_common> DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  set_property(TARGET finufft APPEND PROPERTY
+    INTERFACE_LINK_LIBRARIES $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_LIBDIR}/libducc0.a;${CMAKE_INSTALL_FULL_LIBDIR}/libfinufft_common.a>)
+  # finufft's PUBLIC_HEADER only installs finufft*.h, missing subdirectories
+  install(DIRECTORY ${FINUFFT_SOURCE_DIR}/include/finufft_common ${FINUFFT_SOURCE_DIR}/include/finufft
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  # xsimd and poet are header-only; install their headers
+  install(DIRECTORY ${xsimd_SOURCE_DIR}/include/xsimd DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  install(DIRECTORY ${POET_SOURCE_DIR}/include/poet DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
+
 # ---------------------------------
 # Boost
 # ---------------------------------

@@ -89,6 +89,9 @@ if(Build_Documentation AND NOT PythonSupport)
   message(FATAL_ERROR "Build_Documentation=ON requires PythonSupport to be enabled")
 endif()
 
+# NFFT Buffer Support (finufft + xsimd + poet)
+option(TRIQS_WITH_NFFT "Build with NFFT buffer support for efficient Fourier transforms" ON)
+
 # Benchmarks
 option(Build_Benchs "Build Benchmarks" OFF)
 
