@@ -101,6 +101,9 @@ namespace triqs {
       /// Nmax
       static constexpr uint64_t Nmax = std::numeric_limits<uint64_t>::max();
 
+      /// Get the HDF5 format tag.
+      [[nodiscard]] static std::string hdf5_format() { return "time_pt"; }
+
       private:
       uint64_t n;
       double beta, val;
@@ -108,6 +111,7 @@ namespace triqs {
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, time_pt const &g) {
         auto gr = fg.create_group(subgroup_name);
+        write_hdf5_format(gr, g); // NOLINT
         h5_write(gr, "beta", g.beta);
         h5_write(gr, "val", g.val);
         h5_write(gr, "n", g.n);
@@ -116,6 +120,7 @@ namespace triqs {
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string const &subgroup_name, time_pt &g) {
         auto gr = fg.open_group(subgroup_name);
+        assert_hdf5_format(gr, g); // NOLINT
         h5_read(gr, "beta", g.beta);
         h5_read(gr, "val", g.val);
         h5_read(gr, "n", g.n);
