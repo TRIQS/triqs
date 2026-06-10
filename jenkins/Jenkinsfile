@@ -1,0 +1,202 @@
+def projectName = "triqs" /* set to app/repo name */
+
+/* which platform to build documentation on */
+def documentationPlatform = "ubuntu-clang"
+/* Platforms that regenerate the Python bindings via clair-c2py.
+   All others use the default (OFF) from c2py. */
+def regenPlatform = "ubuntu-clang"
+/* whether to keep and publish the results */
+def keepInstall = false // disabled on jenkins-new: !env.BRANCH_NAME.startsWith("PR-")
+
+properties([
+  disableConcurrentBuilds(),
+  buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30')),
+  pipelineTriggers(keepInstall ? [
+    upstream(
+      threshold: 'SUCCESS',
+      upstreamProjects: '/CCQ/TRIQS/nda/unstable'
+    )
+  ] : [])
+])
+
+def installBase = "/mnt/triqs"
+def mounts = [:]
+if (keepInstall) {
+  mounts["triqs"] = installBase
+}
+
+def runBuild = { String platform, String prefix, List<String> envs ->
+  def macos = platform.startsWith("macos-")
+  def regen = platform == regenPlatform
+  def buildDir = "$WORKSPACE_TMP/build"
+  /* install real branches in a fixed predictable place so apps can find them */
+  def installDir = keepInstall ? "$prefix/install/$JOB_NAME/$platform" : "$WORKSPACE_TMP/install"
+  def triqsDir = installDir
+  envs += [
+    "OPENBLAS_NUM_THREADS=1",
+    "MKL_NUM_THREADS=1"]
+  if (macos) {
+    checkout scm
+    dir(buildDir) {
+      deleteDir()
+    }
+    def brew = env.BREW
+    def hdf5 = "$brew/opt/hdf5"
+    def venv = triqsDir
+    envs += [
+      "PATH=$venv/bin:$brew/bin:/usr/bin:/bin:/usr/sbin",
+      "HDF5_ROOT=$hdf5",
+      "LAPACK_ROOT=$brew/opt/openblas",
+      "C_INCLUDE_PATH=$hdf5/include:$brew/include",
+      "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:$brew/include",
+      "LIBRARY_PATH=$venv/lib:$hdf5/lib:$brew/lib",
+      "DYLD_LIBRARY_PATH=$venv/lib:$hdf5/lib:$brew/lib",
+      "PYTHONPATH=$installDir/lib/python3.13/site-packages",
+      "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
+      "VIRTUAL_ENV=$venv",
+      "OMP_NUM_THREADS=${env.PARALLEL}"]
+    sh """#!/bin/sh -ex
+      $brew/bin/python3 -m venv $venv
+      source $venv/bin/activate
+      pip3 install -U -r $WORKSPACE/requirements.txt
+    """
+  }
+  withEnv(envs) {
+    if (regen) {
+      dir("clair") {
+        /* Build and install clair so that clair-c2py is available for Python binding regeneration.
+         * Unset CPLUS_INCLUDE_PATH / CXXFLAGS for the whole block (not just the configure command)
+         * so that base-image settings (e.g. libc++ include path on ubuntu-intel) do not leak into
+         * the compile phase and mix libc++ headers with libstdc++ linkage. */
+        checkout scmGit(userRemoteConfigs: [[url: 'https://github.com/flatironinstitute/clair']],
+          branches: [[name: 'refs/heads/unstable']])
+      }
+      dir("$WORKSPACE_TMP/clair") {
+        sh """#!/bin/sh -ex
+          unset CPLUS_INCLUDE_PATH
+          unset CXXFLAGS
+          CXX="clang++-\$LLVM" cmake -S $WORKSPACE/clair -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$installDir
+          cmake --build . -j\$PARALLEL
+          cmake --install .
+        """
+      }
+    }
+    def args = regen ? '-DUpdate_Python_Bindings=ON' : ''
+    if (platform == documentationPlatform)
+      args += ' -DBuild_Documentation=ON'
+    else if (platform == "sanitize")
+      args += ' -DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
+    dir(buildDir) {
+      sh """#!/bin/sh -ex
+        cmake $WORKSPACE -DCMAKE_INSTALL_PREFIX=$installDir -DCLANG_OPT="\$CXXFLAGS" $args
+        make -j\$PARALLEL || make -j1 VERBOSE=1
+      """
+      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+        try {
+          sh "make test CTEST_OUTPUT_ON_FAILURE=1"
+        } catch (exc) {
+          archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
+          throw exc
+        }
+      }
+      sh "make install"
+    }
+  }
+}
+
+/* map of all builds to run, populated below */
+def platforms = [:]
+
+/****************** linux builds (in docker) */
+/* Each platform must have a corresponding Dockerfile.PLATFORM in triqs/jenkins */
+def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "ubuntu-intel", "sanitize"]
+for (int i = 0; i < dockerPlatforms.size(); i++) {
+  def platform = dockerPlatforms[i]
+  platforms[platform] = { ->
+    stage(platform) {
+      timeout(time: 2, unit: 'HOURS') {
+        buildPod(tag: platform,
+          context: 'jenkins',
+          dockerfile: "Dockerfile.$platform",
+          devShm: true,
+          mounts: mounts) {
+          runBuild(platform, installBase, [])
+        }
+      }
+    }
+  }
+}
+
+/****************** macos builds (on host) */
+def macosPlatforms = [
+  ["gcc", ['CC=gcc-15', 'CXX=g++-15', 'FC=gfortran-15']],
+  ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'FC=gfortran-15', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
+]
+for (int i = 0; i < macosPlatforms.size(); i++) {
+  def platformEnv = macosPlatforms[i]
+  def platform = platformEnv[0]
+  platforms["macos-$platform"] = { -> node('macos && m1') {
+    stage("macos-$platform") { timeout(time: 1, unit: 'HOURS') {
+      runBuild("macos-$platform", env.HOME, platformEnv[1].collect { it.replace('\$BREW', env.BREW) })
+    } }
+  } }
+}
+
+/****************** wrap-up */
+catchError {
+  parallel platforms
+
+  if (keepInstall) {
+    /* Publish results */
+    stage("publish") {
+      timeout(time: 10, unit: 'MINUTES') {
+        runPod(tag: documentationPlatform,
+          mounts: mounts) {
+          def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
+          def release = env.BRANCH_NAME == "master" || env.BRANCH_NAME == "unstable" || sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
+          lock(resource: 'triqs_publish') {
+            /* Update documention on gh-pages branch */
+            dir("$WORKSPACE_TMP/gh-pages") {
+              def subdir = "$projectName/${env.BRANCH_NAME}"
+              def ghp = scmGit(branches: [[name: 'refs/heads/master']],
+                userRemoteConfigs: [[credentialsId: 'github-jenkins', url: 'https://github.com/TRIQS/TRIQS.github.io.git']])
+              checkout scm: ghp, changelog: false
+              sh "rm -rf ${subdir}"
+              def installDir = "$installBase/install/$JOB_NAME/$documentationPlatform"
+              sh """#!/bin/bash -ex
+                base=$installDir/share/doc
+                dir="$projectName"
+                [[ -d \$base/triqs_\$dir ]] && dir=triqs_\$dir || [[ -d \$base/\$dir ]]
+                cp -r \$base/\$dir ${subdir}
+                git add -A ${subdir}
+                GIT_COMMITTER_EMAIL="jenkins@flatironinstitute.org" GIT_COMMITTER_NAME="Flatiron Jenkins" git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${subdir}' -m '${env.BUILD_TAG} ${commit}'
+              """
+              gitPush(gitScm: ghp, targetBranch: 'master', targetRepo: 'origin')
+            }
+            /* Update packaging repo submodule */
+            if (release) {
+              dir("$WORKSPACE_TMP/packaging") {
+                try {
+                  def pkg = scmGit(branches: [[name: "refs/heads/${env.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[credentialsId: 'github-jenkins', url: 'https://github.com/TRIQS/packaging.git']])
+                  checkout scm: pkg, changelog: false
+                  sh """#!/bin/bash -ex
+                    dir="$projectName"
+                    [[ -d triqs_\$dir ]] && dir=triqs_\$dir || [[ -d \$dir ]]
+                    echo "160000 commit ${commit}\t\$dir" | git update-index --index-info
+                    GIT_COMMITTER_EMAIL="jenkins@flatironinstitute.org" GIT_COMMITTER_NAME="Flatiron Jenkins" git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' -m 'Autoupdate $projectName' -m '${env.BUILD_TAG}'
+                  """
+                  gitPush(gitScm: pkg, targetBranch: env.BRANCH_NAME, targetRepo: 'origin')
+                } catch (err) {
+                  /* Ignore, non-critical -- might not exist on this branch */
+                  echo "Failed to update packaging repo"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+emailFailure()
