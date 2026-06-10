@@ -141,8 +141,12 @@ namespace triqs::mc_tools {
       /**
        * @brief Should we continue the simulation on the current rank after the given number of cycles is done and wait
        * for all other ranks to finish as well or should we stop immediately?
+       *
+       * @details Defaults to true so that ranks which finish early keep doing useful work (e.g. accumulating
+       * measurements) instead of idling at the collect_results barrier. Only has an effect under an MPI environment
+       * (see mpi::has_env); set to false to recover the legacy behavior of stopping exactly at `ncycles`.
        */
-      bool continue_after_ncycles_done = false;
+      bool continue_after_ncycles_done = true;
 
       /// Time interval (in seconds) after which the simulation checks for exceptions on other nodes.
       double check_exception_interval = 1;

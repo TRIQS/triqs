@@ -106,9 +106,10 @@ class TRIQSMCTools : public ::testing::Test {
 
 // Test a basic MC simulation with specific parameters.
 void test_mc_basic(triqs::mc_tools::mc_generic<double> &mc, std::int64_t ncycles, std::int64_t cycle_length) {
-  auto params         = mc.get_run_params();
-  params.ncycles      = ncycles;
-  params.cycle_length = cycle_length;
+  auto params                        = mc.get_run_params();
+  params.ncycles                     = ncycles;
+  params.cycle_length                = cycle_length;
+  params.continue_after_ncycles_done = false; // assert exact cycle counts
   EXPECT_EQ(mc.accumulate(params), 0);
   mc.collect_results(params.comm);
   EXPECT_DOUBLE_EQ(mc.get_percent(), 100);
@@ -140,10 +141,11 @@ TEST_F(TRIQSMCTools, MCGenericStopCallback) {
 }
 
 TEST_F(TRIQSMCTools, MCGenericAfterCycleDuty) {
-  int counter             = 0;
-  auto params             = mc.get_run_params();
-  params.ncycles          = 100;
-  params.after_cycle_duty = [&counter]() { ++counter; };
+  int counter                        = 0;
+  auto params                        = mc.get_run_params();
+  params.ncycles                     = 100;
+  params.continue_after_ncycles_done = false; // assert exact cycle counts
+  params.after_cycle_duty            = [&counter]() { ++counter; };
   EXPECT_EQ(mc.accumulate(params), 0);
   mc.collect_results(params.comm);
   EXPECT_DOUBLE_EQ(mc.get_percent(), 100);
@@ -154,8 +156,9 @@ TEST_F(TRIQSMCTools, MCGenericAfterCycleDuty) {
 }
 
 TEST_F(TRIQSMCTools, MCGenericWarmuup) {
-  auto params    = mc.get_run_params();
-  params.ncycles = 100;
+  auto params                        = mc.get_run_params();
+  params.ncycles                     = 100;
+  params.continue_after_ncycles_done = false; // assert exact cycle counts
   EXPECT_EQ(mc.warmup(params), 0);
   EXPECT_DOUBLE_EQ(mc.get_percent(), 100);
   EXPECT_EQ(mc.get_current_cycle_number(), params.ncycles);
