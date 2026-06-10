@@ -13,17 +13,19 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 
-// Phase-2 stress test for det_manip_qr: drive long sequences of *incremental* rank-1 insert/remove
-// (the moves that use the Givens update/downdate) and cross-check the determinant and inverse against
-// independent from-scratch LAPACK values (nda::linalg::det / nda::linalg::inv). Runs with the periodic
-// re-factorization safety net effectively disabled, so the pure-incremental factorization is what is
-// being validated. Also exercises removing down to size 0 and re-growing.
+// Phase-2 stress test for det_manip_qr: drive long sequences of *incremental* rank-1/2/3 insert/remove
+// (the moves that use the Givens update/downdate) plus swap/roll, and cross-check the determinant and
+// inverse against independent from-scratch LAPACK values (nda::linalg::det / nda::linalg::inv). Runs
+// with the periodic re-factorization safety net effectively disabled, so the pure-incremental
+// factorization is what is being validated; verify_qr is asserted at every step.
 
 #include <triqs/det_manip/det_manip_qr.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
+#include <algorithm>
 #include <iostream>
+#include <vector>
 
 template <class T1, class T2> void assert_close(T1 const &a, T2 const &b, double precision) {
   if (std::abs(a - b) > precision) TRIQS_RUNTIME_ERROR << "assert_close error : " << a << "\n" << b;
@@ -59,7 +61,7 @@ struct fun_cplx {
   }
 };
 
-// Drive `nsteps` random rank-1 insert/remove moves and check det + inverse against from-scratch nda.
+// Drive random rank-1/2/3 insert/remove moves and check det + inverse against from-scratch nda.
 template <typename F> void stress(const char *tag) {
   std::cerr << "--- stress " << tag << " ---" << std::endl;
   F f;
@@ -71,18 +73,52 @@ template <typename F> void stress(const char *tag) {
     long s   = D.size();
     auto det = D.determinant();
     typename F::result_type ratio = 1;
+    bool tried                    = true;
 
-    int move = (s == 0) ? 0 : RNG(2); // 0 = insert, 1 = remove
+    // 0 = insert, 1 = remove (rank 1); 2 = insert2, 3 = remove2 (rank 2); 4 = insert_k, 5 = remove_k (rank 3)
+    int move = (s == 0) ? 0 : RNG(6);
     if (move == 0) {
-      double x = RNG(10.0), y = RNG(10.0);
-      ratio    = D.try_insert(RNG(s + 1), RNG(s + 1), x, y);
-    } else {
+      ratio = D.try_insert(RNG(s + 1), RNG(s + 1), RNG(10.0), RNG(10.0));
+    } else if (move == 1) {
       ratio = D.try_remove(RNG(s), RNG(s));
+    } else if (move == 2) {
+      long i0 = RNG(s + 1), i1 = RNG(s + 2), j0 = RNG(s + 1), j1 = RNG(s + 2);
+      if (i0 != i1 && j0 != j1)
+        ratio = D.try_insert2(i0, i1, j0, j1, RNG(10.0), RNG(10.0), RNG(10.0), RNG(10.0));
+      else
+        tried = false;
+    } else if (move == 3) {
+      if (s >= 2) {
+        long i0 = RNG(s), i1 = RNG(s), j0 = RNG(s), j1 = RNG(s);
+        if (i0 != i1 && j0 != j1)
+          ratio = D.try_remove2(i0, i1, j0, j1);
+        else
+          tried = false;
+      } else
+        tried = false;
+    } else if (move == 4) {
+      // rank-3 insert_k at 3 distinct positions valid at insertion time
+      std::vector<long> iv{RNG(s + 1), s + 1, s + 2}, jv{RNG(s + 1), s + 1, s + 2};
+      std::vector<double> xv{RNG(10.0), RNG(10.0), RNG(10.0)}, yv{RNG(10.0), RNG(10.0), RNG(10.0)};
+      ratio = D.try_insert_k(iv, jv, xv, yv);
+    } else {
+      // rank-3 remove_k at 3 distinct rows / columns
+      if (s >= 3) {
+        std::vector<long> iv{RNG(s), RNG(s), RNG(s)}, jv{RNG(s), RNG(s), RNG(s)};
+        std::sort(iv.begin(), iv.end());
+        std::sort(jv.begin(), jv.end());
+        if (iv[0] != iv[1] && iv[1] != iv[2] && jv[0] != jv[1] && jv[1] != jv[2])
+          ratio = D.try_remove_k(iv, jv);
+        else
+          tried = false;
+      } else
+        tried = false;
     }
 
-    if (std::abs(ratio * det) > 1.e-3) {
+    if (tried && std::abs(ratio * det) > 1.e-3) {
       D.complete_operation();
-      if (D.size() > 0) { // cross-checks against independent from-scratch values
+      if (D.size() > 0) {
+        if (!D.verify_qr(1.e-9)) TRIQS_RUNTIME_ERROR << "verify_qr failed at size " << D.size();
         assert_close(D.determinant(), typename F::result_type(nda::linalg::det(D.matrix())), PRECISION);
         assert_mat_close(nda::matrix<typename F::result_type>(nda::linalg::inv(D.matrix())), D.inverse_matrix(), PRECISION);
         assert_close(det * ratio, D.determinant(), PRECISION);
@@ -90,6 +126,40 @@ template <typename F> void stress(const char *tag) {
     } else {
       D.reject_last_try();
     }
+  }
+}
+
+// Exercise swap_row / swap_col / roll_matrix and verify they keep the factorization consistent.
+void misc_ops() {
+  std::cerr << "--- misc_ops (swap/roll) ---" << std::endl;
+  fun_real f;
+  triqs::det_manip::det_manip_qr<fun_real> D(f, 30);
+  D.set_n_operations_before_refactor(1ul << 62);
+  triqs::mc_tools::random_generator RNG("mt19937", 4242);
+
+  for (int x = 0; x < 7; ++x) D.insert_at_end(RNG(10.0), RNG(10.0));
+
+  auto check = [&] {
+    long s = D.size();
+    if (s == 0) return;
+    if (!D.verify_qr(1.e-9)) TRIQS_RUNTIME_ERROR << "verify_qr failed (misc_ops)";
+    assert_close(D.determinant(), double(nda::linalg::det(D.matrix())), PRECISION);
+    assert_mat_close(nda::matrix<double>(nda::linalg::inv(D.matrix())), D.inverse_matrix(), PRECISION);
+  };
+  check();
+
+  for (int rep = 0; rep < 200; ++rep) {
+    long s   = D.size();
+    int kind = RNG(4);
+    if (kind == 0)
+      D.swap_row(RNG(s), RNG(s));
+    else if (kind == 1)
+      D.swap_col(RNG(s), RNG(s));
+    else if (kind == 2)
+      D.roll_matrix(RNG(2) == 0 ? D.Up : D.Down);
+    else
+      D.roll_matrix(RNG(2) == 0 ? D.Left : D.Right);
+    check();
   }
 }
 
@@ -109,7 +179,6 @@ void shrink_to_zero() {
   }
   if (D.determinant() != 1.0) TRIQS_RUNTIME_ERROR << "empty determinant should be 1, got " << D.determinant();
 
-  // re-grow after reaching size 0
   for (int x = 0; x < 4; ++x) D.insert_at_end(double(x) + 1.1, double(x) + 0.7);
   assert_close(D.determinant(), double(nda::linalg::det(D.matrix())), PRECISION);
   assert_mat_close(nda::matrix<double>(nda::linalg::inv(D.matrix())), D.inverse_matrix(), PRECISION);
@@ -118,6 +187,7 @@ void shrink_to_zero() {
 int main() {
   stress<fun_real>("real");
   stress<fun_cplx>("complex");
+  misc_ops();
   shrink_to_zero();
   std::cerr << "ALL PHASE-2 CHECKS PASSED" << std::endl;
 }

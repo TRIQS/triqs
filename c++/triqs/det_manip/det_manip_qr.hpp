@@ -31,6 +31,7 @@
 #include <cmath>
 #include <complex>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <utility>
 #include <vector>
@@ -44,19 +45,22 @@ namespace triqs::det_manip {
   //  det_manip_qr : a QR-based, numerically more robust alternative to det_manip, with the same interface.
   //
   //  The default det_manip tracks an explicit inverse updated by the Sherman-Morrison-Woodbury formula
-  //  without pivoting, which can drift. det_manip_qr instead obtains the determinant and inverse from an
-  //  orthogonal column-pivoted QR factorization (A P = Q R, nda::lapack::geqp3) instead of LU. Orthogonal
-  //  transforms have a bounded growth factor, so the determinant is backward stable and a singular
-  //  configuration is detected cleanly (an exact zero on the R diagonal).
+  //  without pivoting, which can drift. det_manip_qr instead tracks an orthogonal QR factorization and
+  //  updates it incrementally with Givens rotations (the w2dynamics technique,
+  //  src/ctqmc_fortran/{QRDecomposition,UpdatableQR}.tmpl.F90). Orthogonal transforms have a bounded
+  //  growth factor, so the determinant is backward stable and a singular configuration is detected
+  //  cleanly (an exact zero on the R diagonal).
   //
   //  The factorization is held as member data in INTERNAL (append) order with a row and a column
   //  permutation mapping back to logical order (like w2dynamics' UPDATABLE_QR : qbuf / rbuf / jperm), so
-  //  the determinant and the inverse share a single factorization. Rank-1 insert and remove update it
-  //  incrementally with Givens rotations (grow_insert / shrink_remove); the other operations and a
-  //  periodic safety-net re-factorization recompute the full column-pivoted QR (factorize() :
-  //  nda::lapack::geqp3 + orgqr/ungqr). The inverse uses nda::lapack::trtrs (A^{-1} = P R^{-1} Q^H). The
-  //  Givens primitives and the helpers householder_det_factor / permutation_sign live in
-  //  det_manip/lapack_qr.hpp. This works identically for real and complex value types.
+  //  the determinant and the inverse share a single factorization. insert/insert2/insert_k and
+  //  remove/remove2/remove_k update it incrementally with Givens rotations (grow_insert / grow_k and
+  //  shrink_one chained by shrink_chain). swap_row/swap_col and roll_matrix act in the permutation layer.
+  //  change_*/refill and a safety-net re-factorization (periodic, or when the R-diagonal condition
+  //  estimate grows) recompute the full column-pivoted QR from scratch (factorize() : nda::lapack::geqp3
+  //  + orgqr/ungqr). The inverse uses nda::lapack::trtrs (A^{-1} = P R^{-1} Q^H). The Givens primitives
+  //  and the helpers householder_det_factor / permutation_sign live in det_manip/lapack_qr.hpp. This
+  //  works identically for real and complex value types.
   //
   // ---------------------------------------------------------------------------------------------------
     template <typename FunctionType> class det_manip_qr {
@@ -132,9 +136,11 @@ namespace triqs::det_manip {
       nda::vector<int> row_perm_new, col_perm_new;
       int sign_new       = 1;
       det_type det_q_new = 1;
-      // Safety net: force a full re-factorization periodically to bound Givens drift and re-pivot.
+      // Safety net: force a full re-factorization periodically (count) or when the cheap condition estimate
+      // |R(0,0)/R(N-1,N-1)| exceeds the threshold, to bound Givens drift and re-pivot.
       uint64_t n_ops_before_refactor = 100;
       uint64_t n_ops_since_refactor  = 0;
+      double refactor_cond_threshold = 1.0 / std::sqrt(std::numeric_limits<double>::epsilon()); // ~6.7e7
 
       // Temporary work data
 
@@ -312,7 +318,7 @@ namespace triqs::det_manip {
 
       // Column-pivoted QR factorization (A P = Q R) of an N x N view, using LAPACK via nda. Fills Q (explicit,
       // Fortran layout), R (upper triangular), the row/column permutations and detq = det(Q); returns
-      // det(A) = sgn * det(Q) * prod_i R(i,i). geqp3 is backward stable and gives an exact zero for singular A.
+      // det(A) = sgn * det(Q) * prod_i R(i,i). geqp3 is backward stable and gives an exact zero for a singular A.
       det_type factorize(nda::matrix_const_view<value_type> M, fmatrix_type &Q, fmatrix_type &R, nda::vector<int> &rperm, nda::vector<int> &cperm,
                          int &sgn, det_type &detq) {
         long const n = M.extent(0);
@@ -439,21 +445,85 @@ namespace triqs::det_manip {
         return det_new;
       }
 
-      // Rank-1 Givens "shrink": remove logical row i and column j (N >= 2). (cf. w2dynamics propose_shrink_qr,
-      // k=1.) (1) reduce the removed row a* of Q (row_perm[a*]==i) to a single nonzero at column 0 with column
-      // Givens (R becomes upper-Hessenberg); drop Q-row a*, Q-col 0, R-row 0. (2) drop R-column t*
-      // (col_perm[t*]==j) and retriangularize. Fills the `_new` candidate factorization and sets/returns det_new.
-      det_type shrink_remove(long i, long j) {
-        long const n = N;     // current size (>= 2)
-        long const m = n - 1; // new size
+      // Rank-k Givens "grow": insert k new rows at sorted (distinct) FINAL logical positions iv and k new
+      // columns at sorted positions jv (values xv / yv). New rows go to the internal front, new columns to the
+      // R-end; the (n+k) augmented k-Hessenberg matrix is reduced with qr_k_hessenberg. (cf. propose_grow_qr)
+      det_type grow_k(std::vector<long> const &iv, std::vector<long> const &jv, std::vector<x_type> const &xv, std::vector<y_type> const &yv) {
+        long const n = N;
+        long const k = iv.size();
 
+        // M (n+k): rows 0..k-1 = [ rows-in-R-order (k x n) | dot (k x k) ]; rows k.. = [ R | Q^H new-cols ].
+        fmatrix_type M(n + k, n + k);
+        M() = 0;
+        for (long l = 0; l < k; ++l) {
+          for (long t = 0; t < n; ++t) M(l, t) = f(xv[l], y_values[col_perm(t)]);
+          for (long mm = 0; mm < k; ++mm) M(l, n + mm) = f(xv[l], yv[mm]);
+        }
+        for (long s = 0; s < n; ++s)
+          for (long t = s; t < n; ++t) M(k + s, t) = r_mat(s, t);
+        for (long mm = 0; mm < k; ++mm)
+          for (long s = 0; s < n; ++s) {
+            value_type acc = 0;
+            for (long a = 0; a < n; ++a) acc += qr_conj(q_mat(a, s)) * f(x_values[row_perm(a)], yv[mm]);
+            M(k + s, n + mm) = acc;
+          }
+
+        std::vector<plane_rotation<value_type>> rots;
+        qr_k_hessenberg(M, n + k, n + k, k, rots);
+        r_new = M;
+
+        q_new.resize(n + k, n + k); // Q0 = blockdiag(I_k, Q)
+        q_new() = 0;
+        for (long l = 0; l < k; ++l) q_new(l, l) = 1;
+        for (long a = 0; a < n; ++a)
+          for (long b = 0; b < n; ++b) q_new(k + a, k + b) = q_mat(a, b);
+        rotate_q(q_new, n + k, n + k, k, rots);
+        det_q_new = det_q;
+
+        std::vector<long> row_map(n), col_map(n); // multi-insertion offset map (like complete_insert_k)
+        {
+          long off = 0, idx = 0;
+          for (long o = 0; o < n; ++o) {
+            while (idx < k && iv[idx] <= o + off) { ++off; ++idx; }
+            row_map[o] = o + off;
+          }
+        }
+        {
+          long off = 0, idx = 0;
+          for (long o = 0; o < n; ++o) {
+            while (idx < k && jv[idx] <= o + off) { ++off; ++idx; }
+            col_map[o] = o + off;
+          }
+        }
+        row_perm_new.resize(n + k);
+        col_perm_new.resize(n + k);
+        for (long l = 0; l < k; ++l) row_perm_new(l) = iv[l];
+        for (long a = 0; a < n; ++a) row_perm_new(k + a) = row_map[row_perm(a)];
+        for (long t = 0; t < n; ++t) col_perm_new(t) = col_map[col_perm(t)];
+        for (long mm = 0; mm < k; ++mm) col_perm_new(n + mm) = jv[mm];
+        sign_new = permutation_sign(row_perm_new) * permutation_sign(col_perm_new);
+
+        det_type det_r = 1;
+        for (long a = 0; a < n + k; ++a) det_r *= r_new(a, a);
+        det_new = det_type(sign_new) * det_q_new * det_r;
+        return det_new;
+      }
+
+      // One rank-1 Givens downdate (cf. w2dynamics propose_shrink_qr, k=1): remove logical row i and column j
+      // from (Qin, Rin, rpin, cpin, dqin) of size n, producing the size-(n-1) (Qout, Rout, rpout, cpout) and
+      // updated det(Q) dqout. (1) reduce the removed row a* of Q to a single nonzero at column 0 with column
+      // Givens (R becomes Hessenberg), drop Q-row a*, Q-col 0, R-row 0; (2) drop R-column t* and retriangularize.
+      void shrink_one(fmatrix_type const &Qin, fmatrix_type const &Rin, nda::vector<int> const &rpin, nda::vector<int> const &cpin, det_type dqin,
+                      long i, long j, fmatrix_type &Qout, fmatrix_type &Rout, nda::vector<int> &rpout, nda::vector<int> &cpout, det_type &dqout) {
+        long const n = Qin.extent(0);
+        long const m = n - 1;
         long astar = 0, tstar = 0;
         for (long a = 0; a < n; ++a)
-          if (row_perm(a) == i) astar = a;
+          if (rpin(a) == i) astar = a;
         for (long t = 0; t < n; ++t)
-          if (col_perm(t) == j) tstar = t;
+          if (cpin(t) == j) tstar = t;
 
-        fmatrix_type qw = q_mat, rw = r_mat; // working copies (a rejected move must not touch q_mat/r_mat)
+        fmatrix_type qw = Qin, rw = Rin;
         for (long cc = n - 2; cc >= 0; --cc) {
           value_type r;
           auto rot = make_givens(qw(astar, cc), qw(astar, cc + 1), r);
@@ -462,42 +532,70 @@ namespace triqs::det_manip {
         }
         value_type const delta = qw(astar, 0); // |delta| = 1
 
-        fmatrix_type qd(m, m); // Qd = qw without row a* and column 0
+        Qout.resize(m, m); // Qout = qw without row a* and column 0
         for (long a = 0, ad = 0; a < n; ++a) {
           if (a == astar) continue;
-          for (long b = 1; b < n; ++b) qd(ad, b - 1) = qw(a, b);
+          for (long b = 1; b < n; ++b) Qout(ad, b - 1) = qw(a, b);
           ++ad;
         }
-        r_new.resize(m, m); // R1 = rw rows 1..n-1 with column t* removed, then retriangularize
+        Rout.resize(m, m); // Rout = rw rows 1..n-1 with column t* removed, then retriangularize
         for (long a = 0; a < m; ++a)
           for (long t = 0, td = 0; t < n; ++t) {
             if (t == tstar) continue;
-            r_new(a, td) = rw(a + 1, t);
+            Rout(a, td) = rw(a + 1, t);
             ++td;
           }
-        q_new = qd;
         for (long cc = 0; cc + 1 < m; ++cc) {
           value_type r;
-          auto rot         = make_givens(r_new(cc, cc), r_new(cc + 1, cc), r);
-          r_new(cc, cc)     = r;
-          r_new(cc + 1, cc) = 0;
-          apply_rows(r_new, cc, cc + 1, rot, cc + 1, m);
-          apply_cols_adjoint(q_new, m, cc, cc + 1, rot);
+          auto rot         = make_givens(Rout(cc, cc), Rout(cc + 1, cc), r);
+          Rout(cc, cc)     = r;
+          Rout(cc + 1, cc) = 0;
+          apply_rows(Rout, cc, cc + 1, rot, cc + 1, m);
+          apply_cols_adjoint(Qout, m, cc, cc + 1, rot);
         }
-        det_q_new = det_q * qr_conj(delta) * det_type((astar % 2 == 0) ? 1 : -1);
-
-        row_perm_new.resize(m);
-        col_perm_new.resize(m);
+        dqout = dqin * qr_conj(delta) * det_type((astar % 2 == 0) ? 1 : -1);
+        rpout.resize(m);
+        cpout.resize(m);
         for (long a = 0, ad = 0; a < n; ++a) {
           if (a == astar) continue;
-          row_perm_new(ad++) = row_perm(a) - (row_perm(a) > i ? 1 : 0);
+          rpout(ad++) = rpin(a) - (rpin(a) > i ? 1 : 0);
         }
         for (long t = 0, td = 0; t < n; ++t) {
           if (t == tstar) continue;
-          col_perm_new(td++) = col_perm(t) - (col_perm(t) > j ? 1 : 0);
+          cpout(td++) = cpin(t) - (cpin(t) > j ? 1 : 0);
         }
-        sign_new = (m == 0) ? 1 : permutation_sign(row_perm_new) * permutation_sign(col_perm_new);
+      }
 
+      // Rank-k Givens "shrink": remove the listed logical rows/cols by chaining rank-1 downdates in descending
+      // order (so removing larger indices does not shift the smaller pending ones). Fills the `_new` candidate.
+      det_type shrink_chain(std::vector<long> ivec, std::vector<long> jvec) {
+        long const k = ivec.size();
+        auto desc    = [](long a, long b) { return a > b; };
+        std::sort(ivec.begin(), ivec.end(), desc);
+        std::sort(jvec.begin(), jvec.end(), desc);
+
+        fmatrix_type Qa = q_mat, Ra = r_mat;
+        nda::vector<int> rpa = row_perm, cpa = col_perm;
+        det_type dqa = det_q;
+        for (long l = 0; l < k; ++l) {
+          fmatrix_type Qb, Rb;
+          nda::vector<int> rpb, cpb;
+          det_type dqb;
+          shrink_one(Qa, Ra, rpa, cpa, dqa, ivec[l], jvec[l], Qb, Rb, rpb, cpb, dqb);
+          Qa  = std::move(Qb);
+          Ra  = std::move(Rb);
+          rpa = std::move(rpb);
+          cpa = std::move(cpb);
+          dqa = dqb;
+        }
+        q_new        = std::move(Qa);
+        r_new        = std::move(Ra);
+        row_perm_new = std::move(rpa);
+        col_perm_new = std::move(cpa);
+        det_q_new    = dqa;
+
+        long const m = N - k;
+        sign_new       = (m == 0) ? 1 : permutation_sign(row_perm_new) * permutation_sign(col_perm_new);
         det_type det_r = 1;
         for (long a = 0; a < m; ++a) det_r *= r_new(a, a);
         det_new = det_type(sign_new) * det_q_new * det_r;
@@ -549,9 +647,47 @@ namespace triqs::det_manip {
       /// Returns the function f
       FunctionType const &get_function() const { return f; }
 
-      /// Number of completed operations between two forced full re-factorizations (drift safety net).
+      /// Number of completed operations between two forced full re-factorizations (Phase-2 drift safety net).
       void set_n_operations_before_refactor(uint64_t n) { n_ops_before_refactor = n; }
       uint64_t get_n_operations_before_refactor() const { return n_ops_before_refactor; }
+
+      /// Re-factorize as soon as the cheap condition estimate |R(0,0)/R(N-1,N-1)| exceeds this threshold.
+      void set_refactor_condition_threshold(double c) { refactor_cond_threshold = c; }
+      double get_refactor_condition_threshold() const { return refactor_cond_threshold; }
+
+      /// Cheap lower bound on the condition number of the current matrix : |R(0,0) / R(N-1,N-1)|.
+      double condition_estimate() const {
+        if (N <= 1) return 1.0;
+        auto last = std::abs(r_mat(N - 1, N - 1));
+        if (last == 0.0) return std::numeric_limits<double>::infinity();
+        return std::abs(r_mat(0, 0)) / last;
+      }
+
+      /// Debug self-check of the cached factorization: Q^H Q = I, R upper-triangular, and the reconstruction
+      /// A == Pr (Q R) Pc^T (against the logical `mat`). Returns true if all hold to `rtol`.
+      bool verify_qr(double rtol = 1.e-9) const {
+        if (N == 0) return true;
+        double scale = 0;
+        for (long a = 0; a < N; ++a)
+          for (long t = 0; t < N; ++t) scale = std::max(scale, std::abs(mat(a, t)));
+        double const thr = rtol * std::max(1.0, scale);
+        for (long s = 0; s < N; ++s) // Q^H Q = I
+          for (long t = 0; t < N; ++t) {
+            value_type acc = 0;
+            for (long a = 0; a < N; ++a) acc += qr_conj(q_mat(a, s)) * q_mat(a, t);
+            if (std::abs(acc - value_type(s == t ? 1 : 0)) > rtol) return false;
+          }
+        for (long a = 0; a < N; ++a) // R upper-triangular
+          for (long t = 0; t < a; ++t)
+            if (std::abs(r_mat(a, t)) > thr) return false;
+        for (long a = 0; a < N; ++a) // reconstruction
+          for (long t = 0; t < N; ++t) {
+            value_type b = 0;
+            for (long s = 0; s <= t; ++s) b += q_mat(a, s) * r_mat(s, t);
+            if (std::abs(mat(row_perm(a), col_perm(t)) - b) > thr) return false;
+          }
+        return true;
+      }
 
       /** det M of the current state of the matrix.  */
       auto determinant() { return det; }
@@ -649,7 +785,7 @@ namespace triqs::det_manip {
 
         mat_new(i, j) = f(x, y);
 
-        // incremental rank-1 Givens grow (mat_new still built above for the accessors / non-incremental ops)
+        // incremental rank-1 Givens grow (mat_new still built above for the accessors / fallback ops)
         det_new = grow_insert(i, j, x, y);
 
         return det_new / det;
@@ -778,8 +914,8 @@ namespace triqs::det_manip {
         mat_new(i1 + 1, j0)     = f(x1, y0);
         mat_new(i1 + 1, j1 + 1) = f(x1, y1);
 
-        range R(0, N + 2);
-        det_new = factorize(mat_new(R, R), q_new, r_new, row_perm_new, col_perm_new, sign_new, det_q_new);
+        // incremental rank-2 Givens grow; final logical positions of the new rows/cols are {i0,i1+1}/{j0,j1+1}
+        det_new = grow_k({i0, i1 + 1}, {j0, j1 + 1}, {x0, x1}, {y0, y1});
 
         return det_new / det;
       }
@@ -904,8 +1040,8 @@ namespace triqs::det_manip {
           }
         }
 
-        range R(0, N + k);
-        det_new = factorize(mat_new(R, R), q_new, r_new, row_perm_new, col_perm_new, sign_new, det_q_new);
+        // incremental rank-k Givens grow (wk.{i,j,x,y} sorted; wk.i/wk.j are the final logical positions)
+        det_new = grow_k(wk.i, wk.j, wk.x, wk.y);
 
         return det_new / det;
       }
@@ -963,7 +1099,7 @@ namespace triqs::det_manip {
         mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
 
         // incremental rank-1 Givens shrink
-        det_new = shrink_remove(i, j);
+        det_new = shrink_chain({i}, {j});
 
         return det_new / det;
       }
@@ -1042,8 +1178,8 @@ namespace triqs::det_manip {
         mat_new(Row_C_1, Col_B_1) = mat(Row_C_0, Col_B_0);
         mat_new(Row_C_1, Col_C_1) = mat(Row_C_0, Col_C_0);
 
-        range R(0, N - 2);
-        det_new = factorize(mat_new(R, R), q_new, r_new, row_perm_new, col_perm_new, sign_new, det_q_new);
+        // incremental rank-2 Givens shrink: remove logical rows {i0,i1} and columns {j0,j1}
+        det_new = shrink_chain({w2.i[0], w2.i[1]}, {w2.j[0], w2.j[1]});
 
         return det_new / det;
       }
@@ -1139,8 +1275,8 @@ namespace triqs::det_manip {
           }
         }
 
-        range R(0, N - k);
-        det_new = factorize(mat_new(R, R), q_new, r_new, row_perm_new, col_perm_new, sign_new, det_q_new);
+        // incremental rank-k Givens shrink: remove the logical rows wk.i and columns wk.j
+        det_new = shrink_chain(wk.i, wk.j);
 
         return det_new / det;
       }
@@ -1354,9 +1490,9 @@ namespace triqs::det_manip {
         det                  = det_new;
         ++n_opts;
 
-        // Safety net: periodically rebuild the factorization from scratch to re-orthogonalize Q, re-pivot
-        // the columns and reset the internal order to logical (bounds Givens drift).
-        if (++n_ops_since_refactor >= n_ops_before_refactor) {
+        // Safety net: rebuild the factorization from scratch to re-orthogonalize Q, re-pivot the columns and
+        // reset the internal order to logical, either periodically (count) or when the condition estimate grows.
+        if (++n_ops_since_refactor >= n_ops_before_refactor || (N > 1 && condition_estimate() > refactor_cond_threshold)) {
           range R(0, N);
           det                  = factorize(mat(R, R), q_mat, r_mat, row_perm, col_perm, sign, det_q);
           n_ops_since_refactor = 0;
@@ -1436,6 +1572,39 @@ namespace triqs::det_manip {
         return r;
       }
 
+      /// Swap rows i and j of the matrix (direct operation, flips the determinant sign). O(N): a relabel of
+      /// x_values / mat rows and of the row permutation -- the QR factors Q, R are untouched.
+      void swap_row(long i, long j) {
+        if (i == j) return;
+        std::swap(x_values[i], x_values[j]);
+        for (long t = 0; t < N; ++t) std::swap(mat(i, t), mat(j, t));
+        for (long a = 0; a < N; ++a) {
+          if (row_perm(a) == i)
+            row_perm(a) = j;
+          else if (row_perm(a) == j)
+            row_perm(a) = i;
+        }
+        sign                 = -sign;
+        det                  = -det;
+        mat_inverse_is_valid = false;
+      }
+
+      /// Swap columns i and j of the matrix (direct operation, flips the determinant sign). O(N).
+      void swap_col(long i, long j) {
+        if (i == j) return;
+        std::swap(y_values[i], y_values[j]);
+        for (long a = 0; a < N; ++a) std::swap(mat(a, i), mat(a, j));
+        for (long t = 0; t < N; ++t) {
+          if (col_perm(t) == i)
+            col_perm(t) = j;
+          else if (col_perm(t) == j)
+            col_perm(t) = i;
+        }
+        sign                 = -sign;
+        det                  = -det;
+        mat_inverse_is_valid = false;
+      }
+
       ///
       enum RollDirection { None, Up, Down, Left, Right };
 
@@ -1462,12 +1631,12 @@ namespace triqs::det_manip {
 	}
 	for (long i = 0; i < N; ++i)
 	  for (long j = 0; j < N; ++j) mat(i, j) = f(x_values[i], y_values[j]);
+        // The logical matrix changed: resync the cached QR factorization from scratch (roll is infrequent,
+        // so the O(N^3) rebuild is acceptable and keeps the factorization / inverse consistent).
+        compute_determinant();
+        mat_inverse_is_valid = false;
         // signature of the cycle of order N : (-1)^(N-1)
-        if ((N - 1) % 2 == 1) {
-	  det = -det;
-	  return -1;
-	}
-        return 1;
+        return ((N - 1) % 2 == 1) ? -1 : 1;
       }
   };
 

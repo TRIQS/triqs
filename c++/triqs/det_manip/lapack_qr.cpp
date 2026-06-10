@@ -13,10 +13,10 @@
 // You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 
-// Definition of the LAPACK `trtrs` f77 layer declared in det_manip/lapack_qr.hpp. Kept in a .cpp
-// (compiled into libtriqs, which links LAPACK via nda::nda_c) so the raw LAPACK symbol is resolved
-// inside the library and not in every translation unit that includes the header. This mirrors nda's
-// own interface/cxx_interface.cpp and is the natural place to lift into nda later.
+// Definition of the LAPACK `trtrs` / `lartg` f77 layer declared in det_manip/lapack_qr.hpp. Kept in a
+// .cpp (compiled into libtriqs, which links LAPACK via nda::nda_c) so the raw LAPACK symbols are
+// resolved inside the library and not in every translation unit that includes the header. This mirrors
+// nda's own interface/cxx_interface.cpp and is the natural place to lift into nda later.
 
 #include "./lapack_qr.hpp"
 

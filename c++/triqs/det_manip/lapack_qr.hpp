@@ -19,15 +19,15 @@
 //
 //  This header collects two things:
 //
-//   1. An nda-style wrapper for the LAPACK `trtrs` (triangular solve) routine, which nda does not yet
-//      provide. It is written in the style of nda/lapack/geqp3.hpp so that it can be migrated into nda
-//      verbatim later (move the `nda::lapack` part into nda/lapack/trtrs.hpp + interface/cxx_interface).
+//   1. nda-style wrappers for the LAPACK `trtrs` (triangular solve) and `lartg` (generate a plane
+//      rotation) routines, which nda does not yet provide. They are written in the style of
+//      nda/lapack/geqp3.hpp so that they can be migrated into nda verbatim later (move the
+//      `nda::lapack` parts into nda/lapack + interface/cxx_interface).
 //
-//   2. Small reusable helpers for a column-pivoted QR (nda::lapack::geqp3, A P = Q R), mirroring the
-//      w2dynamics CT-QMC solver (src/ctqmc_fortran/QRDecomposition.tmpl.F90, qr_det):
-//      householder_det_factor (det of a reflector from its tau) and perm_sign (det of the column pivot).
-//      The determinant/inverse that use them live in det_manip_qr itself, which caches Q, R and the
-//      pivot as member data.
+//   2. Small reusable helpers for the (pivoted) QR determinant/update, mirroring the w2dynamics CT-QMC
+//      solver (src/ctqmc_fortran/QRDecomposition.tmpl.F90): householder_det_factor (det of a reflector
+//      from its tau), permutation_sign (det of a permutation), and the Givens-rotation primitives used
+//      by the incremental update/downdate. The determinant/inverse that use them live in det_manip_qr.
 //
 // ---------------------------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ namespace nda::lapack {
 
     // Defined in det_manip/lapack_qr.cpp (compiled into libtriqs, which links LAPACK via nda::nda_c)
     // so that the raw LAPACK symbol is resolved inside the library rather than in every caller's TU.
-    // Mirrors nda's f77 layer (interface/cxx_interface.{hpp,cpp}); migrate there together with trtrs.
+    // Mirrors nda's f77 layer (interface/cxx_interface.{hpp,cpp}); migrate there together.
     void trtrs(char uplo, char trans, char diag, int n, int nrhs, double const *a, int lda, double *b, int ldb, int &info);
     void trtrs(char uplo, char trans, char diag, int n, int nrhs, std::complex<double> const *a, int lda, std::complex<double> *b, int ldb, int &info);
 
@@ -173,6 +173,36 @@ namespace triqs::det_manip {
       V const a = m(p, t), b = m(q, t);
       m(p, t) = rot.c * a + qr_conj(rot.s) * b;
       m(q, t) = -rot.s * a + rot.c * b;
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------------
+  //  General rank-k Givens primitives (ported from w2dynamics QRDecomposition.tmpl.F90, 0-based).
+  // ---------------------------------------------------------------------------------------------------
+
+  /// Reduce an m x n k-Hessenberg matrix `h` (zeros below the k-th subdiagonal) to upper-triangular form
+  /// with Givens row rotations, appending them (in generation order) to `rots`. (cf. qr_k_hessenberg)
+  template <typename M, typename V> void qr_k_hessenberg(M &h, long m, long n, long k, std::vector<plane_rotation<V>> &rots) {
+    for (long j = 0; j + 1 < n; ++j) {
+      long const imax = std::min(j + 1 + k, m) - 2; // highest row with a subdiagonal entry in column j
+      for (long i = imax; i >= j; --i) {
+        V r;
+        auto rot    = make_givens(h(i, j), h(i + 1, j), r);
+        h(i, j)     = r;
+        h(i + 1, j) = 0;
+        apply_rows(h, i, i + 1, rot, j + 1, n);
+        rots.push_back(rot);
+      }
+    }
+  }
+
+  /// Apply the adjoint of the rotations produced by qr_k_hessenberg to the columns of Q (m rows), in the
+  /// same loop order, so that (Q . prod G^H)(prod G . H) = Q H. (cf. rotate_q)
+  template <typename M, typename V> void rotate_q(M &q, long m, long n, long k, std::vector<plane_rotation<V>> const &rots) {
+    long idx = 0;
+    for (long j = 0; j + 1 < n; ++j) {
+      long const imax = std::min(j + 1 + k, m) - 2;
+      for (long i = imax; i >= j; --i) apply_cols_adjoint(q, m, i, i + 1, rots[idx++]);
     }
   }
 
