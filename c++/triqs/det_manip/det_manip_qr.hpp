@@ -41,13 +41,15 @@ namespace triqs::det_manip {
   //  det_manip_qr : a QR-based, numerically more robust alternative to det_manip, with the same interface.
   //
   //  The default det_manip tracks an explicit inverse updated by the Sherman-Morrison-Woodbury formula
-  //  without pivoting, which can drift. det_manip_qr follows the structure of det_manip_basic (the matrix
-  //  is stored in logical order and the determinant/inverse are recomputed on demand) but obtains them
-  //  from an orthogonal column-pivoted QR factorization (A P = Q R, nda::lapack::geqp3) instead of LU.
-  //  Orthogonal transforms have a bounded growth factor, so the determinant is backward stable and a
-  //  singular configuration is detected cleanly (an exact zero on the R diagonal). The QR determinant and
-  //  inverse use the helpers qr_determinant / qr_inverse in det_manip/lapack_qr.hpp; this works
-  //  identically for real and complex value types.
+  //  without pivoting, which can drift. det_manip_qr instead obtains the determinant and inverse from an
+  //  orthogonal column-pivoted QR factorization (A P = Q R, nda::lapack::geqp3) instead of LU. Orthogonal
+  //  transforms have a bounded growth factor, so the determinant is backward stable and a singular
+  //  configuration is detected cleanly (an exact zero on the R diagonal).
+  //
+  //  The factorization (explicit Q, R and the column pivot) is held as member data, like w2dynamics'
+  //  UPDATABLE_QR, so the determinant and the inverse share a single factorization (the inverse uses
+  //  nda::lapack::trtrs : A^{-1} = P R^{-1} Q^H). The helpers householder_det_factor / perm_sign live in
+  //  det_manip/lapack_qr.hpp. This works identically for real and complex value types.
   //
   // ---------------------------------------------------------------------------------------------------
     template <typename FunctionType> class det_manip_qr {
@@ -68,7 +70,8 @@ namespace triqs::det_manip {
       static_assert(std::is_floating_point_v<value_type> || nda::is_complex_v<value_type>,
                     "det_manip_qr : the function must return a floating number or a complex number");
 
-      using matrix_type = nda::matrix<value_type>;
+      using matrix_type  = nda::matrix<value_type>;
+      using fmatrix_type = nda::matrix<value_type, nda::F_layout>; // Fortran layout, required by the LAPACK QR routines
 
       // ---------------------------------------------------------------------------------------------------
       // Data
@@ -108,6 +111,17 @@ namespace triqs::det_manip {
 
       mutable matrix_type mat_inverse;
       mutable bool mat_inverse_is_valid = false;
+
+      // Cached QR factorization of the current matrix : A P = Q R (cf. w2dynamics UPDATABLE_QR :
+      // qbuf / rbuf / jperm / det_q). Held as member data so the determinant and the inverse share a
+      // single factorization. The `_new` members hold the candidate built during a try_*, swapped in by
+      // complete_operation, exactly like mat / mat_new.
+      fmatrix_type q_mat, r_mat;
+      nda::vector<int> jpvt; // 1-based column pivot returned by geqp3
+      det_type det_q = 1;    // det(Q)
+      fmatrix_type q_new, r_new;
+      nda::vector<int> jpvt_new;
+      det_type det_q_new = 1;
 
       // Temporary work data
 
@@ -250,6 +264,10 @@ namespace triqs::det_manip {
         last_try = NoTry;
         x_values.clear();
         y_values.clear();
+        q_mat = fmatrix_type{};
+        r_mat = fmatrix_type{};
+        jpvt  = nda::vector<int>{};
+        det_q = 1;
       }
       //----------------------- Computations ----------------------------------
 
@@ -277,9 +295,54 @@ namespace triqs::det_manip {
         }
       }
 
+      // Column-pivoted QR factorization (A P = Q R) of an N x N view, using LAPACK via nda. Fills Q (explicit,
+      // Fortran layout), R (upper triangular), the pivot piv (1-based) and detq = det(Q); returns
+      // det(A) = prod_i R(i,i) * det(Q) * det(P). geqp3 is backward stable and gives an exact zero for singular A.
+      det_type factorize(nda::matrix_const_view<value_type> M, fmatrix_type &Q, fmatrix_type &R, nda::vector<int> &piv, det_type &detq) {
+        long const n = M.extent(0);
+        if (n == 0) {
+          Q    = fmatrix_type{};
+          R    = fmatrix_type{};
+          piv  = nda::vector<int>{};
+          detq = 1;
+          return det_type{1};
+        }
+
+        Q = fmatrix_type{M}; // copy A into the Q buffer (geqp3 then orgqr/ungqr overwrite it in place)
+        piv.resize(n);
+        piv() = 0; // all columns free
+        nda::vector<value_type> tau(n);
+        nda::lapack::geqp3(Q, piv, tau);
+
+        R.resize(n, n); // extract R before orgqr/ungqr overwrites Q with the explicit Q
+        R() = 0;
+        for (long j = 0; j < n; ++j)
+          for (long i = 0; i <= j; ++i) R(i, j) = Q(i, j);
+
+        det_type det_r = 1;
+        for (long i = 0; i < n; ++i) det_r *= Q(i, i);
+        detq = 1;
+        for (long i = 0; i < n; ++i) detq *= householder_det_factor<value_type>(tau(i));
+
+        if constexpr (nda::is_complex_v<value_type>)
+          nda::lapack::ungqr(Q, tau);
+        else
+          nda::lapack::orgqr(Q, tau);
+
+        return det_r * detq * det_type(perm_sign(piv));
+      }
+
+      // Reset the candidate factorization to empty (used by the N -> 0 special cases that set det_new directly).
+      void clear_candidate_factorization() {
+        q_new     = fmatrix_type{};
+        r_new     = fmatrix_type{};
+        jpvt_new  = nda::vector<int>{};
+        det_q_new = 1;
+      }
+
       void compute_determinant() {
         range R(0, N);
-        det = qr_determinant<value_type>(mat(R, R));
+        det = factorize(mat(R, R), q_mat, r_mat, jpvt, det_q);
       }
 
       void compute_inverse() const {
@@ -288,8 +351,18 @@ namespace triqs::det_manip {
           mat_inverse_is_valid = true;
           return;
         }
-        range R(0, N);
-        mat_inverse(R, R)    = qr_inverse<value_type>(mat(R, R));
+        // A^{-1} = P R^{-1} Q^H, reusing the cached factorization (no geqp3 here).
+        fmatrix_type qh(N, N); // Q^H
+        for (long i = 0; i < N; ++i)
+          for (long j = 0; j < N; ++j) {
+            if constexpr (nda::is_complex_v<value_type>)
+              qh(i, j) = std::conj(q_mat(j, i));
+            else
+              qh(i, j) = q_mat(j, i);
+          }
+        nda::lapack::trtrs('U', 'N', 'N', r_mat, qh); // qh <- R^{-1} Q^H
+        for (long k = 0; k < N; ++k)
+          for (long j = 0; j < N; ++j) mat_inverse(jpvt(k) - 1, j) = qh(k, j); // row jpvt(k)-1 of A^{-1} is row k of X
         mat_inverse_is_valid = true;
       }
 
@@ -409,7 +482,7 @@ namespace triqs::det_manip {
         mat_new(i, j) = f(x, y);
 
         range R(0, N + 1);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -538,7 +611,7 @@ namespace triqs::det_manip {
         mat_new(i1 + 1, j1 + 1) = f(x1, y1);
 
         range R(0, N + 2);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -664,7 +737,7 @@ namespace triqs::det_manip {
         }
 
         range R(0, N + k);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -704,6 +777,7 @@ namespace triqs::det_manip {
         // Treat N = 1 specially -> goes to zero
         if (N == 1){
           det_new = 1.0;
+          clear_candidate_factorization();
           return det_new / det;
         }
 
@@ -721,7 +795,7 @@ namespace triqs::det_manip {
         mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
 
         range R(0, N - 1);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -772,6 +846,7 @@ namespace triqs::det_manip {
         // Treat N = 2 specially -> goes to N = 0
         if (N == 2){
           det_new = 1.0;
+          clear_candidate_factorization();
           return det_new / det;
         }
 
@@ -800,7 +875,7 @@ namespace triqs::det_manip {
         mat_new(Row_C_1, Col_C_1) = mat(Row_C_0, Col_C_0);
 
         range R(0, N - 2);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -860,6 +935,7 @@ namespace triqs::det_manip {
         // Treat N = k specially -> goes to N = 0
         if (N == k) {
           det_new = 1.0;
+          clear_candidate_factorization();
           return det_new / det;
         }
 
@@ -896,7 +972,7 @@ namespace triqs::det_manip {
         }
 
         range R(0, N - k);
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -936,7 +1012,7 @@ namespace triqs::det_manip {
         mat_new(R, R) = mat(R, R);
         for (auto k : R) { mat_new(k, j) = f(x_values[k], y); }
 
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -968,7 +1044,7 @@ namespace triqs::det_manip {
         mat_new(R, R) = mat(R, R);
         for (auto k : R) { mat_new(i, k) = f(x, y_values[k]); }
 
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -1009,7 +1085,7 @@ namespace triqs::det_manip {
         }
         mat_new(i, j) = f(x, y);
 
-        det_new = qr_determinant<value_type>(mat_new(R, R));
+        det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
 
         return det_new / det;
       }
@@ -1045,6 +1121,7 @@ namespace triqs::det_manip {
         w_refill.clear();
         if (s == 0) { // treat empty matrix separately
           det_new = 1.0;
+          clear_candidate_factorization();
         } else {
           std::copy(X.begin(), X.end(), std::back_inserter(w_refill.x_values));
           std::copy(Y.begin(), Y.end(), std::back_inserter(w_refill.y_values));
@@ -1052,7 +1129,7 @@ namespace triqs::det_manip {
             for (long j = 0; j < s; ++j) mat_new(i, j) = f(w_refill.x_values[i], w_refill.y_values[j]);
 
           range R(0, s);
-          det_new = qr_determinant<value_type>(mat_new(R, R));
+          det_new = factorize(mat_new(R, R), q_new, r_new, jpvt_new, det_q_new);
         }
 
         return det_new / det;
@@ -1096,6 +1173,12 @@ namespace triqs::det_manip {
           case (NoTry): return; break;
           default: TRIQS_RUNTIME_ERROR << "Misusing det_manip_qr"; // Never used?
         }
+
+        // Swap in the candidate factorization (built during the try_*), like mat <- mat_new.
+        std::swap(q_mat, q_new);
+        std::swap(r_mat, r_new);
+        std::swap(jpvt, jpvt_new);
+        det_q = det_q_new;
 
         mat_inverse_is_valid = false;
         det                  = det_new;
