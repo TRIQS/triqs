@@ -31,6 +31,8 @@ namespace nda::lapack::f77 {
                const int *ldb, int *info);
   void ztrtrs_(const char *uplo, const char *trans, const char *diag, const int *n, const int *nrhs, const std::complex<double> *a, const int *lda,
                std::complex<double> *b, const int *ldb, int *info);
+  void dlartg_(const double *f, const double *g, double *c, double *s, double *r);
+  void zlartg_(const std::complex<double> *f, const std::complex<double> *g, double *c, std::complex<double> *s, std::complex<double> *r);
   }
 
   void trtrs(char uplo, char trans, char diag, int n, int nrhs, double const *a, int lda, double *b, int ldb, int &info) {
@@ -39,6 +41,13 @@ namespace nda::lapack::f77 {
 
   void trtrs(char uplo, char trans, char diag, int n, int nrhs, std::complex<double> const *a, int lda, std::complex<double> *b, int ldb, int &info) {
     ztrtrs_(&uplo, &trans, &diag, &n, &nrhs, a, &lda, b, &ldb, &info);
+  }
+
+  // Generate a plane (Givens) rotation [[c, s], [-conj(s), c]] s.t. it maps (f, g) -> (r, 0).
+  void lartg(double f, double g, double &c, double &s, double &r) { dlartg_(&f, &g, &c, &s, &r); }
+
+  void lartg(std::complex<double> f, std::complex<double> g, double &c, std::complex<double> &s, std::complex<double> &r) {
+    zlartg_(&f, &g, &c, &s, &r);
   }
 
 } // namespace nda::lapack::f77

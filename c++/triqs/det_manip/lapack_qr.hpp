@@ -51,6 +51,10 @@ namespace nda::lapack {
     void trtrs(char uplo, char trans, char diag, int n, int nrhs, double const *a, int lda, double *b, int ldb, int &info);
     void trtrs(char uplo, char trans, char diag, int n, int nrhs, std::complex<double> const *a, int lda, std::complex<double> *b, int ldb, int &info);
 
+    // Generate a plane (Givens) rotation [[c, s], [-conj(s), c]] mapping (f, g) -> (r, 0). (LAPACK lartg)
+    void lartg(double f, double g, double &c, double &s, double &r);
+    void lartg(std::complex<double> f, std::complex<double> g, double &c, std::complex<double> &s, std::complex<double> &r);
+
   } // namespace f77
 
   /**
@@ -92,9 +96,9 @@ namespace triqs::det_manip {
     }
   }
 
-  /// Sign (determinant) of the column-pivot permutation returned by geqp3 (1-based jpvt).
-  inline int perm_sign(nda::vector<int> const &jpvt) {
-    long const n = jpvt.size();
+  /// Sign (determinant) of a permutation given by its 0-based images p (p is a permutation of 0..n-1).
+  inline int permutation_sign(nda::vector<int> const &p) {
+    long const n = p.size();
     std::vector<char> seen(n, 0);
     int sign = 1;
     for (long i = 0; i < n; ++i) {
@@ -102,7 +106,7 @@ namespace triqs::det_manip {
       long j = i, len = 0;
       while (!seen[j]) {
         seen[j] = 1;
-        j       = jpvt(j) - 1; // jpvt is 1-based
+        j       = p(j);
         ++len;
       }
       if (len % 2 == 0) sign = -sign; // a cycle of even length is an odd permutation
@@ -110,8 +114,66 @@ namespace triqs::det_manip {
     return sign;
   }
 
-  // The determinant and inverse built on these helpers live in det_manip_qr itself (det_manip_qr.hpp),
-  // which caches the QR factorization (Q, R, pivot) as member data so the determinant and inverse share
-  // one factorization.
+  // ---------------------------------------------------------------------------------------------------
+  //  Givens-rotation helpers for the incremental QR update/downdate, ported from w2dynamics
+  //  QRDecomposition.tmpl.F90. A plane rotation is the 2x2 matrix [[c, s], [-conj(s), c]] (c real).
+  // ---------------------------------------------------------------------------------------------------
+
+  template <typename V> V qr_conj(V x) {
+    if constexpr (nda::is_complex_v<V>)
+      return std::conj(x);
+    else
+      return x;
+  }
+
+  template <typename V> struct plane_rotation {
+    decltype(std::abs(V{})) c; // cosine (real)
+    V s;                       // sine
+  };
+
+  /// Generate a Givens rotation G that maps (f, g) -> (r, 0), i.e. G [f; g] = [r; 0]; returns G and sets r.
+  template <typename V> plane_rotation<V> make_givens(V f, V g, V &r) {
+    plane_rotation<V> rot;
+    nda::lapack::f77::lartg(f, g, rot.c, rot.s, r);
+    return rot;
+  }
+
+  /// Apply G to rows (p, q) of M over columns [c0, c1):  [M(p,:); M(q,:)] <- G [M(p,:); M(q,:)].
+  template <typename M, typename V> void apply_rows(M &m, long p, long q, plane_rotation<V> const &rot, long c0, long c1) {
+    for (long t = c0; t < c1; ++t) {
+      V const a = m(p, t), b = m(q, t);
+      m(p, t) = rot.c * a + rot.s * b;
+      m(q, t) = -qr_conj(rot.s) * a + rot.c * b;
+    }
+  }
+
+  /// Apply the adjoint G^H to columns (p, q) of Q (all `nrow` rows):  Q <- Q G^H. Pairs with apply_rows so
+  /// that (Q G^H)(G M) = Q M.
+  template <typename M, typename V> void apply_cols_adjoint(M &q_mat, long nrow, long p, long q, plane_rotation<V> const &rot) {
+    for (long r = 0; r < nrow; ++r) {
+      V const a = q_mat(r, p), b = q_mat(r, q);
+      q_mat(r, p) = rot.c * a + qr_conj(rot.s) * b;
+      q_mat(r, q) = -rot.s * a + rot.c * b;
+    }
+  }
+
+  /// Apply G to columns (p, q) of Q (all `nrow` rows):  Q <- Q G  (right multiplication). Used to reduce a
+  /// chosen row of Q; pairs with apply_rows_adjoint so that (Q G)(G^H M) = Q M.
+  template <typename M, typename V> void apply_cols(M &q_mat, long nrow, long p, long q, plane_rotation<V> const &rot) {
+    for (long r = 0; r < nrow; ++r) {
+      V const a = q_mat(r, p), b = q_mat(r, q);
+      q_mat(r, p) = rot.c * a + rot.s * b;
+      q_mat(r, q) = -qr_conj(rot.s) * a + rot.c * b;
+    }
+  }
+
+  /// Apply the adjoint G^H to rows (p, q) of M over columns [c0, c1):  M <- G^H M.
+  template <typename M, typename V> void apply_rows_adjoint(M &m, long p, long q, plane_rotation<V> const &rot, long c0, long c1) {
+    for (long t = c0; t < c1; ++t) {
+      V const a = m(p, t), b = m(q, t);
+      m(p, t) = rot.c * a + qr_conj(rot.s) * b;
+      m(q, t) = -rot.s * a + rot.c * b;
+    }
+  }
 
 } // namespace triqs::det_manip
