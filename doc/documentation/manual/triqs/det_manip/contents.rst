@@ -32,6 +32,10 @@ This class implements these general operations. It contains:
   * adds/removes two lines and two columns (i.e. adding or removing two x and two y)
   * changes a line/colum, etc...
 
+A numerically more robust, QR-based alternative with the same interface, ``det_manip_qr``, tracks an
+orthogonal QR factorization (updated incrementally with Givens rotations) instead of the
+Sherman-Morrison-Woodbury inverse; see its implementation notes below.
+
 
 
 .. toctree::
@@ -40,4 +44,5 @@ This class implements these general operations. It contains:
    ../../generated/triqs/det_manip
    det_manip
    implementation_notes
+   qr_implementation_notes
    ./../../../userguide/c++/det_manip/tutorial
