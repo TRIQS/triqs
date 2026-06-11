@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./concepts.hpp"
+#include "./mean_error.hpp"
 #include "./utils.hpp"
 
 #include <h5/h5.hpp>
@@ -398,7 +399,7 @@ namespace triqs::stat {
         for (int i = 0; i < size; ++i) {
           real_t var = errs[i] / (static_cast<double>(effs[i]) * static_cast<double>(effs[i] - 1));
           errs[i]    = nda::sqrt(var);
-          taus[i]    = nda::map([](auto v, auto v0) { return (v0 == 0.0) ? nan_sample(v0) : 0.5 * (v / v0 - 1.0); })(var, var0);
+          taus[i]    = tau_estimate_from_vars(var, var0);
         }
       }
       return std::make_tuple(mk[0], errs, taus, effs);

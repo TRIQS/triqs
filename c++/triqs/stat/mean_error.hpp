@@ -261,14 +261,32 @@ namespace triqs::stat {
   }
 
   /**
-   * @brief Compute an estimate for the integrated auto-correlation time.
+   * @brief Compute an estimate for the integrated auto-correlation time from variances.
+   *
+   * @details The integrated autocorrelation time is estimated (elementwise) as
+   * \f[
+   *   \tau = \frac{1}{2} \left( \frac{\mathrm{var}}{\mathrm{var}_0} - 1 \right) \; ,
+   * \f]
+   * where `var` is the variance of the mean with binning and `var0` the variance of the mean without binning.
+   * Elements for which `var0` is zero (e.g. a constant signal) yield NaN instead of triggering a division by zero.
+   *
+   * @param var Binned estimate of the variance of the mean.
+   * @param var0 Unbinned estimate of the variance of the mean.
+   * @return Estimate of the integrated auto-correlation time.
+   */
+  [[nodiscard]] auto tau_estimate_from_vars(auto const &var, auto const &var0) {
+    return nda::make_regular(nda::map([](auto v, auto v0) { return (v0 == 0.0) ? nan_sample(v0) : 0.5 * (v / v0 - 1.0); })(var, var0));
+  }
+
+  /**
+   * @brief Compute an estimate for the integrated auto-correlation time from standard errors.
    *
    * @details The integrated autocorrelation time is estimated as
    * \f[
    *   \tau = \frac{1}{2} \left( \frac{s^2_n}{s^2_0} - 1 \right) \; ,
    * \f]
-   * where \f$ s^2_n \f$ is the variance of the mean with binning and \f$ s_0 \f$ is the variance of the mean without
-   * binning.
+   * where \f$ s_n \f$ is the standard error of the mean with binning and \f$ s_0 \f$ the standard error of the mean
+   * without binning. This is a thin wrapper around triqs::stat::tau_estimate_from_vars applied to the squared errors.
    *
    * @tparam T triqs::stat::StatCompatible type.
    * @param s_n Standard error of the mean with binning.
@@ -276,7 +294,7 @@ namespace triqs::stat {
    * @return Estimate of the integrated auto-correlation time.
    */
   template <StatCompatible T> auto tau_estimate_from_errors(T const &s_n, T const &s_0) {
-    return nda::make_regular(0.5 * (abs_square(s_n) / abs_square(s_0) - 1.0));
+    return tau_estimate_from_vars(abs_square(s_n), abs_square(s_0));
   }
 
   /** @} */
