@@ -112,6 +112,16 @@ For publications based on results produced with this application please cite `Ph
 
 *Homepage*: `<https://triqs.github.io/nrgljubljana_interface/>`_
 
+**Interface to the EDIpack impurity solver**
+--------------------------------------------------
+
+This application provides an interface to the Lanczos-based exact diagonalization 
+impurity solver `EDIpack <https://edipack.github.io/EDIpack/>`_.
+
+For publications based on results produced with this application please cite `SciPost Phys. Codebases 58 (2025) <https://doi.org/10.21468/SciPostPhysCodeb.58>`_ and `Comput. Phys. Commun. 273, 108261 (2022) <https://doi.org/10.1016/j.cpc.2021.108261>`_
+
+*Homepage*: `<https://edipack.github.io/edipack2triqs/>`_
+
 
 .. _abinitio_tools:
 
