@@ -1,4 +1,4 @@
 package_name = "triqs.utility"
 documentation = "Utilities generated from C++ code in triqs/utility."
 namespaces = "triqs::utility"
-match_names = "triqs::utility::time_pt"
+match_names = "triqs::utility::tau_t"
