@@ -1,25 +1,25 @@
-zero: 0 [time_pt : beta = 40 n = 0]
-beta: 40 [time_pt : beta = 40 n = 18446744073709551615]
-t1: 8 [time_pt : beta = 40 n = 3689348814741910323]
-t2: 32 [time_pt : beta = 40 n = 14757395258967641292]
-t1 + t2: 0 [time_pt : beta = 40 n = 0]
-t1 + t2 - (as double) : -40
-t1 - t2: 16 [time_pt : beta = 40 n = 7378697629483820646]
+zero: 0 [tau_t : beta = 40 n = 0]
+beta: 40 [tau_t : beta = 40 n = 18446744073709551615]
+t1: 8 [tau_t : beta = 40 n = 3689348814741910323]
+t2: 32 [tau_t : beta = 40 n = 14757395258967641292]
+t1 + t2: 40 [tau_t : beta = 40 n = 18446744073709551615]
+t1 + t2 - (as double) : 0
+t1 - t2: 16 [tau_t : beta = 40 n = 7378697629483820647]
 t1 - t2 - (as double) : 40
 t1 * t2: 256
 t1 * t2 - (as double) : 0
 t1 / t2: 0.25
 t1 / t2 - (as double) : 0
-t1 + beta: 8 [time_pt : beta = 40 n = 3689348814741910323]
-t1 - beta: 8 [time_pt : beta = 40 n = 3689348814741910323]
+t1 + beta: 8 [tau_t : beta = 40 n = 3689348814741910322]
+t1 - beta: 8 [tau_t : beta = 40 n = 3689348814741910324]
  print 8
- -t1: 32 [time_pt : beta = 40 n = 14757395258967641292]
-epsilon: 2.1684e-18 [time_pt : beta = 40 n = 1]
-- epsilon: 40 [time_pt : beta = 40 n = 18446744073709551614]
-t1 - epsilon :8 [time_pt : beta = 40 n = 3689348814741910322]
-beta - epsilon :40 [time_pt : beta = 40 n = 18446744073709551614]
-beta - epsilon + epsilon:0 [time_pt : beta = 40 n = 0]
-beta + 0:0 [time_pt : beta = 40 n = 0]
+ -t1: 32 [tau_t : beta = 40 n = 14757395258967641293]
+epsilon: 2.1684e-18 [tau_t : beta = 40 n = 1]
+- epsilon: 40 [tau_t : beta = 40 n = 18446744073709551615]
+t1 - epsilon :8 [tau_t : beta = 40 n = 3689348814741910322]
+beta - epsilon :40 [tau_t : beta = 40 n = 18446744073709551614]
+beta - epsilon + epsilon:40 [tau_t : beta = 40 n = 18446744073709551615]
+beta + 0:40 [tau_t : beta = 40 n = 18446744073709551615]
  num limit max 18446744073709551615
  num limit-1  18446744073709551614
  num limit+0  18446744073709551615

@@ -19,18 +19,17 @@
 
 #include <iostream>
 
-#include <triqs/utility/time_pt.hpp>
+#include <triqs/utility/tau_t.hpp>
 
-using triqs::utility::time_pt;
-using triqs::utility::time_segment;
+using triqs::utility::tau_t;
 
 int main(int, char **) {
 
-  time_segment seg(10);
+  tau_t::set_beta(10);
 
-  time_pt zero_pt = seg.get_lower_pt();
-  time_pt beta_pt = seg.get_upper_pt();
-  time_pt pt      = seg.make_time_pt(3);
+  tau_t zero_pt = tau_t::zero();
+  tau_t beta_pt = tau_t::beta();
+  tau_t pt      = tau_t::from_double(3);
 
   std::cout << beta_pt << std::endl;
 
