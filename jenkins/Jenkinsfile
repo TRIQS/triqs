@@ -4,7 +4,7 @@ def projectName = "triqs" /* set to app/repo name */
 def documentationPlatform = "ubuntu-clang"
 /* Platforms that regenerate the Python bindings via clair-c2py.
    All others use the default (OFF) from c2py. */
-def regenPlatform = "ubuntu-clang"
+def regenPlatforms = ["ubuntu-clang"]
 /* whether to keep and publish the results */
 def keepInstall = false // disabled on jenkins-new: !env.BRANCH_NAME.startsWith("PR-")
 
@@ -27,10 +27,11 @@ if (keepInstall) {
 
 def runBuild = { String platform, String prefix, List<String> envs ->
   def macos = platform.startsWith("macos-")
-  def regen = platform == regenPlatform
+  def regen = regenPlatforms.contains(platform)
   def buildDir = "$WORKSPACE_TMP/build"
   /* install real branches in a fixed predictable place so apps can find them */
   def installDir = keepInstall ? "$prefix/install/$JOB_NAME/$platform" : "$WORKSPACE_TMP/install"
+  /* location of the triqs install: same as installDir here, but differs in app Jenkinsfiles */
   def triqsDir = installDir
   envs += [
     "OPENBLAS_NUM_THREADS=1",
@@ -43,6 +44,7 @@ def runBuild = { String platform, String prefix, List<String> envs ->
     def brew = env.BREW
     def hdf5 = "$brew/opt/hdf5"
     def venv = triqsDir
+    def pyver = sh(returnStdout: true, script: "$brew/bin/python3 -c 'import sys; print(\"%d.%d\" % sys.version_info[:2])'").trim()
     envs += [
       "PATH=$venv/bin:$brew/bin:/usr/bin:/bin:/usr/sbin",
       "HDF5_ROOT=$hdf5",
@@ -51,7 +53,7 @@ def runBuild = { String platform, String prefix, List<String> envs ->
       "CPLUS_INCLUDE_PATH=$venv/include:$hdf5/include:$brew/include",
       "LIBRARY_PATH=$venv/lib:$hdf5/lib:$brew/lib",
       "DYLD_LIBRARY_PATH=$venv/lib:$hdf5/lib:$brew/lib",
-      "PYTHONPATH=$installDir/lib/python3.13/site-packages",
+      "PYTHONPATH=$installDir/lib/python$pyver/site-packages",
       "CMAKE_PREFIX_PATH=$venv/lib/cmake/triqs",
       "VIRTUAL_ENV=$venv",
       "OMP_NUM_THREADS=${env.PARALLEL}"]
@@ -65,9 +67,8 @@ def runBuild = { String platform, String prefix, List<String> envs ->
     if (regen) {
       dir("clair") {
         /* Build and install clair so that clair-c2py is available for Python binding regeneration.
-         * Unset CPLUS_INCLUDE_PATH / CXXFLAGS for the whole block (not just the configure command)
-         * so that base-image settings (e.g. libc++ include path on ubuntu-intel) do not leak into
-         * the compile phase and mix libc++ headers with libstdc++ linkage. */
+         * Unset CPLUS_INCLUDE_PATH / CXXFLAGS below so that platform settings (e.g. -stdlib=libc++)
+         * do not leak into the clair build and mix libc++ headers with libstdc++ linkage. */
         checkout scmGit(userRemoteConfigs: [[url: 'https://github.com/flatironinstitute/clair']],
           branches: [[name: 'refs/heads/unstable']])
       }
