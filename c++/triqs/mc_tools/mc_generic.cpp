@@ -89,8 +89,11 @@ namespace triqs::mc_tools {
           metropolis_step();
           ++config_id_;
         }
-        // after cycle duties
-        after_cycle_duties(params);
+        // skip after-cycle duties in overtime cycles: they may communicate and have to run
+        // exactly ncycles times on every rank (see run_param_t::continue_after_ncycles_done)
+        bool const in_overtime = params.ncycles > 0 and cycle_counter > params.ncycles;
+        if (not in_overtime) after_cycle_duties(params);
+        if (params.enable_measures) do_measurements();
       } catch (triqs::signal_handler::exception const &) {
         // current cycle is interrupted, simulation is stopped below
         std::cerr << fmt::format("[Rank {}] Signal caught in mc_generic::run: Stopping the simulation.\n", rank);
@@ -304,11 +307,12 @@ namespace triqs::mc_tools {
   template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::after_cycle_duties(run_param_t const &params) {
     params.after_cycle_duty();
     if (params.enable_calibration) moves_.calibrate(params.comm);
-    if (params.enable_measures) {
-      ++nmeasures_done_;
-      for (auto &m : measures_aux_) m();
-      measures_.accumulate(sign_);
-    }
+  }
+
+  template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::do_measurements() {
+    ++nmeasures_done_;
+    for (auto &m : measures_aux_) m();
+    measures_.accumulate(sign_);
   }
 
   // Explicit template instantiations.

@@ -23,10 +23,12 @@
 
 #include <mpi/mpi.hpp>
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <numbers>
 #include <stdexcept>
+#include <thread>
 
 // MC configuration for integrating a sin(x) using naive MC integration.
 struct mc_config {
@@ -178,6 +180,27 @@ TEST_F(TRIQSMCTools, MCGenericContinueAfterNCyclesDone) {
   EXPECT_GE(mc.get_nmeasures(), params.ncycles);
   EXPECT_GE(mc.get_config_id(), params.ncycles * params.cycle_length);
   EXPECT_DOUBLE_EQ(mc.get_acceptance_rates().at("move_x"), 1);
+}
+
+TEST_F(TRIQSMCTools, MCGenericOvertimeDutyLockstep) {
+  // Overtime cycles (continue_after_ncycles_done with ranks finishing at different times) must not run
+  // the after-cycle duty: it executes exactly ncycles times on EVERY rank, so duties and move calibrates
+  // that communicate stay in lockstep (a rank-dependent call count deadlocks collective duties).
+  std::int64_t duty_count      = 0;
+  auto params                  = mc.get_run_params();
+  params.ncycles               = 100;
+  params.check_cycles_interval = 0.01;
+  params.after_cycle_duty      = [this, &duty_count]() {
+    ++duty_count;
+    // slow down rank 0 so all other ranks reach ncycles first and cycle in overtime
+    if (comm.rank() == 0) std::this_thread::sleep_for(std::chrono::milliseconds{2});
+  };
+  EXPECT_EQ(mc.accumulate(params), 0);
+  EXPECT_EQ(duty_count, params.ncycles);
+  EXPECT_GE(mc.get_current_cycle_number(), params.ncycles);
+  // ranks that finished early kept measuring during overtime
+  if (mpi::has_env && comm.size() > 1 && comm.rank() != 0) EXPECT_GT(mc.get_nmeasures(), params.ncycles);
+  mc.collect_results(params.comm);
 }
 
 TEST_F(TRIQSMCTools, MCGenericPropagateException) {

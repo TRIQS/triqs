@@ -122,7 +122,12 @@ namespace triqs::mc_tools {
       /// MPI communicator.
       mpi::communicator comm = mpi::communicator{};
 
-      /// Callback function that is executed after each cycle.
+      /**
+       * @brief Callback function that is executed after each of the first `ncycles` cycles.
+       *
+       * @details Not executed during overtime cycles (see continue_after_ncycles_done), so it runs exactly
+       * `ncycles` times on every rank and may therefore safely contain MPI communication.
+       */
       std::function<void()> after_cycle_duty = []() {};
 
       /// Should we propagate exceptions to all MPI ranks or abort the simulation immediately?
@@ -145,6 +150,10 @@ namespace triqs::mc_tools {
        * @details Defaults to true so that ranks which finish early keep doing useful work (e.g. accumulating
        * measurements) instead of idling at the collect_results barrier. Only has an effect under an MPI environment
        * (see mpi::has_env); set to false to recover the legacy behavior of stopping exactly at `ncycles`.
+       *
+       * Overtime cycles perform moves and measurements only: `after_cycle_duty` and move calibration stop after
+       * `ncycles`, so per-cycle MPI communication (e.g. a collective move calibrate) stays in lockstep across
+       * ranks and cannot deadlock on the rank-dependent number of overtime cycles.
        */
       bool continue_after_ncycles_done = true;
 
@@ -402,8 +411,12 @@ namespace triqs::mc_tools {
     // Do a single Metropolis accept/reject step.
     void metropolis_step();
 
-    // Perform after cycle duties.
+    // Perform after-cycle duties: the user-provided duty and move calibration. Both may communicate,
+    // so this must be called the same number of times on every rank (it is skipped in overtime cycles).
     void after_cycle_duties(run_param_t const &params);
+
+    // Perform all measurements and update their counter.
+    void do_measurements();
 
     private:
     random_generator rng_;
