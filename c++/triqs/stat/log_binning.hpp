@@ -25,6 +25,7 @@
 #pragma once
 
 #include "./concepts.hpp"
+#include "./mean_error.hpp"
 #include "./utils.hpp"
 
 #include <h5/h5.hpp>
@@ -393,11 +394,13 @@ namespace triqs::stat {
       auto taus       = std::vector<real_t>(size);
 
       // calculate errors and taus
-      real_t var0 = qk[0] / (static_cast<double>(nsamples[0]) * static_cast<double>(nsamples[0] - 1));
-      for (int i = 0; i < size; ++i) {
-        real_t var = errs[i] / (static_cast<double>(effs[i]) * static_cast<double>(effs[i] - 1));
-        errs[i]    = nda::sqrt(var);
-        taus[i]    = 0.5 * (var / var0 - 1.0);
+      if (size > 0) {
+        real_t var0 = qk[0] / (static_cast<double>(nsamples[0]) * static_cast<double>(nsamples[0] - 1));
+        for (int i = 0; i < size; ++i) {
+          real_t var = errs[i] / (static_cast<double>(effs[i]) * static_cast<double>(effs[i] - 1));
+          errs[i]    = nda::sqrt(var);
+          taus[i]    = tau_estimate_from_vars(var, var0);
+        }
       }
       return std::make_tuple(mk[0], errs, taus, effs);
     }
