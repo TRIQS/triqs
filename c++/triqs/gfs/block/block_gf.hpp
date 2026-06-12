@@ -76,6 +76,27 @@ namespace triqs::gfs {
 
   template <typename T> inline constexpr int arity_of<T, std::void_t<decltype(T::arity)>> = T::arity;
 
+  /**
+   * @brief Get the mesh of a block Green's function, or its N-th component for a product mesh.
+   *
+   * @details Assumes a uniform mesh across all blocks: only the 0th block (block (0,0) for a
+   * block2_gf) is inspected; the meshes of all other blocks are ignored. Delegates to the
+   * MemoryGf overload of get_mesh in gf.hpp for the per-block logic.
+   *
+   * @tparam N Index of the mesh component to return (default 0). Ignored for non-product meshes.
+   * @tparam G The type of the block Green's function.
+   * @param g The block Green's function.
+   * @return A const reference to the (N-th component of the) mesh of the 0th block.
+   */
+  template <int N = 0, typename G>
+    requires is_block_gf_v<G>
+  auto const &get_mesh(G const &g) {
+    if constexpr (is_block_gf_v<G, 1>)
+      return get_mesh<N>(g[0]);
+    else // block2_gf: inspect block (0,0)
+      return get_mesh<N>(g(0, 0));
+  }
+
   // Given a gf G, the corresponding block
   template <typename G> using get_mesh_t              = typename std::decay_t<G>::mesh_t;
   template <typename G> using get_target_t            = typename std::decay_t<G>::target_t;

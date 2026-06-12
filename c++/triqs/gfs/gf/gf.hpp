@@ -79,7 +79,15 @@ namespace triqs::gfs {
 
   /// ---------------------------  get_mesh  ---------------------------------
 
-  template <int N, MemoryGf G> auto const &get_mesh(G const &g) {
+  /**
+   * @brief Get the mesh of a Green's function, or its N-th component for a product mesh.
+   *
+   * @tparam N Index of the mesh component to return (default 0). Ignored for non-product meshes.
+   * @tparam G The type of the Green's function.
+   * @param g The Green's function.
+   * @return A const reference to the (N-th component of the) mesh.
+   */
+  template <int N = 0, MemoryGf G> auto const &get_mesh(G const &g) {
     if constexpr (mesh::is_product<typename G::mesh_t>)
       return std::get<N>(g.mesh());
     else

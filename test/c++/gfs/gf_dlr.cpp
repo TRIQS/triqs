@@ -39,39 +39,39 @@ auto onefermion(auto tau, double eps, double beta) { return -exp(-eps * tau) / (
 // Check mesh accessors
 TEST(Gf, dlr_accessors) {
 
-  double beta  = 5;
-  double w_max = 20.0;
-  double eps   = 1e-10;
+  double beta     = 5;
+  double w_max    = 20.0;
+  double eps      = 1e-10;
   bool symmetrize = true;
 
   { // dlr mesh
-  auto g = gf<dlr, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
+    auto g = gf<dlr, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
 
-  EXPECT_EQ(g.mesh().beta(), beta);
-  EXPECT_EQ(g.mesh().eps(), eps);
-  EXPECT_EQ(g.mesh().w_max(), w_max);
-  EXPECT_EQ(g.mesh().statistic(), Fermion);
-  EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
+    EXPECT_EQ(g.mesh().beta(), beta);
+    EXPECT_EQ(g.mesh().eps(), eps);
+    EXPECT_EQ(g.mesh().w_max(), w_max);
+    EXPECT_EQ(g.mesh().statistic(), Fermion);
+    EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
   }
 
   { // dlr_imtime
-  auto g = gf<dlr_imtime, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
+    auto g = gf<dlr_imtime, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
 
-  EXPECT_EQ(g.mesh().beta(), beta);
-  EXPECT_EQ(g.mesh().eps(), eps);
-  EXPECT_EQ(g.mesh().w_max(), w_max);
-  EXPECT_EQ(g.mesh().statistic(), Fermion);
-  EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
+    EXPECT_EQ(g.mesh().beta(), beta);
+    EXPECT_EQ(g.mesh().eps(), eps);
+    EXPECT_EQ(g.mesh().w_max(), w_max);
+    EXPECT_EQ(g.mesh().statistic(), Fermion);
+    EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
   }
 
   { // dlr_imfreq
-  auto g = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
+    auto g = gf<dlr_imfreq, matrix_valued>{{beta, Fermion, w_max, eps, symmetrize}, {1, 1}};
 
-  EXPECT_EQ(g.mesh().beta(), beta);
-  EXPECT_EQ(g.mesh().eps(), eps);
-  EXPECT_EQ(g.mesh().w_max(), w_max);
-  EXPECT_EQ(g.mesh().statistic(), Fermion);
-  EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
+    EXPECT_EQ(g.mesh().beta(), beta);
+    EXPECT_EQ(g.mesh().eps(), eps);
+    EXPECT_EQ(g.mesh().w_max(), w_max);
+    EXPECT_EQ(g.mesh().statistic(), Fermion);
+    EXPECT_EQ(g.mesh().symmetrize(), symmetrize);
   }
 }
 
@@ -389,6 +389,15 @@ TEST(Gf, DLR_imtime_fit) {
   auto Bgcoef = fit_gf_dlr(Bgtau, w_max, eps);
   auto Bgtau2 = make_gf_imtime(Bgcoef, n_tau);
   EXPECT_BLOCK_GF_NEAR(Bgtau, Bgtau2);
+
+  // Mesh overload: passing the dlr mesh directly is equivalent to (w_max, eps)
+  auto dlr_mesh = mesh::dlr{beta, Fermion, w_max, eps};
+  auto gcoef_m  = fit_gf_dlr(gtau, dlr_mesh);
+  EXPECT_EQ(gcoef.mesh(), gcoef_m.mesh());
+  EXPECT_GF_NEAR(gcoef, gcoef_m);
+
+  auto Bgcoef_m = fit_gf_dlr(Bgtau, dlr_mesh);
+  EXPECT_BLOCK_GF_NEAR(Bgcoef, Bgcoef_m);
 }
 
 // ----------------------------------------------------------------
@@ -601,21 +610,21 @@ TEST(Gf, DLR_FT_iw_to_tau) {
   for (auto iw : G0_iw.mesh()) { G0_iw[iw] = 1.0 / (iw + mu); }
 
   auto G0 = make_gf_from_fourier(G0_iw);
-  for (auto tau : G0.mesh()) { EXPECT_COMPLEX_NEAR(G0[tau], onefermion(tau, -mu, beta), 10*eps_DLR); }
+  for (auto tau : G0.mesh()) { EXPECT_COMPLEX_NEAR(G0[tau], onefermion(tau, -mu, beta), 10 * eps_DLR); }
 }
 
 TEST(Gf, MakeGfDlrImfreqFromImfreq) {
   using triqs::mesh::imfreq;
 
   double beta  = 10.0;
-  long   n_iw  = 400;
+  long n_iw    = 400;
   double w_max = 10.0;
   double eps   = 1e-10;
   double tol   = 1e-8;
 
   // scalar_valued
   {
-    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
+    auto g   = gf<imfreq, scalar_valued>{imfreq{beta, Fermion, n_iw}};
     double e = 1.42;
     for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
 
@@ -640,7 +649,7 @@ TEST(Gf, MakeGfDlrImfreqFromImfreq) {
   }
 
   {
-    auto g = gf<imfreq, scalar_valued>{imfreq{beta, Boson, n_iw}};
+    auto g   = gf<imfreq, scalar_valued>{imfreq{beta, Boson, n_iw}};
     double e = 0.7;
     for (auto iw : g.mesh()) g[iw] = 1.0 / (iw - e);
 
@@ -655,7 +664,7 @@ TEST(Gf, MakeGfDlrImfreqFromImfreqBlock) {
   using triqs::mesh::imfreq;
 
   double beta  = 10.0;
-  long   n_iw  = 400;
+  long n_iw    = 400;
   double w_max = 10.0;
   double eps   = 1e-10;
   double tol   = 1e-8;
@@ -681,7 +690,7 @@ TEST(Gf, FindWMaxScalar) {
   using triqs::mesh::imfreq;
 
   double beta = 10.0;
-  long   n_iw = 400;
+  long n_iw   = 400;
   double eps  = 1e-10;
   double e    = 1.42;
 
@@ -701,7 +710,7 @@ TEST(Gf, FindWMaxBlockUsesWorstPole) {
   using triqs::mesh::imfreq;
 
   double beta = 10.0;
-  long   n_iw = 400;
+  long n_iw   = 400;
   double eps  = 1e-10;
 
   auto make_pole = [&](double e) {
@@ -744,7 +753,7 @@ TEST(Gf, FindWMaxConstantOffsetThrows) {
   using triqs::mesh::imfreq;
 
   double beta = 10.0;
-  long   n_iw = 400;
+  long n_iw   = 400;
   double eps  = 1e-10;
   double e    = 1.42;
   double c    = 0.7; // Hartree-Fock-like static shift

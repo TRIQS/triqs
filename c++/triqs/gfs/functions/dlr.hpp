@@ -90,9 +90,40 @@ namespace triqs::gfs {
   }
 
   /**
+   * @brief Fit an imaginary-time Green's function on a given DLR coefficient mesh.
+   *
+   * @details Builds a DLR coefficient Green's function by least-squares fitting the input Green's function (on a
+   * uniform imaginary-time mesh) onto the supplied DLR grid \p dlr_mesh.
+   *
+   * @tparam N Index of the mesh component to fit (default \f$ 0 \f$).
+   * @tparam Ns Additional mesh component indices for product meshes.
+   * @tparam G The type of the input Green's function.
+   * @param g The imaginary-time Green's function to fit.
+   * @param dlr_mesh The DLR coefficient mesh to fit onto.
+   * @return A Green's function on the DLR coefficient mesh.
+   */
+  template <int N = 0, int... Ns, typename G>
+    requires(MemoryGf<G> or is_block_gf_v<G>)
+  auto fit_gf_dlr(G const &g, mesh::dlr const &dlr_mesh) {
+    using M = typename G::mesh_t;
+    if constexpr (is_block_gf_v<G>) {
+      return map_block_gf([&](auto const &gbl) { return fit_gf_dlr<N, Ns...>(gbl, dlr_mesh); }, g);
+    } else if constexpr (mesh::is_product<M>) {
+      return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return fit_gf_dlr(gfl, dlr_mesh); }, g);
+    } else {
+      static_assert(N == 0, "N must be 0 for non-product meshes");
+      static_assert(std::is_same_v<M, mesh::imtime>, "Input mesh must be imtime");
+      auto tvals    = nda::array_adapter(std::array{g.mesh().size()}, [&](auto i) { return g.mesh()[i].value() / g.mesh().beta(); });
+      auto result   = gf{dlr_mesh, g.target_shape()};
+      result.data() = result.mesh().dlr_it().fitvals2coefs(make_regular(tvals), g.data());
+      return result;
+    }
+  }
+
+  /**
    * @brief Fit an imaginary-time Green's function with a Discrete Lehmann Representation.
    *
-   * @details Builds a DLR coefficient Green's function by least-squares fitting the input Green's function (on a 
+   * @details Builds a DLR coefficient Green's function by least-squares fitting the input Green's function (on a
    * uniform imaginary-time mesh) on a DLR grid specified by the spectral cutoff \f$ \omega_{\max} \f$ and tolerance
    * \f$ \epsilon \f$.
    *
@@ -108,20 +139,11 @@ namespace triqs::gfs {
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto fit_gf_dlr(G const &g, double w_max, double eps, bool symmetrize = true) {
-    using M = typename G::mesh_t;
-    if constexpr (is_block_gf_v<G>) {
-      return map_block_gf([&](auto const &gbl) { return fit_gf_dlr<N, Ns...>(gbl, w_max, eps, symmetrize); }, g);
-    } else if constexpr (mesh::is_product<M>) {
-      return apply_to_mesh<N, Ns...>([&](auto const &gfl) { return fit_gf_dlr(gfl, w_max, eps, symmetrize); }, g);
-    } else {
-      static_assert(N == 0, "N must be 0 for non-product meshes");
-      static_assert(std::is_same_v<M, mesh::imtime>, "Input mesh must be imtime");
-      auto tvals    = nda::array_adapter(std::array{g.mesh().size()}, [&](auto i) { return g.mesh()[i].value() / g.mesh().beta(); });
-      auto mesh     = dlr{g.mesh().beta(), g.mesh().statistic(), w_max, eps, symmetrize};
-      auto result   = gf{mesh, g.target_shape()};
-      result.data() = result.mesh().dlr_it().fitvals2coefs(make_regular(tvals), g.data());
-      return result;
-    }
+    // Build the DLR mesh once from a representative imtime mesh and delegate to the
+    // mesh overload, which handles the block / product / leaf recursion.
+    auto const &imt = get_mesh<N>(g);
+    auto dlr_mesh   = dlr{imt.beta(), imt.statistic(), w_max, eps, symmetrize};
+    return fit_gf_dlr<N, Ns...>(g, dlr_mesh);
   }
 
   /**
@@ -289,8 +311,7 @@ namespace triqs::gfs {
   template <int = 0, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   double find_w_max(G const &g, double eps = 1e-10, bool symmetrize = true, double w_max_init = 1.0, double w_max_max = 200.0) {
-    if (w_max_init > w_max_max)
-      TRIQS_RUNTIME_ERROR << "find_w_max: w_max_init (" << w_max_init << ") > w_max_max (" << w_max_max << ")";
+    if (w_max_init > w_max_max) TRIQS_RUNTIME_ERROR << "find_w_max: w_max_init (" << w_max_init << ") > w_max_max (" << w_max_max << ")";
 
     auto const &m0 = detail::imfreq_mesh_of(g);
 
