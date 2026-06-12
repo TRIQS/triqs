@@ -56,6 +56,33 @@ can be included.
 
 *Homepage:* `<https://triqs.github.io/ctseg/>`_
 
+**Interaction-expansion solver**
+--------------------------------
+
+The interaction-expansion solver is an official TRIQS application that allows
+to solve the generic problem of a quantum impurity embedded in a conduction bath
+for an arbitrary local interaction vertex. It is based on a continuous-time quantum
+Monte Carlo algorithm that stochastically samples the diagrams of a weak-coupling
+expansion of the partition function in powers of the interaction (CT-INT).
+
+For publications based on results produced with this application please cite `10.5281/zenodo.15598402 <https://doi.org/10.5281/zenodo.15598402>`_
+
+*Homepage:* `<https://triqs.github.io/ctint/>`_
+
+**X-Crossing Approximation (XCA) solver**
+-----------------------------------------
+
+The X-Crossing Approximation solver is an official TRIQS application that
+solves generic multiband Anderson impurity problems approximately through a
+perturbative (bold) expansion in the coupling to the bath, i.e. the hybridization
+function. It leverages a sum-of-exponentials representation together with the
+Discrete Lehmann Representation to achieve a parametrically better computational
+complexity than direct integration.
+
+For publications based on results produced with this application please cite `Phys. Rev. X 14, 031034 (2024) <https://doi.org/10.1103/PhysRevX.14.031034>`_ and `SciPost Phys. 19, 121 (2025) <https://doi.org/10.21468/SciPostPhys.19.5.121>`_
+
+*Homepage:* `<https://triqs.github.io/xca/>`_
+
 **Hubbard I solver**
 --------------------
 
@@ -75,6 +102,17 @@ static and local interactions.
 
 *Homepage:* `<https://triqs.github.io/hartree_fock/>`_
 
+**gem - Gutzwiller Embedding Method**
+-------------------------------------
+
+gem is an official TRIQS application implementing the ghost Gutzwiller approximation (ghost-GA),
+a quantum embedding method that augments the Gutzwiller variational approach with auxiliary
+("ghost") degrees of freedom. These additional bath levels systematically improve the
+description of the local spectral function and quasiparticle properties of correlated
+electron systems beyond the standard Gutzwiller approximation.
+
+*Homepage:* `<https://triqs.github.io/gem/>`_
+
 **PYED - Exact diagonalization for finite quantum systems (external)**
 ----------------------------------------------------------------------
 
@@ -92,14 +130,15 @@ For publications based on results produced with this application please cite `10
 
 *Homepage*: `<https://github.com/krivenko/pomerol2triqs/>`_
 
-**Interface to the EDIpack exact diagonalization solver (external)**
---------------------------------------------------------------------
+**Interface to the EDIpack impurity solver**
+--------------------------------------------------
 
-TRIQS wrapper around the `EDIpack <https://github.com/EDIpack/EDIpack>`_  massively parallel exact diagonalization solver.
+This application provides an interface to the Lanczos-based exact diagonalization 
+impurity solver `EDIpack <https://edipack.github.io/EDIpack/>`_.
 
-For publications based on results produced with this application please cite `arXiv:2506.01363 <https://doi.org/10.48550/arXiv.2506.01363>`_
+For publications based on results produced with this application please cite `SciPost Phys. Codebases 58 (2025) <https://doi.org/10.21468/SciPostPhysCodeb.58>`_ and `Comput. Phys. Commun. 273, 108261 (2022) <https://doi.org/10.1016/j.cpc.2021.108261>`_
 
-*Homepage*: `<https://github.com/krivenko/edipack2triqs/>`_
+*Homepage*: `<https://edipack.github.io/edipack2triqs/>`_
 
 **Interface to the w2dynamics impurity solver**
 -----------------------------------------------
@@ -137,6 +176,29 @@ results to inputs for full-fledged DFT+DMFT calculations in a few lines.
 For publications based on results produced with this application please cite `Comput. Phys. Comm. 204, 200 (2016) <https://www.sciencedirect.com/science/article/pii/S0010465516300728?via%3Dihub>`_
 
 *Homepage:* `<https://triqs.github.io/dft_tools/>`_
+
+**dftkit - DFT converters for TRIQS**
+-------------------------------------
+
+dftkit is an official TRIQS application that provides converters turning the output of
+various DFT codes into the TRIQS-compatible HDF5 format required for DFT+DMFT calculations.
+Supported codes include Elk, VASP (with the PLOVasp projection tools), Wien2k (with the
+``dmftproj`` executable), Quantum Espresso, Wannier90 and generic tight-binding Hamiltonians.
+It provides a modern, modular successor to the converters historically shipped with DFTTools.
+
+*Homepage:* `<https://triqs.github.io/dftkit/>`_
+
+**modest - Modular Electronic Structure Toolkit**
+-------------------------------------------------
+
+modest is an official TRIQS application written in C++ with a Python interface that extends
+the modular design of TRIQS with an API tailored to electronic-structure developers and users.
+Key features include interfaces to external DFT codes (VASP, Quantum Espresso, Wien2k, Elk,
+AbInit, Wannier90), a generic representation of DFT one-body data, a flexible description of
+generic DMFT embedding scenarios, and high-performance implementations of key routines such as
+the local Green's function, the chemical-potential search and the lattice density.
+
+*Homepage:* `<https://triqs.github.io/modest/>`_
 
 **solid_dmft - Python wrapper to perform DFT+DMFT calculations using TRIQS**
 ----------------------------------------------------------------------------
