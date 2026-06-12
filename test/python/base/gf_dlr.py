@@ -179,6 +179,12 @@ class test_dlr_mesh(unittest.TestCase):
 
         assert_gfs_are_close(gt, gt2)
 
+        # passing the DLR mesh directly is equivalent to (w_max, eps)
+        dlr_mesh = MeshDLR(beta, 'Fermion', w_max, eps)
+        gc_m = fit_gf_dlr(gtau, dlr_mesh)
+        assert gc_m.mesh == gc.mesh
+        assert_gfs_are_close(gc, gc_m)
+
     def test_dlr_bug_segfault(self):
         dlr_iw_mesh = MeshDLRImFreq(beta=5.0, statistic='Fermion', w_max=1.0, eps=1e-14)
 

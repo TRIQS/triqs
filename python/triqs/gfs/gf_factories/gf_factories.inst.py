@@ -113,13 +113,14 @@ DOCS = {
    * Green's function containers are handled component-wise, and
    * product meshes are handled axis-wise. All target ranks (scalar,
    * vector, matrix, rank-3, rank-4) are supported. The DLR grid is
-   * specified by the spectral cutoff ``w_max`` and the tolerance
-   * ``eps``.
+   * either specified by the spectral cutoff ``w_max`` and the tolerance
+   * ``eps``, or passed directly as a DLR mesh ``dlr_mesh``.
    *
    * @param g The imaginary-time Green's function to fit.
    * @param w_max Maximum real frequency captured by the DLR basis.
    * @param eps Target accuracy of the DLR representation.
    * @param symmetrize If true, the DLR grid is symmetric about zero frequency.
+   * @param dlr_mesh The DLR coefficient mesh to fit onto.
    * @return A Green's function on the DLR coefficient mesh.
    */
 """,
@@ -304,6 +305,7 @@ def write_hermitian(f):
         for gf in GF_TYPES:
             view = GF_VIEW_TYPES[gf]
             f.write(f"  auto fit_gf_dlr({view}<imtime, {target}> const &g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
+            f.write(f"  auto fit_gf_dlr({view}<imtime, {target}> const &g, dlr const &dlr_mesh) {{ return fit_gf_dlr<0>(g, dlr_mesh); }}\n")
     f.write("\n")
 
     # --- make_gf_dlr (product mesh wrappers) ---
@@ -325,6 +327,8 @@ def write_hermitian(f):
             for M in LATTICE_MESHES:
                 f.write(f"  auto fit_gf_dlr({view}<prod<imtime, {M}>, {target}> g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<0>(g, w_max, eps, symmetrize); }}\n")
                 f.write(f"  auto fit_gf_dlr({view}<prod<{M}, imtime>, {target}> g, double w_max, double eps, bool symmetrize = true) {{ return fit_gf_dlr<1>(g, w_max, eps, symmetrize); }}\n")
+                f.write(f"  auto fit_gf_dlr({view}<prod<imtime, {M}>, {target}> g, dlr const &dlr_mesh) {{ return fit_gf_dlr<0>(g, dlr_mesh); }}\n")
+                f.write(f"  auto fit_gf_dlr({view}<prod<{M}, imtime>, {target}> g, dlr const &dlr_mesh) {{ return fit_gf_dlr<1>(g, dlr_mesh); }}\n")
     f.write("\n")
 
     f.write("} // namespace triqs::gfs\n")
