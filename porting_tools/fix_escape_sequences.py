@@ -32,8 +32,12 @@ Two classes of problem are handled:
 
   2. Silently-corrupted valid escapes  -> a LaTeX command that happens to be a
      valid Python escape (``\\beta``->backspace, ``\\nu``->newline, ``\\tau``->tab,
-     ...). These produce NO warning and so are *reported* (not auto-fixed, since
-     intent is ambiguous) under ``--strict``.
+     ...). These produce NO warning and cannot be auto-fixed value-preservingly
+     (the corrupt value *is* the current value), so they are *reported* for a
+     human to convert to a raw string. Surfaced under ``--strict`` and always
+     under ``--fix`` -- they typically sit right next to an invalid escape we do
+     fix, e.g. ``:math:`G(\\omega, \\nu)``` where ``\\omega`` is doubled but the
+     sibling ``\\nu`` stays a newline.
 
 When fixing, a literal whose backslashes are all literal (LaTeX/regex) is
 converted to a raw string (cleanest result); otherwise only the offending
@@ -269,8 +273,13 @@ def detect_silent_suspects(src: str):
         prefix, body = split_prefix(t.string)
         if "r" in prefix.lower():
             continue
-        # only flag when string smells like math/LaTeX to limit false positives
-        if "$" not in body and "\\math" not in body and "\\frac" not in body:
+        # Flag only when the literal clearly carries *literal* backslash commands
+        # (LaTeX/regex), to keep false positives low. Strong indicators:
+        #   - math markup: $...$, \math.., \frac, or an RST :math: role
+        #   - a co-occurring INVALID escape (e.g. \omega): proof in itself that the
+        #     author writes literal backslashes, so a sibling \nu/\tau is one too.
+        if not any(m in body for m in ("$", "\\math", "\\frac", ":math:")) \
+                and not _invalid_escape_offsets(body):
             continue
         if _has_silent_latex_escape(body):
             out.append((t.start[0], body[:60]))
@@ -301,6 +310,11 @@ def main(argv=None):
         except _READ_ERRORS:
             continue  # unreadable/odd encoding -> nothing we can do, skip
         warns = detect_syntax_warnings(src, str(f))
+        # A valid-escape LaTeX command (\nu->newline) sitting next to escapes we
+        # do fix is the one thing --fix cannot repair value-preservingly, so
+        # surface these suspects under --fix as well as --strict. Detected on the
+        # original source, where the co-occurring invalid escape is still present.
+        suspects = detect_silent_suspects(src) if (args.strict or args.fix) else []
         if args.fix and (warns or args.prefer_raw):
             new_src, nfix = fix_source(src, prefer_raw=args.prefer_raw)
             if nfix:
@@ -321,15 +335,19 @@ def main(argv=None):
             for lineno, msg in warns:
                 print(f"{f}:{lineno}: {msg}")
                 total_warn += 1
-        if args.strict:
-            for lineno, body in detect_silent_suspects(src):
-                print(f"{f}:{lineno}: SUSPECT silent-escape (LaTeX?): {body!r}")
-                total_suspect += 1
+        for lineno, body in suspects:
+            print(f"{f}:{lineno}: SUSPECT silent-escape (LaTeX?) -- "
+                  f"review, convert to a raw string by hand: {body!r}")
+            total_suspect += 1
 
     if args.fix:
         what = "literal(s)" if args.prefer_raw else "invalid escape(s)"
-        print(f"\nRewrote {total_fixed} {what} in {len(files)} scanned file(s).")
-        return 0
+        msg = f"\nRewrote {total_fixed} {what} in {len(files)} scanned file(s)."
+        if total_suspect:
+            msg += (f" {total_suspect} silent-escape suspect(s) need manual review "
+                    "(cannot be repaired without changing the value).")
+        print(msg)
+        return 1 if total_suspect else 0
     if total_warn or total_suspect:
         parts = [f"{total_warn} SyntaxWarning(s)"]
         if args.strict:
