@@ -1,8 +1,11 @@
 FROM ubuntu:26.04
+ENV LLVM=21
 
-# This platform does not regenerate Python bindings, so no clang / libclang
-# toolchain is needed (clair is only built on the regen platforms).
+# This platform does not regenerate Python bindings, but still installs clang /
+# libclang / libomp / libzstd so that the shared Dockerfile.build clair install
+# step succeeds (clair requires clang++-${LLVM}).
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      clang-${LLVM} \
       cmake \
       g++ \
       gfortran \
@@ -11,6 +14,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       lldb \
       hdf5-tools \
       libboost-dev \
+      libclang-${LLVM}-dev \
+      libomp-${LLVM}-dev \
+      libzstd-dev \
       libfftw3-dev \
       libgfortran5 \
       libgmp-dev \
