@@ -29,9 +29,12 @@
 
 #include <nda/nda.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <ranges>
+#include <span>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -65,6 +68,32 @@ namespace triqs::mesh {
    * @return Combined hash value of all arguments.
    */
   template <typename... Ts> [[nodiscard]] uint64_t hash(Ts &&...ts) { return (std::hash<std::decay_t<Ts>>()(std::forward<Ts>(ts)) + ...); }
+
+  /**
+   * @brief Hash the raw bytes of a span via the standard library's `std::hash<std::string_view>`.
+   *
+   * @details A proper byte mixer, sensitive to every element and their ordering.
+   *
+   * @param bytes Byte span to be hashed.
+   * @return Hash value of the byte sequence.
+   */
+  [[nodiscard]] C2PY_IGNORE inline std::size_t hash_bytes(std::span<std::byte const> bytes) {
+    return std::hash<std::string_view>{}(std::string_view{reinterpret_cast<char const *>(bytes.data()), bytes.size()});
+  }
+
+  /**
+   * @brief Hash the raw bytes of a contiguous nda array's elements (forwards to the byte-span overload).
+   *
+   * @details Contiguity is asserted at runtime, since nda views may be strided.
+   *
+   * @tparam R An nda::MemoryArray type.
+   * @param r Array to hash; must be contiguous (stride 1).
+   * @return Hash value of the array's element bytes.
+   */
+  template <nda::MemoryArray R> [[nodiscard]] std::size_t hash_bytes(R const &r) {
+    EXPECTS(r.is_contiguous());
+    return hash_bytes(std::as_bytes(std::span{r.data(), static_cast<std::size_t>(r.size())}));
+  }
 
   /**
    * @brief Calculate the positive modulo of two integer numbers.
