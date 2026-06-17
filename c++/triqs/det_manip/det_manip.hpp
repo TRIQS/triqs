@@ -677,6 +677,64 @@ namespace triqs::det_manip {
       return try_insert_k({i0, i1}, {j0, j1}, {x0, x1}, {y0, y1});
     }
 
+    // ---- Helper: flatten an nda::Array to a std::vector in C-order ----
+    private:
+    template <nda::Array A> static auto flatten_array(A const &a) {
+      auto v = std::vector<typename A::value_type>(a.size());
+      long flat = 0;
+      nda::for_each(a.shape(), [&](auto... idx) { v[flat++] = a(idx...); });
+      return v;
+    }
+
+    public:
+    /// Compute independent insertion det-ratios at position (i, j) for paired elements of xs and ys.
+    /// xs and ys must be nda::Array with the same rank and shape. Result has the same shape.
+    /// Read-only: does not modify internal state.
+    template <nda::Array X, nda::Array Y>
+      requires(nda::get_rank<X> == nda::get_rank<Y>)
+    auto insert_ratios(long i, long j, X const &xs, Y const &ys) const -> nda::array<value_type, nda::get_rank<X>> {
+      constexpr int R = nda::get_rank<X>;
+      TRIQS_ASSERT(xs.shape() == ys.shape());
+      TRIQS_ASSERT(0 <= i and i <= N);
+      TRIQS_ASSERT(0 <= j and j <= N);
+
+      long nbatch         = xs.size();
+      value_type sign_fac = ((i + j) % 2 == 0 ? 1 : -1);
+      nda::array<value_type, R> result(xs.shape());
+
+      if (nbatch == 0) return result;
+
+      // Flatten inputs for BLAS
+      auto xs_flat = flatten_array(xs);
+      auto ys_flat = flatten_array(ys);
+
+      if (N == 0) {
+        for (long m = 0; m < nbatch; ++m) result.data()[m] = sign_fac * f(xs_flat[m], ys_flat[m]);
+        return result;
+      }
+
+      range RN(N);
+
+      // Build B(N, nbatch) and C(nbatch, N) matrices
+      nda::matrix<value_type> B(N, nbatch), C(nbatch, N), MB(N, nbatch);
+      for (long l = 0; l < N; ++l)
+        for (long m = 0; m < nbatch; ++m) B(l, m) = f(x_values[l], ys_flat[m]);
+      for (long m = 0; m < nbatch; ++m)
+        for (long l = 0; l < N; ++l) C(m, l) = f(xs_flat[m], y_values[l]);
+
+      // MB = mat_inv * B -- single BLAS3 gemm
+      blas::gemm(1.0, mat_inv(RN, RN), B, 0.0, MB);
+
+      // Compute each ratio: ksi_m = f(xs[m], ys[m]) - C[m,:] . MB[:,m]
+      for (long m = 0; m < nbatch; ++m) {
+        value_type dot = 0;
+        for (long l = 0; l < N; ++l) dot += C(m, l) * MB(l, m);
+        result.data()[m] = sign_fac * (f(xs_flat[m], ys_flat[m]) - dot);
+      }
+
+      return result;
+    }
+
     //------------------------------------------------------------------------------------------
     private:
     void complete_insert_k() {

@@ -546,6 +546,48 @@ namespace triqs::det_manip {
       public:
       //------------------------------------------------------------------------------------------
 
+      // Helper: flatten an nda::Array to a std::vector in C-order
+      template <nda::Array A> static auto flatten_array(A const &a) {
+        auto v = std::vector<typename A::value_type>(a.size());
+        long flat = 0;
+        nda::for_each(a.shape(), [&](auto... idx) { v[flat++] = a(idx...); });
+        return v;
+      }
+
+      /// Compute independent insertion det-ratios at position (i, j) for paired elements of xs and ys.
+      /// xs and ys must be nda::Array with the same rank and shape. Result has the same shape.
+      /// Read-only: does not modify internal state.
+      template <nda::Array X, nda::Array Y>
+        requires(nda::get_rank<X> == nda::get_rank<Y>)
+      auto insert_ratios(long i, long j, X const &xs, Y const &ys) const -> nda::array<value_type, nda::get_rank<X>> {
+        constexpr int Rk = nda::get_rank<X>;
+        TRIQS_ASSERT(xs.shape() == ys.shape());
+        TRIQS_ASSERT(0 <= i and i <= N);
+        TRIQS_ASSERT(0 <= j and j <= N);
+
+        long nbatch = xs.size();
+        nda::array<value_type, Rk> result(xs.shape());
+        auto xs_flat = flatten_array(xs);
+        auto ys_flat = flatten_array(ys);
+
+        for (long m = 0; m < nbatch; ++m) result.data()[m] = compute_insert_ratio(i, j, xs_flat[m], ys_flat[m]);
+        return result;
+      }
+
+      private:
+      // Helper: compute a single rank-1 insertion det-ratio by building augmented matrix
+      auto compute_insert_ratio(long i, long j, x_type const &x, y_type const &y) const -> value_type {
+        matrix_type aug(N + 1, N + 1);
+        for (long r = 0; r < N; ++r)
+          for (long c = 0; c < N; ++c) aug(r < i ? r : r + 1, c < j ? c : c + 1) = mat(r, c);
+        for (long c = 0; c < N; ++c) aug(i, c < j ? c : c + 1) = f(x, y_values[c]);
+        for (long r = 0; r < N; ++r) aug(r < i ? r : r + 1, j) = f(x_values[r], y);
+        aug(i, j) = f(x, y);
+        return nda::linalg::det(aug) / det;
+      }
+
+      public:
+
       /**
      * Insert k rows and columns at positions given by vectors i and j.
      *
