@@ -1,3 +1,16 @@
+// Copyright (c) 2024 Simons Foundation
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You may obtain a copy of the License at
 //     https://www.gnu.org/licenses/gpl-3.0.txt
 
 #include <triqs/det_manip/det_manip.hpp>
@@ -325,6 +338,115 @@ void test_cross_validate_rank2() {
   std::cerr << "PASSED" << std::endl;
 }
 
+void test_matrix_vs_sequential() {
+  std::cerr << "=== test_matrix_vs_sequential ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 77777);
+  build_det(D, 20, RNG);
+
+  long Kx = 8, Ky = 10;
+  auto xs = random_array1(Kx, RNG);
+  auto ys = random_array1(Ky, RNG);
+
+  auto mat = D.insert_ratios_matrix(0, 0, xs, ys);
+
+  for (long a = 0; a < Kx; ++a)
+    for (long b = 0; b < Ky; ++b) {
+      auto ratio = D.try_insert(0, 0, xs(a), ys(b));
+      D.reject_last_try();
+      assert_close(mat(a, b), ratio, 1.e-5, "matrix (" + std::to_string(a) + "," + std::to_string(b) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_matrix_state_unchanged() {
+  std::cerr << "=== test_matrix_state_unchanged ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 88888);
+  build_det(D, 15, RNG);
+
+  auto det_before  = D.determinant();
+  auto inv_before  = D.inverse_matrix();
+  auto size_before = D.size();
+
+  auto xs = nda::array<double, 1>{1.0, 2.0, 3.0};
+  auto ys = nda::array<double, 1>{4.0, 5.0};
+  D.insert_ratios_matrix(0, 0, xs, ys);
+
+  if (D.size() != size_before) TRIQS_RUNTIME_ERROR << "Size changed!";
+  assert_close(D.determinant(), det_before, 1.e-12, "det changed");
+  auto inv_after = D.inverse_matrix();
+  for (int i = 0; i < size_before; ++i)
+    for (int j = 0; j < size_before; ++j) assert_close(inv_after(i, j), inv_before(i, j), 1.e-12, "inv changed");
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_matrix_empty() {
+  std::cerr << "=== test_matrix_empty ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+
+  auto xs = nda::array<double, 1>{1.0, 2.0};
+  auto ys = nda::array<double, 1>{3.0, 4.0, 5.0};
+  auto mat = D.insert_ratios_matrix(0, 0, xs, ys);
+
+  for (long a = 0; a < 2; ++a)
+    for (long b = 0; b < 3; ++b) {
+      auto ratio = D.try_insert(0, 0, xs(a), ys(b));
+      D.reject_last_try();
+      assert_close(mat(a, b), ratio, 1.e-14, "matrix empty (" + std::to_string(a) + "," + std::to_string(b) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_matrix_cross_validate() {
+  std::cerr << "=== test_matrix_cross_validate ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::det_manip::det_manip_basic<fun> Db(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 66666);
+
+  for (int n = 0; n < 15; ++n) {
+    double x = RNG(10.0);
+    double y = RNG(10.0);
+    D.insert(D.size(), D.size(), x, y);
+    Db.insert(Db.size(), Db.size(), x, y);
+  }
+
+  long Kx = 6, Ky = 8;
+  auto xs = random_array1(Kx, RNG);
+  auto ys = random_array1(Ky, RNG);
+
+  auto mat_opt   = D.insert_ratios_matrix(0, 0, xs, ys);
+  auto mat_basic = Db.insert_ratios_matrix(0, 0, xs, ys);
+
+  for (long a = 0; a < Kx; ++a)
+    for (long b = 0; b < Ky; ++b)
+      assert_close(mat_opt(a, b), mat_basic(a, b), 1.e-4, "cross matrix (" + std::to_string(a) + "," + std::to_string(b) + ")");
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_matrix_vs_paired() {
+  std::cerr << "=== test_matrix_vs_paired ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 99998);
+  build_det(D, 20, RNG);
+
+  long K = 15;
+  auto xs = random_array1(K, RNG);
+  auto ys = random_array1(K, RNG);
+
+  auto mat    = D.insert_ratios_matrix(0, 0, xs, ys);
+  auto paired = D.insert_ratios(0, 0, xs, ys);
+
+  for (long m = 0; m < K; ++m)
+    assert_close(mat(m, m), paired(m), PRECISION, "matrix diagonal m=" + std::to_string(m));
+  std::cerr << "PASSED" << std::endl;
+}
+
 // ---- Tests for rank-2 arrays (batching across two dimensions) ----
 
 void test_rank2_array_insert_ratios() {
@@ -548,6 +670,8 @@ void test_broadcast_insert2_empty_matrix() {
   std::cerr << "PASSED" << std::endl;
 }
 
+// ---- Tests exercising the position-dependent sign factor (odd parity) ----
+
 // insert_ratios at positions with i+j odd: exercises the sign_fac = -1 branch.
 void test_rank1_nonzero_position() {
   std::cerr << "=== test_rank1_nonzero_position ===" << std::endl;
@@ -574,6 +698,36 @@ void test_rank1_nonzero_position() {
   std::cerr << "PASSED" << std::endl;
 }
 
+// insert_ratios_matrix at positions with i+j odd: exercises the sign_fac = -1 branch.
+void test_matrix_nonzero_position() {
+  std::cerr << "=== test_matrix_nonzero_position ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 27182);
+  build_det(D, 20, RNG);
+
+  long Kx = 5, Ky = 6;
+  auto xs = random_array1(Kx, RNG);
+  auto ys = random_array1(Ky, RNG);
+
+  std::array<long, 3> is = {1, 0, 3}; // i+j = 1(odd), 2(even control), 7(odd)
+  std::array<long, 3> js = {0, 2, 4};
+  for (int t = 0; t < 3; ++t) {
+    long i = is[t], j = js[t];
+    auto mat = D.insert_ratios_matrix(i, j, xs, ys);
+    for (long a = 0; a < Kx; ++a)
+      for (long b = 0; b < Ky; ++b) {
+        auto ratio = D.try_insert(i, j, xs(a), ys(b));
+        D.reject_last_try();
+        assert_close(mat(a, b), ratio, 1.e-5,
+                     "matrix nonzero pos i=" + std::to_string(i) + " j=" + std::to_string(j) + " (" + std::to_string(a) + "," + std::to_string(b)
+                         + ")");
+      }
+  }
+  std::cerr << "PASSED" << std::endl;
+}
+
+// insert2_ratios at positions with odd idx_sum: exercises the (idx_sum % 2 != 0) sign flip,
 // in combination with all swap_x/swap_y parities.
 void test_rank2_odd_idx_sum() {
   std::cerr << "=== test_rank2_odd_idx_sum ===" << std::endl;
@@ -609,6 +763,24 @@ void test_rank2_odd_idx_sum() {
 
 // ---- Empty-batch (K==0) tests for the methods that lack an explicit guard ----
 
+void test_matrix_empty_batch() {
+  std::cerr << "=== test_matrix_empty_batch ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 12321);
+  build_det(D, 5, RNG); // N>0 so the gemm path is exercised
+
+  nda::array<double, 1> empty(0);
+  auto ys  = random_array1(4, RNG);
+  auto mat = D.insert_ratios_matrix(0, 0, empty, ys);
+  if (mat.size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty result (Kx=0)";
+
+  auto xs    = random_array1(3, RNG);
+  auto mat2  = D.insert_ratios_matrix(0, 0, xs, empty);
+  if (mat2.size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty result (Ky=0)";
+  std::cerr << "PASSED" << std::endl;
+}
+
 void test_rank2_empty_batch() {
   std::cerr << "=== test_rank2_empty_batch ===" << std::endl;
   fun f;
@@ -620,6 +792,7 @@ void test_rank2_empty_batch() {
   auto batch = D.insert2_ratios(0, 1, 0, 1, empty, empty, empty, empty);
   if (batch.size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty result";
 
+  // Broadcast with an empty high-rank pair: exercises the empty-batch guard in
   // both the R0>R1 branch and (via recursion) the R0<R1 branch, for both impls.
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
   for (int n = 0; n < 5; ++n) {
@@ -677,6 +850,11 @@ int main() {
   test_rank2_reversed_indices();
   test_cross_validate_rank1();
   test_cross_validate_rank2();
+  test_matrix_vs_sequential();
+  test_matrix_state_unchanged();
+  test_matrix_empty();
+  test_matrix_cross_validate();
+  test_matrix_vs_paired();
 
   // Rank-2 array tests
   test_rank2_array_insert_ratios();
@@ -692,9 +870,11 @@ int main() {
 
   // Position-dependent sign factor (odd parity)
   test_rank1_nonzero_position();
+  test_matrix_nonzero_position();
   test_rank2_odd_idx_sum();
 
   // Empty-batch and remaining-branch coverage
+  test_matrix_empty_batch();
   test_rank2_empty_batch();
   test_broadcast_insert2_empty_matrix_reversed();
 

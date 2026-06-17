@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <iterator>
 #include <numeric>
+#include <span>
 #include <vector>
 
 namespace triqs::det_manip {
@@ -730,6 +731,35 @@ namespace triqs::det_manip {
       return result;
     }
 
+    /// Compute det-ratios for all combinations of xs and ys at position (i, j).
+    /// Returns array of rank Rx + Ry with shape (Sx..., Sy...). Read-only: does not modify internal state.
+    template <nda::Array X, nda::Array Y>
+    auto insert_ratios_matrix(long i, long j, X const &xs, Y const &ys) const
+        -> nda::array<value_type, nda::get_rank<X> + nda::get_rank<Y>> {
+      constexpr int Rx = nda::get_rank<X>;
+      constexpr int Ry = nda::get_rank<Y>;
+      constexpr int Rk = Rx + Ry;
+      TRIQS_ASSERT(0 <= i and i <= N);
+      TRIQS_ASSERT(0 <= j and j <= N);
+
+      long nbatch_x = xs.size();
+      long nbatch_y = ys.size();
+      auto xs_flat = flatten_array(xs);
+      auto ys_flat = flatten_array(ys);
+
+      std::array<long, Rk> res_shape;
+      auto sx = xs.shape();
+      auto sy = ys.shape();
+      for (int d = 0; d < Rx; ++d) res_shape[d] = sx[d];
+      for (int d = 0; d < Ry; ++d) res_shape[Rx + d] = sy[d];
+
+      nda::array<value_type, Rk> result(res_shape);
+
+      for (long a = 0; a < nbatch_x; ++a)
+        for (long b = 0; b < nbatch_y; ++b) result.data()[a * nbatch_y + b] = compute_insert_ratio(i, j, xs_flat[a], ys_flat[b]);
+      return result;
+    }
+
     /// Compute independent rank-2 insertion det-ratios at positions (i0, i1, j0, j1).
     /// Paired args must have equal rank and shape. Lower-rank pairs are broadcast.
     /// Read-only: does not modify internal state.
@@ -841,7 +871,106 @@ namespace triqs::det_manip {
       return nda::linalg::det(aug) / det;
     }
 
+    /// Compute batched rank-k insertion det-ratios. Reference implementation.
+    /// Supports broadcasting: one of xs, ys may have an extra leading dimension.
     public:
+    template <nda::Array X, nda::Array Y>
+      requires(nda::get_rank<X> >= 2 && nda::get_rank<X> <= 3 && nda::get_rank<Y> >= 2 && nda::get_rank<Y> <= 3
+               && nda::get_rank<X> + nda::get_rank<Y> <= 5)
+    auto insertk_ratios(X const &xs, Y const &ys) const -> nda::array<value_type, std::max(nda::get_rank<X>, nda::get_rank<Y>) - 1> {
+      constexpr int Rx   = nda::get_rank<X>;
+      constexpr int Ry   = nda::get_rank<Y>;
+      constexpr int Rout = std::max(Rx, Ry) - 1;
+
+      // Augmented-matrix det-ratio for a single (xs_span, ys_span) pair
+      auto single_ratio = [&](std::span<const x_type> xs_s, std::span<const y_type> ys_s) -> value_type {
+        long k = static_cast<long>(xs_s.size());
+        long Nk = N + k;
+        matrix_type aug(Nk, Nk);
+        for (long r = 0; r < N; ++r)
+          for (long c = 0; c < N; ++c) aug(r + k, c + k) = mat(r, c);
+        for (long l = 0; l < k; ++l) {
+          for (long c = 0; c < N; ++c) aug(l, c + k) = f(xs_s[l], y_values[c]);
+          for (long m = 0; m < k; ++m) aug(l, m) = f(xs_s[l], ys_s[m]);
+        }
+        for (long m = 0; m < k; ++m)
+          for (long r = 0; r < N; ++r) aug(r + k, m) = f(x_values[r], ys_s[m]);
+        return nda::linalg::det(aug) / det;
+      };
+
+      if constexpr (Rx == Ry) {
+        TRIQS_ASSERT(xs.shape() == ys.shape());
+        long nbatch = xs.extent(0);
+        long k      = xs.extent(1);
+        nda::array<value_type, 1> result(nbatch);
+        for (long m = 0; m < nbatch; ++m) {
+          std::vector<x_type> xm(k);
+          std::vector<y_type> ym(k);
+          for (long j = 0; j < k; ++j) {
+            xm[j] = xs(m, j);
+            ym[j] = ys(m, j);
+          }
+          result(m) = single_ratio(xm, ym);
+        }
+        return result;
+      } else if constexpr (Rx > Ry) {
+        // xs(M, nbatch, k), ys(nbatch, k)
+        auto shape_x = xs.shape();
+        auto shape_y = ys.shape();
+        for (int d = 0; d < Ry; ++d) TRIQS_ASSERT(shape_x[Rx - Ry + d] == shape_y[d]);
+        long nbatch   = shape_y[0];
+        long k        = shape_y[1];
+        long nbatch_k = nbatch * k;
+        long M        = xs.size() / nbatch_k;
+
+        std::array<long, Rout> res_shape;
+        for (int d = 0; d < Rout; ++d) res_shape[d] = shape_x[d];
+        nda::array<value_type, Rout> result(res_shape);
+
+        auto fxs = flatten_array(xs);
+        for (long i = 0; i < M; ++i)
+          for (long m = 0; m < nbatch; ++m) {
+            std::vector<x_type> xm(k);
+            std::vector<y_type> ym(k);
+            for (long j = 0; j < k; ++j) {
+              xm[j] = fxs[i * nbatch_k + m * k + j];
+              ym[j] = ys(m, j);
+            }
+            result.data()[i * nbatch + m] = single_ratio(xm, ym);
+          }
+        return result;
+      } else {
+        // xs(nbatch, k), ys(M, nbatch, k)
+        auto shape_x = xs.shape();
+        auto shape_y = ys.shape();
+        for (int d = 0; d < Rx; ++d) TRIQS_ASSERT(shape_y[Ry - Rx + d] == shape_x[d]);
+        long nbatch   = shape_x[0];
+        long k        = shape_x[1];
+        long nbatch_k = nbatch * k;
+        long M        = ys.size() / nbatch_k;
+
+        std::array<long, Rout> res_shape;
+        for (int d = 0; d < Rout; ++d) res_shape[d] = shape_y[d];
+        nda::array<value_type, Rout> result(res_shape);
+
+        auto fys = flatten_array(ys);
+        for (long i = 0; i < M; ++i)
+          for (long m = 0; m < nbatch; ++m) {
+            std::vector<x_type> xm(k);
+            std::vector<y_type> ym(k);
+            for (long j = 0; j < k; ++j) {
+              xm[j] = xs(m, j);
+              ym[j] = fys[i * nbatch_k + m * k + j];
+            }
+            result.data()[i * nbatch + m] = single_ratio(xm, ym);
+          }
+        return result;
+      }
+    }
+
+    //------------------------------------------------------------------------------------------
+    public:
+
     /**
      * @brief Try to insert \f$ k \f$ rows and columns.
      *
