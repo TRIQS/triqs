@@ -39,6 +39,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace triqs::mesh {
@@ -149,7 +150,7 @@ namespace triqs::mesh {
          w_max_(w_max),
          eps_(eps),
          symmetrize_(symmetrize),
-         mesh_hash_(hash(beta, statistic, w_max, eps, symmetrize, nda::sum(dlr.imf.get_ifnodes()))),
+         mesh_hash_(hash(beta, statistic, w_max, eps, symmetrize, hash_bytes(dlr.imf.get_ifnodes()), std::string_view{"dlr_imfreq"})),
          dlr_{std::make_shared<detail::dlr_ops>(std::move(dlr))} {}
 
     public:
@@ -186,10 +187,10 @@ namespace triqs::mesh {
          w_max_(m.w_max_),
          eps_(m.eps_),
          symmetrize_(m.symmetrize_),
-         mesh_hash_(hash(beta_, stat_, w_max_, eps_, symmetrize_, nda::sum(m.dlr_->imf.get_ifnodes()))),
+         mesh_hash_(hash(beta_, stat_, w_max_, eps_, symmetrize_, hash_bytes(m.dlr_->imf.get_ifnodes()), std::string_view{"dlr_imfreq"})),
          dlr_(m.dlr_) {}
 
-    /// Equal-to comparison operator compares the hash values.
+    /// Equal-to comparison operator compares the hash values
     bool operator==(dlr_imfreq const &m) const { return mesh_hash_ == m.mesh_hash_; }
 
     /**
