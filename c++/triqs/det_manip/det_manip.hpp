@@ -131,7 +131,7 @@ namespace triqs::det_manip {
 
     det_type det;
     long Nmax{0}, N;
-    long kmax{1}, k;
+    long kmax_tried{1}, k_tried;
     enum {
       NoTry,
       Insert,
@@ -233,9 +233,9 @@ namespace triqs::det_manip {
        * @param new_N The new size of the reserved memory
        */
     void reserve(long new_N, long new_k = 1) {
-      if (new_k > kmax) {
-        kmax = new_k;
-        if (new_N <= Nmax) wk.resize(Nmax, kmax);
+      if (new_k > kmax_tried) {
+        kmax_tried = new_k;
+        if (new_N <= Nmax) wk.resize(Nmax, kmax_tried);
       }
       if (new_N > Nmax) {
         Nmax = 2 * new_N;
@@ -251,7 +251,7 @@ namespace triqs::det_manip {
         y_values.reserve(Nmax);
 
         w1.resize(Nmax);
-        wk.resize(Nmax, kmax);
+        wk.resize(Nmax, kmax_tried);
       }
     }
 
@@ -614,8 +614,8 @@ namespace triqs::det_manip {
       TRIQS_ASSERT(j.size() == x.size());
       TRIQS_ASSERT(x.size() == y.size());
 
-      k = i.size();
-      reserve(N + k, k);
+      k_tried = i.size();
+      reserve(N + k_tried, k_tried);
       last_try = InsertK;
 
       auto const argsort = [](auto const &vec) {
@@ -628,7 +628,7 @@ namespace triqs::det_manip {
       std::vector<long> idy = argsort(j);
 
       // store it for complete_operation
-      for (long l = 0; l < k; ++l) {
+      for (long l = 0; l < k_tried; ++l) {
         wk.i[l] = i[idx[l]];
         wk.x[l] = x[idx[l]];
         wk.j[l] = j[idy[l]];
@@ -636,19 +636,19 @@ namespace triqs::det_manip {
       };
 
       // check consistency
-      for (int l = 0; l < k - 1; ++l) {
-        TRIQS_ASSERT(wk.i[l] != wk.i[l + 1] and 0 <= wk.i[l] and wk.i[l] < N + k);
-        TRIQS_ASSERT(wk.j[l] != wk.j[l + 1] and 0 <= wk.j[l] and wk.j[l] < N + k);
+      for (int l = 0; l < k_tried - 1; ++l) {
+        TRIQS_ASSERT(wk.i[l] != wk.i[l + 1] and 0 <= wk.i[l] and wk.i[l] < N + k_tried);
+        TRIQS_ASSERT(wk.j[l] != wk.j[l + 1] and 0 <= wk.j[l] and wk.j[l] < N + k_tried);
       }
 
       // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
-      for (long m = 0; m < k; ++m) {
-        for (long n = 0; n < k; ++n) { wk.ksi(m, n) = f(wk.x[m], wk.y[n]); }
+      for (long m = 0; m < k_tried; ++m) {
+        for (long n = 0; n < k_tried; ++n) { wk.ksi(m, n) = f(wk.x[m], wk.y[n]); }
       }
 
       // treat empty matrix separately
       if (N == 0) {
-        newdet  = wk.det_ksi(k);
+        newdet  = wk.det_ksi(k_tried);
         newsign = 1;
         return value_type(newdet);
       }
@@ -656,20 +656,20 @@ namespace triqs::det_manip {
       // I add the rows and cols and the end. If the move is rejected,
       // no effect since N will not be changed : inv_mat(i,j) for i,j>=N has no meaning.
       for (long n = 0; n < N; n++) {
-        for (long l = 0; l < k; ++l) {
+        for (long l = 0; l < k_tried; ++l) {
           wk.B(n, l) = f(x_values[n], wk.y[l]);
           wk.C(l, n) = f(wk.x[l], y_values[n]);
         }
       }
-      range RN(N), Rk(k);
+      range RN(N), Rk(k_tried);
       //wk.MB(RN,Rk) = mat_inv(RN,N) * wk.B(RN,Rk); // OPTIMIZE BELOW
       blas::gemm(1.0, mat_inv(RN, RN), wk.B(RN, Rk), 0.0, wk.MB(RN, Rk));
       //ksi -= wk.C (Rk, RN) * wk.MB(RN, Rk); // OPTIMIZE BELOW
       blas::gemm(-1.0, wk.C(Rk, RN), wk.MB(RN, Rk), 1.0, wk.ksi(Rk, Rk));
-      auto ksi     = wk.det_ksi(k);
+      auto ksi     = wk.det_ksi(k_tried);
       newdet       = det * ksi;
       long idx_sum = 0;
-      for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
+      for (long l = 0; l < k_tried; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
       newsign = (idx_sum % 2 == 0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
       return ksi * (newsign * sign);               // sign is unity, hence 1/sign == sign
     }
@@ -682,19 +682,19 @@ namespace triqs::det_manip {
     void complete_insert_k() {
 
       // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-      for (int l = 0; l < k; ++l) {
+      for (int l = 0; l < k_tried; ++l) {
         x_values.push_back(wk.x[l]);
         y_values.push_back(wk.y[l]);
         row_num.push_back(0);
         col_num.push_back(0);
       }
 
-      range Rk(0, k);
+      range Rk(0, k_tried);
       // treat empty matrix separately
       if (N == 0) {
-        N               = k;
+        N               = k_tried;
         mat_inv(Rk, Rk) = nda::linalg::inv(wk.ksi(Rk, Rk));
-        for (long l = 0; l < k; ++l) {
+        for (long l = 0; l < k_tried; ++l) {
           row_num[wk.i[l]] = l;
           col_num[wk.j[l]] = l;
         }
@@ -704,14 +704,14 @@ namespace triqs::det_manip {
       range RN(N);
       //wk.MC(Rk,RN) = wk.C(Rk,RN) * mat_inv(RN,RN);// OPTIMIZE BELOW
       blas::gemm(1.0, wk.C(Rk, RN), mat_inv(RN, RN), 0.0, wk.MC(Rk, RN));
-      wk.MC(Rk, range(N, N + k)) = -1; // -identity matrix
-      wk.MB(range(N, N + k), Rk) = -1; // -identity matrix !
+      wk.MC(Rk, range(N, N + k_tried)) = -1; // -identity matrix
+      wk.MB(range(N, N + k_tried), Rk) = -1; // -identity matrix !
 
       // keep the real position of the row/col
       // since we insert a col/row, we have first to push the col at the right
       // and then say that col wk.i[0] is stored in N, the last col.
       // same for rows
-      for (int l = 0; l < k; ++l) {
+      for (int l = 0; l < k_tried; ++l) {
         N++;
         for (long i = N - 2; i >= wk.i[l]; i--) row_num[i + 1] = row_num[i];
         row_num[wk.i[l]] = N - 1;
@@ -721,8 +721,8 @@ namespace triqs::det_manip {
       RN = range(N);
 
       wk.ksi(Rk, Rk)               = nda::linalg::inv(wk.ksi(Rk, Rk));
-      mat_inv(RN, range(N - k, N)) = 0;
-      mat_inv(range(N - k, N), RN) = 0;
+      mat_inv(RN, range(N - k_tried, N)) = 0;
+      mat_inv(range(N - k_tried, N), RN) = 0;
       //mat_inv(RN,RN) += wk.MB(RN,Rk) * (wk.ksi(Rk, Rk) * wk.MC(Rk,RN)); // OPTIMIZE BELOW
       blas::gemm(1.0, wk.MB(RN, Rk), (wk.ksi(Rk, Rk) * wk.MC(Rk, RN)), 1.0, mat_inv(RN, RN));
     }
@@ -819,17 +819,17 @@ namespace triqs::det_manip {
       TRIQS_ASSERT(N >= 2);
       TRIQS_ASSERT(i.size() == j.size());
 
-      k = i.size();
-      reserve(N - k, k);
+      k_tried = i.size();
+      reserve(N - k_tried, k_tried);
       last_try = RemoveK;
 
       // check inputs
-      for (int l = 0; l < k - 1; ++l) {
+      for (int l = 0; l < k_tried - 1; ++l) {
         TRIQS_ASSERT(i[l] != i[l + 1] and 0 <= i[l] and i[l] < N);
         TRIQS_ASSERT(j[l] != j[l + 1] and 0 <= j[l] and j[l] < N);
       }
 
-      for (long l = 0; l < k; ++l) {
+      for (long l = 0; l < k_tried; ++l) {
         wk.i[l]     = i[l];
         wk.j[l]     = j[l];
         wk.ireal[l] = row_num[wk.i[l]];
@@ -837,13 +837,13 @@ namespace triqs::det_manip {
       }
 
       // compute the newdet
-      for (long l1 = 0; l1 < k; ++l1) {
-        for (long l2 = 0; l2 < k; ++l2) { wk.ksi(l1, l2) = mat_inv(wk.jreal[l1], wk.ireal[l2]); }
+      for (long l1 = 0; l1 < k_tried; ++l1) {
+        for (long l2 = 0; l2 < k_tried; ++l2) { wk.ksi(l1, l2) = mat_inv(wk.jreal[l1], wk.ireal[l2]); }
       }
-      auto det_ksi = wk.det_ksi(k);
+      auto det_ksi = wk.det_ksi(k_tried);
       newdet       = det * det_ksi;
       long idx_sum = 0;
-      for (long l = 0; l < k; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
+      for (long l = 0; l < k_tried; ++l) { idx_sum += wk.i[l] + wk.j[l]; }
       newsign = (idx_sum % 2 == 0 ? sign : -sign);
 
       return det_ksi * (newsign * sign); // sign is unity, hence 1/sign == sign
@@ -852,22 +852,22 @@ namespace triqs::det_manip {
     //------------------------------------------------------------------------------------------
     private:
     void complete_remove_k() {
-      if (N == k) {
+      if (N == k_tried) {
         clear();
         return;
       } // put the sign to 1 also .... Change complete_remove...
 
       std::vector<long> ireal = wk.ireal;
       std::vector<long> jreal = wk.jreal;
-      std::sort(ireal.begin(), ireal.begin() + k);
-      std::sort(jreal.begin(), jreal.begin() + k);
+      std::sort(ireal.begin(), ireal.begin() + k_tried);
+      std::sort(jreal.begin(), jreal.begin() + k_tried);
 
       // Move rows and cols to be removed to the end, starting from the right.
       // Adjust the x_values and y_values vector accordingly and
       // swap the associated row_num and col_num elements
       // Remember that for M row/col is interchanged by inversion, transposition.
       range RN(N);
-      for (long m = k - 1, target = N - 1; m >= 0; --m, --target) {
+      for (long m = k_tried - 1, target = N - 1; m >= 0; --m, --target) {
         if (ireal[m] != target) {
           deep_swap(mat_inv(RN, ireal[m]), mat_inv(RN, target));
           x_values[ireal[m]] = x_values[target];
@@ -883,7 +883,7 @@ namespace triqs::det_manip {
           std::swap(*jitr, *titr);
         }
       }
-      N -= k;
+      N -= k_tried;
       RN = range(N);
 
       // Clean up removed elements from row_num and col_num
@@ -898,7 +898,7 @@ namespace triqs::det_manip {
       y_values.resize(N);
 
       // M <- a - d^-1 b c with BLAS
-      range Rl(N, N + k), Rk(k);
+      range Rl(N, N + k_tried), Rk(k_tried);
       wk.ksi(Rk, Rk) = nda::linalg::inv(mat_inv(Rl, Rl));
 
       // write explicitely the second product on ksi for speed ?
