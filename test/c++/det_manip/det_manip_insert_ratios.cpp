@@ -175,6 +175,109 @@ void test_rank1_empty_batch() {
   std::cerr << "PASSED" << std::endl;
 }
 
+void test_rank2_batch_vs_sequential() {
+  std::cerr << "=== test_rank2_batch_vs_sequential ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 67890);
+  build_det(D, 20, RNG);
+
+  long K = 30;
+  auto x0s = random_array1(K, RNG);
+  auto x1s = random_array1(K, RNG);
+  auto y0s = random_array1(K, RNG);
+  auto y1s = random_array1(K, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long m = 0; m < K; ++m) {
+    auto ratio = D.try_insert2(0, 1, 0, 1, x0s(m), x1s(m), y0s(m), y1s(m));
+    D.reject_last_try();
+    assert_close(batch(m), ratio, PRECISION, "rank2 m=" + std::to_string(m));
+  }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_rank2_state_unchanged() {
+  std::cerr << "=== test_rank2_state_unchanged ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 22222);
+  build_det(D, 15, RNG);
+
+  auto det_before  = D.determinant();
+  auto size_before = D.size();
+
+  auto x0s = nda::array<double, 1>{1.0, 2.0};
+  auto x1s = nda::array<double, 1>{3.0, 4.0};
+  auto y0s = nda::array<double, 1>{5.0, 6.0};
+  auto y1s = nda::array<double, 1>{7.0, 8.0};
+  D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  if (D.size() != size_before) TRIQS_RUNTIME_ERROR << "Size changed!";
+  assert_close(D.determinant(), det_before, 1.e-12, "det changed");
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_rank2_empty_matrix() {
+  std::cerr << "=== test_rank2_empty_matrix ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+
+  auto x0s = nda::array<double, 1>{1.0, 2.0};
+  auto x1s = nda::array<double, 1>{3.0, 4.0};
+  auto y0s = nda::array<double, 1>{5.0, 6.0};
+  auto y1s = nda::array<double, 1>{7.0, 8.0};
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long m = 0; m < 2; ++m) {
+    auto ratio = D.try_insert2(0, 1, 0, 1, x0s(m), x1s(m), y0s(m), y1s(m));
+    D.reject_last_try();
+    assert_close(batch(m), ratio, 1.e-14, "rank2 empty m=" + std::to_string(m));
+  }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_rank2_reversed_indices() {
+  std::cerr << "=== test_rank2_reversed_indices ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 55555);
+  build_det(D, 20, RNG);
+
+  long K = 15;
+  auto x0s = random_array1(K, RNG);
+  auto x1s = random_array1(K, RNG);
+  auto y0s = random_array1(K, RNG);
+  auto y1s = random_array1(K, RNG);
+
+  // Test i0 > i1 (reversed row indices)
+  auto batch_10 = D.insert2_ratios(1, 0, 0, 1, x0s, x1s, y0s, y1s);
+  for (long m = 0; m < K; ++m) {
+    auto ratio = D.try_insert2(1, 0, 0, 1, x0s(m), x1s(m), y0s(m), y1s(m));
+    D.reject_last_try();
+    assert_close(batch_10(m), ratio, PRECISION, "rank2 reversed i m=" + std::to_string(m));
+  }
+
+  // Test j0 > j1 (reversed col indices)
+  auto batch_01 = D.insert2_ratios(0, 1, 1, 0, x0s, x1s, y0s, y1s);
+  for (long m = 0; m < K; ++m) {
+    auto ratio = D.try_insert2(0, 1, 1, 0, x0s(m), x1s(m), y0s(m), y1s(m));
+    D.reject_last_try();
+    assert_close(batch_01(m), ratio, PRECISION, "rank2 reversed j m=" + std::to_string(m));
+  }
+
+  // Test both reversed
+  auto batch_11 = D.insert2_ratios(1, 0, 1, 0, x0s, x1s, y0s, y1s);
+  for (long m = 0; m < K; ++m) {
+    auto ratio = D.try_insert2(1, 0, 1, 0, x0s(m), x1s(m), y0s(m), y1s(m));
+    D.reject_last_try();
+    assert_close(batch_11(m), ratio, PRECISION, "rank2 both reversed m=" + std::to_string(m));
+  }
+
+  std::cerr << "PASSED" << std::endl;
+}
+
 void test_cross_validate_rank1() {
   std::cerr << "=== test_cross_validate_rank1 ===" << std::endl;
   fun f;
@@ -192,6 +295,33 @@ void test_cross_validate_rank1() {
   auto batch_basic = Db.insert_ratios(0, 0, xs, ys);
 
   for (long m = 0; m < K; ++m) assert_close(batch_opt(m), batch_basic(m), 1.e-4, "cross rank1 m=" + std::to_string(m));
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_cross_validate_rank2() {
+  std::cerr << "=== test_cross_validate_rank2 ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::det_manip::det_manip_basic<fun> Db(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 44444);
+
+  for (int n = 0; n < 15; ++n) {
+    double x = RNG(10.0);
+    double y = RNG(10.0);
+    D.insert(D.size(), D.size(), x, y);
+    Db.insert(Db.size(), Db.size(), x, y);
+  }
+
+  long K = 10;
+  auto x0s = random_array1(K, RNG);
+  auto x1s = random_array1(K, RNG);
+  auto y0s = random_array1(K, RNG);
+  auto y1s = random_array1(K, RNG);
+
+  auto batch_opt   = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  auto batch_basic = Db.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long m = 0; m < K; ++m) assert_close(batch_opt(m), batch_basic(m), 1.e-3, "cross rank2 m=" + std::to_string(m));
   std::cerr << "PASSED" << std::endl;
 }
 
@@ -244,6 +374,180 @@ void test_rank2_array_insert_ratios_cross_validate() {
   std::cerr << "PASSED" << std::endl;
 }
 
+void test_rank2_array_insert2_ratios() {
+  std::cerr << "=== test_rank2_array_insert2_ratios ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 55667);
+  build_det(D, 20, RNG);
+
+  long M = 5, E = 8;
+  auto x0s = random_array2(M, E, RNG);
+  auto x1s = random_array2(M, E, RNG);
+  auto y0s = random_array2(M, E, RNG);
+  auto y1s = random_array2(M, E, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  static_assert(nda::get_rank<decltype(batch)> == 2);
+  TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, E}));
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = D.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(i, j), y0s(i, j), y1s(i, j));
+      D.reject_last_try();
+      assert_close(batch(i, j), ratio, PRECISION,
+                   "rank2 array insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+// ---- Tests for broadcast: insert2_ratios with mixed rank-2 / rank-1 args ----
+
+void test_broadcast_insert2_ratios() {
+  std::cerr << "=== test_broadcast_insert2_ratios ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 77889);
+  build_det(D, 20, RNG);
+
+  long M = 5, E = 8;
+  // Pair 0 (A-side): rank-2, shape (M, E)
+  auto x0s = random_array2(M, E, RNG);
+  auto y0s = random_array2(M, E, RNG);
+  // Pair 1 (B-side): rank-1, shape (E) -- broadcast across M
+  auto x1s = random_array1(E, RNG);
+  auto y1s = random_array1(E, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  static_assert(nda::get_rank<decltype(batch)> == 2);
+  TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, E}));
+
+  // Cross-validate against sequential calls
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = D.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(j), y0s(i, j), y1s(j));
+      D.reject_last_try();
+      assert_close(batch(i, j), ratio, PRECISION,
+                   "broadcast insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_broadcast_insert2_ratios_basic_vs_sequential() {
+  std::cerr << "=== test_broadcast_insert2_ratios_basic_vs_sequential ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip_basic<fun> Db(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 88990);
+
+  for (int n = 0; n < 15; ++n) {
+    double x = RNG(10.0);
+    double y = RNG(10.0);
+    Db.insert(Db.size(), Db.size(), x, y);
+  }
+
+  long M = 4, E = 6;
+  auto x0s = random_array2(M, E, RNG);
+  auto y0s = random_array2(M, E, RNG);
+  auto x1s = random_array1(E, RNG);
+  auto y1s = random_array1(E, RNG);
+
+  auto batch_basic = Db.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = Db.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(j), y0s(i, j), y1s(j));
+      Db.reject_last_try();
+      assert_close(batch_basic(i, j), ratio, 1.e-10,
+                   "basic broadcast vs sequential (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_broadcast_insert2_ratios_cross_validate() {
+  std::cerr << "=== test_broadcast_insert2_ratios_cross_validate ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::det_manip::det_manip_basic<fun> Db(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 88990);
+
+  for (int n = 0; n < 15; ++n) {
+    double x = RNG(10.0);
+    double y = RNG(10.0);
+    D.insert(D.size(), D.size(), x, y);
+    Db.insert(Db.size(), Db.size(), x, y);
+  }
+
+  long M = 4, E = 6;
+  auto x0s = random_array2(M, E, RNG);
+  auto y0s = random_array2(M, E, RNG);
+  auto x1s = random_array1(E, RNG);
+  auto y1s = random_array1(E, RNG);
+
+  D.regenerate(); // refresh inverse for numerical accuracy before cross-validation
+
+  auto batch_opt   = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  auto batch_basic = Db.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j)
+      assert_close(batch_opt(i, j), batch_basic(i, j), 1.e-2,
+                   "cross broadcast insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_broadcast_insert2_ratios_reversed() {
+  std::cerr << "=== test_broadcast_insert2_ratios_reversed ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 99001);
+  build_det(D, 20, RNG);
+
+  long M = 4, E = 6;
+  // Pair 0 (A-side): rank-1, shape (E) -- broadcast
+  auto x0s = random_array1(E, RNG);
+  auto y0s = random_array1(E, RNG);
+  // Pair 1 (B-side): rank-2, shape (M, E) -- high-rank
+  auto x1s = random_array2(M, E, RNG);
+  auto y1s = random_array2(M, E, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  static_assert(nda::get_rank<decltype(batch)> == 2);
+  TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, E}));
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = D.try_insert2(0, 1, 0, 1, x0s(j), x1s(i, j), y0s(j), y1s(i, j));
+      D.reject_last_try();
+      assert_close(batch(i, j), ratio, PRECISION,
+                   "broadcast reversed insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
+void test_broadcast_insert2_empty_matrix() {
+  std::cerr << "=== test_broadcast_insert2_empty_matrix ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+
+  long M = 3, E = 4;
+  triqs::mc_tools::random_generator RNG("mt19937", 10101);
+  auto x0s = random_array2(M, E, RNG);
+  auto y0s = random_array2(M, E, RNG);
+  auto x1s = random_array1(E, RNG);
+  auto y1s = random_array1(E, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = D.try_insert2(0, 1, 0, 1, x0s(i, j), x1s(j), y0s(i, j), y1s(j));
+      D.reject_last_try();
+      assert_close(batch(i, j), ratio, 1.e-14,
+                   "broadcast empty insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
 // insert_ratios at positions with i+j odd: exercises the sign_fac = -1 branch.
 void test_rank1_nonzero_position() {
   std::cerr << "=== test_rank1_nonzero_position ===" << std::endl;
@@ -270,6 +574,96 @@ void test_rank1_nonzero_position() {
   std::cerr << "PASSED" << std::endl;
 }
 
+// in combination with all swap_x/swap_y parities.
+void test_rank2_odd_idx_sum() {
+  std::cerr << "=== test_rank2_odd_idx_sum ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 16180);
+  build_det(D, 20, RNG);
+
+  long K   = 12;
+  auto x0s = random_array1(K, RNG);
+  auto x1s = random_array1(K, RNG);
+  auto y0s = random_array1(K, RNG);
+  auto y1s = random_array1(K, RNG);
+
+  // (i0,i1,j0,j1): idx_sum = 3,3,3 (odd) with varied swaps, plus 6 (even control)
+  std::array<long, 4> i0s = {0, 1, 0, 2};
+  std::array<long, 4> i1s = {1, 0, 2, 1};
+  std::array<long, 4> j0s = {0, 0, 1, 3};
+  std::array<long, 4> j1s = {2, 2, 0, 0};
+  for (int t = 0; t < 4; ++t) {
+    long i0 = i0s[t], i1 = i1s[t], j0 = j0s[t], j1 = j1s[t];
+    auto batch = D.insert2_ratios(i0, i1, j0, j1, x0s, x1s, y0s, y1s);
+    for (long m = 0; m < K; ++m) {
+      auto ratio = D.try_insert2(i0, i1, j0, j1, x0s(m), x1s(m), y0s(m), y1s(m));
+      D.reject_last_try();
+      assert_close(batch(m), ratio, PRECISION,
+                   "odd idx_sum (" + std::to_string(i0) + "," + std::to_string(i1) + "," + std::to_string(j0) + "," + std::to_string(j1)
+                       + ") m=" + std::to_string(m));
+    }
+  }
+  std::cerr << "PASSED" << std::endl;
+}
+
+// ---- Empty-batch (K==0) tests for the methods that lack an explicit guard ----
+
+void test_rank2_empty_batch() {
+  std::cerr << "=== test_rank2_empty_batch ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+  triqs::mc_tools::random_generator RNG("mt19937", 45654);
+  build_det(D, 5, RNG); // N>0 so the gemm path is exercised
+
+  nda::array<double, 1> empty(0);
+  auto batch = D.insert2_ratios(0, 1, 0, 1, empty, empty, empty, empty);
+  if (batch.size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty result";
+
+  // both the R0>R1 branch and (via recursion) the R0<R1 branch, for both impls.
+  triqs::det_manip::det_manip_basic<fun> Db(f, 100);
+  for (int n = 0; n < 5; ++n) {
+    double x = RNG(10.0), y = RNG(10.0);
+    Db.insert(Db.size(), Db.size(), x, y);
+  }
+  long E      = 4;
+  auto empty2 = random_array2(0, E, RNG); // shape (0, E)
+  auto vecE   = random_array1(E, RNG);    // shape (E)
+  if (D.insert2_ratios(0, 1, 0, 1, empty2, vecE, empty2, vecE).size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty (R0>R1, opt)";
+  if (D.insert2_ratios(0, 1, 0, 1, vecE, empty2, vecE, empty2).size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty (R0<R1, opt)";
+  if (Db.insert2_ratios(0, 1, 0, 1, empty2, vecE, empty2, vecE).size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty (R0>R1, basic)";
+  if (Db.insert2_ratios(0, 1, 0, 1, vecE, empty2, vecE, empty2).size() != 0) TRIQS_RUNTIME_ERROR << "Expected empty (R0<R1, basic)";
+  std::cerr << "PASSED" << std::endl;
+}
+
+// insert2_ratios broadcast with R0 < R1 (the recursion branch) on an empty matrix (N==0).
+void test_broadcast_insert2_empty_matrix_reversed() {
+  std::cerr << "=== test_broadcast_insert2_empty_matrix_reversed ===" << std::endl;
+  fun f;
+  triqs::det_manip::det_manip<fun> D(f, 100);
+
+  long M = 3, E = 4;
+  triqs::mc_tools::random_generator RNG("mt19937", 20202);
+  // Pair 0 rank-1 (broadcast), pair 1 rank-2 -> R0 < R1 recursion
+  auto x0s = random_array1(E, RNG);
+  auto y0s = random_array1(E, RNG);
+  auto x1s = random_array2(M, E, RNG);
+  auto y1s = random_array2(M, E, RNG);
+
+  auto batch = D.insert2_ratios(0, 1, 0, 1, x0s, x1s, y0s, y1s);
+  static_assert(nda::get_rank<decltype(batch)> == 2);
+  TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, E}));
+
+  for (long i = 0; i < M; ++i)
+    for (long j = 0; j < E; ++j) {
+      auto ratio = D.try_insert2(0, 1, 0, 1, x0s(j), x1s(i, j), y0s(j), y1s(i, j));
+      D.reject_last_try();
+      assert_close(batch(i, j), ratio, 1.e-14,
+                   "broadcast empty reversed insert2 (" + std::to_string(i) + "," + std::to_string(j) + ")");
+    }
+  std::cerr << "PASSED" << std::endl;
+}
+
 int main() {
   // Original rank-1 tests
   test_rank1_batch_vs_sequential();
@@ -277,14 +671,32 @@ int main() {
   test_rank1_empty_matrix();
   test_rank1_single_point();
   test_rank1_empty_batch();
+  test_rank2_batch_vs_sequential();
+  test_rank2_state_unchanged();
+  test_rank2_empty_matrix();
+  test_rank2_reversed_indices();
   test_cross_validate_rank1();
+  test_cross_validate_rank2();
 
   // Rank-2 array tests
   test_rank2_array_insert_ratios();
   test_rank2_array_insert_ratios_cross_validate();
+  test_rank2_array_insert2_ratios();
+
+  // Broadcast tests (mixed rank-2 / rank-1)
+  test_broadcast_insert2_ratios();
+  test_broadcast_insert2_ratios_basic_vs_sequential();
+  test_broadcast_insert2_ratios_cross_validate();
+  test_broadcast_insert2_ratios_reversed();
+  test_broadcast_insert2_empty_matrix();
 
   // Position-dependent sign factor (odd parity)
   test_rank1_nonzero_position();
+  test_rank2_odd_idx_sum();
+
+  // Empty-batch and remaining-branch coverage
+  test_rank2_empty_batch();
+  test_broadcast_insert2_empty_matrix_reversed();
 
   std::cerr << "\nAll tests PASSED." << std::endl;
   return 0;

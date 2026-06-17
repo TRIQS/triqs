@@ -1015,6 +1015,174 @@ namespace triqs::det_manip {
       return result;
     }
 
+    /// Compute independent rank-2 insertion det-ratios at positions (i0, i1, j0, j1).
+    /// Paired args must have equal rank: get_rank<X0> == get_rank<Y0>, get_rank<X1> == get_rank<Y1>.
+    /// Paired args must have equal shape: x0s.shape() == y0s.shape(), x1s.shape() == y1s.shape().
+    /// When ranks differ between pairs, lower-rank args are broadcast along extra leading dims.
+    /// Result rank = max(get_rank<X0>, get_rank<X1>). Read-only: does not modify internal state.
+    template <nda::Array X0, nda::Array X1, nda::Array Y0, nda::Array Y1>
+      requires(nda::get_rank<X0> == nda::get_rank<Y0>) && (nda::get_rank<X1> == nda::get_rank<Y1>)
+    auto insert2_ratios(long i0, long i1, long j0, long j1, X0 const &x0s, X1 const &x1s, Y0 const &y0s, Y1 const &y1s) const
+        -> nda::array<value_type, std::max(nda::get_rank<X0>, nda::get_rank<X1>)> {
+      constexpr int R0   = nda::get_rank<X0>;
+      constexpr int R1   = nda::get_rank<X1>;
+      constexpr int Rmax = std::max(R0, R1);
+
+      TRIQS_ASSERT(x0s.shape() == y0s.shape());
+      TRIQS_ASSERT(x1s.shape() == y1s.shape());
+      TRIQS_ASSERT(0 <= i0 and i0 <= N + 1);
+      TRIQS_ASSERT(0 <= i1 and i1 <= N + 1);
+      TRIQS_ASSERT(0 <= j0 and j0 <= N + 1);
+      TRIQS_ASSERT(0 <= j1 and j1 <= N + 1);
+      TRIQS_ASSERT(i0 != i1);
+      TRIQS_ASSERT(j0 != j1);
+
+      // sign_fac from positions. Additional (-1)^(swap_x + swap_y) corrects for
+      // computing ksi in unsorted (original pair) order rather than sorted order.
+      long idx_sum     = i0 + i1 + j0 + j1;
+      bool swap_x      = (i0 > i1);
+      bool swap_y      = (j0 > j1);
+      int sort_sign    = ((int(swap_x) + int(swap_y)) % 2 == 0) ? 1 : -1;
+      value_type sign_fac = (idx_sum % 2 == 0 ? sort_sign : -sort_sign);
+
+      if constexpr (R0 == R1) {
+        // Same rank: all arrays have the same size, no broadcasting
+        long nbatch = x0s.size();
+        TRIQS_ASSERT(x0s.size() == x1s.size());
+
+        // Flatten inputs -- keep original pair order (no sorting)
+        auto fx0 = flatten_array(x0s);
+        auto fx1 = flatten_array(x1s);
+        auto fy0 = flatten_array(y0s);
+        auto fy1 = flatten_array(y1s);
+
+        nda::array<value_type, Rmax> result(x0s.shape());
+
+        // Empty batch: nothing to compute and a zero-size gemm below would be invalid.
+        if (nbatch == 0) return result;
+
+        if (N == 0) {
+          for (long m = 0; m < nbatch; ++m)
+            result.data()[m] = sign_fac * (f(fx0[m], fy0[m]) * f(fx1[m], fy1[m]) - f(fx0[m], fy1[m]) * f(fx1[m], fy0[m]));
+          return result;
+        }
+
+        range RN(N);
+        // B0 from y0s (pair 0), B1 from y1s (pair 1) -- unsorted
+        nda::matrix<value_type> B0(N, nbatch), B1(N, nbatch), C0(nbatch, N), C1(nbatch, N), MB0(N, nbatch), MB1(N, nbatch);
+        for (long l = 0; l < N; ++l)
+          for (long m = 0; m < nbatch; ++m) {
+            B0(l, m) = f(x_values[l], fy0[m]);
+            B1(l, m) = f(x_values[l], fy1[m]);
+          }
+        for (long m = 0; m < nbatch; ++m)
+          for (long l = 0; l < N; ++l) {
+            C0(m, l) = f(fx0[m], y_values[l]);
+            C1(m, l) = f(fx1[m], y_values[l]);
+          }
+
+        blas::gemm(1.0, mat_inv(RN, RN), B0, 0.0, MB0);
+        blas::gemm(1.0, mat_inv(RN, RN), B1, 0.0, MB1);
+
+        for (long m = 0; m < nbatch; ++m) {
+          value_type dot00 = 0, dot01 = 0, dot10 = 0, dot11 = 0;
+          for (long l = 0; l < N; ++l) {
+            dot00 += C0(m, l) * MB0(l, m);
+            dot01 += C0(m, l) * MB1(l, m);
+            dot10 += C1(m, l) * MB0(l, m);
+            dot11 += C1(m, l) * MB1(l, m);
+          }
+          auto ksi00 = f(fx0[m], fy0[m]) - dot00;
+          auto ksi01 = f(fx0[m], fy1[m]) - dot01;
+          auto ksi10 = f(fx1[m], fy0[m]) - dot10;
+          auto ksi11 = f(fx1[m], fy1[m]) - dot11;
+          result.data()[m] = sign_fac * (ksi00 * ksi11 - ksi01 * ksi10);
+        }
+        return result;
+      } else if constexpr (R0 > R1) {
+        // Broadcast: pair 0 (x0s, y0s) has shape (M_dims..., common_dims...), pair 1 has shape (common_dims...)
+        auto shape0 = x0s.shape();
+        auto shape1 = x1s.shape();
+        for (int d = 0; d < R1; ++d)
+          TRIQS_ASSERT(shape0[R0 - R1 + d] == shape1[d]);
+
+        // Empty batch: avoid the division by Nc below and the zero-size gemm.
+        if (x0s.size() == 0) return nda::array<value_type, R0>(shape0);
+
+        long Nc = x1s.size();
+        long M  = x0s.size() / Nc;
+        TRIQS_ASSERT(x0s.size() % Nc == 0);
+
+        // Flatten inputs
+        auto fx0 = flatten_array(x0s);
+        auto fx1 = flatten_array(x1s);
+        auto fy0 = flatten_array(y0s);
+        auto fy1 = flatten_array(y1s);
+
+        nda::array<value_type, R0> result(shape0);
+
+        if (N == 0) {
+          for (long m = 0; m < M; ++m)
+            for (long n = 0; n < Nc; ++n) {
+              long mn = m * Nc + n;
+              result.data()[mn] =
+                  sign_fac * (f(fx0[mn], fy0[mn]) * f(fx1[n], fy1[n]) - f(fx0[mn], fy1[n]) * f(fx1[n], fy0[mn]));
+            }
+          return result;
+        }
+
+        range RN(N);
+
+        // Pair 0 (full): B0(N, M*Nc), C0(M*Nc, N)
+        long nbatch0 = M * Nc;
+        nda::matrix<value_type> B0(N, nbatch0), C0(nbatch0, N), MB0(N, nbatch0);
+        for (long l = 0; l < N; ++l)
+          for (long m = 0; m < nbatch0; ++m) B0(l, m) = f(x_values[l], fy0[m]);
+        for (long m = 0; m < nbatch0; ++m)
+          for (long l = 0; l < N; ++l) C0(m, l) = f(fx0[m], y_values[l]);
+
+        // Pair 1 (broadcast): B1(N, Nc), C1(Nc, N)
+        nda::matrix<value_type> B1(N, Nc), C1(Nc, N), MB1(N, Nc);
+        for (long l = 0; l < N; ++l)
+          for (long n = 0; n < Nc; ++n) B1(l, n) = f(x_values[l], fy1[n]);
+        for (long n = 0; n < Nc; ++n)
+          for (long l = 0; l < N; ++l) C1(n, l) = f(fx1[n], y_values[l]);
+
+        blas::gemm(1.0, mat_inv(RN, RN), B0, 0.0, MB0);
+        blas::gemm(1.0, mat_inv(RN, RN), B1, 0.0, MB1);
+
+        // Pre-compute ksi11 for each n (independent of m)
+        std::vector<value_type> ksi11(Nc);
+        for (long n = 0; n < Nc; ++n) {
+          value_type dot11 = 0;
+          for (long l = 0; l < N; ++l) dot11 += C1(n, l) * MB1(l, n);
+          ksi11[n] = f(fx1[n], fy1[n]) - dot11;
+        }
+
+        for (long m = 0; m < M; ++m)
+          for (long n = 0; n < Nc; ++n) {
+            long mn = m * Nc + n;
+            value_type dot00 = 0, dot01 = 0, dot10 = 0;
+            for (long l = 0; l < N; ++l) {
+              dot00 += C0(mn, l) * MB0(l, mn);
+              dot01 += C0(mn, l) * MB1(l, n);
+              dot10 += C1(n, l) * MB0(l, mn);
+            }
+            auto ksi00 = f(fx0[mn], fy0[mn]) - dot00;
+            auto ksi01 = f(fx0[mn], fy1[n]) - dot01;
+            auto ksi10 = f(fx1[n], fy0[mn]) - dot10;
+            result.data()[mn] = sign_fac * (ksi00 * ksi11[n] - ksi01 * ksi10);
+          }
+
+        return result;
+      } else {
+        // R0 < R1: swap pairs and indices, recurse into R0 > R1 branch.
+        // Swapping pairs (0↔1) AND indices (i0↔i1, j0↔j1) is equivalent to
+        // relabeling which pair is 0 and which is 1, giving the same det-ratio.
+        return insert2_ratios(i1, i0, j1, j0, x1s, x0s, y1s, y0s);
+      }
+    }
+
     //------------------------------------------------------------------------------------------
     private:
     // Complete the insert_k operation.
