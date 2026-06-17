@@ -98,7 +98,7 @@ struct test {
     triqs::mc_tools::random_generator RNG("mt19937", 23432);
 
     // Work at fixed order:
-    for (auto i : range(N)) {
+    for ([[maybe_unused]] auto i : range(N)) {
       auto x = RNG(20.0);
       auto y = RNG(20.0);
       DetM_Basic.try_insert(0, 0, x, y);
@@ -359,6 +359,6 @@ struct test {
   }
 };
 
-int main(int argc, char **argv) {
+int main() {
   for (auto i : {1, 2, 3, 5, 8}) { test().run(i); }
 }

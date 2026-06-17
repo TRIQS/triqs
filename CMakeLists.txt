@@ -211,6 +211,7 @@ target_compile_options(triqs_warnings
     $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-gcc-compat>
     $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c++26-extensions>
     $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c++26-compat>
+    $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c2y-extensions> # __COUNTER__ in SCOPE_EXIT
     $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>
 )
 

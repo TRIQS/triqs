@@ -155,7 +155,7 @@ struct test {
             detratio_basic = D_basic.try_insert2(i0, i1, j0, j1, x, x1, y, y1);
 
             std::cerr << "Dinit.get_x = ";
-            for (auto x : Dcopy.get_x()) std::cerr << x << " ";
+            for (auto val : Dcopy.get_x()) std::cerr << val << " ";
             std::cerr << std::endl;
 
 #if 1
@@ -169,19 +169,19 @@ struct test {
             Dcopy2.complete_operation();
 
             std::cerr << "Dcopy.get_x = ";
-            for (auto x : Dcopy.get_x()) std::cerr << x << " ";
+            for (auto val : Dcopy.get_x()) std::cerr << val << " ";
             std::cerr << std::endl;
 
             std::cerr << "Dcopy2.get_x = ";
-            for (auto x : Dcopy2.get_x()) std::cerr << x << " ";
+            for (auto val : Dcopy2.get_x()) std::cerr << val << " ";
             std::cerr << std::endl;
 
             std::cerr << "Dcopy.get_y = ";
-            for (auto x : Dcopy.get_y()) std::cerr << x << " ";
+            for (auto val : Dcopy.get_y()) std::cerr << val << " ";
             std::cerr << std::endl;
 
             std::cerr << "Dcopy2.get_y = ";
-            for (auto x : Dcopy2.get_y()) std::cerr << x << " ";
+            for (auto val : Dcopy2.get_y()) std::cerr << val << " ";
             std::cerr << std::endl;
 
             nda::assert_all_close(Dcopy.matrix(), Dcopy2.matrix(), PRECISION, true);
@@ -258,4 +258,4 @@ struct test {
   }
 };
 
-int main(int argc, char **argv) { test().run(); }
+int main() { test().run(); }

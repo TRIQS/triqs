@@ -172,4 +172,4 @@ struct test {
   }
 };
 
-int main(int argc, char **argv) { test().run(); }
+int main() { test().run(); }
