@@ -181,10 +181,10 @@ namespace triqs::utility::nfft {
         long j = 0;
         for (; j < k_simd; j += S) {
           dbatch angles = dbatch(freq_a) * dbatch::load_unaligned(tau + j);
-          auto [sin_v, cos_v] = triqs::utility::math::sincos<8>(angles);
+          auto [sin_v, cos_v] = triqs::utility::math::sincos<12>(angles);
           for (long s = 0; s < S; ++s) row[j + s] = {cos_v.get(s), sin_v.get(s)};
         }
-        for (; j < k; ++j) row[j] = cis<8>(freq_a * tau[j]);
+        for (; j < k; ++j) row[j] = cis<12>(freq_a * tau[j]);
       }
       return ET;
     }
