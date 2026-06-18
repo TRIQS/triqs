@@ -27,22 +27,24 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::mc_tools::random_generator;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.mc_tools.random_generator.RandomGenerator";
-static const auto _c2py_init_0                               = c2py::dispatcher_c_kw_t{
-   c2py::c_constructor<_c2py_cls_0>(), c2py::c_constructor<_c2py_cls_0, std::string, uint32_t, std::size_t>("name", "seed", "buffer_size"_a = 1000)};
+static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(),
+                                                         c2py::c_constructor<_c2py_cls_0, std::string, uint64_t, std::vector<uint64_t>, std::size_t>(
+                                                            "name", "seed", "spawn_key"_a = std::vector<uint64_t>{}, "buffer_size"_a = 1000)};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
-const std::string c2py::tp_ctor_doc<_c2py_cls_0> =
-   _c2py_init_0.doc(R"DOC(
-[1] Default constructor uses the *mt19937* engine with the default seed.
+const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
+[1] Default constructor uses the *mt19937_64* engine with the default seed.
 
 ------
 
-[2] Construct a random generator by wrapping the specified RNG and seeding it with the given seed.
+[2] Construct a random generator by wrapping the specified RNG and seeding it with the given seed,
+optionally producing the parallel stream identified by the given spawn key.
 
-The given name has to correspond to one of the supported engines. If the name does not match any of the 
-supported engines, a runtime error is raised.
+The given name has to correspond to one of the supported engines. If the name does not match any of the
+supported engines, a runtime error is raised. An empty name selects the default engine `std::mt19937_64`.
 
-An empty name selects the built-in custom Mersenne Twister RNG.
+All streams of one simulation share the same seed and are distinguished by their
+spawn key, e.g. `{mpi_rank, thread_id}` (see triqs::mc_tools::splitmix_seed_seq).
 
 ------
 
@@ -51,11 +53,16 @@ Parameters
 name : {par_0}
    Name of the RNG to be used.
 seed : {par_1}
-   Seed for the RNG.
-buffer_size : {par_2}
-   Size of the buffer used to store random numbers.
+   Seed for the RNG, shared by all streams.
+spawn_key : {par_2}
+   Hierarchical stream identifier.
+buffer_size : {par_3}
+   Size of the buffer used to store random numbers (must be positive).
 )DOC",
-                    {{c2py::python_typename<std::string>()}, {c2py::python_typename<uint32_t>()}, {c2py::python_typename<std::size_t>()}});
+                                                                    {{c2py::python_typename<std::string>()},
+                                                                     {c2py::python_typename<uint64_t>()},
+                                                                     {c2py::python_typename<std::vector<uint64_t>>()},
+                                                                     {c2py::python_typename<std::size_t>()}});
 // __call__
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.operator()(); }, "self"),
@@ -72,6 +79,9 @@ static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_c
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
 [1] Generate a random sample from the uniform distribution defined on the interval :math:`[0, 1)`.
+
+Uses the standard 53-bit technique: the upper 53 bits of a 64-bit integer are scaled
+to produce a double with full mantissa precision.
 
 ------
 
@@ -130,26 +140,34 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 template <>
 const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Random number generator with a selectable underlying engine.
 
-The following engine names are currently accepted by the constructor:
+All supported engines produce 64-bit unsigned integers internally via the standard library.
+Engines with native output smaller than 64 bits are wrapped using `std::independent_bits_engine`.
 
-- *empty string* -- a built-in custom Mersenne Twister RNG
-- *mt19937*
-- *mt11213b*
-- *lagged_fibonacci607*
-- *lagged_fibonacci1279*
-- *lagged_fibonacci2281*
-- *lagged_fibonacci3217*
-- *lagged_fibonacci4423*
-- *lagged_fibonacci9689*
-- *lagged_fibonacci19937*
-- *lagged_fibonacci23209*
-- *lagged_fibonacci44497*
-- *ranlux3*
+The following engines are supported (see also triqs::mc_tools::random_generator_names_list()):
 
-For non-empty names, the underlying engine is provided by boost.random.
+- *empty string* or *mt19937_64*: uses `std::mt19937_64` (default, native 64-bit)
+- *mt19937*: uses `std::mt19937` (32-bit, combined to 64-bit)
+- *ranlux48*: uses `std::ranlux48` (48-bit, combined to 64-bit)
+- *ranlux24*: uses `std::ranlux24` (24-bit, combined to 64-bit)
+- *minstd_rand*: uses `std::minstd_rand` (31-bit, combined to 64-bit)
+- *knuth_b*: uses `std::knuth_b` (31-bit, combined to 64-bit)
 
-For performance reasons, we use a buffer for the generated random numbers to avoid some of the costs of repeated
-function calls to the RNG.)DOC"
+For performance, raw `uint64_t` values are generated in batches and stored in a buffer.
+Doubles in [0, 1) are derived using the standard 53-bit technique.
+Integers in [0, i) are generated using Lemire's nearly divisionless method (unbiased for all ranges).
+
+All engines have their full state initialized through triqs::mc_tools::splitmix_seed_seq from
+the seed and an optional spawn key identifying the parallel stream. For independent Markov
+chains across MPI ranks, pass the same seed everywhere together with a spawn key `{rank}` -- or
+simply an `mpi::communicator`, which does this automatically.
+
+.. note::
+
+   A random_generator is not thread-safe: a single instance must be used by one thread for
+   its whole lifetime. For per-thread streams, construct one generator per thread inside the
+   parallel region with a spawn key that includes the thread id, e.g.
+   `{rank, omp_get_thread_num()}`. In debug builds, drawing from a generator on a thread other than
+   the one that created it triggers an assertion (the check is compiled out when `NDEBUG` is set).)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 
 // ==================== module functions ====================

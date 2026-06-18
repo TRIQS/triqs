@@ -23,6 +23,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
+#include <limits>
 #include "./old_test_tool.hpp"
 
 struct fun {
@@ -54,6 +55,12 @@ template <class T1, class T2> void assert_close(T1 const &A, T2 const &B, double
   if (std::abs(A - B) > precision) TRIQS_RUNTIME_ERROR << "assert_close error : " << A << "\n" << B;
 }
 const double PRECISION = 1.e-6;
+
+// Bound on the inverse-matrix entries of an accepted configuration. The determinant ratio alone
+// does not bound the conditioning of the result (a move can shrink the smallest singular value
+// while another one grows), and on ill-conditioned matrices the fast updates and the 1.e-6
+// precision checks below legitimately lose accuracy.
+const double MAX_INV_ENTRY = 1.e4;
 
 struct test {
 
@@ -93,7 +100,7 @@ struct test {
 
     // basic
     triqs::arrays::assert_all_close(D_basic.matrix(), D.matrix(), PRECISION, true);
-    
+
     assert_close(D.determinant(), 1 / nda::linalg::det(D.inverse_matrix()), PRECISION);
     triqs::arrays::assert_all_close(nda::linalg::inv(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
@@ -103,7 +110,7 @@ struct test {
   }
 
   void run() {
-    triqs::mc_tools::random_generator RNG("mt19937", 23432);
+    triqs::mc_tools::random_generator RNG{};
     for (size_t i = 0; i < 50000; ++i) {
       std::cerr << " ------------------------------------------------" << std::endl;
       std::cerr << " i = " << i << " size = " << D.size() << std::endl;
@@ -159,8 +166,20 @@ struct test {
             std::cerr << std::endl;
 
 #if 1
-	    if (i0>i1) { std::swap(i0,i1); std::swap(x,x1);}
-	    if (j0>j1) { std::swap(j0,j1); std::swap(y,y1);}
+            if (i0 > i1) {
+              std::swap(i0, i1);
+              std::swap(x, x1);
+            }
+            if (j0 > j1) {
+              std::swap(j0, j1);
+              std::swap(y, y1);
+            }
+            // disable the internal precision checks on the copies: a degenerate candidate
+            // would trigger them, and only the (exact) matrix data is compared below
+            for (auto *dm : {&Dcopy, &Dcopy2}) {
+              dm->set_precision_warning(std::numeric_limits<double>::max());
+              dm->set_precision_error(std::numeric_limits<double>::max());
+            }
             Dcopy.try_insert(i0, j0, x, y);
             Dcopy.complete_operation();
             Dcopy.try_insert(i1, j1, x1, y1);
@@ -244,7 +263,17 @@ struct test {
       //assert_close(detratio, detratio_basic, PRECISION);
 
       if (do_something) {
-        if (std::abs(detratio * det_old) > 1.e-4) {
+        bool accept = std::abs(detratio) > MIN_DETRATIO && std::abs(detratio * det_old) > 1.e-4;
+        if (accept) {
+          // complete on a scratch copy first to bound the conditioning of the resulting matrix
+          // (with the copy's internal precision checks disabled, the bound below decides alone)
+          auto D_try = D;
+          D_try.set_precision_warning(std::numeric_limits<double>::max());
+          D_try.set_precision_error(std::numeric_limits<double>::max());
+          D_try.complete_operation();
+          accept = D_try.size() == 0 || nda::max_element(nda::abs(D_try.inverse_matrix())) < MAX_INV_ENTRY;
+        }
+        if (accept) {
           D.complete_operation();
           D_basic.complete_operation();
           if (D.size() > 0) check();

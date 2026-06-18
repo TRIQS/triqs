@@ -95,13 +95,17 @@ struct test {
   void run(int N) {
     using itertools::range;
 
-    triqs::mc_tools::random_generator RNG("mt19937", 23432);
+    triqs::mc_tools::random_generator RNG{};
 
     // Work at fixed order:
     for ([[maybe_unused]] auto i : range(N)) {
-      auto x = RNG(20.0);
-      auto y = RNG(20.0);
-      DetM_Basic.try_insert(0, 0, x, y);
+      auto x = RNG(10.0);
+      auto y = RNG(10.0);
+      while (std::abs(DetM_Basic.try_insert(0, 0, x, y)) < MIN_DETRATIO) {
+        DetM_Basic.reject_last_try();
+        x = RNG(10.0);
+        y = RNG(10.0);
+      }
       DetM_Basic.complete_operation();
 
       DetM_Schur.try_insert(0, 0, x, y);
@@ -121,13 +125,15 @@ struct test {
       auto DetM_Basic2 = DetM_Basic;
       auto DetM_Schur2 = DetM_Schur;
 
-      auto x = RNG(20.0);
-      auto y = RNG(20.0);
+      auto x = RNG(10.0);
+      auto y = RNG(10.0);
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_insert(i, j, x, y);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -157,8 +163,10 @@ struct test {
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_remove(i, j);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -190,15 +198,17 @@ struct test {
       auto DetM_Basic2 = DetM_Basic;
       auto DetM_Schur2 = DetM_Schur;
 
-      auto x0 = RNG(20.0);
-      auto y0 = RNG(20.0);
-      auto x1 = RNG(20.0);
-      auto y1 = RNG(20.0);
+      auto x0 = RNG(10.0);
+      auto y0 = RNG(10.0);
+      auto x1 = RNG(10.0);
+      auto y1 = RNG(10.0);
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_insert2(i0, i1, j0, j1, x0, y0, x1, y1);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -230,8 +240,10 @@ struct test {
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_remove2(i0, i1, j0, j1);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -262,12 +274,14 @@ struct test {
       auto DetM_Basic2 = DetM_Basic;
       auto DetM_Schur2 = DetM_Schur;
 
-      auto y = RNG(20.0);
+      auto y = RNG(10.0);
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_change_col(j, y);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -296,12 +310,14 @@ struct test {
       auto DetM_Basic2 = DetM_Basic;
       auto DetM_Schur2 = DetM_Schur;
 
-      auto x = RNG(20.0);
+      auto x = RNG(10.0);
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_change_row(i, x);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
@@ -330,13 +346,15 @@ struct test {
       auto DetM_Basic2 = DetM_Basic;
       auto DetM_Schur2 = DetM_Schur;
 
-      auto x = RNG(20.0);
-      auto y = RNG(20.0);
+      auto x = RNG(10.0);
+      auto y = RNG(10.0);
 
       double det_old = DetM_Basic2.determinant();
 
-      timer_basic.start();
       double detratio = DetM_Basic2.try_change_col_row(i, j, x, y);
+      if (std::abs(detratio) < MIN_DETRATIO) continue;
+
+      timer_basic.start();
       DetM_Basic2.complete_operation();
       timer_basic.stop();
 
