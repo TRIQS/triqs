@@ -36,6 +36,7 @@
 
 #include <h5/h5.hpp>
 
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -171,8 +172,22 @@ namespace triqs::mc_tools {
      * @param rng_seed Seed for the RNG.
      * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
      */
-    mc_generic(const std::string &rng_name, int rng_seed, int verbosity_lvl)
+    mc_generic(const std::string &rng_name, std::uint64_t rng_seed, int verbosity_lvl)
        : rng_(rng_name, rng_seed), moves_(rng_), report_(&std::cout, verbosity_lvl), verbosity_lvl_(verbosity_lvl) {}
+
+    /**
+     * @brief Construct a generic Monte Carlo class with an independent RNG stream on each MPI rank.
+     *
+     * @details All ranks should pass the same seed; the rank identifies the stream
+     * (see triqs::mc_tools::random_generator).
+     *
+     * @param rng_name Name of the RNG to be used (see triqs::mc_tools::random_generator).
+     * @param rng_seed Seed for the RNG, shared by all ranks.
+     * @param c MPI communicator whose rank identifies the RNG stream.
+     * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
+     */
+    mc_generic(const std::string &rng_name, std::uint64_t rng_seed, mpi::communicator c, int verbosity_lvl)
+       : rng_(rng_name, rng_seed, c), moves_(rng_), report_(&std::cout, verbosity_lvl), verbosity_lvl_(verbosity_lvl) {}
 
     /// Set the verbosity level.
     void set_verbosity(int v) {

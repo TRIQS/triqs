@@ -102,7 +102,7 @@ class TRIQSMCTools : public ::testing::Test {
   }
 
   mpi::communicator comm{};
-  triqs::mc_tools::mc_generic<double> mc{"mt19937", comm.rank() * 0x12af5988, 3};
+  triqs::mc_tools::mc_generic<double> mc{"mt19937_64", comm.rank() * 0x12af5988ull, 3};
   mc_config config{};
 };
 
@@ -201,6 +201,13 @@ TEST_F(TRIQSMCTools, MCGenericOvertimeDutyLockstep) {
   // ranks that finished early kept measuring during overtime
   if (mpi::has_env && comm.size() > 1 && comm.rank() != 0) EXPECT_GT(mc.get_nmeasures(), params.ncycles);
   mc.collect_results(params.comm);
+}
+
+TEST_F(TRIQSMCTools, MCGenericCommunicatorSeeding) {
+  // the communicator constructor gives the same stream as the equivalently seeded random_generator
+  auto mc_keyed = triqs::mc_tools::mc_generic<double>{"mt19937_64", 198, comm, 0};
+  auto rng      = triqs::mc_tools::random_generator{"mt19937_64", 198, comm};
+  for (int i = 0; i < 100; ++i) EXPECT_DOUBLE_EQ(mc_keyed.get_rng()(), rng());
 }
 
 TEST_F(TRIQSMCTools, MCGenericPropagateException) {

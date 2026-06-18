@@ -22,68 +22,59 @@
  * @brief Implementation details for triqs/mc_tools/random_generator.hpp.
  */
 
-#include "./MersenneRNG.hpp"
 #include "./random_generator.hpp"
 #include "../utility/first_include.hpp"
 
-#include <boost/preprocessor/control/if.hpp>
-#include <boost/preprocessor/seq.hpp>
-#include <boost/random/lagged_fibonacci.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/ranlux.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
 #include <fmt/format.h>
-#include <nda/macros.hpp>
+#include <fmt/ranges.h>
 
 #include <cstdint>
+#include <random>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-// List of all supported Boost random number generators.
-#define RNG_LIST                                                                                                                                     \
-  (mt19937)(mt11213b)(                                                                                                                               \
-     lagged_fibonacci607)(lagged_fibonacci1279)(lagged_fibonacci2281)(lagged_fibonacci3217)(lagged_fibonacci4423)(lagged_fibonacci9689)(lagged_fibonacci19937)(lagged_fibonacci23209)(lagged_fibonacci44497)(ranlux3)
-
 namespace triqs::mc_tools {
 
-  random_generator::random_generator(std::string name, std::uint32_t seed, std::size_t buffer_size) : buffer_(buffer_size), name_(std::move(name)) {
-    initialize_rng(name_, seed);
+  // Names of the supported engines; the empty string is additionally accepted as an alias for mt19937_64.
+  static const std::vector<std::string> engine_names = {"mt19937_64", "mt19937", "ranlux48", "ranlux24", "minstd_rand", "knuth_b"};
+
+  random_generator::random_generator(std::string name, std::uint64_t seed, std::vector<std::uint64_t> spawn_key, std::size_t buffer_size)
+     : buffer_(buffer_size), name_(std::move(name)) {
+    if (buffer_size == 0) throw std::runtime_error("Error in random_generator: buffer_size must be positive");
+    initialize_rng(name_, seed, spawn_key);
     refill();
   }
 
-  void random_generator::initialize_rng(std::string const &name, std::uint32_t seed) {
-    // empty string corresponds to RandMT
-    if (name.empty()) {
-      using rng_t = RandomGenerators::RandMT;
-      ptr_        = std::make_unique<rng_model<rng_t>>(seed);
+  void random_generator::initialize_rng(std::string const &name, std::uint64_t seed, std::span<std::uint64_t const> spawn_key) {
+
+    // All engines have their full state initialized from the (seed, spawn_key) pair.
+    auto sseq = splitmix_seed_seq{seed, spawn_key};
+
+    // mt19937_64: native 64-bit engine (default)
+    if (name.empty() || name == "mt19937_64") {
+      ptr_ = std::make_unique<rng_model<std::mt19937_64>>(std::mt19937_64{sseq});
       return;
     }
 
-    // now boost random number generators
-#define DRNG(r, data, XX)                                                                                                                            \
-  if (name == AS_STRING(XX)) {                                                                                                                       \
-    using rng_t = boost::variate_generator<boost::XX, boost::uniform_real<double>>;                                                                  \
-    ptr_        = std::make_unique<rng_model<rng_t>>(rng_t{boost::XX{seed}, boost::uniform_real<>{}});                                               \
-    return;                                                                                                                                          \
-  }
-    BOOST_PP_SEQ_FOR_EACH(DRNG, ~, RNG_LIST)
+    // Wrap an engine with native output < 64 bits using independent_bits_engine.
+    auto wrap = [this](auto base) {
+      using engine_t = std::independent_bits_engine<decltype(base), 64, std::uint64_t>;
+      ptr_           = std::make_unique<rng_model<engine_t>>(engine_t{std::move(base)});
+    };
 
-    // throw an exception if the given name is not recognized
-    throw std::runtime_error(fmt::format("Error in random_generator::initialize_rng: RNG with name {} is not supported", name));
-  }
+    if (name == "mt19937") return wrap(std::mt19937{sseq});         // 32-bit Mersenne Twister
+    if (name == "ranlux48") return wrap(std::ranlux48{sseq});       // 48-bit
+    if (name == "ranlux24") return wrap(std::ranlux24{sseq});       // 24-bit
+    if (name == "minstd_rand") return wrap(std::minstd_rand{sseq}); // 31-bit LCG
+    if (name == "knuth_b") return wrap(std::knuth_b{sseq});         // 31-bit shuffle engine
 
-  std::string random_generator_names(std::string const &sep) {
-#define PR(r, sep, p, XX) BOOST_PP_IF(p, +(sep) +, ) std::string(AS_STRING(XX))
-    return BOOST_PP_SEQ_FOR_EACH_I(PR, sep, RNG_LIST);
+    throw std::runtime_error(fmt::format("Error in random_generator::initialize_rng: RNG with name '{}' is not supported", name));
   }
 
-  std::vector<std::string> random_generator_names_list() {
-    std::vector<std::string> res;
-#define PR2(r, sep, p, XX) res.push_back(AS_STRING(XX));
-    BOOST_PP_SEQ_FOR_EACH_I(PR2, sep, RNG_LIST);
-    return res;
-  }
+  std::string random_generator_names(std::string const &sep) { return fmt::format("{}", fmt::join(engine_names, sep)); }
+
+  std::vector<std::string> random_generator_names_list() { return engine_names; }
 
 } // namespace triqs::mc_tools

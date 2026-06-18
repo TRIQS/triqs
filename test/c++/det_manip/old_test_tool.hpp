@@ -17,6 +17,10 @@
 
 #include <nda/nda.hpp>
 
+// Skip moves with a tiny determinant ratio: a QMC rejects such near-singular moves,
+// and fast updates legitimately lose precision on them.
+inline constexpr double MIN_DETRATIO = 1.e-2;
+
 namespace nda {
 
   template <class T> inline double assert_abs(T z) { return std::abs(z); }

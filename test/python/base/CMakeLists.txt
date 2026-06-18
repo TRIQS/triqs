@@ -76,3 +76,6 @@ add_python_test(discretize_bath)
 
 # constrained residual minimization Dyson solver
 add_python_test(crm_dyson_solver)
+
+# mc_tools random generator
+add_python_test(mc_tools_random_generator)
