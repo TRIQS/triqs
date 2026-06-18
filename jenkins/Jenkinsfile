@@ -137,7 +137,7 @@ for (int i = 0; i < macosPlatforms.size(); i++) {
   def platformEnv = macosPlatforms[i]
   def platform = platformEnv[0]
   platforms["macos-$platform"] = { -> node('macos && m1') {
-    stage("macos-$platform") { timeout(time: 1, unit: 'HOURS') {
+    stage("macos-$platform") { timeout(time: 2, unit: 'HOURS') {
       runBuild("macos-$platform", env.HOME, platformEnv[1].collect { it.replace('\$BREW', env.BREW) })
     } }
   } }
