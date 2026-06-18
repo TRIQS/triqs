@@ -23,22 +23,33 @@ struct fun {
   }
 };
 
-// that can be amplified by near-cancellation in the Schur complement.
-const double PRECISION = 1.e-6;
+// Tolerance for batch insert_ratios vs sequential try_insert. On a well-conditioned matrix (see
+// MIN_INSERT_RATIO) the gemm and gemv paths agree to ~4e-9; 1e-7 leaves margin for other BLAS.
+const double PRECISION = 1.e-7;
 
 template <typename T1, typename T2> void assert_close(T1 const &A, T2 const &B, double precision, std::string const &msg = "") {
   double diff  = std::abs(A - B);
   double scale = std::max(std::abs(double(A)), std::abs(double(B)));
   if (diff > precision * std::max(scale, 1.0))
-    TRIQS_RUNTIME_ERROR << "assert_close error: " << A << " vs " << B << " diff=" << diff << " reldiff=" << diff / std::max(scale, 1e-30) << " " << msg;
+    TRIQS_RUNTIME_ERROR << "assert_close error: " << A << " vs " << B << " diff=" << diff << " reldiff=" << diff / std::max(scale, 1e-30) << " "
+                        << msg;
 }
 
-// Build up a det_manip of given size
+// Reject build insertions with det-ratio below this (as a real MC would, acceptance ~ |ratio|^2):
+// otherwise the random kernel can drive det to ~1e-41, corrupting the maintained inverse so that
+// batch-vs-sequential ratios are pure roundoff noise. Not det_manip's abs(det) singular_threshold.
+const double MIN_INSERT_RATIO = 1.e-3;
+
+// Build up a well-conditioned det_manip of the given size, rejecting near-singular insertions.
 template <typename DM> void build_det(DM &D, int target_size, triqs::mc_tools::random_generator &RNG) {
-  for (int n = 0; n < target_size; ++n) {
+  for (long attempts = 0; D.size() < target_size; ++attempts) {
+    if (attempts > 1000L * target_size) TRIQS_RUNTIME_ERROR << "build_det: too few non-singular insertions";
     double x = RNG(10.0);
     double y = RNG(10.0);
-    D.insert(D.size(), D.size(), x, y);
+    if (std::abs(D.try_insert(D.size(), D.size(), x, y)) > MIN_INSERT_RATIO)
+      D.complete_operation();
+    else
+      D.reject_last_try();
   }
 }
 
@@ -64,7 +75,7 @@ void test_rank1_batch_vs_sequential() {
   triqs::mc_tools::random_generator RNG("mt19937", 12345);
   build_det(D, 20, RNG);
 
-  long K = 30;
+  long K  = 30;
   auto xs = random_array1(K, RNG);
   auto ys = random_array1(K, RNG);
 
@@ -106,8 +117,8 @@ void test_rank1_empty_matrix() {
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
 
-  auto xs = nda::array<double, 1>{1.0, 2.0, 3.0};
-  auto ys = nda::array<double, 1>{4.0, 5.0, 6.0};
+  auto xs    = nda::array<double, 1>{1.0, 2.0, 3.0};
+  auto ys    = nda::array<double, 1>{4.0, 5.0, 6.0};
   auto batch = D.insert_ratios(0, 0, xs, ys);
 
   for (long m = 0; m < 3; ++m) {
@@ -125,8 +136,8 @@ void test_rank1_single_point() {
   triqs::mc_tools::random_generator RNG("mt19937", 99999);
   build_det(D, 10, RNG);
 
-  auto xs = nda::array<double, 1>{5.0};
-  auto ys = nda::array<double, 1>{3.0};
+  auto xs    = nda::array<double, 1>{5.0};
+  auto ys    = nda::array<double, 1>{3.0};
   auto batch = D.insert_ratios(0, 0, xs, ys);
   auto ratio = D.try_insert(0, 0, xs(0), ys(0));
   D.reject_last_try();
@@ -161,7 +172,7 @@ void test_cross_validate_rank1() {
     Db.insert(Db.size(), Db.size(), x, y);
   }
 
-  long K = 10;
+  long K  = 10;
   auto xs = random_array1(K, RNG);
   auto ys = random_array1(K, RNG);
 
@@ -222,8 +233,7 @@ void test_rank2_array_insert_ratios_cross_validate() {
 
   for (long i = 0; i < M; ++i)
     for (long j = 0; j < E; ++j)
-      assert_close(batch_opt(i, j), batch_basic(i, j), 1.e-2,
-                   "cross rank2 array (" + std::to_string(i) + "," + std::to_string(j) + ")");
+      assert_close(batch_opt(i, j), batch_basic(i, j), 1.e-2, "cross rank2 array (" + std::to_string(i) + "," + std::to_string(j) + ")");
   std::cerr << "PASSED" << std::endl;
 }
 
@@ -247,8 +257,7 @@ void test_rank1_nonzero_position() {
     for (long m = 0; m < K; ++m) {
       auto ratio = D.try_insert(i, j, xs(m), ys(m));
       D.reject_last_try();
-      assert_close(batch(m), ratio, PRECISION,
-                   "nonzero pos i=" + std::to_string(i) + " j=" + std::to_string(j) + " m=" + std::to_string(m));
+      assert_close(batch(m), ratio, PRECISION, "nonzero pos i=" + std::to_string(i) + " j=" + std::to_string(j) + " m=" + std::to_string(m));
     }
   }
   std::cerr << "PASSED" << std::endl;
