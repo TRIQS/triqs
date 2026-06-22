@@ -5,6 +5,193 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 4.0.0
+
+TRIQS Version 4.0.0 is a major release that
+* migrates all Python bindings from cpp2py to the new clair + c2py toolchain and removes the `triqs++` compiler wrapper
+* renames the `triqs.gf` Python module to `triqs.gfs` (a deprecation shim keeps `triqs.gf` working for now)
+* migrates the C++ API documentation from cpp2rst to Doxygen
+* bumps the minimum compiler requirements to clang 19 / gcc 14
+* removes long-deprecated headers and API (`triqs/h5.hpp`, `triqs/mpi/base.hpp`, `triqs/mpi/vector.hpp`, deprecated Matsubara domains, `triqs::AnyOf`)
+* adds new real-frequency (`refreq_pts`, `refreq_log`) and Chebyshev imaginary-time meshes
+* overhauls the `triqs/stat` and `triqs/mc_tools` modules
+* fixes several library issues
+
+A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs4.md).
+We provide a detailed list of the changes below.
+
+We thank all contributors: Jennifer Coulter, Philipp Dumitrescu, Samuele Giuli, Thomas Hahn, Alexander Hampel, Jason Kaye, Dominik Kiese, Igor Krivenko, Harrison LaBollita, Henri Menke, Olivier Parcollet, Leonid Pourovskii, Dylan Simon, Hugo U. R. Strand, Nils Wentzell
+
+### Python bindings: cpp2py to clair + c2py
+
+All Python bindings are now generated with the new clair + c2py toolchain instead of cpp2py.
+Every module (`gfs`, `meshes`, `operators`, `atom_diag`, `extractors`, `histograms`, `lattice_tools`,
+`random_generator`, `utilities`, …) was ported and its bindings regenerated.
+As a consequence the `triqs++` compiler wrapper has been removed; `cpp2py` is retained as a build dependency.
+Applications that generate their own Python modules must migrate from cpp2py to clair + c2py and
+regenerate their bindings; auto-generated `*.wrap.cxx` / `*.wrap.hxx` files replace the old `*_desc.py`
+descriptor files.
+
+### Renamings
+
+The `triqs.gf` Python module has been renamed to `triqs.gfs` for consistency with the C++
+`triqs::gfs` namespace. A deprecation shim aliases `triqs.gf` (and its submodules) onto `triqs.gfs`
+and emits a `FutureWarning`; update your imports as `triqs.gf` will be removed in a future release.
+On the C++ side `triqs::function_arg_ret_type` was renamed to `triqs::callable_traits`.
+These renamings can be automated using the [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs4).
+
+### Removal of deprecated API
+
+Headers and symbols deprecated in earlier releases have been removed:
+```
+triqs/h5.hpp (use h5/h5.hpp, namespace h5::), triqs/mpi/base.hpp and triqs/mpi/vector.hpp (use mpi/mpi.hpp),
+triqs::AnyOf / triqs::any_of (use nda::AnyOf), deprecated Matsubara domains (use triqs/mesh/matsubara_freq.hpp),
+mesh::index_to_freq, make_mesh_range_prod
+```
+in C++, and the `triqs.gf.map_block` submodule in Python.
+The [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs4) replaces
+the regex-safe cases; the remainder are described in the [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs4.md).
+
+### Documentation
+
+The C++ API documentation has been migrated from cpp2rst to Doxygen, with new and updated docstrings
+across the `gfs`, `mesh`, `operators`, `atom_diag`, `lattice`, `stat`, and `mc_tools` modules.
+
+### Dependency Management
+
+Python bindings are now generated with clair + c2py and the `triqs++` compiler wrapper has been
+removed (`cpp2py` is retained as a build dependency).
+Minimum compiler requirements are now clang 19 / gcc 14. The `fmt` dependency was bumped to 12.0.0
+and packaging images updated to Ubuntu 26.04 / LLVM 21.
+
+### General
+* Migrate all Python bindings from cpp2py to clair + c2py and regenerate them
+* Remove the `triqs++` compiler wrapper
+* Migrate C++ API documentation from cpp2rst to Doxygen
+* Rename the `triqs.gf` Python module to `triqs.gfs`, with a backward-compatibility shim
+* Bump minimum compiler requirements to clang 19 and gcc 14
+* Remove deprecated headers `triqs/h5.hpp`, `triqs/mpi/base.hpp`, `triqs/mpi/vector.hpp`
+* Remove deprecated Matsubara domains; add new `triqs/mesh/matsubara_freq.hpp` header
+* Remove `triqs::AnyOf`/`any_of` in favor of `nda::AnyOf`
+* Rename `triqs::function_arg_ret_type` to `triqs::callable_traits`
+* Add `triqs.utility.utilities` Python module exposing `time_pt` bindings
+* Add `triqs.solver_utils` submodule with shared solver utilities
+* Make `time_pt` satisfy the `h5::Storable` concept
+* Make `canonical_ops_t` hashable to enable operator pickling
+* Use `FutureWarning` for user-facing deprecation messages
+* Fix UB in lin- and log-binning (#1014)
+* Fix `density` `known_moments` keyword argument lost in binding
+* Fix bug when dividing two Matsubara frequencies
+* Add integer access to `BlockGf`
+* Expose `gf_struct` on `Gf` and `BlockGf` views
+* Restore backward-compatible `h5::read` for dlr, dlr_imfreq, dlr_imtime (#946)
+* Vendor cppcoro header files (MIT-licensed)
+* Update packaging Dockerfiles to Ubuntu 26.04 / LLVM 21
+
+### gfs
+* Add a dlr-mesh overload of `fit_gf_dlr`
+* Add `make_gf_dlr_imfreq` and `find_w_max` for imfreq input
+* Allow real-to-complex target conversion in `block_gf` converting constructor
+* Loosen target type constraint on `block_gf::operator=`
+* Allow different memory layouts for `block_gf` and `block_gf_view`
+* Extend `is_gf_hermitian` and `make_hermitian` to DLR meshes
+* Auto-decay cvref types in `is_gf_v` and `is_block_gf_v` traits
+* Add `target_value_t` trait as a replacement of `gf::target_t::value_t`
+* Allow `make_gf_from_fourier` with DLR mesh types
+* Change `fit_gf_dlr` symmetrize default to true for consistency with the DLR mesh default
+* Use numpy for adding/subtracting scalars and matrices from GFs, and for inverting GFs
+* Assert square `target_shape` when adding/subtracting a scalar to a matrix-valued Gf
+* Add a benchmark for Green's function evaluation
+
+### mesh
+* Add `refreq_pts` and `refreq_log` real-frequency meshes
+* Add a Chebyshev imaginary-time mesh (precomputes 2/beta for faster barycentric evaluation)
+* Make 1D meshes random-access and add a generic `mesh_iterator` class (#990)
+* Add `mesh_hash()` to the Mesh concept and update all meshes accordingly
+* Add comparison operators and `__repr__` to `matsubara_freq` / `MatsubaraFreq`
+* Add `triqs::mesh::values` to obtain a vector of mesh values; expose to Python
+* Expose DLR frequencies for the DLR Python mesh types
+* Expose `units_inv`, `index_modulo`, and `min_max_frequencies` on mesh types
+* Add debug-mode boundary check for DLR mesh tau evaluation
+* Print symmetrized flag in DLR mesh output; switch DLR meshes to symmetrize by default
+* Unify the `SemiCircular` descriptor across mesh types and add imtime support
+
+### det_manip
+* Add batched `insert_ratios`
+* Rename pending-move members `k`/`kmax` to `k_tried`/`kmax_tried`
+* Add `det_manip_basic` class and tests
+
+### mc_generic
+* Add `set_verbosity` and `get_sign` public methods
+* Add an option to run for a minimum number of cycles (`continue_after_ncycles_done`)
+* Add timing information for MC moves and total duration in report headers
+* Introduce `metropolis_step` and after-cycle-duties functions; skip after-cycle duties during overtime cycles
+* Add a time-interval parameter to check for exceptions on other ranks
+* Improve printing of simulation info during a run
+* Use `mpi::gather` for strings in `collect_results`
+
+### mc_tools
+* Add MC-specific concepts
+* Rewrite the type-erasure implementation in moves, measures and sets
+* Make `MersenneRNG` streamable to/from `std::ostream`/`std::istream`
+* Print move durations before move statistics
+
+### stat
+* Simplify the `lin_binning` and `log_binning` APIs and fix MPI edge cases
+* Use `mpi::all_reduce_in_place` in `mean_error` and `jackknife`
+* Fix histogram bin construction and clarify normalization docs
+* Add `nan_sample` and `abs_square` helpers
+* Add a callback function to the accumulator (called before compression)
+* Move stat concepts into their own header
+
+### operators
+* Extend `indices_t` to support `double` and `array<long,3>` index types
+* Extend Python bindings and tests for extended index types
+* `U_matrix`: add `l=3` support to `spherical_to_cubic` (#1006)
+* Selectively add SF / PH terms in the Kanamori interaction
+
+### lattice
+* Add index-to-point conversion to the Bravais lattice class
+* Remove the `gfs.hpp` umbrella header from `tight_binding.hpp`
+
+### blockgf
+* Enforce `str` block names in the `gf_struct` constructor
+
+### py
+* Add joint lattice+DLR Fourier bindings on product meshes
+* Replace bare `raise NotImplemented` with an informative `TypeError`
+* Fix invalid escape sequences in string literals (+ porting tool)
+
+### plot
+* Add an optional `axes` argument to `oplot`; deprecate `ax.oplot`
+
+### cmake
+* Use `c2py_add_module` / `clair_c2py_generate_bindings` for Python extension modules
+* Disable C++20 module scanning for clair-c2py compatibility
+* Enable `CMAKE_EXPORT_COMPILE_COMMANDS` globally
+* Bump `fmt` version to 12.0.0
+* Set `LD_LIBRARY_PATH` for tests to prioritize build-directory libraries
+* Centralize Python and `wrap.hxx` install rules at the top level
+* Fix `add_custom_command`s to be compliant with cmake 3.31
+
+### porting_tools
+* Surface silent-escape suspects under `--fix` and gate the exit code
+
+### packaging
+* Add `meson`, `ninja`, `libomp`, and `git-lfs` to `brewlst`
+
+### doc
+* Add Doxygen-based API docs with examples across mesh, MC tools and stat
+* Update the application list (edipack2triqs, ctseg, MagInt)
+* Add an FI support notice to README.md
+
+### jenkins
+* Migrate to the new k8s system (#1013)
+* Install clair into all linux docker build images
+* Bump Ubuntu LLVM/Clang to 19-21 and base images to Ubuntu 26.04
+* Only regenerate Python bindings on ubuntu-clang
+
+
 ## Version 3.3.3
 
 TRIQS Version 3.3.3 is a patch-release that introduces

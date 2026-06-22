@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+import os
+import re
+
+# Ignore these files (cpp2py *_desc.py descriptors are replaced in the c2py
+# binding migration, so don't bother rewriting them)
+ignore_lst = [".git/", "port.py", "port_to_triqs4", "_desc.py"]
+
+repl_dict = {
+        # --- mesh Python modules moved out of triqs.gf to triqs.mesh ---
+        # Must precede the triqs.gf -> triqs.gfs rule below (there is no triqs.gfs.mesh*).
+        r"triqs\.gfs?\.meshes\b": "triqs.mesh",
+        r"triqs\.gfs?\.mesh_product\b": "triqs.mesh.mesh_product",
+        r"triqs\.gfs?\.mesh_point\b": "triqs.mesh.mesh_point",
+        # --- Python module rename: triqs.gf -> triqs.gfs ---
+        # Only rewrite triqs.gf when NOT already triqs.gfs (negative lookahead on 's')
+        r"triqs\.gf(?![a-zA-Z_])": "triqs.gfs",
+        r"from triqs\.gf import": "from triqs.gfs import",
+        r"import triqs\.gf\b(?!s)": "import triqs.gfs",
+        # --- Removal of deprecated headers / namespaces ---
+        r"#include <triqs/h5\.hpp>": "#include <h5/h5.hpp>",
+        r"triqs::h5\b": "h5",
+        r"#include <triqs/mpi/base\.hpp>": "#include <mpi/mpi.hpp>",
+        r"#include <triqs/mpi/vector\.hpp>": "#include <mpi/vector.hpp>",
+        # --- Deprecated Matsubara domains -> new matsubara_freq header ---
+        r"#include <triqs/mesh/domains/matsubara\.hpp>": "#include <triqs/mesh/matsubara_freq.hpp>",
+        # --- nda linalg interface changes (nda 2.0) ---
+        # The hermitian solvers eigenelements/eigenvalues (both in eigenelements.hpp)
+        # were renamed to eigh/eigvalsh (now in eigh.hpp). Namespace-qualified so we
+        # don't rewrite unrelated identifiers/comments named eigenvalues.
+        r"#include <nda/linalg/eigenelements\.hpp>": "#include <nda/linalg/eigh.hpp>",
+        r"linalg::eigenelements\b": "linalg::eigh",
+        r"linalg::eigenvalues\b": "linalg::eigvalsh",
+        # det_and_inverse.hpp was split into det.hpp + inv.hpp
+        r"#include <nda/linalg/det_and_inverse\.hpp>": "#include <nda/linalg/det.hpp>\n#include <nda/linalg/inv.hpp>",
+        # --- C++ trait rename ---
+        r"\bfunction_arg_ret_type\b": "callable_traits",
+        # --- numpy deprecated aliases (anchored so float_/complex_ don't eat float_power etc.) ---
+        r"numpy\.complex_(?![A-Za-z0-9_])": "numpy.complex128",
+        r"numpy\.float_(?![A-Za-z0-9_])": "numpy.float64",
+        r"np\.complex_(?![A-Za-z0-9_])": "np.complex128",
+        r"np\.float_(?![A-Za-z0-9_])": "np.float64",
+        r"numpy\.trapz\b": "numpy.trapezoid",
+        r"np\.trapz\b": "np.trapezoid",
+        }
+
+file_endings = [".py", ".py.in", ".ipynb", ".cpp", ".hpp", ".cxx", ".rst", ".txt", ".md"]
+
+# Choose the current working directory as the porting root dir
+port_root = os.getcwd()
+
+# Recurse over all subdirectories and files
+for root, dirs, files in os.walk(port_root):
+
+    for fname in files:
+        # Make sure that one of the file endings matches
+        if not any([fname.endswith(ending) for ending in file_endings]):
+            continue
+
+        # Make path absolute
+        fpath = os.path.join(root, fname)
+
+        # Ignore certain files / directories
+        if any(it in fpath for it in ignore_lst):
+            continue
+
+        if os.path.isfile(fpath):
+
+            # Read the file
+            with open(fpath, 'r') as f:
+                s = f.read()
+
+            # Execute all replacements
+            for old, new in list(repl_dict.items()):
+                s = re.sub(old, new, s)
+
+            # Write the updated file
+            with open(fpath, 'w') as f:
+                f.write(s)
