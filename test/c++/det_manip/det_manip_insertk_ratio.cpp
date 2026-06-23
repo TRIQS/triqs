@@ -17,6 +17,7 @@
 #include <triqs/det_manip/det_manip_basic.hpp>
 #include <triqs/mc_tools/random_generator.hpp>
 #include <nda/linalg/det.hpp>
+#include <nda/linalg/inv.hpp>
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -43,6 +44,18 @@ template <typename T1, typename T2> void assert_close(T1 const &A, T2 const &B, 
   if (diff > precision * std::max(scale, 1.0))
     TRIQS_RUNTIME_ERROR << "assert_close error: " << A << " vs " << B << " diff=" << diff << " reldiff=" << diff / std::max(scale, 1e-30) << " "
                         << msg;
+}
+
+// Estimate condition-number-aware relative tolerance for comparing two computations
+// involving M^{-1}. The Schur inverse accumulates O(N * eps * cond) error through N
+// rank-1 updates, and BLAS ordering differences add O(N * eps) per operation.
+double precision_for(auto const &D) {
+  if (D.size() == 0) return 1e-14;
+  long N      = D.size();
+  auto M      = D.matrix();
+  auto Mi     = nda::linalg::inv(M);
+  double cond = max_element(abs(M)) * max_element(abs(Mi));
+  return std::max(1e-12, double(N) * N * 1e-10 * cond);
 }
 
 template <typename DM> void build_det(DM &D, int target_size, triqs::mc_tools::random_generator &RNG) {
@@ -121,6 +134,7 @@ void test_insertk_ratios_vs_sequential() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 14001);
   build_det(D, 15, RNG);
+  auto prec = precision_for(D);
 
   for (int k = 1; k <= 6; ++k) {
     long K  = 20;
@@ -136,7 +150,7 @@ void test_insertk_ratios_vs_sequential() {
         ym[j] = ys(m, j);
       }
       auto ref = insertk_ratio_via_try(D, xm, ym);
-      assert_close(batch(m), ref, 1.e-6, "vs_sequential k=" + std::to_string(k) + " m=" + std::to_string(m));
+      assert_close(batch(m), ref, prec, "vs_sequential k=" + std::to_string(k) + " m=" + std::to_string(m));
     }
   }
   std::cerr << "PASSED" << std::endl;
@@ -149,6 +163,7 @@ void test_insertk_ratios_vs_try() {
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 14002);
   build_det(D, 15, RNG);
+  auto prec = precision_for(D);
 
   for (int k = 1; k <= 5; ++k) {
     long K  = 15;
@@ -164,7 +179,7 @@ void test_insertk_ratios_vs_try() {
         ym[j] = ys(m, j);
       }
       auto ref = insertk_ratio_via_try(D, xm, ym);
-      assert_close(batch(m), ref, 1.e-6, "vs_try k=" + std::to_string(k) + " m=" + std::to_string(m));
+      assert_close(batch(m), ref, prec, "vs_try k=" + std::to_string(k) + " m=" + std::to_string(m));
     }
   }
   std::cerr << "PASSED" << std::endl;
@@ -232,6 +247,7 @@ void test_insertk_ratios_various_sizes() {
     triqs::det_manip::det_manip<fun> D(f, 100);
     triqs::mc_tools::random_generator RNG("mt19937", 12005 + N);
     build_det(D, N, RNG);
+    auto prec = precision_for(D);
 
     for (int k = 1; k <= 4; ++k) {
       long K  = 10;
@@ -246,7 +262,7 @@ void test_insertk_ratios_various_sizes() {
           ym[j] = ys(m, j);
         }
         auto ref = insertk_ratio_via_try(D, xm, ym);
-        assert_close(batch(m), ref, 1.e-6, "N=" + std::to_string(N) + " k=" + std::to_string(k) + " m=" + std::to_string(m));
+        assert_close(batch(m), ref, prec, "N=" + std::to_string(N) + " k=" + std::to_string(k) + " m=" + std::to_string(m));
       }
     }
   }
@@ -377,6 +393,7 @@ void test_insertk_ratios_broadcast_x() {
     auto batch = D.insertk_ratios(xs3, ys2);
     TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, K}));
 
+    auto prec = precision_for(D);
     for (long i = 0; i < M; ++i)
       for (long m = 0; m < K; ++m) {
         std::vector<double> xm(k), ym(k);
@@ -385,7 +402,7 @@ void test_insertk_ratios_broadcast_x() {
           ym[j] = ys2(m, j);
         }
         auto ref = insertk_ratio_via_try(D, xm, ym);
-        assert_close(batch(i, m), ref, 1.e-6, "broadcast_x k=" + std::to_string(k) + " i=" + std::to_string(i) + " m=" + std::to_string(m));
+        assert_close(batch(i, m), ref, prec, "broadcast_x k=" + std::to_string(k) + " i=" + std::to_string(i) + " m=" + std::to_string(m));
       }
   }
   std::cerr << "PASSED" << std::endl;
@@ -407,6 +424,7 @@ void test_insertk_ratios_broadcast_y() {
     auto batch = D.insertk_ratios(xs2, ys3);
     TRIQS_ASSERT(batch.shape() == (std::array<long, 2>{M, K}));
 
+    auto prec = precision_for(D);
     for (long i = 0; i < M; ++i)
       for (long m = 0; m < K; ++m) {
         std::vector<double> xm(k), ym(k);
@@ -415,7 +433,7 @@ void test_insertk_ratios_broadcast_y() {
           ym[j] = ys3(i, m, j);
         }
         auto ref = insertk_ratio_via_try(D, xm, ym);
-        assert_close(batch(i, m), ref, 1.e-6, "broadcast_y k=" + std::to_string(k) + " i=" + std::to_string(i) + " m=" + std::to_string(m));
+        assert_close(batch(i, m), ref, prec, "broadcast_y k=" + std::to_string(k) + " i=" + std::to_string(i) + " m=" + std::to_string(m));
       }
   }
   std::cerr << "PASSED" << std::endl;
