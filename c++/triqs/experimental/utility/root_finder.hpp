@@ -104,10 +104,10 @@ namespace triqs::experimental::utility {
     }
 
     if (abs(yfound - y_target) < precision) {
-      fmt::print("Converged ({} iters): {} = {:g}, {} = {:g}\n", nbre_loop, x_name, x, y_name, yfound);
+      out << fmt::format("Converged ({} iters): {} = {:g}, {} = {:g}\n", nbre_loop, x_name, x, y_name, yfound);
       return {x, yfound};
     } else {
-      fmt::print("Failed: {} did not converge to {:g} after {} iters\n", x_name, y_target, nbre_loop);
+      out << fmt::format("Failed: {} did not converge to {:g} after {} iters\n", x_name, y_target, nbre_loop);
       throw std::runtime_error{fmt::format("Dichotomy adjustment for {} failed after {} iterations", x_name, nbre_loop)};
     }
   }
@@ -141,7 +141,7 @@ namespace triqs::experimental::utility {
       auto y_mid = f(x_mid);
 
       if (abs(y_mid - y_target) <= precision) {
-        fmt::print("Converged ({} iters): {} = {:g}, {} = {:g}\n", it + 1, x_name, x_mid, y_name, y_mid);
+        out << fmt::format("Converged ({} iters): {} = {:g}, {} = {:g}\n", it + 1, x_name, x_mid, y_name, y_mid);
         return {x_mid, y_mid};
       }
 
@@ -175,7 +175,7 @@ namespace triqs::experimental::utility {
                                                double delta_x, long max_loops = 1000, std::string x_name = "", std::string y_name = "",
                                                bool verbosity = false) {
 
-    fmt::print("Root finder: seeking {} s.t. {} = {:g} \u00b1 {:g}\n", x_name, y_name, y_value, precision);
+    if (verbosity) fmt::print("Root finder: seeking {} s.t. {} = {:g} \u00b1 {:g}\n", x_name, y_name, y_value, precision);
 
     auto [x1, x2] = find_bounds(f, x_init, y_value, delta_x, precision, max_loops);
 
