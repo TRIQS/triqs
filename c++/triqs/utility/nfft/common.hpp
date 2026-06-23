@@ -24,12 +24,18 @@ namespace triqs::utility::nfft {
   using dcomplex = std::complex<double>;
 
   // cis(theta) = e^{i theta}. High-accuracy callers use a fused libm sincos via
-  // the compiler builtin (portable across GCC/Clang/IntelLLVM, no platform-private
-  // symbols); lower tolerances use the polynomial approximation from `sincos.hpp`.
+  // the compiler builtin where available, falling back to separate std::sin/std::cos
+  // on compilers that lack __builtin_sincos; lower tolerances use the polynomial
+  // approximation from `sincos.hpp`.
   template <int TolDigits = 12> inline dcomplex cis(double theta) {
     if constexpr (TolDigits >= 12) {
       double s, c;
+#if defined(__has_builtin) && __has_builtin(__builtin_sincos)
       __builtin_sincos(theta, &s, &c);
+#else
+      s = std::sin(theta);
+      c = std::cos(theta);
+#endif
       return {c, s};
     } else {
       auto [s, c] = triqs::utility::math::sincos<TolDigits>(theta);
