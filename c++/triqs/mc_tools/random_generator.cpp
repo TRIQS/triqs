@@ -28,8 +28,10 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
+#include <array>
 #include <cstdint>
 #include <random>
+#include <thread>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -40,10 +42,27 @@ namespace triqs::mc_tools {
   // Names of the supported engines; the empty string is additionally accepted as an alias for mt19937_64.
   static const std::vector<std::string> engine_names = {"mt19937_64", "mt19937", "ranlux48", "ranlux24", "minstd_rand", "knuth_b"};
 
-  random_generator::random_generator(std::string name, std::uint64_t seed, std::vector<std::uint64_t> spawn_key, std::size_t buffer_size)
+  random_generator::random_generator(std::string name, std::uint64_t seed, mpi::communicator c)
      : buffer_(buffer_size), name_(std::move(name)) {
-    if (buffer_size == 0) throw std::runtime_error("Error in random_generator: buffer_size must be positive");
-    initialize_rng(name_, seed, spawn_key);
+    // random_generator is not thread-safe and seeds streams by MPI rank, not by thread: it exposes no
+    // per-thread stream, so every instance must be constructed on a single thread. We capture the
+    // thread of the first construction (the function-local static is initialized exactly once, in a
+    // thread-safe manner) and require every later construction to be on that same thread. This catches
+    // instantiating RNGs on multiple threads (e.g. one per worker thread, or inside a parallel region),
+    // which would otherwise silently produce identical (same seed+rank) or racy streams. Cheap and
+    // always on: construction is a cold path. (Drawing off the owning thread is caught separately by
+    // check_thread.) This is portable across OpenMP, std::thread and pthread -- no parallel-region query.
+    static std::thread::id const ctor_thread = std::this_thread::get_id();
+    if (std::this_thread::get_id() != ctor_thread)
+      throw std::runtime_error("Error in random_generator: all instances must be constructed on the same thread; "
+                               "random_generator is not thread-safe and provides no per-thread stream");
+    if (c.size() > 1) { // collective: all ranks of c construct together and must agree on the seed
+      auto lo = mpi::all_reduce(seed, c, MPI_MIN);
+      auto hi = mpi::all_reduce(seed, c, MPI_MAX);
+      if (lo != hi) throw std::runtime_error("Error in random_generator: all MPI ranks must pass the same seed");
+    }
+    std::array<std::uint64_t, 1> key{static_cast<std::uint64_t>(c.rank())};
+    initialize_rng(name_, seed, key); // {rank} span: decorrelated stream per rank
     refill();
   }
 

@@ -1,4 +1,9 @@
 
+// HAND-MAINTAINED: this file is NOT regenerable by clair-c2py. random_generator's only constructor
+// takes an mpi::communicator, which has no c2py converter, so clair fails ("cannot convert argument /
+// no wrapped constructor"). The constructor below is therefore wired by hand via c2py::c_maker,
+// injecting the world communicator. Keep this file in sync with the C++ API manually.
+
 // C.f. https://numpy.org/doc/1.21/reference/c-api/array.html#importing-the-api
 #define PY_ARRAY_UNIQUE_SYMBOL _cpp2py_ARRAY_API
 #ifndef CLAIR_C2PY_WRAP_GEN
@@ -27,24 +32,21 @@ using c2py::operator""_a;
 using _c2py_cls_0                                            = triqs::mc_tools::random_generator;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.mc_tools.random_generator.RandomGenerator";
-static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(),
-                                                         c2py::c_constructor<_c2py_cls_0, std::string, uint64_t, std::vector<uint64_t>, std::size_t>(
-                                                            "name", "seed", "spawn_key"_a = std::vector<uint64_t>{}, "buffer_size"_a = 1000)};
+// The C++ seeding constructor takes an mpi::communicator (no c2py converter); Python streams are
+// seeded against the world communicator, so the rank is folded in automatically.
+static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_maker<_c2py_cls_0>(
+   +[](std::string name, uint64_t seed) -> _c2py_cls_0 { return _c2py_cls_0{std::move(name), seed, mpi::communicator{}}; },
+   "name", "seed")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
-[1] Default constructor uses the *mt19937_64* engine with the default seed.
-
-------
-
-[2] Construct a random generator by wrapping the specified RNG and seeding it with the given seed,
-optionally producing the parallel stream identified by the given spawn key.
+Construct a random generator with an independent stream for each MPI rank.
 
 The given name has to correspond to one of the supported engines. If the name does not match any of the
 supported engines, a runtime error is raised. An empty name selects the default engine `std::mt19937_64`.
 
-All streams of one simulation share the same seed and are distinguished by their
-spawn key, e.g. `{mpi_rank, thread_id}` (see triqs::mc_tools::splitmix_seed_seq).
+All ranks must pass the same seed; the rank of the world communicator is folded in so the ranks obtain
+decorrelated streams (see triqs::mc_tools::splitmix_seed_seq).
 
 ------
 
@@ -53,16 +55,9 @@ Parameters
 name : {par_0}
    Name of the RNG to be used.
 seed : {par_1}
-   Seed for the RNG, shared by all streams.
-spawn_key : {par_2}
-   Hierarchical stream identifier.
-buffer_size : {par_3}
-   Size of the buffer used to store random numbers (must be positive).
+   Seed shared by all ranks.
 )DOC",
-                                                                    {{c2py::python_typename<std::string>()},
-                                                                     {c2py::python_typename<uint64_t>()},
-                                                                     {c2py::python_typename<std::vector<uint64_t>>()},
-                                                                     {c2py::python_typename<std::size_t>()}});
+                                                                    {{c2py::python_typename<std::string>()}, {c2py::python_typename<uint64_t>()}});
 // __call__
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.operator()(); }, "self"),
@@ -156,18 +151,16 @@ For performance, raw `uint64_t` values are generated in batches and stored in a 
 Doubles in [0, 1) are derived using the standard 53-bit technique.
 Integers in [0, i) are generated using Lemire's nearly divisionless method (unbiased for all ranges).
 
-All engines have their full state initialized through triqs::mc_tools::splitmix_seed_seq from
-the seed and an optional spawn key identifying the parallel stream. For independent Markov
-chains across MPI ranks, pass the same seed everywhere together with a spawn key `{rank}` -- or
-simply an `mpi::communicator`, which does this automatically.
+All engines have their full state initialized through triqs::mc_tools::splitmix_seed_seq from the
+seed and the MPI rank. Every rank passes the same seed and the rank (of the world communicator) is
+folded in, so the Markov chains across ranks are decorrelated.
 
 .. note::
 
    A random_generator is not thread-safe: a single instance must be used by one thread for
-   its whole lifetime. For per-thread streams, construct one generator per thread inside the
-   parallel region with a spawn key that includes the thread id, e.g.
-   `{rank, omp_get_thread_num()}`. In debug builds, drawing from a generator on a thread other than
-   the one that created it triggers an assertion (the check is compiled out when `NDEBUG` is set).)DOC"
+   its whole lifetime. Per-thread streams are not exposed today. In debug builds, drawing from a
+   generator on a thread other than the one that created it triggers an assertion (the check is
+   compiled out when `NDEBUG` is set).)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 
 // ==================== module functions ====================

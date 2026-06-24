@@ -79,7 +79,7 @@ namespace triqs::mc_tools {
      * @param spawn_key Hierarchical stream identifier, e.g. `{mpi_rank, thread_id}`.
      */
     splitmix_seed_seq(std::uint64_t seed, std::span<std::uint64_t const> spawn_key = {}) : state_(mix(seed + gamma)) {
-      for (auto k : spawn_key) state_ = mix(state_ ^ k);
+      for (auto k : spawn_key) state_ = mix(state_ ^ k) + state_; // fold: keeps the chain from being a plain sequence of invertible mixes
     }
 
     /// Construct from a seed and a spawn key given as an initializer list.
@@ -88,13 +88,14 @@ namespace triqs::mc_tools {
 
     /// Fill the given range with 32-bit words derived from the internal state.
     template <typename It> void generate(It first, It last) const {
-      std::uint64_t n = 0;
+      std::uint64_t n = 0, acc = state_;
       for (auto it = first; it != last;) {
         // counter-style derivation; the XOR injection (instead of advancing the state additively)
-        // prevents different streams from producing shifted copies of the same word sequence
-        auto w = mix(state_ ^ ++n * gamma);
-        *it++  = static_cast<result_type>(w);
-        if (it != last) *it++ = static_cast<result_type>(w >> 32);
+        // prevents different streams from producing shifted copies of the same word sequence. The
+        // running accumulator (fold) chains the words so they are not independent mixes of a counter.
+        acc   = mix(state_ ^ ++n * gamma) + acc;
+        *it++ = static_cast<result_type>(acc);
+        if (it != last) *it++ = static_cast<result_type>(acc >> 32);
       }
     }
 
@@ -131,16 +132,20 @@ namespace triqs::mc_tools {
    * Doubles in [0, 1) are derived using the standard 53-bit technique.
    * Integers in [0, i) are generated using Lemire's nearly divisionless method (unbiased for all ranges).
    *
-   * All engines have their full state initialized through triqs::mc_tools::splitmix_seed_seq from
-   * the seed and an optional spawn key identifying the parallel stream. For independent Markov
-   * chains across MPI ranks, pass the same seed everywhere together with a spawn key `{rank}` -- or
-   * simply an `mpi::communicator`, which does this automatically.
+   * All engines have their full state initialized through triqs::mc_tools::splitmix_seed_seq from the
+   * seed and the MPI rank. The only public seeding constructor takes an `mpi::communicator`: every
+   * rank passes the same seed and the rank is folded in as the spawn key `{rank}`, so the Markov
+   * chains across ranks are decorrelated. When `c.size() > 1` the constructor collectively checks
+   * (via `all_reduce`) that all ranks passed the same seed and throws otherwise.
    *
-   * @note A random_generator is not thread-safe: a single instance must be used by one thread for
-   * its whole lifetime. For per-thread streams, construct one generator per thread inside the
-   * parallel region with a spawn key that includes the thread id, e.g.
-   * `{rank, omp_get_thread_num()}`. In debug builds, drawing from a generator on a thread other than
-   * the one that created it triggers an assertion (the check is compiled out when `NDEBUG` is set).
+   * @note A random_generator is not thread-safe and exposes no per-thread stream. All instances must
+   * live on one thread: constructing a random_generator on a thread other than the one that built the
+   * first instance throws `std::runtime_error` (so instantiating one RNG per worker thread, or inside
+   * a parallel region, is rejected -- it would otherwise yield identical or racy streams). In addition,
+   * drawing from a generator on a thread other than the one that created it triggers an assertion in
+   * debug builds (compiled out when `NDEBUG` is set). Per-thread streams, when needed, must be seeded
+   * directly via `splitmix_seed_seq{seed, {rank, thread_id}}` (the internal seed sequence still
+   * supports multi-level spawn keys).
    */
   class random_generator {
     private:
@@ -172,53 +177,24 @@ namespace triqs::mc_tools {
     };
 
     public:
-    /// Default seed for the underlying RNG.
-    static constexpr std::uint64_t default_seed = 198;
-
-    /// Default constructor uses the *mt19937_64* engine with the default seed.
-    random_generator() : random_generator("mt19937_64", default_seed) {}
-
-    /**
-     * @brief Construct a random generator by wrapping the specified RNG and seeding it with the given seed,
-     * optionally producing the parallel stream identified by the given spawn key.
-     *
-     * @details The given name has to correspond to one of the supported engines. If the name does not match any of the
-     * supported engines, a runtime error is raised. An empty name selects the default engine `std::mt19937_64`.
-     *
-     * All streams of one simulation share the same seed and are distinguished by their
-     * spawn key, e.g. `{mpi_rank, thread_id}` (see triqs::mc_tools::splitmix_seed_seq).
-     *
-     * @param name Name of the RNG to be used.
-     * @param seed Seed for the RNG, shared by all streams.
-     * @param spawn_key Hierarchical stream identifier.
-     * @param buffer_size Size of the buffer used to store random numbers (must be positive).
-     */
-    random_generator(std::string name, std::uint64_t seed, std::vector<std::uint64_t> spawn_key = {}, std::size_t buffer_size = 1000);
-
-    /// The same as above, with the spawn key given as an initializer list. This overload makes braced
-    /// spawn keys unambiguous: overload resolution always prefers it for a braced list such as `{0}`,
-    /// which could otherwise also convert to the mpi::communicator overload below.
-    C2PY_IGNORE random_generator(std::string name, std::uint64_t seed, std::initializer_list<std::uint64_t> spawn_key, std::size_t buffer_size = 1000)
-       : random_generator(std::move(name), seed, std::vector<std::uint64_t>{spawn_key}, buffer_size) {}
-
     /**
      * @brief Construct a random generator with an independent stream for each MPI rank.
      *
-     * @details Equivalent to passing the spawn key `{c.rank()}`: all ranks should pass the same seed
-     * and obtain decorrelated streams.
+     * @details The given name has to correspond to one of the supported engines. If the name does not
+     * match any of the supported engines, a runtime error is raised. An empty name selects the default
+     * engine `std::mt19937_64`.
      *
-     * A random_generator is not thread-safe and carries no per-thread stream of its own. For
-     * multi-threaded use, construct one generator per thread, extending the spawn key with the thread
-     * id, e.g. `{c.rank(), omp_get_thread_num()}`, from within the parallel region so each thread owns
-     * its generator.
+     * All ranks of `c` must pass the same seed; the rank is folded in as the spawn key `{rank}`
+     * (see triqs::mc_tools::splitmix_seed_seq), so the ranks obtain decorrelated streams. When
+     * `c.size() > 1` this is a collective call: all ranks construct together and the constructor
+     * checks (via `all_reduce`) that the seed matches across ranks, throwing `std::runtime_error`
+     * otherwise.
      *
      * @param name Name of the RNG to be used.
-     * @param seed Seed shared by all streams.
+     * @param seed Seed shared by all ranks.
      * @param c MPI communicator whose rank identifies the stream.
-     * @param buffer_size Size of the buffer used to store random numbers (must be positive).
      */
-    C2PY_IGNORE random_generator(std::string name, std::uint64_t seed, mpi::communicator c, std::size_t buffer_size = 1000)
-       : random_generator(std::move(name), seed, {static_cast<std::uint64_t>(c.rank())}, buffer_size) {}
+    random_generator(std::string name, std::uint64_t seed, mpi::communicator c);
 
     /// Deleted copy constructor.
     random_generator(random_generator const &) = delete;
@@ -337,11 +313,20 @@ namespace triqs::mc_tools {
       h5::read(gr, "name", rng.name_);
       h5::read(gr, "buffer", rng.buffer_);
       h5::read(gr, "idx", rng.idx_);
-      rng.initialize_rng(rng.name_, default_seed, {});
+      rng.initialize_rng(rng.name_, 0, {}); // seed is irrelevant: the engine state is overwritten from the stored stream below
       std::string rng_state;
       h5::read(gr, "rng", rng_state);
       std::istringstream is{rng_state};
       rng.ptr_->from_istream(is);
+    }
+
+    /// HDF5 construction hook. random_generator is intentionally not default-constructible (a seed is
+    /// always required), so h5::h5_read uses this instead. The seed/communicator passed here are
+    /// placeholders: the engine state is immediately overwritten from the stored stream by h5_read.
+    static random_generator h5_read_construct(h5::group g, std::string const &key) {
+      random_generator rng{"mt19937_64", 0, mpi::communicator{}};
+      h5_read(g, key, rng);
+      return rng;
     }
 
     private:
@@ -384,6 +369,9 @@ namespace triqs::mc_tools {
     void initialize_rng(std::string const &name, std::uint64_t seed, std::span<std::uint64_t const> spawn_key);
 
     private:
+    // raw uint64_t values are generated in batches of this size; an internal performance detail.
+    static constexpr std::size_t buffer_size = 1000;
+
     std::unique_ptr<rng_concept> ptr_;
     size_t idx_{0};
     std::vector<std::uint64_t> buffer_;

@@ -89,7 +89,7 @@ void test_rank1_batch_vs_sequential() {
   std::cerr << "=== test_rank1_batch_vs_sequential ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 12345);
+  triqs::mc_tools::random_generator RNG("mt19937", 12345, mpi::communicator{});
   build_det(D, 20, RNG);
 
   long K  = 30;
@@ -110,7 +110,7 @@ void test_rank1_state_unchanged() {
   std::cerr << "=== test_rank1_state_unchanged ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 54321);
+  triqs::mc_tools::random_generator RNG("mt19937", 54321, mpi::communicator{});
   build_det(D, 15, RNG);
 
   auto det_before  = D.determinant();
@@ -150,7 +150,7 @@ void test_rank1_single_point() {
   std::cerr << "=== test_rank1_single_point ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 99999);
+  triqs::mc_tools::random_generator RNG("mt19937", 99999, mpi::communicator{});
   build_det(D, 10, RNG);
 
   auto xs    = nda::array<double, 1>{5.0};
@@ -166,7 +166,7 @@ void test_rank1_empty_batch() {
   std::cerr << "=== test_rank1_empty_batch ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 11111);
+  triqs::mc_tools::random_generator RNG("mt19937", 11111, mpi::communicator{});
   build_det(D, 5, RNG);
 
   nda::array<double, 1> xs(0), ys(0);
@@ -180,7 +180,7 @@ void test_cross_validate_rank1() {
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 33333);
+  triqs::mc_tools::random_generator RNG("mt19937", 33333, mpi::communicator{});
 
   build_det_pair(D, Db, 15, RNG);
 
@@ -201,7 +201,7 @@ void test_rank2_array_insert_ratios() {
   std::cerr << "=== test_rank2_array_insert_ratios ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 11223);
+  triqs::mc_tools::random_generator RNG("mt19937", 11223, mpi::communicator{});
   build_det(D, 20, RNG);
 
   long M = 5, E = 8;
@@ -227,7 +227,7 @@ void test_rank2_array_insert_ratios_cross_validate() {
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 44556);
+  triqs::mc_tools::random_generator RNG("mt19937", 44556, mpi::communicator{});
 
   build_det_pair(D, Db, 15, RNG);
 
@@ -249,7 +249,7 @@ void test_rank1_nonzero_position() {
   std::cerr << "=== test_rank1_nonzero_position ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG("mt19937", 31415);
+  triqs::mc_tools::random_generator RNG("mt19937", 31415, mpi::communicator{});
   build_det(D, 20, RNG);
 
   long K  = 12;
