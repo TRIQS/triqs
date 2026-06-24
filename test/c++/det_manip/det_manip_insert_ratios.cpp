@@ -53,6 +53,23 @@ template <typename DM> void build_det(DM &D, int target_size, triqs::mc_tools::r
   }
 }
 
+// Build two det_manips (optimized + basic) with the same well-conditioned points, rejecting
+// near-singular insertions so the incrementally-maintained inverse stays comparable to a fresh one.
+template <typename DM1, typename DM2>
+void build_det_pair(DM1 &D, DM2 &Db, int target_size, triqs::mc_tools::random_generator &RNG) {
+  for (long attempts = 0; D.size() < target_size; ++attempts) {
+    if (attempts > 1000L * target_size) TRIQS_RUNTIME_ERROR << "build_det_pair: too few non-singular insertions";
+    double x = RNG(10.0);
+    double y = RNG(10.0);
+    if (std::abs(D.try_insert(D.size(), D.size(), x, y)) > MIN_INSERT_RATIO) {
+      D.complete_operation();
+      Db.insert(Db.size(), Db.size(), x, y);
+    } else {
+      D.reject_last_try();
+    }
+  }
+}
+
 // Helper: fill an nda::array<double, 1> with random values
 nda::array<double, 1> random_array1(long K, triqs::mc_tools::random_generator &RNG, double range = 10.0) {
   nda::array<double, 1> a(K);
@@ -165,12 +182,7 @@ void test_cross_validate_rank1() {
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 33333);
 
-  for (int n = 0; n < 15; ++n) {
-    double x = RNG(10.0);
-    double y = RNG(10.0);
-    D.insert(D.size(), D.size(), x, y);
-    Db.insert(Db.size(), Db.size(), x, y);
-  }
+  build_det_pair(D, Db, 15, RNG);
 
   long K  = 10;
   auto xs = random_array1(K, RNG);
@@ -217,12 +229,7 @@ void test_rank2_array_insert_ratios_cross_validate() {
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 44556);
 
-  for (int n = 0; n < 15; ++n) {
-    double x = RNG(10.0);
-    double y = RNG(10.0);
-    D.insert(D.size(), D.size(), x, y);
-    Db.insert(Db.size(), Db.size(), x, y);
-  }
+  build_det_pair(D, Db, 15, RNG);
 
   long M = 4, E = 6;
   auto xs = random_array2(M, E, RNG);
