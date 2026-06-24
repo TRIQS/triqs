@@ -29,27 +29,5 @@ class TestRandomGenerator(unittest.TestCase):
             for _ in range(50):
                 self.assertEqual(rng1(), rng2())
 
-    def test_spawn_key_streams(self):
-        for name in random_generator_names_list():
-            r_a = RandomGenerator(name, 198, spawn_key=[0, 0])
-            r_b = RandomGenerator(name, 198, [0, 0])  # positional spawn key
-            r_t = RandomGenerator(name, 198, spawn_key=[0, 1])
-            r_0 = RandomGenerator(name, 198)
-            diff_t, diff_0 = False, False
-            for _ in range(100):
-                a = r_a()
-                self.assertEqual(a, r_b())
-                diff_t |= a != r_t()
-                diff_0 |= a != r_0()
-            self.assertTrue(diff_t)
-            self.assertTrue(diff_0)
-
-    def test_buffer_size(self):
-        rng1 = RandomGenerator("mt19937_64", 42)
-        rng2 = RandomGenerator("mt19937_64", 42, buffer_size=10)
-        for _ in range(100):
-            self.assertEqual(rng1(), rng2())
-
-
 if __name__ == '__main__':
     unittest.main()

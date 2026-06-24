@@ -40,8 +40,8 @@ TEST(TRIQSMCTools, RandomGeneratorNames) {
 TEST(TRIQSMCTools, DefaultIsMT19937_64) {
   using namespace triqs::mc_tools;
   int const seed   = 42;
-  auto rng_default = random_generator("", seed);
-  auto rng_named   = random_generator("mt19937_64", seed);
+  auto rng_default = random_generator("", seed, mpi::communicator{});
+  auto rng_named   = random_generator("mt19937_64", seed, mpi::communicator{});
   for (int i = 0; i < 100; ++i) EXPECT_DOUBLE_EQ(rng_default(), rng_named());
 }
 
@@ -49,9 +49,11 @@ TEST(TRIQSMCTools, DefaultIsMT19937_64) {
 // of an engine seeded with splitmix_seed_seq and our 53-bit conversion formula.
 TEST(TRIQSMCTools, MT19937_64MatchesDirectUsage) {
   using namespace triqs::mc_tools;
+  mpi::communicator c;
   std::uint64_t const seed = 0x18a2b3c4;
-  auto rng                 = random_generator("mt19937_64", seed);
-  auto sseq                = splitmix_seed_seq{seed};
+  auto rng                 = random_generator("mt19937_64", seed, c);
+  // the communicator ctor folds in the rank as spawn key {rank}
+  auto sseq = splitmix_seed_seq{seed, {static_cast<std::uint64_t>(c.rank())}};
   std::mt19937_64 direct_engine{sseq};
 
   for (int i = 0; i < 100; ++i) {
@@ -62,43 +64,53 @@ TEST(TRIQSMCTools, MT19937_64MatchesDirectUsage) {
   }
 }
 
-// Spawn keys identify parallel streams: equal keys reproduce the stream, different keys
-// (including different hierarchy levels) give different streams.
+// Spawn keys identify parallel streams in splitmix_seed_seq (the internal seed sequence; the public
+// random_generator API no longer exposes spawn keys). Equal keys reproduce the stream, distinct keys
+// -- including different hierarchy levels and different order -- give decorrelated streams.
 TEST(TRIQSMCTools, SpawnKeyStreams) {
   using namespace triqs::mc_tools;
   std::uint64_t const seed = 198;
 
-  for (auto const &name : random_generator_names_list()) {
-    auto r_a  = random_generator(name, seed, {0, 0});
-    auto r_b  = random_generator(name, seed, {0, 0});
-    auto r_t1 = random_generator(name, seed, {0, 1});
-    auto r_r1 = random_generator(name, seed, {1, 0});
-    auto r_p  = random_generator(name, seed, {0});
-    auto r_0  = random_generator(name, seed);
+  // generate n 32-bit words from a splitmix_seed_seq seeded with (seed, key)
+  auto words = [&](std::initializer_list<std::uint64_t> key, int n) {
+    splitmix_seed_seq s{seed, key};
+    std::vector<std::uint32_t> w(n);
+    s.generate(w.begin(), w.end());
+    return w;
+  };
+  int const n = 16;
 
-    bool diff_t1 = false, diff_r1 = false, diff_p = false, diff_0 = false;
-    for (int i = 0; i < 100; ++i) {
-      double const a = r_a();
-      EXPECT_DOUBLE_EQ(a, r_b()) << "Engine: " << name;
-      diff_t1 |= (a != r_t1());
-      diff_r1 |= (a != r_r1());
-      diff_p |= (a != r_p());
-      diff_0 |= (a != r_0());
-    }
-    EXPECT_TRUE(diff_t1) << "Engine: " << name; // different thread level
-    EXPECT_TRUE(diff_r1) << "Engine: " << name; // different rank level
-    EXPECT_TRUE(diff_p) << "Engine: " << name;  // different key depth
-    EXPECT_TRUE(diff_0) << "Engine: " << name;  // keyed vs unkeyed
-  }
+  EXPECT_EQ(words({0, 0}, n), words({0, 0}, n)); // equal keys -> identical
+  EXPECT_NE(words({0, 0}, n), words({0, 1}, n)); // different thread level
+  EXPECT_NE(words({0, 0}, n), words({1, 0}, n)); // different rank level
+  EXPECT_NE(words({0}, n), words({0, 0}, n));    // different key depth
+  EXPECT_NE(words({}, n), words({0}, n));        // keyed vs unkeyed
+  // fold sanity check: the key chain is order-sensitive, so {0,1} and {1,0} differ (a plain
+  // sequence of independent mixes that ignored the running state could collide here).
+  EXPECT_NE(words({0, 1}, n), words({1, 0}, n));
 }
 
-// The communicator constructor is equivalent to the spawn key {rank}.
+// The communicator constructor folds in the rank as spawn key {rank}, matching a direct
+// splitmix_seed_seq{seed, {rank}}.
 TEST(TRIQSMCTools, CommunicatorSeeding) {
   using namespace triqs::mc_tools;
   mpi::communicator c;
-  auto r1 = random_generator("", 198, c);
-  auto r2 = random_generator("", 198, {static_cast<std::uint64_t>(c.rank())});
-  for (int i = 0; i < 100; ++i) EXPECT_DOUBLE_EQ(r1(), r2());
+  std::uint64_t const seed = 198;
+  auto r1                  = random_generator("", seed, c);
+  auto sseq                = splitmix_seed_seq{seed, {static_cast<std::uint64_t>(c.rank())}};
+  std::mt19937_64 direct{sseq};
+  for (int i = 0; i < 100; ++i) EXPECT_DOUBLE_EQ(r1(), (direct() >> 11) * 0x1.0p-53);
+}
+
+// Across MPI ranks, passing different seeds to the communicator constructor is a programming error:
+// the collective same-seed check must throw on every rank (only exercised under np > 1).
+TEST(TRIQSMCTools, CommunicatorSeedMismatchThrows) {
+  using namespace triqs::mc_tools;
+  mpi::communicator c;
+  if (c.size() < 2) GTEST_SKIP() << "needs np > 1";
+  EXPECT_THROW(random_generator("mt19937_64", 100 + c.rank(), c), std::runtime_error);
+  // equal seeds must not throw
+  EXPECT_NO_THROW(random_generator("mt19937_64", 42, c));
 }
 
 // Across MPI ranks, the communicator constructor yields pairwise different streams (run with np > 1).
@@ -217,8 +229,8 @@ TEST(TRIQSMCTools, CommunicatorRankCorrelation) {
 TEST(TRIQSMCTools, SeedReproducibility) {
   using namespace triqs::mc_tools;
   for (auto const &name : random_generator_names_list()) {
-    auto rng1 = random_generator(name, 12345);
-    auto rng2 = random_generator(name, 12345);
+    auto rng1 = random_generator(name, 12345, mpi::communicator{});
+    auto rng2 = random_generator(name, 12345, mpi::communicator{});
     for (int i = 0; i < 50; ++i) EXPECT_DOUBLE_EQ(rng1(), rng2()) << "Engine: " << name;
   }
 }
@@ -227,7 +239,7 @@ TEST(TRIQSMCTools, SeedReproducibility) {
 TEST(TRIQSMCTools, AllEnginesDoubleRange) {
   using namespace triqs::mc_tools;
   for (auto const &name : random_generator_names_list()) {
-    auto rng = random_generator(name, 54321);
+    auto rng = random_generator(name, 54321, mpi::communicator{});
     for (int i = 0; i < 10000; ++i) {
       double val = rng();
       EXPECT_GE(val, 0.0) << "Engine: " << name;
@@ -240,7 +252,7 @@ TEST(TRIQSMCTools, AllEnginesDoubleRange) {
 TEST(TRIQSMCTools, AllEnginesIntegerRange) {
   using namespace triqs::mc_tools;
   for (auto const &name : random_generator_names_list()) {
-    auto rng = random_generator(name, 99999);
+    auto rng = random_generator(name, 99999, mpi::communicator{});
     for (int i = 0; i < 10000; ++i) {
       auto val = rng(100);
       EXPECT_GE(val, 0);
@@ -252,7 +264,7 @@ TEST(TRIQSMCTools, AllEnginesIntegerRange) {
 // Integer generation at large ranges: verify results span the full 64-bit range.
 TEST(TRIQSMCTools, LargeRangeIntegerGeneration) {
   using namespace triqs::mc_tools;
-  auto rng                  = random_generator("mt19937_64", 42);
+  auto rng                  = random_generator("mt19937_64", 42, mpi::communicator{});
   constexpr auto range      = std::numeric_limits<std::uint64_t>::max();
   bool has_high_bits        = false;
   bool has_low_bits         = false;
@@ -271,7 +283,7 @@ TEST(TRIQSMCTools, LargeRangeIntegerGeneration) {
 // Integer uniformity: chi-squared test for moderate range.
 TEST(TRIQSMCTools, IntegerUniformity) {
   using namespace triqs::mc_tools;
-  auto rng           = random_generator("mt19937_64", 42);
+  auto rng           = random_generator("mt19937_64", 42, mpi::communicator{});
   constexpr int bins = 100;
   constexpr int N    = 1000000;
   std::vector<int> counts(bins, 0);
@@ -289,7 +301,7 @@ TEST(TRIQSMCTools, IntegerUniformity) {
 // Double generation quality: verify 53 bits of mantissa are used.
 TEST(TRIQSMCTools, DoublePrecision53Bits) {
   using namespace triqs::mc_tools;
-  auto rng = random_generator("mt19937_64", 42);
+  auto rng = random_generator("mt19937_64", 42, mpi::communicator{});
 
   // Count distinct values in a small interval. With 53-bit precision,
   // values near 0.5 should have spacing ~2^-53 ≈ 1.1e-16.
@@ -311,7 +323,7 @@ TEST(TRIQSMCTools, DoublePrecision53Bits) {
 // Preview returns the same value as the next call to operator().
 TEST(TRIQSMCTools, PreviewConsistency) {
   using namespace triqs::mc_tools;
-  auto rng = random_generator("mt19937_64", 42);
+  auto rng = random_generator("mt19937_64", 42, mpi::communicator{});
   for (int i = 0; i < 100; ++i) {
     double preview_val = rng.preview();
     double actual_val  = rng();
@@ -324,10 +336,18 @@ TEST(TRIQSMCTools, RandomGeneratorHDF5) {
   using namespace triqs::mc_tools;
   // rank-specific file names to avoid lock contention when run under MPI
   auto rank       = mpi::communicator{}.rank();
+  // random_generator is not default-constructible, so we do the round-trip manually (rw_h5 requires
+  // a default ctor); h5 reconstructs it via random_generator::h5_read_construct.
   auto check_hdf5 = [rank](std::string const &name) {
-    auto rng = random_generator(name, 0x18a2b3c4);
+    auto label = name.empty() ? std::string{"default"} : name;
+    auto fname = fmt::format("mctools_rng_{}_r{}.h5", label, rank);
+    auto rng   = random_generator(name, 0x18a2b3c4, mpi::communicator{});
     for (int i = 0; i < 10; ++i) rng();
-    auto rng2 = rw_h5(rng, fmt::format("mctools_rng_{}_r{}", (name.empty() ? "default" : name), rank), name.empty() ? "default" : name);
+    { h5::file f{fname, 'w'}; h5::write(f, label, rng); }
+    auto rng2 = [&] {
+      h5::file f{fname, 'r'};
+      return h5::read<random_generator>(f, label);
+    }();
     for (int i = 0; i < 10; ++i) EXPECT_DOUBLE_EQ(rng(), rng2()) << "HDF5 round-trip failed for engine: " << name;
   };
 
@@ -338,8 +358,8 @@ TEST(TRIQSMCTools, RandomGeneratorHDF5) {
 // Move semantics: verify move constructor and assignment produce identical sequences.
 TEST(TRIQSMCTools, RandomGeneratorMoveOperation) {
   using namespace triqs::mc_tools;
-  auto rng  = random_generator();
-  auto rng2 = random_generator();
+  auto rng  = random_generator("mt19937_64", 198, mpi::communicator{});
+  auto rng2 = random_generator("mt19937_64", 198, mpi::communicator{});
   for (int i = 0; i < 10; ++i) {
     rng();
     rng2();
@@ -350,7 +370,7 @@ TEST(TRIQSMCTools, RandomGeneratorMoveOperation) {
   for (int i = 0; i < 10; ++i) EXPECT_DOUBLE_EQ(rng2(), rng3());
 
   // move assignment
-  auto rng4 = random_generator();
+  auto rng4 = random_generator("mt19937_64", 198, mpi::communicator{});
   rng4      = std::move(rng2);
   for (int i = 0; i < 10; ++i) EXPECT_DOUBLE_EQ(rng3(), rng4());
 }

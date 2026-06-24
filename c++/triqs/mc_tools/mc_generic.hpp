@@ -173,7 +173,7 @@ namespace triqs::mc_tools {
      * @param verbosity_lvl Verbosity level (see triqs::utility::report_stream).
      */
     mc_generic(const std::string &rng_name, std::uint64_t rng_seed, int verbosity_lvl)
-       : rng_(rng_name, rng_seed), moves_(rng_), report_(&std::cout, verbosity_lvl), verbosity_lvl_(verbosity_lvl) {}
+       : rng_(rng_name, rng_seed, mpi::communicator{}), moves_(rng_), report_(&std::cout, verbosity_lvl), verbosity_lvl_(verbosity_lvl) {}
 
     /**
      * @brief Construct a generic Monte Carlo class with an independent RNG stream on each MPI rank.
