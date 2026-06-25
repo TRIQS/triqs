@@ -39,4 +39,13 @@ ENV PYTHON_VERSION=3.14 \
   ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer \
   ASAN_OPTIONS=symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0 \
   UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1
+# Open MPI 5+ routes through UCX by default, whose libucm malloc/mmap hooks
+# collide with the LLVM sanitizer interceptors and SEGV inside MPI_Init. Route
+# through the ob1 PML + shared-memory BTLs so libucm is never loaded. The mpi
+# library sets the same flags via MPIEXEC_PREFLAGS, but that only reaches
+# mpiexec-launched tests; setting them in the environment here also covers
+# bare-python/mpi4py launches (e.g. singleton MPI_Init). See mpi/doc/sanitizers.md.
+ENV OMPI_MCA_pml=ob1 \
+  OMPI_MCA_btl=self,vader \
+  OMPI_MCA_osc=^ucx
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
