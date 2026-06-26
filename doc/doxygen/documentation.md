@@ -110,4 +110,14 @@ It provides various macros and helper functions to simplify writing unit tests i
 
 ## Utilities
 
+@ref triqs-utility collects the foundational building blocks shared across the **TRIQS** library:
 
+- @ref triqs-utility-io provide verbosity-controlled and auto-indenting output streams.
+- @ref triqs-utility-macros provide the exception hierarchy, various macros, and the compiler / platform glue used by 
+every other component.
+- @ref triqs-utility-math expose numerical helpers used across the library, such as interpolation points and weights, 
+analytic continuation and runtime-typed numbers.
+- @ref triqs-utility-other collects general-purpose helpers that do not fit the other categories.
+- @ref triqs-utility-runtime contains process-level utilities such as timers and signal handling tools.
+- @ref triqs-utility-tuple contain various useful functions when working with `std::tuple` and `std::variant` types.
+- @ref triqs-utility-traits collect template-metaprogramming helpers, type traits and RAII helpers.

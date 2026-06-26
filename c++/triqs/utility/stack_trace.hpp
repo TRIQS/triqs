@@ -17,16 +17,25 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#ifndef TRIQS_UTILITY_TRACE_H
-#define TRIQS_UTILITY_TRACE_H
-#include <triqs/utility/first_include.hpp>
+/**
+ * @file
+ * @brief Provides a function to capture the current C++ stack trace as a string.
+ */
+
+#pragma once
+
+#include "./first_include.hpp"
+
 #include <string>
-#include <sstream>
 
-namespace triqs {
-  namespace utility {
+namespace triqs::utility {
 
-    std::string stack_trace();
-  }
-} // namespace triqs
-#endif
+  /**
+   * @ingroup triqs-utility-runtime
+   * @brief Capture the current call stack and return it as a demangled, human-readable string.
+   *
+   * @return The current stack trace, one frame per line.
+   */
+  std::string stack_trace();
+
+} // namespace triqs::utility

@@ -18,50 +18,53 @@
 // Authors: Olivier Parcollet, Nils Wentzell
 
 #include "./stack_trace.hpp"
+
 #include <string>
+
+#ifndef __APPLE__
+#include <array>
+#include <cstdio>
 #include <sstream>
-#include <iostream>
+
 #include <sys/types.h>
 #include <unistd.h>
+#endif // __APPLE__
 
 namespace triqs::utility {
 
   std::string stack_trace() {
-
-    // On Os X, we use lldb, on linux gdb to decipher the call stack for us
-    // We launch it with a pipe, and get back the output
 #ifdef __APPLE__
-    // The LLDB Solution implemented below is no longer working on Mac OS 10.15 (Catalina)
+    // The lldb solution used on Linux (see below) no longer works on Mac OS 10.15 (Catalina).
+    // The lldb command was: "lldb -p " + std::to_string(getpid()) + " --batch -o \"bt\" 2>&1"
     // TODO Replace by implementation of stacktrace standardization proposal (e.g. https://github.com/boostorg/stacktrace)
-    return {"Stack-trace currently not available on Mac OS"};
-    std::string cmd             = "lldb -p " + std::to_string(getpid()) + " --batch -o \"bt\" 2>&1";
-    const char *PYTHON_SENTINEL = "Python";
+    return "Stack-trace currently not available on Mac OS";
 #else
-    std::string cmd             = "gdb --batch -n -ex bt -p " + std::to_string(getpid()) + " 2>&1";
-    const char *PYTHON_SENTINEL = "libpython";
-#endif
+    // On Linux we use gdb to decipher the call stack for us.
+    // We launch it with a pipe and read back the output.
+    std::string const cmd         = "gdb --batch -n -ex bt -p " + std::to_string(getpid()) + " 2>&1";
+    std::string const py_sentinel = "libpython";
 
-    const int max_buffer = 256;
-    char buffer2[max_buffer];
+    constexpr int max_buffer = 256;
+    std::array<char, max_buffer> buffer{};
     std::string pipe_output;
-    FILE *stream = popen(cmd.c_str(), "r");
-    if (stream) {
-      while (!feof(stream))
-        if (fgets(buffer2, max_buffer, stream) != NULL) pipe_output.append(buffer2);
+    if (FILE *stream = popen(cmd.c_str(), "r"); stream != nullptr) {
+      while (fgets(buffer.data(), max_buffer, stream) != nullptr) pipe_output.append(buffer.data());
       pclose(stream);
     }
 
     std::stringstream ss(pipe_output);
-    std::string to, r = "\n";
+    std::string to;
+    std::string r = "\n";
 
     while (std::getline(ss, to, '\n') and (to.find("triqs::exception::exception") == std::string::npos)) {}
 
     while (std::getline(ss, to, '\n')) {
-      if (to.find(PYTHON_SENTINEL) != std::string::npos) break;
+      if (to.find(py_sentinel) != std::string::npos) break;
       r += to + '\n';
     }
 
     return r;
+#endif
   }
 
 } // namespace triqs::utility

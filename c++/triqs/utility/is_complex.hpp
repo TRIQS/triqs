@@ -17,11 +17,30 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a type trait to check if a type is complex.
+ */
+
 #pragma once
+
 #include <complex>
 #include <type_traits>
 
 namespace triqs {
+
+  /**
+   * @ingroup triqs-utility-traits
+   * @brief Trait that checks if a type is complex.
+   * 
+   * @details It inherits from `std::true_type` when `T` is `std::complex<U>` for some `U`. Otherwise, it inherits from 
+   * `std::false_type`.
+   * 
+   * @tparam T Type to inspect.
+   */
   template <typename T> struct is_complex : std::false_type {};
+
+  // Specialization of is_complex for std::complex<T>.
   template <typename T> struct is_complex<std::complex<T>> : std::true_type {};
+
 } // namespace triqs

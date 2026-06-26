@@ -486,5 +486,62 @@
 
 /**
  * @defgroup triqs-utility Utilities
- * @brief General-purpose utility classes and functions used throughout the **TRIQS** library.
+ * @brief General-purpose utilities used across the **TRIQS** library.
+ *
+ * @details The @ref triqs-utility module collects foundational building blocks that the rest of the **TRIQS** library
+ * depends on: compiler glue and exception types, template-metaprogramming helpers, numerical helpers (Legendre,
+ * Chebyshev, Padé, ...), runtime utilities (timers, signal handling, crash logging) and a small set of I/O streams.
+ *
+ * The utilities are organised into the following thematic subgroups:
+ * - @ref triqs-utility-io — reporting and debugging output streams,
+ * - @ref triqs-utility-macros — foundational macros, exception types and compiler/platform glue,
+ * - @ref triqs-utility-math — numerical and mathematical helpers,
+ * - @ref triqs-utility-other — other general-purpose utilities,
+ * - @ref triqs-utility-runtime — timers, signal handling and other runtime utilities,
+ * - @ref triqs-utility-tuple — helpers for manipulating and serializing tuples and variants,
+ * - @ref triqs-utility-traits — type traits and template-metaprogramming helpers.
+ *
+ * Most utilities live in the `triqs::utility` namespace.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-macros Macros and exceptions
+ * @brief Foundational macros, exception types and compiler/platform glue.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-traits Type traits and metaprogramming
+ * @brief Type traits, concept helpers and template-metaprogramming utilities.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-tuple Tuple and variant tools
+ * @brief Helpers for manipulating and serializing `std::tuple` and `std::variant` objects.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-math Math helpers
+ * @brief Numerical and mathematical helpers (Legendre, Chebyshev, Padé, real-or-complex, ...).
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-runtime Runtime utilities
+ * @brief Timers, signal handling, crash logging and other runtime helpers.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-io I/O streams
+ * @brief Reporting and debugging output streams.
+ */
+
+/**
+ * @ingroup triqs-utility
+ * @defgroup triqs-utility-other Other utilities
+ * @brief Other general-purpose utilities.
  */

@@ -17,11 +17,18 @@
 //
 // Authors: Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Backward-compatibility alias that re-exports the `itertools` namespace into `triqs::utility`.
+ */
+
 #pragma once
 
 #include <itertools/itertools.hpp>
 
-// Expose itertools functionality in triqs::utility namespace for backward compatibility
 namespace triqs::utility {
+
+  // Re-export the `itertools` namespace.
   using namespace ::itertools;
+
 } // namespace triqs::utility

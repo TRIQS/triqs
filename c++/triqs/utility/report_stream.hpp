@@ -17,7 +17,13 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Verbosity-controlled output stream and an auto-indenting `std::ostream`.
+ */
+
 #pragma once
+
 #include <ostream>
 #include <streambuf>
 #include <string>
@@ -25,64 +31,78 @@
 namespace triqs::utility {
 
   /**
-   * @brief Output stream with flexible verbosity level.
+   * @addtogroup triqs-utility-io
+   * @{
+   */
+
+  /**
+   * @brief Output stream with a configurable verbosity level.
    *
-   * This class behaves pretty much like a standard ostream but you can also
-   * set some verbosity level.
-   *
-   * Example:
-   *
-   *     report_stream rep(std::cout, 2); // verbosity level 2
-   *     rep << "Hello" << endl;          // prints Hello
-   *     rep(2) << "Hello2" << endl;      // prints Hello2
-   *     rep(3) << "Hello3" << endl;      // verbosity < 3, no output
+   * @details It behaves like a `std::ostream` but each operator<<() call is conditional on the current verbosity level.
+   * It only emits output when the verbosity level is greater than zero. The verbosity level is set at construction time 
+   * and can be (temporarily) reduced using operator()().
    */
   class report_stream {
-
     std::ostream *out;
     int verbosity;
 
     public:
-    /// Construct from a pointer to an ostream (legacy interface).
+    /**
+     * @brief Construct a report stream from a pointer to an ostream and a verbosity level.
+     * 
+     * @param out_ Pointer to the underlying `std::ostream`.
+     * @param verbosity_ Verbosity level.
+     */
     report_stream(std::ostream *out_, int verbosity_ = 1) : out(out_), verbosity(verbosity_) {}
 
-    /// Construct from a reference to an ostream.
+    /**
+     * @brief Construct a report stream from a reference to an ostream and a verbosity level.
+     * 
+     * @param out_ Reference to the underlying `std::ostream`.
+     * @param verbosity_ Verbosity level.
+     */
     report_stream(std::ostream &out_, int verbosity_ = 1) : out(&out_), verbosity(verbosity_) {}
 
+    /**
+     * @brief Return a child report stream whose verbosity has been reduced by \f$ n - 1 \f$.
+     * 
+     * @param n Amount by which to lower the verbosity threshold.
+     * @return A report stream writing to the same ostream with the reduced verbosity.
+     */
     report_stream operator()(int n) const { return {out, verbosity - n + 1}; }
 
+    /**
+     * @brief Streaming operator to write the given argument if the current verbosity is greater than zero.
+     * 
+     * @tparam T Type to be written.
+     * @param x Object to write to the underlying ostream.
+     * @return Reference to `*this` to allow chaining.
+     */
     template <class T> report_stream &operator<<(T const &x) {
       if (verbosity > 0) (*out) << x;
       return *this;
     }
 
-    // operator<< for manipulators like std::endl
+    /**
+     * @brief Streaming operator that accepts manipulators like `std::endl`.
+     * 
+     * @param manip Stream manipulator applied to the underlying ostream when verbosity is greater than zero.
+     * @return Reference to `*this` to allow chaining.
+     */
     report_stream &operator<<(std::ostream &(*manip)(std::ostream &)) {
       if (verbosity > 0) manip(*out);
       return *this;
     }
   };
 
-  // =============================================================================
-
   /**
-   * @class indented_ostream
-   * @brief A custom output stream that automatically indents each new line by a specified number of spaces.
+   * @brief Adapter for `std::ostream` that prepends a fixed-width indentation to every new line.
    *
-   * This class is useful for formatting output with consistent indentation. It wraps around an existing
-   * `std::ostream` and ensures that every new line starts with a specified number of spaces.
-   *
-   * Example usage:
-   * @code
-   *   auto out = triqs::utility::indented_ostream{std::cout, 3}; // Indent all lines with 3 spaces
-   *   out << "Hello, world!" << std::endl;
-   *   out << "Indented text." << std::endl;
-   * @endcode
-   *
-   * @note This class inherits from `std::ostream` and uses a custom stream buffer to handle indentation.
+   * @details It inherits from `std::ostream` and substitutes a custom `std::streambuf` that injects a given number of
+   * spaces at the start of every line. Useful for nesting verbose output without manually padding each string.
    */
   class indented_ostream : public std::ostream {
-
+    // Custom streambuf that prepends a fixed number of spaces to every line.
     class indented_streambuf : public std::streambuf {
       std::streambuf *dest;
       std::string head;
@@ -104,12 +124,14 @@ namespace triqs::utility {
 
     public:
     /**
-     * @brief Constructor
-     *
-     * @param os The underlying std::ostream to write into.
-     * @param indent The number of spaces to use for indentation.
+     * @brief Construct an indented stream on top of an existing ostream with a given indentation width.
+     * 
+     * @param os Underlying `std::ostream` that receives the indented output.
+     * @param indent Number of spaces inserted at the start of each line.
      */
     indented_ostream(std::ostream &os, int indent) : std::ostream(&buffer), buffer(os.rdbuf(), indent) {}
   };
+
+  /** @} */
 
 } // namespace triqs::utility

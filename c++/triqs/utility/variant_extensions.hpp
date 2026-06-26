@@ -17,6 +17,11 @@
 //
 // Authors: Igor Krivenko, Nils Wentzell
 
+/**
+ * @file
+ * @brief Small helpers for working with `std::variant` types.
+ */
+
 #pragma once
 
 #include <nda/stdutil/array.hpp>
@@ -28,7 +33,14 @@
 
 namespace triqs::utility {
 
-  // Lambda-overload helper for std::visit: std::visit(overloaded{[](T1){...}, [](T2){...}}, var).
+  /**
+   * @ingroup triqs-utility-tuple
+   * @brief Lambda-overload helper for `std::visit`.
+   *
+   * @details Combines several callables into a single object whose `operator()` is overloaded for each input.
+   * 
+   * @tparam Fs Callable types being combined.
+   */
   template <typename... Fs> struct overloaded : Fs... {
     using Fs::operator()...;
   };
@@ -37,29 +49,62 @@ namespace triqs::utility {
 
 namespace std {
 
-  // == ostream operator<< for variant and vector of variant
+  /**
+   * @addtogroup triqs-utility-tuple
+   * @{
+   */
 
+  /**
+   * @brief Write a `std::variant` to an output stream by visiting the held alternative and forwarding it to the stream.
+   * 
+   * @tparam T First alternative type.
+   * @tparam Ts Remaining alternative types.
+   * @param os Output stream.
+   * @param v Variant to write.
+   * @return Reference to the output stream.
+   */
   template <typename T, typename... Ts> std::ostream &operator<<(std::ostream &os, std::variant<T, Ts...> const &v) {
     visit([&os](auto const &x) { os << x; }, v);
     return os;
   }
 
-  template <typename T, typename... Ts> std::ostream &operator<<(std::ostream &os, std::vector<std::variant<T, Ts...>> const &fs) {
+  /**
+   * @brief Write a vector of `std::variant` as a comma-separated list of its elements.
+   * 
+   * @tparam T First alternative type.
+   * @tparam Ts Remaining alternative types.
+   * @param os Output stream.
+   * @param vec Vector of variants to write.
+   * @return Reference to the output stream.
+   */
+  template <typename T, typename... Ts> std::ostream &operator<<(std::ostream &os, std::vector<std::variant<T, Ts...>> const &vec) {
     int u = 0;
-    for (auto const &i : fs) {
+    for (auto const &i : vec) {
       if (u++) os << ",";
       os << i;
     }
     return os;
   }
 
-  // == Make std::to_string available for both string and variant
-
+  /// Identity overload for `std::string`.
   inline string to_string(string const &str) { return str; }
+
+  /**
+   * @brief Convert a variant into a string.
+   * 
+   * @details It uses a stringstream and the std::operator<<(std::ostream&, std::variant<T, Ts...> const&) overload.
+   * 
+   * @tparam T First alternative type.
+   * @tparam Ts Remaining alternative types.
+   * @param var Variant to convert.
+   * @return String representation of the variant.
+   */
   template <typename T, typename... Ts> inline string to_string(variant<T, Ts...> const &var) {
     stringstream ss;
     ss << var;
     return ss.str();
   }
+
+  /** @} */
 
 } // namespace std

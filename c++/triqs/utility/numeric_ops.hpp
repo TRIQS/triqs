@@ -18,89 +18,151 @@
 //
 // Authors: Igor Krivenko, Nils Wentzell
 
+/**
+ * @file
+ * @brief Numeric helpers overloaded for various types.
+ */
+
 #pragma once
 
+#include "./is_complex.hpp"
+
+#include <cmath>
 #include <complex>
+#include <concepts>
 #include <limits>
-#include <type_traits>
-#include <triqs/utility/is_complex.hpp>
 
-namespace triqs {
-  namespace utility {
+namespace triqs::utility {
 
-    // Useful numeric operations which have to be implemented separately for different categories of builtin types.
+  /**
+   * @ingroup triqs-utility-math
+   * @{
+   */
 
-    //
-    // Zero value tests
-    //
-    template <typename T> // Integral types
-    std::enable_if_t<std::is_integral<T>::value, bool> is_zero(T const &x) {
-      return x == 0;
-    }
+  /**
+   * @brief Exact zero check for integral values.
+   * 
+   * @tparam I Integral type.
+   * @param x Value to test.
+   * @return True if the given integral value is exactly zero, false otherwise.
+   */
+  template <std::integral I> bool is_zero(I const &x) { return x == 0; }
 
-    template <typename T> // Floating-point types
-    std::enable_if_t<std::is_floating_point<T>::value, bool> is_zero(T const &x, T tolerance = 100 * std::numeric_limits<T>::epsilon()) {
-      return std::abs(x) < tolerance;
-    }
+  /**
+   * @brief Zero check for floating-point values.
+   * 
+   * @tparam T Floating-point type.
+   * @param x Value to test.
+   * @param tolerance Absolute tolerance \f$ \epsilon \f$.
+   * @return True if \f$ |x| < \epsilon \f$, false otherwise.
+   */
+  template <std::floating_point T> bool is_zero(T const &x, T tolerance = 100 * std::numeric_limits<T>::epsilon()) { return std::abs(x) < tolerance; }
 
-    template <typename value_t> // std::complex
-    bool is_zero(std::complex<value_t> const &x, value_t tolerance = 100 * std::numeric_limits<value_t>::epsilon()) {
-      return is_zero(std::real(x), tolerance) && is_zero(std::imag(x), tolerance);
-    }
+  /**
+   * @brief Zero check for complex values.
+   * 
+   * @tparam T Value type.
+   * @param z Value to test.
+   * @param tolerance Absolute tolerance \f$ \epsilon \f$.
+   * @return True if \f$ |\Re(z)| < \epsilon \f$ and \f$ |\Im(z)| < \epsilon \f$, false otherwise.
+   */
+  template <typename T> bool is_zero(std::complex<T> const &z, T tolerance = 100 * std::numeric_limits<T>::epsilon()) {
+    return is_zero(std::real(z), tolerance) && is_zero(std::imag(z), tolerance);
+  }
 
-    //
-    // Complex conjugate
-    //
-    template <typename T> // Integral types
-    std::enable_if_t<std::is_integral<T>::value, T> conj(T const &x) {
-      return x;
-    }
+  /**
+   * @brief Complex conjugate of an integral value.
+   * 
+   * @tparam I Integral type.
+   * @param x Value to conjugate.
+   * @return Value \f$ x \f$ unchanged.
+   */
+  template <std::integral I> I conj(I const &x) { return x; }
 
-    template <typename T> // Floating-point types
-    std::enable_if_t<std::is_floating_point<T>::value, T> conj(T const &x) {
-      return x;
-    }
+  /**
+   * @brief Complex conjugate of a floating-point value.
+   * 
+   * @tparam T Floating-point type.
+   * @param x Value to conjugate.
+   * @return Value \f$ x \f$ unchanged.
+   */
+  template <std::floating_point T> T conj(T const &x) { return x; }
 
-    template <typename T> // std::complex
-    std::enable_if_t<triqs::is_complex<T>::value, T> conj(T const &x) {
-      return std::conj(x);
-    }
+  /**
+   * @brief Complex conjugate of a complex value.
+   * 
+   * @tparam Z Complex type.
+   * @param z Value to conjugate.
+   * @return \f$ z^* \f$.
+   */
+  template <typename Z>
+    requires(triqs::is_complex<Z>::value)
+  Z conj(Z const &z) {
+    return std::conj(z);
+  }
 
-    //
-    // Real part
-    //
-    template <typename T> // Integral types
-    std::enable_if_t<std::is_integral<T>::value, T> real(T const &x) {
-      return x;
-    }
+  /**
+   * @brief Real part of an integral value.
+   * 
+   * @tparam I Integral type.
+   * @param x Value to inspect.
+   * @return Value \f$ x \f$ unchanged.
+   */
+  template <std::integral I> I real(I const &x) { return x; }
 
-    template <typename T> // Floating-point types
-    std::enable_if_t<std::is_floating_point<T>::value, T> real(T const &x) {
-      return x;
-    }
+  /**
+   * @brief Real part of a floating-point value.
+   * 
+   * @tparam T Floating-point type.
+   * @param x Value to inspect.
+   * @return Value \f$ x \f$ unchanged.
+   */
+  template <std::floating_point T> T real(T const &x) { return x; }
 
-    template <typename T> // std::complex
-    std::enable_if_t<triqs::is_complex<T>::value, T> real(T const &x) {
-      return std::real(x);
-    }
+  /**
+   * @brief Real part of a complex value.
+   * 
+   * @tparam Z Complex type.
+   * @param z Value to inspect.
+   * @return Real part of \f$ z \f$, i.e. \f$ \Re(z) \f$.
+   */
+  template <typename Z>
+    requires(triqs::is_complex<Z>::value)
+  Z real(Z const &z) {
+    return std::real(z);
+  }
 
-    //
-    // Imaginary part
-    //
-    template <typename T> // Integral types
-    std::enable_if_t<std::is_integral<T>::value, T> imag(T const &) {
-      return T{};
-    }
+  /**
+   * @brief Imaginary part of an integral value.
+   * 
+   * @tparam I Integral type.
+   * @param x Value to inspect.
+   * @return Zero.
+   */
+  template <std::integral I> I imag([[maybe_unused]] I const &x) { return I{}; }
 
-    template <typename T> // Floating-point types
-    std::enable_if_t<std::is_floating_point<T>::value, T> imag(T const &) {
-      return T{};
-    }
+  /**
+   * @brief Imaginary part of a floating-point value.
+   * 
+   * @tparam T Floating-point type.
+   * @param x Value to inspect.
+   * @return Zero.
+   */
+  template <std::floating_point T> T imag([[maybe_unused]] T const &x) { return T{}; }
 
-    template <typename T> // std::complex
-    std::enable_if_t<triqs::is_complex<T>::value, T> imag(T const &x) {
-      return std::imag(x);
-    }
+  /**
+   * @brief Imaginary part of a complex value.
+   * 
+   * @tparam Z Complex type.
+   * @param z Value to inspect.
+   * @return Imaginary part of \f$ z \f$, i.e. \f$ \Im(z) \f$.
+   */
+  template <typename Z>
+    requires(triqs::is_complex<Z>::value)
+  Z imag(Z const &z) {
+    return std::imag(z);
+  }
 
-  } // namespace utility
-} // namespace triqs
+  /** @} */
+
+} // namespace triqs::utility

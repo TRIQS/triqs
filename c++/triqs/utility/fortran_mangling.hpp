@@ -16,10 +16,21 @@
 //
 // Authors: Olivier Parcollet
 
-// Compiler independent call to Fortran names
+/**
+ * @file
+ * @brief Compiler-independent name-mangling for calling Fortran subroutines from C++.
+ */
+
+#pragma once
+
+/**
+ * @ingroup triqs-utility-macros
+ * @brief Translate the C++ identifier `id` to the corresponding Fortran symbol name.
+ *
+ * @warning This is unused. It might be removed in the future.
+ */
 #ifndef TRIQS_BIND_FORTRAN_LOWERCASE
 #define TRIQS_FORTRAN_MANGLING(id) id##_
 #else
 #error "I do not know what to do with this fortran mangling !"
-// ???
 #endif

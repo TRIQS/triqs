@@ -17,21 +17,59 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Helper functions built around `std::type_info`. 
+ */
+
 #pragma once
+
 #include <string>
 #include <typeinfo>
 
-namespace triqs {
-  namespace utility {
+namespace triqs::utility {
 
-    std::string demangle(const char *name);
-    std::string demangle(std::string const &name);
-    std::string get_name(std::type_info const &info);
+  /**
+   * @addtogroup triqs-utility-other
+   * @{
+   */
 
-    template <typename T> std::string typeid_name(T const &A) { return get_name(typeid(A)); }
+  /**
+   * @brief Demangle a mangled C++ symbol name to a human-readable string.
+   * 
+   * @param name Mangled name (typically `typeid(...).name()`).
+   * @return The demangled name, or the original name if demangling failed.
+   */
+  std::string demangle(const char *name);
 
-    template <typename T> std::string typeid_name() { return get_name(typeid(T)); }
-    //std::string typeid_name() { return get_name(typeid(std::declval<T>()));}
+  /// Overload of @ref demangle accepting an `std::string`.
+  std::string demangle(std::string const &name);
 
-  } // namespace utility
-} // namespace triqs
+  /**
+   * @brief Demangle the name corresponding to an `std::type_info`.
+   * 
+   * @param info Type info object.
+   * @return The demangled name, or the original name if demangling failed.
+   */
+  std::string get_name(std::type_info const &info);
+
+  /**
+   * @brief Human-readable name of the dynamic type of a given object.
+   * 
+   * @tparam T Type of the object.
+   * @param obj Object whose type name is requested.
+   * @return Demangled name of the dynamic type of the given object.
+   */
+  template <typename T> std::string typeid_name(T const &obj) { return get_name(typeid(obj)); }
+
+  /**
+   * @brief Human-readable name of a given static type.
+   * 
+   * @tparam T Type of interest.
+   * @return Demangled name of `T`.
+   */
+  template <typename T> std::string typeid_name() { return get_name(typeid(T)); }
+
+  /** @} */
+
+} // namespace triqs::utility

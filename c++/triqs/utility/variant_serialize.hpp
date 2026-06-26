@@ -18,49 +18,80 @@
 //
 // Authors: Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Boost.Serialization support for `std::variant`.
+ */
+
 #pragma once
-#include <variant>
+
 #include <boost/serialization/split_free.hpp>
 
-namespace boost {
-  namespace serialization {
+#include <variant>
 
-    template <typename Archive> struct variant_serialize_saver {
-      Archive &ar;
-      variant_serialize_saver(Archive &ar) : ar(ar) {}
-      template <typename T> void operator()(T x) { ar << x; }
-    };
+namespace boost::serialization {
 
-    template <typename Archive> struct variant_serialize_loader {
-      Archive &ar;
-      bool initialize;
-      variant_serialize_loader(Archive &ar, bool initialize) : ar(ar), initialize(initialize) {}
-      template <typename T> void operator()(T &x) {
-        if (initialize) ::new (&x) T();
-        ar >> x;
-      }
-    };
+  /**
+   * @addtogroup triqs-utility-tuple
+   * @{
+   */
 
-    template <typename Archive, typename... Types>
-    inline void serialize(Archive &ar, triqs::utility::variant<Types...> &v, const unsigned int version) {
-      split_free(ar, v, version);
+  // Visitor that saves the held alternative to a Boost archive.
+  template <typename Archive> struct variant_serialize_saver {
+    Archive &ar; // NOLINT
+    variant_serialize_saver(Archive &ar) : ar(ar) {}
+    template <typename T> void operator()(T x) { ar << x; }
+  };
+
+  // Visitor that loads an alternative from a Boost archive (optionally placement-new-constructing the slot first).
+  template <typename Archive> struct variant_serialize_loader {
+    Archive &ar; // NOLINT
+    bool initialize;
+    variant_serialize_loader(Archive &ar, bool initialize) : ar(ar), initialize(initialize) {}
+    template <typename T> void operator()(T &x) {
+      if (initialize) ::new (&x) T();
+      ar >> x;
     }
+  };
 
-    template <typename Archive, typename... Types> void save(Archive &ar, std::variant<Types...> const &v, const unsigned int version) {
-      ar << v.type_id;
-      visit(variant_serialize_saver<Archive>(ar), v);
-    }
+  /**
+   * @brief Serialize a `std::variant`.
+   * 
+   * @warning This is unused. It might be removed in the future.
+   * 
+   * @tparam Archive Archive type.
+   * @tparam Ts Alternative types of the variant.
+   * @param ar Boost archive.
+   * @param v Variant to serialize.
+   * @param version Unused version required by the Boost.Serialization protocol.
+   */
+  template <typename Archive, typename... Ts> void save(Archive &ar, std::variant<Ts...> const &v, [[maybe_unused]] const unsigned int version) {
+    ar << v.type_id;
+    visit(variant_serialize_saver<Archive>(ar), v);
+  }
 
-    template <typename Archive, typename... Types> void load(Archive &ar, std::variant<Types...> &v, const unsigned int version) {
-      int new_type_id;
-      ar >> new_type_id;
-      if (v.type_id != new_type_id) {
-        v.destroy();
-        v.type_id = new_type_id;
-        visit(variant_serialize_loader<Archive>(ar, true), v);
-      } else
-        visit(variant_serialize_loader<Archive>(ar, false), v);
-    }
+  /**
+   * @brief Deserialize a `std::variant`.
+   * 
+   * @warning This is unused. It might be removed in the future.
+   * 
+   * @tparam Archive Archive type.
+   * @tparam Ts Alternative types of the variant.
+   * @param ar Boost archive.
+   * @param v Variant to deserialize into.
+   * @param version Unused version required by the Boost.Serialization protocol.
+   */
+  template <typename Archive, typename... Ts> void load(Archive &ar, std::variant<Ts...> &v, [[maybe_unused]] const unsigned int version) {
+    int new_type_id{};
+    ar >> new_type_id;
+    if (v.type_id != new_type_id) {
+      v.destroy();
+      v.type_id = new_type_id;
+      visit(variant_serialize_loader<Archive>(ar, true), v);
+    } else
+      visit(variant_serialize_loader<Archive>(ar, false), v);
+  }
 
-  } // namespace serialization
-} // namespace boost
+  /** @} */
+
+} // namespace boost::serialization

@@ -17,6 +17,11 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a trait inspecting the `operator()` of a callable type.
+ */
+
 #pragma once
 
 #include <cstddef>
@@ -42,15 +47,16 @@ namespace triqs::utility {
   } // namespace detail
 
   /**
-   * @brief Type traits for callable types.
+   * @ingroup triqs-utility-traits
+   * @brief Type trait for a callable type with a single, non-overloaded `operator()`.
    *
-   * @details The `operator()` of the callable type can only have 1 overload.
-   *
-   * It defines the following traits:
-   * - `arity`: Number of arguments the function call operator takes (including default arguments).
-   * - `result_type`: Return type of the function call operator.
+   * @details Provides the following (static, constexpr) members:
+   * - `arity`: Number of arguments the call operator takes (including defaulted arguments).
+   * - `result_type`: Return type of the call operator.
    * - `arg_t<N>`: Type of the N-th argument.
-   * - `decay_arg_t<N>`: Decay type of the N-th argument.
+   * - `decay_arg_t<N>`: `std::decay_t` applied to `arg_t<N>`.
+   *
+   * The `operator()` of `F` must have exactly one overload. Ambiguous callables are not supported.
    *
    * @tparam F Callable type.
    */

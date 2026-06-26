@@ -166,6 +166,60 @@
       </tab>
       <tab type="user" url="@ref triqs-test-tools" title="Test tools"/>
       <tab type="usergroup" url="@ref triqs-utility" title="Utilities">
+        <tab type="usergroup" url="@ref triqs-utility-io" title="I/O streams">
+          <tab type="user" url="@ref triqs::utility::debug_stream" title="utility::debug_stream"/>
+          <tab type="user" url="@ref triqs::utility::indented_ostream" title="utility::indented_ostream"/>
+          <tab type="user" url="@ref triqs::utility::report_stream" title="utility::report_stream"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-macros" title="Macros and exceptions">
+          <tab type="user" url="@ref triqs::exception" title="exception"/>
+          <tab type="user" url="@ref triqs::runtime_error" title="runtime_error"/>
+          <tab type="user" url="@ref triqs::keyboard_interrupt" title="keyboard_interrupt"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-math" title="Math helpers">
+          <tab type="user" url="@ref triqs::utility::gmp_complex" title="utility::gmp_complex"/>
+          <tab type="user" url="@ref triqs::utility::legendre_generator" title="utility::legendre_generator"/>
+          <tab type="user" url="@ref triqs::utility::pade_approximant" title="utility::pade_approximant"/>
+          <tab type="user" url="@ref triqs::utility::real_or_complex" title="utility::real_or_complex"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-other" title="Other utilities">
+          <tab type="user" url="@ref triqs::utility::dressed_iterator" title="utility::dressed_iterator"/>
+          <tab type="user" url="@ref triqs::utility::dressed_iterator< IteratorType, Dressing, void >" title="utility::dressed_iterator (no aux)"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-runtime" title="Runtime utilities">
+          <tab type="usergroup" url="@ref triqs::signal_handler" title="signal_handler">
+            <tab type="user" url="@ref triqs::signal_handler::exception" title="signal_handler::exception"/>
+          </tab>
+          <tab type="user" url="@ref triqs::utility::crash_logger" title="utility::crash_logger"/>
+          <tab type="user" url="@ref triqs::utility::time_pt" title="utility::time_pt"/>
+          <tab type="user" url="@ref triqs::utility::time_segment" title="utility::time_segment"/>
+          <tab type="user" url="@ref triqs::utility::timer" title="utility::timer"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-tuple" title="Tuple and variant tools">
+          <tab type="user" url="@ref triqs::utility::overloaded" title="utility::overloaded"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-utility-traits" title="Type traits and metaprogramming">
+          <tab type="usergroup" url="@ref triqs::utility::tags" title="utility::tags">
+            <tab type="user" url="@ref triqs::utility::tags::divides" title="utility::tags::divides"/>
+            <tab type="user" url="@ref triqs::utility::tags::minus" title="utility::tags::minus"/>
+            <tab type="user" url="@ref triqs::utility::tags::multiplies" title="utility::tags::multiplies"/>
+            <tab type="user" url="@ref triqs::utility::tags::plus" title="utility::tags::plus"/>  
+          </tab>
+          <tab type="user" url="@ref triqs::_and" title="_and"/>
+          <tab type="user" url="@ref triqs::_or" title="_or"/>
+          <tab type="user" url="@ref triqs::count_type_occurrence" title="count_type_occurrence"/>
+          <tab type="user" url="@ref triqs::count_type_occurrence_not" title="count_type_occurrence_not"/>
+          <tab type="user" url="@ref triqs::is_complex" title="is_complex"/>
+          <tab type="user" url="@ref triqs::is_view" title="is_view"/>
+          <tab type="user" url="@ref triqs::is_view_tag" title="is_view_tag"/>
+          <tab type="user" url="@ref triqs::remove_cv_ref" title="remove_cv_ref"/>
+          <tab type="user" url="@ref triqs::utility::callable_traits" title="utility::callable_traits"/>
+          <tab type="user" url="@ref triqs::utility::is_in_ZRC" title="utility::is_in_ZRC"/>
+          <tab type="user" url="@ref triqs::utility::operation" title="utility::operation"/>
+          <tab type="user" url="@ref triqs::utility::remove_rvalue_ref" title="utility::remove_rvalue_ref"/>
+          <tab type="user" url="@ref triqs::utility::scope_guard" title="utility::scope_guard"/>
+          <tab type="user" url="@ref triqs::utility::type_of_mult" title="utility::type_of_mult"/>
+        </tab>
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>

@@ -17,30 +17,42 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#ifndef TRIQS_UTILITY_TUPLE_SERIALIZE_H
-#define TRIQS_UTILITY_TUPLE_SERIALIZE_H
+/**
+ * @file
+ * @brief Boost.Serialization support for `std::tuple`.
+ */
+
+#pragma once
 
 #include <tuple>
 
-namespace boost {
-  namespace serialization {
+namespace boost::serialization {
 
-    template <int pos> struct tuple_serialize_impl {
-      template <typename Archive, typename T> void operator()(Archive &ar, T &t) {
-        ar &std::get<std::tuple_size<T>::value - 1 - pos>(t);
-        tuple_serialize_impl<pos - 1>()(ar, t);
-      }
-    };
-
-    template <> struct tuple_serialize_impl<0> {
-      template <typename Archive, typename T> void operator()(Archive &ar, T &t) { ar &std::get<std::tuple_size<T>::value - 1>(t); }
-    };
-
-    template <typename Archive, typename... ElementTypes> void serialize(Archive &ar, std::tuple<ElementTypes...> &t, const unsigned int version) {
-      tuple_serialize_impl<sizeof...(ElementTypes) - 1>()(ar, t);
+  // Recursive helper that serializes the element at position `tuple_size - 1 - pos`.
+  template <int pos> struct tuple_serialize_impl {
+    template <typename Archive, typename T> void operator()(Archive &ar, T &t) {
+      ar &std::get<std::tuple_size_v<T> - 1 - pos>(t);
+      tuple_serialize_impl<pos - 1>()(ar, t);
     }
+  };
 
-  } // namespace serialization
-} // namespace boost
+  // Base case of tuple_serialize_impl — serializes the last element.
+  template <> struct tuple_serialize_impl<0> {
+    template <typename Archive, typename T> void operator()(Archive &ar, T &t) { ar &std::get<std::tuple_size_v<T> - 1>(t); }
+  };
 
-#endif
+  /**
+   * @ingroup triqs-utility-tuple
+   * @brief Boost.Serialization entry point for `std::tuple`.
+   * 
+   * @tparam Archive Archive type.
+   * @tparam Ts Tuple element types.
+   * @param ar Boost archive.
+   * @param t Tuple to serialize.
+   * @param version Unused version required by the Boost.Serialization protocol.
+   */
+  template <typename Archive, typename... Ts> void serialize(Archive &ar, std::tuple<Ts...> &t, [[maybe_unused]] const unsigned int version) {
+    tuple_serialize_impl<sizeof...(Ts) - 1>()(ar, t);
+  }
+
+} // namespace boost::serialization

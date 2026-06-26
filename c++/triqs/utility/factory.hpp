@@ -17,29 +17,42 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Generic factory for constructing objects of a given type.
+ */
+
 #pragma once
-#include <type_traits>
-#include <vector>
+
 #include "./macros.hpp"
 
-namespace triqs {
-  namespace utility {
+#include <utility>
+#include <vector>
 
+namespace triqs::utility {
+
+  namespace detail {
+
+    // Generic factory to construct a given type.
     template <typename T> struct factories {
       template <typename U> static T invoke(U &&x) { return T(std::forward<U>(x)); }
     };
 
+    // Specialization of factories to construct a std::vector<T> from a std::vector<U>.
     template <typename T> struct factories<std::vector<T>> {
       using R = std::vector<T>;
 
+      // Copy and move vectors of the same type.
       static R invoke(R &&x) { return R(std::move(x)); }
       static R invoke(R const &x) { return R(x); }
       static R invoke(R &x) { return R(x); }
 
+      // Convert vectors of different types element-wise, moving the elements out of an rvalue source.
       template <typename U> static R invoke(std::vector<U> &&v) {
+        auto tmp = std::move(v);
         R r;
-        r.reserve(v.size());
-        for (auto &x : v) r.push_back(factories<T>::invoke(std::move(x)));
+        r.reserve(tmp.size());
+        for (auto &x : tmp) r.push_back(factories<T>::invoke(std::move(x)));
         return r;
       }
 
@@ -58,6 +71,27 @@ namespace triqs {
       }
     };
 
-    template <typename T, typename... U> T factory(U &&...x) { return factories<T>::invoke(std::forward<U>(x)...); }
-  } // namespace utility
-} // namespace triqs
+  } // namespace detail
+
+  /**
+   * @ingroup triqs-utility-other
+   * @brief Generic factory to construct an object of a given type from an arbitrary parameter pack of arguments.
+   *
+   * @details The actual construction is delegated to the helper class `detail::factories<T>`, whose static `invoke`
+   * member is called with the forwarded arguments. By default `detail::factories<T>` simply forwards its single
+   * argument to a constructor of `T`, so any type that is directly constructible from the given argumnets works out of 
+   * the box.
+   *
+   * To support custom construction logic for a type `T` (e.g. element-wise conversion, allocation, or building from
+   * a different representation), provide a partial or full specialization of `detail::factories<T>` exposing one or
+   * more static `invoke` overloads that return a `T`. The library already specializes it for `std::vector<T>` to
+   * allow constructing a vector from another vector with element-wise conversion.
+   *
+   * @tparam T Target type.
+   * @tparam U Argument types.
+   * @param x Constructor arguments.
+   * @return A newly constructed `T` instance.
+   */
+  template <typename T, typename... U> T factory(U &&...x) { return detail::factories<T>::invoke(std::forward<U>(x)...); }
+
+} // namespace triqs::utility

@@ -17,83 +17,101 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#pragma once
-#include "./first_include.hpp"
-#include <string>
-#include <exception>
-#include <stdexcept>
-#include <functional>
-#include <vector>
-#include <iostream>
-#include "./typeid_name.hpp"
-#include "./scope_guard.hpp"
-#include "../h5.hpp"
+/**
+ * @file
+ * @brief RAII container that dumps registered HDF5-serializable objects to disk if its scope unwinds abnormally.
+ */
 
-namespace triqs {
-  namespace utility {
+#pragma once
+
+#include "./scope_guard.hpp"
+#include "./typeid_name.hpp"
+
+#include <h5/h5.hpp>
+
+#include <functional>
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace triqs::utility {
+
+  /**
+   * @ingroup triqs-utility-runtime
+   * @brief RAII helper that writes user-registered objects to an HDF5 crash dump on abnormal scope exit.
+   *
+   * @warning This is unused. It might be removed in the future.
+   */
+  class crash_logger {
+    std::string filename_;
+    std::vector<scope_guard<std::function<void()>>> guards;
+    std::vector<std::string> names;
+
+    public:
+    /**
+     * @brief Construct a crash logger that will write to an HDF5 file on abnormal exit.
+     * @param filename HDF5 file to write to.
+     */
+    crash_logger(std::string filename) : filename_(std::move(filename)) {}
+
+    /// Deleted copy constructor.
+    crash_logger(const crash_logger &) = delete;
+
+    /// Default move constructor.
+    crash_logger(crash_logger &&) = default;
+
+    /// Deleted copy-assignment.
+    crash_logger &operator=(const crash_logger &) = delete;
 
     /**
-  * Usage :
-  *
-  * Suppose we have objects a,b,c ... which are all H5_Serializable
-  * Then :
-  *  { // a scope, whatever
-  *    auto log = crash_logger("dump.h5");
-  *    log(a,"a")(b,"b")(c,"c"); // <---- pls make a macro here !
-  *    // ... do some work
-  *    log.dismiss();
-  *  }
-  *
-  * Now : if the calculation proceeds correctly, nothing happens. log is destroyed.
-  * if however the calculation does not reach the dismiss, e.g. an exception occurs
-  * then log is destroyed without a dismiss and it will dump all objects in the hdf5 file.
-  *
-  * "some work" can be as complex as needed...
-  *
-  */
-    class crash_logger {
-      std::string filename_;
-      std::vector<scope_guard<std::function<void()>>> guards;
-      std::vector<std::string> names;
+     * @brief Move-assignment takes over guards and names from `x`.
+     * 
+     * @param x Other crash_logger to move from.
+     * @return Reference to `*this`.
+     */
+    crash_logger &operator=(crash_logger &&x) noexcept {
+      using std::swap;
+      swap(guards, x.guards);
+      swap(names, x.names);
+      return *this;
+    }
 
-      public:
-      ///
-      crash_logger(std::string filename) : filename_(filename) {}
-      crash_logger(const crash_logger &)            = delete;
-      crash_logger(crash_logger &&)                 = default;
-      crash_logger &operator=(const crash_logger &) = delete;
-      crash_logger &operator=(crash_logger &&x) {
-        using std::swap;
-        swap(guards, x.guards);
-        swap(names, x.names);
-        return *this;
-      }
-      ///
-      template <typename Obj> crash_logger &operator()(Obj const &obj, std::string name) {
-        names.push_back(name);
-        guards.emplace_back([&obj, this, name]() {
-          using h5::h5_write; // to have the proper overload for scalar type !!
-          try {
-            h5_write(h5::group(h5::file(this->filename_.c_str(), 'a')), name, obj);
-          } catch (...) {
-            std::cerr << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name << std::endl;
-          }
-        }); // end lambda
-        return *this;
-      }
-      ///
-      ~crash_logger() noexcept() {
-        if ((guards.size() > 0) && (guards.front().active())) {
-          std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
-          for (auto &x : names) std::cerr << "\"" << x << "\" ";
-          std::cerr << std::endl;
-          h5::file(this->filename_.c_str(), 'w'); // create the file
+    /**
+     * @brief Register an object to be dumped to a given HDF5 path on abnormal exit.
+     * 
+     * @tparam T HDF5-serializable type.
+     * @param obj Object to dump on abnormal exit.
+     * @param name HDF5 path / dataset name.
+     * @return Reference to `*this` for chained registration.
+     */
+    template <typename T> crash_logger &operator()(T const &obj, std::string name) {
+      names.push_back(name);
+      guards.emplace_back([&obj, this, name]() {
+        using h5::h5_write; // ensure proper ADL for scalar types
+        try {
+          h5_write(h5::group(h5::file(this->filename_.c_str(), 'a')), name, obj);
+        } catch (...) {
+          std::cerr << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name << std::endl;
         }
+      });
+      return *this;
+    }
+
+    /// Destructor writes all registered objects to the dump file if there has not been a call to dismiss().
+    ~crash_logger() noexcept {
+      if ((guards.size() > 0) && (guards.front().active())) {
+        std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
+        for (auto &x : names) std::cerr << "\"" << x << "\" ";
+        std::cerr << std::endl;
+        h5::file(this->filename_.c_str(), 'w'); // create the file
       }
-      ///
-      void dismiss() {
-        for (auto &g : guards) g.dismiss();
-      }
-    };
-  } // namespace utility
-} // namespace triqs
+    }
+
+    /// Dismiss the logger by suppressing scope-exit dumps and by releasing registered objects.
+    void dismiss() {
+      for (auto &g : guards) g.dismiss();
+    }
+  };
+
+} // namespace triqs::utility

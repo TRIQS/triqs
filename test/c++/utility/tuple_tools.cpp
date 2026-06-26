@@ -19,6 +19,7 @@
 
 #include <triqs/utility/tuple_tools.hpp>
 #include <cmath>
+#include <iostream>
 #include <stdexcept>
 #include <functional>
 #include <string>

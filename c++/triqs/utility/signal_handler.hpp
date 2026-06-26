@@ -19,29 +19,48 @@
 
 /**
  * @file
- * @brief Provides a signal handler for the TRIQS library.
+ * @brief Provides a signal handler for the **TRIQS** library.
  */
 
 #pragma once
 
+/**
+ * @addtogroup triqs-utility-runtime
+ * @{
+ */
+
+/// Signal handling utilities for the **TRIQS** library.
 namespace triqs::signal_handler {
 
-  // Empty exception class.
+  /// Empty exception type that callers may use to signal a graceful shutdown.
   class exception {};
 
-  /// Start the signal handler.
+  /**
+   * @brief Install the TRIQS signal handler. 
+   * @details After this call, raised signals are queued instead of terminating the process.
+   */
   void start();
 
-  /// Stop the signal handler.
+  /**
+   * @brief Restore the previous signal disposition. 
+   * @details Subsequent signals revert to their default behavior.
+   */
   void stop();
 
-  /// A signal has been received. If `pop` is true and there is a signal, pop it.
+  /**
+   * @brief Whether at least one signal has been queued since the last reset.
+   * 
+   * @param pop If `true`, also pop the most recent queued signal before returning.
+   * @return True if at least one signal is queued.
+   */
   bool received(bool pop = false);
 
-  /// Last received signal.
+  /// Integer identifier of the most recently received signal.
   int last();
 
-  /// Pop the last signal.
+  /// Pop the most recently received signal from the queue (no-op if empty).
   void pop();
 
 } // namespace triqs::signal_handler
+
+/** @} */

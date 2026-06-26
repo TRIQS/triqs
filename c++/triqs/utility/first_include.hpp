@@ -17,28 +17,46 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Compiler / platform glue and the `dcomplex` alias (must be included before any Boost header).
+ */
+
 #pragma once
+
 #include <complex>
 
+/**
+ * @addtogroup triqs-utility-other
+ * @{
+ */
+
+/// Convenience alias for `std::complex<double>`.
+using dcomplex = std::complex<double>;
+
+/** @} */
+
 #if defined __GNUC__ && !defined __clang__
+// GCC version as an integer of the form `major * 10000 + minor * 100 + patchlevel` (only defined on GCC).
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
-using dcomplex = std::complex<double>;
-
-// disable std::auto_ptr (disabled in c++17) usage in boost
+// Disable std::auto_ptr (removed in C++17) usage in boost.
 #define BOOST_NO_AUTO_PTR
 
-// Workaround GCC 15 + Boost Issue for OSX Builds
+// Workaround for a GCC 15 + Boost issue on macOS builds.
 #if defined(__GNUC__) && (__GNUC__ == 15) && defined(__APPLE__) && !defined(__clang__)
 #define BOOST_HAS_LONG_LONG 1
 #endif
 
+// Annotation consumed by the legacy cpp2py wrapper generator to skip a declaration.
 #define CPP2PY_IGNORE __attribute__((annotate("ignore_in_python")))
+
+// Annotation consumed by the legacy cpp2py wrapper generator to wrap an argument as a Python dictionary.
 #define CPP2PY_ARG_AS_DICT __attribute__((annotate("use_parameter_class")))
 
-// MACRO USED only in automatic Python wrapper generator desc.
-// Only on clang, other compilers : not needed,
+// The annotations below are only emitted under Clang (the AST analyzer used by the wrapper generator). Under
+// other compilers they expand to nothing so they do not affect the produced binary.
 #if defined(__clang__)
 #define TRIQS_WRAP_ARG_AS_DICT CPP2PY_ARG_AS_DICT
 #define TRIQS_WRAP_IGNORE CPP2PY_IGNORE

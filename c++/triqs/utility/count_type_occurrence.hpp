@@ -17,26 +17,63 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#ifndef TRIQS_UTILITY_COUNT_OCCUR_H
-#define TRIQS_UTILITY_COUNT_OCCUR_H
+/**
+ * @file
+ * @brief Compile-time count of types in a parameter pack that derive from a given type `T`.
+ */
+
+#pragma once
+
+#include <type_traits>
+
 namespace triqs {
 
-  // count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
+  /**
+   * @addtogroup triqs-utility-traits
+   * @{
+   */
 
+  /**
+   * @brief Number of types in a parameter pack that derive from (or are equal to) a given type.
+   *
+   * @details It uses `std::is_base_of` to determine whether a type derives from `T`.
+   * 
+   * Useful when restricting variadic template overloads to a maximum number of arguments of a certain category.
+   * 
+   * @warning This is unused. It might be removed in the future.
+   * 
+   * @tparam T Base type to look for.
+   * @tparam A Parameter pack of candidate types.
+   */
   template <typename T, typename... A> struct count_type_occurrence;
 
+  // Specialization of count_type_occurrence for at least one type in the parameter pack.
   template <typename T, typename A0, typename... A>
-  struct count_type_occurrence<T, A0, A...> : std::integral_constant<int, std::is_base_of<T, A0>::value + count_type_occurrence<T, A...>::value> {};
+  struct count_type_occurrence<T, A0, A...> : std::integral_constant<int, std::is_base_of_v<T, A0> + count_type_occurrence<T, A...>::value> {};
 
+  // Specialization of count_type_occurrence for an empty parameter pack.
   template <typename T> struct count_type_occurrence<T> : std::integral_constant<int, 0> {};
 
+  /**
+   * @brief Number of types in a parameter pack that do not derive from (or are equal to) a given type.
+   * 
+   * @details Complement of triqs::count_type_occurrence.
+   * 
+   * @warning This is unused. It might be removed in the future.
+   * 
+   * @tparam T Base type to look for.
+   * @tparam A Parameter pack of candidate types.
+   */
   template <typename T, typename... A> struct count_type_occurrence_not;
 
+  // Specialization of count_type_occurrence_not for at least one type in the parameter pack.
   template <typename T, typename A0, typename... A>
-  struct count_type_occurrence_not<T, A0, A...>
-     : std::integral_constant<int, !(std::is_base_of<T, A0>::value) + count_type_occurrence_not<T, A...>::value> {};
+  struct count_type_occurrence_not<T, A0, A...> : std::integral_constant<int, !(std::is_base_of_v<T, A0>)+count_type_occurrence_not<T, A...>::value> {
+  };
 
+  // Specialization of count_type_occurrence_not for an empty parameter pack.
   template <typename T> struct count_type_occurrence_not<T> : std::integral_constant<int, 0> {};
 
+  /** @} */
+
 } // namespace triqs
-#endif

@@ -17,53 +17,80 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#pragma once
-#include <ostream>
-#include <sstream>
+/**
+ * @file
+ * @brief A conditional output stream that only emits when a user-supplied predicate returns `true`.
+ */
 
-namespace triqs {
-  namespace utility {
+#pragma once
+
+#include <functional>
+#include <ostream>
+
+namespace triqs::utility {
+
+  /**
+   * @ingroup triqs-utility-io
+   * @brief Output stream wrapper that emits only when a condition returns `true` and only in debug builds.
+   *
+   * @details Behaves like a `std::ostream` but streaming is guarded both by `#ifdef TRIQS_DEBUG` and by a user 
+   * predicate. 
+   * 
+   * Useful for sparse, conditional logging in hot loops (e.g. printing only every 100 Monte Carlo configurations).
+   *
+   * @warning This is unused. It might be removed in the future.
+   */
+  class debug_stream {
+    std::ostream *out; // NOLINT
+    std::function<bool()> condition;
+
+    public:
+    /**
+     * @brief Construct a debug stream with a condition predicate.
+     * 
+     * @param out_ Pointer to the underlying output stream.
+     * @param condition Predicate that determines whether to emit output.
+     */
+    debug_stream(std::ostream *out_, std::function<bool()> condition) : out(out_), condition(condition) {}
 
     /**
-  * \brief Output stream with a condition
-  *
-  * This class behaves pretty much like a standard ostream
-  * except that the printing is "under" condition
-  *
-  * Example:
-  *
-  * debug_stream rep( std::cerr, [&mc](){ return mc.config_id() %100 == 0;}
-  *
-  */
-    class debug_stream {
-      std::ostream *out;
-      std::function<bool()> condition;
+     * @brief Construct a debug stream without a condition.
+     * @param out_ Pointer to the underlying output stream.
+     */
+    debug_stream(std::ostream *out_) : out(out_) {}
 
-      public:
-      debug_stream(std::ostream *out_, std::function<bool()> condition) : out(out_), condition(condition) {}
-      debug_stream(std::ostream *out_) : out(out_) {}
-
-      template <class T> debug_stream &operator<<(T const &x) {
+    /**
+     * @brief Write an object to the underlying ostream if the condition() holds and `TRIQS_DEBUG` is defined.
+     * 
+     * @tparam T Type of the object to write.
+     * @param x Object to write.
+     * @return Reference to `*this`.
+     */
+    template <class T> debug_stream &operator<<([[maybe_unused]] T const &x) {
 #ifdef TRIQS_DEBUG
-        if (condition && condition()) (*out) << x;
+      if (condition && condition()) (*out) << x;
 #endif
-        return *this;
-      }
+      return *this;
+    }
 
-      // this is the type of std::cout
-      typedef std::basic_ostream<char, std::char_traits<char>> CoutType;
+    /// Output stream type.
+    using CoutType = std::basic_ostream<char, std::char_traits<char>>;
 
-      // this is the function signature of std::endl
-      typedef CoutType &(*StandardEndLine)(CoutType &);
+    /// Type of standard manipulators like `std::endl`.
+    using StandardEndLine = CoutType &(*)(CoutType &);
 
-      // define an operator<< to take in std::endl
-      debug_stream &operator<<(StandardEndLine manip) {
-        // call the function, but we cannot return it's value
+    /**
+     * @brief Overload of operator<<() that accepts manipulators like `std::endl`.
+     * 
+     * @param manip Manipulator function.
+     * @return Reference to `*this`.
+     */
+    debug_stream &operator<<([[maybe_unused]] StandardEndLine manip) {
 #ifdef TRIQS_DEBUG
-        if (condition && condition()) manip(*out);
+      if (condition && condition()) manip(*out);
 #endif
-        return *this;
-      }
-    };
-  } // namespace utility
-} // namespace triqs
+      return *this;
+    }
+  };
+
+} // namespace triqs::utility

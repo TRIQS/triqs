@@ -32,6 +32,11 @@
 namespace triqs::utility {
 
   /**
+   * @addtogroup triqs-utility-math
+   * @{
+   */
+
+  /**
    * @brief Get the quantity \f$ T_{nl} \f$ from Eq.(E2) in the paper
    * <a href="https://doi.org/10.1103/PhysRevB.84.075145">https://doi.org/10.1103/PhysRevB.84.075145</a>.
    *
@@ -122,5 +127,7 @@ namespace triqs::utility {
     unsigned int l_{0};
     std::array<double, 2> arr_{1.0, 0.0};
   };
+
+  /** @} */
 
 } // namespace triqs::utility

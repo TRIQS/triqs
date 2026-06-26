@@ -17,51 +17,61 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Common macros used in **TRIQS**.
+ */
+
 #pragma once
 
-#include <triqs/utility/first_include.hpp>
-#include <triqs/utility/stack_trace.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <type_traits>
-#include <iostream>
+#include "./first_include.hpp"
+#include "./traits.hpp"
 
+#include <boost/utility/enable_if.hpp>
 #include <nda/macros.hpp>
 
+#include <type_traits>
+
+/**
+ * @ingroup triqs-utility-macros
+ * @{
+ */
+
+/// Trailing-return-type convenience: expands to `-> decltype(...) { return ...; }`.
 #define DECL_AND_RETURN(...)                                                                                                                         \
   ->decltype(__VA_ARGS__) { return __VA_ARGS__; }
 
+/// Macro to catch exceptions, print the error message and return 1.
 #define TRIQS_CATCH_AND_ABORT                                                                                                                        \
   catch (std::exception const &e) {                                                                                                                  \
     std::cout << e.what() << std::endl;                                                                                                              \
     return 1;                                                                                                                                        \
   }
 
-namespace triqs {
-  template <typename T> struct remove_cv_ref : std::remove_cv<typename std::remove_reference<T>::type> {};
-
-  /// Tag the views
-  struct is_view_tag {};
-  template <typename T> struct is_view : std::is_base_of<is_view_tag, T> {};
-
-} // namespace triqs
-
+// Unused, outdated macros. Should be removed.
 #define TYPE_ENABLE_IF(Type, ...) typename boost::enable_if<__VA_ARGS__, Type>::type
 #define TYPE_ENABLE_IFC(Type, ...) typename boost::enable_if_c<__VA_ARGS__, Type>::type
 #define TYPE_DISABLE_IF(Type, ...) typename boost::disable_if<__VA_ARGS__, Type>::type
 #define TYPE_DISABLE_IFC(Type, ...) typename boost::disable_if_c<__VA_ARGS__, Type>::type
 
+/// Mark a function or type as deprecated with a custom message.
 #define TRIQS_DEPRECATED(Message) __attribute__((deprecated(AS_STRING(Message))))
-#define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
 
+/// Macro that prints the name and value of a variable together with the source location.
+#define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << (X) << "      at " << __FILE__ << ":" << __LINE__ << '\n'
+
+/// Force-inline attribute portable across GCC and Clang.
 #define FORCEINLINE __inline__ __attribute__((always_inline))
 
+/// Macro that prints a message together with the source location and calls `std::terminate()`.
 #define TERMINATE(X)                                                                                                                                 \
   std::cerr << "Terminating at " << __FILE__ << ":" << __LINE__ << "\n";                                                                             \
-  std::cerr << X;                                                                                                                                    \
+  std::cerr << (X);                                                                                                                                  \
   std::terminate();                                                                                                                                  \
   }
 
-// c2py related macros
+// Fallback definitions for the c2py annotation macros: when this header is not included via the clair-c2py
+// binding generator, the annotations expand to nothing so the production binary is unaffected.
 #ifndef C2PY_INCLUDED
 #define C2PY_IGNORE
 #define C2PY_WRAP_AS_METHOD
@@ -72,3 +82,5 @@ namespace triqs {
 #define C2PY_PROPERTY_SET(X)
 #define C2PY_DEPRECATED_PARAMETER_NAME(...)
 #endif // C2PY_INCLUDED
+
+/** @} */

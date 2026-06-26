@@ -17,15 +17,29 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#ifndef TRIQS_TOOLS_MC_CALLBACKS_H
-#define TRIQS_TOOLS_MC_CALLBACKS_H
-#include <triqs/utility/first_include.hpp>
+/**
+ * @file
+ * @brief Callbacks used by the Monte Carlo framework.
+ */
+
+#pragma once
+
+#include "./first_include.hpp"
+
 #include <functional>
 
-namespace triqs {
-  namespace utility {
+namespace triqs::utility {
 
-    std::function<bool()> clock_callback(int time_in_seconds);
-  }
-} // namespace triqs
-#endif
+  /**
+   * @ingroup triqs-utility-runtime
+   * @brief Build a callback that returns `true` once a given time in seconds has elapsed since its creation.
+   *
+   * @details Typically used as a stop condition for long-running loops (Monte Carlo cycles, optimisers, ...). The first 
+   * invocation starts the internal clock. Subsequent invocations check the elapsed wall-clock time.
+   * 
+   * @param time_in_seconds Wall-clock budget in seconds.
+   * @return A `std::function<bool()>` that returns `true` once the budget is exhausted.
+   */
+  std::function<bool()> clock_callback(int time_in_seconds);
+
+} // namespace triqs::utility

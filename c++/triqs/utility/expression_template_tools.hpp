@@ -17,64 +17,124 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
-#ifndef TRIQS_UTILITY_EXPRESSION_TEMPLATE_TOOLS_H
-#define TRIQS_UTILITY_EXPRESSION_TEMPLATE_TOOLS_H
-#include <type_traits>
-#include <complex>
+/**
+ * @file
+ * @brief Building blocks for expression-template and other type traits.
+ */
+
+#pragma once
+
 #include "./macros.hpp"
 
-namespace triqs {
-  namespace utility {
+#include <complex>
+#include <type_traits>
+#include <utility>
 
-    template <class T> struct remove_rvalue_ref {
-      typedef T type;
-    };
-    template <class T> struct remove_rvalue_ref<T &> {
-      typedef T const &type;
-    };
-    template <class T> struct remove_rvalue_ref<T &&> {
-      typedef T type;
-    };
-    template <class T> using remove_rvalue_ref_t = typename remove_rvalue_ref<T>::type;
+namespace triqs::utility {
 
-    namespace tags {
-      struct plus {};
-      struct minus {};
-      struct multiplies {};
-      struct divides {};
-    } // namespace tags
+  /**
+   * @addtogroup triqs-utility-traits
+   * @{
+   */
 
-    // The basic operations put in a template....
-    template <typename Tag> struct operation;
-    template <> struct operation<tags::plus> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) + std::forward<R>(r))
-      static const char name = '+';
-    };
-    template <> struct operation<tags::minus> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) - std::forward<R>(r))
-      static const char name = '-';
-    };
-    template <> struct operation<tags::multiplies> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) * std::forward<R>(r))
-      static const char name = '*';
-    };
-    template <> struct operation<tags::divides> {
-      template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) / std::forward<R>(r))
-      static const char name = '/';
-    };
+  /**
+   * @brief Strip rvalue references from `T` while turning lvalue references into `const &`.
+   *
+   * @details Convenient when building expression trees where rvalue operands should be stored by value while lvalue 
+   * operands should be stored by const reference.
+   * 
+   * @tparam T Type to transform.
+   */
+  template <class T> struct remove_rvalue_ref {
+    using type = T;
+  };
+  template <class T> struct remove_rvalue_ref<T &> {
+    using type = T const &;
+  };
+  template <class T> struct remove_rvalue_ref<T &&> {
+    using type = T;
+  };
 
-    // The scalar ...
-    template <typename T> struct is_in_ZRC : std::is_arithmetic<T> {};
-    template <> struct is_in_ZRC<bool> : std::true_type {};
-    template <typename T> struct is_in_ZRC<std::complex<T>> : std::true_type {};
-    template <typename T> struct is_in_ZRC<T &> : is_in_ZRC<T> {};
-    template <typename T> struct is_in_ZRC<T &&> : is_in_ZRC<T> {};
-    template <typename T> struct is_in_ZRC<const T> : is_in_ZRC<T> {};
+  /// Alias for the nested `type` in remove_rvalue_ref.
+  template <class T> using remove_rvalue_ref_t = typename remove_rvalue_ref<T>::type;
 
-    template <typename A, typename B> struct type_of_mult {
-      typedef decltype(std::declval<typename std::remove_reference<A>::type>() * std::declval<typename std::remove_reference<B>::type>()) type;
-    };
+  /// Namespace for empty tag types identifying the four basic arithmetic operations used in expression templates.
+  namespace tags {
 
-  } // namespace utility
-} // namespace triqs
-#endif
+    /// Tag for `+` operation.
+    struct plus {};
+
+    /// Tag for `-` operation.
+    struct minus {};
+
+    /// Tag for `*` operation.
+    struct multiplies {};
+
+    /// Tag for `/` operation.
+    struct divides {};
+
+  } // namespace tags
+
+  /**
+   * @brief Callable wrapper that evaluates the operation identified by `Tag` on two operands.
+   *
+   * @details Specialized for the four tags in namespace `triqs::utility::tags`. Each specialization provides a 
+   * templated `operator()(L &&l, R &&r)` and a static `char name` (`+`, `-`, `*`, `/`) suitable for printing.
+   * 
+   * @tparam Tag Type of the operation.
+   */
+  template <typename Tag> struct operation;
+
+  // Spezialization of triqs::utility::operation for plus operation: returns `l + r`.
+  template <> struct operation<tags::plus> {
+    static const char name = '+';
+    template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) + std::forward<R>(r))
+  };
+
+  // Spezialization of triqs::utility::operation for minus operation: returns `l - r`.
+  template <> struct operation<tags::minus> {
+    static const char name = '-';
+    template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) - std::forward<R>(r))
+  };
+
+  // Spezialization of triqs::utility::operation for multiplies operation: returns `l * r`.
+  template <> struct operation<tags::multiplies> {
+    static const char name = '*';
+    template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) * std::forward<R>(r))
+  };
+
+  // Spezialization of triqs::utility::operation for divides operation: returns `l / r`.
+  template <> struct operation<tags::divides> {
+    static const char name = '/';
+    template <typename L, typename R> auto operator()(L &&l, R &&r) const DECL_AND_RETURN(std::forward<L>(l) / std::forward<R>(r))
+  };
+
+  /**
+   * @brief Trait identifying types that lie in \f$ \mathbb{Z} \cup \mathbb{R} \cup \mathbb{C} \f$.
+   *
+   * @details True for all arithmetic types (including `bool`) and for `std::complex<T>`.
+   * 
+   * @tparam T Type to inspect.
+   */
+  template <typename T> struct is_in_ZRC : std::is_arithmetic<T> {};
+  template <> struct is_in_ZRC<bool> : std::true_type {};
+  template <typename T> struct is_in_ZRC<std::complex<T>> : std::true_type {};
+  template <typename T> struct is_in_ZRC<T &> : is_in_ZRC<T> {};
+  template <typename T> struct is_in_ZRC<T &&> : is_in_ZRC<T> {};
+  template <typename T> struct is_in_ZRC<const T> : is_in_ZRC<T> {};
+
+  /**
+   * @brief Trait whose nested `type` is `decltype(a * b)` with cv-/ref-qualifiers stripped from the operands.
+   * 
+   * @warning This is unused. It might be removed in the future.
+   * 
+   * @tparam A Left operand type.
+   * @tparam B Right operand type.
+   */
+  template <typename A, typename B> struct type_of_mult {
+    using type = decltype(std::declval<std::remove_reference_t<A>>() * std::declval<std::remove_reference_t<B>>());
+  };
+
+  /** @} */
+
+} // namespace triqs::utility

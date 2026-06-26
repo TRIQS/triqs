@@ -17,19 +17,42 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Kronecker delta \f$ \delta_{ij} \f$ for arithmetic types, with a CLEF lazy-expression hook.
+ */
+
 #pragma once
 
 #include <nda/clef.hpp>
 
+#include <type_traits>
+
 namespace triqs::utility {
+
+  /**
+   * @ingroup triqs-utility-math
+   * @brief Kronecker delta \f$ \delta_{ij} \f$.
+   * 
+   * @tparam T1 Arithmetic type of the first index.
+   * @tparam T2 Arithmetic type of the second index.
+   * @param i Index \f$ i \f$.
+   * @param j Index \f$ j \f$.
+   * @return True if the given indices are equal, false otherwise.
+   */
   template <typename T1, typename T2>
-    requires(std::is_arithmetic_v<std::decay_t<T1>> and std::is_arithmetic_v<std::decay_t<T2>>)
-  inline bool kronecker(T1 &&i, T2 &&j) {
+    requires(std::is_arithmetic_v<T1> and std::is_arithmetic_v<T2>)
+  inline bool kronecker(T1 i, T2 j) {
     return i == j;
   }
+
 } // namespace triqs::utility
 
 namespace nda::clef {
+
   using triqs::utility::kronecker;
+
+  // Make `kronecker` available as a lazy CLEF expression node.
   CLEF_MAKE_FNT_LAZY(kronecker);
+
 } // namespace nda::clef

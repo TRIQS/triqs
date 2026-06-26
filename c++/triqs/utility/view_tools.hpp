@@ -17,16 +17,25 @@
 //
 // Authors: Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Aliases that map a TRIQS container type to its regular / view / const-view companion.
+ */
+
 #pragma once
-#include <type_traits>
+
 #include <nda/nda.hpp>
+
+#include <type_traits>
 
 namespace triqs {
 
   namespace details {
+
     template <typename T, typename Enable = void> struct _regular {
       using type = T;
     };
+
     template <typename T> struct _regular<T, std::void_t<typename T::regular_type>> {
       using type = typename T::regular_type;
     };
@@ -34,9 +43,11 @@ namespace triqs {
     template <typename T, typename Enable = void> struct _view_or_type {
       using type = T;
     };
+
     template <typename T> struct _view_or_type<T, std::void_t<typename T::view_type>> {
       using type = typename T::view_type;
     };
+
     template <typename T> struct _view_or_type<T const, std::void_t<typename T::view_type>> {
       using type = typename T::const_view_type;
     };
@@ -44,14 +55,42 @@ namespace triqs {
     template <typename T, typename Enable = void> struct _const_view_or_type {
       using type = T;
     };
+
     template <typename T> struct _const_view_or_type<T, std::void_t<typename T::const_view_type>> {
       using type = typename T::const_view_type;
     };
+
   } // namespace details
 
-  template <typename T> using regular_t            = typename details::_regular<std::decay_t<T>>::type;
-  template <typename T> using view_or_type_t       = typename details::_view_or_type<T>::type;
+  /**
+   * @addtogroup triqs-utility-traits
+   * @{
+   */
+
+  /**
+   * @brief Get the regular type of a given type `T` if it exists. 
+   * @details Falls back to `std::decay_t<T>`.
+   * @tparam T Type to inspect.
+   */
+  template <typename T> using regular_t = typename details::_regular<std::decay_t<T>>::type;
+
+  /**
+   * @brief Get the view type of a given type `T` if it exists.
+   * @details Falls back to `T`.
+   * @tparam T Type to inspect.
+   */
+  template <typename T> using view_or_type_t = typename details::_view_or_type<T>::type;
+
+  /**
+   * @brief Get the const view type of a given type `T` if it exists.
+   * @details Falls back to `T`.
+   * @tparam T Container or scalar type.
+   */
   template <typename T> using const_view_or_type_t = typename details::_const_view_or_type<T>::type;
 
+  // Elevate nda::make_regular into the triqs namespace.
   using nda::make_regular;
-} //namespace triqs
+
+  /** @} */
+
+} // namespace triqs
