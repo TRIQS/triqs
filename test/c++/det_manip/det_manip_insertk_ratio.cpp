@@ -119,7 +119,7 @@ void test_insertk_ratios_vs_sequential() {
   std::cerr << "=== test_insertk_ratios_vs_sequential ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14001);
   build_det(D, 15, RNG);
 
   for (int k = 1; k <= 6; ++k) {
@@ -147,7 +147,7 @@ void test_insertk_ratios_vs_try() {
   std::cerr << "=== test_insertk_ratios_vs_try ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14002);
   build_det(D, 15, RNG);
 
   for (int k = 1; k <= 5; ++k) {
@@ -175,7 +175,7 @@ void test_insertk_ratios_empty_matrix() {
   std::cerr << "=== test_insertk_ratios_empty_matrix ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14003);
 
   for (int k = 1; k <= 4; ++k) {
     long K  = 10;
@@ -202,7 +202,7 @@ void test_insertk_ratios_state_unchanged() {
   std::cerr << "=== test_insertk_ratios_state_unchanged ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14004);
   build_det(D, 15, RNG);
 
   auto det_before  = D.determinant();
@@ -291,7 +291,7 @@ void test_insertk_ratios_single_candidate() {
   std::cerr << "=== test_insertk_ratios_single_candidate ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14005);
   build_det(D, 10, RNG);
 
   for (int k = 1; k <= 4; ++k) {
@@ -314,7 +314,7 @@ void test_insertk_ratios_empty_batch() {
   std::cerr << "=== test_insertk_ratios_empty_batch ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14006);
   build_det(D, 10, RNG);
 
   nda::matrix<double> xs(0, 3), ys(0, 3);
@@ -328,7 +328,7 @@ void test_basic_insertk_ratios_vs_sequential() {
   std::cerr << "=== test_basic_insertk_ratios_vs_sequential ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14007);
   build_det(Db, 15, RNG);
 
   for (int k = 1; k <= 4; ++k) {
@@ -366,7 +366,7 @@ void test_insertk_ratios_broadcast_x() {
   std::cerr << "=== test_insertk_ratios_broadcast_x ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14008);
   build_det(D, 15, RNG);
 
   for (int k = 1; k <= 4; ++k) {
@@ -396,7 +396,7 @@ void test_insertk_ratios_broadcast_y() {
   std::cerr << "=== test_insertk_ratios_broadcast_y ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14009);
   build_det(D, 15, RNG);
 
   for (int k = 1; k <= 4; ++k) {
@@ -468,7 +468,7 @@ void test_insertk_ratios_broadcast_empty_matrix() {
   std::cerr << "=== test_insertk_ratios_broadcast_empty_matrix ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14010);
 
   for (int k = 1; k <= 3; ++k) {
     long M = 3, K = 5;
@@ -495,7 +495,7 @@ void test_insertk_ratios_broadcast_y_empty_matrix() {
   std::cerr << "=== test_insertk_ratios_broadcast_y_empty_matrix ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14011);
 
   for (int k = 1; k <= 3; ++k) {
     long M   = 3, K = 5;
@@ -522,7 +522,7 @@ void test_insertk_ratios_broadcast_state_unchanged() {
   std::cerr << "=== test_insertk_ratios_broadcast_state_unchanged ===" << std::endl;
   fun f;
   triqs::det_manip::det_manip<fun> D(f, 100);
-  triqs::mc_tools::random_generator RNG{};
+  triqs::mc_tools::random_generator RNG("mt19937", 14012);
   build_det(D, 15, RNG);
 
   auto det_before  = D.determinant();

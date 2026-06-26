@@ -102,7 +102,9 @@ class TRIQSMCTools : public ::testing::Test {
   }
 
   mpi::communicator comm{};
-  triqs::mc_tools::mc_generic<double> mc{"mt19937_64", comm.rank() * 0x12af5988ull, 3};
+  // All ranks pass the same seed; the communicator-only random_generator derives a distinct
+  // stream per rank (a rank-dependent seed now trips its "same seed on all ranks" check).
+  triqs::mc_tools::mc_generic<double> mc{"mt19937_64", 0x12af5988ull, 3};
   mc_config config{};
 };
 

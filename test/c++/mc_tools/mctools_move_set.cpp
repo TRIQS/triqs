@@ -130,7 +130,7 @@ TEST(TRIQSMCTools, MoveBasics) {
 TEST(TRIQSMCTools, MoveSetBasics) {
   using namespace triqs::mc_tools;
   mpi::communicator comm{};
-  auto rng = random_generator{};
+  auto rng = random_generator{"mt19937_64", 198, comm};
 
   // lambda to create a move set
   auto create_move_set = [&](std::vector<counter> &ct_vec) {

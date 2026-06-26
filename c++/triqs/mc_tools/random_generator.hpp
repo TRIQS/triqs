@@ -192,9 +192,9 @@ namespace triqs::mc_tools {
      *
      * @param name Name of the RNG to be used.
      * @param seed Seed shared by all ranks.
-     * @param c MPI communicator whose rank identifies the stream.
+     * @param c MPI communicator whose rank identifies the stream (defaults to the world communicator).
      */
-    random_generator(std::string name, std::uint64_t seed, mpi::communicator c);
+    random_generator(std::string name, std::uint64_t seed, mpi::communicator c = {});
 
     /// Deleted copy constructor.
     random_generator(random_generator const &) = delete;

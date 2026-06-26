@@ -408,12 +408,7 @@ void test_matrix_cross_validate() {
   triqs::det_manip::det_manip_basic<fun> Db(f, 100);
   triqs::mc_tools::random_generator RNG("mt19937", 66666);
 
-  for (int n = 0; n < 15; ++n) {
-    double x = RNG(10.0);
-    double y = RNG(10.0);
-    D.insert(D.size(), D.size(), x, y);
-    Db.insert(Db.size(), Db.size(), x, y);
-  }
+  build_det_pair(D, Db, 15, RNG);
 
   long Kx = 6, Ky = 8;
   auto xs = random_array1(Kx, RNG);

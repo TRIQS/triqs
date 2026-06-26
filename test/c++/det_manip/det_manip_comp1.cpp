@@ -110,7 +110,7 @@ struct test {
   }
 
   void run() {
-    triqs::mc_tools::random_generator RNG{};
+    triqs::mc_tools::random_generator RNG("mt19937_64", 23432);
     for (size_t i = 0; i < 50000; ++i) {
       std::cerr << " ------------------------------------------------" << std::endl;
       std::cerr << " i = " << i << " size = " << D.size() << std::endl;

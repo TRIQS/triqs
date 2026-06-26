@@ -68,7 +68,7 @@ struct test {
   }
 
   void run() {
-    triqs::mc_tools::random_generator RNG{};
+    triqs::mc_tools::random_generator RNG("mt19937_64", 23432);
 
     // Test insert_k with k=3
     for (int iter = 0; iter < 100; ++iter) {
