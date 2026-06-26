@@ -24,7 +24,14 @@
       </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
       </tab>
-      <tab type="usergroup" url="@ref triqs-hilber" title="Hilbert space">
+      <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">
+        <tab type="user" url="@ref triqs::hilbert_space::fundamental_operator_set" title="hilbert_space::fundamental_operator_set"/>
+        <tab type="user" url="@ref triqs::hilbert_space::hilbert_space" title="hilbert_space::hilbert_space"/>
+        <tab type="user" url="@ref triqs::hilbert_space::imperative_operator" title="hilbert_space::imperative_operator"/>
+        <tab type="user" url="@ref triqs::hilbert_space::space_partition" title="hilbert_space::space_partition"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state< HS, T, false >" title="hilbert_space::state with nda::vector"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state< HS, T, true >" title="hilbert_space::state with std::unordered_map"/>
+        <tab type="user" url="@ref triqs::hilbert_space::sub_hilbert_space" title="hilbert_space::sub_hilbert_space"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-lattice" title="Lattice tools">
         <tab type="usergroup" url="@ref triqs::lattice::bravais_lattice" title="lattice::bravais_lattice">
@@ -140,11 +147,6 @@
         </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-ops" title="Operators">
-        <tab type="user" url="@ref triqs::hilbert_space::fundamental_operator_set" title="hilbert_space::fundamental_operator_set"/>
-        <tab type="user" url="@ref triqs::hilbert_space::hilbert_space" title="hilbert_space::hilbert_space"/>
-        <tab type="user" url="@ref triqs::hilbert_space::state&lt; HilbertSpace, ScalarType, false &gt;" title="hilbert_space::state with nda::vector"/>
-        <tab type="user" url="@ref triqs::hilbert_space::state&lt; HilbertSpace, ScalarType, true &gt;" title="hilbert_space::state with std::unordered_map"/>
-        <tab type="user" url="@ref triqs::hilbert_space::sub_hilbert_space" title="hilbert_space::sub_hilbert_space"/>
         <tab type="user" url="@ref triqs::operators::canonical_ops_t" title="operators::canonical_ops_t"/>
         <tab type="user" url="@ref triqs::operators::many_body_operator_generic" title="operators::many_body_operator_generic"/>
       </tab>

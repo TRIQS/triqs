@@ -35,7 +35,7 @@ namespace triqs {
   namespace hilbert_space {
 
     /**
-     * @addtogroup triqs-ops
+     * @addtogroup triqs-hilbert
      * @{
      */
 

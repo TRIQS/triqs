@@ -80,7 +80,7 @@
  */
 
 /**
- * @defgroup triqs-hilber Hilbert space
+ * @defgroup triqs-hilbert Hilbert space
  * @brief Fock state representations and Hilbert space tools for many-body systems.
  *
  * @details In the following, we introduce some basic concepts and notations used throughout the documentation.
