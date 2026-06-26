@@ -232,68 +232,12 @@ namespace triqs::operators {
    * @tparam T Value type of the coefficients.
    */
   template <typename T> class many_body_operator_generic {
-
+    public:
     /// Container type for monomials and their coefficients.
     using monomials_map_t = std::map<monomial_t, T>;
 
-    monomials_map_t monomials;
-
-    /**
-     * @brief Write a triqs::operators::many_body_operator together with a
-     * triqs::hilbert_space::fundamental_operator_set to HDF5.
-     *
-     * @param g `h5::group` to be written to.
-     * @param name Name of the subgroup.
-     * @param op Operator to be written.
-     * @param fops Fundamental operator set associated with the operator.
-     */
-    friend void h5_write(h5::group g, std::string const &name, many_body_operator const &op, hilbert_space::fundamental_operator_set const &fops);
-
-    /**
-     * @brief Write a triqs::operators::many_body_operator_generic to HDF5.
-     *
-     * @details A minimal fundamental operator set is constructed from the operator and used to label the canonical
-     * operators of each monomial.
-     *
-     * @param g `h5::group` to be written to.
-     * @param name Name of the subgroup.
-     * @param op Operator to be written.
-     */
-    friend void h5_write(h5::group g, std::string const &name, many_body_operator_generic const &op) {
-      h5_write(g, name, op, op.make_fundamental_operator_set());
-    }
-
-    /**
-     * @brief Read a triqs::operators::many_body_operator together with a
-     * triqs::hilbert_space::fundamental_operator_set from HDF5.
-     *
-     * @param g `h5::group` to be read from.
-     * @param name Name of the subgroup.
-     * @param op Operator to be read into.
-     * @param fops Fundamental operator set associated with the operator.
-     */
-    friend void h5_read(h5::group g, std::string const &name, many_body_operator &op, hilbert_space::fundamental_operator_set &fops);
-
-    /**
-     * @brief Read a triqs::operators::many_body_operator_generic from HDF5.
-     *
-     * @param g `h5::group` to be read from.
-     * @param name Name of the subgroup.
-     * @param op Operator to be read into.
-     */
-    friend void h5_read(h5::group g, std::string const &name, many_body_operator_generic &op) {
-      hilbert_space::fundamental_operator_set fops;
-      many_body_operator op_real_cplx;
-      h5_read(g, name, op_real_cplx, fops);
-      op = std::move(op_real_cplx);
-    }
-
-    public:
     /// Value type of the coefficients (either real, complex or real_or_complex).
     using scalar_t = T;
-
-    /// HDF5 format tag of the many-body operator.
-    [[nodiscard]] static std::string hdf5_format() { return "Operator"; }
 
     /// Default constructor creates a zero many-body operator, i.e. with no terms.
     many_body_operator_generic() = default;
@@ -408,18 +352,17 @@ namespace triqs::operators {
     /// Constant iterator type yielding (monomial, coefficient) pairs.
     using const_iterator = utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;
 
-    public:
     /// Get a const iterator to the beginning of the map that contains the monomials and their coefficients.
-    const_iterator begin() const noexcept { return monomials.begin(); }
+    [[nodiscard]] const_iterator begin() const noexcept { return monomials.begin(); }
 
     /// Get a const iterator past the end of the map that contains the monomials and their coefficients.
-    const_iterator end() const noexcept { return monomials.end(); }
+    [[nodiscard]] const_iterator end() const noexcept { return monomials.end(); }
 
     /// Get a const iterator to the beginning of the map that contains the monomials and their coefficients.
-    const_iterator cbegin() const noexcept { return monomials.cbegin(); }
+    [[nodiscard]] const_iterator cbegin() const noexcept { return monomials.cbegin(); }
 
     /// Get a const iterator past the end of the map that contains the monomials and their coefficients.
-    const_iterator cend() const noexcept { return monomials.cend(); }
+    [[nodiscard]] const_iterator cend() const noexcept { return monomials.cend(); }
 
     /**
      * @brief Check if the current operator \f$ \hat{O} \f$ is close to zero.
@@ -753,6 +696,26 @@ namespace triqs::operators {
     [[nodiscard]] C2PY_PROPERTY_GET(imag) many_body_operator_generic imag() const { return operators::imag(*this); }
 
     /**
+     * @brief Write a triqs::operators::many_body_operator_generic to a `std::ostream`.
+     *
+     * @param os `std::ostream` object.
+     * @param op Operator \f$ \hat{O} \f$ to be written.
+     * @return Reference to `std::ostream` object.
+     */
+    friend std::ostream &operator<<(std::ostream &os, many_body_operator_generic const &op) {
+      if (op.monomials.size() != 0) {
+        bool print_plus = false;
+        for (auto const &m : op.monomials) {
+          os << (print_plus ? " + " : "") << m.second;
+          os << m.first;
+          print_plus = true;
+        }
+      } else
+        os << "0";
+      return os;
+    }
+
+    /**
      * @brief Serialize the many-body operator to a generic archive.
      * @param ar Archive to serialize to.
      */
@@ -763,6 +726,59 @@ namespace triqs::operators {
      * @param ar Archive to deserialize from.
      */
     void deserialize(auto &ar) { ar & monomials; }
+
+    /// HDF5 format tag of the many-body operator.
+    [[nodiscard]] static std::string hdf5_format() { return "Operator"; }
+
+    /**
+     * @brief Write a triqs::operators::many_body_operator together with a
+     * triqs::hilbert_space::fundamental_operator_set to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param op Operator to be written.
+     * @param fops Fundamental operator set associated with the operator.
+     */
+    friend void h5_write(h5::group g, std::string const &name, many_body_operator const &op, hilbert_space::fundamental_operator_set const &fops);
+
+    /**
+     * @brief Write a triqs::operators::many_body_operator_generic to HDF5.
+     *
+     * @details A minimal fundamental operator set is constructed from the operator and used to label the canonical
+     * operators of each monomial.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param op Operator to be written.
+     */
+    friend void h5_write(h5::group g, std::string const &name, many_body_operator_generic const &op) {
+      h5_write(g, name, op, op.make_fundamental_operator_set());
+    }
+
+    /**
+     * @brief Read a triqs::operators::many_body_operator together with a
+     * triqs::hilbert_space::fundamental_operator_set from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param op Operator to be read into.
+     * @param fops Fundamental operator set associated with the operator.
+     */
+    friend void h5_read(h5::group g, std::string const &name, many_body_operator &op, hilbert_space::fundamental_operator_set &fops);
+
+    /**
+     * @brief Read a triqs::operators::many_body_operator_generic from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param op Operator to be read into.
+     */
+    friend void h5_read(h5::group g, std::string const &name, many_body_operator_generic &op) {
+      hilbert_space::fundamental_operator_set fops;
+      many_body_operator op_real_cplx;
+      h5_read(g, name, op_real_cplx, fops);
+      op = std::move(op_real_cplx);
+    }
 
     private:
     // Normalize a monomial and insert into a map
@@ -815,25 +831,8 @@ namespace triqs::operators {
       if (is_zero(it->second)) m.erase(it);
     }
 
-    /**
-     * @brief Write a triqs::operators::many_body_operator_generic to a `std::ostream`.
-     *
-     * @param os `std::ostream` object.
-     * @param op Operator \f$ \hat{O} \f$ to be written.
-     * @return Reference to `std::ostream` object.
-     */
-    friend std::ostream &operator<<(std::ostream &os, many_body_operator_generic const &op) {
-      if (op.monomials.size() != 0) {
-        bool print_plus = false;
-        for (auto const &m : op.monomials) {
-          os << (print_plus ? " + " : "") << m.second;
-          os << m.first;
-          print_plus = true;
-        }
-      } else
-        os << "0";
-      return os;
-    }
+    private:
+    monomials_map_t monomials;
   };
 
   /**
