@@ -25,15 +25,23 @@
 
 #pragma once
 
+#include "../arrays.hpp"
+#include "../hilbert_space/fundamental_operator_set.hpp"
+#include "../hilbert_space/hilbert_space.hpp"
+#include "../operators/many_body_operator.hpp"
+#include "../utility/macros.hpp"
+
+#include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
+#include <nda/h5.hpp>
+#include <nda/nda.hpp>
+
+#include <complex>
+#include <initializer_list>
+#include <iostream>
 #include <string>
+#include <type_traits>
 #include <vector>
-#include <map>
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/arrays.hpp>
-#include <triqs/operators/many_body_operator.hpp>
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
-#include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/utility/macros.hpp>
 
 namespace triqs::atom_diag {
 
@@ -81,10 +89,6 @@ namespace triqs::atom_diag {
    * @tparam Complex Allow the Hamiltonian to be complex-valued.
    */
   template <bool Complex> class atom_diag {
-
-    friend struct atom_diag_worker<Complex>;
-    static constexpr bool is_complex = Complex;
-
     public:
     /// Scalar type of the matrix elements: `double` or `std::complex<double>`.
     using scalar_t = std::conditional_t<Complex, std::complex<double>, double>;
@@ -95,18 +99,21 @@ namespace triqs::atom_diag {
     /// Block-diagonal matrix type, one dense block per invariant subspace.
     using block_matrix_t = std::vector<matrix_t>;
 
-    /// State vector spanning the full Hilbert space, expressed in the eigenbasis of \f$ \hat H \f$.
+    /// State vector type of the full Hilbert space.
     using full_hilbert_space_state_t = vector<scalar_t>;
 
     /// Many-body operator type compatible with scalar_t.
     using many_body_op_t = triqs::operators::many_body_operator_generic<scalar_t>;
 
+    /// Data type of a fundamental operator set.
+    using fops_data_t = triqs::hilbert_space::fundamental_operator_set::data_t;
+
     /**
      * @brief Eigensystem of a single invariant subspace of the Hamiltonian \f$ H_B \f$.
      *
-     * @details Holds the eigenvalues \f$ E_B \f$ (with the global ground-state energy subtracted, so that
-     * the smallest eigenvalue across all subspaces is zero) and the unitary matrix \f$ U_B \f$ that maps the Fock
-     * basis of the subspace to the eigenbasis.
+     * @details Holds the eigenvalues \f$ E_B \f$ (with the global ground-state energy subtracted, so that the smallest 
+     * eigenvalue across all subspaces is zero) and the unitary matrix \f$ U_B \f$ that maps the Fock basis of the 
+     * subspace to the eigenbasis.
      */
     struct C2PY_IGNORE eigensystem_t {
       /// Eigenvalues \f$ E_B \f$ sorted in ascending order.
@@ -115,21 +122,19 @@ namespace triqs::atom_diag {
       /// Unitary matrix \f$ U_B \f$ mapping the Fock basis to the eigenbasis.
       matrix_t unitary_matrix;
 
-#ifdef __cpp_impl_three_way_comparison
       /// Default equal-to operator compares the eigenvalues and unitary matrix.
       bool operator==(eigensystem_t const &) const = default;
-#endif
 
       /**
        * @brief Broadcast an eigensystem to all ranks of an MPI communicator.
        *
-       * @param eigs Eigensystem to broadcast.
+       * @param es Eigensystem to broadcast.
        * @param c MPI communicator.
        * @param root Rank holding the source eigensystem.
        */
-      C2PY_IGNORE friend void mpi_broadcast(eigensystem_t &eigs, mpi::communicator c = {}, int root = 0) {
-        mpi::broadcast(eigs.eigenvalues, c, root);
-        mpi::broadcast(eigs.unitary_matrix, c, root);
+      C2PY_IGNORE friend void mpi_broadcast(eigensystem_t &es, mpi::communicator c = {}, int root = 0) {
+        mpi::broadcast(es.eigenvalues, c, root);
+        mpi::broadcast(es.unitary_matrix, c, root);
       }
 
       /// Get the HDF5 format tag.
@@ -138,12 +143,12 @@ namespace triqs::atom_diag {
       /**
        * @brief Write an eigensystem to HDF5.
        *
-       * @param fg HDF5 group to write into.
+       * @param g HDF5 group to write into.
        * @param name Name of the subgroup to create.
        * @param es Eigensystem to write.
        */
-      friend void h5_write(h5::group fg, std::string const &name, eigensystem_t const &es) {
-        auto gr = fg.create_group(name);
+      friend void h5_write(h5::group g, std::string const &name, eigensystem_t const &es) {
+        auto gr = g.create_group(name);
         h5_write(gr, "eigenvalues", es.eigenvalues);
         h5_write(gr, "unitary_matrix", es.unitary_matrix);
       }
@@ -151,66 +156,66 @@ namespace triqs::atom_diag {
       /**
        * @brief Read an eigensystem from HDF5.
        *
-       * @param fg HDF5 group to read from.
+       * @param g HDF5 group to read from.
        * @param name Name of the subgroup containing the eigensystem.
        * @param es Eigensystem to read into.
        */
-      friend void h5_read(h5::group fg, std::string const &name, eigensystem_t &es) {
-        auto gr = fg.open_group(name);
+      friend void h5_read(h5::group g, std::string const &name, eigensystem_t &es) {
+        auto gr = g.open_group(name);
         h5_read(gr, "eigenvalues", es.eigenvalues);
         h5_read(gr, "unitary_matrix", es.unitary_matrix);
       }
     };
 
     /**
-     * @brief Block-matrix representation of an operator that respects the block structure of the Hamiltonian.
+     * @brief Block-matrix representation of an operator \f$ \hat{O} \f$ that respects the block structure of the 
+     * Hamiltonian.
      *
      * @details Stores, for every invariant subspace \f$ B \f$, the target subspace \f$ B' \f$ (or \f$ -1 \f$ if the 
      * operator annihilates \f$ B \f$) together with the dense matrix block describing the action \f$ B \to B' \f$ in 
-     * the Hamiltonian eigenbasis:
-     * \f[
-     *   \hat O\, P_B = P_{B'}\, \hat O\, P_B \; ,
-     * \f]
-     * where \f$ P_B \f$ projects onto subspace \f$ B \f$.
+     * the Hamiltonian eigenbasis.
+     * 
+     * We say that an operator \f$ \hat O \f$ respects the block structure of the Hamiltonian if it maps every invariant
+     * subspace \f$ B \f$ to a single invariant subspace \f$ B' \f$ (or annihilates it).
      */
     struct C2PY_IGNORE op_block_mat_t {
-      /**
-       * @brief Construct an empty block-matrix representation for a problem with the given number of subspaces.
-       *
-       * @details All connections are initialised to `-1` (i.e. no target subspace) and the matrix blocks are left
-       * empty.
-       *
-       * @param n_blocks Number of invariant subspaces of the underlying Hamiltonian.
-       */
-      op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range::all) = -1; };
-
       /// Array of subspace-to-subspace connections induced by the operator.
       array<long, 1> connection;
 
       /// Vector of dense matrix blocks describing the action \f$ B \to B' \f$ in the eigenbasis.
       std::vector<matrix_t> block_mat;
 
-      /// Number of source subspaces.
+      /**
+       * @brief Construct an empty block-matrix representation for a problem with the given number of subspaces.
+       *
+       * @details All connections are initialised to \f$ -1 \f$ (i.e. no target subspace) and the matrix blocks are left
+       * empty.
+       *
+       * @param n_blocks Number of invariant subspaces of the underlying Hamiltonian.
+       */
+      op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range::all) = -1; };
+
+      /// Number of invariant subspaces.
       int n_blocks() const { return block_mat.size(); }
 
       /**
        * @brief Pretty-print the block matrix to a stream.
        *
-       * @param out Output stream.
+       * @param os Output stream.
        * @param op_mat Block matrix to print.
        * @return Reference to the output stream.
        */
-      friend std::ostream &operator<<(std::ostream &out, op_block_mat_t const &op_mat) {
-        out << "Operator block matrix:\n"
-            << " n_blocks = " << op_mat.n_blocks() << "\n";
-        for (int bidx : range(op_mat.n_blocks())) {
+      friend std::ostream &operator<<(std::ostream &os, op_block_mat_t const &op_mat) {
+        os << "Operator block matrix:\n"
+           << " n_blocks = " << op_mat.n_blocks() << "\n";
+        for (auto bidx : range(op_mat.n_blocks())) {
           auto &m = op_mat.block_mat[bidx];
           auto b2 = op_mat.connection(bidx);
-          out << "Block: "
-              << "blocks (" << bidx << ", " << b2 << ") "
-              << "size (" << first_dim(m) << ", " << second_dim(m) << ") " << op_mat.block_mat[bidx] << "\n";
+          os << "Block: "
+             << "blocks (" << bidx << ", " << b2 << ") "
+             << "size (" << first_dim(m) << ", " << second_dim(m) << ") " << op_mat.block_mat[bidx] << "\n";
         }
-        return out;
+        return os;
       };
     };
 
@@ -300,7 +305,7 @@ namespace triqs::atom_diag {
     C2PY_IGNORE fundamental_operator_set const &get_fops() const { return fops; }
 
     /// Get the data of the fundamental operator set used at construction.
-    C2PY_PROPERTY_GET(fops) triqs::hilbert_space::fundamental_operator_set::data_t const &get_fops_as_data() const { return fops.data(); }
+    C2PY_PROPERTY_GET(fops) fops_data_t const &get_fops_as_data() const { return fops.data(); }
 
     /// Get the full Hilbert space over which the diagonalization problem is defined.
     C2PY_IGNORE class hilbert_space const &get_full_hilbert_space() const { return full_hs; }
@@ -346,7 +351,7 @@ namespace triqs::atom_diag {
      */
     C2PY_PROPERTY_GET(fock_states) std::vector<std::vector<fock_state_t>> get_fock_states() const {
       std::vector<std::vector<fock_state_t>> fock_states(n_subspaces());
-      for (int i : range(n_subspaces())) fock_states[i] = sub_hilbert_spaces[i].get_all_fock_states();
+      for (auto i : range(n_subspaces())) fock_states[i] = sub_hilbert_spaces[i].get_all_fock_states();
       return fock_states;
     }
 
@@ -366,7 +371,7 @@ namespace triqs::atom_diag {
      */
     C2PY_PROPERTY_GET(unitary_matrices) std::vector<matrix<scalar_t>> get_unitary_matrices() const {
       std::vector<matrix<scalar_t>> umat(n_subspaces());
-      for (int i : range(n_subspaces())) umat[i] = get_eigensystems()[i].unitary_matrix;
+      for (auto i : range(n_subspaces())) umat[i] = get_eigensystems()[i].unitary_matrix;
       return umat;
     }
 
@@ -433,7 +438,7 @@ namespace triqs::atom_diag {
     /**
      * @brief Get the vacuum state as a vector in the full Hilbert space.
      *
-     * @details The returned vector is expressed in the eigenbasis of the Hamiltonian.
+     * @details The returned vector is expressed in the eigenbasis of the Hamiltonian \f$ \hat H \f$.
      *
      * @return Vacuum state vector.
      */
@@ -529,40 +534,37 @@ namespace triqs::atom_diag {
      */
     C2PY_IGNORE op_block_mat_t get_op_mat(many_body_op_t const &op) const;
 
-#ifdef __cpp_impl_three_way_comparison
+    /// Default equal-to operator compares all data members.
     bool operator==(atom_diag const &rhs) const = default;
-#endif
 
-    private:
-    /// ------------------  DATA  -----------------
+    /// Get the HDF5 format tag (`"AtomDiagReal"` or `"AtomDiagComplex"`).
+    [[nodiscard]] static std::string hdf5_format() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
 
-    many_body_op_t h_atomic;                           // Hamiltonian
-    fundamental_operator_set fops;                     // Keep it to compute the Green's function
-    class hilbert_space full_hs;                       // Full Hilbert space of the problem
-    std::vector<sub_hilbert_space> sub_hilbert_spaces; // The invariant subspaces, i.e. the lists of Fock states
-    std::vector<eigensystem_t> eigensystems;           // Eigensystem in each subspace
-    matrix<long> creation_connection;                  // creation_connection(i, B) -> B', target subspace of c†_i acting on B
-    matrix<long> annihilation_connection;              // idem for annihilation operators
-    std::vector<std::vector<matrix_t>> cdag_matrices;  // cdag_matrices[i][B] = block of c†_i mapping B -> B'
-    std::vector<std::vector<matrix_t>> c_matrices;     // idem for annihilation operators
-    double gs_energy;                                  // Energy of the ground state
-    long vacuum_subspace_index;                        // Invariant subspace containing |0>
-    full_hilbert_space_state_t vacuum;                 // Vacuum vector (in the eigenbasis)
-
-    std::vector<std::vector<quantum_number_t>> quantum_numbers; // Values of the quantum numbers for each subspace
-
-    std::vector<int> first_eigenstate_of_subspace; // Index of the first eigenstate of each subspace
-    void fill_first_eigenstate_of_subspace();
-    void compute_vacuum();
-
-    /* Friend declarations of a template class are a bit ugly */
+    // Friend declarations.
+    friend struct atom_diag_worker<Complex>;
     friend std::ostream &operator<< <Complex>(std::ostream &os, atom_diag const &ss);
     friend void h5_write<Complex>(h5::group gr, std::string const &name, atom_diag const &);
     friend void h5_read<Complex>(h5::group gr, std::string const &name, atom_diag &);
 
-    public:
-    /// Get the HDF5 format tag (`"AtomDiagReal"` or `"AtomDiagComplex"`).
-    [[nodiscard]] static std::string hdf5_format() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
+    private:
+    void fill_first_eigenstate_of_subspace();
+    void compute_vacuum();
+
+    private:
+    many_body_op_t h_atomic;                                    // Hamiltonian
+    fundamental_operator_set fops;                              // Keep it to compute the Green's function
+    class hilbert_space full_hs;                                // Full Hilbert space of the problem
+    std::vector<sub_hilbert_space> sub_hilbert_spaces;          // The invariant subspaces, i.e. the lists of Fock states
+    std::vector<eigensystem_t> eigensystems;                    // Eigensystem in each subspace
+    matrix<long> creation_connection;                           // creation_connection(i, B) -> B', target subspace of c†_i acting on B
+    matrix<long> annihilation_connection;                       // idem for annihilation operators
+    std::vector<std::vector<matrix_t>> cdag_matrices;           // cdag_matrices[i][B] = block of c†_i mapping B -> B'
+    std::vector<std::vector<matrix_t>> c_matrices;              // idem for annihilation operators
+    double gs_energy{0.0};                                      // Energy of the ground state
+    long vacuum_subspace_index{-1};                             // Invariant subspace containing |0>
+    full_hilbert_space_state_t vacuum;                          // Vacuum vector (in the eigenbasis)
+    std::vector<std::vector<quantum_number_t>> quantum_numbers; // Values of the quantum numbers for each subspace
+    std::vector<int> first_eigenstate_of_subspace;              // Index of the first eigenstate of each subspace
   };
 
   /** @} */

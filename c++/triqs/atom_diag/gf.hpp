@@ -25,9 +25,12 @@
 
 #pragma once
 
-#include <vector>
-#include <triqs/gfs.hpp>
 #include "./atom_diag.hpp"
+#include "../arrays.hpp"
+#include "../gfs.hpp"
+
+#include <utility>
+#include <vector>
 
 namespace triqs::atom_diag {
 
@@ -102,7 +105,7 @@ namespace triqs::atom_diag {
    * @param mesh Imaginary-time mesh used to evaluate the Green's function.
    * @return Atomic Green's function \f$ G_{ab}(\tau) \f$.
    */
-  template <bool Complex> block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh);
+  template <bool Complex> block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, imtime const &mesh);
 
   /**
    * @brief Build the atomic imaginary-time Green's function directly from a solved diagonalization problem.
@@ -138,7 +141,7 @@ namespace triqs::atom_diag {
    * @param mesh Matsubara mesh used to evaluate the Green's function.
    * @return Atomic Green's function \f$ G_{ab}(i\omega) \f$.
    */
-  template <bool Complex> block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imfreq const &mesh);
+  template <bool Complex> block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, imfreq const &mesh);
 
   /**
    * @brief Build the atomic Matsubara Green's function directly from a solved diagonalization problem.
@@ -175,8 +178,7 @@ namespace triqs::atom_diag {
    * @param mesh Legendre mesh used to evaluate the Green's function.
    * @return Atomic Green's function \f$ G_{ab}(\ell) \f$.
    */
-  template <bool Complex>
-  block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh);
+  template <bool Complex> block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, legendre const &mesh);
 
   /**
    * @brief Build the atomic Green's function in the Legendre basis directly from a solved diagonalization problem.
@@ -216,7 +218,7 @@ namespace triqs::atom_diag {
    * @return Atomic Green's function \f$ G_{ab}(\omega) \f$.
    */
   template <bool Complex>
-  block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh, double broadening = 0);
+  block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, refreq const &mesh, double broadening = 0);
 
   /**
    * @brief Build the atomic retarded Green's function on a real-frequency mesh directly from a solved

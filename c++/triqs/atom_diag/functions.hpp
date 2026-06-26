@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include <vector>
-#include <triqs/gfs.hpp>
 #include "./atom_diag.hpp"
+
+#include <vector>
 
 namespace triqs::atom_diag {
 

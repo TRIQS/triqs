@@ -18,12 +18,22 @@
 //
 // Authors: Maxime Charlebois, Michel Ferrero, Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
-#include "../atom_diag.hpp"
 #include "./worker.hpp"
+#include "../atom_diag.hpp"
+#include "../../arrays.hpp"
+#include "../../hilbert_space/fundamental_operator_set.hpp"
+#include "../../hilbert_space/imperative_operator.hpp"
+#include "../../hilbert_space/state.hpp"
+#include "../../operators/many_body_operator.hpp"
 
-#include <triqs/arrays.hpp>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
+#include <itertools/itertools.hpp>
+
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using namespace triqs::arrays;
 
@@ -80,7 +90,7 @@ namespace triqs::atom_diag {
   ATOM_DIAG_METHOD(void, compute_vacuum()) {
     // Compute vacuum vector in the eigenbasis
     vacuum() = 0;
-    for (int sp : range(sub_hilbert_spaces.size())) {
+    for (auto sp : range(sub_hilbert_spaces.size())) {
       if (sub_hilbert_spaces[sp].has_state(fock_state_t(0))) {
         vacuum_subspace_index               = sp;
         vacuum(index_range_of_subspace(sp)) = dagger(eigensystems[sp].unitary_matrix)(range::all, 0);
@@ -142,7 +152,7 @@ namespace triqs::atom_diag {
   ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op) const) {
     op_block_mat_t op_mat(n_subspaces());
 
-    for (int b : range(n_subspaces())) {
+    for (auto b : range(n_subspaces())) {
       for (auto const &term : op) {
         auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
         if (bb == -1) continue;
@@ -183,9 +193,9 @@ namespace triqs::atom_diag {
   template <bool Complex> void h5_write(h5::group fg, std::string const &name, atom_diag<Complex> const &ad) {
     using matrix_t = typename atom_diag<Complex>::matrix_t;
     auto gr        = fg.create_group(name);
-    write_hdf5_format(gr, ad);
+    write_hdf5_format(gr, ad); // NOLINT
 
-    h5_write_attribute(gr, "fops", ad.fops);
+    h5_write_attribute(gr, "fops", ad.fops); // NOLINT
     h5::write(gr, "h_atomic", ad.h_atomic);
     h5::write(gr, "full_hs", ad.full_hs);
     h5::write(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);
@@ -214,7 +224,7 @@ namespace triqs::atom_diag {
     using matrix_t = typename atom_diag<Complex>::matrix_t;
     auto gr        = fg.open_group(name);
 
-    h5_read_attribute(gr, "fops", ad.fops);
+    h5_read_attribute(gr, "fops", ad.fops); // NOLINT
     h5::try_read(gr, "h_atomic", ad.h_atomic);
     h5::read(gr, "full_hs", ad.full_hs);
     h5::read(gr, "sub_hilbert_spaces", ad.sub_hilbert_spaces);

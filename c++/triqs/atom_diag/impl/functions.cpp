@@ -18,13 +18,17 @@
 //
 // Authors: Michel Ferrero, Alexander Hampel, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+#include "../atom_diag.hpp"
 #include "../functions.hpp"
-#include <cmath>
+#include "../../arrays.hpp"
+#include "../../operators/many_body_operator.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/numeric_ops.hpp"
+
 #include <algorithm>
-#include <limits>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/numeric_ops.hpp>
-#include <triqs/utility/legendre.hpp>
+#include <cmath>
+#include <complex>
+#include <vector>
 
 namespace triqs::atom_diag {
 

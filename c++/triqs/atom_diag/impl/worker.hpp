@@ -20,9 +20,11 @@
 
 #pragma once
 
-#include <vector>
-#include <climits>
 #include "../atom_diag.hpp"
+#include "../../hilbert_space/hilbert_space.hpp"
+
+#include <climits>
+#include <vector>
 
 using namespace triqs::hilbert_space;
 

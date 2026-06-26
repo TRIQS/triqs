@@ -18,16 +18,17 @@
 //
 // Authors: Philipp Dumitrescu, Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
-#include "../functions.hpp"
+#include "../atom_diag.hpp"
 #include "../gf.hpp"
-#include <cmath>
+#include "../../arrays.hpp"
+#include "../../gfs.hpp"
+#include "../../utility/legendre.hpp"
+
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <utility>
 #include <vector>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/numeric_ops.hpp>
-#include <triqs/utility/legendre.hpp>
 
 namespace triqs::atom_diag {
 
@@ -74,8 +75,8 @@ namespace triqs::atom_diag {
     int bl = 0;
     for (auto const &[block, bl_size] : gf_struct) {
 
-      for (int inner_index1 : range(bl_size))
-        for (int inner_index2 : range(bl_size)) {
+      for (auto inner_index1 : range(bl_size))
+        for (auto inner_index2 : range(bl_size)) {
           int n1 = fops[{block, inner_index1}]; // linear_index of c
           int n2 = fops[{block, inner_index2}]; // linear_index of c_dag
 
@@ -144,8 +145,8 @@ namespace triqs::atom_diag {
     int bl = 0;
     for (auto &block : g) {
       auto shape = block.target_shape();
-      for (int n1 : range(shape[0]))
-        for (int n2 : range(shape[1])) {
+      for (auto n1 : range(shape[0]))
+        for (auto n2 : range(shape[1])) {
           for (auto const &term : lehmann[bl](n1, n2)) proc(bl, n1, n2, term.first, term.second);
         }
       ++bl;
@@ -242,7 +243,7 @@ namespace triqs::atom_diag {
       double w = -beta / (2 * std::cosh(x));
       for (auto l : g.mesh()) {
         g[l] += residue * w * std::sqrt(2 * l.index() + 1) * (l.index() % 2 == 0 ? 1 : std::copysign(1, -x))
-           * triqs::utility::mod_cyl_bessel_i(l.index(), std::abs(x));
+           * triqs::utility::mod_cyl_bessel_i(static_cast<int>(l.index()), std::abs(x));
       }
     };
   }

@@ -19,14 +19,20 @@
 // Authors: Maxime Charlebois, Michel Ferrero, Igor Krivenko, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
 #include "./worker.hpp"
+#include "../../hilbert_space/fundamental_operator_set.hpp"
+#include "../../hilbert_space/imperative_operator.hpp"
+#include "../../hilbert_space/space_partition.hpp"
+#include "../../hilbert_space/state.hpp"
+#include "../../operators/many_body_operator.hpp"
 
-#include <vector>
+#include <nda/nda.hpp>
+
 #include <bitset>
+#include <limits>
 #include <map>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
-#include <triqs/hilbert_space/space_partition.hpp>
-#include <nda/linalg/eigh.hpp>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace triqs::hilbert_space;
 
@@ -327,7 +333,7 @@ namespace triqs::atom_diag {
       auto remap_connection = [&](matrix<long> &connection) {
         auto c2 = connection;
         for (int n = 0; n < first_dim(connection); ++n)
-          for (int j = 0; j < second_dim(connection); ++j) connection(n, remap[j]) = (c2(n, j) == -1 ? -1 : remap[c2(n, j)]);
+          for (int j = 0; j < second_dim(connection); ++j) connection(n, remap[j]) = (c2(n, j) == -1 ? -1 : remap[static_cast<int>(c2(n, j))]);
       };
       remap_connection(hdiag->creation_connection);
       remap_connection(hdiag->annihilation_connection);
