@@ -25,14 +25,16 @@
 
 #pragma once
 
-#include <triqs/utility/first_include.hpp>
-#include <triqs/utility/callable_traits.hpp>
-#include <triqs/arrays.hpp>
-#include <nda/linalg/det.hpp>
-#include <nda/linalg/inv.hpp>
+#include "../arrays.hpp"
+#include "../utility/callable_traits.hpp"
+#include "../utility/first_include.hpp"
+
 #include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <iterator>
 #include <numeric>
 #include <vector>
@@ -131,9 +133,9 @@ namespace triqs::det_manip {
 
     // Working data for two-row/column operations: arguments and positions of the two new/changed rows/columns.
     struct work_data_type2 {
-      x_type x[2];
-      y_type y[2];
-      long i[2], j[2];
+      std::array<x_type, 2> x;
+      std::array<y_type, 2> y;
+      std::array<long, 2> i, j;
     } w2;
 
     // Working data for k-row/column operations: arguments and positions of the k rows/columns (k = current count).
@@ -508,23 +510,23 @@ namespace triqs::det_manip {
       if (N == Nmax) reserve(2 * Nmax);
       last_try = Insert;
 
-      range Row_A__(0, i);
+      range Row_A(0, i);
       range Row_B_0(i, N);
       range Row_B_1 = Row_B_0 + std::ptrdiff_t{1};
 
-      range Col_A__(0, j);
+      range Col_A(0, j);
       range Col_B_0(j, N);
       range Col_B_1 = Col_B_0 + std::ptrdiff_t{1};
 
-      mat_new(Row_A__, Col_A__) = mat(Row_A__, Col_A__);
-      mat_new(Row_A__, Col_B_1) = mat(Row_A__, Col_B_0);
-      mat_new(Row_B_1, Col_A__) = mat(Row_B_0, Col_A__);
+      mat_new(Row_A, Col_A)     = mat(Row_A, Col_A);
+      mat_new(Row_A, Col_B_1)   = mat(Row_A, Col_B_0);
+      mat_new(Row_B_1, Col_A)   = mat(Row_B_0, Col_A);
       mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
 
-      for (auto k : Row_A__) { mat_new(k, j) = f(x_values[k], y); }
+      for (auto k : Row_A) { mat_new(k, j) = f(x_values[k], y); }
       for (auto k : Row_B_0) { mat_new(k + 1, j) = f(x_values[k], y); }
 
-      for (auto k : Col_A__) { mat_new(i, k) = f(x, y_values[k]); }
+      for (auto k : Col_A) { mat_new(i, k) = f(x, y_values[k]); }
       for (auto k : Col_B_0) { mat_new(i, k + 1) = f(x, y_values[k]); }
 
       mat_new(i, j) = f(x, y);
@@ -608,33 +610,33 @@ namespace triqs::det_manip {
 
       // std::cerr << i0 << "," << i1 << "," << j0 << "," << j1 << " : " << x0 << "," << x1 << "," << y0 << "," << y1 << std::endl;
 
-      range Row_A__(0, i0);
+      range Row_A(0, i0);
       range Row_B_0(i0, i1);
       range Row_B_1 = Row_B_0 + std::ptrdiff_t{1};
       range Row_C_0(i1, N);
       range Row_C_1 = Row_C_0 + std::ptrdiff_t{2};
 
-      range Col_A__(0, j0);
+      range Col_A(0, j0);
       range Col_B_0(j0, j1);
       range Col_B_1 = Col_B_0 + std::ptrdiff_t{1};
       range Col_C_0(j1, N);
       range Col_C_1 = Col_C_0 + std::ptrdiff_t{2};
 
-      mat_new(Row_A__, Col_A__) = mat(Row_A__, Col_A__);
-      mat_new(Row_A__, Col_B_1) = mat(Row_A__, Col_B_0);
-      mat_new(Row_A__, Col_C_1) = mat(Row_A__, Col_C_0);
+      mat_new(Row_A, Col_A)   = mat(Row_A, Col_A);
+      mat_new(Row_A, Col_B_1) = mat(Row_A, Col_B_0);
+      mat_new(Row_A, Col_C_1) = mat(Row_A, Col_C_0);
 
-      mat_new(Row_B_1, Col_A__) = mat(Row_B_0, Col_A__);
+      mat_new(Row_B_1, Col_A)   = mat(Row_B_0, Col_A);
       mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
       mat_new(Row_B_1, Col_C_1) = mat(Row_B_0, Col_C_0);
 
-      mat_new(Row_C_1, Col_A__) = mat(Row_C_0, Col_A__);
+      mat_new(Row_C_1, Col_A)   = mat(Row_C_0, Col_A);
       mat_new(Row_C_1, Col_B_1) = mat(Row_C_0, Col_B_0);
       mat_new(Row_C_1, Col_C_1) = mat(Row_C_0, Col_C_0);
 
       // Note: need to shift i1/j1 below by +1 to adjust for first row/column
 
-      for (auto k : Row_A__) {
+      for (auto k : Row_A) {
         mat_new(k, j0)     = f(x_values[k], y0);
         mat_new(k, j1 + 1) = f(x_values[k], y1);
       }
@@ -648,7 +650,7 @@ namespace triqs::det_manip {
         mat_new(k + 2, j1 + 1) = f(x_values[k], y1);
       }
 
-      for (auto k : Col_A__) {
+      for (auto k : Col_A) {
         mat_new(i0, k)     = f(x0, y_values[k]);
         mat_new(i1 + 1, k) = f(x1, y_values[k]);
       }
@@ -764,13 +766,13 @@ namespace triqs::det_manip {
       TRIQS_ASSERT(j.size() == x.size());
       TRIQS_ASSERT(x.size() == y.size());
 
-      long k = i.size();
+      long k = static_cast<long>(i.size());
       wk.resize(k);
 
       // Sort indices to ensure proper insertion order
       auto argsort = [](auto const &vec) {
         std::vector<long> idx(vec.size());
-        std::iota(idx.begin(), idx.end(), 0L);
+        std::ranges::iota(idx, 0L);
         std::stable_sort(idx.begin(), idx.end(), [&vec](long lhs, long rhs) { return vec[lhs] < vec[rhs]; });
         return idx;
       };
@@ -896,17 +898,17 @@ namespace triqs::det_manip {
         return det_new / det;
       }
 
-      range Row_A__(0, i);
+      range Row_A(0, i);
       range Row_B_0(i + 1, N);
       range Row_B_1 = Row_B_0 + std::ptrdiff_t{-1};
 
-      range Col_A__(0, j);
+      range Col_A(0, j);
       range Col_B_0(j + 1, N);
       range Col_B_1 = Col_B_0 + std::ptrdiff_t{-1};
 
-      mat_new(Row_A__, Col_A__) = mat(Row_A__, Col_A__);
-      mat_new(Row_A__, Col_B_1) = mat(Row_A__, Col_B_0);
-      mat_new(Row_B_1, Col_A__) = mat(Row_B_0, Col_A__);
+      mat_new(Row_A, Col_A)     = mat(Row_A, Col_A);
+      mat_new(Row_A, Col_B_1)   = mat(Row_A, Col_B_0);
+      mat_new(Row_B_1, Col_A)   = mat(Row_B_0, Col_A);
       mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
 
       range R(0, N - 1);
@@ -973,27 +975,27 @@ namespace triqs::det_manip {
         return det_new / det;
       }
 
-      range Row_A__(0, i0);
+      range Row_A(0, i0);
       range Row_B_0(i0 + 1, i1);
       range Row_B_1 = Row_B_0 + std::ptrdiff_t{-1};
       range Row_C_0(i1 + 1, N);
       range Row_C_1 = Row_C_0 + std::ptrdiff_t{-2};
 
-      range Col_A__(0, j0);
+      range Col_A(0, j0);
       range Col_B_0(j0 + 1, j1);
       range Col_B_1 = Col_B_0 + std::ptrdiff_t{-1};
       range Col_C_0(j1 + 1, N);
       range Col_C_1 = Col_C_0 + std::ptrdiff_t{-2};
 
-      mat_new(Row_A__, Col_A__) = mat(Row_A__, Col_A__);
-      mat_new(Row_A__, Col_B_1) = mat(Row_A__, Col_B_0);
-      mat_new(Row_A__, Col_C_1) = mat(Row_A__, Col_C_0);
+      mat_new(Row_A, Col_A)   = mat(Row_A, Col_A);
+      mat_new(Row_A, Col_B_1) = mat(Row_A, Col_B_0);
+      mat_new(Row_A, Col_C_1) = mat(Row_A, Col_C_0);
 
-      mat_new(Row_B_1, Col_A__) = mat(Row_B_0, Col_A__);
+      mat_new(Row_B_1, Col_A)   = mat(Row_B_0, Col_A);
       mat_new(Row_B_1, Col_B_1) = mat(Row_B_0, Col_B_0);
       mat_new(Row_B_1, Col_C_1) = mat(Row_B_0, Col_C_0);
 
-      mat_new(Row_C_1, Col_A__) = mat(Row_C_0, Col_A__);
+      mat_new(Row_C_1, Col_A)   = mat(Row_C_0, Col_A);
       mat_new(Row_C_1, Col_B_1) = mat(Row_C_0, Col_B_0);
       mat_new(Row_C_1, Col_C_1) = mat(Row_C_0, Col_C_0);
 
@@ -1038,12 +1040,12 @@ namespace triqs::det_manip {
       TRIQS_ASSERT(i.size() == j.size());
       TRIQS_ASSERT(N >= static_cast<long>(i.size()));
 
-      long k = i.size();
+      long k = static_cast<long>(i.size());
       wk.resize(k);
 
       // Sort indices in descending order for proper removal
-      std::sort(i.begin(), i.end());
-      std::sort(j.begin(), j.end());
+      std::ranges::sort(i);
+      std::ranges::sort(j);
 
       // Check consistency
       for (long l = 0; l < k - 1; ++l) {
