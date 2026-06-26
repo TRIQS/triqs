@@ -100,6 +100,8 @@ namespace triqs::hilbert_space {
          [](auto const &v) -> std::string {
            if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>)
              return fmt::format("'{}'", v);
+           else if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::array<long, 3>>)
+             return fmt::format("({})", fmt::join(v, ","));
            else
              return fmt::format("{}", v);
          },

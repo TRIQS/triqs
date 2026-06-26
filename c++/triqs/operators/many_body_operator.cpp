@@ -26,6 +26,7 @@
 #include "../hilbert_space/fundamental_operator_set.hpp"
 #include "../utility/real_or_complex.hpp"
 
+#include <fmt/ostream.h>
 #include <h5/h5.hpp>
 #include <hdf5.h>
 #include <itertools/itertools.hpp>
@@ -47,23 +48,10 @@ namespace triqs::operators {
 // maximum order of the monomial (here quartic operators)
 #define MAX_MONOMIAL_SIZE 4
 
-  struct print_visitor {
-    std::ostream &os;
-    void operator()(long i) { os << i; }
-    void operator()(std::string const &x) { os << '\'' << x << '\''; }
-    void operator()(double d) { os << d; }
-    void operator()(std::array<long, 3> const &a) { os << '(' << a[0] << ',' << a[1] << ',' << a[2] << ')'; }
-  };
-
-  std::ostream &operator<<(std::ostream &os, canonical_ops_t const &op) {
-    print_visitor pr{os};
-    os << 'c' << (op.dagger ? "_dag" : "") << '(';
-    int u = 0;
-    for (auto const &i : op.indices) {
-      if (u++) os << ",";
-      visit(pr, i);
-    }
-    return os << ')';
+  std::ostream &operator<<(std::ostream &sout, canonical_ops_t const &op) {
+    using triqs::hilbert_space::format_indices;
+    fmt::print(sout, "c{}{}", (op.dagger ? "_dag" : ""), format_indices(op.indices, ",", "(", ")"));
+    return sout;
   }
 
   bool operator<(monomial_t const &m1, monomial_t const &m2) {

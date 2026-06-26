@@ -69,8 +69,8 @@ TEST(hilbert_space, operator_indices) {
   EXPECT_PRINT("['up' | 'down']", format_indices(indices_t{"up", "down"}, " | ", "[", "]"));
   EXPECT_PRINT("1.5", format_indices(indices_t{1.5}));
   EXPECT_PRINT("'up',2,1.5", format_indices(indices_t{"up", 2, 1.5}));
-  EXPECT_PRINT("[1, 2, 3]", format_indices(indices_t{std::array<long, 3>{1, 2, 3}}));
-  EXPECT_PRINT("'up',[1, 2, 3],1.5", format_indices(indices_t{"up", std::array<long, 3>{1, 2, 3}, 1.5}));
+  EXPECT_PRINT("(1,2,3)", format_indices(indices_t{std::array<long, 3>{1, 2, 3}}));
+  EXPECT_PRINT("'up',(1,2,3),1.5", format_indices(indices_t{"up", std::array<long, 3>{1, 2, 3}, 1.5}));
 }
 
 TEST(hilbert_space, hilbert_space) {

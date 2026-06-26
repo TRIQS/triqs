@@ -57,14 +57,14 @@ namespace triqs::operators {
   // Elevate triqs::utility::real_or_complex to the `triqs::operators` namespace.
   using utility::real_or_complex;
 
+  /// Elevate triqs::hilbert_space::indices_t to the `triqs::operators` namespace.
+  using indices_t = hilbert_space::fundamental_operator_set::indices_t;
+
   // Forward declarations.
   template <typename ScalarType> class many_body_operator_generic;
 
   template <typename ScalarType> many_body_operator_generic<ScalarType> real(many_body_operator_generic<ScalarType> const &op);
   template <typename ScalarType> many_body_operator_generic<ScalarType> imag(many_body_operator_generic<ScalarType> const &op);
-
-  /// See triqs::hilbert_space::indices_t.
-  using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
   /// Many-body operator with real or complex coefficients (see triqs::operators::many_body_operator_generic).
   using many_body_operator = many_body_operator_generic<real_or_complex>;
@@ -74,8 +74,6 @@ namespace triqs::operators {
 
   /// Many-body operator with complex coefficients (see triqs::operators::many_body_operator_generic).
   using many_body_operator_complex = many_body_operator_generic<std::complex<double>>;
-
-  //-----------------------------------------------------------------------------------------
 
   /**
    * @brief Second quantization creation/annihilation operator.
@@ -92,10 +90,10 @@ namespace triqs::operators {
      * @brief True for creation (\f$ \hat{c}_{\alpha_i}^{\dagger} \f$), false for annihilation 
      * (\f$ \hat{c}_{\alpha_i} \f$) operators.
      */
-    bool dagger;
+    bool dagger{false};
 
     /// Single particle state index \f$ \alpha_i \f$.
-    indices_t indices;
+    indices_t indices{};
 
     /**
      * @brief Three-way comparison operator for canonical operators.
