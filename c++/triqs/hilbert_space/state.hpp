@@ -43,7 +43,7 @@ namespace triqs::hilbert_space {
    */
 
   // Forward declaration.
-  template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
+  template <typename HS, typename T, bool BasedOnMap> class state {};
 
   /**
    * @brief Create a zero state in the same Hilbert (Fock) space as the given state.
@@ -51,18 +51,16 @@ namespace triqs::hilbert_space {
    * @details It simply returns the many-body state \f$ \lvert \psi \rangle \in \mathcal{F}^{(m)} = 0 \f$, i.e. with all 
    * amplitudes \f$ a_{f_i} = 0 \f$.
    * 
-   * See triqs::hilbert_space::state<HilbertSpace, ScalarType, true> and 
-   * triqs::hilbert_space::state<HilbertSpace, ScalarType, false> for more details.
+   * See triqs::hilbert_space::state<HS, T, true> and triqs::hilbert_space::state<HS, T, false> for more details.
    *
-   * @tparam HilbertSpace Hilbert space type.
-   * @tparam ScalarType Amplitude type.
+   * @tparam HS Hilbert space type.
+   * @tparam T Amplitude type.
    * @tparam BasedOnMap Whether the amplitudes are stored in a map or a vector.
    * @param phi Reference state belonging to \f$ \mathcal{F}^{(m)} \f$.
    * @return \f$ \lvert \psi \rangle \in \mathcal{F}^{(m)} \f$ with all amplitudes set to zero.
    */
-  template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
-  auto make_zero_state(state<HilbertSpace, ScalarType, BasedOnMap> const &phi) {
-    return state<HilbertSpace, ScalarType, BasedOnMap>{phi.get_hilbert()};
+  template <typename HS, typename T, bool BasedOnMap> auto make_zero_state(state<HS, T, BasedOnMap> const &phi) {
+    return state<HS, T, BasedOnMap>{phi.get_hilbert()};
   }
 
   /**
@@ -83,21 +81,19 @@ namespace triqs::hilbert_space {
    * 
    * It inherits from `boost::additive` and `boost::multiplicative` to provide basic vector space operations.
    *
-   * @tparam HilbertSpace Hilbert space type.
-   * @tparam ScalarType Amplitude type.
+   * @tparam HS Hilbert space type.
+   * @tparam T Amplitude type.
    */
-  template <typename HilbertSpace, typename ScalarType>
-  class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace, ScalarType, true>>,
-                                                boost::multiplicative<state<HilbertSpace, ScalarType, true>, ScalarType> {
+  template <typename HS, typename T> class state<HS, T, true> : boost::additive<state<HS, T, true>>, boost::multiplicative<state<HS, T, true>, T> {
     public:
     /// Value type of the amplitudes (either real or complex).
-    using value_type = ScalarType;
+    using value_type = T;
 
     /// Type of the Hilbert (Fock) space this state belongs to.
-    using hilbert_space_t = HilbertSpace;
+    using hilbert_space_t = HS;
 
     /// Container type for amplitudes.
-    using amplitude_t = std::unordered_map<fock_state_t, ScalarType>;
+    using amplitude_t = std::unordered_map<fock_state_t, value_type>;
 
     /// Default constructor for a dummy state that does not belong to any Hilbert (Fock) space.
     state() : hs_ptr_(nullptr) {}
@@ -107,7 +103,7 @@ namespace triqs::hilbert_space {
      * @details All amplitues are set to zero, i.e. \f$ a_{f_i} = 0 \; \forall f_i \f$.
      * @param hs Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      */
-    state(HilbertSpace const &hs) : hs_ptr_(&hs) {}
+    state(hilbert_space_t const &hs) : hs_ptr_(&hs) {}
 
     /**
      * @brief Construct a new many-body state \f$ \lvert \psi \rangle \in \mathcal{F}^{(m)} = \lvert f_i \rangle \f$.
@@ -118,7 +114,7 @@ namespace triqs::hilbert_space {
      * @param hs Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      * @param f Fock state \f$ \lvert f_i \rangle \f$ for which the amplitude \f$ a_{f_i} = 1 \f$.
      */
-    state(HilbertSpace const &hs, fock_state_t f) : hs_ptr_(&hs) { map_[f] = value_type(1.0); }
+    state(hilbert_space_t const &hs, fock_state_t f) : hs_ptr_(&hs) { map_[f] = value_type(1.0); }
 
     /// Get the dimension of the associated Hilbert (Fock) space, i.e. \f$ \dim(\mathcal{F}^{(m)}) \f$.
     [[nodiscard]] int size() const { return hs_ptr_->size(); }
@@ -247,13 +243,13 @@ namespace triqs::hilbert_space {
     }
 
     /// Get the Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$ the current state belongs to.
-    HilbertSpace const &get_hilbert() const { return *hs_ptr_; }
+    hilbert_space_t const &get_hilbert() const { return *hs_ptr_; }
 
     /**
      * @brief Set the Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$ for this state.
      * @param new_hs New Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      */
-    void set_hilbert(HilbertSpace const &new_hs) { hs_ptr_ = &new_hs; }
+    void set_hilbert(hilbert_space_t const &new_hs) { hs_ptr_ = &new_hs; }
 
     private:
     // Discard all amplitudes smaller than a specific threshold.
@@ -269,7 +265,7 @@ namespace triqs::hilbert_space {
     }
 
     private:
-    const HilbertSpace *hs_ptr_;
+    const hilbert_space_t *hs_ptr_;
     amplitude_t map_;
   };
 
@@ -290,21 +286,19 @@ namespace triqs::hilbert_space {
    * 
    * It inherits from `boost::additive` and `boost::multiplicative` to provide basic vector space operations.
    *
-   * @tparam HilbertSpace Hilbert space type.
-   * @tparam ScalarType Amplitude type.
+   * @tparam HS Hilbert space type.
+   * @tparam T Amplitude type.
    */
-  template <typename HilbertSpace, typename ScalarType>
-  class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpace, ScalarType, false>>,
-                                                 boost::multiplicative<state<HilbertSpace, ScalarType, false>, ScalarType> {
+  template <typename HS, typename T> class state<HS, T, false> : boost::additive<state<HS, T, false>>, boost::multiplicative<state<HS, T, false>, T> {
     public:
     /// Value type of the amplitudes (either real or complex).
-    using value_type = ScalarType;
+    using value_type = T;
 
     /// Type of the Hilbert (Fock) space this state belongs to.
-    using hilbert_space_t = HilbertSpace;
+    using hilbert_space_t = HS;
 
     /// Container type for amplitudes.
-    using amplitude_t = nda::vector<ScalarType>;
+    using amplitude_t = nda::vector<value_type>;
 
     /// Default constructor for a dummy state that does not belong to any Hilbert (Fock) space.
     state() : hs_ptr_(nullptr) {}
@@ -314,7 +308,7 @@ namespace triqs::hilbert_space {
      * @details All amplitues are set to zero, i.e. \f$ a_{f_i} = 0 \; \forall f \f$.
      * @param hs Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      */
-    state(HilbertSpace const &hs) : hs_ptr_(&hs), vec_(amplitude_t::zeros(hs.size())) {}
+    state(hilbert_space_t const &hs) : hs_ptr_(&hs), vec_(amplitude_t::zeros(hs.size())) {}
 
     /**
      * @brief Construct a new many-body state \f$ \lvert \psi \rangle \in \mathcal{F}^{(m)} = \lvert f_i \rangle \f$.
@@ -325,7 +319,7 @@ namespace triqs::hilbert_space {
      * @param hs Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      * @param f Fock state \f$ \lvert f_i \rangle \f$ for which the amplitude \f$ a_{f_i} = 1 \f$.
      */
-    state(HilbertSpace const &hs, fock_state_t f) : hs_ptr_(&hs), vec_(amplitude_t::zeros(hs.size())) { vec_[f] = value_type(1.0); }
+    state(hilbert_space_t const &hs, fock_state_t f) : hs_ptr_(&hs), vec_(amplitude_t::zeros(hs.size())) { vec_[f] = value_type(1.0); }
 
     /// Get the dimension of the associated Hilbert (Fock) space, i.e. \f$ \dim(\mathcal{F}^{(m)}) \f$.
     [[nodiscard]] int size() const { return hs_ptr_->size(); }
@@ -444,32 +438,31 @@ namespace triqs::hilbert_space {
     amplitude_t &amplitudes() { return vec_; }
 
     /// Get the Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$ the current state belongs to.
-    HilbertSpace const &get_hilbert() const { return *hs_ptr_; }
+    hilbert_space_t const &get_hilbert() const { return *hs_ptr_; }
 
     /**
      * @brief Set the Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$ for this state.
      * @param new_hs New Hilbert (Fock) space \f$ \mathcal{F}^{(m)} \f$.
      */
-    void set_hilbert(HilbertSpace const &new_hs) { hs_ptr_ = &new_hs; }
+    void set_hilbert(hilbert_space_t const &new_hs) { hs_ptr_ = &new_hs; }
 
     private:
-    const HilbertSpace *hs_ptr_;
+    const hilbert_space_t *hs_ptr_;
     amplitude_t vec_;
   };
 
   /**
-   * @brief Write a triqs::hilbert_space::state<HilbertSpace, ScalarType, true> or a 
-   * triqs::hilbert_space::state<HilbertSpace, ScalarType, false> to a `std::ostream`.
+   * @brief Write a triqs::hilbert_space::state<HS, T, true> or a triqs::hilbert_space::state<HS, T, false> to a 
+   * `std::ostream`.
    *
-   * @tparam HilbertSpace Hilbert space type.
-   * @tparam ScalarType Amplitude type.
+   * @tparam HS Hilbert space type.
+   * @tparam T Amplitude type.
    * @tparam BasedOnMap Whether the amplitudes are stored in a map or a vector.
    * @param sout `std::ostream` object.
    * @param psi State to be written.
    * @return Reference to `std::ostream` object.
    */
-  template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
-  std::ostream &operator<<(std::ostream &sout, state<HilbertSpace, ScalarType, BasedOnMap> const &psi) {
+  template <typename HS, typename T, bool BasedOnMap> std::ostream &operator<<(std::ostream &sout, state<HS, T, BasedOnMap> const &psi) {
     bool something_written = false;
     auto const &hs         = psi.get_hilbert();
 

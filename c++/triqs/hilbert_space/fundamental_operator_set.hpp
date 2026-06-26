@@ -237,9 +237,9 @@ namespace triqs::hilbert_space {
     // Helper class for the creation of the const iterator.
     using _enum_iterator = decltype(itertools::enumerate(std::declval<data_t>()).cbegin());
     struct _cdress {
-      indices_t const &index;
+      indices_t const &index; // NOLINT
       int linear_index;
-      _cdress(_enum_iterator _it) : index(std::get<1>(*_it)), linear_index(std::get<0>(*_it)) {}
+      _cdress(_enum_iterator _it) : index(std::get<1>(*_it)), linear_index(static_cast<int>(std::get<0>(*_it))) {}
     };
 
     public:
