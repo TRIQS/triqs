@@ -68,36 +68,22 @@ namespace triqs::hilbert_space {
    * operator acts inside a single Hilbert (Fock) space.
    */
   template <typename HilbertType, typename ScalarType = double, bool UseMap = false> class imperative_operator {
-
-    // Fock state convention:
-    // |0,...,k> = C^+_0 ... C^+_k |0>
-    // Operator monomial convention:
-    // C^+_0 ... C^+_i ... C_j  ... C_0
-
-    using scalar_t = ScalarType;
-
-    // Precomputed bitmask representation of a single monomial: coeff is the coefficient,
-    // d_mask / dag_mask mark the annihilation / creation operator bit positions, and
-    // d_count_mask / dag_count_mask are the precomputed parity masks used for the fermionic sign.
+    private:
+    // Precomputed bitmask representation of a single monomial.
     struct one_term_t {
-      scalar_t coeff;
+      ScalarType coeff;
       uint64_t d_mask, dag_mask, d_count_mask, dag_count_mask;
     };
-    std::vector<one_term_t> all_terms;
-
-    std::vector<sub_hilbert_space> const *sub_spaces;
-    using hilbert_map_t = std::vector<int>;
-    hilbert_map_t hilbert_map;
 
     public:
+    /// Coefficient type (might be a callable type)
+    using coeff_t = ScalarType;
+
+    /// Map between subspace indices (only used when `UseMap = true`).
+    using hilbert_map_t = std::vector<int>;
+
     /// Default constructor creates a zero imperative operator with no terms.
     imperative_operator() {}
-
-    /**
-     * @brief Check whether the imperative operator has no terms.
-     * @return True if the operator contains no monomials, false otherwise.
-     */
-    bool is_empty() const { return (all_terms.size() == 0); }
 
     /**
      * @brief Construct an imperative_operator from a triqs::operators::many_body_operator_generic and a
@@ -119,7 +105,7 @@ namespace triqs::hilbert_space {
      * @param sub_spaces_set Pointer to the vector of all Hilbert subspaces referenced by `hmap` (only used when
      * `UseMap = true`).
      */
-    imperative_operator(triqs::operators::many_body_operator_generic<scalar_t> const &op, fundamental_operator_set const &fops,
+    imperative_operator(triqs::operators::many_body_operator_generic<coeff_t> const &op, fundamental_operator_set const &fops,
                         hilbert_map_t hmap = hilbert_map_t(), std::vector<sub_hilbert_space> const *sub_spaces_set = nullptr) {
 
       sub_spaces  = sub_spaces_set;
@@ -147,7 +133,7 @@ namespace triqs::hilbert_space {
               using std::swap;
               swap(monomial[i - 1], monomial[i]);
               swapped = true;
-              coef *= scalar_t(-1);
+              coef *= coeff_t(-1);
             }
           }
           --n;
@@ -179,7 +165,7 @@ namespace triqs::hilbert_space {
           return mask;
         };
         uint64_t d_count_mask = compute_count_mask(ndag), dag_count_mask = compute_count_mask(dag);
-        all_terms.push_back(one_term_t{scalar_t(coef), d_mask, dag_mask, d_count_mask, dag_count_mask});
+        all_terms.push_back(one_term_t{coeff_t(coef), d_mask, dag_mask, d_count_mask, dag_count_mask});
       }
     }
 
@@ -196,39 +182,12 @@ namespace triqs::hilbert_space {
       for (auto &M : all_terms) L(M.coeff);
     }
 
-    private:
-    // Return a zero state in the target Hilbert space of `st` under this operator.
-    // When UseMap is true and the connection map sends `st`'s subspace to `-1`, returns a default-constructed
-    // (empty) sub_hilbert_space state.
-    template <typename StateType> StateType get_target_st(StateType const &st) const {
-      if constexpr (UseMap) {
-        auto n = hilbert_map[st.get_hilbert().get_index()];
-        if (n == -1) return StateType{};
-        return StateType{(*sub_spaces)[n]};
-      } else {
-        return StateType(st.get_hilbert());
-      }
-    }
+    /**
+     * @brief Check whether the imperative operator has no terms.
+     * @return True if the operator contains no monomials, false otherwise.
+     */
+    bool is_empty() const { return (all_terms.size() == 0); }
 
-    static bool parity_number_of_bits(uint64_t v) {
-      // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetNaive
-      // v ^= v >> 16;
-      // only ok until 16 orbitals ! assert this or put the >> 16
-      v ^= v >> 8;
-      v ^= v >> 4;
-      v ^= v >> 2;
-      v ^= v >> 1;
-      return v & 0x01;
-    }
-
-    // Return x(args...) when scalar_t is callable, x otherwise. Supports parameterized operators
-    // whose coefficients are themselves callable objects.
-    template <typename... Args> static auto apply_if_possible(scalar_t const &x, Args &&...args) -> std::invoke_result_t<scalar_t, Args...> {
-      return x(std::forward<Args>(args)...);
-    }
-    static auto apply_if_possible(scalar_t const &x) -> scalar_t { return x; }
-
-    public:
     /**
      * @brief Apply the operator to a many-body state \f$ \lvert \psi \rangle \f$ and return the resulting state.
      *
@@ -270,6 +229,43 @@ namespace triqs::hilbert_space {
       }
       return target_st;
     }
+
+    private:
+    // Return a zero state in the target Hilbert space of `st` under this operator.
+    // When UseMap is true and the connection map sends `st`'s subspace to `-1`, returns a default-constructed
+    // (empty) sub_hilbert_space state.
+    template <typename StateType> StateType get_target_st(StateType const &st) const {
+      if constexpr (UseMap) {
+        auto n = hilbert_map[st.get_hilbert().get_index()];
+        if (n == -1) return StateType{};
+        return StateType{(*sub_spaces)[n]};
+      } else {
+        return StateType(st.get_hilbert());
+      }
+    }
+
+    static bool parity_number_of_bits(uint64_t v) {
+      // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetNaive
+      // v ^= v >> 16;
+      // only ok until 16 orbitals ! assert this or put the >> 16
+      v ^= v >> 8;
+      v ^= v >> 4;
+      v ^= v >> 2;
+      v ^= v >> 1;
+      return v & 0x01;
+    }
+
+    // Return x(args...) when scalar_t is callable, x otherwise. Supports parameterized operators
+    // whose coefficients are themselves callable objects.
+    template <typename... Args> static auto apply_if_possible(coeff_t const &x, Args &&...args) -> std::invoke_result_t<coeff_t, Args...> {
+      return x(std::forward<Args>(args)...);
+    }
+    static auto apply_if_possible(coeff_t const &x) -> coeff_t { return x; }
+
+    private:
+    std::vector<one_term_t> all_terms;
+    std::vector<sub_hilbert_space> const *sub_spaces;
+    hilbert_map_t hilbert_map;
   };
 
   /** @} */
