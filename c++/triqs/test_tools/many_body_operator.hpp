@@ -17,16 +17,42 @@
 //
 // Authors: Nils Wentzell
 
-#pragma once
-#include "./arrays.hpp"
-#include <triqs/operators/many_body_operator.hpp>
+/**
+ * @file
+ * @brief GoogleTest helper for comparing many-body operators.
+ */
 
-// Test that two operators are term-wise equal up to a precision
+#pragma once
+
+#include "./arrays.hpp"
+#include "../operators/many_body_operator.hpp"
+
+/**
+ * @addtogroup triqs-test-tools
+ * @{
+ */
+
+/**
+ * @brief Check that two many-body operators are term-wise equal up to a given precision.
+ *
+ * @details Wraps triqs::operators::assert_operators_are_close and turns a thrown triqs::exception into a GoogleTest 
+ * `AssertionFailure` carrying the exception message.
+ *
+ * @tparam X Type of the first operator.
+ * @tparam Y Type of the second operator.
+ * @param x First operator.
+ * @param y Second operator.
+ * @param precision Absolute tolerance used for the term-wise comparison.
+ * @return `AssertionSuccess` if the operators are close, `AssertionFailure` otherwise.
+ */
 template <typename X, typename Y>::testing::AssertionResult test_operators_are_close(X const &x, Y const &y, double precision = 1e-6) {
   try {
-    assert_operators_are_close(x, y, precision);
+    triqs::operators::assert_operators_are_close(x, y, precision);
     return ::testing::AssertionSuccess();
   } catch (triqs::exception const &msg) { return ::testing::AssertionFailure() << msg.what(); }
 }
 
+/// Non-fatal GoogleTest assertion that two many-body operators are close (see @ref test_operators_are_close).
 #define EXPECT_OPERATOR_NEAR(X, ...) EXPECT_TRUE(test_operators_are_close(X, __VA_ARGS__))
+
+/** @} */

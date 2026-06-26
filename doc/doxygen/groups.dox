@@ -476,7 +476,12 @@
 
 /**
  * @defgroup triqs-test-tools Test tools
- * @brief Helpers and utilities for writing C++ and Python tests.
+ * @brief GoogleTest-based helpers for writing TRIQS C++ unit tests.
+ *
+ * @details The @ref triqs-test-tools module is a header-only collection of helpers, built on top of **GoogleTest**, 
+ * that the TRIQS C++ test suite uses to compare its core data structures and to set up test executables.
+ * 
+ * It provides various macros and helper functions to simplify writing unit tests involving TRIQS components.
  */
 
 /**

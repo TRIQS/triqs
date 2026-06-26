@@ -18,43 +18,74 @@
 //
 // Authors: Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief GoogleTest helper macros and an HDF5 round-trip utility shared by the TRIQS C++ test suite.
+ */
+
 #pragma once
 
 #ifndef TRIQS_DEBUG
 #define TRIQS_DEBUG
 #endif
 
-#include <mpi/mpi.hpp>
-#include <triqs/arrays.hpp>
-#include <h5/h5.hpp>
-#include <triqs/utility/typeid_name.hpp>
-#include <iostream>
-#include <sstream>
-#include <gtest/gtest.h>
-#include <nda/gtest_tools.hpp>
-#include <nda/clef/adapters/math.hpp>
+#include "../arrays.hpp"
 
-#if H5_VERSION_GE(1, 8, 9)
-#include <h5/serialization.hpp>
-#endif
+#include <gtest/gtest.h>
+#include <h5/h5.hpp>
+#include <mpi/mpi.hpp>
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+
+#include <sstream>
+#include <string>
 
 using dcomplex = std::complex<double>;
 using triqs::clef::placeholder;
 
-// Check that 'cout << Y' prints X
+/**
+ * @addtogroup triqs-test-tools
+ * @{
+ */
+
+/**
+ * @brief Check that streaming `Y` into an output stream produces the string `X`.
+ *
+ * @details Streams `Y` into a `std::stringstream` and compares the result to `X` with `EXPECT_EQ`, i.e. a non-fatal
+ * GoogleTest assertion that lets the test continue on failure.
+ *
+ * @param X Expected string.
+ * @param Y Object to be streamed via `operator<<`.
+ */
 #define EXPECT_PRINT(X, Y)                                                                                                                           \
   {                                                                                                                                                  \
     std::stringstream ss;                                                                                                                            \
-    ss << Y;                                                                                                                                         \
+    ss << (Y);                                                                                                                                       \
     EXPECT_EQ(X, ss.str());                                                                                                                          \
   }
+
+/**
+ * @brief Check that streaming `Y` into an output stream produces the string `X`.
+ *
+ * @details Like @ref EXPECT_PRINT but uses `ASSERT_EQ`, i.e. a fatal GoogleTest assertion that aborts the current test
+ * on failure.
+ *
+ * @param X Expected string.
+ * @param Y Object to be streamed via `operator<<`.
+ */
 #define ASSERT_PRINT(X, Y)                                                                                                                           \
   {                                                                                                                                                  \
     std::stringstream ss;                                                                                                                            \
-    ss << Y;                                                                                                                                         \
+    ss << (Y);                                                                                                                                       \
     ASSERT_EQ(X, ss.str());                                                                                                                          \
   }
 
+/**
+ * @brief Define a `main` function that runs all registered GoogleTest tests.
+ *
+ * @details Initializes GoogleTest and runs all tests. When TRIQS is built with MPI support, an `mpi::environment` is
+ * set up so that MPI-aware tests run under a valid communicator.
+ */
 #define MAKE_MAIN                                                                                                                                    \
   int main(int argc, char **argv) {                                                                                                                  \
     ::testing::InitGoogleTest(&argc, argv);                                                                                                          \
@@ -66,41 +97,29 @@ using triqs::clef::placeholder;
       return RUN_ALL_TESTS();                                                                                                                        \
   }
 
-// Arrays are equal
-
-// ------------------  HDF5 --------------------
-//
-// We serialize to H5, deserialize, compare
-
+/**
+ * @brief Write an object to an HDF5 file and read it back.
+ *
+ * @details Serializes `x` to an HDF5 file, reads it back into a freshly default-constructed object and returns it.
+ * Useful for testing that a type's HDF5 read/write round-trip preserves its value.
+ *
+ * @tparam T Type of the object. Must be default-constructible and h5-serializable.
+ * @param x Object to write to file.
+ * @param filename Base name of the HDF5 file (the `.h5` extension is appended).
+ * @param name Name of the dataset inside the file.
+ * @return The object read back from the file.
+ */
 template <typename T> T rw_h5(T const &x, std::string filename = "ess", std::string name = "x") {
-
-  namespace h5 = h5;
   T y; // must be default constructible
-
   {
     h5::file file(filename + ".h5", 'w');
     h5_write(file, name, x);
   }
-
   {
     h5::file file(filename + ".h5", 'r');
     h5_read(file, name, y);
   }
-
-#if H5_VERSION_GE(1, 8, 9)
-
-//#define TRIQS_TEST_USE_H5_SERIA
-#ifdef TRIQS_TEST_USE_H5_SERIA
-
-  std::cerr << "Checking H5 serialization/deserialization of \n " << triqs::utility::demangle(typeid(x).name()) << std::endl;
-  auto s  = h5::serialize(x);
-  T x2    = h5::deserialize<T>(s);
-  auto s2 = h5::serialize(x);
-  std::cerr << "Length of serialization string " << first_dim(s) << std::endl;
-  EXPECT_EQ_ARRAY(s, s2); // << "Test h5 save, load, save, compare has failed !";
-#endif
-
-#endif
-
   return y;
 }
+
+/** @} */

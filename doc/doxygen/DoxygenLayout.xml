@@ -164,8 +164,7 @@
           <tab type="user" url="@ref triqs::stat::histogram" title="stat::histogram"/>
         </tab>
       </tab>
-      <tab type="usergroup" url="@ref triqs-test-tools" title="Test tools">
-      </tab>
+      <tab type="user" url="@ref triqs-test-tools" title="Test tools"/>
       <tab type="usergroup" url="@ref triqs-utility" title="Utilities">
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>

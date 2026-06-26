@@ -103,6 +103,11 @@ Every component has an MPI-aware variant so the same client code runs serially o
 
 ## Test tools
 
+@ref triqs-test-tools is a header-only collection of GoogleTest-based helpers used throughout the **TRIQS** C++ test 
+suite.
+
+It provides various macros and helper functions to simplify writing unit tests involving TRIQS components.
+
 ## Utilities
 
 
