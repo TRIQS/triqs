@@ -77,16 +77,16 @@ namespace triqs::operators {
   /**
    * @brief Second quantization creation/annihilation operator.
    *
-   * @details A canonical second quantization operator, \f$ \hat{c}_{\alpha_i} \f$ or 
+   * @details A canonical second quantization operator, \f$ \hat{c}_{\alpha_i} \f$ or
    * \f$ \hat{c}_{\alpha_i}^\dagger \f$, is defined by
-   * 
-   * - a single particle state index \f$ \alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i}) \f$, where each 
+   *
+   * - a single particle state index \f$ \alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i}) \f$, where each
    *   \f$ \beta^{(i)}_j \f$ is an integer, a string, a double or an array of integers, and
    * - a boolean flag `dagger` indicating whether it is a creation (true) or annihilation (false) operator.
    */
   struct canonical_ops_t {
     /**
-     * @brief True for creation (\f$ \hat{c}_{\alpha_i}^{\dagger} \f$), false for annihilation 
+     * @brief True for creation (\f$ \hat{c}_{\alpha_i}^{\dagger} \f$), false for annihilation
      * (\f$ \hat{c}_{\alpha_i} \f$) operators.
      */
     bool dagger{false};
@@ -98,14 +98,14 @@ namespace triqs::operators {
      * @brief Three-way comparison operator for canonical operators.
      *
      * @details The ordering is defined as follows:
-     * - All creation operators are less than all annihilation operators, i.e. \f$ \hat{c}_{\alpha_i}^\dagger < 
+     * - All creation operators are less than all annihilation operators, i.e. \f$ \hat{c}_{\alpha_i}^\dagger <
      * \hat{c}_{\alpha_j} \f$ for any \f$ \alpha_i \f$ and \f$ \alpha_j \f$.
-     * - Among canonical operators with the same `dagger` flag, indices are compared element-wise. For each element, the 
-     * active type of `std::variant` is compared first (`long` < `std::string` < `double` < `std::array<long, 3>`), and 
+     * - Among canonical operators with the same `dagger` flag, indices are compared element-wise. For each element, the
+     * active type of `std::variant` is compared first (`long` < `std::string` < `double` < `std::array<long, 3>`), and
      * only when the active types agree are the underlying values compared.
-     * - For annihilation operators, the index comparison is reversed, so that with the same set of indices the ordering 
-     * becomes \f$ \hat{c}_{\alpha_1}^\dagger < \hat{c}_{\alpha_2}^\dagger < \dots < \hat{c}_{\alpha_2} < 
-     * \hat{c}_{\alpha_1} \f$. For example, with integer indices \f$ 1, 2, 3 \f$ the ascending order is \f$ 
+     * - For annihilation operators, the index comparison is reversed, so that with the same set of indices the ordering
+     * becomes \f$ \hat{c}_{\alpha_1}^\dagger < \hat{c}_{\alpha_2}^\dagger < \dots < \hat{c}_{\alpha_2} <
+     * \hat{c}_{\alpha_1} \f$. For example, with integer indices \f$ 1, 2, 3 \f$ the ascending order is \f$
      * \hat{c}_1^\dagger < \hat{c}_2^\dagger < \hat{c}_3^\dagger < \hat{c}_3 < \hat{c}_2 < \hat{c}_1 \f$.
      *
      * @note The order induced by this operator is in general different from the order in
@@ -191,7 +191,7 @@ namespace triqs::operators {
    * @brief Less-than comparison operator for triqs::operators::monomial_t.
    *
    * @details The ordering is defined as follows:
-   * - If the two monomials \f$ \hat{m}_1 \f$ and \f$ \hat{m}_2 \f$ contain a different number of operators, the shorter 
+   * - If the two monomials \f$ \hat{m}_1 \f$ and \f$ \hat{m}_2 \f$ contain a different number of operators, the shorter
    * one is the smaller one.
    * - Otherwise, the monomials are compared lexicographically according to the ordering of
    * triqs::operators::canonical_ops_t::operator<=>().
@@ -216,7 +216,7 @@ namespace triqs::operators {
   /**
    * @brief Generic many-body operator.
    *
-   * @details A generic many-body operator \f$ \hat{O} \f$ is defined as a linear combination of monomials 
+   * @details A generic many-body operator \f$ \hat{O} \f$ is defined as a linear combination of monomials
    * \f$ \hat{m}_i \f$ such that
    * \f[
    *   \hat{O} = \sum_{i} a_i \hat{m}_i \; ,
@@ -226,7 +226,7 @@ namespace triqs::operators {
    * Under the hood, we simply store all individual terms in a map/dictionary with the monomials as keys and the
    * coefficients as values.
    *
-   * Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over 
+   * Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over
    * the field of real/complex numbers with an extra addition operation between operators and scalars.
    *
    * @tparam T Value type of the coefficients.
@@ -269,7 +269,7 @@ namespace triqs::operators {
      */
     explicit many_body_operator_generic(scalar_t const &x) {
       using triqs::utility::is_zero;
-      if (!is_zero(x)) monomials.insert({{}, x});
+      if (!is_zero(x)) monomials_.insert({{}, x});
     }
 
     /**
@@ -280,11 +280,11 @@ namespace triqs::operators {
      */
     many_body_operator_generic(scalar_t const &x, monomial_t monomial) {
       using triqs::utility::is_zero;
-      if (!is_zero(x)) monomials.emplace(std::move(monomial), x);
+      if (!is_zero(x)) monomials_.emplace(std::move(monomial), x);
     }
 
     struct _cdress;
-    C2PY_IGNORE many_body_operator_generic(_cdress const &term) { normalize_and_insert(term.monomial, term.coef, monomials); }
+    C2PY_IGNORE many_body_operator_generic(_cdress const &term) { normalize_and_insert(term.monomial, term.coef, monomials_); }
 
     /**
      * @brief Assignment operator from a many-body operator with a different coefficient type.
@@ -298,13 +298,13 @@ namespace triqs::operators {
      */
     template <typename S> many_body_operator_generic &operator=(many_body_operator_generic<S> const &x) {
       static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
-      monomials.clear();
-      for (auto const &y : x.get_monomials()) monomials.insert(std::make_pair(monomial_t{y.first}, scalar_t(y.second)));
+      monomials_.clear();
+      for (auto const &y : x.get_monomials()) monomials_.insert(std::make_pair(monomial_t{y.first}, scalar_t(y.second)));
       return *this;
     }
 
     /// Get the map/dictionary of monomials and their coefficients.
-    monomials_map_t const &get_monomials() const { return monomials; }
+    monomials_map_t const &get_monomials() const { return monomials_; }
 
     /**
      * @brief Create a minimal fundamental operator set with all single particle state indices \f$ \alpha_i \f$ that
@@ -314,7 +314,7 @@ namespace triqs::operators {
      */
     hilbert_space::fundamental_operator_set make_fundamental_operator_set() const {
       hilbert_space::fundamental_operator_set fops;
-      for (auto const &m : monomials)         // for all monomials of the operator
+      for (auto const &m : monomials_)        // for all monomials of the operator
         for (auto const &c_cdag_op : m.first) // loop over the C C^+ operators of the monomial
           fops.insert_from_indices_t(c_cdag_op.indices);
       return fops;
@@ -331,7 +331,7 @@ namespace triqs::operators {
     static many_body_operator_generic make_canonical(bool is_dag, indices_t indices) {
       many_body_operator_generic res;
       auto m = monomial_t{canonical_ops_t{is_dag, indices}};
-      res.monomials.insert({m, scalar_t(1)});
+      res.monomials_.insert({m, scalar_t(1)});
       return res;
     }
 
@@ -353,16 +353,16 @@ namespace triqs::operators {
     using const_iterator = utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;
 
     /// Get a const iterator to the beginning of the map that contains the monomials and their coefficients.
-    [[nodiscard]] const_iterator begin() const noexcept { return monomials.begin(); }
+    [[nodiscard]] const_iterator begin() const noexcept { return monomials_.begin(); }
 
     /// Get a const iterator past the end of the map that contains the monomials and their coefficients.
-    [[nodiscard]] const_iterator end() const noexcept { return monomials.end(); }
+    [[nodiscard]] const_iterator end() const noexcept { return monomials_.end(); }
 
     /// Get a const iterator to the beginning of the map that contains the monomials and their coefficients.
-    [[nodiscard]] const_iterator cbegin() const noexcept { return monomials.cbegin(); }
+    [[nodiscard]] const_iterator cbegin() const noexcept { return monomials_.cbegin(); }
 
     /// Get a const iterator past the end of the map that contains the monomials and their coefficients.
-    [[nodiscard]] const_iterator cend() const noexcept { return monomials.cend(); }
+    [[nodiscard]] const_iterator cend() const noexcept { return monomials_.cend(); }
 
     /**
      * @brief Check if the current operator \f$ \hat{O} \f$ is close to zero.
@@ -379,7 +379,7 @@ namespace triqs::operators {
      * @brief Check if the current operator \f$ \hat{O} \f$ is exactly zero.
      * @return True if the operator has no terms, false otherwise.
      */
-    [[nodiscard]] bool is_zero() const { return monomials.empty(); }
+    [[nodiscard]] bool is_zero() const { return monomials_.empty(); }
 
     /**
      * @brief Unary minus operator to negate the current many-body operator \f$ \hat{O} \f$.
@@ -387,7 +387,7 @@ namespace triqs::operators {
      */
     many_body_operator_generic operator-() const {
       auto res = *this;
-      for (auto &m : res.monomials) m.second = -m.second;
+      for (auto &m : res.monomials_) m.second = -m.second;
       return res;
     }
 
@@ -406,10 +406,10 @@ namespace triqs::operators {
       if (is_zero(alpha)) return *this;
       bool is_new_monomial;
       typename monomials_map_t::iterator it;
-      std::tie(it, is_new_monomial) = monomials.insert(std::make_pair(monomial_t(0), alpha));
+      std::tie(it, is_new_monomial) = monomials_.insert(std::make_pair(monomial_t(0), alpha));
       if (!is_new_monomial) {
         it->second += alpha;
-        erase_zero_monomial(monomials, it);
+        erase_zero_monomial(monomials_, it);
       }
       return *this;
     }
@@ -438,9 +438,9 @@ namespace triqs::operators {
     many_body_operator_generic &operator*=(scalar_t alpha) {
       using triqs::utility::is_zero;
       if (is_zero(alpha)) {
-        monomials.clear();
+        monomials_.clear();
       } else {
-        for (auto &m : monomials) m.second *= alpha;
+        for (auto &m : monomials_) m.second *= alpha;
       }
       return *this;
     }
@@ -535,11 +535,11 @@ namespace triqs::operators {
     many_body_operator_generic &operator+=(many_body_operator_generic const &op) {
       bool is_new_monomial;
       typename monomials_map_t::iterator it;
-      for (auto const &m : op.monomials) {
-        std::tie(it, is_new_monomial) = monomials.insert(m);
+      for (auto const &m : op.monomials_) {
+        std::tie(it, is_new_monomial) = monomials_.insert(m);
         if (!is_new_monomial) {
           it->second += m.second;
-          erase_zero_monomial(monomials, it);
+          erase_zero_monomial(monomials_, it);
         }
       }
       return *this;
@@ -559,11 +559,11 @@ namespace triqs::operators {
     many_body_operator_generic &operator-=(many_body_operator_generic const &op) {
       bool is_new_monomial;
       typename monomials_map_t::iterator it;
-      for (auto const &m : op.monomials) {
-        std::tie(it, is_new_monomial) = monomials.insert(std::make_pair(m.first, -m.second));
+      for (auto const &m : op.monomials_) {
+        std::tie(it, is_new_monomial) = monomials_.insert(std::make_pair(m.first, -m.second));
         if (!is_new_monomial) {
           it->second -= m.second;
-          erase_zero_monomial(monomials, it);
+          erase_zero_monomial(monomials_, it);
         }
       }
       return *this;
@@ -587,15 +587,15 @@ namespace triqs::operators {
      */
     many_body_operator_generic &operator*=(many_body_operator_generic const &op) {
       monomials_map_t tmp_map; // product will be stored here
-      for (auto const &m : monomials)
-        for (auto const &op_m : op.monomials) {
+      for (auto const &m : monomials_)
+        for (auto const &op_m : op.monomials_) {
           monomial_t product_m;
           product_m.reserve(m.first.size() + op_m.first.size());
           for (auto const &tmp_op : m.first) product_m.push_back(tmp_op);
           for (auto const &tmp_op : op_m.first) product_m.push_back(tmp_op);
           normalize_and_insert(product_m, m.second * op_m.second, tmp_map);
         }
-      std::swap(monomials, tmp_map);
+      std::swap(monomials_, tmp_map);
       return *this;
     }
 
@@ -660,7 +660,7 @@ namespace triqs::operators {
     friend many_body_operator_generic dagger(many_body_operator_generic const &op) {
       many_body_operator_generic res;
       using triqs::utility::conj;
-      for (auto const &x : op) res.monomials.insert({_dagger(x.monomial), conj(x.coef)});
+      for (auto const &x : op) res.monomials_.insert({_dagger(x.monomial), conj(x.coef)});
       return res;
     }
 
@@ -684,7 +684,7 @@ namespace triqs::operators {
       using triqs::utility::is_zero;
       for (auto const &x : op) {
         auto c = L(x.monomial, x.coef);
-        if (!is_zero(c)) res.monomials.insert({x.monomial, c});
+        if (!is_zero(c)) res.monomials_.insert({x.monomial, c});
       }
       return res;
     }
@@ -703,9 +703,9 @@ namespace triqs::operators {
      * @return Reference to `std::ostream` object.
      */
     friend std::ostream &operator<<(std::ostream &os, many_body_operator_generic const &op) {
-      if (op.monomials.size() != 0) {
+      if (op.monomials_.size() != 0) {
         bool print_plus = false;
-        for (auto const &m : op.monomials) {
+        for (auto const &m : op.monomials_) {
           os << (print_plus ? " + " : "") << m.second;
           os << m.first;
           print_plus = true;
@@ -719,13 +719,13 @@ namespace triqs::operators {
      * @brief Serialize the many-body operator to a generic archive.
      * @param ar Archive to serialize to.
      */
-    void serialize(auto &ar) const { ar & monomials; }
+    void serialize(auto &ar) const { ar & monomials_; }
 
     /**
      * @brief Deserialize the many-body operator from a generic archive.
      * @param ar Archive to deserialize from.
      */
-    void deserialize(auto &ar) { ar & monomials; }
+    void deserialize(auto &ar) { ar & monomials_; }
 
     /// HDF5 format tag of the many-body operator.
     [[nodiscard]] static std::string hdf5_format() { return "Operator"; }
@@ -832,7 +832,7 @@ namespace triqs::operators {
     }
 
     private:
-    monomials_map_t monomials;
+    monomials_map_t monomials_;
   };
 
   /**

@@ -100,7 +100,7 @@ namespace triqs::operators {
     // Its abs is the unique int associated to the series of indices of the C, from the fundamental_operator_set
     std::vector<h5_monomial> datavec;
 
-    for (auto const &m : op.monomials) { // for all monomials of the operator
+    for (auto const &m : op.monomials_) { // for all monomials of the operator
       if (m.first.size() > MAX_MONOMIAL_SIZE)
         TRIQS_RUNTIME_ERROR << " h5 writing many_body_operator : unexpected monomial with more than " << MAX_MONOMIAL_SIZE << "operators !";
       h5_monomial y = {m.second.is_real(), real(m.second), imag(m.second), {0, 0, 0, 0}}; // we want to transform it to an h5_monomial
@@ -175,7 +175,7 @@ namespace triqs::operators {
         monomial.push_back({(i > 0), r_fops[std::abs(i) - 1]}); // add one C, C^+ op to the monomial
       }
       real_or_complex s = (mon.is_real ? real_or_complex(mon.re) : real_or_complex(std::complex<double>(mon.re, mon.im)));
-      op.monomials.insert({monomial, s}); // add the monomial to the operator
+      op.monomials_.insert({monomial, s}); // add the monomial to the operator
     }
   }
 
