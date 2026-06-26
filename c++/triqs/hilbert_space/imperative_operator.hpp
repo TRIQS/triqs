@@ -24,13 +24,16 @@
  */
 
 #pragma once
-#include "./fundamental_operator_set.hpp"
-#include "../operators/many_body_operator.hpp"
-#include "./hilbert_space.hpp"
 
-#include <vector>
-#include <utility>
+#include "./fundamental_operator_set.hpp"
+#include "./hilbert_space.hpp"
+#include "../operators/many_body_operator.hpp"
+
 #include <algorithm>
+#include <cstdint>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace triqs::hilbert_space {
 
@@ -96,7 +99,7 @@ namespace triqs::hilbert_space {
     using hilbert_map_t = std::vector<int>;
 
     /// Default constructor creates a zero imperative operator with no terms.
-    imperative_operator() {}
+    imperative_operator() = default;
 
     /**
      * @brief Construct an imperative_operator from a triqs::operators::many_body_operator_generic and a
@@ -124,10 +127,9 @@ namespace triqs::hilbert_space {
      * `UseMap = true`).
      */
     imperative_operator(triqs::operators::many_body_operator_generic<coeff_t> const &op, fundamental_operator_set const &fops,
-                        hilbert_map_t hmap = hilbert_map_t(), std::vector<sub_hilbert_space> const *subspaces = nullptr) {
+                        hilbert_map_t hmap = hilbert_map_t(), std::vector<sub_hilbert_space> const *subspaces = nullptr)
+       : subspaces_(subspaces), hmap_(std::move(hmap)) {
 
-      subspaces_ = subspaces;
-      hmap_      = hmap;
       if ((hmap_.size() == 0) != !UseMap) TRIQS_RUNTIME_ERROR << "Internal error";
 
       // ordering matching the canonical form
@@ -144,9 +146,9 @@ namespace triqs::hilbert_space {
         auto coef     = term.coef;
 
         // Sort monomial according to the order established by fops
-        int n = monomial.size();
-        bool swapped;
-        do {
+        int n        = monomial.size();
+        bool swapped = true;
+        while (swapped) {
           swapped = false;
           for (int i = 1; i < n; ++i) {
             if (greater(monomial[i - 1], monomial[i])) {
@@ -157,7 +159,7 @@ namespace triqs::hilbert_space {
             }
           }
           --n;
-        } while (swapped);
+        }
 
         // Given the environment variable CHECK_ISSUE819 was set by the user
         // throw an exception if the result of this model was effected by issue 819
@@ -180,7 +182,7 @@ namespace triqs::hilbert_space {
           uint64_t mask = 0;
           bool is_on    = (d.size() % 2 == 1);
           for (int i = 0; i < 64; ++i) {
-            if (std::find(begin(d), end(d), i) != end(d))
+            if (std::ranges::find(d, i) != d.end())
               is_on = !is_on;
             else if (is_on)
               mask |= (uint64_t(1) << i);
@@ -209,10 +211,10 @@ namespace triqs::hilbert_space {
      * @brief Check whether the imperative operator has no terms.
      * @return True if the operator contains no monomials, false otherwise.
      */
-    bool is_empty() const { return (terms_.size() == 0); }
+    [[nodiscard]] bool is_empty() const { return (terms_.size() == 0); }
 
     /**
-     * @fn S operator()(S const &st, Args&&... args) const
+     * @fn S operator()(S const &psi, Args&&... args) const
      * @brief Apply the operator to a many-body state \f$ \lvert \psi \rangle \f$ and return the resulting state.
      *
      * @details The input state is expanded over the occupation number basis of its Hilbert (Fock) space \f$
@@ -267,7 +269,7 @@ namespace triqs::hilbert_space {
 
       for (int i = 0; i < terms_.size(); ++i) { // loop over monomials
         auto M = terms_[i];
-        foreach (psi, [M, &target_st, hs, args...](int j, typename S::value_type amplitude) {
+        foreach (psi, [M, &target_st, hs, ... args = std::forward<Args>(args)](int j, typename S::value_type amplitude) {
           fock_state_t f2 = hs.get_fock_state(j);
           if ((f2 & M.d_mask) != M.d_mask) return;
           f2 &= ~M.d_mask;
@@ -316,7 +318,7 @@ namespace triqs::hilbert_space {
 
     private:
     std::vector<one_term_t> terms_;
-    std::vector<sub_hilbert_space> const *subspaces_;
+    std::vector<sub_hilbert_space> const *subspaces_ = nullptr;
     hilbert_map_t hmap_;
   };
 
