@@ -29,6 +29,11 @@ triqs::atom_diag::atomic_g_lehmann.
 
 ## Determinant manipulation
 
+@ref triqs-detmanip provides tools to efficiently compute determinants and ratios of determinants, as needed for the
+acceptance probabilities of CTQMC solvers. By caching the inverse matrix and the determinant of an internally permuted
+matrix, rows and columns can be inserted, removed or changed at low cost, with most operations split into a cheap `try`
+step that only evaluates the determinant ratio and a `complete` step that applies the accepted update.
+
 ## Experimental tools
 
 ## Green's functions

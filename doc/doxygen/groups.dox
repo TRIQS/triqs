@@ -57,11 +57,55 @@
  */
 
 /**
- * @defgroup triqs-det-manip Determinant manipulation
- * @brief Efficient algorithms for manipulating determinants in Monte Carlo sampling.
+ * @defgroup triqs-detmanip Determinant manipulation
+ * @brief Manipulating determinants efficiently.
  *
- * @details This module provides optimized algorithms for computing and updating determinants,
- * which are essential for determinantal quantum Monte Carlo methods.
+ * @details The weight of a MC configuration in CTQMC solvers is often given in terms of the determinant of one or
+ * more matrices such that the acceptance probability is a ratio of these determinants. It is therefore important to
+ * be able to efficiently compute these determinants and ratios of determinants.
+ *
+ * Let \f$ F^{(n)} \f$ be the \f$ n \times n \f$ matrix that we are interested in. We assume that the elements of the
+ * matrix can be written as \f$ F^{(n)}_{ij} = f(x_i, y_j) \f$, where \f$ f \f$ is the callable object and \f$ 
+ * \mathbf{x} \f$ and \f$ \mathbf{y} \f$ are vectors of size \f$ n \f$ that contain the arguments for \f$ f \f$ and 
+ * therefore determine the contents of the matrix.
+ *
+ * In the following, we will not work directly with the matrix \f$ F^{(n)} \f$ but with \f$ G^{(n)} \f$ which has its
+ * rows and columns permuted w.r.t. \f$ F^{(n)} \f$, i.e. \f$ F^{(n)} = P^{(n)}_r G^{(n)} P^{(n)}_c \f$. \f$ P^{(n)}_r
+ * \f$ and \f$ P^{(n)}_c \f$ are permutation matrices that permute the rows and columns of \f$ G^{(n)} \f$ to restore
+ * the original matrix. This gives us more flexibility when adding, removing, or modifying rows and columns.
+ *
+ * Suppose we know the matrix \f$ G^{(n)} \f$ and its determinant \f$ \det(G^{(n)}) \f$ and that we want to add \f$ k
+ * \f$ new rows and columns to the matrix. We can write the resulting matrix as
+ * \f[
+ *   G^{(n+k)} = \begin{bmatrix} G^{(n)} & B \\ C & D \end{bmatrix} =
+ *   \begin{bmatrix} [M^{(n)}]^{-1} & B \\ C & D \end{bmatrix} =
+ *   [M^{(n+k)}]^{-1} \; .
+ * \f]
+ * Here, we have introduced the inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$ and the matrices \f$ B \f$, \f$ C \f$,
+ * and \f$ D \f$ which are of size \f$ n \times k \f$, \f$ k \times n \f$, and \f$ k \times k \f$, respectively. They
+ * contain the elements of the new rows and columns.
+ *
+ * By making use of the block structure of the matrix (see also <a href="https://en.wikipedia.org/wiki/Block_matrix">
+ * Wikipedia</a>), the inverse matrix takes the form
+ * \f[
+ *   M^{(n+k)} = \begin{bmatrix} M^{(n)} + M^{(n)} B (D - C M^{(n)} B)^{-1} C M^{(n)} & -M^{(n)} B (D - C M^{(n)}
+ *   B)^{-1} \\ -(D - C M^{(n)} B)^{-1} C M^{(n)} & (D - C M^{(n)} B)^{-1} \end{bmatrix} =
+ *   \begin{bmatrix} P & Q \\ R & S \end{bmatrix}  \; ,
+ * \f]
+ * and its determinant can be computed as
+ * \f[
+ *   \det(G^{(n+k)}) = \det(G^{(n)}) \det(D - C M^{(n)} B) = \det(G^{(n)}) \det(S^{-1}) \; .
+ * \f]
+ * Here, \f$ P \f$, \f$ Q \f$, \f$ R \f$, and \f$ S \f$ are matrices of size \f$ n \times n \f$, \f$ n \times k \f$,
+ * \f$ k \times n \f$, and \f$ k \times k \f$, respectively.
+ *
+ * The original matrix \f$ F^{(n)} \f$ and its determinant can be obtained with \f$ F^{(n)} = P^{(n)}_r G^{(n)}
+ * P^{(n)}_c \f$ and \f$ \det(F^{(n)}) = \det(P^{(n)}_r) \det(G^{(n)}) det(P^{(n)}_c) = s^{(n)} \det(G^{(n)}) \f$,
+ * where \f$ s^{(n)} = \det(P^{(n)}_r) det(P^{(n)}_c) = \pm 1 \f$ is a sign associated with the permutation matrices.
+ *
+ * So by keeping track of the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and two additional
+ * permutation matrices that specify how the rows and columns have been permuted w.r.t. the original matrix, we can
+ * add, remove, or modify (a few) rows and columns fairly efficiently.
  */
 
 /**

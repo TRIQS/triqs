@@ -18,7 +18,8 @@
           <tab type="user" url="@ref triqs::atom_diag::atom_diag::op_block_mat_t" title="atom_diag::atom_diag::op_block_mat_t"/>
         </tab>
       </tab>
-      <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
+      <tab type="usergroup" url="@ref triqs-detmanip" title="Determinant manipulation">
+        <tab type="user" url="@ref triqs::det_manip::det_manip" title="det_manip::det_manip"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-experimental" title="Experimental tools">
       </tab>
