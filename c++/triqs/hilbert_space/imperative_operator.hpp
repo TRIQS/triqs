@@ -40,32 +40,45 @@ namespace triqs::hilbert_space {
    */
 
   /**
-   * @brief Imperative representation of a many-body operator acting on many-body states.
+   * @brief Representation of a many-body operator acting on many-body states.
    *
    * @details Constructed from a triqs::operators::many_body_operator_generic, an imperative_operator stores a
-   * precomputed bitmask representation of every monomial \f$ \hat{m}_i \f$ that appears in the operator. Applying
-   * the operator to a many-body state \f$ \lvert \psi \rangle \f$ is then reduced to a sequence of bitwise checks
-   * and XORs on the integer-encoded Fock states (see triqs::hilbert_space::fock_state_t), augmented by the
-   * fermionic sign computed from the parity of bit positions of the affected operators.
+   * precomputed bitmask representation of every monomial \f$ \hat{m}_i \f$ that appears in the operator. Following the
+   * conventions of triqs::operators::many_body_operator_generic and triqs::hilbert_space::fundamental_operator_set, the
+   * source operator is written as
+   * \f[
+   *   \hat{O} = \sum_i a_i \, \hat{m}_i,
+   *   \qquad
+   *   \hat{m}_i = \hat{c}^{\dagger}_{\alpha_{i_1}} \cdots \hat{c}^{\dagger}_{\alpha_{i_{n_i}}}\,
+   *               \hat{c}_{\alpha_{j_1}} \cdots \hat{c}_{\alpha_{j_{m_i}}},
+   * \f]
+   * with real or complex coefficients \f$ a_i \f$ and single particle state indices \f$ \alpha_k \f$ drawn from the
+   * supplied fundamental operator set \f$ A = \{ \alpha_k \}_{k=0}^{N-1} \f$ (\f$ N \leq 64 \f$). Each \f$ \alpha_k \f$
+   * is identified with its position \f$ k \f$ in \f$ A \f$, which is used as a bit position; a Fock basis state is
+   * encoded as a 64-bit integer (see triqs::hilbert_space::fock_state_t) via \f$ \lvert n_0 n_1 \dots n_{N-1} \rangle
+   * \leftrightarrow \sum_k n_k\, 2^k \f$, with the convention \f$ \lvert n_0 \dots n_{N-1} \rangle =
+   * (\hat{c}^{\dagger}_{\alpha_0})^{n_0} \cdots (\hat{c}^{\dagger}_{\alpha_{N-1}})^{n_{N-1}} \lvert 0 \rangle \f$.
+   *
+   * At construction, each monomial \f$ \hat{m}_i \f$ is reordered to the canonical form above (creation operators on
+   * the left with \f$ \alpha_{i_1} < \dots < \alpha_{i_{n_i}} \f$, annihilation operators on the right with \f$
+   * \alpha_{j_1} > \dots > \alpha_{j_{m_i}} \f$, matching the ordering of triqs::operators::canonical_ops_t), absorbing
+   * the appropriate fermionic sign into the coefficient \f$ a_i \f$. It is then stored as four 64-bit masks:
+   *
+   * - `dag_mask` — bit \f$ i_a \f$ is set if \f$ \hat{m}_i \f$ contains \f$ \hat{c}^{\dagger}_{\alpha_{i_a}} \f$,
+   * - `d_mask` — bit \f$ j_b \f$ is set if \f$ \hat{m}_i \f$ contains \f$ \hat{c}_{\alpha_{j_b}} \f$,
+   * - `dag_count_mask`, `d_count_mask` — precomputed parity masks that, when AND'ed with a Fock state and combined
+   * through XOR, yield the fermionic sign without rescanning the canonical order at apply time.
    *
    * If `UseMap` is `false`, the operator acts within a single Hilbert (Fock) space (see
    * triqs::hilbert_space::hilbert_space).
    *
    * If `UseMap` is `true`, the operator acts across a fixed set of invariant subspaces (see
-   * triqs::hilbert_space::sub_hilbert_space) and the user must supply a connection map `hmap` such that `hmap[i]`
-   * is the index of the subspace into which the operator maps the i-th subspace, or `-1` if the operator
-   * annihilates that subspace.
+   * triqs::hilbert_space::sub_hilbert_space) and the user must supply a connection map how the operator maps subspaces
+   * to one another.
    *
-   * @warning When `HilbertType = triqs::hilbert_space::sub_hilbert_space`, the operator must generate only
-   * one-to-one connections between the subspaces in the supplied map. If this is not the case, use
-   * `HilbertType = triqs::hilbert_space::hilbert_space` instead.
-   *
-   * @tparam HilbertType Hilbert space type — either triqs::hilbert_space::hilbert_space or
-   * triqs::hilbert_space::sub_hilbert_space.
-   * @tparam ScalarType Coefficient type of the underlying many-body operator (typically `double` or
-   * `std::complex<double>`); may also be a callable producing a scalar when the operator is parameterized.
-   * @tparam UseMap If `true`, the constructor expects a user-supplied subspace connection map; if `false`, the
-   * operator acts inside a single Hilbert (Fock) space.
+   * @tparam HilbertType Hilbert space type.
+   * @tparam ScalarType Coefficient type.
+   * @tparam UseMap Whether a connection map between invariant subspaces is used.
    */
   template <typename HilbertType, typename ScalarType = double, bool UseMap = false> class imperative_operator {
     private:
@@ -76,7 +89,7 @@ namespace triqs::hilbert_space {
     };
 
     public:
-    /// Coefficient type (might be a callable type)
+    /// Coefficient type (might be a callable type).
     using coeff_t = ScalarType;
 
     /// Map between subspace indices (only used when `UseMap = true`).
@@ -89,17 +102,22 @@ namespace triqs::hilbert_space {
      * @brief Construct an imperative_operator from a triqs::operators::many_body_operator_generic and a
      * triqs::hilbert_space::fundamental_operator_set.
      *
-     * @details The monomials of `op` are normalized to the order induced by `fops`, picking up the appropriate
-     * fermionic sign, and then converted to a compact bitmask representation in which each canonical operator is
-     * identified with a bit position from `fops`.
+     * @details The monomials of the given operator are normalized to the order induced by the fundamental operator set,
+     * picking up the appropriate fermionic sign, and converted to a compact bitmask representation in which each
+     * canonical operator is identified with a bit position from the fundamental operator set.
      *
-     * If the template parameter `UseMap` is `true`, the additional arguments `hmap` and `sub_spaces_set` must be
-     * supplied to describe how `op` maps Hilbert subspaces (see triqs::hilbert_space::sub_hilbert_space) to one
-     * another. If `UseMap` is `false`, `hmap` must be empty and `sub_spaces_set` must be `nullptr`; an internal
-     * error is raised otherwise.
+     * When `UseMap = true`, the operator additionally acts across invariant Hilbert subspaces and a connection map
+     * describing how the operator maps subspaces to one another must be supplied through `hmap` and `sub_spaces_set`.
+     * When `UseMap = false`, `hmap` must be empty and `sub_spaces_set` must be `nullptr`; an internal error is raised
+     * otherwise.
+     *
+     * @note Preconditions for the `UseMap = true` case (not checked at construction time):
+     * - `sub_spaces_set` must be non-null and the pointed-to vector must outlive the constructed operator.
+     * - Every `hmap[i]` is either `-1` (subspace annihilated by `op`) or a valid index into `*sub_spaces_set`.
+     * - `hmap.size()` must cover every subspace index of any state subsequently passed to operator()().
      *
      * @param op Source many-body operator.
-     * @param fops Fundamental operator set; must contain all single particle state indices that appear in `op`.
+     * @param fops Fundamental operator set; must contain all single particle state indices that appear in the operator.
      * @param hmap Map of subspace-to-subspace connections generated by `op` (only used when `UseMap = true`).
      * `hmap[i] = j` means the i-th subspace is mapped to the j-th subspace; `hmap[i] = -1` means it is annihilated.
      * @param sub_spaces_set Pointer to the vector of all Hilbert subspaces referenced by `hmap` (only used when
@@ -112,6 +130,7 @@ namespace triqs::hilbert_space {
       hilbert_map = hmap;
       if ((hilbert_map.size() == 0) != !UseMap) TRIQS_RUNTIME_ERROR << "Internal error";
 
+      // ordering matching the canonical form
       auto greater = [&fops](triqs::operators::canonical_ops_t const &op1, triqs::operators::canonical_ops_t const &op2) {
         if (op1.dagger != op2.dagger) return op2.dagger;
         return op1.dagger ? (fops[op1.indices] > fops[op2.indices]) : (fops[op1.indices] < fops[op2.indices]);
@@ -120,6 +139,7 @@ namespace triqs::hilbert_space {
       // The goal here is to have a transcription of the many_body_operator in terms
       // of simple vectors (maybe the code below could be more elegant)
       for (auto const &term : op) {
+        // canonical-order working copy; each swap flips the fermionic sign of the coefficient
         auto monomial = term.monomial;
         auto coef     = term.coef;
 
@@ -147,12 +167,15 @@ namespace triqs::hilbert_space {
           TRIQS_RUNTIME_ERROR << "ERROR: The Atom-Diag result of this model is affected by issue 819 (https://github.com/TRIQS/triqs/issues/819).\n"
                                  "If you have solved the same model with release 2.2.0, 2.2.1 or 3.0.0 of TRIQS the result was incorrect.";
 
+        // build bitmask representation of the canonical monomial
         std::vector<int> dag, ndag;
         uint64_t d_mask = 0, dag_mask = 0;
         for (auto const &canonical_op : monomial) {
           (canonical_op.dagger ? dag : ndag).push_back(fops[canonical_op.indices]);
           (canonical_op.dagger ? dag_mask : d_mask) |= (uint64_t(1) << fops[canonical_op.indices]);
         }
+        // parity mask: bit i set iff i is not in d AND the number of d-bits > i is odd
+        // used to read off the fermionic sign via parity_number_of_bits in operator()
         auto compute_count_mask = [](std::vector<int> const &d) {
           uint64_t mask = 0;
           bool is_on    = (d.size() % 2 == 1);
@@ -170,13 +193,13 @@ namespace triqs::hilbert_space {
     }
 
     /**
-     * @brief Apply a callable object to each coefficient of the operator by reference.
+     * @brief Apply a callable object to each coefficient of the operator.
      *
-     * @details The callable is invoked once per stored monomial term and receives the coefficient by mutable
-     * reference, allowing in-place modification.
+     * @details The callable is invoked once per stored monomial term and receives the coefficient by mutable reference,
+     * allowing in-place modification.
      *
-     * @tparam w_max Type of the callable object; must be invocable with `ScalarType &`.
-     * @param L Callable object.
+     * @tparam w_max Callable type.
+     * @param L Callable object applied to each coefficient of the operator.
      */
     template <typename w_max> void update(w_max L) {
       for (auto &M : all_terms) L(M.coeff);
@@ -189,22 +212,51 @@ namespace triqs::hilbert_space {
     bool is_empty() const { return (all_terms.size() == 0); }
 
     /**
+     * @fn StateType operator()(StateType const &st, Args&&... args) const
      * @brief Apply the operator to a many-body state \f$ \lvert \psi \rangle \f$ and return the resulting state.
      *
-     * @details The result is computed term by term. For each monomial \f$ \hat{m}_i \f$ stored in the operator,
-     * every non-zero amplitude in \f$ \lvert \psi \rangle \f$ is checked against the precomputed
-     * annihilation/creation bitmasks. Whenever the monomial can act, the fermionic sign is recovered from the
-     * parity of bit positions of the operators and the corresponding amplitude is added to the result.
+     * @details The input state is expanded over the occupation number basis of its Hilbert (Fock) space \f$
+     * \mathcal{F}^{(m)} \f$,
+     * \f[
+     *   \lvert \psi \rangle = \sum_{f \in \mathcal{F}^{(m)}} b_f \lvert f \rangle,
+     * \f]
+     * where \f$ \lvert f \rangle \f$ are the basis Fock states and \f$ b_f \f$ the corresponding amplitudes. Applying
+     * \f$ \hat{O} = \sum_i a_i \hat{m}_i \f$ to \f$ \lvert \psi \rangle \f$ yields
+     * \f[
+     *   \hat{O} \lvert \psi \rangle
+     *     = \sum_{f} \sum_{i} a_i \, b_f \, \hat{m}_i \lvert f \rangle
+     *     = \sum_{f'} b'_{f'} \lvert f' \rangle = \lvert \psi' \rangle \; ,
+     * \f]
+     * so the task reduces to evaluating \f$ \hat{m}_i \lvert f \rangle \f$ for every monomial \f$ \hat{m}_i \f$ and
+     * every basis state \f$ \lvert f \rangle \f$ with non-zero amplitude \f$ b_f \f$, and accumulating the resulting
+     * contributions into the amplitudes \f$ b'_{f'} \f$ of the target state.
      *
-     * The optional extra arguments `args...` are forwarded to each coefficient of the operator, making this
-     * overload useful when `ScalarType` is itself a callable (e.g. for parametric or time-dependent operators).
-     * For ordinary scalar coefficients the arguments are simply ignored.
+     * For a given monomial and Fock state, the action \f$ \hat{m}_i \lvert f \rangle = s_{i,f} \lvert f' \rangle \f$
+     * (with sign \f$ s_{i,f} \in \{ -1, 0, +1 \} \f$) reduces to a handful of bitwise operations on the precomputed
+     * masks:
      *
-     * @tparam StateType Many-body state type (see triqs::hilbert_space::state).
+     * - if any annihilation site is unoccupied in \f$ \lvert f \rangle \f$ the term vanishes (\f$ s_{i,f} = 0 \f$);
+     *   otherwise clear those bits,
+     * - if any creation site is already occupied in the intermediate state the term again vanishes;
+     *   otherwise set those bits to obtain \f$ \lvert f' \rangle \f$,
+     * - read off the fermionic sign \f$ s_{i,f} = \pm 1 \f$ from the parity of the relevant bits of \f$ \lvert f
+     *   \rangle \f$ and \f$ \lvert f' \rangle \f$ combined with the precomputed `d_count_mask` and `dag_count_mask`.
+     *
+     * The contribution \f$ s_{i,f} \, a_i \, b_f \f$ is then accumulated into the amplitude \f$ b'_{f'} \f$ at the
+     * basis index of \f$ \lvert f' \rangle \f$ in the target state, so that after looping over all monomials and all
+     * non-zero amplitudes of \f$ \lvert \psi \rangle \f$ the target state holds
+     * \f$ b'_{f'} = \sum_{i, f} s_{i,f} \, a_i \, b_f \, \delta_{f', \hat{m}_i f} \f$.
+     *
+     * The optional extra arguments are forwarded to each coefficient of the operator, making this overload useful when
+     * `ScalarType` is itself a callable (e.g. for parametric or time-dependent operators). For ordinary scalar
+     * coefficients the arguments are simply ignored.
+     *
+     * @tparam StateType Many-body state type.
      * @tparam Args Types of the optional extra arguments forwarded to the coefficients.
      * @param st Initial many-body state \f$ \lvert \psi \rangle \f$.
-     * @param args Optional argument pack forwarded to each coefficient of the operator.
-     * @return Resulting many-body state \f$ \hat{O} \lvert \psi \rangle \f$.
+     * @param args Optional arguments forwarded to each coefficient of the operator (only meaningful when `ScalarType`
+     * is a callable).
+     * @return Resulting many-body state \f$ \hat{O} \lvert \psi \rangle = \lvert \psi' \rangle  \f$.
      */
     template <typename StateType, typename... Args> StateType operator()(StateType const &st, Args &&...args) const {
 
@@ -231,9 +283,8 @@ namespace triqs::hilbert_space {
     }
 
     private:
-    // Return a zero state in the target Hilbert space of `st` under this operator.
-    // When UseMap is true and the connection map sends `st`'s subspace to `-1`, returns a default-constructed
-    // (empty) sub_hilbert_space state.
+    // Return a zero state in the target Hilbert space of |psi> under this operator, or a default-constructed (empty)
+    // state when UseMap=true and the connection map sends |psi>'s subspace to -1.
     template <typename StateType> StateType get_target_st(StateType const &st) const {
       if constexpr (UseMap) {
         auto n = hilbert_map[st.get_hilbert().get_index()];
@@ -244,6 +295,7 @@ namespace triqs::hilbert_space {
       }
     }
 
+    // Return true if the number of set bits in v is odd, false if it is even.
     static bool parity_number_of_bits(uint64_t v) {
       // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetNaive
       // v ^= v >> 16;
@@ -255,8 +307,8 @@ namespace triqs::hilbert_space {
       return v & 0x01;
     }
 
-    // Return x(args...) when scalar_t is callable, x otherwise. Supports parameterized operators
-    // whose coefficients are themselves callable objects.
+    // Return x(args...) when args... is non-empty (coeff_t must be callable with them), x otherwise.
+    // Supports parameterized operators whose coefficients are themselves callable objects.
     template <typename... Args> static auto apply_if_possible(coeff_t const &x, Args &&...args) -> std::invoke_result_t<coeff_t, Args...> {
       return x(std::forward<Args>(args)...);
     }
