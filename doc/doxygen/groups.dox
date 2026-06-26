@@ -1,4 +1,244 @@
 /**
+ * @defgroup triqs-atom-diag Atomic problem diagonalization
+ * @brief Exact diagonalization of atomic (local) Hamiltonians and their atomic Green's function.
+ *
+ * @details The @ref triqs-atom-diag module performs exact diagonalization of a many-body Hamiltonian \f$ \hat H \f$
+ * acting on the Fock space of a finite set of fermionic single-particle states. The Hilbert space is split into
+ * invariant subspaces of \f$ \hat H \f$, each of which is diagonalized independently:
+ * \f[
+ *   H_B = U_B \, \mathrm{diag}(E_B) \, U^{\dagger}_B \; ,
+ * \f]
+ * where \f$ B \f$ indexes the subspaces, \f$ H_B \f$ is the Hamiltonian restricted to the subspace, \f$ U_B \f$ is the
+ * unitary matrix mapping the Fock basis of the subspace to the eigenbasis of the Hamiltonian, and \f$ E_B \f$ is the
+ * vector of eigenvalues. By convention the global ground-state energy is subtracted at construction, so that the
+ * smallest eigenvalue across all subspaces is zero.
+ *
+ * The invariant subspaces are built either by an auto-partition procedure, by an explicit list of quantum-number
+ * operators, or by a particle-number window, and each block is then diagonalized with the QR algorithm.
+ *
+ * **Notation used throughout the API:**
+ *
+ * - \f$ B,\, B' \f$ : subspace index (parameter `sp_index`),
+ * - \f$ \dim(B) \f$ : dimension of subspace \f$ B \f$, returned by triqs::atom_diag::atom_diag::get_subspace_dim,
+ * - \f$ E_{B,i} \f$ : the \f$ i \f$-th eigenvalue inside subspace \f$ B \f$,
+ * - \f$ N \f$ : dimension of the full Hilbert space.
+ *
+ * **Atomic Green's function.**
+ *
+ * Derived from a solved diagonalization problem, the atomic Green's function is built in the Lehmann (spectral)
+ * representation,
+ * \f[
+ *   G_{ab}(z) = \frac{1}{Z} \sum_{B, B'} \sum_{i=0}^{\dim(B)-1} \sum_{j=0}^{\dim(B')-1} \Bigl( e^{-\beta E_{B,i}} +
+ *   \eta\, e^{-\beta E_{B',j}} \Bigr) \frac{\langle B, i\,|\, \hat c_a \,|\, B', j\rangle \, \langle B', j\,|\,
+ *   \hat c_b^\dagger \,|\, B, i\rangle} {z + E_{B,i} - E_{B',j}} \; ,
+ * \f]
+ * where \f$ \eta = +1 \f$ for fermionic and \f$ \eta = -1 \f$ for bosonic statistics, \f$ Z \f$ is the partition
+ * function, \f$ B, B' \f$ are subspace indices, and \f$ i, j \f$ are eigenstate indices inside the corresponding
+ * subspaces with \f$ 0 \le i < \dim(B) \f$ and \f$ 0 \le j < \dim(B') \f$. The orbital indices \f$ a, b \f$ run over
+ * one Green's-function block and are mapped to fundamental-operator linear indices through the fundamental operator
+ * set. The only non-zero contributions come from \f$ (B, B') \f$ pairs that are connected by the application of a
+ * creation/annihilation operator, i.e. for which the corresponding matrix block is non-zero.
+ *
+ * The poles
+ * \f[
+ *   p = E_{B',j} - E_{B,i}
+ * \f]
+ * and the residues
+ * \f[
+ *   r_p = \bigl(e^{-\beta E_{B,i}} + \eta\, e^{-\beta E_{B',j}}\bigr)
+ *   \langle B, i\,|\, \hat c_a \,|\, B', j\rangle \langle B', j\,|\, \hat c_b^\dagger \,|\, B, i\rangle / Z
+ * \f]
+ * are first stored in the Lehmann data structure, then evaluated on the requested target mesh (imaginary time,
+ * Matsubara, Legendre, or real frequency).
+ *
+ * The solver itself is exposed through triqs::atom_diag::atom_diag (with real- and complex-valued specializations);
+ * a set of free functions builds thermodynamic averages, quantum-number tables and the atomic Green's function on
+ * different meshes from a solved instance.
+ */
+
+/**
+ * @defgroup triqs-det-manip Determinant manipulation
+ * @brief Efficient algorithms for manipulating determinants in Monte Carlo sampling.
+ *
+ * @details This module provides optimized algorithms for computing and updating determinants,
+ * which are essential for determinantal quantum Monte Carlo methods.
+ */
+
+/**
+ * @defgroup triqs-experimental Experimental tools
+ * @brief Experimental tools that are still under development and whose API may change.
+ */
+
+/**
+ * @defgroup triqs-gfs Green's functions
+ * @brief Generic containers for Green's functions, self energies and other important functions in quantum many-body
+ * physics.
+ *
+ * @details The @ref triqs-gfs in the **TRIQS** library are generic containers for functions which are not known
+ * analytically. As the name suggests, they are intended to be used for quantum many-body Green's functions, self
+ * energies or other correlation functions, but they can in principle be used for more general functions.
+ */
+
+/**
+ * @defgroup triqs-hilber Hilbert space
+ * @brief Fock state representations and Hilbert space tools for many-body systems.
+ *
+ * @details In the following, we introduce some basic concepts and notations used throughout the documentation.
+ *
+ * Let us start by considering a single particle Hilbert space \f$ \mathcal{H}_1 \f$ of finite dimension \f$ N \f$ with
+ * a complete set of eigenstates \f$ \{ \lvert \alpha_i \rangle \}_{i=0}^{N-1} \f$.
+ *
+ * We can construct the associated Fock space \f$ \mathcal{F} \f$ as the Hilbert space spanned by all possible
+ * occupation number configurations of the single particle states. Since we are only considering fermions, each single
+ * particle state \f$ \lvert \alpha_i \rangle \f$ can either be empty or singly occupied, i.e. \f$ n_{\alpha_i} \in
+ * \{0, 1\} \f$, which implies that \f$ \dim(\mathcal{F}) = 2^N \f$.
+ *
+ * The occupation number basis states of the Fock space are therefore given by
+ * \f[
+ *   \lvert n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle = \prod_{i=0}^{N-1} (c_{\alpha_i}^\dagger)^{n_{
+ *   \alpha_i}} \lvert 0 \rangle \; ,
+ * \f]
+ * where \f$ c_{\alpha_i}^\dagger \f$ is the fermionic creation operator such that \f$ \lvert \alpha_i \rangle =
+ * c_{\alpha_i}^\dagger \lvert 0 \rangle \f$, and \f$ \lvert 0 \rangle \f$ is the vacuum state with no particles.
+ *
+ * If we restrict ourselves to \f$ N < 64 \f$, we can 1-to-1 map each occupation number basis state \f$ \lvert
+ * n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle \f$ to a single 64-bit integer
+ * \f[
+ *   f(n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}}) = \sum_{i=0}^{N-1} n_{\alpha_i} 2^i \; ,
+ * \f]
+ * where the \f$ i \f$-th bit of \f$ f \f$ is set if and only if the single particle state \f$ \lvert \alpha_i \rangle
+ * \f$ is occupied.
+ */
+
+/**
+ * @defgroup triqs-lattice Lattice tools
+ * @brief Tools for working with Bravais lattices, Brillouin zones and tight-binding Hamiltonians.
+ *
+ * @details The lattice tools provide classes to describe crystal lattices in real and reciprocal space, and to build
+ * tight-binding Hamiltonians on top of them. The main classes are:
+ * - triqs::lattice::bravais_lattice: A Bravais lattice in 1, 2 or 3 dimensions, defined by a set of basis vectors and
+ * the positions of (optionally named) atomic orbitals within the unit cell.
+ * - triqs::lattice::brillouin_zone: The first Brillouin zone of a given Bravais lattice, defined by the corresponding
+ * reciprocal-space basis vectors.
+ * - triqs::lattice::tight_binding: A tight-binding Hamiltonian on a Bravais lattice, parameterised by lattice
+ * displacements and the associated hopping (overlap) matrices between orbitals. It provides the Fourier transform to
+ * reciprocal space, dispersion (band-structure) calculations on Brillouin zone meshes and integration with the TRIQS
+ * Green's function framework.
+ * - triqs::lattice::grid_generator: A forward iterator that produces a regular grid of points inside the d-dimensional
+ * unit cube, useful for sampling the Brillouin zone.
+ */
+
+/**
+ * @defgroup triqs-mc MC tools
+ * @brief Tools to implement and perform Monte Carlo simulations.
+ *
+ * @details The @ref triqs-mc module provides a generic framework for writing Markov-chain Monte Carlo simulations. It
+ * does not implement any particular physical algorithm; instead it supplies the scaffolding common to all such
+ * simulations — driving the Markov chain, dispatching user-defined updates, accumulating user-defined observables, and
+ * aggregating results across MPI ranks.
+ *
+ * A simulation is described by three ingredients supplied by the user:
+ * - a **sign type** (real or complex, see triqs::mc_tools::DoubleOrComplex) that encodes the per-configuration weight,
+ * - a set of **moves** that propose updates of the Markov chain and report their Metropolis acceptance ratio (see
+ * @ref triqs-mc-moves and triqs::mc_tools::MCMove),
+ * - a set of **measurements** that accumulate observables along the chain (see @ref triqs-mc-measures and
+ * triqs::mc_tools::MCMeasure).
+ *
+ * These ingredients are plugged into a triqs::mc_tools::mc_generic instance, which manages *warmup* (equilibration,
+ * optional move calibration) and *accumulation* (measurement) phases, organised into cycles of MC steps. The driver is
+ * MPI-aware: random seeds, exception propagation, cycle counters and measurement reduction are all coordinated through
+ * an `mpi::communicator`, so the same simulation code runs serially or in parallel.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-concepts MC concepts
+ * @brief Concepts that specify the requirements for MC moves and measurements.
+ *
+ * @details The MC framework is generic: any user type that satisfies the relevant concept can be plugged into
+ * triqs::mc_tools::mc_generic. The concepts in this group spell out the minimal interface those types must expose:
+ * - triqs::mc_tools::DoubleOrComplex constrains the *sign type* to either `double` or `std::complex<double>`.
+ * - triqs::mc_tools::MCMove requires `attempt()` and `accept()` returning the sign type, with optional `reject()`,
+ * `calibrate()` and `collect_statistics()` hooks for adaptive moves and diagnostics.
+ * - triqs::mc_tools::MCMeasure requires `accumulate(sign)` and `collect_results(mpi::communicator)`, leaving the
+ * storage of partial accumulators entirely to the user.
+ *
+ * Because the framework relies on concepts rather than virtual inheritance, user moves and measurements remain plain,
+ * value-semantic types; the triqs::mc_tools::mc_generic engine wraps them through type erasure internally.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-measures MC measurements
+ * @brief Abstraction for Monte Carlo measurements.
+ *
+ * @details A *measurement* is any object that, given the current sign of the Markov chain, contributes to one or more
+ * running estimators. This group provides the type-erased wrappers used by triqs::mc_tools::mc_generic to store
+ * heterogeneous measurements together:
+ * - triqs::mc_tools::measure wraps a user object satisfying triqs::mc_tools::MCMeasure and bookkeeps the number of
+ * measurements, optional timing and an optional `report()` callback.
+ * - triqs::mc_tools::measure_set is the container of registered measurements; it forwards `accumulate` and
+ * `collect_results` to every measurement it owns.
+ * - triqs::mc_tools::measure_aux holds *auxiliary* callables that are run on every cycle but do not themselves
+ * accumulate an estimator (e.g. live diagnostics or periodic state dumps).
+ *
+ * Final reduction across MPI ranks is delegated to the user code inside `collect_results`, which receives the
+ * communicator.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-moves MC moves
+ * @brief Abstraction for Monte Carlo moves.
+ *
+ * @details A *move* proposes an update of the Markov chain and returns the Metropolis acceptance ratio. The framework
+ * supplies two type-erased containers:
+ * - triqs::mc_tools::move wraps a user object satisfying triqs::mc_tools::MCMove, tracks per-move proposal and
+ * acceptance counters, optional timing, and forwards the optional `reject`, `calibrate` and `collect_statistics` hooks.
+ * - triqs::mc_tools::move_set combines several moves with relative weights and itself satisfies the MCMove concept: on
+ * each step it draws one of its sub-moves with probability proportional to its weight, allowing composite update
+ * schemes to be assembled hierarchically.
+ *
+ * Acceptance ratios and timing statistics are exposed for diagnostics and are aggregated across MPI ranks when results
+ * are collected.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-simulation MC simulation
+ * @brief Run and manage MC simulations.
+ *
+ * @details This group contains triqs::mc_tools::mc_generic, the driver that ties together moves, measurements and the
+ * random generator. A typical lifecycle is:
+ * 1. construct an `mc_generic<S>` with a chosen engine name and seed,
+ * 2. register moves with `add_move`, measurements with `add_measure`, and any auxiliary callables with
+ * `add_measure_aux`,
+ * 3. run `warmup` (equilibrate the chain, optionally calibrate moves), then `accumulate` (perform measurements) — or
+ * the combined `warmup_and_accumulate` / `run`,
+ * 4. call `collect_results` to reduce per-rank estimators across an `mpi::communicator`.
+ *
+ * The driver organises work into *cycles* of MC steps separated by measurement passes, and checks for user-requested
+ * termination and for exceptions on configurable intervals so that ranks can stop in a coordinated way even with
+ * asymmetric workloads.
+ */
+
+/**
+ * @ingroup triqs-mc
+ * @defgroup triqs-mc-utils MC utilities
+ * @brief Various utilities used with @ref triqs-mc.
+ *
+ * @details This group collects auxiliary building blocks used by the MC framework, most prominently the random number
+ * generator:
+ * - triqs::mc_tools::random_generator is a type-erased wrapper around a pseudo-random engine. The engine is selected at
+ * construction by name (`"mt19937"`, several `"lagged_fibonacci..."` variants, `"ranlux3"`, and the built-in Mersenne
+ * Twister); samples are produced in batches into an internal buffer for efficiency. Overloaded `operator()` returns
+ * either a uniform `double` in \f$ [0,1) \f$ or a uniform integer in \f$ \{0, ..., i-1 \} \f$, and the generator state
+ * can be serialised to HDF5 for reproducible restarts.
+ *
+ * The list of available engine names is exposed at runtime via triqs::mc_tools::random_generator_names_list.
+ */
+
+/**
  * @defgroup triqs-meshes Meshes
  * @brief Various meshes for @ref triqs-gfs.
  *
@@ -79,7 +319,7 @@
  * @ingroup triqs-meshes-imag
  * @defgroup triqs-meshes-matsubara Matsubara frequencies
  * @brief Tools to represent and manipulate Matsubara frequencies.
- * 
+ *
  * @details Arithmetic operations between Matsubara frequencies and scalars are performed using the complex values of
  * the Matsubara frequencies.
  */
@@ -127,244 +367,8 @@
  */
 
 /**
- * @ingroup triqs-meshes
- * @defgroup triqs-meshes-lattice Lattice meshes
- * @brief %Mesh types for lattice domains like Brillouin zone and cyclic lattice.
- */
-
-/**
- * @defgroup triqs-lattice Lattice tools
- * @brief Tools for working with Bravais lattices, Brillouin zones and tight-binding Hamiltonians.
- *
- * @details The lattice tools provide classes to describe crystal lattices in real and reciprocal space, and to build 
- * tight-binding Hamiltonians on top of them. The main classes are:
- * - triqs::lattice::bravais_lattice: A Bravais lattice in 1, 2 or 3 dimensions, defined by a set of basis vectors and 
- * the positions of (optionally named) atomic orbitals within the unit cell.
- * - triqs::lattice::brillouin_zone: The first Brillouin zone of a given Bravais lattice, defined by the corresponding 
- * reciprocal-space basis vectors.
- * - triqs::lattice::tight_binding: A tight-binding Hamiltonian on a Bravais lattice, parameterised by lattice 
- * displacements and the associated hopping (overlap) matrices between orbitals. It provides the Fourier transform to 
- * reciprocal space, dispersion (band-structure) calculations on Brillouin zone meshes and integration with the TRIQS 
- * Green's function framework.
- * - triqs::lattice::grid_generator: A forward iterator that produces a regular grid of points inside the d-dimensional 
- * unit cube, useful for sampling the Brillouin zone.
- */
-
-/**
- * @defgroup triqs-gfs Green's functions
- * @brief Generic containers for Green's functions, self energies and other important functions in quantum many-body
- * physics.
- *
- * @details The @ref triqs-gfs in the **TRIQS** library are generic containers for functions which are not known
- * analytically. As the name suggests, they are intended to be used for quantum many-body Green's functions, self
- * energies or other correlation functions, but they can in principle be used for more general functions.
- */
-
-/**
- * @defgroup triqs-mc MC tools
- * @brief Tools to implement and perform Monte Carlo simulations.
- *
- * @details The @ref triqs-mc module provides a generic framework for writing Markov-chain Monte Carlo simulations. It 
- * does not implement any particular physical algorithm; instead it supplies the scaffolding common to all such
- * simulations — driving the Markov chain, dispatching user-defined updates, accumulating user-defined observables, and 
- * aggregating results across MPI ranks.
- *
- * A simulation is described by three ingredients supplied by the user:
- * - a **sign type** (real or complex, see triqs::mc_tools::DoubleOrComplex) that encodes the per-configuration weight,
- * - a set of **moves** that propose updates of the Markov chain and report their Metropolis acceptance ratio (see 
- * @ref triqs-mc-moves and triqs::mc_tools::MCMove),
- * - a set of **measurements** that accumulate observables along the chain (see @ref triqs-mc-measures and 
- * triqs::mc_tools::MCMeasure).
- *
- * These ingredients are plugged into a triqs::mc_tools::mc_generic instance, which manages *warmup* (equilibration, 
- * optional move calibration) and *accumulation* (measurement) phases, organised into cycles of MC steps. The driver is 
- * MPI-aware: random seeds, exception propagation, cycle counters and measurement reduction are all coordinated through 
- * an `mpi::communicator`, so the same simulation code runs serially or in parallel.
- */
-
-/**
- * @ingroup triqs-mc
- * @defgroup triqs-mc-concepts MC concepts
- * @brief Concepts that specify the requirements for MC moves and measurements.
- *
- * @details The MC framework is generic: any user type that satisfies the relevant concept can be plugged into 
- * triqs::mc_tools::mc_generic. The concepts in this group spell out the minimal interface those types must expose:
- * - triqs::mc_tools::DoubleOrComplex constrains the *sign type* to either `double` or `std::complex<double>`.
- * - triqs::mc_tools::MCMove requires `attempt()` and `accept()` returning the sign type, with optional `reject()`, 
- * `calibrate()` and `collect_statistics()` hooks for adaptive moves and diagnostics.
- * - triqs::mc_tools::MCMeasure requires `accumulate(sign)` and `collect_results(mpi::communicator)`, leaving the 
- * storage of partial accumulators entirely to the user.
- *
- * Because the framework relies on concepts rather than virtual inheritance, user moves and measurements remain plain, 
- * value-semantic types; the triqs::mc_tools::mc_generic engine wraps them through type erasure internally.
- */
-
-/**
- * @ingroup triqs-mc
- * @defgroup triqs-mc-measures MC measurements
- * @brief Abstraction for Monte Carlo measurements.
- *
- * @details A *measurement* is any object that, given the current sign of the Markov chain, contributes to one or more 
- * running estimators. This group provides the type-erased wrappers used by triqs::mc_tools::mc_generic to store 
- * heterogeneous measurements together:
- * - triqs::mc_tools::measure wraps a user object satisfying triqs::mc_tools::MCMeasure and bookkeeps the number of 
- * measurements, optional timing and an optional `report()` callback.
- * - triqs::mc_tools::measure_set is the container of registered measurements; it forwards `accumulate` and 
- * `collect_results` to every measurement it owns.
- * - triqs::mc_tools::measure_aux holds *auxiliary* callables that are run on every cycle but do not themselves 
- * accumulate an estimator (e.g. live diagnostics or periodic state dumps).
- *
- * Final reduction across MPI ranks is delegated to the user code inside `collect_results`, which receives the 
- * communicator.
- */
-
-/**
- * @ingroup triqs-mc
- * @defgroup triqs-mc-moves MC moves
- * @brief Abstraction for Monte Carlo moves.
- *
- * @details A *move* proposes an update of the Markov chain and returns the Metropolis acceptance ratio. The framework 
- * supplies two type-erased containers:
- * - triqs::mc_tools::move wraps a user object satisfying triqs::mc_tools::MCMove, tracks per-move proposal and 
- * acceptance counters, optional timing, and forwards the optional `reject`, `calibrate` and `collect_statistics` hooks.
- * - triqs::mc_tools::move_set combines several moves with relative weights and itself satisfies the MCMove concept: on 
- * each step it draws one of its sub-moves with probability proportional to its weight, allowing composite update 
- * schemes to be assembled hierarchically.
- *
- * Acceptance ratios and timing statistics are exposed for diagnostics and are aggregated across MPI ranks when results 
- * are collected.
- */
-
-/**
- * @ingroup triqs-mc
- * @defgroup triqs-mc-utils MC utilities
- * @brief Various utilities used with @ref triqs-mc.
- *
- * @details This group collects auxiliary building blocks used by the MC framework, most prominently the random number 
- * generator:
- * - triqs::mc_tools::random_generator is a type-erased wrapper around a pseudo-random engine. The engine is selected at 
- * construction by name (`"mt19937"`, several `"lagged_fibonacci..."` variants, `"ranlux3"`, and the built-in Mersenne 
- * Twister); samples are produced in batches into an internal buffer for efficiency. Overloaded `operator()` returns
- * either a uniform `double` in \f$ [0,1) \f$ or a uniform integer in \f$ \{0, ..., i-1 \} \f$, and the generator state 
- * can be serialised to HDF5 for reproducible restarts.
- *
- * The list of available engine names is exposed at runtime via triqs::mc_tools::random_generator_names_list.
- */
-
-/**
- * @ingroup triqs-mc
- * @defgroup triqs-mc-simulation MC simulation
- * @brief Run and manage MC simulations.
- *
- * @details This group contains triqs::mc_tools::mc_generic, the driver that ties together moves, measurements and the 
- * random generator. A typical lifecycle is:
- * 1. construct an `mc_generic<S>` with a chosen engine name and seed,
- * 2. register moves with `add_move`, measurements with `add_measure`, and any auxiliary callables with 
- * `add_measure_aux`,
- * 3. run `warmup` (equilibrate the chain, optionally calibrate moves), then `accumulate` (perform measurements) — or 
- * the combined `warmup_and_accumulate` / `run`,
- * 4. call `collect_results` to reduce per-rank estimators across an `mpi::communicator`.
- *
- * The driver organises work into *cycles* of MC steps separated by measurement passes, and checks for user-requested 
- * termination and for exceptions on configurable intervals so that ranks can stop in a coordinated way even with 
- * asymmetric workloads.
- */
-
-/**
- * @defgroup triqs-ops Many-body states and operators
+ * @defgroup triqs-ops Operators
  * @brief Tools to specify and manipulate many-body states and operators.
- *
- * @details In the following, we introduce some basic concepts and notations used throughout the documentation.
- *
- * Let us start by considering a single particle Hilbert space \f$ \mathcal{H}_1 \f$ of finite dimension \f$ N \f$ with
- * a complete set of eigenstates \f$ \{ \lvert \alpha_i \rangle \}_{i=0}^{N-1} \f$.
- * 
- * We can construct the associated Fock space \f$ \mathcal{F} \f$ as the Hilbert space spanned by all possible 
- * occupation number configurations of the single particle states. Since we are only considering fermions, each single 
- * particle state \f$ \lvert \alpha_i \rangle \f$ can either be empty or singly occupied, i.e. \f$ n_{\alpha_i} \in 
- * \{0, 1\} \f$, which implies that \f$ \dim(\mathcal{F}) = 2^N \f$. 
- * 
- * The occupation number basis states of the Fock space are therefore given by
- * \f[
- *   \lvert n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle = \prod_{i=0}^{N-1} (c_{\alpha_i}^\dagger)^{n_{
- *   \alpha_i}} \lvert 0 \rangle \; ,
- * \f]
- * where \f$ c_{\alpha_i}^\dagger \f$ is the fermionic creation operator such that \f$ \lvert \alpha_i \rangle =
- * c_{\alpha_i}^\dagger \lvert 0 \rangle \f$, and \f$ \lvert 0 \rangle \f$ is the vacuum state with no particles.
- * 
- * If we restrict ourselves to \f$ N < 64 \f$, we can 1-to-1 map each occupation number basis state \f$ \lvert 
- * n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}} \rangle \f$ to a single 64-bit integer
- * \f[
- *   f(n_{\alpha_0}, n_{\alpha_1}, \dots, n_{\alpha_{N-1}}) = \sum_{i=0}^{N-1} n_{\alpha_i} 2^i \; ,
- * \f]
- * where the \f$ i \f$-th bit of \f$ f \f$ is set if and only if the single particle state \f$ \lvert \alpha_i \rangle 
- * \f$ is occupied.
- */
-
-/**
- * @defgroup triqs-atom-diag Atomic problem diagonalization
- * @brief Exact diagonalization of atomic (local) Hamiltonians and their atomic Green's function.
- *
- * @details The @ref triqs-atom-diag module performs exact diagonalization of a many-body Hamiltonian \f$ \hat H \f$
- * acting on the Fock space of a finite set of fermionic single-particle states. The Hilbert space is split into
- * invariant subspaces of \f$ \hat H \f$, each of which is diagonalized independently:
- * \f[
- *   H_B = U_B \, \mathrm{diag}(E_B) \, U^{\dagger}_B \; ,
- * \f]
- * where \f$ B \f$ indexes the subspaces, \f$ H_B \f$ is the Hamiltonian restricted to the subspace, \f$ U_B \f$ is the 
- * unitary matrix mapping the Fock basis of the subspace to the eigenbasis of the Hamiltonian, and \f$ E_B \f$ is the 
- * vector of eigenvalues. By convention the global ground-state energy is subtracted at construction, so that the 
- * smallest eigenvalue across all subspaces is zero.
- *
- * The invariant subspaces are built either by an auto-partition procedure, by an explicit list of quantum-number
- * operators, or by a particle-number window, and each block is then diagonalized with the QR algorithm.
- *
- * **Notation used throughout the API:**
- *
- * - \f$ B,\, B' \f$ : subspace index (parameter `sp_index`),
- * - \f$ \dim(B) \f$ : dimension of subspace \f$ B \f$, returned by triqs::atom_diag::atom_diag::get_subspace_dim,
- * - \f$ E_{B,i} \f$ : the \f$ i \f$-th eigenvalue inside subspace \f$ B \f$,
- * - \f$ N \f$ : dimension of the full Hilbert space.
- *
- * **Atomic Green's function.**
- *
- * Derived from a solved diagonalization problem, the atomic Green's function is built in the Lehmann (spectral)
- * representation,
- * \f[
- *   G_{ab}(z) = \frac{1}{Z} \sum_{B, B'} \sum_{i=0}^{\dim(B)-1} \sum_{j=0}^{\dim(B')-1} \Bigl( e^{-\beta E_{B,i}} + 
- *   \eta\, e^{-\beta E_{B',j}} \Bigr) \frac{\langle B, i\,|\, \hat c_a \,|\, B', j\rangle \, \langle B', j\,|\, 
- *   \hat c_b^\dagger \,|\, B, i\rangle} {z + E_{B,i} - E_{B',j}} \; ,
- * \f]
- * where \f$ \eta = +1 \f$ for fermionic and \f$ \eta = -1 \f$ for bosonic statistics, \f$ Z \f$ is the partition
- * function, \f$ B, B' \f$ are subspace indices, and \f$ i, j \f$ are eigenstate indices inside the corresponding
- * subspaces with \f$ 0 \le i < \dim(B) \f$ and \f$ 0 \le j < \dim(B') \f$. The orbital indices \f$ a, b \f$ run over
- * one Green's-function block and are mapped to fundamental-operator linear indices through the fundamental operator 
- * set. The only non-zero contributions come from \f$ (B, B') \f$ pairs that are connected by the application of a
- * creation/annihilation operator, i.e. for which the corresponding matrix block is non-zero.
- *
- * The poles 
- * \f[
- *   p = E_{B',j} - E_{B,i} 
- * \f] 
- * and the residues 
- * \f[
- *   r_p = \bigl(e^{-\beta E_{B,i}} + \eta\, e^{-\beta E_{B',j}}\bigr)
- *   \langle B, i\,|\, \hat c_a \,|\, B', j\rangle \langle B', j\,|\, \hat c_b^\dagger \,|\, B, i\rangle / Z
- * \f] 
- * are first stored in the Lehmann data structure, then evaluated on the requested target mesh (imaginary time, 
- * Matsubara, Legendre, or real frequency).
- *
- * The solver itself is exposed through triqs::atom_diag::atom_diag (with real- and complex-valued specializations);
- * a set of free functions builds thermodynamic averages, quantum-number tables and the atomic Green's function on
- * different meshes from a solved instance.
- */
-
-/**
- * @defgroup triqs-det-manip Determinant manipulation
- * @brief Efficient algorithms for manipulating determinants in Monte Carlo sampling.
- *
- * @details This module provides optimized algorithms for computing and updating determinants,
- * which are essential for determinantal quantum Monte Carlo methods.
  */
 
 /**
@@ -377,10 +381,32 @@
  * on a range of pre-collected samples.
  *
  * Every component has an MPI-aware variant — either an `*_mpi` overload (e.g. triqs::stat::mean_mpi,
- * triqs::stat::jackknife_mpi) or a member function taking an `mpi::communicator` (e.g. 
- * triqs::stat::lin_binning::mean_error_and_tau, triqs::stat::log_binning::mean_errors_and_taus). The same client code 
- * therefore runs serially or in parallel, and per-rank partial results are combined into a single estimator on all 
+ * triqs::stat::jackknife_mpi) or a member function taking an `mpi::communicator` (e.g.
+ * triqs::stat::lin_binning::mean_error_and_tau, triqs::stat::log_binning::mean_errors_and_taus). The same client code
+ * therefore runs serially or in parallel, and per-rank partial results are combined into a single estimator on all
  * ranks.
+ */
+
+/**
+ * @defgroup triqs-stat-accs Accumulators
+ * @ingroup triqs-stat
+ * @brief Streaming binning accumulators that estimate mean, error and autocorrelation time on the fly.
+ *
+ * @details An *accumulator* receives samples one at a time via `operator<<` and maintains running estimators without
+ * storing the full sample stream. Two flavours are provided:
+ * - triqs::stat::lin_binning groups consecutive samples into equally sized bins. The bin data is kept and can be
+ * accessed after the run, which makes it the natural input for downstream resampling (see
+ * @ref triqs-stat-resampling). It can run either with a fixed maximum number of bins (bins are compressed by a factor
+ * of two and the bin capacity is doubled whenever the maximum is reached) or with an unbounded number of bins of fixed
+ * capacity.
+ * - triqs::stat::log_binning is the canonical *autocorrelation* diagnostic: it maintains one bin per power-of-two bin
+ * size and reports the standard error \f$ s_n \f$ and integrated autocorrelation time \f$ \tau_n \f$ for each binning
+ * level. \f$ s_n \f$ and \f$ \tau_n \f$ are expected to grow with the bin size and saturate once the bin size exceeds
+ * the autocorrelation time of the underlying chain.
+ *
+ * Both accumulators provide MPI-aware variants of their estimator methods and HDF5 serialisation for checkpointing long
+ * runs. The free function triqs::stat::compress_bins merges adjacent bins of a `std::vector<T>` by a given
+ * compression factor and is used by triqs::stat::lin_binning when aligning bin capacities across MPI ranks.
  */
 
 /**
@@ -401,40 +427,18 @@
  */
 
 /**
- * @defgroup triqs-stat-accs Accumulators
- * @ingroup triqs-stat
- * @brief Streaming binning accumulators that estimate mean, error and autocorrelation time on the fly.
- *
- * @details An *accumulator* receives samples one at a time via `operator<<` and maintains running estimators without
- * storing the full sample stream. Two flavours are provided:
- * - triqs::stat::lin_binning groups consecutive samples into equally sized bins. The bin data is kept and can be 
- * accessed after the run, which makes it the natural input for downstream resampling (see
- * @ref triqs-stat-resampling). It can run either with a fixed maximum number of bins (bins are compressed by a factor
- * of two and the bin capacity is doubled whenever the maximum is reached) or with an unbounded number of bins of fixed
- * capacity.
- * - triqs::stat::log_binning is the canonical *autocorrelation* diagnostic: it maintains one bin per power-of-two bin
- * size and reports the standard error \f$ s_n \f$ and integrated autocorrelation time \f$ \tau_n \f$ for each binning
- * level. \f$ s_n \f$ and \f$ \tau_n \f$ are expected to grow with the bin size and saturate once the bin size exceeds
- * the autocorrelation time of the underlying chain.
- *
- * Both accumulators provide MPI-aware variants of their estimator methods and HDF5 serialisation for checkpointing long 
- * runs. The free function triqs::stat::compress_bins merges adjacent bins of a `std::vector<T>` by a given
- * compression factor and is used by triqs::stat::lin_binning when aligning bin capacities across MPI ranks.
- */
-
-/**
  * @defgroup triqs-stat-meanerr Mean and error estimation
  * @ingroup triqs-stat
  * @brief Free functions that compute the mean / sum and a corresponding error estimate from a range of samples.
  *
  * @details Given a range of samples \f$ \{ x_i : i = 1, \ldots, N \} \f$, this group provides:
- * - triqs::stat::mean and its MPI-aware counterpart triqs::stat::mean_mpi, which return either the simple sum \f$ 
+ * - triqs::stat::mean and its MPI-aware counterpart triqs::stat::mean_mpi, which return either the simple sum \f$
  * \sum_i x_i \f$ or the arithmetic mean \f$ \overline{x} \f$ depending on the triqs::stat::mean_tag template parameter.
- * - triqs::stat::mean_and_err and triqs::stat::mean_and_err_mpi, which return both the mean / sum and an error 
+ * - triqs::stat::mean_and_err and triqs::stat::mean_and_err_mpi, which return both the mean / sum and an error
  * estimate. The flavour of error is selected through the triqs::stat::error_tag enum: sum of squared deviations from
  * the mean, variance of the data, variance of the mean, standard error of the data, standard error of the mean, or
  * jackknife error.
- * - triqs::stat::tau_estimate_from_errors, which computes an estimate of the integrated autocorrelation time \f$ \tau 
+ * - triqs::stat::tau_estimate_from_errors, which computes an estimate of the integrated autocorrelation time \f$ \tau
  * = \frac{1}{2} (s_n^2 / s_0^2 - 1) \f$ from a binned and an unbinned standard error.
  *
  * The two MPI variants accept a `std::optional<mpi::communicator>` and fall back to the serial implementation when no
@@ -452,15 +456,15 @@
  * naive estimate \f$ f(\overline{x}_1, \overline{x}_2, \ldots) \f$ carries a bias of order \f$ 1/N \f$ that has to be
  * corrected.
  *
- * triqs::stat::jackknife performs the delete-one jackknife resampling on one or more sample ranges and returns a tuple 
+ * triqs::stat::jackknife performs the delete-one jackknife resampling on one or more sample ranges and returns a tuple
  * containing:
  * - the bias-corrected estimate \f$ f_{\mathrm{corr}} = N \overline{f} - (N - 1) \overline{f}_{\mathrm{JK}} \f$,
  * - the jackknife error estimate \f$ s_f \f$,
  * - the jackknife function estimate \f$ \overline{f}_{\mathrm{JK}} \f$, and
  * - the naive estimate \f$ \overline{f} = f(\overline{x}_1, \overline{x}_2, \ldots) \f$.
  *
- * The MPI-aware variant triqs::stat::jackknife_mpi performs the same calculation on samples distributed across multiple 
- * ranks; results are made available on all ranks. Both functions accept any callable and any number of 
+ * The MPI-aware variant triqs::stat::jackknife_mpi performs the same calculation on samples distributed across multiple
+ * ranks; results are made available on all ranks. Both functions accept any callable and any number of
  * triqs::stat::StatCompatibleRange inputs.
  */
 
@@ -468,4 +472,14 @@
  * @defgroup triqs-stat-utils Utilities
  * @ingroup triqs-stat
  * @brief Histograms and small helpers shared by the rest of the @ref triqs-stat module.
+ */
+
+/**
+ * @defgroup triqs-test-tools Test tools
+ * @brief Helpers and utilities for writing C++ and Python tests.
+ */
+
+/**
+ * @defgroup triqs-utility Utilities
+ * @brief General-purpose utility classes and functions used throughout the **TRIQS** library.
  */

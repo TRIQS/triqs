@@ -29,6 +29,8 @@ triqs::atom_diag::atomic_g_lehmann.
 
 ## Determinant manipulation
 
+## Experimental tools
+
 ## Green's functions
 
 ## Hilbert space
@@ -99,7 +101,7 @@ triqs::stat::AccCompatible, triqs::stat::StatCompatibleRange).
 
 Every component has an MPI-aware variant so the same client code runs serially or in parallel.
 
-## Testing tools
+## Test tools
 
 ## Utilities
 

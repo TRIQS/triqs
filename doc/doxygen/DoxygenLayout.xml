@@ -12,7 +12,19 @@
       <tab type="user" url="@ref mesh_ex1" title="Example 1: Mesh types"/>
     </tab>
     <tab type="usergroup" url="@ref documentation" title="API Documentation">
+      <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic problem diagonalization">
+        <tab type="usergroup" url="@ref triqs::atom_diag::atom_diag" title="atom_diag::atom_diag">
+          <tab type="user" url="@ref triqs::atom_diag::atom_diag::eigensystem_t" title="atom_diag::atom_diag::eigensystem_t"/>
+          <tab type="user" url="@ref triqs::atom_diag::atom_diag::op_block_mat_t" title="atom_diag::atom_diag::op_block_mat_t"/>
+        </tab>
+      </tab>
+      <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-experimental" title="Experimental tools">
+      </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-hilber" title="Hilbert space">
       </tab>
       <tab type="usergroup" url="@ref triqs-lattice" title="Lattice tools">
         <tab type="usergroup" url="@ref triqs::lattice::bravais_lattice" title="lattice::bravais_lattice">
@@ -20,8 +32,32 @@
         </tab>
         <tab type="user" url="@ref triqs::lattice::brillouin_zone" title="lattice::brillouin_zone"/>
         <tab type="user" url="@ref triqs::lattice::grid_generator" title="lattice::grid_generator"/>
-        <tab type="user" url="@ref triqs::lattice::tight_binding" title="lattice::tight_binding"/>
         <tab type="user" url="@ref triqs::lattice::hopping_dict" title="lattice::hopping_dict"/>
+        <tab type="user" url="@ref triqs::lattice::tight_binding" title="lattice::tight_binding"/>
+      </tab>
+      <tab type="usergroup" url="@ref triqs-mc" title="MC tools">
+        <tab type="usergroup" url="@ref triqs-mc-concepts" title="MC concepts">
+          <tab type="user" url="@ref triqs::mc_tools::DoubleOrComplex" title="mc_tools::DoubleOrComplex"/>
+          <tab type="user" url="@ref triqs::mc_tools::MCMeasure" title="mc_tools::MCMeasure"/>
+          <tab type="user" url="@ref triqs::mc_tools::MCMove" title="mc_tools::MCMove"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-measures" title="MC measurements">
+          <tab type="user" url="@ref triqs::mc_tools::measure" title="mc_tools::measure"/>
+          <tab type="user" url="@ref triqs::mc_tools::measure_aux" title="mc_tools::measure_aux"/>
+          <tab type="user" url="@ref triqs::mc_tools::measure_set" title="mc_tools::measure_set"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-moves" title="MC moves">
+          <tab type="user" url="@ref triqs::mc_tools::move" title="mc_tools::move"/>
+          <tab type="user" url="@ref triqs::mc_tools::move_set" title="mc_tools::move_set"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-simulation" title="MC simulation">
+          <tab type="usergroup" url="@ref triqs::mc_tools::mc_generic" title="mc_tools::mc_generic">
+            <tab type="user" url="@ref triqs::mc_tools::mc_generic::run_param_t" title="mc_tools::mc_generic::run_param_t"/>
+          </tab>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-mc-utils" title="MC utilities">
+          <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
+        </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-meshes" title="Meshes">
         <tab type="usergroup" url="@ref triqs-meshes-concepts" title="Mesh concepts">
@@ -38,20 +74,10 @@
               <tab type="user" url="@ref triqs::mesh::legendre::mesh_point_t" title="mesh::legendre::mesh_point_t"/>
             </tab>
           </tab>
-          <tab type="usergroup" url="@ref triqs-meshes-lattice" title="Lattice meshes">
-            <tab type="usergroup" url="@ref triqs-meshes-kexpr" title="k-vector expressions">
-              <tab type="user" url="@ref triqs::mesh::BzMeshPoint" title="mesh::BzMeshPoint"/>
-              <tab type="user" url="@ref triqs::mesh::k_expr" title="mesh::k_expr"/>
-              <tab type="user" url="@ref triqs::mesh::k_expr_unary" title="mesh::k_expr_unary"/>
-            </tab>
-            <tab type="usergroup" url="@ref triqs::mesh::brzone" title="mesh::brzone">
-              <tab type="user" url="@ref triqs::mesh::brzone::mesh_point_t" title="mesh::brzone::mesh_point_t"/>
-            </tab>
-            <tab type="usergroup" url="@ref triqs::mesh::cyclat" title="mesh::cyclat">
-              <tab type="user" url="@ref triqs::mesh::cyclat::mesh_point_t" title="mesh::cyclat::mesh_point_t"/>
-            </tab>
-          </tab>
           <tab type="usergroup" url="@ref triqs-meshes-imag" title="Imaginary time and frequency meshes">
+            <tab type="usergroup" url="@ref triqs-meshes-matsubara" title="Matsubara frequencies">
+              <tab type="user" url="@ref triqs::mesh::matsubara_freq" title="mesh::matsubara_freq"/>
+            </tab>
             <tab type="usergroup" url="@ref triqs::mesh::chebyshev" title="mesh::chebyshev">
               <tab type="user" url="@ref triqs::mesh::chebyshev::mesh_point_t" title="mesh::chebyshev::mesh_point_t"/>
             </tab>
@@ -65,16 +91,26 @@
               <tab type="user" url="@ref triqs::mesh::imfreq::mesh_point_t" title="mesh::imfreq::mesh_point_t"/>
             </tab>
             <tab type="user" url="@ref triqs::mesh::imtime" title="mesh::imtime"/>
-            <tab type="usergroup" url="@ref triqs-meshes-matsubara" title="Matsubara frequencies">
-              <tab type="user" url="@ref triqs::mesh::matsubara_freq" title="mesh::matsubara_freq"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs-meshes-lattice" title="Lattice meshes">
+            <tab type="usergroup" url="@ref triqs-meshes-kexpr" title="k-vector expressions">
+              <tab type="user" url="@ref triqs::mesh::BzMeshPoint" title="mesh::BzMeshPoint"/>
+              <tab type="user" url="@ref triqs::mesh::k_expr" title="mesh::k_expr"/>
+              <tab type="user" url="@ref triqs::mesh::k_expr_unary" title="mesh::k_expr_unary"/>
+            </tab>
+            <tab type="usergroup" url="@ref triqs::mesh::brzone" title="mesh::brzone">
+              <tab type="user" url="@ref triqs::mesh::brzone::mesh_point_t" title="mesh::brzone::mesh_point_t"/>
+            </tab>
+            <tab type="usergroup" url="@ref triqs::mesh::cyclat" title="mesh::cyclat">
+              <tab type="user" url="@ref triqs::mesh::cyclat::mesh_point_t" title="mesh::cyclat::mesh_point_t"/>
             </tab>
           </tab>
           <tab type="usergroup" url="@ref triqs-meshes-other" title="Other mesh types">
-            <tab type="usergroup" url="@ref triqs::mesh::discrete" title="mesh::discrete">
-              <tab type="user" url="@ref triqs::mesh::discrete::mesh_point_t" title="mesh::discrete::mesh_point_t"/>
-            </tab>
             <tab type="usergroup" url="@ref triqs::mesh::detail::linear" title="mesh::detail::linear">
               <tab type="user" url="@ref triqs::mesh::detail::linear::mesh_point_t" title="mesh::detail::linear::mesh_point_t"/>
+            </tab>
+            <tab type="usergroup" url="@ref triqs::mesh::discrete" title="mesh::discrete">
+              <tab type="user" url="@ref triqs::mesh::discrete::mesh_point_t" title="mesh::discrete::mesh_point_t"/>
             </tab>
           </tab>
           <tab type="usergroup" url="@ref triqs-meshes-prod" title="Product meshes">
@@ -103,45 +139,14 @@
           <tab type="user" url="@ref triqs::mesh::tail_fitter_handle" title="mesh::tail_fitter_handle"/>
         </tab>
       </tab>
-      <tab type="usergroup" url="@ref triqs-mc" title="MC tools">
-        <tab type="usergroup" url="@ref triqs-mc-concepts" title="MC concepts">
-          <tab type="user" url="@ref triqs::mc_tools::DoubleOrComplex" title="mc_tools::DoubleOrComplex"/>
-          <tab type="user" url="@ref triqs::mc_tools::MCMove" title="mc_tools::MCMove"/>
-          <tab type="user" url="@ref triqs::mc_tools::MCMeasure" title="mc_tools::MCMeasure"/>
-        </tab>
-        <tab type="usergroup" url="@ref triqs-mc-measures" title="MC measurements">
-          <tab type="user" url="@ref triqs::mc_tools::measure" title="mc_tools::measure"/>
-          <tab type="user" url="@ref triqs::mc_tools::measure_aux" title="mc_tools::measure_aux"/>
-          <tab type="user" url="@ref triqs::mc_tools::measure_set" title="mc_tools::measure_set"/>
-        </tab>
-        <tab type="usergroup" url="@ref triqs-mc-moves" title="MC moves">
-          <tab type="user" url="@ref triqs::mc_tools::move" title="mc_tools::move"/>
-          <tab type="user" url="@ref triqs::mc_tools::move_set" title="mc_tools::move_set"/>
-        </tab>
-        <tab type="usergroup" url="@ref triqs-mc-simulation" title="MC simulation">
-          <tab type="user" url="@ref triqs::mc_tools::mc_generic" title="mc_tools::mc_generic"/>
-          <tab type="user" url="@ref triqs::mc_tools::mc_generic::run_param_t" title="mc_tools::mc_generic::run_param_t"/>
-        </tab>
-        <tab type="usergroup" url="@ref triqs-mc-utils" title="MC utilities">
-          <tab type="user" url="@ref triqs::mc_tools::random_generator" title="mc_tools::random_generator"/>
-        </tab>
-      </tab>
-      <tab type="usergroup" url="@ref triqs-ops" title="Many-body states and operators">
+      <tab type="usergroup" url="@ref triqs-ops" title="Operators">
         <tab type="user" url="@ref triqs::hilbert_space::fundamental_operator_set" title="hilbert_space::fundamental_operator_set"/>
         <tab type="user" url="@ref triqs::hilbert_space::hilbert_space" title="hilbert_space::hilbert_space"/>
-        <tab type="user" url="@ref triqs::hilbert_space::state< HilbertSpace, ScalarType, false >" title="hilbert_space::state with nda::vector"/>
-        <tab type="user" url="@ref triqs::hilbert_space::state< HilbertSpace, ScalarType, true >" title="hilbert_space::state with std::unordered_map"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state&lt; HilbertSpace, ScalarType, false &gt;" title="hilbert_space::state with nda::vector"/>
+        <tab type="user" url="@ref triqs::hilbert_space::state&lt; HilbertSpace, ScalarType, true &gt;" title="hilbert_space::state with std::unordered_map"/>
         <tab type="user" url="@ref triqs::hilbert_space::sub_hilbert_space" title="hilbert_space::sub_hilbert_space"/>
         <tab type="user" url="@ref triqs::operators::canonical_ops_t" title="operators::canonical_ops_t"/>
         <tab type="user" url="@ref triqs::operators::many_body_operator_generic" title="operators::many_body_operator_generic"/>
-      </tab>
-      <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic diagonalization">
-        <tab type="usergroup" url="@ref triqs::atom_diag::atom_diag" title="atom_diag::atom_diag">
-          <tab type="user" url="@ref triqs::atom_diag::atom_diag::eigensystem_t" title="atom_diag::atom_diag::eigensystem_t"/>
-          <tab type="user" url="@ref triqs::atom_diag::atom_diag::op_block_mat_t" title="atom_diag::atom_diag::op_block_mat_t"/>
-        </tab>
-      </tab>
-      <tab type="usergroup" url="@ref triqs-det-manip" title="Determinant manipulation">
       </tab>
       <tab type="usergroup" url="@ref triqs-stat" title="Statistical analysis tools">
         <tab type="usergroup" url="@ref triqs-stat-accs" title="Accumulators">
@@ -149,8 +154,8 @@
           <tab type="user" url="@ref triqs::stat::log_binning" title="stat::log_binning"/>
         </tab>
         <tab type="usergroup" url="@ref triqs-stat-concepts" title="Concepts">
-          <tab type="user" url="@ref triqs::stat::StatCompatible" title="stat::StatCompatible"/>
           <tab type="user" url="@ref triqs::stat::AccCompatible" title="stat::AccCompatible"/>
+          <tab type="user" url="@ref triqs::stat::StatCompatible" title="stat::StatCompatible"/>
           <tab type="user" url="@ref triqs::stat::StatCompatibleRange" title="stat::StatCompatibleRange"/>
         </tab>
         <tab type="user" url="@ref triqs-stat-meanerr" title="Mean and error estimation"/>
@@ -158,6 +163,10 @@
         <tab type="usergroup" url="@ref triqs-stat-utils" title="Utilities">
           <tab type="user" url="@ref triqs::stat::histogram" title="stat::histogram"/>
         </tab>
+      </tab>
+      <tab type="usergroup" url="@ref triqs-test-tools" title="Test tools">
+      </tab>
+      <tab type="usergroup" url="@ref triqs-utility" title="Utilities">
       </tab>
       <tab type="filelist" visible="yes" title="" intro=""/>
     </tab>
