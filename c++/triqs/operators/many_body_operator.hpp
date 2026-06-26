@@ -61,10 +61,9 @@ namespace triqs::operators {
   using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
   // Forward declarations.
-  template <typename ScalarType> class many_body_operator_generic;
-
-  template <typename ScalarType> many_body_operator_generic<ScalarType> real(many_body_operator_generic<ScalarType> const &op);
-  template <typename ScalarType> many_body_operator_generic<ScalarType> imag(many_body_operator_generic<ScalarType> const &op);
+  template <typename T> class many_body_operator_generic;
+  template <typename T> many_body_operator_generic<T> real(many_body_operator_generic<T> const &op);
+  template <typename T> many_body_operator_generic<T> imag(many_body_operator_generic<T> const &op);
 
   /// Many-body operator with real or complex coefficients (see triqs::operators::many_body_operator_generic).
   using many_body_operator = many_body_operator_generic<real_or_complex>;
@@ -230,12 +229,12 @@ namespace triqs::operators {
    * Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over 
    * the field of real/complex numbers with an extra addition operation between operators and scalars.
    *
-   * @tparam ScalarType Value type of the coefficients.
+   * @tparam T Value type of the coefficients.
    */
-  template <typename ScalarType> class many_body_operator_generic {
+  template <typename T> class many_body_operator_generic {
 
     /// Container type for monomials and their coefficients.
-    using monomials_map_t = std::map<monomial_t, ScalarType>;
+    using monomials_map_t = std::map<monomial_t, T>;
 
     monomials_map_t monomials;
 
@@ -291,7 +290,7 @@ namespace triqs::operators {
 
     public:
     /// Value type of the coefficients (either real, complex or real_or_complex).
-    using scalar_t = ScalarType;
+    using scalar_t = T;
 
     /// HDF5 format tag of the many-body operator.
     [[nodiscard]] static std::string hdf5_format() { return "Operator"; }
