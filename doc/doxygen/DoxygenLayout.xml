@@ -37,6 +37,18 @@
         </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
+        <tab type="usergroup" url="@ref triqs-gfs-concepts" title="GF concepts">
+        </tab>
+        <tab type="usergroup" url="@ref triqs-gfs-containers" title="GF containers">
+        </tab>
+        <tab type="usergroup" url="@ref triqs-gfs-functions" title="GF functions">
+        </tab>
+        <tab type="usergroup" url="@ref triqs-gfs-io" title="GF input/output">
+        </tab>
+        <tab type="usergroup" url="@ref triqs-gfs-transforms" title="GF transforms">
+        </tab>
+        <tab type="usergroup" url="@ref triqs-gfs-utils" title="GF utilities">
+        </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">
         <tab type="user" url="@ref triqs::hilbert_space::fundamental_operator_set" title="hilbert_space::fundamental_operator_set"/>

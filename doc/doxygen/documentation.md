@@ -45,6 +45,18 @@ functions, tight-binding Hamiltonians, superlattice folding, Wannier90 file load
 
 ## Green's functions
 
+@ref triqs-gfs are generic containers for functions that are not known analytically, such as quantum many-body
+Green's functions, self energies and other correlation functions. A container is parameterised by a mesh (see
+@ref triqs-meshes), which fixes the domain and representation of the function, and a target, which fixes the value
+stored at each mesh point.
+
+- @ref triqs-gfs-concepts specify the requirements for Green's function types.
+- @ref triqs-gfs-containers are the central containers and their views, including their block-diagonal variants.
+- @ref triqs-gfs-functions provide common physical operations on Green's functions.
+- @ref triqs-gfs-io provides HDF5 serialisation.
+- @ref triqs-gfs-transforms convert between different representations.
+- @ref triqs-gfs-utils provide factory functions, expression templates, MPI support and other utilities.
+
 ## Hilbert space
 
 @ref triqs-hilbert provides the fermionic Fock space and related tools for performing many-body calculations:

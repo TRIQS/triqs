@@ -148,6 +148,90 @@
  * @details The @ref triqs-gfs in the **TRIQS** library are generic containers for functions which are not known
  * analytically. As the name suggests, they are intended to be used for quantum many-body Green's functions, self
  * energies or other correlation functions, but they can in principle be used for more general functions.
+ *
+ * The central container is triqs::gfs::gf, a class template parameterised by two ingredients:
+ * - a **mesh** (see @ref triqs-meshes) that fixes the mathematical domain of the function, how it is represented in
+ * memory and how it is evaluated, and
+ * - a **target**, which fixes the value stored at each mesh point: a scalar (triqs::gfs::scalar_valued), a matrix
+ * (triqs::gfs::matrix_valued) or a higher-rank tensor (triqs::gfs::tensor_valued). The target traits live in
+ * @ref triqs-gfs-containers.
+ *
+ * Each container comes with non-owning view classes, triqs::gfs::gf_view and triqs::gfs::gf_const_view, that refer to
+ * the data of an existing Green's function without copying it. The generic requirements shared by all of these types
+ * are spelled out as C++20 concepts in @ref triqs-gfs-concepts.
+ *
+ * Many physical problems are naturally block-diagonal (e.g. in spin or orbital sectors). triqs::gfs::block_gf and its
+ * view triqs::gfs::block_gf_view represent a vector of Green's functions sharing a common type, while
+ * triqs::gfs::block2_gf provides the two-index analogue.
+ *
+ * Around these containers the module provides a library of physical operations such as density and high-frequency tail
+ * evaluation (@ref triqs-gfs-functions), HDF5 serialisation (@ref triqs-gfs-io), transforms between representations
+ * such as the Fourier transform and the Padé analytic continuation (@ref triqs-gfs-transforms), and factory functions,
+ * expression templates and other utilities (@ref triqs-gfs-utils).
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-concepts GF concepts
+ * @brief Concepts that specify the requirements for Green's function types.
+ *
+ * @details The Green's function machinery is generic: any type satisfying the relevant concept can be used with the
+ * algorithms in @ref triqs-gfs. The concepts in this group spell out the minimal interface those types must expose,
+ * most prominently triqs::gfs::MemoryGf, which constrains a type to own a mesh and a compatible data array.
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-containers GF containers
+ * @brief Green's function container and view types.
+ *
+ * @details This group contains the central Green's function containers and their non-owning views:
+ * - triqs::gfs::gf is the owning container, parameterised by a mesh and a target (triqs::gfs::scalar_valued,
+ * triqs::gfs::matrix_valued or triqs::gfs::tensor_valued).
+ * - triqs::gfs::gf_view and triqs::gfs::gf_const_view are mutable and constant views into the data of an existing
+ * Green's function.
+ * - triqs::gfs::block_gf, triqs::gfs::block_gf_view and triqs::gfs::block2_gf represent block-diagonal Green's
+ * functions, i.e. (vectors of) Green's functions grouped into named blocks.
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-functions GF functions
+ * @brief Physical operations acting on Green's functions.
+ *
+ * @details This group provides a library of operations frequently applied to Green's functions, such as computing the
+ * particle density, evaluating and manipulating high-frequency tails, and converting between different basis
+ * representations (Matsubara frequency, imaginary time, Legendre, DLR).
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-io GF input/output
+ * @brief HDF5 serialisation of Green's functions.
+ *
+ * @details This group provides the HDF5 read and write support for the Green's function containers, so that they can
+ * be stored to and restored from disk.
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-transforms GF transforms
+ * @brief Transforms between different Green's function representations.
+ *
+ * @details This group provides the transforms that map a Green's function from one representation to another, in
+ * particular the Fourier transform between imaginary time and Matsubara frequency (and their real-axis counterparts),
+ * the Legendre/Matsubara transform, and the Padé analytic continuation from Matsubara to real frequency.
+ */
+
+/**
+ * @ingroup triqs-gfs
+ * @defgroup triqs-gfs-utils GF utilities
+ * @brief Factories, MPI support, expression templates and other utilities used with @ref triqs-gfs.
+ *
+ * @details This group collects the auxiliary building blocks of the Green's function module: factory functions that
+ * construct containers, lazy expression templates that fuse arithmetic on Green's functions, MPI broadcast and reduce
+ * support, CLEF auto-assignment, and the mapping helpers used to apply operations block-by-block on block Green's
+ * functions.
  */
 
 /**
