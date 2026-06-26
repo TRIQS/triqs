@@ -18,17 +18,25 @@
 //
 // Authors: Michel Ferrero, JaksaVucicevic, Igor Krivenko, Henri Menke, Laura Messio, Olivier Parcollet, Priyanka Seth, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides a class to manipulate determinants efficiently.
+ */
+
 #pragma once
 
-#include <triqs/utility/first_include.hpp>
-#include <vector>
+#include "../utility/callable_traits.hpp"
+#include "../utility/first_include.hpp"
+#include "../arrays.hpp"
+
+#include <nda/nda.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <iterator>
 #include <numeric>
-#include <cmath>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/callable_traits.hpp>
-#include <nda/linalg/det.hpp>
-#include <nda/linalg/inv.hpp>
+#include <vector>
 
 namespace triqs::det_manip {
 
@@ -165,7 +173,7 @@ namespace triqs::det_manip {
     using y_type     = typename f_tr::template decay_arg_t<1>;
     using value_type = typename f_tr::result_type;
     using det_type   = value_type;
-    static_assert(std::is_floating_point<value_type>::value || nda::is_complex_v<value_type>,
+    static_assert(std::is_floating_point_v<value_type> || nda::is_complex_v<value_type>,
                   "det_manip : the function must return a floating number or a complex number");
 
     using matrix_type = nda::matrix<value_type>;
@@ -173,9 +181,9 @@ namespace triqs::det_manip {
     protected: // the data
     FunctionType f;
 
-    det_type det;
-    long Nmax{0}, N;
-    long kmax_tried{1}, k_tried;
+    det_type det{1};
+    long Nmax{0}, N{0};
+    long kmax_tried{1}, k_tried{0};
     enum {
       NoTry,
       Insert,
@@ -248,8 +256,8 @@ namespace triqs::det_manip {
     work_data_type1<x_type, y_type, value_type> w1;
     work_data_typek<x_type, y_type, value_type> wk;
     work_data_type_refill<x_type, y_type, value_type> w_refill;
-    det_type newdet;
-    int newsign;
+    det_type newdet{1};
+    int newsign{1};
 
     private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
     void swap_but_f(det_manip &rhs) noexcept {
@@ -320,7 +328,7 @@ namespace triqs::det_manip {
      * @details See set_singular_threshold() for details.
      * @return Threshold value.
      */
-    double get_singular_threshold() const { return singular_threshold; }
+    [[nodiscard]] double get_singular_threshold() const { return singular_threshold; }
 
     /**
      * @brief Set the threshold being used when testing for a singular matrix (default: -1).
@@ -339,7 +347,7 @@ namespace triqs::det_manip {
      * @details See set_n_operations_before_check() for details.
      * @return Number of operations.
      */
-    double get_n_operations_before_check() const { return n_opts_max_before_check; }
+    [[nodiscard]] double get_n_operations_before_check() const { return n_opts_max_before_check; }
 
     /**
      * @brief Set the number of operations before a consistency check is performed (default: 100).
@@ -353,7 +361,7 @@ namespace triqs::det_manip {
      * @details See set_precision_warning() for details.
      * @return Threshold value.
      */
-    double get_precision_warning() const { return precision_warning; }
+    [[nodiscard]] double get_precision_warning() const { return precision_warning; }
 
     /**
      * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
@@ -374,7 +382,7 @@ namespace triqs::det_manip {
      * @details See set_precision_warning() for details.
      * @return Threshold value.
      */
-    double get_precision_error() const { return precision_error; }
+    [[nodiscard]] double get_precision_error() const { return precision_error; }
 
     /**
      * @brief Set the precision threshold that determines when to throw an exception (default: 1e-5).
@@ -392,10 +400,9 @@ namespace triqs::det_manip {
      * @param F Callable `FunctionType` object (a copy is stored in the class).
      * @param init_size Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
-    det_manip(FunctionType F, long init_size) : f(std::move(F)), Nmax(0), N(0) {
+    det_manip(FunctionType F, long init_size) : f(std::move(F)) {
       reserve(init_size);
       mat_inv() = 0;
-      det       = 1;
     }
 
     /**
@@ -409,7 +416,7 @@ namespace triqs::det_manip {
      * @param Y Container holding the second arguments \f$ \mathbf{y} \f$.
      */
     template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)), Nmax(0) {
+    det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)) {
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
       N = X.size();
       if (N == 0) {
@@ -464,7 +471,7 @@ namespace triqs::det_manip {
      * @brief Get the current size of the matrix.
      * @return Number of rows/columns of the matrix.
      */
-    long size() const { return N; }
+    [[nodiscard]] long size() const { return N; }
 
     /**
      * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
@@ -490,7 +497,7 @@ namespace triqs::det_manip {
     std::vector<x_type> get_x() const {
       std::vector<x_type> res;
       res.reserve(N);
-      for (int i : range(N)) res.emplace_back(x_values[row_num[i]]);
+      for (long i : range(N)) res.emplace_back(x_values[row_num[i]]);
       return res;
     }
 
@@ -502,7 +509,7 @@ namespace triqs::det_manip {
     std::vector<y_type> get_y() const {
       std::vector<y_type> res;
       res.reserve(N);
-      for (int i : range(N)) res.emplace_back(y_values[col_num[i]]);
+      for (long i : range(N)) res.emplace_back(y_values[col_num[i]]);
       return res;
     }
 
@@ -853,13 +860,13 @@ namespace triqs::det_manip {
       TRIQS_ASSERT(j.size() == x.size());
       TRIQS_ASSERT(x.size() == y.size());
 
-      k_tried = i.size();
+      k_tried = static_cast<long>(i.size());
       reserve(N + k_tried, k_tried);
       last_try = InsertK;
 
       auto const argsort = [](auto const &vec) {
         std::vector<long> idx(vec.size());
-        std::iota(idx.begin(), idx.end(), static_cast<long>(0));
+        std::ranges::iota(idx, static_cast<long>(0));
         std::stable_sort(idx.begin(), idx.end(), [&vec](long const lhs, long const rhs) { return vec[lhs] < vec[rhs]; });
         return idx;
       };
@@ -1113,22 +1120,22 @@ namespace triqs::det_manip {
       if (w1.ireal != N - 1) {
         deep_swap(mat_inv(RN, w1.ireal), mat_inv(RN, N - 1));
         x_values[w1.ireal] = x_values[N - 1];
-        auto iitr          = std::find(row_num.begin(), row_num.end(), w1.ireal);
-        auto titr          = std::find(row_num.begin(), row_num.end(), N - 1);
+        auto iitr          = std::ranges::find(row_num, w1.ireal);
+        auto titr          = std::ranges::find(row_num, N - 1);
         std::swap(*iitr, *titr);
       }
       if (w1.jreal != N - 1) {
         deep_swap(mat_inv(w1.jreal, RN), mat_inv(N - 1, RN));
         y_values[w1.jreal] = y_values[N - 1];
-        auto jitr          = std::find(col_num.begin(), col_num.end(), w1.jreal);
-        auto titr          = std::find(col_num.begin(), col_num.end(), N - 1);
+        auto jitr          = std::ranges::find(col_num, w1.jreal);
+        auto titr          = std::ranges::find(col_num, N - 1);
         std::swap(*jitr, *titr);
       }
       N--;
       RN = range(N);
 
-      auto it1 [[maybe_unused]] = std::remove(row_num.begin(), row_num.end(), N);
-      auto it2 [[maybe_unused]] = std::remove(col_num.begin(), col_num.end(), N);
+      auto it1 [[maybe_unused]] = std::ranges::remove(row_num, N);
+      auto it2 [[maybe_unused]] = std::ranges::remove(col_num, N);
 
       row_num.pop_back();
       col_num.pop_back();
@@ -1215,14 +1222,14 @@ namespace triqs::det_manip {
      */
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
 
-      std::sort(i.begin(), i.end());
-      std::sort(j.begin(), j.end());
+      std::ranges::sort(i);
+      std::ranges::sort(j);
 
       TRIQS_ASSERT(last_try == NoTry);
       TRIQS_ASSERT(N >= 2);
       TRIQS_ASSERT(i.size() == j.size());
 
-      k_tried = i.size();
+      k_tried = static_cast<long>(i.size());
       reserve(N - k_tried, k_tried);
       last_try = RemoveK;
 
@@ -1291,15 +1298,15 @@ namespace triqs::det_manip {
         if (ireal[m] != target) {
           deep_swap(mat_inv(RN, ireal[m]), mat_inv(RN, target));
           x_values[ireal[m]] = x_values[target];
-          auto iitr          = std::find(row_num.begin(), row_num.end(), ireal[m]);
-          auto titr          = std::find(row_num.begin(), row_num.end(), target);
+          auto iitr          = std::ranges::find(row_num, ireal[m]);
+          auto titr          = std::ranges::find(row_num, target);
           std::swap(*iitr, *titr);
         }
         if (jreal[m] != target) {
           deep_swap(mat_inv(jreal[m], RN), mat_inv(target, RN));
           y_values[jreal[m]] = y_values[target];
-          auto jitr          = std::find(col_num.begin(), col_num.end(), jreal[m]);
-          auto titr          = std::find(col_num.begin(), col_num.end(), target);
+          auto jitr          = std::ranges::find(col_num, jreal[m]);
+          auto titr          = std::ranges::find(col_num, target);
           std::swap(*jitr, *titr);
         }
       }
@@ -1664,8 +1671,8 @@ namespace triqs::det_manip {
 
       row_num.resize(N, 0); // Zero Initialization avoids ASAN false positive
       col_num.resize(N, 0);
-      std::iota(row_num.begin(), row_num.end(), 0);
-      std::iota(col_num.begin(), col_num.end(), 0);
+      std::ranges::iota(row_num, 0);
+      std::ranges::iota(col_num, 0);
 
       range RN(N);
       mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
@@ -1731,7 +1738,9 @@ namespace triqs::det_manip {
 
     // Check whether the determinant is considered singular: (singular_threshold < 0 ? not
     // std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)). See set_singular_threshold().
-    bool is_singular() const { return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)); }
+    [[nodiscard]] bool is_singular() const {
+      return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold));
+    }
 
     //------------------------------------------------------------------------------------------
     public:
@@ -1953,7 +1962,7 @@ namespace triqs::det_manip {
      * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
      */
     int roll_matrix(RollDirection roll) {
-      long tmp;
+      long tmp      = 0;
       const long NN = N;
       switch (roll) {
         case (None): return 1;
