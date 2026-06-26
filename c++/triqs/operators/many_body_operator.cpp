@@ -23,8 +23,20 @@
  */
 
 #include "./many_body_operator.hpp"
+#include "../hilbert_space/fundamental_operator_set.hpp"
+#include "../utility/real_or_complex.hpp"
+
 #include <h5/h5.hpp>
 #include <hdf5.h>
+#include <itertools/itertools.hpp>
+
+#include <array>
+#include <cmath>
+#include <complex>
+#include <cstddef>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace triqs::operators {
 

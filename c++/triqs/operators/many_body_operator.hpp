@@ -24,17 +24,28 @@
  */
 
 #pragma once
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
-#include <ostream>
-#include <cmath>
-#include <algorithm>
-#include <utility>
-#include <triqs/utility/macros.hpp>
-#include <triqs/utility/real_or_complex.hpp>
-#include <triqs/utility/numeric_ops.hpp>
-#include <triqs/utility/variant_extensions.hpp>
+#include "../hilbert_space/fundamental_operator_set.hpp"
+#include "../utility/dressed_iterator.hpp"
+#include "../utility/real_or_complex.hpp"
+#include "../utility/numeric_ops.hpp"
+#include "../utility/variant_extensions.hpp"
+
 #include <h5/h5.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <compare>
+#include <complex>
+#include <cstddef>
+#include <functional>
+#include <map>
+#include <ostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
 
 namespace triqs::operators {
 
@@ -46,7 +57,7 @@ namespace triqs::operators {
   // Elevate triqs::utility::real_or_complex to the `triqs::operators` namespace.
   using utility::real_or_complex;
 
-  // Forward declaration.
+  // Forward declarations.
   template <typename ScalarType> class many_body_operator_generic;
 
   template <typename ScalarType> many_body_operator_generic<ScalarType> real(many_body_operator_generic<ScalarType> const &op);
