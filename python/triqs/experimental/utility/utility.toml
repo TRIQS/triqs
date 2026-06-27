@@ -1,5 +1,13 @@
 package_name = "triqs.experimental.utility"
-documentation = "Experimental utility tools (root finder, adaptive integration)"
+documentation = """Experimental numerical utilities.
+
+.. warning::
+
+   Experimental and unstable -- the API may change without notice.
+
+Generic numerical helpers, currently covering one-dimensional root finding and
+adaptive integration.
+"""
 namespaces = "triqs::experimental::utility"
 match_names = "triqs::experimental::utility::(root_finder|find_bounds|dichotomy|bisection)"
 wrap_no_arg_methods_as_properties = true

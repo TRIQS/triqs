@@ -26,6 +26,7 @@ Python API
 
    triqs.atom_diag
    triqs.dos
+   triqs.experimental
    triqs.fit
    triqs.gfs
    triqs.lattice

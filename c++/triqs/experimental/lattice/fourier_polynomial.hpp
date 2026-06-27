@@ -358,7 +358,7 @@ namespace triqs::experimental::lattice {
     /**
      * @brief Get the storage index of a given R-vector.
      *
-     * @details Throws a `TRIQS_RUNTIME_ERROR` if the R-vector is not present.
+     * @details It throws an exception if the R-vector is not present.
      *
      * @param R Lattice vector \f$ \mathbf{R} \f$.
      * @return Storage index of `R` in the list of R-vectors.
