@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Provides block-wise applications (via triqs::gfs::map_block_gf) of common Green's function operations.
+ */
+
 #pragma once
 #include <triqs/gfs/block/map.hpp>
 /*
@@ -13,19 +18,22 @@
    (for error messages, no preproc, doc generation : otherwise no doc string ...)
 
   ----  normal mapping -------
-  
+
     VIMEXPAND inverse reinterpret_scalar_valued_gf_as_matrix_valued make_gf_from_fourier make_gf_from_inverse_fourier
-    ///
+    /// \ingroup triqs-gfs-map
+    /// \brief Apply \c @ block-wise to each block of the block Green's function.
     template <typename M, typename T, typename L, int A> auto @(block_gf<M, T, L, A> &g) {
       auto l = [](auto &&x) { return @(x); };
       return map_block_gf(l, g);
     }
-    ///
+    /// \ingroup triqs-gfs-map
+    /// \brief Apply \c @ block-wise to each block of the block Green's function.
     template <typename M, typename T, typename L, int A> auto @(block_gf<M, T, L, A> const &g) {
       auto l = [](auto &&x) { return @(x); };
       return map_block_gf(l, g);
     }
-    ///  
+    /// \ingroup triqs-gfs-map
+    /// \brief Apply \c @ block-wise to each block of the block Green's function.
     template <typename M, typename T, typename L, int A, bool C> auto @(block_gf_view<M, T, L, A, C> g) {
       auto l = [](auto &&x) { return @(x); };
       return map_block_gf(l, g);
@@ -37,65 +45,77 @@ namespace triqs::gfs {
 
   // --- VIMEXPAND_START  --DO NOT EDIT BELOW --
 
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c inverse block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto inverse(block_gf<M, T, L, A> &g) {
     auto l = [](auto &&x) { return inverse(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c inverse block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto inverse(block_gf<M, T, L, A> const &g) {
     auto l = [](auto &&x) { return inverse(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c inverse block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A, bool C> auto inverse(block_gf_view<M, T, L, A, C> g) {
     auto l = [](auto &&x) { return inverse(x); };
     return map_block_gf(l, g);
   }
 
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c reinterpret_scalar_valued_gf_as_matrix_valued block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<M, T, L, A> &g) {
     auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c reinterpret_scalar_valued_gf_as_matrix_valued block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<M, T, L, A> const &g) {
     auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c reinterpret_scalar_valued_gf_as_matrix_valued block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A, bool C> auto reinterpret_scalar_valued_gf_as_matrix_valued(block_gf_view<M, T, L, A, C> g) {
     auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
     return map_block_gf(l, g);
   }
 
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto make_gf_from_fourier(block_gf<M, T, L, A> &g) {
     auto l = [](auto &&x) { return make_gf_from_fourier(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto make_gf_from_fourier(block_gf<M, T, L, A> const &g) {
     auto l = [](auto &&x) { return make_gf_from_fourier(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A, bool C> auto make_gf_from_fourier(block_gf_view<M, T, L, A, C> g) {
     auto l = [](auto &&x) { return make_gf_from_fourier(x); };
     return map_block_gf(l, g);
   }
 
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_inverse_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto make_gf_from_inverse_fourier(block_gf<M, T, L, A> &g) {
     auto l = [](auto &&x) { return make_gf_from_inverse_fourier(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_inverse_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A> auto make_gf_from_inverse_fourier(block_gf<M, T, L, A> const &g) {
     auto l = [](auto &&x) { return make_gf_from_inverse_fourier(x); };
     return map_block_gf(l, g);
   }
-  ///
+  /// \ingroup triqs-gfs-map
+  /// \brief Apply \c make_gf_from_inverse_fourier block-wise to each block of the block Green's function.
   template <typename M, typename T, typename L, int A, bool C> auto make_gf_from_inverse_fourier(block_gf_view<M, T, L, A, C> g) {
     auto l = [](auto &&x) { return make_gf_from_inverse_fourier(x); };
     return map_block_gf(l, g);

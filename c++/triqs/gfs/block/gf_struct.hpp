@@ -15,19 +15,42 @@
 //
 // Authors: Michel Ferrero, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the type describing the block structure of a block Green's function.
+ */
+
 #pragma once
+
 #include <h5/h5.hpp>
+
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
 
 namespace triqs::gfs {
 
-  /*----------------------------------------------------------
-   *   gf_struct
-   *--------------------------------------------------------*/
-
-  /// Type describing the structure of a Block Green's function
+  /**
+   * @ingroup triqs-gfs-block
+   * @brief Type describing the structure of a block Green's function.
+   *
+   * @details Each entry is a pair `(block name, block %size)`; the list of entries defines the blocks of a
+   * triqs::gfs::block_gf and the matrix size of each block.
+   */
   using gf_struct_t = std::vector<std::pair<std::string, long>>;
 
-  /// h5_read function with backward compatibility layer for old gf_struct type
+  /**
+   * @ingroup triqs-gfs-io
+   * @brief Read a triqs::gfs::gf_struct_t from HDF5, with a backward-compatibility layer for the old format.
+   *
+   * @details Old archives stored the block structure as a list of index lists; in that case the size of each block is
+   * recovered from the number of indices. New archives are read directly.
+   *
+   * @param g `h5::group` to read from.
+   * @param name Name of the dataset/subgroup holding the block structure.
+   * @param gf_struct Block structure to read into.
+   */
   inline void h5_read_gf_struct(h5::group g, std::string const &name, gf_struct_t &gf_struct) {
     {
       auto gobj = g.open_group(name);

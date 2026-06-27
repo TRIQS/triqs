@@ -17,52 +17,110 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the CLEF auto-assignment hooks for block Green's functions.
+ */
+
 #pragma once
 
-namespace triqs {
-  namespace gfs {
+#include "./block_gf.hpp"
 
-    /*------------------------------------------------------------------------------------------------------
-  *             Interaction with the CLEF library : auto assignment implementation
-  *-----------------------------------------------------------------------------------------------------*/
+#include <utility>
 
-    // auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
+namespace triqs::gfs {
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf_view<M, T> g, RHS const &rhs) {
-      for (int i = 0; i < g.size(); ++i) triqs_bgf_clef_auto_assign_impl_aux_assign(g[i], rhs(i));
-    }
+  /**
+   * @addtogroup triqs-gfs-clef
+   * @{
+   */
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf_view<M, T> g, RHS const &rhs) {
-      for (int i = 0; i < g.size1(); ++i)
-        for (int j = 0; j < g.size2(); ++j) triqs_bgf_clef_auto_assign_impl_aux_assign(g(i, j), rhs(i, j));
-    }
+  // auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
 
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
-
-    template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
-
-    // enable the writing g[om_] << .... also
-    template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf_view<M, T> g, RHS const &rhs) {
-      clef_auto_assign(g, rhs);
-    }
-
-    template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
-
-    template <typename G, typename RHS> void triqs_bgf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs) {
-      std::forward<G>(g) = std::forward<RHS>(rhs);
-    }
-
-    template <typename G, typename Expr, int... Is> void triqs_bgf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs) {
-      clef_auto_assign(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
-    }
-
-    /*
- template <typename G, typename RHS> void clef_auto_assign_impl_b(G &g, RHS const &rhs, std::true_type) {
-  for (int i = 0; i < g.size(); ++i) {
-   triqs_bgf_clef_auto_assign_impl_aux_assign(g[i], triqs::tuple::apply(rhs, w.components_tuple()));
+  /**
+   * @brief CLEF auto-assignment into a block Green's function view, i.e. `g(om_) << expr`.
+   *
+   * @details Iterates over the blocks and fills each block with the evaluation of the right hand side at the block
+   * index.
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Block Green's function view to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf_view<M, T> g, RHS const &rhs) {
+    for (int i = 0; i < g.size(); ++i) triqs_bgf_clef_auto_assign_impl_aux_assign(g[i], rhs(i));
   }
- }
-*/
 
-  } // namespace gfs
-} // namespace triqs
+  /**
+   * @brief CLEF auto-assignment into a two-index block Green's function view, i.e. `g(i_, j_) << expr`.
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Two-index block Green's function view to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf_view<M, T> g, RHS const &rhs) {
+    for (int i = 0; i < g.size1(); ++i)
+      for (int j = 0; j < g.size2(); ++j) triqs_bgf_clef_auto_assign_impl_aux_assign(g(i, j), rhs(i, j));
+  }
+
+  /**
+   * @brief CLEF auto-assignment into a (owning) block Green's function (delegates to the view overload).
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Block Green's function to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
+
+  /**
+   * @brief CLEF auto-assignment into a (owning) two-index block Green's function (delegates to the view overload).
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Two-index block Green's function to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign(block2_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
+
+  /**
+   * @brief CLEF auto-assignment via subscript into a block Green's function view, i.e. `g[om_] << expr`.
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Block Green's function view to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf_view<M, T> g, RHS const &rhs) { clef_auto_assign(g, rhs); }
+
+  /**
+   * @brief CLEF auto-assignment via subscript into a (owning) block Green's function (delegates to the view overload).
+   *
+   * @tparam RHS Type of the CLEF expression on the right hand side.
+   * @tparam M Mesh type.
+   * @tparam T Target type.
+   * @param g Block Green's function to fill.
+   * @param rhs CLEF expression to evaluate at each block.
+   */
+  template <typename RHS, typename M, typename T> void clef_auto_assign_subscript(block_gf<M, T> &g, RHS const &rhs) { clef_auto_assign(g(), rhs); }
+
+  // Helper that assigns a (non-CLEF) right hand side to a block element.
+  template <typename G, typename RHS> void triqs_bgf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs) {
+    std::forward<G>(g) = std::forward<RHS>(rhs);
+  }
+
+  // Helper overload that recurses into a CLEF function object right hand side.
+  template <typename G, typename Expr, int... Is> void triqs_bgf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs) {
+    clef_auto_assign(std::forward<G>(g), std::move(rhs));
+  }
+
+  /** @} */
+
+} // namespace triqs::gfs

@@ -15,20 +15,46 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet
 
+/**
+ * @file
+ * @brief Provides the block-wise lazy Fourier transform for block Green's functions.
+ */
+
 #pragma once
+
+#include "./block_gf.hpp"
 
 namespace triqs::gfs {
 
+  /**
+   * @addtogroup triqs-gfs-map
+   * @{
+   */
+
+  /**
+   * @brief Lazily apply the Fourier transform block by block to a block Green's function.
+   *
+   * @details Returns a lazy transform object that applies `fourier` to each block when assigned into a block Green's
+   * function.
+   *
+   * @tparam V Mesh type. @tparam T Target type. @tparam L Layout type. @tparam A Block arity.
+   * @param g Block Green's function.
+   * @return A lazy transform applying `fourier` block by block.
+   */
   template <typename V, typename T, typename L, int A> auto fourier(block_gf<V, T, L, A> const &g) {
     return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
-  };
+  }
 
+  /// Lvalue overload of the block-wise lazy Fourier transform (see the const overload).
   template <typename V, typename T, typename L, int A> auto fourier(block_gf<V, T, L, A> &g) {
     return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
-  };
+  }
 
+  /// View overload of the block-wise lazy Fourier transform (see the const overload).
   template <typename V, typename T, typename L, int A, bool C> auto fourier(block_gf_view<V, T, L, A, C> g) {
     return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
-  };
+  }
+
+  /** @} */
 
 } // namespace triqs::gfs

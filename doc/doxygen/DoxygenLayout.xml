@@ -38,10 +38,17 @@
       </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
         <tab type="usergroup" url="@ref triqs-gfs-concepts" title="GF concepts">
+          <tab type="user" url="@ref triqs::gfs::BlockGf" title="gfs::BlockGf"/>
           <tab type="user" url="@ref triqs::gfs::MemoryGf" title="gfs::MemoryGf"/>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-containers" title="GF containers">
           <tab type="usergroup" url="@ref triqs-gfs-block" title="Block Green's functions">
+            <tab type="usergroup" url="@ref triqs::gfs::block_gf" title="gfs::block_gf">
+              <tab type="user" url="@ref triqs::gfs::block_gf::iterator_impl" title="gfs::block_gf::iterator_impl"/>
+            </tab>
+            <tab type="usergroup" url="@ref triqs::gfs::block_gf_view" title="gfs::block_gf_view">
+              <tab type="user" url="@ref triqs::gfs::block_gf_view::iterator_impl" title="gfs::block_gf_view::iterator_impl"/>
+            </tab>
           </tab>
           <tab type="usergroup" url="@ref triqs-gfs-targets" title="GF targets">
             <tab type="user" url="@ref triqs::gfs::_target_from_type_rank" title="gfs::_target_from_type_rank"/>
@@ -87,6 +94,8 @@
           <tab type="usergroup" url="@ref triqs-gfs-clef" title="CLEF auto-assignment">
           </tab>
           <tab type="usergroup" url="@ref triqs-gfs-algebra" title="GF algebra">
+            <tab type="user" url="@ref triqs::gfs::bgf_expr" title="gfs::bgf_expr"/>
+            <tab type="user" url="@ref triqs::gfs::bgf_unary_m_expr" title="gfs::bgf_unary_m_expr"/>
             <tab type="user" url="@ref triqs::gfs::gf_expr" title="gfs::gf_expr"/>
             <tab type="user" url="@ref triqs::gfs::gf_unary_m_expr" title="gfs::gf_unary_m_expr"/>
             <tab type="user" url="@ref triqs::gfs::is_gf_expr" title="gfs::is_gf_expr"/>
