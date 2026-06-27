@@ -64,7 +64,7 @@ class DOS :
 
     Notes
     -----
-    The class implements the TRIQS :ref:`plot protocol <plotting>`, so
+    The class implements the TRIQS plot protocol, so
     instances can be passed directly to
     :func:`triqs.plot.mpl_interface.oplot`. HDF5 read/write is registered
     via :func:`h5.formats.register_class`.

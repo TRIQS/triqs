@@ -135,6 +135,27 @@ class TBLattice(object):
         Positions of the orbitals inside the unit cell.
     orbital_names : list of str
         Names of the orbitals in the unit cell.
+
+    Examples
+    --------
+    A nearest-neighbour tight-binding model on the 2D square lattice:
+
+    >>> from triqs.lattice.tight_binding import TBLattice, dos
+    >>> t = 1.0
+    >>> TB = TBLattice(
+    ...     units=[(1, 0, 0), (0, 1, 0)],
+    ...     hoppings={( 1, 0): [[-t]], (-1,  0): [[-t]],
+    ...               ( 0, 1): [[-t]], ( 0, -1): [[-t]]},
+    ...     orbital_positions=[(0, 0, 0)])
+
+    Compute its density of states on a regular k-grid (one
+    :class:`~triqs.dos.DOS` per band):
+
+    >>> d = dos(TB, n_kpts=100, n_eps=100, name='square')[0]
+
+    Build a k-mesh on the Brillouin zone for further calculations:
+
+    >>> kmesh = TB.get_kmesh(n_k=32)
     """
     def __init__(self, units,
                  hoppings=dict(),

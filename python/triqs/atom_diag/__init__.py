@@ -83,6 +83,40 @@ quantum-number eigenvalues (:func:`quantum_number_eigenvalues`,
 :func:`quantum_number_eigenvalues_checked`), and assembles the atomic Green's
 function on different meshes (:func:`atomic_g_tau`, :func:`atomic_g_iw`,
 :func:`atomic_g_l`, :func:`atomic_g_w`) from a solved instance.
+
+Examples
+--------
+Diagonalize a three-orbital Hubbard-Kanamori atom and compute thermodynamic
+averages and atomic Green's functions:
+
+>>> import numpy as np
+>>> from itertools import product
+>>> from triqs.operators import n, c, c_dag
+>>> from triqs.operators.util.hamiltonians import h_int_kanamori
+>>> from triqs.atom_diag import AtomDiag, partition_function, atomic_density_matrix, trace_rho_op, atomic_g_iw
+
+Set of fundamental operators (3 orbitals, 2 spins) and a Kanamori interaction:
+
+>>> spin_names, n_orb = ('up', 'dn'), 3
+>>> fops = [(sn, on) for sn, on in product(spin_names, range(n_orb))]
+>>> H = h_int_kanamori(spin_names, n_orb,
+...                    3.0 * np.ones((3, 3)), 2.0 * np.ones((3, 3)), 0.5, True)
+
+Diagonalize, letting the solver auto-partition the Hilbert space:
+
+>>> ad = AtomDiag(H, fops)
+>>> ad.n_subspaces
+28
+
+Thermodynamic quantities at inverse temperature ``beta`` and the atomic
+Green's function on a Matsubara mesh:
+
+>>> beta = 3.0
+>>> Z = partition_function(ad, beta)
+>>> dm = atomic_density_matrix(ad, beta)
+>>> docc = trace_rho_op(dm, n('up', 0) * n('dn', 0), ad)
+>>> gf_struct = [('dn', n_orb), ('up', n_orb)]
+>>> G_iw = atomic_g_iw(ad, beta, gf_struct, 100)
 """
 
 

@@ -24,6 +24,35 @@ Provides the :class:`Operator` class together with the canonical factories
 operator), as well as the Hermitian-conjugate function :func:`dagger`. Higher-
 level helpers — model Hamiltonians, observables, interaction tensors and
 coefficient extractors — live in :mod:`triqs.operators.util`.
+
+Examples
+--------
+Build many-body operators from the canonical factories and combine them with
+the usual algebra (sums, products, multiplication by a scalar). The factory
+arguments are arbitrary indices, e.g. a spin name and an orbital index:
+
+>>> from triqs.operators import c, c_dag, n, dagger
+
+A single-orbital Hubbard interaction (two spins):
+
+>>> U = 4.0
+>>> H = U * n('up', 0) * n('dn', 0)
+
+Nearest-neighbour hopping on a two-site spinless chain:
+
+>>> t = 1.0
+>>> H = -t * (c_dag('s', 0) * c('s', 1) + c_dag('s', 1) * c('s', 0))
+
+The number operator is ``n(*idx) == c_dag(*idx) * c(*idx)``, so the following
+operator is identically zero:
+
+>>> (n('up', 0) - c_dag('up', 0) * c('up', 0)).is_zero()
+True
+
+Operators can be Hermitian-conjugated with :func:`dagger`:
+
+>>> op = c_dag('up', 0) * c('dn', 1)
+>>> H = op + dagger(op)              # a Hermitian hopping term
 """
 
 from .operators import *
