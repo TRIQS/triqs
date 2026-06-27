@@ -36,6 +36,13 @@ step that only evaluates the determinant ratio and a `complete` step that applie
 
 ## Experimental tools
 
+@ref triqs-experimental collect functionality that is still under active development and whose API may change between 
+releases. They live in the `triqs::experimental` namespace and are organized into two submodules:
+
+- @ref triqs-experimental-lattice provides advanced lattice tools, such as Fourier-series representations of lattice
+functions, tight-binding Hamiltonians, superlattice folding, Wannier90 file loaders and Brillouin-zone integration.
+- @ref triqs-experimental-utility provides numerical helpers, such as adaptive integration and root finding.
+
 ## Green's functions
 
 ## Hilbert space

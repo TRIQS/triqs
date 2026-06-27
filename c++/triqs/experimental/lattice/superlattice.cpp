@@ -1,9 +1,21 @@
 #include "./superlattice.hpp"
-#include <itertools/itertools.hpp>
-#include <map>
+#include "../../utility/exceptions.hpp"
 
-constexpr auto _all_ = nda::range::all;
+#include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
+
+#include <array>
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <optional>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
 namespace triqs::experimental::lattice {
+
+  constexpr auto all_ = nda::range::all;
 
   superlattice::superlattice(nda::array<long, 2> sl_units, nda::array<long, 2> cluster_pts) : units(sl_units), cluster_points(cluster_pts) {
     std::cout << n_cluster_sites() << " cluster points in superlattice.\n";
@@ -12,7 +24,7 @@ namespace triqs::experimental::lattice {
     TRIQS_ASSERT(cluster_pts.extent(1) == dim());
     transfo_SL_L = nda::matrix<double>{transpose(units)};
     // Ensure non-empty cluster points
-    if (abs(nda::linalg::det(transfo_SL_L)) != n_cluster_sites())
+    if (abs(nda::linalg::det(transfo_SL_L)) != static_cast<double>(n_cluster_sites()))
       throw std::runtime_error{"Mismatch between det(superlattice vectors) and number of cluster points!"};
     transfo_SL_L = nda::linalg::inv(transfo_SL_L);
   }
@@ -59,8 +71,8 @@ namespace triqs::experimental::lattice {
     auto const &cpts = sl.get_cluster_pts();
     for (auto i : nda::range(sl.n_cluster_sites()))
       for (auto j : nda::range(sl.n_cluster_sites())) {
-        auto ai = cpts(i, _all_);
-        auto aj = cpts(j, _all_);
+        auto ai = cpts(i, all_);
+        auto aj = cpts(j, all_);
         for (auto &&[r_idx, r] : enumerate(fp.get_R_list())) {
           auto r1 = nda::vector<long>(kdim);
           for (int u = 0; u < kdim; ++u) r1[u] = r[u] + ai[u] - aj[u]; // r1 = r + ai - aj

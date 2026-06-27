@@ -1,47 +1,78 @@
 #pragma once
-#include "triqs/experimental/utility/adaptive.hpp"
-#include "triqs/experimental/utility/integrator.hpp"
+
+#include "../utility/adaptive.hpp"
+#include "../utility/integrator.hpp"
+#include "../../gfs.hpp"
+
+#include <itertools/itertools.hpp>
+#include <mpi/mpi.hpp>
+#include <nda/nda.hpp>
+
+#include <algorithm>
+#include <array>
+#include <concepts>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <numeric>
 #include <stdexcept>
-#include <triqs/gfs.hpp>
+#include <utility>
+#include <vector>
 
 namespace triqs::experimental::lattice {
 
   using namespace triqs::gfs;
 
-  // The placeholders authorized in the expressions integrated by bz_integrator
+  /**
+   * @addtogroup triqs-experimental-lattice
+   * @{
+   */
+
+  /**
+   * @brief CLEF placeholders for the momentum and frequency arguments of integrable expressions.
+   *
+   * @details These placeholders are the ones recognized by the Brillouin-zone integrators in this module: `kx`, `ky`
+   * and `kz` for the three momentum components and `w` for the frequency.
+   */
   namespace placeholders {
 
+    /// Placeholder for the first momentum component \f$ k_x \f$.
     constexpr nda::clef::placeholder<0> kx; // global var, clang requests const(expr)
+    /// Placeholder for the second momentum component \f$ k_y \f$.
     constexpr nda::clef::placeholder<1> ky;
+    /// Placeholder for the third momentum component \f$ k_z \f$.
     constexpr nda::clef::placeholder<2> kz;
+    /// Placeholder for the frequency \f$ \omega \f$.
     constexpr nda::clef::placeholder<3> w;
 
   } // namespace placeholders
 
-  // Options for adaptive integration, to be extended with
-  // addition of improved adaptive integrator
+  /**
+   * @brief Options controlling the adaptive Brillouin-zone integration.
+   *
+   * @details This struct is intended to be extended as improved adaptive integrators are added.
+   */
   struct adaptive_options {
-    double tolerance = 1.e-3; // target error
+    /// Target absolute error of the adaptive integration.
+    double tolerance = 1.e-3;
   };
 
   /**
-   * @brief Options for the case of integrate_bz function, with both adaptive + ptr integration
+   * @brief Options controlling the combined PTR and adaptive Brillouin-zone integration.
    *
-   * @details The integration function we are running for Gloc currently makes an attempt to converge the integration at
-   * each frequency using fixed k-grid integration with increasing grid density, starting from `k_grid`
-   * and increasing in increments of `delta_k_grid` until either a given point is converged with PTR or we hit `k_grid_max`.
-   * After that, the remaining unconverged frequency points are run with adaptive
-   * integration until they reach a certain absolute tolerance.
-   *
+   * @details The integration first attempts to converge each frequency with fixed k-grid (PTR) integration of
+   * increasing grid density, starting from `k_grid` and increasing in steps of `delta_k_grid` until a point converges
+   * or the grid reaches `k_grid_max`. The remaining unconverged frequency points are then integrated adaptively until
+   * they reach the requested absolute tolerance.
    */
   struct bz_int_options {
-    double tolerance                 = 1.e-3;        /// absolute tolerance of the integrated quantity
-    std::array<long, 3> k_grid       = {10, 10, 10}; /// default PTR number of points
-    std::array<long, 3> delta_k_grid = {2, 2, 2};    /// Increase step of k in the grid refinement
-    std::array<long, 3> k_grid_max   = {20, 20, 20}; /// Max of kx, ky, kz
-    bool run_adaptive                = true;         /// if false, does not run adaptive integration at the end
-    bool run_ptr                     = true;         /// if false, does not run PTR integration, goes directly to adaptive
-    bool verbose                     = false;        /// if logging should be printed
+    double tolerance                 = 1.e-3;        ///< Absolute tolerance of the integrated quantity.
+    std::array<long, 3> k_grid       = {10, 10, 10}; ///< Initial number of PTR k-points along each direction.
+    std::array<long, 3> delta_k_grid = {2, 2, 2};    ///< Increment of the k-grid size at each refinement step.
+    std::array<long, 3> k_grid_max   = {20, 20, 20}; ///< Maximum number of k-points along each direction.
+    bool run_adaptive                = true;         ///< Whether to run adaptive integration on the remaining points.
+    bool run_ptr                     = true;         ///< Whether to run PTR integration before the adaptive step.
+    bool verbose                     = false;        ///< Whether to print the convergence progress.
   };
 
   namespace detail {
@@ -64,15 +95,19 @@ namespace triqs::experimental::lattice {
   //---------------------------------------------------------
 
   /**
-   * @brief Compute the integral of f_kw on k using PTR utilizing both MPI and OMP parallelism.
+   * @brief Integrate an expression over the Brillouin zone on a fixed k-grid (PTR) for a list of frequencies, using
+   * both MPI and OpenMP parallelism.
    *
-   * @tparam T
-   * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
-   * @param omega_values list of frequency values as complex double, double, or mesh point type
-   * @param k_grid the number of points along [x,y,z] directions on which to evaluate the expression using PTR. Example: A grid of [2,2,2]
-   * will sample a 2x2x2 grid, with 2 points along each direction, for a total Nk of 8.
-   * @param comm MPI communicator
-   * @return The value of the integral expression, fully integrated on kx, ky, kz and for all omega points
+   * @details The expression is evaluated on a regular grid of \f$ k_x \times k_y \times k_z \f$ points and averaged.
+   * The work is distributed over MPI ranks along the longest grid direction and over OpenMP threads.
+   *
+   * @tparam T Type of the frequency values, convertible to `double` or `dcomplex` (e.g. a number or a mesh point).
+   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
+   * @param omega_values List of frequency values at which the integral is evaluated.
+   * @param k_grid Number of grid points along each direction; e.g. `{2, 2, 2}` samples a total of 8 k-points.
+   * @param comm MPI communicator over which the k-grid is distributed.
+   * @return Array of shape `[n_omega, dim, dim]` holding the integral, fully integrated over \f$ k_x, k_y, k_z \f$ for
+   * each frequency.
    */
   template <typename T>
     requires(std::convertible_to<T, dcomplex> or std::convertible_to<T, double>) // allow for real or imaginary mesh points or numbers
@@ -80,7 +115,7 @@ namespace triqs::experimental::lattice {
                                         mpi::communicator comm) {
 
     for (auto i : {0, 1, 2}) {
-      if (k_grid[i] <= 0) std::runtime_error{"Cannot use PTR integration with kgrid dim <= 0."};
+      if (k_grid[i] <= 0) throw std::runtime_error{"Cannot use PTR integration with kgrid dim <= 0."};
     }
 
     namespace ph  = placeholders;
@@ -122,15 +157,18 @@ namespace triqs::experimental::lattice {
   // -------------------------------------------
 
   /**
-   * @brief Compute the integral of f_kw on k using PTR utilizing both MPI and OMP parallelism.
+   * @brief Integrate an expression over the Brillouin zone on a fixed k-grid (PTR) for all points of a frequency mesh,
+   * using both MPI and OpenMP parallelism.
    *
-   * @tparam T
-   * @param f_kw expression representing the function to integrate, with placeholder for kx, ky, kz and omega
-   * @param w_mesh mesh of frequency points on which to perform the integration
-   * @param k_grid the number of points along [x,y,z] directions on which to evaluate the expression using PTR. Example: A grid of [2,2,2]
-   * will sample a 2x2x2 grid, with 2 points along each direction, for a total Nk of 8.
-   * @param comm MPI communicator
-   * @return The value of the integral expression, fully integrated on kx, ky, kz and for all omega points
+   * @details This overload evaluates the integral at every point of the given frequency mesh and stores the result in a
+   * Green's function defined on that mesh.
+   *
+   * @tparam Mesh Frequency mesh type.
+   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
+   * @param w_mesh Frequency mesh on which the integration is performed.
+   * @param k_grid Number of grid points along each direction; e.g. `{2, 2, 2}` samples a total of 8 k-points.
+   * @param comm MPI communicator over which the k-grid is distributed.
+   * @return Green's function on `w_mesh` holding the integral, fully integrated over \f$ k_x, k_y, k_z \f$.
    */
   template <typename Mesh> auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid, mpi::communicator comm = {}) {
 
@@ -145,14 +183,15 @@ namespace triqs::experimental::lattice {
 
   // -------------------------------------------
   /**
-   * @brief Compute the integral of f_kw on k adaptively, return a lambda function
-   *          which can be evaluated for a given omega (to prepare for the case of adaptive omega integration)
-   *          Currently this is not parallelized (as this is not easy for adaptive integration),
-   *          but can be somewhat parallelized on evaluation of frequencies on the returned lambda function.
+   * @brief Build a callable that adaptively integrates an expression over the Brillouin zone for a given frequency.
    *
-   * @param f_kw Expression to integrate on k and omega
-   * @param opt An options struct giving the user's selected integration options (for now, only absolute tolerance)
-   * @return f_w A lambda function which provides the final function eval for a given omega point to return the integral value
+   * @details This overload returns a lambda that, given a frequency \f$ \omega \f$, performs the adaptive
+   * three-dimensional Brillouin-zone integration of the expression. The k-integration itself is not parallelized, but
+   * the returned callable can be evaluated in parallel over different frequencies.
+   *
+   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
+   * @param opt Adaptive integration options (currently only the absolute tolerance).
+   * @return Callable that maps a frequency \f$ \omega \f$ to the value of the Brillouin-zone integral.
    */
   auto integrate_adaptive(auto const &f_kw, adaptive_options const &opt) {
 
@@ -166,19 +205,23 @@ namespace triqs::experimental::lattice {
       std::pair<double, double> k_domain = {0, 1};
       auto expr_k                        = eval(expr_kw, ph::w = om);
 
-      return utility::integrate(int_1d_adapt, utility::integrate(int_1d_adapt, utility::integrate(int_1d_adapt, expr_k, ph::kx = k_domain), ph::ky = k_domain),
-                       ph::kz = k_domain);
+      return utility::integrate(int_1d_adapt,
+                                utility::integrate(int_1d_adapt, utility::integrate(int_1d_adapt, expr_k, ph::kx = k_domain), ph::ky = k_domain),
+                                ph::kz = k_domain);
     };
   }
 
   /**
-   * @brief Compute the integral of f_kw on k adaptively, and returns a gf which
-   *         contains the evaluation of the adaptive integration on the input frequency mesh.
+   * @brief Adaptively integrate an expression over the Brillouin zone for all points of a frequency mesh.
    *
-   * @param f_kw Expression to integrate on k and omega
-   * @param w_mesh mesh on which the integral is evaluted, used to construct the returned GF
-   * @param opt An options struct giving the user's selected integration options (for now, only absolute tolerance)
-   * @return gf containing the evaluated integral
+   * @details This overload evaluates the adaptive Brillouin-zone integral at every point of the given frequency mesh,
+   * in parallel over frequencies, and stores the result in a Green's function defined on that mesh.
+   *
+   * @tparam Mesh Frequency mesh type.
+   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
+   * @param w_mesh Frequency mesh on which the integral is evaluated and which defines the returned Green's function.
+   * @param opt Adaptive integration options (currently only the absolute tolerance).
+   * @return Green's function on `w_mesh` holding the adaptively integrated expression.
    */
   template <typename Mesh> auto integrate_adaptive(auto const &f_kw, Mesh const &w_mesh, adaptive_options const &opt) {
 
@@ -193,20 +236,21 @@ namespace triqs::experimental::lattice {
 
   // -------------------------------------------
   /**
-   * @brief Compute the integral of expr_kw on k for all w, s
+   * @brief Integrate an expression over the Brillouin zone for all frequencies, combining PTR and adaptive integration.
    *
-   * The idea is to compute some w with PTR, some with Adaptive
-   * If PTR reaches the maximum allowed grid but fails to meet a convergence threshold,
-   * we fall back to adaptive for the frequency points that fail to converge.
-   * This calls on integrate_ptr and integrate_adaptive to operate.
+   * @details This is the main entry point of the module. It first integrates the frequencies with fixed k-grid (PTR)
+   * integration of increasing grid density and then falls back to adaptive integration for the frequency points that
+   * did not converge before the maximum grid size was reached. It dispatches to
+   * triqs::experimental::lattice::integrate_ptr and triqs::experimental::lattice::integrate_adaptive according to the
+   * given options.
    *
-   * @tparam mesh A Mesh type (Imfreq, DLR, Refreq)
-   * @param f_kw CLEF expression representing the function to integrate, with placeholder for kx, ky, kz and omega
-   *     from the experimental::placeholders namespace
-   * @param w_mesh Frequency mesh object (Imfreq, DLR, Refreq)
-   * @param opt bz_int_options containing options for both ptr and adaptive integration.
-   * @param comm An MPI communicator (optional, defaults to world communicator)
-   * @return gf Green's function containing the given expression evaluated on the mesh
+   * @tparam Mesh Frequency mesh type (e.g. imfreq, DLR or refreq).
+   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$ from
+   * the triqs::experimental::lattice::placeholders namespace.
+   * @param w_mesh Frequency mesh on which the integral is evaluated.
+   * @param opt Options controlling both the PTR and the adaptive integration.
+   * @param comm MPI communicator (defaults to the world communicator).
+   * @return Matrix-valued Green's function on `w_mesh` holding the integrated expression.
    */
   template <typename Mesh>
   gf<Mesh, matrix_valued> integrate_bz(auto const &f_kw, Mesh const &w_mesh, bz_int_options const &opt, mpi::communicator comm = {}) {
@@ -253,10 +297,10 @@ namespace triqs::experimental::lattice {
 
     // ------ Do the PTR -------
     if (opt.run_ptr) {
-      do { // run loop at least once if PTR is chosen
+      do { // NOLINT (run loop at least once if PTR is chosen )
 
         if (opt.verbose) {
-          int remaining_ptr = ptr_converged.size() - std::reduce(ptr_converged.begin(), ptr_converged.end());
+          int remaining_ptr = static_cast<int>(ptr_converged.size()) - std::reduce(ptr_converged.begin(), ptr_converged.end());
           std::cout << "Points remaining unconverged: " << remaining_ptr << ", now running with k-grid " << k_grid[0] << " " << k_grid[1] << " "
                     << k_grid[2] << std::endl;
         }
@@ -297,4 +341,7 @@ namespace triqs::experimental::lattice {
     }
     return g_out;
   }
+
+  /** @} */
+
 } // namespace triqs::experimental::lattice

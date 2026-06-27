@@ -1,9 +1,13 @@
-#include "wannier_loader.hpp"
+#include "./wannier_loader.hpp"
+#include "../../utility/generator.hpp"
+#include "../../utility/first_include.hpp"
+
+#include <itertools/itertools.hpp>
+#include <nda/nda.hpp>
+
 #include <fstream> // std::ifstream
 #include <stdexcept>
-#include "../../utility/generator.hpp"
-#include "nda/concepts.hpp"
-#include "triqs/utility/first_include.hpp"
+#include <utility>
 
 namespace triqs::experimental::lattice {
 
@@ -14,6 +18,9 @@ namespace triqs::experimental::lattice {
       return x;
     }
 
+    // The generator is consumed eagerly in the same scope, so the file reference stays valid (and std::ifstream is
+    // non-copyable).
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-reference-coroutine-parameters)
     template <typename T> generator<T> read_N(std::ifstream &file, int n) {
       for ([[maybe_unused]] auto i : nda::range(n)) co_yield read<T>(file);
     }
@@ -21,8 +28,7 @@ namespace triqs::experimental::lattice {
 
   // ------------------------------------------------------
 
-  std::tuple<std::vector<std::array<long, 3>>, std::vector<nda::array<dcomplex, 2>>, std::vector<nda::array<dcomplex, 3>>, nda::matrix<double>>
-  read_wannier90_tb_data(std::string const &w90_path_and_seedname) {
+  w90_tb_data_t read_wannier90_tb_data(std::string const &w90_path_and_seedname) {
 
     // open the file
     std::string tb_filename = w90_path_and_seedname + "_tb.dat";
@@ -57,14 +63,14 @@ namespace triqs::experimental::lattice {
     }
 
     // read the R vectors and the Wannier Hamiltonian -------
-    std::array<long, 3> R;
+    std::array<long, 3> R{};
     for (auto ir : nda::range(n_r)) {
 
       file >> R[0] >> R[1] >> R[2];
       for ([[maybe_unused]] auto [x, y] : product(nda::range(n_wannier), nda::range(n_wannier))) {
 
-        double re, im;
-        int ii, jj; // read these from the file rather than as loop indices
+        double re = 0.0, im = 0.0;
+        int ii = 0, jj = 0; // read these from the file rather than as loop indices
         file >> ii >> jj >> re >> im;
 
         // check state
@@ -85,8 +91,8 @@ namespace triqs::experimental::lattice {
       file >> R[0] >> R[1] >> R[2];
       for ([[maybe_unused]] auto [x, y] : product(nda::range(n_wannier), nda::range(n_wannier))) {
 
-        std::array<double, 3> re, im;
-        int ii, jj; // read these from the file rather than as loop indices
+        std::array<double, 3> re{}, im{};
+        int ii = 0, jj = 0; // read these from the file rather than as loop indices
         file >> ii >> jj >> re[0] >> im[0] >> re[1] >> im[1] >> re[2] >> im[2];
         // merge degeneracy information into the position operator
         for (auto idx_cart : {0, 1, 2})
@@ -96,8 +102,7 @@ namespace triqs::experimental::lattice {
     return {std::move(r_vectors), std::move(H_r), std::move(position_op_r), std::move(latt_vec)};
   }
 
-  std::tuple<std::vector<std::array<long, 3>>, std::vector<nda::array<dcomplex, 2>>>
-  read_wannier90_hr_data(std::string const &w90_path_and_seedname) {
+  w90_hr_data_t read_wannier90_hr_data(std::string const &w90_path_and_seedname) {
 
     // open the file
     std::string hr_filename = w90_path_and_seedname + "_hr.dat";
@@ -124,11 +129,11 @@ namespace triqs::experimental::lattice {
     }
 
     // read the R vectors and the Wannier Hamiltonian -------
-    std::array<long, 3> R;
+    std::array<long, 3> R{};
     for (auto [ir, _unused1, _unused2] : product(nda::range(n_r), nda::range(n_wannier), nda::range(n_wannier))) {
 
-      double re, im;
-      int ii, jj; // read these from the file rather than as loop indices
+      double re = 0.0, im = 0.0;
+      int ii = 0, jj = 0; // read these from the file rather than as loop indices
       file >> R[0] >> R[1] >> R[2] >> ii >> jj >> re >> im;
 
       // check state

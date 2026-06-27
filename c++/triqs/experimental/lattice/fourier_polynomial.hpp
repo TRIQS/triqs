@@ -1,17 +1,34 @@
 #pragma once
-#include <algorithm>
+
+#include "../../utility/exceptions.hpp"
+
 #include <h5/h5.hpp>
+#include <itertools/itertools.hpp>
 #include <mpi/mpi.hpp>
 #include <nda/h5.hpp>
 #include <nda/mpi.hpp>
 #include <nda/nda.hpp>
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <complex>
+#include <iterator>
+#include <ranges>
+#include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
-#include "../../utility/exceptions.hpp"
+#include <vector>
 
 namespace triqs::experimental::lattice {
 
   using nda::dcomplex;
+
+  /**
+   * @addtogroup triqs-experimental-lattice
+   * @{
+   */
 
   template <int coeff_dim, int kdim> class fourier_polynomial;
 
@@ -29,7 +46,14 @@ namespace triqs::experimental::lattice {
   // make_gf_from_fourier call them.
   // ---------------------------------------------------------------------------
 
-  /// Helper: build R_mat of shape [nR, kdim] from a sequence of R-vectors.
+  /**
+   * @brief Build the packed matrix of lattice vectors from a sequence of R-vectors.
+   *
+   * @tparam kdim Dimension of the lattice vectors.
+   * @param r_list Sequence of R-vectors, each supporting `operator[](int)`.
+   * @return Matrix of shape `[nR, kdim]` whose row \f$ i \f$ holds the components of the \f$ i \f$-th R-vector as
+   * doubles.
+   */
   template <int kdim> nda::matrix<double> make_R_mat(auto const &r_list) {
     nda::matrix<double> rm(r_list.size(), kdim);
     for (long i = 0; i < static_cast<long>(r_list.size()); ++i)
@@ -37,7 +61,20 @@ namespace triqs::experimental::lattice {
     return rm;
   }
 
-  /// Evaluate at a single k-point.
+  /**
+   * @brief Evaluate a Fourier series at a single k-point.
+   *
+   * @details This kernel computes \f$ f(\mathbf{k}) = \sum_\mathbf{R} f(\mathbf{R}) \, e^{2 \pi i \, \mathbf{k} \cdot
+   * \mathbf{R}} \f$ directly by summing the exponentials.
+   *
+   * @tparam coeff_dim Rank of the Fourier coefficient at each R-vector.
+   * @tparam kdim Dimension of the k-vector.
+   * @tparam CoeffArr Type of the packed coefficient array.
+   * @param R_mat Packed matrix of lattice vectors of shape `[nR, kdim]`.
+   * @param coeff_arr Packed coefficient array of shape `[nR, coeff_shape...]`.
+   * @param k The k-point at which to evaluate.
+   * @return Value of the Fourier series at `k`, a `dcomplex` for scalar targets or an nda array/matrix otherwise.
+   */
   template <int coeff_dim, int kdim, typename CoeffArr>
   auto fourier_eval(nda::matrix_const_view<double> R_mat, CoeffArr const &coeff_arr, std::array<double, kdim> const &k) {
     auto c_shape = coeff_arr.shape();
@@ -63,7 +100,19 @@ namespace triqs::experimental::lattice {
     return res;
   }
 
-  /// Evaluate at a batch of k-points passed as a matrix of shape [nk, kdim].
+  /**
+   * @brief Evaluate a Fourier series at a batch of k-points given as a matrix.
+   *
+   * @details This kernel evaluates the Fourier series at all k-points at once using BLAS matrix multiplications for the
+   * phases and the coefficient contraction.
+   *
+   * @tparam coeff_dim Rank of the Fourier coefficient at each R-vector.
+   * @tparam CoeffArr Type of the packed coefficient array.
+   * @param R_mat Packed matrix of lattice vectors of shape `[nR, kdim]`.
+   * @param coeff_arr Packed coefficient array of shape `[nR, coeff_shape...]`.
+   * @param k_list Matrix of k-points of shape `[nk, kdim]`.
+   * @return Array of shape `[nk, coeff_shape...]` holding the value of the Fourier series at each k-point.
+   */
   template <int coeff_dim, typename CoeffArr>
   nda::array<dcomplex, coeff_dim + 1> fourier_eval(nda::matrix_const_view<double> R_mat, CoeffArr const &coeff_arr,
                                                    nda::array_const_view<double, 2> k_list) {
@@ -92,7 +141,20 @@ namespace triqs::experimental::lattice {
     return result;
   }
 
-  /// Evaluate at a contiguous range of k-points (each element must support operator[](int)).
+  /**
+   * @brief Evaluate a Fourier series at a contiguous range of k-points.
+   *
+   * @details This kernel packs the k-points of the range into a matrix and forwards to the batched matrix overload.
+   *
+   * @tparam coeff_dim Rank of the Fourier coefficient at each R-vector.
+   * @tparam kdim Dimension of the k-vectors.
+   * @tparam CoeffArr Type of the packed coefficient array.
+   * @tparam V Contiguous range type whose elements support `operator[](int)`.
+   * @param R_mat Packed matrix of lattice vectors of shape `[nR, kdim]`.
+   * @param coeff_arr Packed coefficient array of shape `[nR, coeff_shape...]`.
+   * @param k_iterator Contiguous range of k-points.
+   * @return Array of shape `[nk, coeff_shape...]` holding the value of the Fourier series at each k-point.
+   */
   template <int coeff_dim, int kdim, typename CoeffArr, typename V>
     requires(std::ranges::contiguous_range<V>)
   nda::array<dcomplex, coeff_dim + 1> fourier_eval(nda::matrix_const_view<double> R_mat, CoeffArr const &coeff_arr, V const &k_iterator) {
@@ -108,17 +170,32 @@ namespace triqs::experimental::lattice {
   // plus a placeholder-aware operator() for clef lazy evaluation.
   // ---------------------------------------------------------------------------
 
+  /**
+   * @brief Owning container for a Fourier-series representation of a lattice function.
+   *
+   * @details A fourier_polynomial stores a list of real-space lattice vectors \f$ \mathbf{R} \f$ together with their
+   * Fourier coefficients and represents the function
+   * \f[
+   *   f(\mathbf{k}) = \sum_\mathbf{R} f(\mathbf{R}) \, e^{2 \pi i \, \mathbf{k} \cdot \mathbf{R}} \; .
+   * \f]
+   * It provides a placeholder-aware call operator for CLEF lazy evaluation as well as batched BLAS evaluation at a list
+   * of k-points, HDF5 serialization and MPI broadcast.
+   *
+   * @tparam coeff_dim Rank of the Fourier coefficient at each \f$ \mathbf{R} \f$ (e.g. 0 for scalar-, 2 for
+   * matrix-valued targets).
+   * @tparam kdim Dimension of the k-vectors (1, 2 or 3).
+   */
   template <int coeff_dim, int kdim> class fourier_polynomial {
 
     protected:
-    std::vector<std::array<long, kdim>> R_list;    // R-vectors as long arrays
-    nda::matrix<double> R_mat;                     // R-vectors as doubles [nR, kdim] for BLAS
-    nda::array<dcomplex, coeff_dim + 1> coeff_arr; // Fourier coefficients [nR, coeff_shape...]
+    std::vector<std::array<long, kdim>> R_list;    ///< Lattice vectors \f$ \mathbf{R} \f$ as integer arrays.
+    nda::matrix<double> R_mat;                     ///< Lattice vectors as doubles, of shape `[nR, kdim]`, for BLAS.
+    nda::array<dcomplex, coeff_dim + 1> coeff_arr; ///< Packed Fourier coefficients, of shape `[nR, coeff_shape...]`.
 
     /// HDF5 write helper for derived classes: writes R_list and coeff_arr under the given format tag.
     void h5_write_impl(h5::group g, std::string const &name, char const *format) const {
       auto gr = g.create_group(name);
-      h5::write_hdf5_format_as_string(gr, format);
+      h5::write_hdf5_format_as_string(gr, format); // NOLINT
       h5::write(gr, "R_list", R_list);
       h5::write(gr, "coeff_arr", coeff_arr);
     }
@@ -126,7 +203,7 @@ namespace triqs::experimental::lattice {
     /// HDF5 read helper for derived classes: reads R_list and coeff_arr in place; rebuilds R_mat.
     void h5_read_impl(h5::group g, std::string const &name, char const *exp_format) {
       auto gr = g.open_group(name);
-      h5::assert_hdf5_format_as_string(gr, exp_format, true);
+      h5::assert_hdf5_format_as_string(gr, exp_format, true); // NOLINT
       h5::read(gr, "R_list", R_list);
       h5::read(gr, "coeff_arr", coeff_arr);
       TRIQS_ASSERT(R_list.size() == coeff_arr.shape(0));
@@ -134,13 +211,23 @@ namespace triqs::experimental::lattice {
     }
 
     public:
-    fourier_polynomial()                                          = default;
-    fourier_polynomial(fourier_polynomial const &)                = default;
-    fourier_polynomial(fourier_polynomial &&) noexcept            = default;
-    fourier_polynomial &operator=(fourier_polynomial const &)     = default;
+    /// Default constructor: construct an empty Fourier polynomial.
+    fourier_polynomial() = default;
+    /// Copy constructor.
+    fourier_polynomial(fourier_polynomial const &) = default;
+    /// Move constructor.
+    fourier_polynomial(fourier_polynomial &&) noexcept = default;
+    /// Copy assignment operator.
+    fourier_polynomial &operator=(fourier_polynomial const &) = default;
+    /// Move assignment operator.
     fourier_polynomial &operator=(fourier_polynomial &&) noexcept = default;
 
-    /// Construct from vectors of R-vectors and coefficient arrays.
+    /**
+     * @brief Construct from a list of R-vectors and a matching list of coefficient arrays.
+     *
+     * @param R_list_ List of lattice vectors \f$ \mathbf{R} \f$.
+     * @param coeff_list_ List of Fourier coefficients, one per R-vector and all of the same shape.
+     */
     fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, std::vector<nda::array<dcomplex, coeff_dim>> const &coeff_list_)
        : R_list(std::move(R_list_)), R_mat(make_R_mat<kdim>(R_list)) {
       TRIQS_ASSERT(!coeff_list_.empty());
@@ -149,46 +236,133 @@ namespace triqs::experimental::lattice {
       for (long i = 0; i < static_cast<long>(coeff_list_.size()); ++i) coeff_arr(i, nda::ellipsis{}) = coeff_list_[i];
     }
 
-    /// Construct from R-vectors and a packed coefficient array directly.
+    /**
+     * @brief Construct from a list of R-vectors and a packed coefficient array.
+     *
+     * @param R_list_ List of lattice vectors \f$ \mathbf{R} \f$.
+     * @param coeff_arr_ Packed coefficient array of shape `[nR, coeff_shape...]`.
+     */
     fourier_polynomial(std::vector<std::array<long, kdim>> R_list_, nda::array<dcomplex, coeff_dim + 1> coeff_arr_)
        : R_list(std::move(R_list_)), R_mat(make_R_mat<kdim>(R_list)), coeff_arr(std::move(coeff_arr_)) {
       TRIQS_ASSERT(R_list.size() == coeff_arr.shape(0));
     }
 
-    /// MPI broadcast: send R_list and coeff_arr; recompute R_mat locally.
+    /**
+     * @brief Broadcast a Fourier polynomial over an MPI communicator.
+     *
+     * @details The list of R-vectors and the coefficient array are broadcast, and the packed R-matrix is recomputed
+     * locally on each rank.
+     *
+     * @param x Fourier polynomial to broadcast (overwritten on non-root ranks).
+     * @param c MPI communicator.
+     * @param root Rank of the broadcasting process.
+     */
     friend void mpi_broadcast(fourier_polynomial &x, mpi::communicator c = {}, int root = 0) {
       mpi::broadcast(x.R_list, c, root);
       mpi::broadcast(x.coeff_arr, c, root);
       x.R_mat = make_R_mat<kdim>(x.R_list);
     }
 
-    /// HDF5 format tag.
+    /**
+     * @brief Get the HDF5 format tag.
+     *
+     * @return HDF5 format tag of a Fourier polynomial.
+     */
     [[nodiscard]] static std::string hdf5_format() { return "fourier_polynomial"; }
 
-    /// HDF5 write: standalone serialization of a fourier_polynomial<C, K>.
+    /**
+     * @brief Write a Fourier polynomial to HDF5.
+     *
+     * @param g `h5::group` to be written to.
+     * @param name Name of the subgroup.
+     * @param x Fourier polynomial to be written.
+     */
     friend void h5_write(h5::group g, std::string const &name, fourier_polynomial const &x) { x.h5_write_impl(g, name, "fourier_polynomial"); }
 
-    /// HDF5 read.
+    /**
+     * @brief Read a Fourier polynomial from HDF5.
+     *
+     * @param g `h5::group` to be read from.
+     * @param name Name of the subgroup.
+     * @param x Fourier polynomial to be read into.
+     */
     friend void h5_read(h5::group g, std::string const &name, fourier_polynomial &x) { x.h5_read_impl(g, name, "fourier_polynomial"); }
 
-    /** Access real space lattice points */
+    /**
+     * @brief Get the list of real-space lattice vectors.
+     *
+     * @return Const reference to the list of lattice vectors \f$ \mathbf{R} \f$.
+     */
     [[nodiscard]] C2PY_IGNORE auto const &get_R_list() const { return R_list; }
 
-    /** Access the packed coefficient array [nR, coeff_shape...] */
+    /**
+     * @brief Get the packed coefficient array.
+     *
+     * @return View of the packed coefficient array of shape `[nR, coeff_shape...]`.
+     */
     [[nodiscard]] C2PY_IGNORE auto get_coeff_arr() { return coeff_arr(); }
+
+    /**
+     * @brief Get the packed coefficient array (const overload).
+     *
+     * @return Const view of the packed coefficient array of shape `[nR, coeff_shape...]`.
+     */
     [[nodiscard]] C2PY_IGNORE auto get_coeff_arr() const { return coeff_arr(); }
 
-    /** Access the R matrix [nR, kdim] as doubles */
+    /**
+     * @brief Get the packed matrix of lattice vectors.
+     *
+     * @return Const reference to the matrix of lattice vectors of shape `[nR, kdim]` as doubles.
+     */
     [[nodiscard]] C2PY_IGNORE auto const &get_R_mat() const { return R_mat; }
 
-    /** Number of R-vectors */
+    /**
+     * @brief Get the number of R-vectors.
+     *
+     * @return Number of lattice vectors stored in the Fourier polynomial.
+     */
     [[nodiscard]] long n_R() const { return static_cast<long>(R_list.size()); }
 
+    /**
+     * @brief Access the coefficient associated with a given R-vector.
+     *
+     * @param R Lattice vector \f$ \mathbf{R} \f$.
+     * @return View of the coefficient associated with `R`.
+     */
     C2PY_IGNORE auto operator[](std::array<long, kdim> R) { return coeff_arr(get_R_idx(R), nda::ellipsis{}); }
+
+    /**
+     * @brief Access the coefficient associated with a given R-vector (const overload).
+     *
+     * @param R Lattice vector \f$ \mathbf{R} \f$.
+     * @return Const view of the coefficient associated with `R`.
+     */
     C2PY_IGNORE auto operator[](std::array<long, kdim> R) const { return coeff_arr(get_R_idx(R), nda::ellipsis{}); }
+
+    /**
+     * @brief Access the coefficient at a given storage index.
+     *
+     * @param i Storage index of the R-vector.
+     * @return View of the coefficient at index `i`.
+     */
     C2PY_IGNORE auto operator[](long i) { return coeff_arr(i, nda::ellipsis{}); }
+
+    /**
+     * @brief Access the coefficient at a given storage index (const overload).
+     *
+     * @param i Storage index of the R-vector.
+     * @return Const view of the coefficient at index `i`.
+     */
     C2PY_IGNORE auto operator[](long i) const { return coeff_arr(i, nda::ellipsis{}); }
 
+    /**
+     * @brief Get the storage index of a given R-vector.
+     *
+     * @details Throws a `TRIQS_RUNTIME_ERROR` if the R-vector is not present.
+     *
+     * @param R Lattice vector \f$ \mathbf{R} \f$.
+     * @return Storage index of `R` in the list of R-vectors.
+     */
     long get_R_idx(std::array<long, kdim> R) const {
       auto it = std::ranges::find(R_list, R);
       if (it == R_list.end()) { TRIQS_RUNTIME_ERROR << "Could not locate R in the Wannier Hamiltonian.\n"; }
@@ -196,13 +370,18 @@ namespace triqs::experimental::lattice {
     }
 
     /**
-     * @brief Call operator
-     * @param ks: any combination of double and placeholder (or lazy expressions)
-     * @return If ks contains
-     *   * 0 placeholder: evaluation by computing the exponentials
-     *   * > 1 placeholder in dim > 1 or 1 placeholder in dim ==1: a lazy call expression
-     *   * exactly ONE placeholder in dim > 1: a lazy call expression of the partially evaluated tb_hopping<1>
+     * @brief Evaluate the Fourier polynomial, optionally as a lazy CLEF expression.
      *
+     * @details The behavior depends on how many of the arguments are CLEF placeholders (or lazy expressions):
+     * - With no placeholder, the function is evaluated directly by computing the exponentials.
+     * - With exactly one placeholder and `kdim > 1`, a partially evaluated Fourier polynomial of dimension 1 is built
+     *   and returned as a lazy CLEF call expression.
+     * - In all other cases (more than one placeholder, or a single placeholder with `kdim == 1`), a lazy CLEF call
+     *   expression is returned.
+     *
+     * @tparam T Argument types, each either `double` or a CLEF placeholder / lazy expression.
+     * @param ks The `kdim` arguments at which to evaluate, mixing doubles and placeholders.
+     * @return The evaluated value if no placeholder is present, otherwise a lazy CLEF call expression.
      */
     template <typename... T>
       requires((std::is_same_v<T, double> or nda::clef::is_lazy<T>) and ...) // double OR placeholder
@@ -270,21 +449,41 @@ namespace triqs::experimental::lattice {
     // -----------------------------
 
     public:
-    /// Batch BLAS evaluation at a list of k-points of shape [nk, kdim]
+    /**
+     * @brief Evaluate the Fourier polynomial at a batch of k-points given as a matrix.
+     *
+     * @param k_list Matrix of k-points of shape `[nk, kdim]`.
+     * @return Array of shape `[nk, coeff_shape...]` holding the value at each k-point.
+     */
     nda::array<dcomplex, coeff_dim + 1> operator()(nda::array_const_view<double, 2> k_list) const {
       return fourier_eval<coeff_dim>(R_mat, coeff_arr, k_list);
     }
 
-    /// Evaluation at a contiguous range of k-points
+    /**
+     * @brief Evaluate the Fourier polynomial at a contiguous range of k-points.
+     *
+     * @param k_iterator Contiguous range of k-points, each supporting `operator[](int)`.
+     * @return Array of shape `[nk, coeff_shape...]` holding the value at each k-point.
+     */
     nda::array<dcomplex, coeff_dim + 1> operator()(std::ranges::contiguous_range auto const &k_iterator) const {
       return fourier_eval<coeff_dim, kdim>(R_mat, coeff_arr, k_iterator);
     }
 
-    /// Evaluation at a single k-point
+    /**
+     * @brief Evaluate the Fourier polynomial at a single k-point.
+     *
+     * @param ks The k-point at which to evaluate.
+     * @return Value of the Fourier polynomial at `ks`.
+     */
     auto operator()(std::array<double, kdim> ks) const { return fourier_eval<coeff_dim, kdim>(R_mat, coeff_arr, ks); }
   };
+
+  /** @} */
+
 } // namespace triqs::experimental::lattice
 
+/// @cond
 // this allows the deep partial evaluation mechanism to speed up calculations
 template <int coeff_dim, int kdim>
 inline constexpr bool nda::clef::supports_partial_eval_of_calls<triqs::experimental::lattice::fourier_polynomial<coeff_dim, kdim>> = true;
+/// @endcond

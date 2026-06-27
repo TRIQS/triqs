@@ -4,8 +4,12 @@
 // See LICENSE in the root of this distribution for details.
 
 #pragma once
+
+#include "../../utility/report_stream.hpp"
+
 #include <fmt/core.h>
-#include <triqs/utility/report_stream.hpp>
+
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
@@ -17,18 +21,26 @@ namespace triqs::experimental::utility {
   using std::abs;
   using triqs::utility::report_stream;
 
+  /**
+   * @addtogroup triqs-experimental-utility
+   * @{
+   */
+
   //------------------------------------------------------
   /**
-   * @ingroup root
-   * @brief find upper and lower bounds of f(x)
+   * @brief Find a lower and an upper bound that bracket the solution of \f$ f(x) = y \f$.
    *
-   * @param f function of f(x)
-   * @param x_init initial guess x
-   * @param y_value target value y = f(x)
-   * @param delta_x x increment
-   * @param precision f(x) - y_value < precision
-   * @param max_loops maximum number of loops
-   * @return x1, x2 where f(x1) and f(x2) bound y_value
+   * @details Starting from an initial guess, this function steps along \f$ x \f$ in increments of `delta_x` until the
+   * target value \f$ y \f$ is bracketed by the function values at the two most recent points (or until the maximum
+   * number of steps is reached). The returned bounds are ordered such that the first is smaller than the second.
+   *
+   * @param f Function \f$ f(x) : \mathbb{R} \to \mathbb{R} \f$ whose root is sought.
+   * @param x_init Initial guess for \f$ x \f$.
+   * @param y_value Target value \f$ y = f(x) \f$.
+   * @param delta_x Step size by which \f$ x \f$ is incremented.
+   * @param precision Absolute precision \f$ |f(x) - y| \f$ used to stop the search early.
+   * @param max_loops Maximum number of steps.
+   * @return Pair \f$ (x_1, x_2) \f$ with \f$ x_1 \leq x_2 \f$ whose function values bracket \f$ y \f$.
    */
   inline std::pair<double, double> find_bounds(std::function<double(double)> f, double x_init, double y_value, double delta_x, double precision,
                                                long max_loops = 1000) {
@@ -58,19 +70,24 @@ namespace triqs::experimental::utility {
   //------------------------------------------------------
 
   /**
-   * @ingroup root
-   * @brief dichotomy algorithm
+   * @brief Solve \f$ f(x) = y \f$ on a bracketing interval using the false-position (dichotomy) method.
    *
-   * @param f function f(x)
-   * @param x_low lower bound on x
-   * @param x_high upper bound on x
-   * @param y_target target value for f(x)
-   * @param precision f(x) - y_target < precision
-   * @param max_loops maxmimum number of iterations
-   * @param x_name Name of x variable
-   * @param y_name Name of y variable
-   * @param verbosity Print progress
-   * @return x, f(x) where f(x) = y_target
+   * @details Given an interval \f$ [x_\mathrm{low}, x_\mathrm{high}] \f$ that brackets the target value, this method
+   * iteratively replaces one of the bounds with the linear (secant) estimate of the root until the residual drops below
+   * the requested precision. 
+   * 
+   * It raises an error if convergence is not reached within `max_loops` iterations.
+   *
+   * @param f Function \f$ f(x) : \mathbb{R} \to \mathbb{R} \f$ whose root is sought.
+   * @param x_low Lower bound of the bracketing interval.
+   * @param x_high Upper bound of the bracketing interval.
+   * @param y_target Target value \f$ y \f$ for \f$ f(x) \f$.
+   * @param precision Absolute precision \f$ |f(x) - y| \f$ at which the iteration stops.
+   * @param max_loops Maximum number of iterations.
+   * @param x_name Name of the \f$ x \f$ variable, used in the progress log.
+   * @param y_name Name of the \f$ y \f$ variable, used in the progress log.
+   * @param verbosity Whether to print the convergence progress.
+   * @return Pair \f$ (x, f(x)) \f$ with \f$ f(x) = y \f$ within the requested precision.
    */
   inline std::pair<double, double> dichotomy(std::function<double(double)> f, double x_low, double x_high, double y_target, double precision,
                                              long max_loops, std::string x_name, std::string y_name, bool verbosity) {
@@ -114,19 +131,24 @@ namespace triqs::experimental::utility {
   //------------------------------------------------------
 
   /**
-   * @ingroup root
-   * @brief bisection algorithm
+   * @brief Solve \f$ f(x) = y \f$ on a bracketing interval using the bisection method.
    *
-   * @param f function f(x)
-   * @param x_low lower bound on f(x)
-   * @param x_high upper bound on f(x)
-   * @param y_target target value for f(x) = y_target
-   * @param precision f(x) - y_target < precision
-   * @param max_loops maximum number of attempts
-   * @param x_name Name of x variable
-   * @param y_name Name of y variable
-   * @param verbosity Print progress
-   * @return x, f(x) where f(x) = y_target
+   * @details Given an interval \f$ [x_\mathrm{low}, x_\mathrm{high}] \f$ that brackets the target value, this method
+   * repeatedly halves the interval, keeping the half in which the target value remains bracketed, until the residual
+   * drops below the requested precision. 
+   * 
+   * It raises an error if convergence is not reached within `max_loops` iterations.
+   *
+   * @param f Function \f$ f(x) : \mathbb{R} \to \mathbb{R} \f$ whose root is sought.
+   * @param x_low Lower bound of the bracketing interval.
+   * @param x_high Upper bound of the bracketing interval.
+   * @param y_target Target value \f$ y \f$ for \f$ f(x) \f$.
+   * @param precision Absolute precision \f$ |f(x) - y| \f$ at which the iteration stops.
+   * @param max_loops Maximum number of iterations.
+   * @param x_name Name of the \f$ x \f$ variable, used in the progress log.
+   * @param y_name Name of the \f$ y \f$ variable, used in the progress log.
+   * @param verbosity Whether to print the convergence progress.
+   * @return Pair \f$ (x, f(x)) \f$ with \f$ f(x) = y \f$ within the requested precision.
    */
   inline std::pair<double, double> bisection(std::function<double(double)> f, double x_low, double x_high, double y_target, double precision,
                                              long max_loops, std::string x_name, std::string y_name, bool verbosity) {
@@ -157,19 +179,24 @@ namespace triqs::experimental::utility {
   //------------------------------------------------------
 
   /**
-   * @brief Root finder \f$ f(x) = 0 \f$.
+   * @brief Find the value \f$ x \f$ that solves \f$ f(x) = y \f$ using the requested root-finding method.
    *
-   * @param method Root finding method (`dichtomy` or `bisection`).
-   * @param f \f$ f(x) : \mathbb{R} \to \mathbb{R} \f$.
-   * @param x_init Initial value for \f$ x \f$.
-   * @param y_value Target value for \f$ y \f$.
-   * @param precision Precision for algorithm.
-   * @param delta_x Increment of \f$ x \f$.
-   * @param max_loops Max number of iterations.
-   * @param x_name Name of \f$ x \f$ variable.
-   * @param y_name Name of \f$ y = f(x) \f$ variable.
-   * @param verbosity Turn on/off logging.
-   * @return \f$ x, f(x) \f$ where \f$ f(x) = y \f$.
+   * @details This is the main entry point of the root finder. It first brackets the solution and then refines it with
+   * either a dichotomy or a bisection step, depending on the chosen method.
+   *
+   * It raises an error if the method name is not recognized.
+   *
+   * @param method Root-finding method, either `"dichotomy"` or `"bisection"`.
+   * @param f Function \f$ f(x) : \mathbb{R} \to \mathbb{R} \f$ whose root is sought.
+   * @param x_init Initial guess for \f$ x \f$.
+   * @param y_value Target value \f$ y \f$ for \f$ f(x) \f$.
+   * @param precision Absolute precision \f$ |f(x) - y| \f$ at which the iteration stops.
+   * @param delta_x Step size used when bracketing the solution.
+   * @param max_loops Maximum number of iterations.
+   * @param x_name Name of the \f$ x \f$ variable, used in the progress log.
+   * @param y_name Name of the \f$ y = f(x) \f$ variable, used in the progress log.
+   * @param verbosity Whether to print the convergence progress.
+   * @return Pair \f$ (x, f(x)) \f$ with \f$ f(x) = y \f$ within the requested precision.
    */
   inline std::pair<double, double> root_finder(std::string method, std::function<double(double)> f, double x_init, double y_value, double precision,
                                                double delta_x, long max_loops = 1000, std::string x_name = "", std::string y_name = "",
@@ -187,5 +214,7 @@ namespace triqs::experimental::utility {
       throw std::runtime_error("Not a valid choice of root finder method!");
     }
   }
+
+  /** @} */
 
 } // namespace triqs::experimental::utility

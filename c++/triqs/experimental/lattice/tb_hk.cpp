@@ -1,4 +1,9 @@
-#include "tb_hk.hpp"
+#include "./tb_hk.hpp"
+#include "../../utility/exceptions.hpp"
+
+#include <nda/nda.hpp>
+
+#include <utility>
 
 namespace triqs::experimental::lattice {
 

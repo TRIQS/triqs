@@ -111,6 +111,33 @@
 /**
  * @defgroup triqs-experimental Experimental tools
  * @brief Experimental tools that are still under development and whose API may change.
+ *
+ * @details They live in the `triqs::experimental` namespace and are organized into two submodules:
+ * 
+ * - @ref triqs-experimental-lattice provides advanced lattice tools.
+ * - @ref triqs-experimental-utility provides numerical helpers.
+ */
+
+/**
+ * @ingroup triqs-experimental
+ * @defgroup triqs-experimental-lattice Lattice tools (experimental)
+ * @brief Fourier polynomials, tight-binding Hamiltonians, superlattices, Wannier90 loaders and Brillouin-zone 
+ * integration.
+ *
+ * @details These tools represent lattice functions \f$ f(\mathbf{k}) = \sum_\mathbf{R} f(\mathbf{R}) e^{2 \pi i
+ * \mathbf{k} \cdot \mathbf{R}} \f$ as Fourier polynomials and build tight-binding Hamiltonians on top of them. They
+ * provide band-structure calculations, folding onto a superlattice, loading of Wannier90 `*_tb.dat` / `*_hr.dat` files, 
+ * and the computation of the non-interacting local Green's function via Brillouin-zone integration.
+ */
+
+/**
+ * @ingroup triqs-experimental
+ * @defgroup triqs-experimental-utility Utilities (experimental)
+ * @brief Adaptive 1D integration, a generic CLEF integrator wrapper and root-finding routines.
+ *
+ * @details These utilities provide the numerical building blocks used by the experimental 
+ * @ref triqs-experimental-lattice tools: an adaptive 13-point Kronrod 1D integrator, a generic wrapper that integrates 
+ * CLEF expressions over a placeholder, and dichotomy/bisection root finding.
  */
 
 /**

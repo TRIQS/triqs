@@ -23,6 +23,17 @@
         <tab type="user" url="@ref triqs::det_manip::det_manip_basic" title="det_manip::det_manip_basic"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-experimental" title="Experimental tools">
+        <tab type="usergroup" url="@ref triqs-experimental-lattice" title="Lattice tools (experimental)">
+          <tab type="user" url="@ref triqs::experimental::lattice::placeholders" title="experimental::lattice::placeholders"/>
+          <tab type="user" url="@ref triqs::experimental::lattice::adaptive_options" title="experimental::lattice::adaptive_options"/>
+          <tab type="user" url="@ref triqs::experimental::lattice::bz_int_options" title="experimental::lattice::bz_int_options"/>
+          <tab type="user" url="@ref triqs::experimental::lattice::fourier_polynomial" title="experimental::lattice::fourier_polynomial"/>
+          <tab type="user" url="@ref triqs::experimental::lattice::superlattice" title="experimental::lattice::superlattice"/>
+          <tab type="user" url="@ref triqs::experimental::lattice::tb_hk" title="experimental::lattice::tb_hk"/>
+        </tab>
+        <tab type="usergroup" url="@ref triqs-experimental-utility" title="Utilities (experimental)">
+          <tab type="user" url="@ref triqs::experimental::utility::integrate_1d_adapt" title="experimental::utility::integrate_1d_adapt"/>
+        </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
       </tab>

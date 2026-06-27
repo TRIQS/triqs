@@ -1,13 +1,33 @@
 #pragma once
-#include <nda/clef/placeholder.hpp>
-#include <nda/clef/utils.hpp>
+
 #include <nda/nda.hpp>
 
-using dcomplex = std::complex<double>;
+#include <array>
+#include <cmath>
+#include <iostream>
+#include <utility>
+#include <vector>
 
 namespace triqs::experimental::utility {
 
-  // set up for the recursive call
+  /**
+   * @addtogroup triqs-experimental-utility
+   * @{
+   */
+
+  /**
+   * @brief Adaptive one-dimensional integrator based on a 13-point Gauss-Kronrod-Lobatto rule.
+   *
+   * @details This class integrates a callable \f$ f(x) \f$ over a one-dimensional interval \f$ [a, b] \f$ by 
+   * recursively subdividing the domain. On each subinterval it compares a 4-point Gauss-Lobatto estimate with a 7-point
+   * Kronrod estimate and keeps subdividing until their difference falls below the requested relative tolerance (scaled
+   * by a global 13-point Kronrod estimate of the integral). 
+   * 
+   * It supports both scalar- and array-valued integrands and can be combined with CLEF lazy expressions through 
+   * triqs::experimental::utility::integrate.
+   *
+   * @tparam T Value type of the integrand, either a scalar type or an array type.
+   */
   template <typename T> class integrate_1d_adapt {
 
     double tolerance = 1e-6;
@@ -28,13 +48,21 @@ namespace triqs::experimental::utility {
 
     public:
     /**
-      * @brief Simple constructor for 1d adaptive integrator on 0,1 domain
-      *
-      * @param tolerance the tolerance to stop the adaptive integration
-      *
-    */
+     * @brief Construct an adaptive one-dimensional integrator with the given relative tolerance.
+     * @param tolerance Relative tolerance at which the recursive subdivision is stopped.
+     */
     integrate_1d_adapt(double tolerance = 1e-6) : tolerance{tolerance} {}
 
+    /**
+     * @brief Build a lazy CLEF call expression for the integral of a lazy integrand over a given domain.
+     *
+     * @details This overload is selected when the integrand is a CLEF lazy expression. It defers the evaluation by
+     * returning a CLEF call expression that integrates the expression once its placeholders are assigned.
+     *
+     * @param f Lazy CLEF expression representing the integrand \f$ f(x) \f$.
+     * @param domain Pair \f$ (a, b) \f$ giving the start and end points of the integration interval.
+     * @return Lazy CLEF call expression representing the integral of \f$ f \f$ over the domain.
+     */
     auto operator()(auto f, const std::pair<double, double> &domain) const
       requires(nda::clef::is_lazy<decltype(f)>)
     {
@@ -42,13 +70,15 @@ namespace triqs::experimental::utility {
     }
 
     /**
-      * @brief Perform an adaptive integration in 1d
-      *
-      * @param f function to be integrated
-      * @param domain a pair of start and end points for the domain
-      *
-      * @return value of the integral
-      */
+     * @brief Perform the adaptive one-dimensional integration of a callable integrand over a given domain.
+     *
+     * @details This overload is selected when the integrand is a plain callable (not a CLEF lazy expression). It
+     * evaluates a 13-point Kronrod estimate to set the error scale and then drives the recursive subdivision.
+     *
+     * @param f Callable integrand \f$ f(x) \f$.
+     * @param domain Pair \f$ (a, b) \f$ giving the start and end points of the integration interval.
+     * @return Value of the integral \f$ \int_a^b f(x) \, dx \f$.
+     */
     auto operator()(auto const &f, const std::pair<double, double> &domain) const
       requires(not nda::clef::is_lazy<decltype(f)>)
     {
@@ -140,5 +170,7 @@ namespace triqs::experimental::utility {
          + adaptive_recursion(f, x[3], x[4], fx[3], fx[4], is) + adaptive_recursion(f, x[4], xb, fx[4], fb, is);
     }
   };
+
+  /** @} */
 
 } // namespace triqs::experimental::utility
