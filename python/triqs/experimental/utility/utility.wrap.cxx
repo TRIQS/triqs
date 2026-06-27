@@ -55,33 +55,39 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cfun(
    "method", "f", "x_init", "y_value", "precision", "delta_x", "max_loops"_a = 1000, "x_name"_a = "", "y_name"_a = "", "verbosity"_a = false)};
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC(
-bisection algorithm
+Solve :math:`f(x) = y` on a bracketing interval using the bisection method.
+
+Given an interval :math:`[x_\mathrm{low}, x_\mathrm{high}]` that brackets the target value, this method
+repeatedly halves the interval, keeping the half in which the target value remains bracketed, until the residual
+drops below the requested precision. 
+
+It raises an error if convergence is not reached within `max_loops` iterations.
 
 Parameters
 ----------
 f : {par_0}
-   function f(x)
+   Function :math:`f(x) : \mathbb{R} \to \mathbb{R}` whose root is sought.
 x_low : {par_1}
-   lower bound on f(x)
+   Lower bound of the bracketing interval.
 x_high : {par_2}
-   upper bound on f(x)
+   Upper bound of the bracketing interval.
 y_target : {par_3}
-   target value for f(x) = y_target
+   Target value :math:`y` for :math:`f(x)`.
 precision : {par_4}
-   f(x) - y_target < precision
+   Absolute precision :math:`|f(x) - y|` at which the iteration stops.
 max_loops : {par_5}
-   maximum number of attempts
+   Maximum number of iterations.
 x_name : {par_6}
-   Name of x variable
+   Name of the :math:`x` variable, used in the progress log.
 y_name : {par_7}
-   Name of y variable
+   Name of the :math:`y` variable, used in the progress log.
 verbosity : {par_8}
-   Print progress
+   Whether to print the convergence progress.
 
 Returns
 -------
 {ret_0}
-   x, f(x) where f(x) = y_target
+   Pair :math:`(x, f(x))` with :math:`f(x) = y` within the requested precision.
 )DOC",
                                                 {{c2py::python_typename<std::function<double(double)>>()},
                                                  {c2py::python_typename<double>()},
@@ -94,33 +100,39 @@ Returns
                                                  {c2py::python_typename<bool>()}},
                                                 {c2py::python_typename<std::pair<double, double>>()});
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC(
-dichotomy algorithm
+Solve :math:`f(x) = y` on a bracketing interval using the false-position (dichotomy) method.
+
+Given an interval :math:`[x_\mathrm{low}, x_\mathrm{high}]` that brackets the target value, this method
+iteratively replaces one of the bounds with the linear (secant) estimate of the root until the residual drops below
+the requested precision. 
+
+It raises an error if convergence is not reached within `max_loops` iterations.
 
 Parameters
 ----------
 f : {par_0}
-   function f(x)
+   Function :math:`f(x) : \mathbb{R} \to \mathbb{R}` whose root is sought.
 x_low : {par_1}
-   lower bound on x
+   Lower bound of the bracketing interval.
 x_high : {par_2}
-   upper bound on x
+   Upper bound of the bracketing interval.
 y_target : {par_3}
-   target value for f(x)
+   Target value :math:`y` for :math:`f(x)`.
 precision : {par_4}
-   f(x) - y_target < precision
+   Absolute precision :math:`|f(x) - y|` at which the iteration stops.
 max_loops : {par_5}
-   maxmimum number of iterations
+   Maximum number of iterations.
 x_name : {par_6}
-   Name of x variable
+   Name of the :math:`x` variable, used in the progress log.
 y_name : {par_7}
-   Name of y variable
+   Name of the :math:`y` variable, used in the progress log.
 verbosity : {par_8}
-   Print progress
+   Whether to print the convergence progress.
 
 Returns
 -------
 {ret_0}
-   x, f(x) where f(x) = y_target
+   Pair :math:`(x, f(x))` with :math:`f(x) = y` within the requested precision.
 )DOC",
                                                 {{c2py::python_typename<std::function<double(double)>>()},
                                                  {c2py::python_typename<double>()},
@@ -133,27 +145,31 @@ Returns
                                                  {c2py::python_typename<bool>()}},
                                                 {c2py::python_typename<std::pair<double, double>>()});
 static const auto _c2py_doc_2 = _c2py_fun_2.doc(R"DOC(
-find upper and lower bounds of f(x)
+Find a lower and an upper bound that bracket the solution of :math:`f(x) = y`.
+
+Starting from an initial guess, this function steps along :math:`x` in increments of `delta_x` until the
+target value :math:`y` is bracketed by the function values at the two most recent points (or until the maximum
+number of steps is reached). The returned bounds are ordered such that the first is smaller than the second.
 
 Parameters
 ----------
 f : {par_0}
-   function of f(x)
+   Function :math:`f(x) : \mathbb{R} \to \mathbb{R}` whose root is sought.
 x_init : {par_1}
-   initial guess x
+   Initial guess for :math:`x`.
 y_value : {par_2}
-   target value y = f(x)
+   Target value :math:`y = f(x)`.
 delta_x : {par_3}
-   x increment
+   Step size by which :math:`x` is incremented.
 precision : {par_4}
-   f(x) - y_value < precision
+   Absolute precision :math:`|f(x) - y|` used to stop the search early.
 max_loops : {par_5}
-   maximum number of loops
+   Maximum number of steps.
 
 Returns
 -------
 {ret_0}
-   x1, x2 where f(x1) and f(x2) bound y_value
+   Pair :math:`(x_1, x_2)` with :math:`x_1 \leq x_2` whose function values bracket :math:`y`.
 )DOC",
                                                 {{c2py::python_typename<std::function<double(double)>>()},
                                                  {c2py::python_typename<double>()},
@@ -163,35 +179,40 @@ Returns
                                                  {c2py::python_typename<long>()}},
                                                 {c2py::python_typename<std::pair<double, double>>()});
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC(
-Root finder :math:`f(x) = 0`.
+Find the value :math:`x` that solves :math:`f(x) = y` using the requested root-finding method.
+
+This is the main entry point of the root finder. It first brackets the solution and then refines it with
+either a dichotomy or a bisection step, depending on the chosen method.
+
+It raises an error if the method name is not recognized.
 
 Parameters
 ----------
 method : {par_0}
-   Root finding method (`dichtomy` or `bisection`).
+   Root-finding method, either `"dichotomy"` or `"bisection"`.
 f : {par_1}
-   :math:`f(x) : \mathbb{R} \to \mathbb{R}`.
+   Function :math:`f(x) : \mathbb{R} \to \mathbb{R}` whose root is sought.
 x_init : {par_2}
-   Initial value for :math:`x`.
+   Initial guess for :math:`x`.
 y_value : {par_3}
-   Target value for :math:`y`.
+   Target value :math:`y` for :math:`f(x)`.
 precision : {par_4}
-   Precision for algorithm.
+   Absolute precision :math:`|f(x) - y|` at which the iteration stops.
 delta_x : {par_5}
-   Increment of :math:`x`.
+   Step size used when bracketing the solution.
 max_loops : {par_6}
-   Max number of iterations.
+   Maximum number of iterations.
 x_name : {par_7}
-   Name of :math:`x` variable.
+   Name of the :math:`x` variable, used in the progress log.
 y_name : {par_8}
-   Name of :math:`y = f(x)` variable.
+   Name of the :math:`y = f(x)` variable, used in the progress log.
 verbosity : {par_9}
-   Turn on/off logging.
+   Whether to print the convergence progress.
 
 Returns
 -------
 {ret_0}
-   :math:`x, f(x)` where :math:`f(x) = y`.
+   Pair :math:`(x, f(x))` with :math:`f(x) = y` within the requested precision.
 )DOC",
                                                 {{c2py::python_typename<std::string>()},
                                                  {c2py::python_typename<std::function<double(double)>>()},
@@ -218,16 +239,23 @@ static PyMethodDef module_methods[] = {
 
 //// module doc directly in the code or "" if not present...
 /// Or mandatory ?
-static struct PyModuleDef module_def = {
-   PyModuleDef_HEAD_INIT,
-   "utility",                                                                       /* name of module */
-   R"RAWDOC(Experimental utility tools (root finder, adaptive integration))RAWDOC", /* module documentation, may be NULL */
-   -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-   module_methods,
-   NULL,
-   NULL,
-   NULL,
-   NULL};
+static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
+                                        "utility", /* name of module */
+                                        R"RAWDOC(Experimental numerical utilities.
+
+.. warning::
+
+   Experimental and unstable -- the API may change without notice.
+
+Generic numerical helpers, currently covering one-dimensional root finding and
+adaptive integration.
+)RAWDOC",                                          /* module documentation, may be NULL */
+                                        -1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+                                        module_methods,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL};
 
 //--------------------- module init function -----------------------------
 
