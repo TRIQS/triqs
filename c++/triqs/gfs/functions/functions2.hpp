@@ -17,17 +17,44 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides tail fitting, slicing, inversion, reality and matrix-multiplication functions for Green's functions.
+ */
+
 #pragma once
+
+#include "../gf/gf.hpp"
+#include "../gf/gf_view.hpp"
+#include "../block/block_gf.hpp"
+#include "../block/map.hpp"
+#include "../../utility/exceptions.hpp"
+
 #include <itertools/itertools.hpp>
+
+#include <algorithm>
+#include <optional>
+#include <utility>
+#include <type_traits>
+#include <vector>
 
 namespace triqs::gfs {
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Make a const view of a Green's function.
+   * 
+   * @tparam Gf The type of the Green's function.
+   * @param g The Green's function.
+   * @return A triqs::gfs::gf_const_view of `g`.
+   */
   template <typename Gf>
     requires(is_gf_v<Gf>)
   auto make_const_view(Gf const &g) {
     return gf_const_view{g};
   }
 
+  // Name elevated from nda for the declarations below.
   using nda::array_const_view;
 
   /*------------------------------------------------------------------------------------------------------
@@ -35,6 +62,7 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail of a Green's function using a least-squares procedure.
    *
    * @details The result is the set of expansion moments that best reproduces the high-frequency behavior of \f$ G \f$ 
@@ -56,6 +84,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail of a block Green's function using a least-squares procedure.
    *
    * @details Each block is fitted independently using ``fit_tail``. The returned error is the maximum across blocks.
@@ -82,6 +111,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail of a Green's function, imposing hermitian symmetry on the fitted moments.
    *
    * @details The symmetry constraint is \f$ G_{i,j}(i\omega) = G_{j,i}^*(-i\omega) \f$.
@@ -112,6 +142,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail of a block Green's function, imposing hermitian symmetry block by block.
    *
    * @details The symmetry constraint is \f$ G_{i,j}(i\omega) = G_{j,i}^*(-i\omega) \f$.
@@ -149,6 +180,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Create a zero-initialized tail object for a given Green function object.
    *
    * @tparam N The mesh position of the frequency or time mesh [default: 0].
@@ -170,16 +202,38 @@ namespace triqs::gfs {
    *                      Slicing the matrix_valued/matrix_real_valued into a matrix
    *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @fn auto slice_target(G &&g, Args &&...args)
+   * @brief Slice the target of a Green's function, keeping the result matrix- (or tensor-) valued.
+   *
+   * @tparam G The type of the Green's function.
+   * @tparam Args Types of the target slice arguments.
+   * @param g The Green's function.
+   * @param args Slice arguments applied to the target indices.
+   * @return A view of `g` sliced over its target space.
+   */
   template <typename G, typename... Args> auto slice_target(G &&g, Args &&...args) {
-    return g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
+    return std::forward<G>(g).apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), std::forward<Args>(args)...); });
   }
 
   /*------------------------------------------------------------------------------------------------------
    *                      Slicing the matrix valued into a scalar
    *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @fn auto slice_target_to_scalar(G &&g, Args &&...args)
+   * @brief Slice the target of a matrix-valued Green's function down to a scalar-valued one.
+   *
+   * @tparam G The type of the Green's function.
+   * @tparam Args Types of the target slice arguments.
+   * @param g The Green's function.
+   * @param args Slice arguments selecting a single target element.
+   * @return A scalar-valued view of `g`.
+   */
   template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&...args) {
-    auto r = g.apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), args...); });
+    auto r = std::forward<G>(g).apply_on_data([&args...](auto &&d) { return d(nda::ellipsis(), std::forward<Args>(args)...); });
     return r;
   }
 
@@ -188,41 +242,71 @@ namespace triqs::gfs {
   *                      A scalar valued gf can be viewed as a 1x1 matrix
   *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Reinterpret a scalar-valued Green's function as a 1x1 matrix-valued one.
+   *
+   * @tparam G The type of the (scalar-valued) Green's function.
+   * @tparam Args Unused.
+   * @param g The scalar-valued Green's function.
+   * @return A 1x1 matrix-valued view of `g`.
+   */
   template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
     static_assert(std::is_same_v<typename std::decay_t<G>::target_t, scalar_valued>,
                   "slice_target_to_scalar : the result is not a scalar valued function");
-    return g.apply_on_data([](auto &&d) { return nda::reinterpret_add_fast_dims_of_size_one<2>(d); });
+    return std::forward<G>(g).apply_on_data([](auto &&d) { return nda::reinterpret_add_fast_dims_of_size_one<2>(d); });
   }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Inversion
   *-----------------------------------------------------------------------------------------------------*/
 
-  // auxiliary function : invert the data : one function for all matrix valued gf (save code).
+  /**
+   * @ingroup triqs-gfs-algebra
+   * @brief Invert, in place, the target matrix at each mesh point of a matrix-valued Green's function.
+   * 
+   * @tparam M Mesh type.
+   * @param g The matrix-valued Green's function view, inverted in place.
+   */
   template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
     auto &a           = g.data();
     auto mesh_lengths = stdutil::mpop<2>(a.indexmap().lengths());
     nda::for_each(mesh_lengths, [&a](auto &&...i) { nda::linalg::inv_in_place(make_matrix_view(a(i..., range::all, range::all))); });
   }
 
+  /**
+   * @ingroup triqs-gfs-algebra
+   * @brief Return the matrix inverse of a matrix-valued Green's function (inverts the target matrix at each mesh point).
+   * 
+   * @tparam M Mesh type.
+   * @param g The matrix-valued Green's function.
+   * @return A new Green's function holding the per-mesh-point matrix inverse.
+   */
   template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> g) {
     invert_in_place(g());
     return g;
   }
 
+  /// @ingroup triqs-gfs-algebra
+  /// View overload of triqs::gfs::inverse (makes a regular copy first).
   template <typename M> gf<M, matrix_valued> inverse(gf_view<M, matrix_valued> g) { return inverse(gf{g}); }
+
+  /// @ingroup triqs-gfs-algebra
+  /// Const-view overload of triqs::gfs::inverse (makes a regular copy first).
   template <typename M> gf<M, matrix_valued> inverse(gf_const_view<M, matrix_valued> g) { return inverse(gf{g}); }
 
   /*------------------------------------------------------------------------------------------------------
   *                     is_gf_real : true iif the gf is real
   *-----------------------------------------------------------------------------------------------------*/
 
-  /// is_gf_real(g, tolerance).
   /**
-   @tparam G any Gf type
-   @param g a gf
-   @param tolerance tolerance threshold
-   @return true iif the function g is real up to tolerance
+   * @ingroup triqs-gfs-reality
+   * @brief Test whether a Green's function is real up to a tolerance.
+   * 
+   * @tparam G Any Green's function type.
+   * @param g The Green's function.
+   * @param tolerance Tolerance threshold.
+   * @return True if `g` is real up to `tolerance`.
    */
   template <typename G>
   bool is_gf_real(G const &g, double tolerance = 1.e-13)
@@ -230,6 +314,9 @@ namespace triqs::gfs {
   {
     return max_element(abs(imag(g.data()))) <= tolerance;
   }
+
+  /// @ingroup triqs-gfs-reality
+  /// Block overload of triqs::gfs::is_gf_real (true iff every block is real up to tolerance).
   template <typename G>
   bool is_gf_real(G const &bg, double tolerance = 1.e-13)
     requires(is_block_gf_v<G>)
@@ -237,11 +324,13 @@ namespace triqs::gfs {
     return std::all_of(bg.begin(), bg.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
   }
 
-  /// Takes the real part of g without check, and returns a new gf with a real target
-  /// real(g).
   /**
-   @tparam G any Gf, BlockGf or Block2Gf type
-   @param g a gf
+   * @ingroup triqs-gfs-reality
+   * @brief Take the real part of a Green's function (no check), returning a new Green's function with a real target.
+   * 
+   * @tparam G Any Gf, BlockGf or Block2Gf type.
+   * @param g The Green's function.
+   * @return A Green's function holding the real part of `g`.
    */
   template <typename G>
   typename G::regular_type::real_t real(G const &g)
@@ -254,10 +343,13 @@ namespace triqs::gfs {
   }
 
   /**
-   * Takes the imag part of g without check, and returns a new gf with a real target.
-   *
-   * @tparam G any Gf, BlockGf or Block2Gf type
-   * @param g a gf
+   * @ingroup triqs-gfs-reality
+   * @brief Take the imaginary part of a Green's function (no check), returning a new Green's function with a real 
+   * target.
+   * 
+   * @tparam G Any Gf, BlockGf or Block2Gf type.
+   * @param g The Green's function.
+   * @return A Green's function holding the imaginary part of `g`.
    */
   template <typename G>
   typename G::regular_type::real_t imag(G const &g)
@@ -273,12 +365,28 @@ namespace triqs::gfs {
   *                      Transpose. Create a NEW gf
   *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Transpose the target matrix of a matrix-valued Green's function, returning a new Green's function.
+   * 
+   * @tparam M Mesh type.
+   * @param g The matrix-valued Green's function.
+   * @return A new Green's function whose target matrix is transposed at every mesh point.
+   */
   template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) { return {g.mesh(), transposed_view(g.data(), 0, 2, 1)}; }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
+  /**
+   * @ingroup triqs-gfs-reality
+   * @brief Complex-conjugate a Green's function, returning a new Green's function.
+   * 
+   * @tparam G The type of the Green's function.
+   * @param g The Green's function.
+   * @return A new Green's function holding the complex conjugate of `g`.
+   */
   template <typename G>
   typename G::regular_type conj(G const &g)
     requires(is_gf_v<G>)
@@ -290,6 +398,8 @@ namespace triqs::gfs {
   *                      Multiply by matrices left or right
   *-----------------------------------------------------------------------------------------------------*/
 
+  // Right-multiply the target matrix at each mesh point of the data array by r.
+  // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): a is indexed per mesh point in the loop, not forwarded
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       matrix_view<T> v = a(i, nda::range::all, nda::range::all);
@@ -297,6 +407,8 @@ namespace triqs::gfs {
     }
   }
 
+  // Left-multiply the target matrix at each mesh point of the data array by l.
+  // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): a is indexed per mesh point in the loop, not forwarded
   template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       matrix_view<T> v = a(i, nda::range::all, nda::range::all);
@@ -304,11 +416,31 @@ namespace triqs::gfs {
     }
   }
 
+  /**
+   * @ingroup triqs-gfs-algebra
+   * @brief Right-multiply a matrix-valued Green's function by a matrix at every mesh point.
+   * 
+   * @tparam M Mesh type. 
+   * @tparam T Scalar type of the matrix.
+   * @param g The matrix-valued Green's function.
+   * @param r The matrix multiplied from the right.
+   * @return The resulting Green's function.
+   */
   template <typename M, typename T> gf<M, matrix_valued> operator*(gf<M, matrix_valued> g, matrix<T> r) {
     _gf_data_mul_R(g.data(), r);
     return g;
   }
 
+  /**
+   * @ingroup triqs-gfs-algebra
+   * @brief Left-multiply a matrix-valued Green's function by a matrix at every mesh point.
+   * 
+   * @tparam M Mesh type. 
+   * @tparam T Scalar type of the matrix.
+   * @param l The matrix multiplied from the left.
+   * @param g The matrix-valued Green's function.
+   * @return The resulting Green's function.
+   */
   template <typename M, typename T> gf<M, matrix_valued> operator*(matrix<T> l, gf<M, matrix_valued> g) {
     _gf_data_mul_L(l, g.data());
     return g;
@@ -319,6 +451,7 @@ namespace triqs::gfs {
   *                      Optimized for speed.
   *-----------------------------------------------------------------------------------------------------*/
 
+  // Set a = l * b * r for the target matrix at each mesh point of the data arrays (optimized via gemm).
   template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A &a, M const &l, B const &b, M const &r) {
     auto tmp = matrix<typename M::value_type>(second_dim(b), second_dim(r));
     auto _   = nda::range::all;
@@ -330,6 +463,18 @@ namespace triqs::gfs {
     }
   }
 
+  /**
+   * @ingroup triqs-gfs-algebra
+   * @brief Set `g1 = l * g2 * r` at every mesh point (in place, optimized for speed).
+   * 
+   * @tparam G1 Type of the output Green's function. 
+   * @tparam G2 Type of the input Green's function. 
+   * @tparam M Matrix type.
+   * @param g1 The output Green's function (overwritten).
+   * @param l The left matrix factor.
+   * @param g2 The input Green's function.
+   * @param r The right matrix factor.
+   */
   template <typename G1, typename G2, typename M> void set_from_L_G_R(G1 &g1, M const &l, G2 const &g2, M const &r) {
     set_from_gf_data_mul_LR(g1.data(), l, g2.data(), r);
   }

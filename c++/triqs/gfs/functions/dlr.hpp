@@ -16,25 +16,47 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides conversions between Green's functions and the Discrete Lehmann Representation (DLR).
+ */
+
 #pragma once
-#include "nda/declarations.hpp"
-#include "triqs/gfs/gf/gf.hpp"
-#include "triqs/gfs/block/block_gf.hpp"
-#include "../../mesh/imtime.hpp"
-#include "../../mesh/imfreq.hpp"
-#include "../../mesh/dlr_imtime.hpp"
+
+#include "../gf/flatten.hpp"
+#include "../gf/gf.hpp"
+#include "../block/block_gf.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/tuple_tools.hpp"
+
+#include "../../mesh/dlr.hpp"
 #include "../../mesh/dlr_imfreq.hpp"
-#include "../..//mesh/dlr.hpp"
+#include "../../mesh/dlr_imtime.hpp"
+#include "../../mesh/imfreq.hpp"
+#include "../../mesh/imtime.hpp"
+#include "../../mesh/prod.hpp"
+
+#include <array>
+#include <cmath>
+#include <vector>
+
 namespace triqs::gfs {
 
+  // Elevate the DLR mesh types into the triqs::gfs namespace.
   using mesh::dlr;
   using mesh::dlr_imfreq;
   using mesh::dlr_imtime;
+
+  /**
+   * @addtogroup triqs-gfs-basis
+   * @{
+   */
 
   //-------------------------------------------------------
   // Transformation of DLR Green's functions
   // ------------------------------------------------------
 
+  // Apply f to mesh component N: helper for the make_gf_dlr* transforms; recurses over product-mesh components and blocks.
   template <int N, int... Ns, typename F, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
   auto apply_to_mesh(F const &f, G const &g) {
@@ -315,6 +337,7 @@ namespace triqs::gfs {
 
     auto const &m0 = detail::imfreq_mesh_of(g);
 
+    // NOLINTNEXTLINE(bugprone-float-loop-counter): intentional geometric (x1.5) growth of the real-valued DLR cutoff
     for (double w_max = w_max_init; w_max <= w_max_max; w_max *= 1.5) {
       auto dlr_mesh       = dlr_imfreq{m0.beta(), m0.statistic(), w_max, eps, symmetrize};
       auto [iw_lo, iw_hi] = dlr_mesh.min_max_frequencies();
@@ -445,5 +468,7 @@ namespace triqs::gfs {
       }
     }
   }
+
+  /** @} */
 
 } // namespace triqs::gfs

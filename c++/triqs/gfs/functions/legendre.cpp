@@ -17,49 +17,57 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-#include "../../gfs.hpp"
-#include <triqs/utility/legendre.hpp>
+/**
+ * @file
+ * @brief Implementation of the Legendre-basis Green's function functions.
+ */
 
-namespace triqs {
-  namespace gfs {
+#include "./legendre.hpp"
+#include "../gf/defs.hpp"
+#include "../gf/gf_const_view.hpp"
+#include "../gf/gf_view.hpp"
+#include "../../mesh/legendre.hpp"
+#include "../../utility/legendre.hpp"
 
-    using nda::array;
+namespace triqs::gfs {
 
-    //-------------------------------------------------------
-    // For Legendre functions
-    // ------------------------------------------------------
+  using nda::array;
 
-    // compute a tail from the Legendre GF
-    // this is Eq. 8 of our paper
-    array<dcomplex, 3> get_tail(gf_const_view<legendre> gl, int order) {
+  //-------------------------------------------------------
+  // For Legendre functions
+  // ------------------------------------------------------
 
-      auto sh = gl.data().shape();
-      sh[0]   = order;
-      array<dcomplex, 3> t{sh};
-      t() = 0.0;
+  // compute a tail from the Legendre GF
+  // this is Eq. 8 of our paper
+  array<dcomplex, 3> get_tail(gf_const_view<mesh::legendre> gl, int order) {
 
-      for (int p = 0; p < order; p++)
-        for (auto l : gl.mesh()) t(p, ellipsis{}) += (triqs::utility::legendre_t(l.index(), p) / std::pow(gl.mesh().beta(), p)) * gl[l];
+    auto sh = gl.data().shape();
+    sh[0]   = order;
+    array<dcomplex, 3> t{sh};
+    t() = 0.0;
 
-      return t;
+    for (int p = 0; p < order; p++)
+      for (auto l : gl.mesh())
+        t(p, ellipsis{}) += (triqs::utility::legendre_t(static_cast<int>(l.index()), p) / std::pow(gl.mesh().beta(), p)) * gl[l];
+
+    return t;
+  }
+
+  // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
+  void enforce_discontinuity(gf_view<mesh::legendre> gl, nda::array_const_view<double, 2> disc) {
+
+    double norm = 0.0;
+    nda::vector<double> t(gl.data().shape()[0]);
+    for (int i = 0; i < t.size(); ++i) {
+      t(i) = triqs::utility::legendre_t(i, 1) / gl.mesh().beta();
+      norm += t(i) * t(i);
     }
 
-    // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
-    void enforce_discontinuity(gf_view<legendre> gl, nda::array_const_view<double, 2> disc) {
+    nda::array<dcomplex, 2> corr(disc.shape());
+    corr() = 0;
+    for (auto l : gl.mesh()) corr += t(l.index()) * gl[l];
 
-      double norm = 0.0;
-      nda::vector<double> t(gl.data().shape()[0]);
-      for (int i = 0; i < t.size(); ++i) {
-        t(i) = triqs::utility::legendre_t(i, 1) / gl.mesh().beta();
-        norm += t(i) * t(i);
-      }
+    for (auto l : gl.mesh()) gl.data()(l.index(), range::all, range::all) += (disc - corr) * t(l.index()) / norm;
+  }
 
-      nda::array<dcomplex, 2> corr(disc.shape());
-      corr() = 0;
-      for (auto l : gl.mesh()) corr += t(l.index()) * gl[l];
-
-      for (auto l : gl.mesh()) gl.data()(l.index(), range::all, range::all) += (disc - corr) * t(l.index()) / norm;
-    }
-
-  } // namespace gfs
-} // namespace triqs
+} // namespace triqs::gfs

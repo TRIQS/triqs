@@ -17,25 +17,36 @@
 //
 // Authors: Philipp Dumitrescu, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides imaginary-time Green's function utilities.
+ */
+
 #pragma once
 
-namespace triqs {
-  namespace gfs {
+#include "../gf/gf_const_view.hpp"
+#include "../gf/gf.hpp"
+#include "../../mesh/imtime.hpp"
 
-    //-------------------------------------------------------
-    // rebinning
-    // ------------------------------------------------------
+#include <cstddef>
 
-    /**
-     * @brief Rebin an imaginary-time Green's function onto a coarser uniform mesh.
-     *
-     * @details The new mesh has ``new_n_tau`` points covering the same \f$ [0, \beta] \f$ interval. Each output point 
-     * is an average of the input values whose \f$ \tau \f$ falls in the corresponding bin.
-     *
-     * @param g The imaginary-time Green's function to rebin.
-     * @param new_n_tau Number of points of the output mesh.
-     * @return A new imaginary-time Green's function on a mesh of size ``new_n_tau``.
-     */
-    gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, size_t new_n_tau);
-  } // namespace gfs
-} // namespace triqs
+namespace triqs::gfs {
+
+  //-------------------------------------------------------
+  // rebinning
+  // ------------------------------------------------------
+
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Rebin an imaginary-time Green's function onto a coarser uniform mesh.
+   *
+   * @details The new mesh has ``new_n_tau`` points covering the same \f$ [0, \beta] \f$ interval. Each output point 
+   * is an average of the input values whose \f$ \tau \f$ falls in the corresponding bin.
+   *
+   * @param g The imaginary-time Green's function to rebin.
+   * @param new_n_tau Number of points of the output mesh.
+   * @return A new imaginary-time Green's function on a mesh of size ``new_n_tau``.
+   */
+  gf<mesh::imtime> rebinning_tau(gf_const_view<mesh::imtime> const &g, size_t new_n_tau);
+
+} // namespace triqs::gfs

@@ -17,17 +17,47 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides Matsubara-frequency-specific functions and reality / hermiticity helpers for Green's functions.
+ */
+
 #pragma once
+
+#include "./functions2.hpp"
+#include "../gf/gf.hpp"
+#include "../gf/gf_view.hpp"
+#include "../block/block_gf.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/view_tools.hpp"
+
+#include "../../mesh/dlr_imfreq.hpp"
+#include "../../mesh/dlr_imtime.hpp"
+#include "../../mesh/imfreq.hpp"
+#include "../../mesh/imtime.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <type_traits>
+#include <utility>
 
 namespace triqs::gfs {
 
+  // Elevated from nda (name not found via ADL on some compilers).
   using nda::conj; // not found on gcc 5
 
   // ---------------------------  A few specific functions ---------------------------------
 
   /**
-   * This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
-   * using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
+   * @ingroup triqs-gfs-reality
+   * @brief Build a full-mesh Matsubara Green's function from one defined on positive frequencies only.
+   *
+   * @details Uses the relation \f$ G(-i\omega_n) = G(i\omega_n)^* \f$, valid for Green's functions with a real
+   * imaginary-time counterpart, to fill in the negative-frequency part of the mesh.
+   *
+   * @tparam T Target type. @tparam Layout Layout type.
+   * @param g Green's function defined on a positive-only Matsubara mesh.
+   * @return The Green's function on the full (positive and negative) Matsubara mesh.
    */
   template <typename T, typename Layout> gf<mesh::imfreq, T> make_gf_from_real_gf(gf_const_view<mesh::imfreq, T, Layout> g) {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
@@ -37,22 +67,30 @@ namespace triqs::gfs {
     long L          = sh[0];
     sh[0]           = 2 * sh[0] - is_boson;
     array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
-    auto ___ = nda::ellipsis{};
-    if (is_boson) new_data(L - 1, ___) = dat(0, ___);
-    int L1 = (is_boson ? L - 1 : L);
-    for (int u = is_boson; u < L; ++u) {
-      new_data(L1 + u, ___)    = dat(u, ___);
-      new_data(L - 1 - u, ___) = conj(dat(u, ___));
+    auto ell = nda::ellipsis{};
+    if (is_boson) new_data(L - 1, ell) = dat(0, ell);
+    long L1 = (is_boson ? L - 1 : L);
+    for (long u = is_boson; u < L; ++u) {
+      new_data(L1 + u, ell)    = dat(u, ell);
+      new_data(L - 1 - u, ell) = conj(dat(u, ell));
     }
     return {mesh::imfreq{g.mesh().beta(), g.mesh().statistic(), L}, std::move(new_data)};
   }
 
-  /// Make a const view of the positive frequency part of the function
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Make a view of the positive-frequency part of a Matsubara Green's function.
+   *
+   * @tparam G The type of the Green's function (must be an lvalue or a view).
+   * @param g The Matsubara Green's function.
+   * @return A view onto the positive-frequency part of `g`.
+   */
   template <typename G>
-  view_or_type_t<std::decay_t<G>> positive_freq_view(G &&g)
+  view_or_type_t<std::decay_t<G>>
+  positive_freq_view(G &&g) // NOLINT(cppcoreguidelines-missing-std-forward): the returned view binds to g's data; g is not moved
     requires(is_gf_v<G>)
   {
-    static_assert(std::is_same<typename std::decay_t<G>::mesh_t, mesh::imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
+    static_assert(std::is_same_v<typename std::decay_t<G>::mesh_t, mesh::imfreq>, "positive_freq_view only makes senses for imfreq gf");
     static_assert(std::decay_t<G>::is_view or std::is_lvalue_reference_v<G>, "Cannot construct a positive_freq_view from a temporary gf");
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
@@ -62,6 +100,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-reality
    * @brief Test whether a Green's function satisfies the hermitian symmetry up to a tolerance \f$ \epsilon \f$.
    *
    * @details Depending on the mesh and target rank, one of the following relations is checked:
@@ -156,6 +195,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-reality
    * @brief Test whether a Matsubara Green's function corresponds to a real imaginary-time Green's function.
    *
    * @details The criterion checked, up to tolerance \f$ \epsilon \f$, is \f$ G_{i,j,\dots}(i\omega) \approx 
@@ -189,6 +229,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-reality
    * @brief Symmetrize a Green's function so that it satisfies the hermitian symmetry.
    *
    * @details Depending on the mesh and target rank, one of the following transformations is applied:
@@ -266,6 +307,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-reality
    * @brief Symmetrize a Matsubara Green's function so that its imaginary-time partner is real-valued.
    *
    * @details The transformation applied is \f$ G_{i,j,\dots}(i\omega) \rightarrow \frac{1}{2} [ G_{i,j,\dots}(i\omega) 
@@ -296,6 +338,16 @@ namespace triqs::gfs {
 
   // ------------------------------------------------------------------------------------------------------
 
+  /**
+   * @ingroup triqs-gfs-reshape
+   * @brief Make a const view of a Matsubara Green's function restricted to the first `n_max` frequency indices.
+   *
+   * @tparam G The Green's function container template.
+   * @tparam T The target type of the Green's function.
+   * @param g The Matsubara Green's function.
+   * @param n_max Number of (positive) Matsubara indices to keep.
+   * @return A const view on the restricted frequency range.
+   */
   template <template <typename, typename, typename...> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
     auto iw_mesh = mesh::imfreq{g.mesh().beta(), Fermion, n_max};
 
@@ -308,6 +360,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Overwrite the high-frequency tail of a Matsubara Green's function.
    *
    * @details For every Matsubara index with \f$ |n| \geq n_{\min} \f$, the value of the Green's function is replaced by 
@@ -324,6 +377,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Overwrite the high-frequency portion of a Matsubara Green's function with the tail expansion.
    *
    * @details The cutoff \f$ n_{\min} \f$ is first set automatically from the tail-fit window of the mesh. Then the 
@@ -340,6 +394,7 @@ namespace triqs::gfs {
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail of a Matsubara Green's function on a restricted frequency window.
    *
    * @details The fit is performed on the window \f$ [n_{\min}, n_{\max}] \f$ of the Matsubara mesh (\f$ n_{\max} = 
@@ -361,12 +416,13 @@ namespace triqs::gfs {
                           int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
-    double tail_fraction = double(n_max - n_min) / n_max;
+    double tail_fraction = static_cast<double>(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
     return fit_tail(g_rview, known_moments);
   }
 
   /**
+   * @ingroup triqs-gfs-tailfitting
    * @brief Fit the high-frequency tail on a restricted window, imposing hermitian moment matrices.
    *
    * @details Behaves like ``fit_tail_on_window`` but enforces the symmetry \f$ G_{i,j}(i\omega) = 
@@ -387,7 +443,7 @@ namespace triqs::gfs {
                                     int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
-    double tail_fraction = double(n_max - n_min) / n_max;
+    double tail_fraction = static_cast<double>(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
     return fit_hermitian_tail(g_rview, known_moments);
   }

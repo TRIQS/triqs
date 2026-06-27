@@ -18,8 +18,25 @@
 //
 // Authors: Michel Ferrero, Alexander Hampel, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
-#include "../../gfs.hpp"
-#include <triqs/utility/legendre.hpp>
+/**
+ * @file
+ * @brief Implementation of the density functions for Green's functions.
+ */
+
+#include "./density.hpp"
+#include "./functions2.hpp"
+#include "../gf/defs.hpp"
+#include "../gf/gf_const_view.hpp"
+#include "../gf/targets.hpp"
+#include "../../mesh/imfreq.hpp"
+#include "../../mesh/legendre.hpp"
+#include "../../mesh/refreq.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/macros.hpp"
+
+#include <cmath>
+#include <iostream>
+#include <string>
 
 namespace triqs::gfs {
 
@@ -29,7 +46,7 @@ namespace triqs::gfs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  nda::matrix<dcomplex> density(gf_const_view<imfreq> g, array_const_view<dcomplex, 3> known_moments) {
+  nda::matrix<dcomplex> density(gf_const_view<mesh::imfreq> g, array_const_view<dcomplex, 3> known_moments) {
 
     if (g.mesh().positive_only())
       TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
@@ -57,13 +74,13 @@ namespace triqs::gfs {
       mom_123.rebind(known_moments(range(1, 4), range::all, range::all));
 
     auto sh = g.target_shape();
-    int N1 = sh[0], N2 = sh[1];
+    long N1 = sh[0], N2 = sh[1];
     nda::matrix<dcomplex> res(sh);
     auto beta = g.mesh().beta();
 
-    auto S = g.mesh().statistic();
-    double b1, b2, b3; // pole location for tail model
-    double xi;         // +1, -1 for boson/fermion
+    auto S    = g.mesh().statistic();
+    double b1 = 0, b2 = 0, b3 = 0; // pole location for tail model
+    double xi = 0;                 // +1, -1 for boson/fermion
 
     if (S == Fermion) {
       xi = -1.;
@@ -120,7 +137,7 @@ namespace triqs::gfs {
   }
 
   //-------------------------------------------------------
-  dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_const_view<dcomplex, 1> known_moments) {
+  dcomplex density(gf_const_view<mesh::imfreq, scalar_valued> g, array_const_view<dcomplex, 1> known_moments) {
     auto km = array<dcomplex, 3>(make_shape(known_moments.shape()[0], 1, 1));
     if (!known_moments.is_empty()) km(range::all, 0, 0) = known_moments();
     auto res = density(reinterpret_scalar_valued_gf_as_matrix_valued(g), km)(0, 0);
@@ -132,15 +149,15 @@ namespace triqs::gfs {
   // ------------------------------------------------------
 
   /// Zero temperature density from integration on the real frequency axis
-  nda::matrix<dcomplex> density(gf_const_view<refreq> g) {
+  nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g) {
 
     double wmin = g.mesh().w_min();
     double dw   = g.mesh().delta();
 
     EXPECTS(wmin < 0.);
 
-    auto N0    = int(std::floor(-wmin / dw)) + 1; // frequency index at or above w=0
-    double dw0 = -wmin - (N0 - 1) * dw;           // last interval width to w=0
+    auto N0    = static_cast<int>(std::floor(-wmin / dw)) + 1; // frequency index at or above w=0
+    double dw0 = -wmin - (N0 - 1) * dw;                        // last interval width to w=0
 
     nda::matrix<dcomplex> res(g.target_shape());
 
@@ -164,7 +181,7 @@ namespace triqs::gfs {
   }
 
   /// Finite temperature density from integration on the real frequency axis
-  nda::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
+  nda::matrix<dcomplex> density(gf_const_view<mesh::refreq> g, double beta) {
 
     auto [N, M] = g.target_shape();
     EXPECTS(beta > 0 and N == M);
@@ -183,17 +200,17 @@ namespace triqs::gfs {
   }
 
   //-------------------------------------------------------
-  dcomplex density(gf_const_view<refreq, scalar_valued> g, double beta) {
+  dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g, double beta) {
     return density(reinterpret_scalar_valued_gf_as_matrix_valued(g), beta)(0, 0);
   }
 
-  dcomplex density(gf_const_view<refreq, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
+  dcomplex density(gf_const_view<mesh::refreq, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
   //-------------------------------------------------------
   // For Legendre functions
   // ------------------------------------------------------
 
-  nda::matrix<dcomplex> density(gf_const_view<legendre> gl) {
+  nda::matrix<dcomplex> density(gf_const_view<mesh::legendre> gl) {
     nda::matrix<dcomplex> res(gl.target_shape());
     res() = 0.0;
 
@@ -205,6 +222,6 @@ namespace triqs::gfs {
     return transpose(res);
   }
 
-  dcomplex density(gf_const_view<legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
+  dcomplex density(gf_const_view<mesh::legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
 } // namespace triqs::gfs
