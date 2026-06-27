@@ -95,6 +95,15 @@ meshes.
 
 ## Operators
 
+@ref triqs-ops provides a symbolic algebra for second-quantized many-body operators that act on the fermionic Fock space 
+documented under @ref triqs-hilbert. It is split into two parts:
+
+- @ref triqs-ops-mbo is the many-body operator algebra. triqs::operators::many_body_operator (with its real- and
+complex-valued aliases) is a linear combination of monomials of canonical creation/annihilation operators, assembled
+from the factory functions triqs::operators::c_dag, triqs::operators::c and triqs::operators::n and combined with
+ordinary `+`, `-` and `*` arithmetic.
+- @ref triqs-ops-extractors decomposes an operator of known structure into coefficient dictionaries and dense arrays
+
 ## Statistical analysis tools
 
 @ref triqs-stat is a header-mostly toolkit for the statistical analysis of Monte Carlo data and other sampled

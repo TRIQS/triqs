@@ -50,7 +50,7 @@
 namespace triqs::operators {
 
   /**
-   * @addtogroup triqs-ops
+   * @addtogroup triqs-ops-mbo
    * @{
    */
 

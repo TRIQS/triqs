@@ -39,7 +39,7 @@
 namespace triqs::operators::utils {
 
   /**
-   * @addtogroup triqs-ops
+   * @addtogroup triqs-ops-extractors
    * @{
    */
 

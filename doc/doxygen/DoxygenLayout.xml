@@ -149,8 +149,11 @@
         </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-ops" title="Operators">
-        <tab type="user" url="@ref triqs::operators::canonical_ops_t" title="operators::canonical_ops_t"/>
-        <tab type="user" url="@ref triqs::operators::many_body_operator_generic" title="operators::many_body_operator_generic"/>
+        <tab type="usergroup" url="@ref triqs-ops-mbo" title="Many-body operators">
+          <tab type="user" url="@ref triqs::operators::canonical_ops_t" title="operators::canonical_ops_t"/>
+          <tab type="user" url="@ref triqs::operators::many_body_operator_generic" title="operators::many_body_operator_generic"/>
+        </tab>
+        <tab type="user" url="@ref triqs-ops-extractors" title="Operator utilities"/>
       </tab>
       <tab type="usergroup" url="@ref triqs-stat" title="Statistical analysis tools">
         <tab type="usergroup" url="@ref triqs-stat-accs" title="Accumulators">

@@ -412,7 +412,64 @@
 
 /**
  * @defgroup triqs-ops Operators
- * @brief Tools to specify and manipulate many-body states and operators.
+ * @brief Tools to construct and manipulate second-quantized many-body operators.
+ *
+ * @details The @ref triqs-ops module provides a symbolic algebra for second-quantized many-body operators acting on the
+ * fermionic Fock space introduced in @ref triqs-hilbert.
+ *
+ * The central type is triqs::operators::many_body_operator (with the real- and complex-valued aliases
+ * triqs::operators::many_body_operator_real and triqs::operators::many_body_operator_complex). A many-body operator
+ * \f$ \hat{O} = \sum_i a_i \hat{m}_i \f$ is a linear combination of monomials \f$ \hat{m}_i \f$ (see
+ * triqs::operators::monomial_t), where each monomial is an ordered product of canonical creation/annihilation
+ * operators (see triqs::operators::canonical_ops_t). The operators form an algebra over the field of real/complex
+ * scalars, with an additional addition operation between operators and scalars.
+ *
+ * Operators are not constructed directly but assembled from the factory functions triqs::operators::c (annihilation),
+ * triqs::operators::c_dag (creation) and triqs::operators::n (number), combined with the usual `+`, `-` and `*`
+ * arithmetic.
+ *
+ * Helper functions include `dagger` (Hermitian conjugation), triqs::operators::real / triqs::operators::imag
+ * (real/imaginary parts of the coefficients), `transform` (apply a callable to each coefficient) and
+ * triqs::operators::is_op_hermitian.
+ *
+ * The module is split into two parts:
+ * - @ref triqs-ops-mbo — the many-body operator algebra itself.
+ * - @ref triqs-ops-extractors — helpers that decompose an operator into coefficient tensors and matrices.
+ */
+
+/**
+ * @ingroup triqs-ops
+ * @defgroup triqs-ops-mbo Many-body operators
+ * @brief The many-body operator algebra in second quantization.
+ *
+ * @details This group contains triqs::operators::many_body_operator_generic and its real- and complex-valued aliases.
+ * An operator is stored as a map from monomials (triqs::operators::monomial_t, an ordered product of
+ * triqs::operators::canonical_ops_t) to scalar coefficients. 
+ * 
+ * In addition the group provides:
+ * 
+ * - the creation/annihilation/number factories triqs::operators::c, triqs::operators::c_dag and triqs::operators::n,
+ * - operator-operator and operator-scalar arithmetic (`+`, `-`, `*`, `/`) implementing the algebra,
+ * - Hermitian conjugation via `dagger` and Hermiticity checks via triqs::operators::is_op_hermitian,
+ * - coefficient manipulation through `transform`, triqs::operators::real and triqs::operators::imag, and
+ * - HDF5 serialization of operators together with a fundamental operator set.
+ */
+
+/**
+ * @ingroup triqs-ops
+ * @defgroup triqs-ops-extractors Operator utilities
+ * @brief Helpers to extract coefficient tensors and maps from many-body operators.
+ *
+ * @details This group collects free functions that decompose a many-body operator of a known structure into coefficient 
+ * dictionaries and dense arrays:
+ * 
+ * - utils::extract_h_dict, utils::extract_U_dict2 and utils::extract_U_dict4 read the coefficients of normal-ordered 
+ * quadratic, density-density and general two-particle operators into index-keyed dictionaries.
+ * - utils::dict_to_matrix and utils::dict_to_variant_matrix convert such dictionaries into dense arrays indexed by the 
+ * linear indices of a triqs::hilbert_space::fundamental_operator_set.
+ * - utils::quadratic_terms and utils::quartic_terms keep only the monomials of a given length. 
+ * - utils::block_matrix_from_op and utils::op_from_block_matrix convert between a block-diagonal quadratic operator and 
+ * its block-matrix representation.
  */
 
 /**
