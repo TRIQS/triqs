@@ -255,7 +255,6 @@ namespace triqs::gfs {
      *  @param dat data arrray
      *
      *  @note  Using the "pass by value" and move
-     *  @example triqs/gfs/gf_constructors_0.cpp
      */
     gf(mesh_t m, data_t dat) : _mesh(std::move(m)), _data(std::move(dat)) {}
 
@@ -310,7 +309,6 @@ namespace triqs::gfs {
      * 		  RHS can be anything modeling the gf concept TBW
      * 		  In particular lazy expression with Green functions
      * @param rhs
-     * @example    triqs/gfs/gf_assign_0.cpp
      */
     template <typename RHS>
     gf &operator=(RHS &&rhs)

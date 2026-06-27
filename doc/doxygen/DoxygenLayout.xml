@@ -9,7 +9,8 @@
       </tab>
     </tab>
     <tab type="usergroup" url="@ref examples" title="Examples">
-      <tab type="user" url="@ref mesh_ex1" title="Example 1: Mesh types"/>
+      <tab type="user" url="@ref mesh_ex" title="Mesh types"/>
+      <tab type="user" url="@ref gf_ex" title="Green's functions"/>
     </tab>
     <tab type="usergroup" url="@ref documentation" title="API Documentation">
       <tab type="usergroup" url="@ref triqs-atom-diag" title="Atomic problem diagonalization">

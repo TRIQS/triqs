@@ -1,15 +1,19 @@
-@page mesh_ex1 Example 1: Mesh types
+@page mesh_ex Mesh types
 
 [TOC]
 
-This example shows how to construct each of the mesh types provided by @ref triqs-meshes and how to iterate their 
-points. 
-Each section below is a self-contained `main()` whose source lives in `doc/doxygen/examples/` and is built by 
-`doc/doxygen/examples/CMakeLists.txt`, so it cannot drift out of sync with the library.
+A *mesh* is the discretized domain of a @ref triqs-gfs "Green's function": it defines the points at
+which the function is stored and the rule used to evaluate it in between. This example constructs
+each of the mesh types provided by @ref triqs-meshes and iterates over its points, printing for every
+point its index, its linear data index (the offset into the underlying array), and — where the mesh
+carries values — its coordinate.
+
+Each section below is a self-contained `main()` whose source lives in `doc/doxygen/examples/` and is
+built by `doc/doxygen/examples/CMakeLists.txt`, so it cannot drift out of sync with the library.
 
 For the equivalent Python usage, see the Python user guide.
 
-@section mesh_ex1_brzone Brillouin-zone mesh
+@section mesh_ex_brzone Brillouin-zone mesh
 
 @include brzone.cpp
 
@@ -30,7 +34,7 @@ mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5000, 0.5000, 0.3
 mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5000, 0.5000, 0.6667]
 @endcode
 
-@section mesh_ex1_chebyshev Chebyshev mesh
+@section mesh_ex_chebyshev Chebyshev mesh
 
 @include chebyshev.cpp
 
@@ -44,7 +48,7 @@ mesh point #3: index = 3, data index = 3, value = 7.938926261462366
 mesh point #4: index = 4, data index = 4, value = 9.755282581475768
 @endcode
 
-@section mesh_ex1_cyclat Cyclic-lattice mesh
+@section mesh_ex_cyclat Cyclic-lattice mesh
 
 @include cyclat.cpp
 
@@ -65,7 +69,7 @@ mesh point #10: index = [1, 1, 1], data index = 10, value = [0.5, 0.5, 0.5]
 mesh point #11: index = [1, 1, 2], data index = 11, value = [0.5, 0.5, 1]
 @endcode
 
-@section mesh_ex1_discrete Discrete mesh
+@section mesh_ex_discrete Discrete mesh
 
 @include discrete.cpp
 
@@ -79,7 +83,7 @@ mesh point #3: index = 3, data index = 3
 mesh point #4: index = 4, data index = 4
 @endcode
 
-@section mesh_ex1_dlr DLR mesh
+@section mesh_ex_dlr DLR mesh
 
 @include dlr.cpp
 
@@ -96,7 +100,7 @@ mesh point #6: index = 6, data index = 6, value = 3.831753911537679
 mesh point #7: index = 7, data index = 7, value = 4.997323654048254
 @endcode
 
-@section mesh_ex1_dlr_imfreq DLR imaginary-frequency mesh
+@section mesh_ex_dlr_imfreq DLR imaginary-frequency mesh
 
 @include dlr_imfreq.cpp
 
@@ -113,7 +117,7 @@ mesh point #6: index = 2, data index = 6, value = 1.5707963267948966i
 mesh point #7: index = 5, data index = 7, value = 3.455751918948772i
 @endcode
 
-@section mesh_ex1_dlr_imtime DLR imaginary-time mesh
+@section mesh_ex_dlr_imtime DLR imaginary-time mesh
 
 @include dlr_imtime.cpp
 
@@ -130,7 +134,7 @@ mesh point #6: index = 6, data index = 6, value = 9.550004964934757
 mesh point #7: index = 7, data index = 7, value = 9.987968049992553
 @endcode
 
-@section mesh_ex1_imfreq Imaginary-frequency mesh
+@section mesh_ex_imfreq Imaginary-frequency mesh
 
 @include imfreq.cpp
 
@@ -145,7 +149,7 @@ mesh point #4: index = 1, data index = 4, value = 0.9424777960769379i
 mesh point #5: index = 2, data index = 5, value = 1.5707963267948966i
 @endcode
 
-@section mesh_ex1_imtime Imaginary-time mesh
+@section mesh_ex_imtime Imaginary-time mesh
 
 @include imtime.cpp
 
@@ -159,7 +163,7 @@ mesh point #3: index = 3, data index = 3, value = 7.5
 mesh point #4: index = 4, data index = 4, value = 10
 @endcode
 
-@section mesh_ex1_legendre Legendre mesh
+@section mesh_ex_legendre Legendre mesh
 
 @include legendre.cpp
 
@@ -173,7 +177,7 @@ mesh point #3: index = 3, data index = 3
 mesh point #4: index = 4, data index = 4
 @endcode
 
-@section mesh_ex1_prod Product mesh
+@section mesh_ex_prod Product mesh
 
 @include prod.cpp
 
@@ -194,7 +198,7 @@ mesh point #10: index = ([1, 1, 0], 0), data index = (3, 1)
 mesh point #11: index = ([1, 1, 0], 1), data index = (3, 2)
 @endcode
 
-@section mesh_ex1_refreq Real-frequency mesh
+@section mesh_ex_refreq Real-frequency mesh
 
 @include refreq.cpp
 
@@ -208,7 +212,7 @@ mesh point #3: index = 3, data index = 3, value = 2.5
 mesh point #4: index = 4, data index = 4, value = 5
 @endcode
 
-@section mesh_ex1_refreq_log Logarithmic real-frequency mesh
+@section mesh_ex_refreq_log Logarithmic real-frequency mesh
 
 @include refreq_log.cpp
 
@@ -231,7 +235,7 @@ mesh point #12: index = 12, data index = 12, value = 5
 mesh point #13: index = 13, data index = 13, value = 10
 @endcode
 
-@section mesh_ex1_refreq_pts Custom-point real-frequency mesh
+@section mesh_ex_refreq_pts Custom-point real-frequency mesh
 
 @include refreq_pts.cpp
 
@@ -245,7 +249,7 @@ mesh point #3: index = 3, data index = 3, value = 1
 mesh point #4: index = 4, data index = 4, value = 5
 @endcode
 
-@section mesh_ex1_retime Real-time mesh
+@section mesh_ex_retime Real-time mesh
 
 @include retime.cpp
 

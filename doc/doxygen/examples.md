@@ -8,7 +8,8 @@ For the equivalent Python usage, see the Python user guide.
 
 | Example | Description |
 |---------|-------------|
-| @ref mesh_ex1 | C++ mesh types — constructing each mesh and iterating its points |
+| @ref mesh_ex | C++ mesh types — constructing each mesh and iterating its points |
+| @ref gf_ex | Green's functions — creating and manipulating @f$G(i\omega)@f$, @f$G(\tau)@f$, @f$G(t)@f$, ... |
 
 @section compiling Compiling the examples
 
