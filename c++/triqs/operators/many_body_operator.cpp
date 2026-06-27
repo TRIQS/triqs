@@ -31,6 +31,7 @@
 #include <hdf5.h>
 #include <itertools/itertools.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <complex>
@@ -55,7 +56,7 @@ namespace triqs::operators {
   }
 
   bool operator<(monomial_t const &m1, monomial_t const &m2) {
-    return m1.size() != m2.size() ? m1.size() < m2.size() : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
+    return m1.size() != m2.size() ? m1.size() < m2.size() : std::ranges::lexicographical_compare(m1, m2);
   }
 
   std::ostream &operator<<(std::ostream &os, monomial_t const &m) {
@@ -63,17 +64,16 @@ namespace triqs::operators {
     return os;
   }
 
-  /// ----- h5 support
-
   namespace {
 
     // the type of the monomial to be stored in the h5 file
     // the complicated indices of the C, C^ will be transformed into an int
     // via a fundamental_operator_set
     struct h5_monomial {
-      bool is_real;
-      double re, im;
-      long op_indices[MAX_MONOMIAL_SIZE];
+      bool is_real{};
+      double re{};
+      double im{};
+      std::array<long, MAX_MONOMIAL_SIZE> op_indices{};
     };
 
     // create the h5 type corresponding to h5_monomial
@@ -82,8 +82,8 @@ namespace triqs::operators {
       H5Tinsert(mono_obj, "is_real", HOFFSET(h5_monomial, is_real), H5T_NATIVE_INT);
       H5Tinsert(mono_obj, "re", HOFFSET(h5_monomial, re), H5T_NATIVE_DOUBLE);
       H5Tinsert(mono_obj, "im", HOFFSET(h5_monomial, im), H5T_NATIVE_DOUBLE);
-      hsize_t array_dim[] = {MAX_MONOMIAL_SIZE};
-      object array_tid    = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
+      std::array<h5::hsize_t, 1> array_dim{MAX_MONOMIAL_SIZE};
+      h5::object array_tid = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim.data());
       H5Tinsert(mono_obj, "op_indices", HOFFSET(h5_monomial, op_indices), array_tid);
       return mono_obj;
     }
@@ -103,7 +103,7 @@ namespace triqs::operators {
     for (auto const &m : op.monomials_) { // for all monomials of the operator
       if (m.first.size() > MAX_MONOMIAL_SIZE)
         TRIQS_RUNTIME_ERROR << " h5 writing many_body_operator : unexpected monomial with more than " << MAX_MONOMIAL_SIZE << "operators !";
-      h5_monomial y = {m.second.is_real(), real(m.second), imag(m.second), {0, 0, 0, 0}}; // we want to transform it to an h5_monomial
+      h5_monomial y = {.is_real = m.second.is_real(), .re = real(m.second), .im = imag(m.second), .op_indices = {0, 0, 0, 0}};
       int i         = 0;
       for (auto const &c_cdag_op : m.first) {            // loop over the C C^+ operators of the monomial
         long c_number     = fops[c_cdag_op.indices] + 1; // the number of the C C^+ op. 0 means "no operators" here, so we shift by 1
@@ -119,8 +119,8 @@ namespace triqs::operators {
     object dt = h5_monomial_dtype();
 
     // dataspace
-    hsize_t dim[] = {datavec.size()};
-    object dspace = H5Screate_simple(1, dim, NULL);
+    std::array<hsize_t, 1> dim{datavec.size()};
+    object dspace = H5Screate_simple(1, dim.data(), nullptr);
 
     // dataset
     object ds = g.create_dataset(name.c_str(), dt, dspace);
@@ -147,8 +147,8 @@ namespace triqs::operators {
     h5::dataspace dspace = H5Dget_space(ds);
 
     // recover the dimension: must be of rank 1
-    std::array<hsize_t, 1> dims_out;
-    int ndims = H5Sget_simple_extent_dims(dspace, dims_out.data(), NULL);
+    std::array<hsize_t, 1> dims_out{};
+    int ndims = H5Sget_simple_extent_dims(dspace, dims_out.data(), nullptr);
     if (ndims != 1)
       TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = " << ndims;
 
@@ -169,10 +169,10 @@ namespace triqs::operators {
     auto r_fops = fops.data(); // the data vector v[int] -> indices inverting fops[indices] -> n
 
     for (auto const &mon : datavec) {
-      monomial_t monomial;                                      // vector of canonical_ops_t
-      for (int i : mon.op_indices) {                            // loop over the index of the C, C^ ops of the monomial
-        if (i == 0) break;                                      // means we have reach the end of the C,  C^+ list
-        monomial.push_back({(i > 0), r_fops[std::abs(i) - 1]}); // add one C, C^+ op to the monomial
+      monomial_t monomial;                                                           // vector of canonical_ops_t
+      for (long i : mon.op_indices) {                                                // loop over the index of the C, C^ ops of the monomial
+        if (i == 0) break;                                                           // means we have reach the end of the C,  C^+ list
+        monomial.push_back({.dagger = (i > 0), .indices = r_fops[std::abs(i) - 1]}); // add one C, C^+ op to the monomial
       }
       real_or_complex s = (mon.is_real ? real_or_complex(mon.re) : real_or_complex(std::complex<double>(mon.re, mon.im)));
       op.monomials_.insert({monomial, s}); // add the monomial to the operator

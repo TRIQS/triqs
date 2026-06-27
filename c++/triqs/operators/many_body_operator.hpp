@@ -170,8 +170,6 @@ namespace triqs::operators {
    */
   std::ostream &operator<<(std::ostream &os, canonical_ops_t const &op);
 
-  //-----------------------------------------------------------------------------------------
-
   /**
    * @brief Type used to represent a monomial of canonical second quantization operators.
    *
@@ -211,8 +209,6 @@ namespace triqs::operators {
    */
   std::ostream &operator<<(std::ostream &os, monomial_t const &m);
 
-  //-----------------------------------------------------------------------------------------
-
   /**
    * @brief Generic many-body operator.
    *
@@ -242,12 +238,6 @@ namespace triqs::operators {
     /// Default constructor creates a zero many-body operator, i.e. with no terms.
     many_body_operator_generic() = default;
 
-    /// Copy and move constructors / assignment use the default semantics.
-    many_body_operator_generic(many_body_operator_generic const &)            = default;
-    many_body_operator_generic(many_body_operator_generic &&)                 = default;
-    many_body_operator_generic &operator=(many_body_operator_generic const &) = default;
-    many_body_operator_generic &operator=(many_body_operator_generic &&)      = default;
-
     /**
      * @brief Construct a many-body operator from another many-body operator with a different coefficient type.
      *
@@ -255,11 +245,11 @@ namespace triqs::operators {
      * `scalar_t` must be constructible from `S`.
      *
      * @tparam S Scalar type of the source operator.
-     * @param x Source many-body operator.
+     * @param p Source many-body operator.
      */
-    template <typename S> many_body_operator_generic(many_body_operator_generic<S> const &x) {
-      static_assert(std::is_constructible<scalar_t, S>::value, "Construction is impossible");
-      *this = x;
+    template <typename S> many_body_operator_generic(many_body_operator_generic<S> const &p) {
+      static_assert(std::is_constructible_v<scalar_t, S>);
+      *this = p;
     }
 
     /**
@@ -293,18 +283,18 @@ namespace triqs::operators {
      * `scalar_t`. The scalar type `scalar_t` must be constructible from `S`.
      *
      * @tparam S Scalar type of the source operator.
-     * @param x Source many-body operator.
+     * @param p Source many-body operator.
      * @return Reference to `this` containing the result.
      */
-    template <typename S> many_body_operator_generic &operator=(many_body_operator_generic<S> const &x) {
-      static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
+    template <typename S> many_body_operator_generic &operator=(many_body_operator_generic<S> const &p) {
+      static_assert(std::is_constructible_v<scalar_t, S>);
       monomials_.clear();
-      for (auto const &y : x.get_monomials()) monomials_.insert(std::make_pair(monomial_t{y.first}, scalar_t(y.second)));
+      for (auto const &y : p.get_monomials()) monomials_.insert(std::make_pair(monomial_t{y.first}, scalar_t(y.second)));
       return *this;
     }
 
     /// Get the map/dictionary of monomials and their coefficients.
-    monomials_map_t const &get_monomials() const { return monomials_; }
+    [[nodiscard]] monomials_map_t const &get_monomials() const { return monomials_; }
 
     /**
      * @brief Create a minimal fundamental operator set with all single particle state indices \f$ \alpha_i \f$ that
@@ -312,11 +302,10 @@ namespace triqs::operators {
      *
      * @return Fundamental operator set \f$ A = \{ \alpha_i \}_{i=0}^{N-1} \f$.
      */
-    hilbert_space::fundamental_operator_set make_fundamental_operator_set() const {
+    [[nodiscard]] hilbert_space::fundamental_operator_set make_fundamental_operator_set() const {
       hilbert_space::fundamental_operator_set fops;
-      for (auto const &m : monomials_)        // for all monomials of the operator
-        for (auto const &c_cdag_op : m.first) // loop over the C C^+ operators of the monomial
-          fops.insert_from_indices_t(c_cdag_op.indices);
+      for (auto const &m : monomials_)
+        for (auto const &c_cdag_op : m.first) fops.insert_from_indices_t(c_cdag_op.indices);
       return fops;
     }
 
@@ -330,7 +319,7 @@ namespace triqs::operators {
      */
     static many_body_operator_generic make_canonical(bool is_dag, indices_t indices) {
       many_body_operator_generic res;
-      auto m = monomial_t{canonical_ops_t{is_dag, indices}};
+      auto m = monomial_t{canonical_ops_t{.dagger = is_dag, .indices = indices}};
       res.monomials_.insert({m, scalar_t(1)});
       return res;
     }
@@ -338,7 +327,7 @@ namespace triqs::operators {
     // We use utility::dressed_iterator to dress iterators.
     // _cdress is a simple struct of refs that exposes (monomial, coef) to the iterator.
     struct C2PY_IGNORE _cdress {
-      monomial_t const &monomial;
+      monomial_t const &monomial; // NOLINT
       scalar_t coef;
       _cdress(typename monomials_map_t::const_iterator _it) : monomial(_it->first), coef(_it->second) {}
       operator std::pair<std::vector<std::pair<bool, indices_t>>, scalar_t>() const {
@@ -398,17 +387,17 @@ namespace triqs::operators {
      * present, the given scalar \f$ a \f$ is added to its coefficient. Otherwise, a new term \f$ a \hat{I} \f$ is
      * created and added to \f$ \hat{O} \f$.
      *
-     * @param alpha Scalar \f$ a \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Reference to `this` containing the result \f$ \hat{O} + a \f$.
      */
-    many_body_operator_generic &operator+=(scalar_t alpha) {
+    many_body_operator_generic &operator+=(scalar_t a) {
       using triqs::utility::is_zero;
-      if (is_zero(alpha)) return *this;
-      bool is_new_monomial;
+      if (is_zero(a)) return *this;
+      bool is_new_monomial{};
       typename monomials_map_t::iterator it;
-      std::tie(it, is_new_monomial) = monomials_.insert(std::make_pair(monomial_t(0), alpha));
+      std::tie(it, is_new_monomial) = monomials_.insert(std::make_pair(monomial_t(0), a));
       if (!is_new_monomial) {
-        it->second += alpha;
+        it->second += a;
         erase_zero_monomial(monomials_, it);
       }
       return *this;
@@ -420,27 +409,27 @@ namespace triqs::operators {
      *
      * @details Equivalent to `operator+=(-a)`.
      *
-     * @param alpha Scalar \f$ a \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Reference to `this` containing the result \f$ \hat{O} - a \f$.
      */
-    many_body_operator_generic &operator-=(scalar_t alpha) { return operator+=(-alpha); }
+    many_body_operator_generic &operator-=(scalar_t a) { return operator+=(-a); }
 
     /**
-     * @brief Multiplication assignment operator to multiply the current many-body operator \f$ \hat{O} \f$ by a
-     * scalar \f$ a \f$.
+     * @brief Multiplication assignment operator to multiply the current many-body operator \f$ \hat{O} \f$ by a scalar 
+     * \f$ a \f$.
      *
      * @details Multiplies all coefficients \f$ a_i \f$ of the operator \f$ \hat{O} \f$ by the given scalar \f$ a \f$.
      * If \f$ a = 0 \f$, the operator is set to zero (i.e. all terms are removed).
      *
-     * @param alpha Scalar \f$ a \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Reference to `this` containing the result \f$ \hat{O} \times a \f$.
      */
-    many_body_operator_generic &operator*=(scalar_t alpha) {
+    many_body_operator_generic &operator*=(scalar_t a) {
       using triqs::utility::is_zero;
-      if (is_zero(alpha)) {
+      if (is_zero(a)) {
         monomials_.clear();
       } else {
-        for (auto &m : monomials_) m.second *= alpha;
+        for (auto &m : monomials_) m.second *= a;
       }
       return *this;
     }
@@ -449,77 +438,77 @@ namespace triqs::operators {
      * @brief Division assignment operator to divide the current many-body operator \f$ \hat{O} \f$ by a scalar
      * \f$ a \f$.
      *
-     * @details Equivalent to `operator*=(1 / a)`.
+     * @details It calls operator*=() with \f$ 1 / a \f$.
      *
-     * @param alpha Scalar \f$ a \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Reference to `this` containing the result \f$ \hat{O} / a \f$.
      */
-    many_body_operator_generic &operator/=(scalar_t alpha) { return operator*=(scalar_t(1) / alpha); }
+    many_body_operator_generic &operator/=(scalar_t a) { return operator*=(scalar_t(1) / a); }
 
     /**
      * @brief Add a scalar \f$ a \f$ to a many-body operator \f$ \hat{O} \f$.
      *
-     * @param lhs Operator \f$ \hat{O} \f$.
-     * @param rhs Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Many-body operator \f$ \hat{O} + a \f$.
      */
-    friend many_body_operator_generic operator+(many_body_operator_generic lhs, scalar_t rhs) { return lhs += rhs; }
+    friend many_body_operator_generic operator+(many_body_operator_generic op, scalar_t a) { return op += a; }
 
     /**
      * @brief Add a many-body operator \f$ \hat{O} \f$ to a scalar \f$ a \f$.
      *
-     * @param lhs Scalar \f$ a \f$.
-     * @param rhs Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
      * @return Many-body operator \f$ a + \hat{O} \f$.
      */
-    friend many_body_operator_generic operator+(scalar_t lhs, many_body_operator_generic rhs) { return rhs += lhs; }
+    friend many_body_operator_generic operator+(scalar_t a, many_body_operator_generic op) { return op += a; }
 
     /**
      * @brief Subtract a scalar \f$ a \f$ from a many-body operator \f$ \hat{O} \f$.
      *
-     * @param lhs Operator \f$ \hat{O} \f$.
-     * @param rhs Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Many-body operator \f$ \hat{O} - a \f$.
      */
-    friend many_body_operator_generic operator-(many_body_operator_generic lhs, scalar_t rhs) { return lhs -= rhs; }
+    friend many_body_operator_generic operator-(many_body_operator_generic op, scalar_t a) { return op -= a; }
 
     /**
      * @brief Subtract a many-body operator \f$ \hat{O} \f$ from a scalar \f$ a \f$.
      *
      * @details Equivalent to \f$ -\hat{O} + a \f$. See operator-() and operator+=(scalar_t).
      *
-     * @param alpha Scalar \f$ a \f$.
+     * @param a Scalar \f$ a \f$.
      * @param op Many-body operator \f$ \hat{O} \f$.
      * @return Many-body operator \f$ a - \hat{O} \f$.
      */
-    friend many_body_operator_generic operator-(scalar_t alpha, many_body_operator_generic const &op) { return -op + alpha; }
+    friend many_body_operator_generic operator-(scalar_t a, many_body_operator_generic const &op) { return -op + a; }
 
     /**
      * @brief Multiply a many-body operator \f$ \hat{O} \f$ by a scalar \f$ a \f$ on the right.
      *
-     * @param lhs Operator \f$ \hat{O} \f$.
-     * @param rhs Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Many-body operator \f$ \hat{O} \times a \f$.
      */
-    friend many_body_operator_generic operator*(many_body_operator_generic lhs, scalar_t rhs) { return lhs *= rhs; }
+    friend many_body_operator_generic operator*(many_body_operator_generic op, scalar_t a) { return op *= a; }
 
     /**
      * @brief Multiply a many-body operator \f$ \hat{O} \f$ by a scalar \f$ a \f$ on the left.
      *
-     * @param lhs Scalar \f$ a \f$.
-     * @param rhs Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
      * @return Many-body operator \f$ a \times \hat{O} \f$.
      */
-    friend many_body_operator_generic operator*(scalar_t lhs, many_body_operator_generic rhs) { return rhs *= lhs; }
+    friend many_body_operator_generic operator*(scalar_t a, many_body_operator_generic op) { return op *= a; }
 
     /**
      * @brief Divide a many-body operator \f$ \hat{O} \f$ by a scalar \f$ a \f$.
      *
-     * @param lhs Operator \f$ \hat{O} \f$.
-     * @param rhs Scalar \f$ a \f$.
+     * @param op Operator \f$ \hat{O} \f$.
+     * @param a Scalar \f$ a \f$.
      * @return Many-body operator \f$ \hat{O} / a \f$.
      */
-    friend many_body_operator_generic operator/(many_body_operator_generic lhs, scalar_t rhs) { return lhs /= rhs; }
+    friend many_body_operator_generic operator/(many_body_operator_generic op, scalar_t a) { return op /= a; }
 
     /**
      * @brief Addition assignment operator to add the many-body operator \f$ \hat{P} \f$ to the current many-body
@@ -533,7 +522,7 @@ namespace triqs::operators {
      * @return Reference to `this` containing the result \f$ \hat{O} + \hat{P} \f$.
      */
     many_body_operator_generic &operator+=(many_body_operator_generic const &op) {
-      bool is_new_monomial;
+      bool is_new_monomial{};
       typename monomials_map_t::iterator it;
       for (auto const &m : op.monomials_) {
         std::tie(it, is_new_monomial) = monomials_.insert(m);
@@ -557,7 +546,7 @@ namespace triqs::operators {
      * @return Reference to `this` containing the result \f$ \hat{O} - \hat{P} \f$.
      */
     many_body_operator_generic &operator-=(many_body_operator_generic const &op) {
-      bool is_new_monomial;
+      bool is_new_monomial{};
       typename monomials_map_t::iterator it;
       for (auto const &m : op.monomials_) {
         std::tie(it, is_new_monomial) = monomials_.insert(std::make_pair(m.first, -m.second));
@@ -636,9 +625,8 @@ namespace triqs::operators {
      */
     bool operator==(many_body_operator_generic const &op) const { return (*this - op).is_zero(); }
 
-    // implementation details of dagger
-    //
     private:
+    // Implementation details of dagger.
     static canonical_ops_t _dagger(canonical_ops_t const &cop) { return {!cop.dagger, cop.indices}; }
 
     static monomial_t _dagger(monomial_t const &m) {
@@ -674,16 +662,16 @@ namespace triqs::operators {
      * with the monomial \f$ \hat{m}_i \f$ is inserted in the resulting operator. If the returned coefficient is zero,
      * the term is omitted.
      *
-     * @tparam Lambda Callable type.
+     * @tparam F Callable type.
      * @param op Operator \f$ \hat{O} \f$ to be transformed.
-     * @param L Callable object.
+     * @param f Callable object.
      * @return Transformed many-body operator.
      */
-    template <typename Lambda> friend many_body_operator_generic transform(many_body_operator_generic const &op, Lambda &&L) {
+    template <typename F> friend many_body_operator_generic transform(many_body_operator_generic const &op, F &&f) { // NOLINT
       many_body_operator_generic res;
       using triqs::utility::is_zero;
       for (auto const &x : op) {
-        auto c = L(x.monomial, x.coef);
+        auto c = f(x.monomial, x.coef);
         if (!is_zero(c)) res.monomials_.insert({x.monomial, c});
       }
       return res;
@@ -788,10 +776,10 @@ namespace triqs::operators {
       // recursively calls itself if a permutation of two operators produces a new
       // monomial
       if (m.size() >= 2) {
-        bool is_swapped;
-        do {
+        bool is_swapped{};
+        do { // NOLINT
           is_swapped = false;
-          for (std::size_t n = 1; n < m.size(); ++n) {
+          for (int n = 1; n < m.size(); ++n) {
             canonical_ops_t &prev_index = m[n - 1];
             canonical_ops_t &cur_index  = m[n];
             if (prev_index == cur_index) return; // The monomial is effectively zero
@@ -816,7 +804,7 @@ namespace triqs::operators {
       }
 
       // Insert the result
-      bool is_new_monomial;
+      bool is_new_monomial{};
       typename monomials_map_t::iterator it;
       std::tie(it, is_new_monomial) = target.insert(std::make_pair(std::move(m), coeff));
       if (!is_new_monomial) {
@@ -841,16 +829,15 @@ namespace triqs::operators {
    * @details Checks whether the difference \f$ \hat{O}_1 - \hat{O}_2 \f$ is close to zero within the given tolerance
    * \f$ \epsilon \f$ using many_body_operator_generic::is_almost_zero(). Throws an exception otherwise.
    *
-   * @tparam scalar1_t Scalar type of the first many-body operator.
-   * @tparam scalar2_t Scalar type of the second many-body operator.
+   * @tparam T1 Scalar type of the first many-body operator.
+   * @tparam T2 Scalar type of the second many-body operator.
    * @param op1 Many-body operator \f$ \hat{O}_1 \f$.
    * @param op2 Many-body operator \f$ \hat{O}_2 \f$.
    * @param precision Tolerance \f$ \epsilon \f$.
    */
-  template <typename scalar1_t, typename scalar2_t>
-  void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2,
-                                  double precision) {
-    if (!(op1 - op2).is_almost_zero(precision)) TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
+  template <typename T1, typename T2>
+  void assert_operators_are_close(many_body_operator_generic<T1> const &op1, many_body_operator_generic<T2> const &op2, double precision) {
+    if (!(op1 - op2).is_almost_zero(precision)) TRIQS_RUNTIME_ERROR << "Error in operators::assert_operators_are_close: Terms are different";
   }
 
   /**
@@ -859,14 +846,14 @@ namespace triqs::operators {
    *
    * @details Implemented in terms of transform().
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @param op Operator \f$ \hat{O} \f$ to be transformed.
    * @return Real part of the operator.
    */
-  template <typename scalar_t> many_body_operator_generic<scalar_t> real(many_body_operator_generic<scalar_t> const &op) {
-    return transform(op, [](monomial_t const &, scalar_t c) {
+  template <typename T> many_body_operator_generic<T> real(many_body_operator_generic<T> const &op) {
+    return transform(op, [](monomial_t const &, T a_i) {
       using triqs::utility::real;
-      return real(c);
+      return real(a_i);
     });
   }
 
@@ -876,14 +863,14 @@ namespace triqs::operators {
    *
    * @details Implemented in terms of transform().
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @param op Operator \f$ \hat{O} \f$ to be transformed.
    * @return Imaginary part of the operator.
    */
-  template <typename scalar_t> many_body_operator_generic<scalar_t> imag(many_body_operator_generic<scalar_t> const &op) {
-    return transform(op, [](monomial_t const &, scalar_t c) {
+  template <typename T> many_body_operator_generic<T> imag(many_body_operator_generic<T> const &op) {
+    return transform(op, [](monomial_t const &, T a_i) {
       using triqs::utility::imag;
-      return imag(c);
+      return imag(a_i);
     });
   }
 
@@ -893,59 +880,56 @@ namespace triqs::operators {
    * @details Checks whether the difference \f$ \hat{O}^{\dagger} - \hat{O} \f$ is close to zero within the given
    * tolerance \f$ \epsilon \f$.
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @param op Many-body operator \f$ \hat{O} \f$.
    * @param tolerance Tolerance \f$ \epsilon \f$.
    * @return True if \f$ \hat{O} \f$ is Hermitian within the given precision, false otherwise.
    */
-  template <typename scalar_t> bool is_op_hermitian(many_body_operator_generic<scalar_t> const &op, double tolerance = 0.0) {
+  template <typename T> bool is_op_hermitian(many_body_operator_generic<T> const &op, double tolerance = 0.0) {
     return (dagger(op) - op).is_almost_zero(tolerance);
   }
-
-  // ---- factories --------------
 
   /**
    * @brief Create an annihilation operator \f$ \hat{c}_{\alpha} \f$.
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @tparam IndexTypes Integer, string or double types.
    * @param indices \f$ \beta_1, \dots, \beta_k \f$ that form the index \f$ \alpha \f$.
    * @return Many-body operator \f$ \hat{O} = \hat{c}_{\alpha} \f$.
    */
-  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c(IndexTypes... indices) {
-    return many_body_operator_generic<scalar_t>::make_canonical(false, indices_t{indices...});
-    // need to put many_body_operator_generic<double>::indices_t because {} constructor is explicit !?
+  template <typename T = real_or_complex, typename... IndexTypes> many_body_operator_generic<T> c(IndexTypes... indices) {
+    return many_body_operator_generic<T>::make_canonical(false, indices_t{indices...});
   }
 
   /**
    * @brief Create a creation operator \f$ \hat{c}_{\alpha}^{\dagger} \f$.
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @tparam IndexTypes Integer, string or double types.
    * @param indices \f$ \beta_1, \dots, \beta_k \f$ that form the index \f$ \alpha \f$.
    * @return Many-body operator \f$ \hat{O} = \hat{c}_{\alpha}^{\dagger} \f$.
    */
-  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c_dag(IndexTypes... indices) {
-    return many_body_operator_generic<scalar_t>::make_canonical(true, indices_t{indices...});
+  template <typename T = real_or_complex, typename... IndexTypes> many_body_operator_generic<T> c_dag(IndexTypes... indices) {
+    return many_body_operator_generic<T>::make_canonical(true, indices_t{indices...});
   }
 
   /**
    * @brief Create a number operator \f$ \hat{n}_{\alpha} = \hat{c}_{\alpha}^{\dagger} \hat{c}_{\alpha} \f$.
    *
-   * @tparam scalar_t Scalar type of the many-body operator.
+   * @tparam T Scalar type of the many-body operator.
    * @tparam IndexTypes Integer, string or double types.
    * @param indices \f$ \beta_1, \dots, \beta_k \f$ that form the index \f$ \alpha \f$.
    * @return Many-body operator \f$ \hat{O} = \hat{n}_{\alpha} = \hat{c}_{\alpha}^{\dagger} \hat{c}_{\alpha} \f$.
    */
-  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> n(IndexTypes... indices) {
-    return c_dag<scalar_t>(indices...) * c<scalar_t>(indices...);
+  template <typename T = real_or_complex, typename... IndexTypes> many_body_operator_generic<T> n(IndexTypes... indices) {
+    return c_dag<T>(indices...) * c<T>(indices...);
   }
 
   /** @} */
 
 } // namespace triqs::operators
 
-/// Specialization of `std::hash` for triqs::operators::canonical_ops_t combining the `dagger` flag with each element of `indices`.
+// Specialization of `std::hash` for triqs::operators::canonical_ops_t combining the `dagger` flag with each element of `indices`.
 template <> struct std::hash<triqs::operators::canonical_ops_t> {
   std::size_t operator()(triqs::operators::canonical_ops_t const &c) const noexcept {
     std::size_t h = std::hash<bool>{}(c.dagger);
