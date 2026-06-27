@@ -1,15 +1,7 @@
 .. _documentation:
 
-Documentation
-=============
-
-Manual
-------
-.. toctree::
-   :maxdepth: 2
-
-   documentation/manual/contents
-
+API Documentation
+=================
 
 C++ API
 -------
