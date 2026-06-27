@@ -153,8 +153,8 @@
  * - a **mesh** (see @ref triqs-meshes) that fixes the mathematical domain of the function, how it is represented in
  * memory and how it is evaluated, and
  * - a **target**, which fixes the value stored at each mesh point: a scalar (triqs::gfs::scalar_valued), a matrix
- * (triqs::gfs::matrix_valued) or a higher-rank tensor (triqs::gfs::tensor_valued). The target traits live in
- * @ref triqs-gfs-containers.
+ * (triqs::gfs::matrix_valued) or a higher-rank tensor (triqs::gfs::tensor_valued). The target types live in
+ * @ref triqs-gfs-targets.
  *
  * Each container comes with non-owning view classes, triqs::gfs::gf_view and triqs::gfs::gf_const_view, that refer to
  * the data of an existing Green's function without copying it. The generic requirements shared by all of these types
@@ -186,22 +186,161 @@
  * @brief Green's function container and view types.
  *
  * @details This group contains the central Green's function containers and their non-owning views:
- * - triqs::gfs::gf is the owning container, parameterised by a mesh and a target (triqs::gfs::scalar_valued,
- * triqs::gfs::matrix_valued or triqs::gfs::tensor_valued).
+ * - triqs::gfs::gf is the owning container, parameterised by a mesh and a target.
  * - triqs::gfs::gf_view and triqs::gfs::gf_const_view are mutable and constant views into the data of an existing
  * Green's function.
- * - triqs::gfs::block_gf, triqs::gfs::block_gf_view and triqs::gfs::block2_gf represent block-diagonal Green's
- * functions, i.e. (vectors of) Green's functions grouped into named blocks.
+ *
+ * The block-diagonal containers are collected in @ref triqs-gfs-block, and the target value types in
+ * @ref triqs-gfs-targets.
+ */
+
+/**
+ * @ingroup triqs-gfs-containers
+ * @defgroup triqs-gfs-block Block Green's functions
+ * @brief Block-diagonal Green's function containers.
+ *
+ * @details Many physical problems are naturally block-diagonal (e.g. in spin or orbital sectors).
+ * triqs::gfs::block_gf and its view triqs::gfs::block_gf_view represent a vector of Green's functions grouped into
+ * named blocks, while triqs::gfs::block2_gf and triqs::gfs::block2_gf_view provide the two-index analogue. The block
+ * structure of a Green's function is described by triqs::gfs::gf_struct_t.
+ */
+
+/**
+ * @ingroup triqs-gfs-containers
+ * @defgroup triqs-gfs-targets GF targets
+ * @brief Target types that fix the value stored at each mesh point of a Green's function.
+ *
+ * @details A target determines the value stored at each mesh point of a Green's function: a scalar
+ * (triqs::gfs::scalar_valued), a matrix (triqs::gfs::matrix_valued) or a higher-rank tensor
+ * (triqs::gfs::tensor_valued), each available in a real- and a complex-valued variant. This group also contains the
+ * traits that map between a (scalar type, rank) pair and the corresponding target type.
  */
 
 /**
  * @ingroup triqs-gfs
- * @defgroup triqs-gfs-functions GF functions
- * @brief Physical operations acting on Green's functions.
+ * @defgroup triqs-gfs-utils GF utilities
+ * @brief Operations and utilities acting on Green's function containers.
  *
- * @details This group provides a library of operations frequently applied to Green's functions, such as computing the
- * particle density, evaluating and manipulating high-frequency tails, and converting between different basis
- * representations (Matsubara frequency, imaginary time, Legendre, DLR).
+ * @details This is a parent group collecting the building blocks of the Green's function module, organised by purpose:
+ * construction (@ref triqs-gfs-factories), lazy arithmetic (@ref triqs-gfs-algebra), evaluation and interpolation
+ * (@ref triqs-gfs-evaluation), MPI support (@ref triqs-gfs-mpi), CLEF auto-assignment (@ref triqs-gfs-clef), data
+ * reshaping and slicing (@ref triqs-gfs-reshape), block mapping (@ref triqs-gfs-map) and symmetry reduction
+ * (@ref triqs-gfs-symmetry).
+ * 
+ * General utilities are placed directly in @ref triqs-gfs-utils.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-factories GF factories
+ * @brief Factory functions that construct Green's function containers.
+ *
+ * @details Convenience factories that build triqs::gfs::gf, triqs::gfs::block_gf and triqs::gfs::block2_gf objects (and
+ * their views) from meshes, shapes, block structures or existing Green's functions.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-algebra GF algebra
+ * @brief Lazy expression templates and arithmetic operations on Green's functions.
+ *
+ * @details Arithmetic on Green's functions is *lazy*: an expression such as `g1 + g2` or `2 * g` does not compute a
+ * new Green's function immediately. Instead it builds a lightweight expression node (triqs::gfs::gf_expr for binary
+ * operations, triqs::gfs::gf_unary_m_expr for the unary minus) that models the `GreenFunction` concept and is only 
+ * evaluated element by element when the expression is assigned to a container or accessed. This fuses chained 
+ * operations and avoids intermediate temporaries.
+ *
+ * The operators are generated by macros, so they do not appear individually in the member list below. The complete set
+ * of supported operations is, with `g`, `g1`, `g2` Green's functions and `s` a scalar (an integer, real or complex
+ * number):
+ *
+ * **Binary operators** (build a lazy triqs::gfs::gf_expr):
+ * - `g1 + g2`, `g1 - g2` — element-wise addition / subtraction of two Green's functions.
+ * - `g1 * g2`, `g1 / g2` — element-wise product / quotient of two Green's functions.
+ * - `s * g`, `g * s` — multiplication by a scalar from either side.
+ * - `s / g`, `g / s` — scalar divided by a Green's function, and Green's function divided by a scalar.
+ * - Note: addition and subtraction with a bare scalar are **not** available as binary expressions (only `*` and `/`
+ *   accept a scalar operand); use the in-place `+=` / `-=` operators below instead.
+ *
+ * **Unary operator:**
+ * - `-g` — negation (builds a lazy triqs::gfs::gf_unary_m_expr).
+ *
+ * **Compound assignment** (in-place, defined for both triqs::gfs::gf and triqs::gfs::gf_view and implemented as
+ * `g = g OP x`):
+ * - `g += x`, `g -= x`, `g *= x`, `g /= x`, where `x` is another Green's function or a scalar.
+ *
+ * **In-place operations with a matrix or scalar:**
+ * - `g += m`, `g -= m` — add / subtract a matrix `m` at every mesh point of a matrix-valued Green's function.
+ * - `g += s`, `g -= s` — for a matrix-valued Green's function, add / subtract `s` times the identity matrix at every
+ *   mesh point; for a scalar-valued Green's function, add / subtract the scalar `s` directly.
+ *
+ * **Compatibility rules** enforced when combining two Green's functions:
+ * - The meshes must be identical, otherwise a `triqs::runtime_error` is thrown; the data and target shapes must match
+ *   as well (a scalar operand adopts the shape of the other operand).
+ * - For products and quotients on an imaginary-time mesh (triqs::mesh::imtime, triqs::mesh::dlr_imtime) the particle
+ *   statistics of the result is the parity sum of the operand statistics (e.g. fermion \f$ \times \f$ fermion
+ *   \f$ \to \f$ boson).
+ * - On a product mesh (triqs::mesh::prod) the rules are applied component by component.
+ *
+ * Block Green's functions (triqs::gfs::block_gf) support the analogous set of arithmetic operations, applied
+ * block by block.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-evaluation GF evaluation
+ * @brief Evaluation, interpolation and mesh/target introspection of Green's functions.
+ *
+ * @details Tools to evaluate a Green's function at arbitrary points using the interpolation scheme of its mesh
+ * (triqs::gfs::gf_evaluator, triqs::gfs::default_evaluator) and to introspect its mesh and target
+ * (triqs::gfs::get_mesh, triqs::gfs::target_value_t).
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-mpi GF MPI support
+ * @brief MPI broadcast and reduction of Green's functions.
+ *
+ * @details MPI-aware operations for the Green's function containers: triqs::gfs::mpi_broadcast and
+ * triqs::gfs::mpi_reduce (with the in-place variant triqs::gfs::mpi_reduce_into), for both single and block Green's
+ * functions.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-clef CLEF auto-assignment
+ * @brief CLEF integration enabling the `g(w_) << expr` assignment syntax.
+ *
+ * @details Hooks that let a Green's function be filled by a lazy CLEF expression, e.g. `g(w_) << 1 / (w_ - eps)`, by
+ * evaluating the expression at every mesh point.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-reshape GF reshaping and slicing
+ * @brief Reshape, flatten and slice the data of a Green's function.
+ *
+ * @details Utilities that reinterpret the data of a Green's function: flattening the target into a two-dimensional
+ * form (triqs::gfs::flatten_gf_2d), slicing the target space, transposing, and forming restricted or reinterpreted
+ * views.
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-map GF block mapping
+ * @brief Apply a function block-by-block on block Green's functions.
+ *
+ * @details Helpers that lift a function acting on a single Green's function to a function acting on each block of a
+ * block Green's function (triqs::gfs::map_block_gf).
+ */
+
+/**
+ * @ingroup triqs-gfs-utils
+ * @defgroup triqs-gfs-symmetry GF symmetries
+ * @brief Symmetry-reduced representation of Green's functions.
+ *
+ * @details Tools to exploit symmetries of a Green's function by storing and reconstructing only a symmetry-reduced set
+ * of data points.
  */
 
 /**
@@ -215,23 +354,77 @@
 
 /**
  * @ingroup triqs-gfs
- * @defgroup triqs-gfs-transforms GF transforms
- * @brief Transforms between different Green's function representations.
+ * @defgroup triqs-gfs-functions GF functions
+ * @brief Physical operations acting on Green's functions.
  *
- * @details This group provides the transforms that map a Green's function from one representation to another, in
- * particular the Fourier transform between imaginary time and Matsubara frequency (and their real-axis counterparts),
- * the Legendre/Matsubara transform, and the Padé analytic continuation from Matsubara to real frequency.
+ * @details This is a parent group for operations frequently applied to Green's functions: computing the particle
+ * density (@ref triqs-gfs-density), fitting and manipulating high-frequency tails (@ref triqs-gfs-tailfitting),
+ * checking reality and hermiticity (@ref triqs-gfs-reality) and converting between basis representations
+ * (@ref triqs-gfs-basis).
+ */
+
+/**
+ * @ingroup triqs-gfs-functions
+ * @defgroup triqs-gfs-density GF density
+ * @brief Computation of the particle density from a Green's function.
+ */
+
+/**
+ * @ingroup triqs-gfs-functions
+ * @defgroup triqs-gfs-tailfitting GF tail fitting
+ * @brief Fitting and manipulation of the high-frequency tail of a Green's function.
+ *
+ * @details Tools to extract the high-frequency moments of a Green's function (triqs::gfs::fit_tail,
+ * triqs::gfs::fit_hermitian_tail) and to construct or substitute tails.
+ */
+
+/**
+ * @ingroup triqs-gfs-functions
+ * @defgroup triqs-gfs-reality GF reality and hermiticity
+ * @brief Reality and hermiticity checks and operations on Green's functions.
+ *
+ * @details Predicates such as triqs::gfs::is_gf_real and triqs::gfs::is_gf_hermitian, together with related
+ * operations such as complex conjugation.
+ */
+
+/**
+ * @ingroup triqs-gfs-functions
+ * @defgroup triqs-gfs-basis GF basis conversions
+ * @brief Conversions between basis representations of a Green's function.
+ *
+ * @details Conversions to and from compact basis representations such as Legendre polynomials and the discrete
+ * Lehmann representation (DLR).
  */
 
 /**
  * @ingroup triqs-gfs
- * @defgroup triqs-gfs-utils GF utilities
- * @brief Factories, MPI support, expression templates and other utilities used with @ref triqs-gfs.
+ * @defgroup triqs-gfs-transforms GF transforms
+ * @brief Transforms between different Green's function representations.
  *
- * @details This group collects the auxiliary building blocks of the Green's function module: factory functions that
- * construct containers, lazy expression templates that fuse arithmetic on Green's functions, MPI broadcast and reduce
- * support, CLEF auto-assignment, and the mapping helpers used to apply operations block-by-block on block Green's
- * functions.
+ * @details This is a parent group for the transforms that map a Green's function from one representation to another:
+ * the Fourier transform (@ref triqs-gfs-fourier), the Legendre/Matsubara transform (@ref triqs-gfs-legendre-matsubara)
+ * and the Padé analytic continuation (@ref triqs-gfs-pade).
+ */
+
+/**
+ * @ingroup triqs-gfs-transforms
+ * @defgroup triqs-gfs-fourier GF Fourier transform
+ * @brief Fourier transform between time and frequency representations.
+ *
+ * @details The Fourier transform between imaginary time and Matsubara frequency and between real time and real
+ * frequency, as well as the lattice Fourier transform.
+ */
+
+/**
+ * @ingroup triqs-gfs-transforms
+ * @defgroup triqs-gfs-legendre-matsubara GF Legendre-Matsubara transform
+ * @brief Transform between the Legendre and Matsubara representations.
+ */
+
+/**
+ * @ingroup triqs-gfs-transforms
+ * @defgroup triqs-gfs-pade GF Padé continuation
+ * @brief Padé analytic continuation from Matsubara to real frequencies.
  */
 
 /**

@@ -17,18 +17,35 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides utilities to flatten the data of arrays and Green's functions into a two-dimensional form.
+ */
+
 #pragma once
-#include "gf.hpp"
+
+#include "./gf.hpp"
+#include "../../utility/macros.hpp"
+
+#include <utility>
+
 namespace triqs::gfs {
 
   /**
-   * Given an array a, creates a two-dimensional array whose first dimension is the n-th dimension of a
-   * and the second dimension are the flattening of the other dimensions, in the original order
+   * @addtogroup triqs-gfs-reshape
+   * @{
+   */
+
+  /**
+   * @brief Flatten an array into two dimensions, keeping one dimension and collapsing the rest.
    *
-   * @param a : array
-   * @tparam N : the dimension to preserve
+   * @details The result is a two-dimensional array whose first dimension is the \f$ N \f$-th dimension of the input
+   * and whose second dimension is the flattening of all other dimensions, kept in their original order.
    *
-   * @return : a two-dimensional array
+   * @tparam N Index of the dimension to preserve.
+   * @tparam A `nda::MemoryArray` type of the input.
+   * @param v Input array.
+   * @return A two-dimensional array.
    */
   template <int N = 0, nda::MemoryArray A> auto flatten_2d(A const &v) {
     long nrows = v.extent(N);      // # rows of the result, i.e. n-th dim, which is now at 0.
@@ -38,7 +55,13 @@ namespace triqs::gfs {
 
   // -------------------------------------------------------
 
-  /// Inverse of flatten_2d
+  /**
+   * @brief Inverse of triqs::gfs::flatten_2d: scatter a two-dimensional array back into a higher-rank array.
+   *
+   * @tparam N Index of the dimension that was preserved by the flattening.
+   * @param out Output array, whose shape determines how the flattened data is reshaped (written into).
+   * @param afl Flattened (two-dimensional) input array.
+   */
   template <int N = 0> void unflatten_2d(nda::MemoryArray auto &&out, nda::MemoryArray auto const &afl) {
     auto sh_fl = out.shape();
     std::swap(sh_fl[0], sh_fl[N]);
@@ -49,14 +72,15 @@ namespace triqs::gfs {
   //-------------------------------------
 
   /**
-   * Given a Green-function g, creates a new Green function with a mesh that is the n-th mesh of g
-   * and with a target that is tensor_valued<1>, containing the flattening of all other data dimensions
-   * in original order.
+   * @brief Flatten a Green's function into a single-mesh, tensor-valued Green's function.
    *
-   * @param g : array
-   * @tparam N : the mesh to keep
+   * @details The result keeps the \f$ N \f$-th mesh of the input Green's function and has a `tensor_valued<1>` target
+   * containing the flattening of all other data dimensions in their original order.
    *
-   * @return : the single-mesh tensor-valued Green-function
+   * @tparam N Index of the mesh to keep.
+   * @tparam G triqs::gfs::MemoryGf type of the input.
+   * @param g Input Green's function.
+   * @return The single-mesh, tensor-valued Green's function.
    */
   template <int N = 0, MemoryGf G> auto flatten_gf_2d(G const &g) {
     auto const &mesh = get_mesh<N>(g);
@@ -65,11 +89,20 @@ namespace triqs::gfs {
 
   //-------------------------------------
 
-  /// Inverse of flatten_gf_2d
+  /**
+   * @brief Inverse of triqs::gfs::flatten_gf_2d: scatter a flattened Green's function back into a higher-rank one.
+   *
+   * @tparam N Index of the mesh that was kept by the flattening.
+   * @tparam Gfl triqs::gfs::MemoryGf type of the flattened Green's function (must have a non-product mesh).
+   * @param g Output Green's function (written into).
+   * @param gfl Flattened input Green's function.
+   */
   template <int N = 0, MemoryGf Gfl> void unflatten_gf_2d(MemoryGf auto &g, Gfl const &gfl) {
     static_assert(not mesh::is_product<typename Gfl::mesh_t>, "unflatten_gf_2d: Flattened Green-function must have non-product mesh");
     EXPECTS(get_mesh<N>(g) == gfl.mesh());
     unflatten_2d<N>(g.data(), gfl.data());
   }
+
+  /** @} */
 
 } // namespace triqs::gfs

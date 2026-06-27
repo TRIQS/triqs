@@ -38,16 +38,74 @@
       </tab>
       <tab type="usergroup" url="@ref triqs-gfs" title="Green's functions">
         <tab type="usergroup" url="@ref triqs-gfs-concepts" title="GF concepts">
+          <tab type="user" url="@ref triqs::gfs::MemoryGf" title="gfs::MemoryGf"/>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-containers" title="GF containers">
+          <tab type="usergroup" url="@ref triqs-gfs-block" title="Block Green's functions">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-targets" title="GF targets">
+            <tab type="user" url="@ref triqs::gfs::_target_from_type_rank" title="gfs::_target_from_type_rank"/>
+            <tab type="user" url="@ref triqs::gfs::matrix_real_valued" title="gfs::matrix_real_valued"/>
+            <tab type="user" url="@ref triqs::gfs::matrix_valued" title="gfs::matrix_valued"/>
+            <tab type="user" url="@ref triqs::gfs::scalar_real_valued" title="gfs::scalar_real_valued"/>
+            <tab type="user" url="@ref triqs::gfs::scalar_valued" title="gfs::scalar_valued"/>
+            <tab type="user" url="@ref triqs::gfs::tensor_real_valued" title="gfs::tensor_real_valued"/>
+            <tab type="user" url="@ref triqs::gfs::tensor_valued" title="gfs::tensor_valued"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs::gfs::gf" title="gfs::gf">
+            <tab type="user" url="@ref triqs::gfs::gf::target_and_shape_t" title="gfs::gf::target_and_shape_t"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs::gfs::gf_const_view" title="gfs::gf_const_view">
+            <tab type="user" url="@ref triqs::gfs::gf_const_view::target_and_shape_t" title="gfs::gf_const_view::target_and_shape_t"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs::gfs::gf_view" title="gfs::gf_view">
+            <tab type="user" url="@ref triqs::gfs::gf_view::target_and_shape_t" title="gfs::gf_view::target_and_shape_t"/>
+          </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-functions" title="GF functions">
+          <tab type="usergroup" url="@ref triqs-gfs-basis" title="GF basis conversions">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-density" title="GF density">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-reality" title="GF reality and hermiticity">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-tailfitting" title="GF tail fitting">
+          </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-io" title="GF input/output">
+          <tab type="user" url="@ref triqs::gfs::gf_h5_rw" title="gfs::gf_h5_rw"/>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-transforms" title="GF transforms">
+          <tab type="usergroup" url="@ref triqs-gfs-fourier" title="GF Fourier transform">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-legendre-matsubara" title="GF Legendre-Matsubara transform">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-pade" title="GF Padé continuation">
+          </tab>
         </tab>
         <tab type="usergroup" url="@ref triqs-gfs-utils" title="GF utilities">
+          <tab type="usergroup" url="@ref triqs-gfs-clef" title="CLEF auto-assignment">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-algebra" title="GF algebra">
+            <tab type="user" url="@ref triqs::gfs::gf_expr" title="gfs::gf_expr"/>
+            <tab type="user" url="@ref triqs::gfs::gf_unary_m_expr" title="gfs::gf_unary_m_expr"/>
+            <tab type="user" url="@ref triqs::gfs::is_gf_expr" title="gfs::is_gf_expr"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-map" title="GF block mapping">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-evaluation" title="GF evaluation">
+            <tab type="user" url="@ref triqs::gfs::default_evaluator" title="gfs::default_evaluator"/>
+            <tab type="user" url="@ref triqs::gfs::gf_evaluator" title="gfs::gf_evaluator"/>
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-factories" title="GF factories">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-mpi" title="GF MPI support">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-reshape" title="GF reshaping and slicing">
+          </tab>
+          <tab type="usergroup" url="@ref triqs-gfs-symmetry" title="GF symmetries">
+          </tab>
+          <tab type="user" url="@ref triqs::gfs::is_instantiation_of" title="gfs::is_instantiation_of"/>
         </tab>
       </tab>
       <tab type="usergroup" url="@ref triqs-hilbert" title="Hilbert space">

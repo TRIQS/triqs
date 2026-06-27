@@ -110,14 +110,24 @@ namespace triqs::gfs {
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
 
+  /**
+   * @ingroup triqs-gfs-concepts
+   * @brief Concept checking that a type is a block Green's function.
+   *
+   * @details A type models triqs::gfs::BlockGf if it is one of the block Green's function containers
+   * (triqs::gfs::block_gf, triqs::gfs::block_gf_view) or their two-index analogues, i.e. if `BlockGreenFunction_v` is
+   * `true` for it.
+   *
+   * @tparam G Type to check.
+   */
+  template <typename G>
+  concept BlockGf = BlockGreenFunction_v<G>;
+
   // Forward declarations with default arguments. The corresponding friend declarations inside `block_gf` and
   // the definitions in `./mpi.hpp` may then re-declare these templates without re-introducing defaults.
-  template <typename G>
-    requires(BlockGreenFunction_v<G>)
-  void mpi_broadcast(G &&bg, mpi::communicator c = {}, int root = 0);
-  template <typename G1, typename G2>
-    requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
-  void mpi_reduce_into(G1 const &bg_in, G2 &&bg_out, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
+  template <BlockGf BG> void mpi_broadcast(BG &&bg, mpi::communicator c = {}, int root = 0);
+  template <BlockGf BG1, BlockGf BG2>
+  void mpi_reduce_into(BG1 const &bg_in, BG2 &&bg_out, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM);
 
   // ------------- Helper Types -----------------------------
 
@@ -316,14 +326,12 @@ namespace triqs::gfs {
 
     friend std::ostream &operator<<(std::ostream &out, block_gf const &) { return out << "block_gf"; }
 
-    // Friend declarations.
-    template <typename G>
-      requires(BlockGreenFunction_v<G>)
-    friend void mpi_broadcast(G &&, mpi::communicator c, int root);
+    // Friend declarations (hidden from doxygen; documented as free functions in block/mpi.hpp).
+    /// @cond
+    template <BlockGf BG> friend void mpi_broadcast(BG &&, mpi::communicator c, int root);
 
-    template <typename G1, typename G2>
-      requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
-    friend void mpi_reduce_into(G1 const &, G2 &&, mpi::communicator, int, bool, MPI_Op);
+    template <BlockGf BG1, BlockGf BG2> friend void mpi_reduce_into(BG1 const &, BG2 &&, mpi::communicator, int, bool, MPI_Op);
+    /// @endcond
 
     // Common code for gf, gf_view, gf_const_view
 #include "./_block_gf_view_common.hpp"

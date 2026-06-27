@@ -17,19 +17,39 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides common type aliases, forward declarations and internal helpers for the Green's function containers.
+ */
+
 #pragma once
 
-#include "../../utility/factory.hpp"
 #include "../../arrays.hpp"
 #include "../../mesh/concepts.hpp"
-#include "../../mesh/utils.hpp"
 #include "../../mesh/matsubara_freq.hpp"
 #include "../../mesh/prod.hpp"
+#include "../../mesh/utils.hpp"
+#include "../../utility/factory.hpp"
+
+#include <array>
+#include <complex>
+#include <cstddef>
+#include <utility>
 
 namespace triqs::gfs {
 
+  // Alias for std::complex<double>.
   using dcomplex = std::complex<double>;
 
+  // Elevate certain types into the triqs::gfs namespace.
+  using mesh::all_t;
+  using mesh::Boson;
+  using mesh::closest_mesh_pt;
+  using mesh::Fermion;
+  using mesh::matsubara_freq;
+  using mesh::Mesh;
+  using mesh::n_variables;
+  using mesh::statistic_enum;
   using nda::array;
   using nda::array_view;
   using nda::ellipsis;
@@ -37,42 +57,50 @@ namespace triqs::gfs {
   using nda::matrix_const_view;
   using nda::matrix_view;
   using triqs::arrays::make_shape;
-
   using utility::factory;
 
-  // Using from mesh namespace
-  using mesh::all_t;
-  using mesh::Boson;
-  using mesh::closest_mesh_pt;
-  using mesh::Mesh;
-  //using mesh::closest_pt_wrap;
-  using mesh::Fermion;
-  using mesh::matsubara_freq;
-  using mesh::n_variables;
-  using mesh::statistic_enum;
+  /**
+   * @addtogroup triqs-gfs-evaluation
+   * @{
+   */
 
-  /*----------------------------------------------------------
-   *  Evaluator
-   *--------------------------------------------------------*/
-
-  // gf_evaluator regroup functions to evaluate the function.
+  /**
+   * @brief Functor that evaluates a Green's function at an arbitrary point of a given mesh.
+   *
+   * @details This template is specialized for each mesh type to provide the appropriate interpolation scheme used when
+   * a Green's function is called with off-mesh arguments.
+   *
+   * @tparam M triqs::mesh::Mesh type.
+   */
   template <Mesh M> struct gf_evaluator;
 
-  // the policy
+  /**
+   * @brief Default evaluator policy.
+   *
+   * @details Selects triqs::gfs::gf_evaluator as the evaluation functor for a given mesh type.
+   */
   struct default_evaluator {
+    /// The evaluator functor associated with the mesh type `Mesh`.
     template <typename Mesh> using evaluator_t = gf_evaluator<Mesh>;
   };
 
-  /*----------------------------------------------------------
-   *  HDF5
-   *  Traits to read/write in hdf5 files.
-   *  Can be specialized for some case (Cf block). Defined below
-   *--------------------------------------------------------*/
+  /** @} */
 
+  /**
+   * @ingroup triqs-gfs-io
+   * @brief Traits class for reading/writing a Green's function from/to HDF5.
+   *
+   * @details This template is specialized for the various mesh/target combinations (and for block Green's functions)
+   * to provide the concrete HDF5 serialisation logic.
+   *
+   * @tparam Mesh triqs::mesh::Mesh type.
+   * @tparam Target Target type of the Green's function.
+   */
   template <typename Mesh, typename Target> struct gf_h5_rw;
 
   namespace detail {
 
+    // Build a sub-mesh from a product mesh by keeping the components at the given positions.
     template <auto Positions, Mesh M> auto filter_mesh(M const &m) {
       static_assert(Positions.size() > 0);
       if constexpr (Positions.size() == 1) {
@@ -84,6 +112,7 @@ namespace triqs::gfs {
       }
     }
 
+    // Compute the positions of the first L set entries of a boolean filter.
     template <size_t L> constexpr std::array<int, L> compute_position(auto const &filter) {
       std::array<int, L> r{};
       int ii = 0;
@@ -94,6 +123,7 @@ namespace triqs::gfs {
       return r;
     }
 
+    // Check whether a Green's function evaluation is known to vanish at the given arguments.
     template <Mesh M, typename... XS> bool eval_to_zero(M const &m, XS const &...xs) {
       if constexpr (sizeof...(XS) > 1) {
         return [&]<std::size_t... Is>(std::index_sequence<Is...>) {

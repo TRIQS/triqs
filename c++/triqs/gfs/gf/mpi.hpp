@@ -23,6 +23,7 @@
 #pragma once
 
 #include "./gf.hpp"
+#include "../../utility/macros.hpp"
 
 #include <mpi/mpi.hpp>
 #include <nda/nda.hpp>
@@ -30,6 +31,11 @@
 #include <type_traits>
 
 namespace triqs::gfs {
+
+  /**
+   * @addtogroup triqs-gfs-mpi
+   * @{
+   */
 
   /**
    * @brief Implementation of an MPI broadcast for triqs::gfs::gf, triqs::gfs::gf_view or triqs::gfs::gf_const_view
@@ -83,7 +89,7 @@ namespace triqs::gfs {
    * @tparam G2 triqs::gfs::MemoryGf type.
    * @param g_in GF (view) to be reduced.
    * @param g_out GF (view) to be reduced into.
-   * @param comm `mpi::communicator` object.
+   * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    * @param all Should all processes receive the result of the reduction.
    * @param op MPI reduction operation.
@@ -123,7 +129,7 @@ namespace triqs::gfs {
    *
    * @tparam G triqs::gfs::MemoryGf type.
    * @param g GF (view) to be reduced.
-   * @param comm `mpi::communicator` object.
+   * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    * @param all Should all processes receive the result of the reduction.
    * @param op MPI reduction operation.
@@ -134,5 +140,7 @@ namespace triqs::gfs {
     mpi_reduce_into(g, res, c, root, all, op);
     return res;
   }
+
+  /** @} */
 
 } // namespace triqs::gfs

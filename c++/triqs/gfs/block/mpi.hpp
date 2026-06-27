@@ -60,6 +60,11 @@ namespace triqs::gfs {
   } // namespace detail
 
   /**
+   * @addtogroup triqs-gfs-mpi
+   * @{
+   */
+
+  /**
    * @brief Implementation of an MPI broadcast for triqs::gfs::block_gf and triqs::gfs::block_gf_view types.
    *
    * @details It simply broadcasts the vector (of vectors) of GF objects. Furthermore,
@@ -71,10 +76,8 @@ namespace triqs::gfs {
    * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    */
-  template <typename G>
-    requires(BlockGreenFunction_v<G>)
-  void mpi_broadcast(G &&bg, mpi::communicator c, int root) { // NOLINT (temporary views are allowed)
-    constexpr bool is_view = std::decay_t<G>::is_view;
+  template <BlockGf BG> void mpi_broadcast(BG &&bg, mpi::communicator c, int root) { // NOLINT (temporary views are allowed)
+    constexpr bool is_view = std::decay_t<BG>::is_view;
 
     // broadcast block names
     if constexpr (!is_view) {
@@ -108,20 +111,19 @@ namespace triqs::gfs {
    * non-views but for views, it is expected that they already have the correct block names).
    * - On non-receiving ranks, the output block GF is ignored and left unchanged.
    *
-   * @tparam G1 Block GF type.
-   * @tparam G2 Block GF type.
+   * @tparam BG1 Block GF type.
+   * @tparam BG2 Block GF type.
    * @param bg_in Block GF (view) to be reduced.
    * @param bg_out Block GF (view) to be reduced into.
-   * @param comm `mpi::communicator` object.
+   * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    * @param all Should all processes receive the result of the reduction.
    * @param op MPI reduction operation.
    */
-  template <typename G1, typename G2>
-    requires(BlockGreenFunction_v<G1> and BlockGreenFunction_v<G2>)
-  void mpi_reduce_into(G1 const &bg_in, G2 &&bg_out, mpi::communicator c, int root, // NOLINT (temporary views are allowed here)
+  template <BlockGf BG1, BlockGf BG2>
+  void mpi_reduce_into(BG1 const &bg_in, BG2 &&bg_out, mpi::communicator c, int root, // NOLINT (temporary views are allowed here)
                        bool all, MPI_Op op) {
-    constexpr bool is_view = std::decay_t<G2>::is_view;
+    constexpr bool is_view = std::decay_t<BG2>::is_view;
 
     // check the shape and block names of the input block GFs
     EXPECTS(mpi::all_equal(detail::hash_names(bg_in), c));
@@ -153,20 +155,20 @@ namespace triqs::gfs {
    * - On receiving ranks, it contains the reduced GF objects and the same block names as the input block GF.
    * - On non-receiving ranks, a default constructed block GF is returned.
    *
-   * @tparam G Block GF type.
+   * @tparam BG Block GF type.
    * @param bg Block GF (view) to be reduced (into).
-   * @param comm `mpi::communicator` object.
+   * @param c `mpi::communicator` object.
    * @param root Rank of the root process.
    * @param all Should all processes receive the result of the reduction.
    * @param op MPI reduction operation.
    * @return A triqs::gfs::block_gf object with the reduced data.
    */
-  template <typename G>
-    requires(BlockGreenFunction_v<G>)
-  auto mpi_reduce(G const &bg, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-    auto res = typename G::regular_type{};
+  template <BlockGf BG> auto mpi_reduce(BG const &bg, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    auto res = typename BG::regular_type{};
     mpi_reduce_into(bg, res, c, root, all, op);
     return res;
   }
+
+  /** @} */
 
 } // namespace triqs::gfs
