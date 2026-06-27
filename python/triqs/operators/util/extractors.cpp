@@ -2,6 +2,7 @@
 #include <triqs/c2py_converters/fundamental_operator_set.hpp>
 #include <triqs/c2py_converters/real_or_complex.hpp>
 #include <triqs/operators/util/extractors.hpp>
+#include <triqs/utility/tuple_tools.hpp>
 
 #include "../operators.wrap.hxx"
 
@@ -29,7 +30,7 @@ namespace triqs::operators::utils::py {
    *
    * @param H The many-body operator.
    * @param ignore_irrelevant If `true`, silently skip non-quadratic terms.
-   * @return Dictionary mapping index pairs to coefficients.
+   * @return Dictionary mapping index pairs \f$ (i, j) \f$ to coefficients \f$ h_{ij} \f$.
    */
   std::map<std::tuple<idx_tup, idx_tup>, roc> extract_h_dict(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup>, roc> result;
@@ -43,7 +44,7 @@ namespace triqs::operators::utils::py {
    *
    * @param H The many-body operator.
    * @param ignore_irrelevant If `true`, silently skip irrelevant terms.
-   * @return Dictionary mapping index pairs to coefficients.
+   * @return Dictionary mapping index pairs \f$ (i, j) \f$ to coefficients \f$ U_{ij} \f$.
    */
   std::map<std::tuple<idx_tup, idx_tup>, roc> extract_U_dict2(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup>, roc> result;
@@ -52,12 +53,16 @@ namespace triqs::operators::utils::py {
   }
 
   /**
-   * @brief Extract the interaction part \f$ \frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j 
-   * \hat{c}_l \hat{c}_k \f$ from a many-body operator.
+   * @brief Extract the two-body interaction part from a many-body operator.
+   * 
+   * @details The two body interaction is assumed to have the form
+   * \f[
+   *    \frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j \hat{c}_l \hat{c}_k \; .
+   * \f]
    *
    * @param H The many-body operator.
    * @param ignore_irrelevant If `true`, silently skip irrelevant terms.
-   * @return Dictionary mapping index quadruples to coefficients.
+   * @return Dictionary mapping index quadruples \f$ (i, j, k, l) \f$ to coefficients \f$ U_{ijkl} \f$.
    */
   std::map<std::tuple<idx_tup, idx_tup, idx_tup, idx_tup>, roc> extract_U_dict4(many_body_operator const &H, bool ignore_irrelevant = false) {
     std::map<std::tuple<idx_tup, idx_tup, idx_tup, idx_tup>, roc> result;
