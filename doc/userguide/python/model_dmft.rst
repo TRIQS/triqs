@@ -4,7 +4,7 @@ Model DMFT
 ==========
 
 This Tutorial Series to teaches you how to run Model-DMFT calculations using TRIQS.
-You can find the associated Jupyter Notebooks in the `ModelDMFT` subdirectory of the `TRIQS/tutorials<https://github.com/TRIQS/tutorials>`_.
+You can find the associated Jupyter Notebooks in the `ModelDMFT` subdirectory of the `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_.
 
 .. toctree::
    :maxdepth: 1

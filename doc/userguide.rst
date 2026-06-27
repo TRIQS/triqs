@@ -1,16 +1,13 @@
 .. _triqs_userguide:
 
-.. warning::
-
-     This part of the documentation is currently being rewritten
-
 User guide
 ==========
 
 Welcome to the TRIQS project!
 
-This guide aims at presenting you the main classes of TRIQS and its applications through ready-to-use examples. These small demo codes
-should help you understand the logic behind the general design and organization of the library.
+This guide presents the main classes of TRIQS through ready-to-use examples in Python. These small
+demo codes should help you understand the logic behind the general design and organization of the
+library.
 
 .. note::
 
@@ -18,9 +15,11 @@ should help you understand the logic behind the general design and organization 
      You can run the notebooks either in an interactive `Binder Session <https://triqs.github.io/notebook>`_ on the web
      or run them locally after setting up TRIQS on your computer.
 
-.. warning::
+.. note::
 
-     This pages does not aim to replace the full reference of the code available :ref:`here <documentation>`.
+     This guide does not aim to replace the full :ref:`API Documentation <documentation>`.
+     The C++ library together with its examples is documented separately in the
+     `C++ API <./doxygen/index.html>`_.
 
 
 Why use TRIQS?
@@ -28,8 +27,8 @@ Why use TRIQS?
 
 TRIQS is a powerful library that allows you to easily write code to study strongly correlated problems.
 It is designed as a toolkit containing all the essential ingredients to tackle condensed matter physics.
-Before presenting you the tools available both in C++ and Python, we want you to have a look at a small script 
-where a full Dynamical Mean-Field Theory calculation using the Continuous-Time Hybridization Expansion (CT-HYB) solver 
+Before presenting the tools available both in C++ and Python, we want you to have a look at a small script
+where a full Dynamical Mean-Field Theory calculation using the Continuous-Time Hybridization Expansion (CT-HYB) solver
 is realized in... one page!
 
 .. toctree::
@@ -41,7 +40,7 @@ is realized in... one page!
 Python Tutorials
 ----------------
 
-We provide here three different Tutorial series, with increasing difficulty, that introduce you to various aspects of the TRIQS Python interface. These Tutorials are also provided as Jupyter Notebooks in our `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_ repository.
+We provide here different Tutorial series, with increasing difficulty, that introduce you to various aspects of the TRIQS Python interface. These Tutorials are also provided as Jupyter Notebooks in our `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_ repository.
 
 .. toctree::
    :maxdepth: 2
@@ -49,6 +48,7 @@ We provide here three different Tutorial series, with increasing difficulty, tha
    userguide/python/basics
    userguide/python/model_dmft
    userguide/python/two_particle_response
+   userguide/python/tight_binding
 
 If you want to learn more about Python, iPython and the notebook, you can check our external resources:
 
@@ -57,22 +57,5 @@ If you want to learn more about Python, iPython and the notebook, you can check 
 
    userguide/python/external_resources
 
-A quick tour in C++
--------------------
-
-We here provide a little tour of some aspects of TRIQS and its applications, at the C++
-level.  
-
-.. toctree::
-   :maxdepth: 1
-
-   userguide/c++/gfs/tutorial
-   userguide/c++/arrays/tutorial
-   userguide/c++/det_manip/tutorial
-   userguide/c++/hdf5/tutorial
-
-
-.. toctree::
-   :maxdepth: 1
-
-   userguide/c++/using_the_lib/contents
+For the documentation of individual classes and functions — together with
+ready-to-use code examples — see the :ref:`Python API <documentation>`.

@@ -4,7 +4,7 @@ Basics
 ======
 
 This Tutorial Series to teaches you the basics of the TRIQS Python interface.
-You can find the associated Jupyter Notebooks in the `Basics` subdirectory of the `TRIQS/tutorials<https://github.com/TRIQS/tutorials>`_.
+You can find the associated Jupyter Notebooks in the `Basics` subdirectory of the `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_.
 
 .. toctree::
    :maxdepth: 1

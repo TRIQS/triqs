@@ -4,7 +4,7 @@ Two-particle Response
 =====================
 
 This Tutorial Series to teaches you various aspects on two-particle response calculations.
-You can find the associated Jupyter Notebooks in the `TwoParticleResponse` subdirectory of the `TRIQS/tutorials<https://github.com/TRIQS/tutorials>`_.
+You can find the associated Jupyter Notebooks in the `TwoParticleResponse` subdirectory of the `TRIQS/tutorials <https://github.com/TRIQS/tutorials>`_.
 
 .. toctree::
    :maxdepth: 1
