@@ -28,7 +28,7 @@ using _c2py_cls_0                                            = triqs::stat::hist
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.stat.histograms.Histogram";
 static const auto _c2py_init_0 = c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(), c2py::c_constructor<_c2py_cls_0, int, int>("a", "b"),
-                                                         c2py::c_constructor<_c2py_cls_0, double, double, unsigned long>("a", "b", "nbins")};
+                                                         c2py::c_constructor<_c2py_cls_0, double, double, std::size_t>("a", "b", "nbins")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
@@ -65,7 +65,7 @@ nbins : {par_2}
 )DOC",
                                                                     {{c2py::python_typename<int>(), c2py::python_typename<double>()},
                                                                      {c2py::python_typename<int>(), c2py::python_typename<double>()},
-                                                                     {c2py::python_typename<unsigned long>()}});
+                                                                     {c2py::python_typename<std::size_t>()}});
 // clear
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.clear(); }, "self")};
 

@@ -28,12 +28,26 @@ using _c2py_cls_0                                            = triqs::utility::t
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_0>     = true;
 template <> inline constexpr auto c2py::tp_name<_c2py_cls_0> = "triqs.utility.utilities.TimePt";
 static const auto _c2py_init_0 =
-   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(), c2py::c_constructor<_c2py_cls_0, unsigned long long, double>("n_", "beta_")};
+   c2py::dispatcher_c_kw_t{c2py::c_constructor<_c2py_cls_0>(), c2py::c_constructor<_c2py_cls_0, uint64_t, double>("n_", "beta_")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_0> = c2py::pyfkw_constructor<_c2py_init_0>;
 template <>
 const std::string c2py::tp_ctor_doc<_c2py_cls_0> = _c2py_init_0.doc(R"DOC(
-Default constructor: :math:`\tau=0`
-)DOC");
+[1] Default constructor creates the point :math:`\tau_0` for :math:`\beta = 0`.
+
+------
+
+[2] Construct a point :math:`\tau_n` from an integer grid position and the inverse temperature.
+
+------
+
+Parameters
+----------
+n_ : {par_0}
+   Integer position :math:`n \in [0, N_\text{max}]` on the grid.
+beta_ : {par_1}
+   Inverse temperature :math:`\beta`.
+)DOC",
+                                                                    {{c2py::python_typename<uint64_t>()}, {c2py::python_typename<double>()}});
 
 // ----- Method table ----
 template <>
@@ -45,16 +59,15 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
 };
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(A point in imaginary time, i.e. :math:`\tau \in [0,\beta]`, but defined on a very thin grid.
+const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(A point in imaginary time, :math:`\tau_n \in [0, \beta]`, stored on a very fine integer grid.
 
-* Regular type.
+Each time point is identified by an integer position :math:`n \in [0, N_\mathrm{max}]` of type `uint64_t` 
+and the inverse temperature :math:`\beta`. Its floating-point value is :math:`\beta * n / N_\mathrm{max}`. 
 
-* **Rationale**: the position in the segment is given by an uint64_t,
-  i.e. a very long integer.
-  This allows exact comparisons, which notoriously dangerous on floating point number.
+Comparing two time points reduces to integer comparison, which avoids the well-known pitfalls of floating-point 
+equality.
 
-* Each time point is constructed from a segment, Cf time_segment class.
-* It can be casted to a double, but the reverse is wrong.)DOC"
+Various arithmetic operations are defined between time points and between time points and scalar `double` values.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 
 // ==================== module functions ====================

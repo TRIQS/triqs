@@ -405,7 +405,7 @@ Returns
 static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC(
 Get the storage index of a given R-vector.
 
-Throws a `TRIQS_RUNTIME_ERROR` if the R-vector is not present.
+It throws an exception if the R-vector is not present.
 
 Parameters
 ----------

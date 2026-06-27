@@ -137,11 +137,11 @@ Assumes that :math:`\hat{h}` has the form
 
    \hat{h} = \sum_{\sigma ij} h_{\sigma ij} \hat{c}_{\sigma, i}^\dagger \hat{c}_{\sigma, j} \; ,
 
-where the first element of each canonical operator's index is interpreted as the block label :math:`\sigma` (a 
+where the first element of each canonical operator's index is interpreted as the block label :math:`\sigma` (a
 string) and the second element as the in-block integer index :math:`i`.
 
-If a term that is not of this form is encountered, an exception is thrown unless ``ignore_irrelevant`` is `true`, 
-in which case the offending term is silently skipped.
+If a term that is not of this form is encountered, an exception is thrown unless `ignore_irrelevant` is true, in 
+which case the offending term is silently skipped.
 
 Parameters
 ----------
@@ -150,7 +150,7 @@ h : {par_0}
 gf_struct : {par_1}
    Block structure specifying the block labels and the size of each block.
 ignore_irrelevant : {par_2}
-   If `true`, terms that do not match the expected form are skipped instead of triggering an 
+   If true, terms that do not match the expected form are skipped instead of triggering an 
    exception.
 
 Returns
@@ -214,15 +214,20 @@ ignore_irrelevant : {par_1}
 Returns
 -------
 {ret_0}
-   Dictionary mapping index pairs to coefficients.
+   Dictionary mapping index pairs :math:`(i, j)` to coefficients :math:`U_{ij}`.
 )DOC",
    {{c2py::python_typename<const triqs::operators::many_body_operator &>()}, {c2py::python_typename<bool>()}},
    {c2py::python_typename<
       std::map<std::tuple<triqs::operators::utils::py::idx_tup, triqs::operators::utils::py::idx_tup>, triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_3 =
    _c2py_fun_3.doc(R"DOC(
-Extract the interaction part :math:`\frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j
-\hat{c}_l \hat{c}_k` from a many-body operator.
+Extract the two-body interaction part from a many-body operator.
+
+The two body interaction is assumed to have the form
+
+.. math::
+
+   \frac{1}{2} \sum_{ijkl} U_{ijkl} \hat{c}^\dagger_i \hat{c}^\dagger_j \hat{c}_l \hat{c}_k \; .
 
 Parameters
 ----------
@@ -234,7 +239,7 @@ ignore_irrelevant : {par_1}
 Returns
 -------
 {ret_0}
-   Dictionary mapping index quadruples to coefficients.
+   Dictionary mapping index quadruples :math:`(i, j, k, l)` to coefficients :math:`U_{ijkl}`.
 )DOC",
                    {{c2py::python_typename<const triqs::operators::many_body_operator &>()}, {c2py::python_typename<bool>()}},
                    {c2py::python_typename<std::map<std::tuple<triqs::operators::utils::py::idx_tup, triqs::operators::utils::py::idx_tup,
@@ -254,7 +259,7 @@ ignore_irrelevant : {par_1}
 Returns
 -------
 {ret_0}
-   Dictionary mapping index pairs to coefficients.
+   Dictionary mapping index pairs :math:`(i, j)` to coefficients :math:`h_{ij}`.
 )DOC",
    {{c2py::python_typename<const triqs::operators::many_body_operator &>()}, {c2py::python_typename<bool>()}},
    {c2py::python_typename<
@@ -272,10 +277,10 @@ Given the block matrices :math:`h_{\sigma ij}` and the block structure, returns
 Parameters
 ----------
 bl_mat : {par_0}
-   One matrix :math:`h_{\sigma ij}` per block :math:`\sigma`, packaged as a one-dimensional array of 
+   One matrix :math:`h_{\sigma ij}` per block :math:`\sigma`, packaged as a one-dimensional array of
    matrices.
 gf_struct : {par_1}
-   Block structure.
+   Block structure specifying the block labels and the size of each block.
 
 Returns
 -------
@@ -289,7 +294,7 @@ Returns
    {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_6 =
    _c2py_fun_6.doc(R"DOC(
-Keep only the quadratic terms of a many-body operator :math:`\hat{h}`.
+Keep only quadratic terms of a many-body operator :math:`\hat{h}`.
 
 Parameters
 ----------
@@ -305,7 +310,7 @@ Returns
                    {c2py::python_typename<triqs::operators::many_body_operator_generic<triqs::utility::real_or_complex>>()});
 static const auto _c2py_doc_7 =
    _c2py_fun_7.doc(R"DOC(
-Keep only the quartic terms of a many-body operator :math:`\hat{h}`.
+Keep only quartic terms of a many-body operator :math:`\hat{h}`.
 
 Parameters
 ----------

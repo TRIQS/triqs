@@ -341,7 +341,7 @@ static constexpr auto prop_doc_7  = R"DOC(Get the values of all quantum-number o
 static constexpr auto prop_doc_8  = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
 static constexpr auto prop_doc_9  = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
 
-The returned vector is expressed in the eigenbasis of the Hamiltonian.)DOC";
+The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.)DOC";
 static constexpr auto prop_doc_10 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
 
 // ----- Member and property table ----
@@ -702,7 +702,7 @@ static constexpr auto prop_doc_18 = R"DOC(Get the values of all quantum-number o
 static constexpr auto prop_doc_19 = R"DOC(Get the unitary matrices :math:`U_B` for every invariant subspace.)DOC";
 static constexpr auto prop_doc_20 = R"DOC(Get the vacuum state as a vector in the full Hilbert space.
 
-The returned vector is expressed in the eigenbasis of the Hamiltonian.)DOC";
+The returned vector is expressed in the eigenbasis of the Hamiltonian :math:`\hat H`.)DOC";
 static constexpr auto prop_doc_21 = R"DOC(Get the index of the invariant subspace containing the vacuum state.)DOC";
 
 // ----- Member and property table ----
@@ -1132,7 +1132,7 @@ Returns
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
-   {c2py::python_typename<std::vector<std::vector<double>>>()});
+   {c2py::python_typename<std::vector<std::vector<triqs::atom_diag::quantum_number_t>>>()});
 static const auto _c2py_doc_26 = _c2py_fun_26.doc(
    R"DOC(
 Tabulate the eigenvalues :math:`q_{B,i}` of a quantum-number operator :math:`\hat Q`, also checking that 
@@ -1157,7 +1157,7 @@ Returns
    {{c2py::python_typename<const typename triqs::atom_diag::atom_diag<false>::many_body_op_t &>(),
      c2py::python_typename<const typename triqs::atom_diag::atom_diag<true>::many_body_op_t &>()},
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()}},
-   {c2py::python_typename<std::vector<std::vector<double>>>()});
+   {c2py::python_typename<std::vector<std::vector<triqs::atom_diag::quantum_number_t>>>()});
 static const auto _c2py_doc_27 = _c2py_fun_27.doc(
    R"DOC(
 Compute the trace of a many-body operator weighted by a block-diagonal density matrix.

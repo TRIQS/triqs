@@ -1390,7 +1390,23 @@ static auto const _c2py_fun_0 =
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(
    R"DOC(
-Build a Green's function on the conjugate mesh by Fourier transform.
+[1, 2, 3, 4, 5] Fourier transform a Matsubara-frequency Green's function to imaginary time (`n_tau` time points, -1 for the default).
+
+------
+
+[6, 7, 8, 9, 10, 11, 12, 13, 14, 15] Fourier transform an imaginary-time Green's function to Matsubara frequencies (`n_iw` positive frequencies, -1 for the default).
+
+------
+
+[16, 17, 18, 19, 20] Fourier transform a real-frequency Green's function to real time (set `shift_half_bin` to shift the time mesh by half a bin).
+
+------
+
+[21, 22, 23, 24, 25, 26, 27, 28, 29, 30] Fourier transform a real-time Green's function to real frequencies (set `shift_half_bin` to shift the frequency mesh by half a bin).
+
+------
+
+[31] Build a Green's function on the conjugate mesh by Fourier transform.
 
 Applies to every overload. The supported conjugate mesh
 pairs are imaginary time and Matsubara frequencies, real time and
@@ -1418,6 +1434,8 @@ the input mesh.
     imaginary-time and Matsubara and the real-time and
     real-frequency pairs. The known-moment tail correction
     improves accuracy at high frequency.
+
+------
 
 Parameters
 ----------

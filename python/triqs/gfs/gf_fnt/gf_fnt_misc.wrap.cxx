@@ -157,9 +157,9 @@ static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
       "g", "tolerance"_a = 1.e-12)};
 
 // rebinning_tau
-static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cfun(
-   [](const triqs::gfs::gf_const_view<triqs::mesh::imtime> &g, unsigned long new_n_tau) { return triqs::gfs::rebinning_tau(g, new_n_tau); }, "g",
-   "new_n_tau")};
+static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
+   c2py::cfun([](const triqs::gfs::gf_const_view<triqs::mesh::imtime> &g, size_t new_n_tau) { return triqs::gfs::rebinning_tau(g, new_n_tau); }, "g",
+              "new_n_tau")};
 
 // set_from_imfreq
 static auto const _c2py_fun_4 = c2py::dispatcher_f_kw_t{
@@ -432,7 +432,7 @@ Returns
 {ret_0}
    A new imaginary-time Green's function on a mesh of size ``new_n_tau``.
 )DOC",
-                   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imtime> &>()}, {c2py::python_typename<unsigned long>()}},
+                   {{c2py::python_typename<const triqs::gfs::gf_const_view<triqs::mesh::imtime> &>()}, {c2py::python_typename<size_t>()}},
                    {c2py::python_typename<triqs::gfs::gf<triqs::mesh::imtime>>()});
 static const auto _c2py_doc_4 =
    _c2py_fun_4.doc(R"DOC(

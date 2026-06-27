@@ -42,8 +42,8 @@ static int synth_constructor_0(PyObject *self, PyObject *args, PyObject *kwargs)
     return -1;
   }
   auto &self_c = *(((c2py::wrap<_c2py_cls_0> *)self)->_c);
-  de("dagger", self_c.dagger, false);
-  de("indices", self_c.indices, false);
+  de("dagger", self_c.dagger, true);
+  de("indices", self_c.indices, true);
   return de.check();
 }
 
@@ -55,9 +55,9 @@ const std::string c2py::tp_ctor_doc<_c2py_cls_0> =
 
 Parameters
 ----------
-dagger : {par_0}
+dagger : {par_0}, default={false}
 
-indices : {par_1}
+indices : {par_1}, default={}
 
 )DOC",
                       "par", {c2py::python_typename<bool>(), c2py::python_typename<triqs::operators::indices_t>()});
@@ -70,7 +70,7 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-constexpr auto _c2py_doc_member_0 = R"DOC(True for creation (:math:`\hat{c}_{\alpha_i}^{\dagger}`), false for annihilation 
+constexpr auto _c2py_doc_member_0 = R"DOC(True for creation (:math:`\hat{c}_{\alpha_i}^{\dagger}`), false for annihilation
 (:math:`\hat{c}_{\alpha_i}`) operators.)DOC";
 constexpr auto _c2py_doc_member_1 = R"DOC(Single particle state index :math:`\alpha_i`.)DOC";
 static PyObject *prop_get_dict_0(PyObject *self, void *) {
@@ -93,10 +93,10 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
 template <>
 const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Second quantization creation/annihilation operator.
 
-A canonical second quantization operator, :math:`\hat{c}_{\alpha_i}` or 
+A canonical second quantization operator, :math:`\hat{c}_{\alpha_i}` or
 :math:`\hat{c}_{\alpha_i}^\dagger`, is defined by
 
-- a single particle state index :math:`\alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i})`, where each 
+- a single particle state index :math:`\alpha_i = (\beta^{(i)}_1, \dots, \beta^{(i)}_{k_i})`, where each
   :math:`\beta^{(i)}_j` is an integer, a string, a double or an array of integers, and
 - a boolean flag `dagger` indicating whether it is a creation (true) or annihilation (false) operator.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
@@ -307,7 +307,7 @@ template <> constexpr PyNumberMethods *c2py::tp_as_number<_c2py_cls_1> = &c2py::
 template <>
 const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Generic many-body operator.
 
-A generic many-body operator :math:`\hat{O}` is defined as a linear combination of monomials 
+A generic many-body operator :math:`\hat{O}` is defined as a linear combination of monomials
 :math:`\hat{m}_i` such that
 
 .. math::
@@ -319,7 +319,7 @@ where :math:`a_i` are real or complex coefficients.
 Under the hood, we simply store all individual terms in a map/dictionary with the monomials as keys and the
 coefficients as values.
 
-Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over 
+Operator-operator and operator-scalar arithmetic is supported such that many-body operators form an algebra over
 the field of real/complex numbers with an extra addition operation between operators and scalars.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 
