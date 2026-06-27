@@ -113,6 +113,11 @@
           <tab type="usergroup" url="@ref triqs-gfs-reshape" title="GF reshaping and slicing">
           </tab>
           <tab type="usergroup" url="@ref triqs-gfs-symmetry" title="GF symmetries">
+            <tab type="user" url="@ref triqs::gfs::ScalarGfInitFunc" title="gfs::ScalarGfInitFunc"/>
+            <tab type="user" url="@ref triqs::gfs::ScalarGfSymmetry" title="gfs::ScalarGfSymmetry"/>
+            <tab type="user" url="@ref triqs::gfs::TensorGfInitFunc" title="gfs::TensorGfInitFunc"/>
+            <tab type="user" url="@ref triqs::gfs::TensorGfSymmetry" title="gfs::TensorGfSymmetry"/>
+            <tab type="user" url="@ref triqs::gfs::sym_grp" title="gfs::sym_grp"/>
           </tab>
           <tab type="user" url="@ref triqs::gfs::is_instantiation_of" title="gfs::is_instantiation_of"/>
         </tab>

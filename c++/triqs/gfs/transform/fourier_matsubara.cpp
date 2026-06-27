@@ -17,13 +17,29 @@
 //
 // Authors: Michel Ferrero, Laura Messio, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
-#include "../../gfs.hpp"
+/**
+ * @file
+ * @brief Implementation of the imaginary-time/Matsubara-frequency Fourier transforms.
+ */
+
+#include "./fourier.hpp"
 #include "./fourier_common.hpp"
+
+#include "../functions/functions2.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+#include <string>
 
 namespace triqs::gfs {
 
   namespace {
 
+    // a is read into an nda expression template (the result is computed lazily after the a* product), so it is
+    // deliberately not std::forward-ed into a sink.
+    // NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
     // NB : will return an expression template, but compute the number after a*
     template <typename A> auto oneFermion(A &&a, double b, double tau, double beta) {
       return -a * (b >= 0 ? exp(-b * tau) / (1 + exp(-beta * b)) : exp(b * (beta - tau)) / (1 + exp(beta * b)));
@@ -32,18 +48,19 @@ namespace triqs::gfs {
     template <typename A> auto oneBoson(A &&a, double b, double tau, double beta) {
       return a * (b >= 0 ? exp(-b * tau) / (exp(-beta * b) - 1) : exp(b * (beta - tau)) / (1 - exp(b * beta)));
     }
+    // NOLINTEND(cppcoreguidelines-missing-std-forward)
   } // namespace
 
   //-------------------------------------
 
-  array<dcomplex, 2> fit_tail(gf_const_view<imtime, tensor_valued<1>> gt) {
+  array<dcomplex, 2> fit_tail(gf_const_view<mesh::imtime, tensor_valued<1>> gt) {
     using matrix_t   = nda::matrix<dcomplex>;
     int fit_order    = 8;
     auto _           = range::all;
     auto d_vec_left  = matrix_t(fit_order, gt.target_shape()[0]);
     auto d_vec_right = d_vec_left;
-    int n_tau        = gt.mesh().size();
-    for (int m : range(1, fit_order + 1)) {
+    long n_tau       = gt.mesh().size();
+    for (long m : range(1, fit_order + 1)) {
       d_vec_left(m - 1, _)  = (gt[m] - gt[0]) / gt.mesh()[m];                     // Values around 0
       d_vec_right(m - 1, _) = (gt[n_tau - 1] - gt[n_tau - 1 - m]) / gt.mesh()[m]; // Values around beta
     }
@@ -93,14 +110,14 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<imtime> gt, nda::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<mesh::imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<mesh::imtime> gt, nda::array_const_view<dcomplex, 2> known_moments) {
 
     nda::array<dcomplex, 2> tail;
 
     if (known_moments.is_empty()) {
       // A simple check on whether or not we are dealing with noisy data
-      auto dat  = gt.data();
-      int n_tau = gt.mesh().size();
+      auto dat   = gt.data();
+      long n_tau = gt.mesh().size();
       auto der_1 =
          max_element(abs(dat(1, range::all) - dat(0, range::all)) + abs(dat(n_tau - 2, range::all) - dat(n_tau - 1, range::all))) / gt.mesh().delta();
       auto der_2 = 0.5 * max_element(abs(dat(2, range::all) - dat(0, range::all)) + abs(dat(n_tau - 3, range::all) - dat(n_tau - 1, range::all)))
@@ -117,7 +134,7 @@ namespace triqs::gfs {
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
-      int n_known_moments                      = std::min<size_t>(known_moments.shape()[0], 4);
+      long n_known_moments                     = std::min<long>(known_moments.shape()[0], 4);
       tail                                     = make_zero_tail(gt, 4);
       tail(range(n_known_moments), range::all) = known_moments(range(n_known_moments), range::all);
     }
@@ -138,10 +155,10 @@ namespace triqs::gfs {
     array<dcomplex, 2> _gin(L + 1, n_others);
 
     bool is_fermion = (iw_mesh.statistic() == Fermion);
-    double fact     = beta / L;
+    double fact     = beta / static_cast<double>(L);
     dcomplex iomega = M_PI * 1i / beta;
 
-    double b1, b2, b3;
+    double b1 = 0, b2 = 0, b3 = 0;
     array<dcomplex, 1> a1, a2, a3;
     auto _  = range::all;
     auto m1 = tail(1, _);
@@ -172,10 +189,10 @@ namespace triqs::gfs {
         _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
-    int dims[] = {int(L)};
-    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
+    std::array<int, 1> dims{static_cast<int>(L)};
+    _fourier_base(_gin, _gout, 1, dims.data(), static_cast<int>(n_others), FFTW_BACKWARD);
 
-    auto gw = gf_vec_t<imfreq>{iw_mesh, {n_others}};
+    auto gw = gf_vec_t<mesh::imfreq>{iw_mesh, {n_others}};
 
     // Correction term to account for proper Trapezoidal integration
     // FIXME Avoid copy, by doing proper in-place operation
@@ -187,7 +204,7 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<imfreq> gw, nda::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<mesh::imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<mesh::imfreq> gw, nda::array_const_view<dcomplex, 2> known_moments) {
 
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
@@ -228,7 +245,7 @@ namespace triqs::gfs {
     double fact     = 1.0 / beta;
     dcomplex iomega = M_PI * 1i / beta;
 
-    double b1, b2, b3;
+    double b1 = 0, b2 = 0, b3 = 0;
     array<dcomplex, 1> a1, a2, a3;
     auto _  = range::all;
     auto m1 = tail(1, _);
@@ -253,10 +270,10 @@ namespace triqs::gfs {
 
     for (auto iw : gw.mesh()) _gin((iw.n + L) % L, _) = fact * (gw[iw] - (a1 / (iw - b1) + a2 / (iw - b2) + a3 / (iw - b3)));
 
-    int dims[] = {int(L)};
-    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
+    std::array<int, 1> dims{static_cast<int>(L)};
+    _fourier_base(_gin, _gout, 1, dims.data(), static_cast<int>(n_others), FFTW_FORWARD);
 
-    auto gt = gf_vec_t<imtime>{tau_mesh, {n_others}};
+    auto gt = gf_vec_t<mesh::imtime>{tau_mesh, {n_others}};
 
     if (is_fermion)
       for (auto t : tau_mesh)

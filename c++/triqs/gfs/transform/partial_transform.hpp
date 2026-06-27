@@ -15,19 +15,38 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-#pragma once
-#include "../gf/gf.hpp"
-//#include "../gf/gf_view.hpp"
-#include "../gf/gf_const_view.hpp"
-#include "../gf/flatten.hpp"
+/**
+ * @file
+ * @brief Provides a helper to apply a transform to a single component of a product-mesh Green's function.
+ */
 
-/* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier (g, mesh, options)  -> fourier_transform of g
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
+#pragma once
+
+#include "../gf/flatten.hpp"
+#include "../gf/gf.hpp"
+#include "../gf/gf_const_view.hpp"
+
+#include "../../mesh/prod.hpp"
+#include "../../utility/tuple_tools.hpp"
+
 namespace triqs::gfs {
 
+  /**
+   * @ingroup triqs-gfs-fourier
+   * @brief Apply a transform to a single mesh component of a product-mesh Green's function.
+   *
+   * @details The input Green's function is flattened along the component `N` (collapsing all other mesh axes and
+   * target indices into a single dimension), the user-supplied `lambda` is applied to the resulting flattened
+   * Green's function, and the result is unflattened back onto a product mesh whose `N`-th component is replaced by
+   * the mesh produced by `lambda`. This is the common scaffold used by per-axis transforms on product meshes.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam M Mesh types of the product-mesh components.
+   * @tparam Target Target type of the input Green's function.
+   * @param gin The input Green's function on a product mesh.
+   * @param lambda The transform applied to the flattened Green's function of the selected component.
+   * @return A new Green's function whose `N`-th mesh component has been transformed.
+   */
   template <int N = 0, typename... M, typename Target> auto partial_transform(gf_const_view<mesh::prod<M...>, Target> gin, auto lambda) {
 
     // Flatten the gf except for the variable N

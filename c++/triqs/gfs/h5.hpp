@@ -17,7 +17,19 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the HDF5 read/write machinery for Green's functions.
+ */
+
 #pragma once
+
+#include "./functions/functions2.hpp"
+#include "./functions/imfreq.hpp"
+#include "./gf/gf.hpp"
+#include "./gf/gf_view.hpp"
+
+#include "../mesh/imfreq.hpp"
 
 namespace triqs::gfs {
 
@@ -25,7 +37,8 @@ namespace triqs::gfs {
   *                              HDF5
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G, typename Target> constexpr bool gf_has_target() { return std::is_same<typename G::target_t, Target>::value; }
+  // True if G's target type is exactly Target.
+  template <typename G, typename Target> constexpr bool gf_has_target() { return std::is_same_v<typename G::target_t, Target>; }
   /*
  // ---------------------------
 
@@ -68,7 +81,17 @@ namespace triqs::gfs {
 
   // ---------------------------
 
-  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
+  /**
+   * @ingroup triqs-gfs-io
+   * @brief HDF5 read/write implementation for Green's functions.
+   *
+   * @details Provides the static `write` and `read` members used to serialize the data and mesh of a Green's
+   * function to and from an HDF5 group. The template can be specialized (e.g. for block Green's functions) to
+   * customize the on-disk layout.
+   *
+   * @tparam V The mesh (variable) type of the Green's function.
+   * @tparam T The target type of the Green's function.
+   */
   template <typename V, typename T> struct gf_h5_rw {
 
     //template <typename G> static void write(h5::group gr, G const &g) { _write(gr, gf_h5_before_write<V, T>::invoke(gr, g)); }

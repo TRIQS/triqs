@@ -17,19 +17,53 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the gf_evaluator that evaluates a Green's function at arbitrary mesh points.
+ */
+
 #pragma once
+
+#include "./functions/functions2.hpp"
+#include "./gf/defs.hpp"
+#include "./gf/gf.hpp"
+
+#include "../mesh/imfreq.hpp"
 
 namespace triqs::gfs {
 
   // evaluator by default forwards everything to evaluate
   // specialize e.g. for tail where gf data is used
 
-  /*----------------------------------------------------------
-  *  Default
-  *--------------------------------------------------------*/
+  /**
+   * @addtogroup triqs-gfs-evaluation
+   * @{
+   */
 
+  /**
+   * @brief Default evaluator of a Green's function at arbitrary points of its mesh.
+   *
+   * @details The primary template forwards the evaluation to the mesh's `evaluate` function, which interpolates
+   * the underlying data. It is specialized for specific meshes (e.g. triqs::mesh::imfreq) where evaluation
+   * outside the stored grid requires dedicated handling.
+   *
+   * @tparam M The mesh type of the Green's function.
+   */
   template <Mesh M> struct gf_evaluator {
 
+    /**
+     * @brief Evaluate a Green's function at a set of mesh coordinates.
+     *
+     * @fn auto gf_evaluator::operator()(G const &g, XS &&...xs) const
+     * @details Interpolates the data of `g` via the mesh's `evaluate` function. If any of the coordinates makes
+     * a mesh evaluate to zero, a zero-valued result of the appropriate target shape is returned.
+     *
+     * @tparam G The Green's function type (must satisfy `is_gf_v`).
+     * @tparam XS The types of the evaluation coordinates.
+     * @param g The Green's function to evaluate.
+     * @param xs The coordinates at which to evaluate, one per mesh component.
+     * @return The interpolated value at the given coordinates.
+     */
     template <typename G, typename... XS>
       requires(is_gf_v<G>)
     auto operator()(G const &g, XS &&...xs) const {
@@ -43,12 +77,12 @@ namespace triqs::gfs {
     }
   };
 
-  /*----------------------------------------------------------
-   *  mesh::imfreq
-   *--------------------------------------------------------*/
-
+  // Evaluator specialization for Matsubara-frequency Green's functions (internal; the primary gf_evaluator is the
+  // documented API). Off the stored grid it uses the analytic structure: on a positive-only mesh negative
+  // frequencies are reconstructed by conjugation, and outside the grid the high-frequency tail is fitted and summed.
   template <> struct gf_evaluator<mesh::imfreq> {
 
+    // Evaluate at a Matsubara frequency: stored value on the grid, conjugate on a positive-only mesh, else tail sum.
     template <typename G> auto operator()(G const &g, matsubara_freq const &f) const {
 
       using r_t = std::decay_t<decltype(make_regular(g[0]))>;
@@ -73,8 +107,10 @@ namespace triqs::gfs {
       return res;
     }
 
-    // int -> replace by matsubara_freq
+    // Integer overload: convert n to a matsubara_freq and delegate to the matsubara_freq overload.
     template <typename G> decltype(auto) operator()(G const &g, int n) const { return g(matsubara_freq(n, g.mesh().beta(), g.mesh().statistic())); }
   };
+
+  /** @} */
 
 } // namespace triqs::gfs

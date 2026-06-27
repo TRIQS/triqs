@@ -17,16 +17,49 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides factory functions to construct Green's functions from a mesh and target, or from another Green's function.
+ */
+
 #pragma once
 
-namespace triqs {
-  namespace gfs {
+#include "./gf/gf.hpp"
 
-    // Construct a Green function given a Mesh, and a Target
-    template <typename Mesh, typename T> gf<Mesh, typename T::target_t> make_gf(Mesh m, T const &t) { return {std::move(m), t.shape()}; }
+#include <type_traits>
+#include <utility>
 
-    // Create a Green function from another gf or view
-    template <typename G> typename std::decay_t<G>::regular_type make_gf(G &&g) { return typename std::decay_t<G>::regular_type{std::forward<G>(g)}; }
+namespace triqs::gfs {
 
-  } // namespace gfs
-} // namespace triqs
+  /**
+   * @addtogroup triqs-gfs-factories
+   * @{
+   */
+
+  /**
+   * @brief Construct a Green's function from a mesh and a target.
+   *
+   * @details The target type is taken from `T::target_t` and the target shape from `t.shape()`.
+   *
+   * @tparam Mesh The type of the mesh.
+   * @tparam T The type providing the target (e.g. an array determining the target shape and type).
+   * @param m The mesh of the resulting Green's function.
+   * @param t An object whose `target_t` and `shape()` define the target of the Green's function.
+   * @return A triqs::gfs::gf on the mesh `m` with the target deduced from `t`.
+   */
+  template <typename Mesh, typename T> gf<Mesh, typename T::target_t> make_gf(Mesh m, T const &t) { return {std::move(m), t.shape()}; }
+
+  /**
+   * @brief Construct a regular Green's function from another Green's function or view.
+   *
+   * @details Returns a copy with the regular (owning) type of the input, materializing the data of a view if necessary.
+   *
+   * @tparam G The type of the input Green's function or view.
+   * @param g The Green's function or view to copy.
+   * @return A regular Green's function holding a copy of the data of `g`.
+   */
+  template <typename G> typename std::decay_t<G>::regular_type make_gf(G &&g) { return typename std::decay_t<G>::regular_type{std::forward<G>(g)}; }
+
+  /** @} */
+
+} // namespace triqs::gfs

@@ -18,6 +18,11 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Hugo U. R. Strand, Nils Wentzell
 
+/**
+ * @file
+ * @brief Umbrella header for the Green's function library.
+ */
+
 #pragma once
 
 /**

@@ -18,19 +18,20 @@
 //
 // Authors: Michel Ferrero, Igor Krivenko, Olivier Parcollet, Nils Wentzell
 
-#include "../../gfs.hpp"
-//#include "pade.hpp"
-#include <triqs/arrays.hpp>
-#include <triqs/utility/pade_approximants.hpp>
+/**
+ * @file
+ * @brief Implementation of the Pade analytic continuation.
+ */
+
+#include "./pade.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/pade_approximants.hpp"
+
+#include <complex>
 
 namespace triqs::gfs {
 
-  typedef std::complex<double> dcomplex;
-
-  void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
-
-    // make sure the GFs have the same structure
-    //assert(gw.shape() == gr.shape());
+  void pade(gf_view<mesh::refreq, scalar_valued> gr, gf_const_view<mesh::imfreq, scalar_valued> gw, int n_points, double freq_offset) {
 
     if (n_points < 0 || n_points > gw.mesh().last_index() + 1)
       TRIQS_RUNTIME_ERROR << "Pade argument n_points (" << n_points

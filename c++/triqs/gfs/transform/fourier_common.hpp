@@ -17,15 +17,22 @@
 //
 // Authors: Michel Ferrero, Nils Wentzell
 
+/**
+ * @file
+ * @brief Declares the low-level FFTW wrapper shared by the Fourier transform implementations.
+ */
+
 #pragma once
+
 #include <triqs/arrays.hpp>
-// include only in cpp implementation
+
 #include <fftw3.h>
 
 namespace triqs::gfs {
 
   using namespace triqs::arrays;
-  // call to fftw
+
+  // Low-level FFTW driver: performs fftw_count batched complex-to-complex transforms of the rows of in into out.
   void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int *dims, int fftw_count, int fftw_backward_forward);
 
 } // namespace triqs::gfs

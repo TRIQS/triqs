@@ -115,7 +115,7 @@ namespace triqs::gfs {
    * @brief Fit an imaginary-time Green's function on a given DLR coefficient mesh.
    *
    * @details Builds a DLR coefficient Green's function by least-squares fitting the input Green's function (on a
-   * uniform imaginary-time mesh) onto the supplied DLR grid \p dlr_mesh.
+   * uniform imaginary-time mesh) onto the supplied DLR grid `dlr_mesh`.
    *
    * @tparam N Index of the mesh component to fit (default \f$ 0 \f$).
    * @tparam Ns Additional mesh component indices for product meshes.
@@ -265,18 +265,18 @@ namespace triqs::gfs {
    * @brief Sample an imaginary frequency Green's function on the DLR Matsubara frequency nodes
    * defined by (w_max, eps, symmetrize).
    *
-   * @details Constructs a fresh triqs::mesh::dlr_imfreq mesh from \p w_max, \p eps and \p symmetrize
-   * (using the same beta and statistic as \p g) and returns a Gf on that mesh whose values are read
-   * off \p g at the corresponding Matsubara indices.
+   * @details Constructs a fresh triqs::mesh::dlr_imfreq mesh from `w_max`, `eps` and `symmetrize`
+   * (using the same beta and statistic as `g`) and returns a Gf on that mesh whose values are read
+   * off `g` at the corresponding Matsubara indices.
    *
    * For a block_gf, the DLR mesh is built once and reused across blocks (the underlying cppdlr SVD
    * is not cheap). For a product mesh, the operation is applied to the imfreq axis selected by the
    * template parameter pack <N, Ns...>.
    *
-   * It throws an exception if the input imfreq mesh of \p g does not cover the Matsubara frequency
+   * It throws an exception if the input imfreq mesh of `g` does not cover the Matsubara frequency
    * range of the constructed DLR mesh.
    *
-   * @tparam N     Index of the imfreq axis to transform when \p g has a product mesh. Must be 0 for
+   * @tparam N     Index of the imfreq axis to transform when `g` has a product mesh. Must be 0 for
    *               non-product meshes.
    * @tparam Ns    Additional axis indices for nested product-mesh transformations.
    * @tparam G     A MemoryGf or block_gf type with an imfreq mesh on the selected axis.
@@ -284,7 +284,7 @@ namespace triqs::gfs {
    * @param  w_max      DLR energy cutoff used to build the dlr_imfreq mesh.
    * @param  eps        DLR accuracy used to build the dlr_imfreq mesh.
    * @param  symmetrize If true, build a particle-hole symmetric DLR mesh.
-   * @return A Gf on a freshly built dlr_imfreq mesh, sampled from \p g.
+   * @return A Gf on a freshly built dlr_imfreq mesh, sampled from `g`.
    */
   template <int N = 0, int... Ns, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)
@@ -302,33 +302,33 @@ namespace triqs::gfs {
 
   /**
    * @brief Find a DLR energy cutoff \f$ \omega_{\mathrm{max}} \f$ that reproduces an imfreq Green's
-   * function within tolerance \p eps after a DLR round-trip.
+   * function within tolerance `eps` after a DLR round-trip.
    *
-   * @details Starting from \p w_max_init, the cutoff is grown by a factor of 1.5 per iteration. For
+   * @details Starting from `w_max_init`, the cutoff is grown by a factor of 1.5 per iteration. For
    * each candidate \f$ \omega_{\mathrm{max}} \f$ the function
-   * - builds a triqs::mesh::dlr_imfreq mesh from (\f$ \omega_{\mathrm{max}} \f$, \p eps, \p symmetrize),
-   * - samples \p g on that DLR mesh,
-   * - reconstructs the Gf on the original imfreq mesh of \p g via the DLR coefficients, and
+   * - builds a triqs::mesh::dlr_imfreq mesh from (\f$ \omega_{\mathrm{max}} \f$, `eps`, `symmetrize`),
+   * - samples `g` on that DLR mesh,
+   * - reconstructs the Gf on the original imfreq mesh of `g` via the DLR coefficients, and
    * - measures the element-wise round-trip error
    *   \f[ e = \max_{i\omega_n, \mathrm{indices}} \left| g(i\omega_n) - g_{\mathrm{rec}}(i\omega_n) \right| \;. \f]
-   * The smallest \f$ \omega_{\mathrm{max}} \le \f$ \p w_max_max with \f$ e < \f$ \p eps is returned.
+   * The smallest \f$ \omega_{\mathrm{max}} \le \f$ `w_max_max` with \f$ e < \f$ `eps` is returned.
    *
-   * Candidate cutoffs whose DLR frequency range exceeds the range of the input imfreq mesh of \p g
+   * Candidate cutoffs whose DLR frequency range exceeds the range of the input imfreq mesh of `g`
    * are skipped (they would produce an invalid DLR mesh).
    *
    * For a block_gf, the error reported per iteration is the worst-case error across all blocks.
    *
-   * It throws an exception if \p w_max_init exceeds \p w_max_max, or if no candidate cutoff
-   * \f$ \le \f$ \p w_max_max achieves \f$ e < \f$ \p eps.
+   * It throws an exception if `w_max_init` exceeds `w_max_max`, or if no candidate cutoff
+   * \f$ \le \f$ `w_max_max` achieves \f$ e < \f$ `eps`.
    *
    * @tparam G An imfreq MemoryGf or block_gf type.
    * @param  g           Input Green's function on an imfreq mesh.
    * @param  eps         Target DLR accuracy and round-trip error tolerance.
    * @param  symmetrize  If true, use particle-hole symmetric DLR meshes.
-   * @param  w_max_init  Initial value of the DLR cutoff to try (must be \f$ \le \f$ \p w_max_max).
+   * @param  w_max_init  Initial value of the DLR cutoff to try (must be \f$ \le \f$ `w_max_max`).
    * @param  w_max_max   Maximum DLR cutoff to try before giving up.
-   * @return The smallest \f$ \omega_{\mathrm{max}} \le \f$ \p w_max_max for which the round-trip
-   *         error is below \p eps.
+   * @return The smallest \f$ \omega_{\mathrm{max}} \le \f$ `w_max_max` for which the round-trip
+   *         error is below `eps`.
    */
   template <int = 0, typename G>
     requires(MemoryGf<G> or is_block_gf_v<G>)

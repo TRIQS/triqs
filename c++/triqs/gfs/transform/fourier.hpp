@@ -17,53 +17,77 @@
 //
 // Authors: Philipp Dumitrescu, Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
+/**
+ * @file
+ * @brief Provides the Fourier transform factories and the lazy `fourier(...)` assignment for Green's functions.
+ */
+
 #pragma once
-#include "./../gf/flatten.hpp"
-#include <triqs/utility/tuple_tools.hpp>
+
+#include "../gf/flatten.hpp"
+#include "../gf/gf.hpp"
+#include "../gf/gf_const_view.hpp"
+#include "../gf/gf_view.hpp"
+#include "../gf/targets.hpp"
+#include "../block/block_gf.hpp"
+#include "../block/map.hpp"
+#include "../functions/dlr.hpp"
+
+#include "../../mesh/adjoint.hpp"
+#include "../../mesh/brzone.hpp"
+#include "../../mesh/cyclat.hpp"
+#include "../../mesh/dlr_imfreq.hpp"
+#include "../../mesh/dlr_imtime.hpp"
+#include "../../mesh/imfreq.hpp"
+#include "../../mesh/imtime.hpp"
+#include "../../mesh/prod.hpp"
+#include "../../mesh/refreq.hpp"
+#include "../../mesh/retime.hpp"
+#include "../../utility/exceptions.hpp"
+#include "../../utility/tuple_tools.hpp"
+
+#include <itertools/itertools.hpp>
+
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace triqs::gfs {
 
-  // trait for error messages later
+  // Names elevated from nda for the declarations below.
+  using nda::array;
+  using nda::array_const_view;
+
+  // Trait yielding the conjugate (Fourier-adjoint) mesh of V, used for static checks below.
   template <typename V> using _mesh_fourier_image = decltype(make_adjoint_mesh(V()));
 
-  /*------------------------------------------------------------------------------------------------------
-            Implementation
-  *-----------------------------------------------------------------------------------------------------*/
-
+  // Vector-valued (tensor_valued<1>) Green's function aliases used by the core FFTW implementation.
   template <typename V> using gf_vec_t   = gf<V, tensor_valued<1>>;
   template <typename V> using gf_vec_vt  = gf_view<V, tensor_valued<1>>;
   template <typename V> using gf_vec_cvt = gf_const_view<V, tensor_valued<1>>;
 
   // matsubara
-  gf_vec_t<imfreq> _fourier_impl(imfreq const &iw_mesh, gf_vec_cvt<imtime> gt, array_const_view<dcomplex, 2> known_moments = {});
-  gf_vec_t<imtime> _fourier_impl(imtime const &tau_mesh, gf_vec_cvt<imfreq> gw, array_const_view<dcomplex, 2> known_moments = {});
+  gf_vec_t<mesh::imfreq> _fourier_impl(mesh::imfreq const &iw_mesh, gf_vec_cvt<mesh::imtime> gt, array_const_view<dcomplex, 2> known_moments = {});
+  gf_vec_t<mesh::imtime> _fourier_impl(mesh::imtime const &tau_mesh, gf_vec_cvt<mesh::imfreq> gw, array_const_view<dcomplex, 2> known_moments = {});
 
   // dlr
-  inline gf_vec_t<dlr_imfreq> _fourier_impl(dlr_imfreq const &, gf_vec_cvt<dlr_imtime> gt) { return make_gf_dlr_imfreq(gt); }
-  inline gf_vec_t<dlr_imtime> _fourier_impl(dlr_imtime const &, gf_vec_cvt<dlr_imfreq> gw) { return make_gf_dlr_imtime(gw); }
+  inline gf_vec_t<mesh::dlr_imfreq> _fourier_impl(mesh::dlr_imfreq const &, gf_vec_cvt<mesh::dlr_imtime> gt) { return make_gf_dlr_imfreq(gt); }
+  inline gf_vec_t<mesh::dlr_imtime> _fourier_impl(mesh::dlr_imtime const &, gf_vec_cvt<mesh::dlr_imfreq> gw) { return make_gf_dlr_imtime(gw); }
 
   // real
-  gf_vec_t<refreq> _fourier_impl(refreq const &w_mesh, gf_vec_cvt<retime> gt, array_const_view<dcomplex, 2> known_moments = {});
-  gf_vec_t<retime> _fourier_impl(retime const &t_mesh, gf_vec_cvt<refreq> gw, array_const_view<dcomplex, 2> known_moments = {});
+  gf_vec_t<mesh::refreq> _fourier_impl(mesh::refreq const &w_mesh, gf_vec_cvt<mesh::retime> gt, array_const_view<dcomplex, 2> known_moments = {});
+  gf_vec_t<mesh::retime> _fourier_impl(mesh::retime const &t_mesh, gf_vec_cvt<mesh::refreq> gw, array_const_view<dcomplex, 2> known_moments = {});
 
   // lattice
-  gf_vec_t<cyclat> _fourier_impl(cyclat const &r_mesh, gf_vec_cvt<brzone> gk);
-  gf_vec_t<brzone> _fourier_impl(brzone const &k_mesh, gf_vec_cvt<cyclat> gr);
+  gf_vec_t<mesh::cyclat> _fourier_impl(mesh::cyclat const &r_mesh, gf_vec_cvt<mesh::brzone> gk);
+  gf_vec_t<mesh::brzone> _fourier_impl(mesh::brzone const &k_mesh, gf_vec_cvt<mesh::cyclat> gr);
 
-  /*------------------------------------------------------------------------------------------------------
-   *
-   * The general Fourier function
-   * gin : input
-   * gout : output
-   * opt_args : e.g. moments. Must be flatten_2d
-   *
-   *-----------------------------------------------------------------------------------------------------*/
-
-  // this function just regroups the green function data, and calls the vector_valued gf core implementation
+  // Regroup the gf data, call the vector-valued core implementation, then unflatten the result (gin: input, gout: output, opt_args: e.g. moments).
   template <int N, typename M1, typename M2, typename T1, typename T2, typename... OptArgs>
   void _fourier(gf_const_view<M1, T1> gin, gf_view<M2, T2> gout, OptArgs const &...opt_args) {
 
-    static_assert(std::is_same<typename T1::complex_t, T2>::value, "Incompatible target types for fourier transform");
+    static_assert(std::is_same_v<typename T1::complex_t, T2>, "Incompatible target types for fourier transform");
 
     // pb std::get<0> would not work on a non composite mesh. We use a little lambda to deduce ref and type
     auto const &out_mesh = [&gout]() -> auto const & { // NB must return a reference
@@ -87,13 +111,8 @@ namespace triqs::gfs {
     unflatten_gf_2d<N>(gout, gout_fl);
   }
 
-  /* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier (g, mesh, options)  -> fourier_transform of g
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
-
   /**
+   * @ingroup triqs-gfs-fourier
    * @brief Build a new Green's function on the conjugate mesh by Fourier transforming an input Green's function.
    *
    * @details Supports the standard pairs of conjugate meshes:
@@ -103,9 +122,9 @@ namespace triqs::gfs {
    * - imaginary-time DLR \f$ \leftrightarrow \f$ Matsubara-frequency DLR,
    * - cyclic lattice \f$ \leftrightarrow \f$ Brillouin zone.
    *
-   * The output mesh may be supplied explicitly; if omitted, the conjugate mesh of the input is used. For 
-   * Matsubara/real-frequency pairs an optional integer (\f$ n_{\tau} or \f$ n_{i\omega} \f$) controls the size of the
-   * generated mesh. Known high-frequency moments may be passed to improve accuracy near the tail.
+   * The output mesh may be supplied explicitly; if omitted, the conjugate mesh of the input is used. For
+   * Matsubara/real-frequency pairs an optional integer (\f$ n_{\tau} \f$ or \f$ n_{i\omega} \f$) controls the size of
+   * the generated mesh. Known high-frequency moments may be passed to improve accuracy near the tail.
    *
    * For block Green's functions, the transform is applied block by block.
    *
@@ -141,59 +160,73 @@ namespace triqs::gfs {
     }
   }
 
-  /* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier : Specialized makers for different meshes
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
-
-  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<brzone, T> gin) {
+  /// Fourier transform a Brillouin-zone Green's function to the conjugate cyclic-lattice mesh.
+  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<mesh::brzone, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<cyclat, T> gin) {
+  /// Fourier transform a cyclic-lattice Green's function to the conjugate Brillouin-zone mesh.
+  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<mesh::cyclat, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> gf<imtime, T> make_gf_from_fourier(gf_const_view<imfreq, T> gin, int n_tau = -1) {
+  /// Fourier transform a Matsubara-frequency Green's function to imaginary time (`n_tau` time points, -1 for the default).
+  template <int N = 0, typename T> gf<mesh::imtime, T> make_gf_from_fourier(gf_const_view<mesh::imfreq, T> gin, int n_tau = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_tau));
   }
 
-  template <int N = 0, typename T> gf<imfreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_iw = -1) {
+  /// Fourier transform an imaginary-time Green's function to Matsubara frequencies (`n_iw` positive frequencies, -1 for the default).
+  template <int N = 0, typename T> gf<mesh::imfreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<mesh::imtime, T> gin, int n_iw = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_iw));
   }
 
-  template <int N = 0, typename T> gf<dlr_imtime, T> make_gf_from_fourier(gf_const_view<dlr_imfreq, T> gin) {
+  /// Fourier transform a Matsubara-frequency DLR Green's function to the imaginary-time DLR mesh.
+  template <int N = 0, typename T> gf<mesh::dlr_imtime, T> make_gf_from_fourier(gf_const_view<mesh::dlr_imfreq, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> gf<dlr_imfreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<dlr_imtime, T> gin) {
+  /// Fourier transform an imaginary-time DLR Green's function to the Matsubara-frequency DLR mesh.
+  template <int N = 0, typename T> gf<mesh::dlr_imfreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<mesh::dlr_imtime, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> gf<retime, T> make_gf_from_fourier(gf_const_view<refreq, T> gin, bool shift_half_bin = false) {
+  /// Fourier transform a real-frequency Green's function to real time (set `shift_half_bin` to shift the time mesh by half a bin).
+  template <int N = 0, typename T> gf<mesh::retime, T> make_gf_from_fourier(gf_const_view<mesh::refreq, T> gin, bool shift_half_bin = false) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
   }
 
-  template <int N = 0, typename T> gf<refreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<retime, T> gin, bool shift_half_bin = false) {
+  /// Fourier transform a real-time Green's function to real frequencies (set `shift_half_bin` to shift the frequency mesh by half a bin).
+  template <int N = 0, typename T>
+  gf<mesh::refreq, typename T::complex_t> make_gf_from_fourier(gf_const_view<mesh::retime, T> gin, bool shift_half_bin = false) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
   }
 
-  /* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier : Fourier transform multiple meshes
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
-
+  // Worker tag used by make_gf_from_multi_fourier to fold one per-axis transform via operator&.
   template <int N> struct _fou_wk {};
-  template <int N, typename G> auto operator&(G &&gin, _fou_wk<N> const &) {
+
+  // Apply the N-th axis Fourier transform of gin (the operator& building block of make_gf_from_multi_fourier).
+  template <int N, typename G>
+  auto operator&(G &&gin, _fou_wk<N> const &) { // NOLINT(cppcoreguidelines-missing-std-forward): gin is only read, not forwarded into a sink
     return make_gf_from_fourier<N>(gin, make_adjoint_mesh(std::get<N>(gin.mesh())));
   }
 
+  /**
+   * @ingroup triqs-gfs-fourier
+   * @brief Fourier transform several components of a product-mesh Green's function at once.
+   *
+   * @details Each axis listed in the template pack `Ns` is transformed to its conjugate mesh, in turn.
+   *
+   * @tparam Ns Indices of the mesh components to transform.
+   * @tparam V Product mesh type of the input Green's function.
+   * @tparam T Target type of the input Green's function.
+   * @param gin The input Green's function on a product mesh.
+   * @return A new Green's function with the selected components Fourier transformed.
+   */
   template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) { return (gin() & ... & _fou_wk<Ns>{}); }
 
+  /// Fourier transform two components of a product-mesh Green's function onto the explicit meshes `m1` and `m2`.
   template <int N1, int N2, typename M1, typename M2, typename... Vs, typename T>
-  auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin, M1 &&m1, M2 &&m2) {
+  auto make_gf_from_fourier(gf_const_view<mesh::prod<Vs...>, T> gin, M1 &&m1, M2 &&m2) {
     static_assert(sizeof...(Vs) >= 2, "Green function mesh rank incompatible with mesh indices");
 
     auto g1 = make_gf_from_fourier<N1>(gin(), std::forward<M1>(m1));
@@ -202,8 +235,9 @@ namespace triqs::gfs {
     return g2;
   }
 
+  /// Fourier transform three components of a product-mesh Green's function onto the explicit meshes `m1`, `m2` and `m3`.
   template <int N1, int N2, int N3, typename M1, typename M2, typename M3, typename... Vs, typename T>
-  auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin, M1 &&m1, M2 &&m2, M3 &&m3) {
+  auto make_gf_from_fourier(gf_const_view<mesh::prod<Vs...>, T> gin, M1 &&m1, M2 &&m2, M3 &&m3) {
     static_assert(sizeof...(Vs) >= 3, "Green function mesh rank incompatible with mesh indices");
 
     auto g1 = make_gf_from_fourier<N1, N2>(gin(), std::forward<M1>(m1), std::forward<M2>(m2));
@@ -212,16 +246,12 @@ namespace triqs::gfs {
     return g2;
   }
 
-  template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin) {
+  /// Fourier transform the components `Ns` of a product-mesh Green's function onto their default conjugate meshes.
+  template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<mesh::prod<Vs...>, T> gin) {
     return make_gf_from_fourier<Ns...>(gin(), make_adjoint_mesh(std::get<Ns>(gin.mesh()))...);
   }
 
-  /* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier : Block / Block2 Gf
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
-
+  /// Fourier transform a block Green's function, with per-block known high-frequency moments.
   template <int N = 0, typename G, typename M, int R>
   auto make_gf_from_fourier(G const &gin, M const &m, std::vector<array<dcomplex, R>> const &known_moments)
     requires(is_block_gf_v<G>)
@@ -236,6 +266,7 @@ namespace triqs::gfs {
     return make_block_gf(gin.block_names(), std::move(g_vec));
   }
 
+  /// Fourier transform a Block2 Green's function, with per-block known high-frequency moments.
   template <int N = 0, typename G, typename M, int R>
   auto make_gf_from_fourier(G const &gin, M const &m, std::vector<std::vector<array<dcomplex, R>>> const &known_moments)
     requires(is_block_gf_v<G>)
@@ -257,6 +288,7 @@ namespace triqs::gfs {
     return block2_gf_of<r_t>{gin.block_names(), std::move(g_vecvec)};
   }
 
+  /// Fourier transform a block Green's function block-wise, forwarding any extra arguments to each block.
   template <int N = 0, int... Ns, typename G, typename... Args>
   auto make_gf_from_fourier(G const &gin, Args const &...args)
     requires(is_block_gf_v<G>)
@@ -265,36 +297,42 @@ namespace triqs::gfs {
     return map_block_gf(l, gin);
   }
 
-  /* *-----------------------------------------------------------------------------------------------------
-   *
-   * make_gf_from_fourier : Give proper overloads for gf and gf_view
-   *
-   * *-----------------------------------------------------------------------------------------------------*/
-
+  /// Overload accepting a triqs::gfs::gf_view input; delegates to the const-view implementation.
   template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf_view<V, T> gin, Args &&...args) {
     return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
+  /// Overload accepting a triqs::gfs::gf input; delegates to the const-view implementation.
   template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf<V, T> const &gin, Args &&...args) {
     return make_gf_from_fourier<N, Ns...>(gf_const_view{gin}, std::forward<Args>(args)...);
-    //    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
-  /*------------------------------------------------------------------------------------------------------
-  *                                  Lazy transformation
-  *-----------------------------------------------------------------------------------------------------*/
-
-  // internal. Keep a view on a, and the argument of the call
+  // Lazy Fourier expression: keeps a const view on the source gf and the (possibly reference) optional arguments of the call.
   template <int N, typename GCV, typename... Args> struct _fourier_lazy {
     GCV g;
     std::tuple<Args...> args; // Args can be a ref.
   };
 
+  /**
+   * @ingroup triqs-gfs-fourier
+   * @fn auto fourier(G const &g, Args &&...args)
+   * @brief Build a lazy Fourier transform expression for use in `g_out = fourier(g_in, ...)` assignments.
+   *
+   * @details The returned object holds a const view on `g` and the optional arguments; the actual transform is
+   * performed when it is assigned into a target Green's function, whose mesh selects the conjugate variable.
+   *
+   * @tparam N Index of the mesh component to transform (default \f$ 0 \f$).
+   * @tparam G The type of the input Green's function.
+   * @tparam Args Types of the optional arguments (e.g. known high-frequency moments).
+   * @param g The input Green's function.
+   * @param args Optional arguments forwarded to the transform.
+   * @return A lazy expression assignable into a Green's function on the conjugate mesh.
+   */
   template <int N = 0, typename G, typename... Args> _fourier_lazy<N, typename G::const_view_type, Args...> fourier(G const &g, Args &&...args) {
     return {g(), {std::forward<Args>(args)...}};
   }
 
-  // realize the call for gx = fourier(gy);
+  // Realize the lazy Fourier expression for gx = fourier(gy): static-checks the mesh/target compatibility and calls _fourier.
   template <int N, typename M1, typename T1, typename M2, typename T2, typename... Args>
   void triqs_gf_view_assign_delegation(gf_view<M1, T1> lhs_g, _fourier_lazy<N, gf_const_view<M2, T2>, Args...> const &rhs) {
     static_assert(std::is_same_v<typename T1::real_t, typename T2::real_t>, "Error : in gx = fourier(gy), gx and gy must have the same target");
@@ -313,7 +351,7 @@ namespace triqs::gfs {
 
 } // namespace triqs::gfs
 
-// declares the function to accept the clef lazy expressions
 namespace nda::clef {
+  // Make fourier usable inside lazy CLEF expressions.
   TRIQS_CLEF_MAKE_FNT_LAZY(fourier);
-}
+} // namespace nda::clef

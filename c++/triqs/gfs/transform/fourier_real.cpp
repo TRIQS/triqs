@@ -17,13 +17,24 @@
 //
 // Authors: Michel Ferrero, Laura Messio, Olivier Parcollet, Nils Wentzell
 
-#include "../../gfs.hpp"
+/**
+ * @file
+ * @brief Implementation of the real-time/real-frequency Fourier transforms.
+ */
+
+#include "./fourier.hpp"
 #include "./fourier_common.hpp"
+
+#include "../functions/functions2.hpp"
+
+#include <array>
+#include <cmath>
+#include <string>
 
 namespace triqs::gfs {
 
   namespace {
-    dcomplex I(0, 1);
+    constexpr dcomplex I{0, 1};
     inline dcomplex th_expo(double t, double a) { return (t > 0 ? -I * exp(-a * t) : (t < 0 ? 0 : -0.5 * I * exp(-a * t))); }
     inline dcomplex th_expo_neg(double t, double a) { return (t < 0 ? I * exp(a * t) : (t > 0 ? 0 : 0.5 * I * exp(a * t))); }
     inline dcomplex th_expo_inv(double w, double a) { return 1. / (w + I * a); }
@@ -32,7 +43,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<refreq> _fourier_impl(mesh::refreq const &w_mesh, gf_vec_cvt<retime> gt, nda::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<mesh::refreq> _fourier_impl(mesh::refreq const &w_mesh, gf_vec_cvt<mesh::retime> gt, nda::array_const_view<dcomplex, 2> known_moments) {
 
     nda::array_const_view<dcomplex, 2> mom_12;
     if (known_moments.is_empty())
@@ -46,9 +57,9 @@ namespace triqs::gfs {
       mom_12.rebind(known_moments(range(1, 3), range::all));
     }
 
-    size_t L = gt.mesh().size();
+    long L = gt.mesh().size();
     if (w_mesh.size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
-    double test = std::abs(gt.mesh().delta() * w_mesh.delta() * L / (2 * M_PI) - 1);
+    double test = std::abs(gt.mesh().delta() * w_mesh.delta() * static_cast<double>(L) / (2 * M_PI) - 1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
 
     long n_others = second_dim(gt.data());
@@ -58,7 +69,7 @@ namespace triqs::gfs {
     const double tmin = gt.mesh().t_min();
     const double wmin = w_mesh.w_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-    const double a = w_mesh.delta() * std::sqrt(double(L));
+    const double a = w_mesh.delta() * std::sqrt(static_cast<double>(L));
 
     auto _  = range::all;
     auto m1 = mom_12(0, _);
@@ -68,8 +79,8 @@ namespace triqs::gfs {
 
     for (auto t : gt.mesh()) _gin(t.index(), _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
 
-    int dims[] = {int(L)};
-    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
+    std::array<int, 1> dims{static_cast<int>(L)};
+    _fourier_base(_gin, _gout, 1, dims.data(), static_cast<int>(n_others), FFTW_BACKWARD);
 
     auto gw = gf_vec_t<mesh::refreq>{w_mesh, {n_others}};
     for (auto w : w_mesh)
@@ -80,7 +91,7 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<retime> _fourier_impl(mesh::retime const &t_mesh, gf_vec_cvt<refreq> gw, nda::array_const_view<dcomplex, 2> known_moments) {
+  gf_vec_t<mesh::retime> _fourier_impl(mesh::retime const &t_mesh, gf_vec_cvt<mesh::refreq> gw, nda::array_const_view<dcomplex, 2> known_moments) {
 
     nda::array_const_view<dcomplex, 2> mom_12;
 
@@ -97,15 +108,15 @@ namespace triqs::gfs {
       mom_12.rebind(known_moments(range(1, 3), range::all));
     }
 
-    size_t L = gw.mesh().size();
+    long L = gw.mesh().size();
     if (L != t_mesh.size()) TRIQS_RUNTIME_ERROR << "Meshes are of different size: " << L << " vs " << t_mesh.size();
-    double test = std::abs(t_mesh.delta() * gw.mesh().delta() * L / (2 * M_PI) - 1);
+    double test = std::abs(t_mesh.delta() * gw.mesh().delta() * static_cast<double>(L) / (2 * M_PI) - 1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
 
     const double tmin = t_mesh.t_min();
     const double wmin = gw.mesh().w_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-    const double a = gw.mesh().delta() * std::sqrt(double(L));
+    const double a = gw.mesh().delta() * std::sqrt(static_cast<double>(L));
 
     long n_others = second_dim(gw.data());
 
@@ -120,11 +131,11 @@ namespace triqs::gfs {
 
     for (auto w : gw.mesh()) _gin(w.index(), _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
 
-    int dims[] = {int(L)};
-    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
+    std::array<int, 1> dims{static_cast<int>(L)};
+    _fourier_base(_gin, _gout, 1, dims.data(), static_cast<int>(n_others), FFTW_FORWARD);
 
-    auto gt           = gf_vec_t<retime>{t_mesh, {n_others}};
-    const double corr = 1.0 / (t_mesh.delta() * L);
+    auto gt           = gf_vec_t<mesh::retime>{t_mesh, {n_others}};
+    const double corr = 1.0 / (t_mesh.delta() * static_cast<double>(L));
     for (auto t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
 
     return gt;

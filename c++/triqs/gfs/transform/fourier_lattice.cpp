@@ -17,23 +17,20 @@
 //
 // Authors: Michel Ferrero, Olivier Parcollet, Nils Wentzell
 
-#include "../../gfs.hpp"
-#include "./fourier_common.hpp"
-#include <itertools/itertools.hpp>
+/**
+ * @file
+ * @brief Implementation of the cyclic-lattice/Brillouin-zone Fourier transforms.
+ */
 
-#define ASSERT_EQUAL(X, Y, MESS)                                                                                                                     \
-  if (X != Y) TRIQS_RUNTIME_ERROR << MESS;
+#include "./fourier.hpp"
+#include "./fourier_common.hpp"
+
+#include <array>
 
 namespace triqs::gfs {
 
-  // The implementation is almost the same in both cases...
-  template <typename M1, typename M2> gf_vec_t<M1> __impl(int fftw_backward_forward, M1 const &out_mesh, gf_vec_cvt<M2> g_in) {
-
-    //ASSERT_EQUAL(g_out.data().shape(), g_in.data().shape(), "Meshes are different");
-    //ASSERT_EQUAL(g_out.data().indexmap().strides()[1], g_out.data().shape()[1], "Unexpected strides in fourier implementation");
-    //ASSERT_EQUAL(g_out.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
-    //ASSERT_EQUAL(g_in.data().indexmap().strides()[1], g_in.data().shape()[1], "Unexpected strides in fourier implementation");
-    //ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
+  // Shared driver for both lattice transform directions: batched multi-dimensional FFT of g_in onto out_mesh.
+  template <typename M1, typename M2> gf_vec_t<M1> fourier_lattice_impl(int fftw_backward_forward, M1 const &out_mesh, gf_vec_cvt<M2> g_in) {
 
     auto g_out    = gf_vec_t<M1>{out_mesh, std::array{g_in.target_shape()[0]}};
     long n_others = second_dim(g_in.data());
@@ -49,13 +46,15 @@ namespace triqs::gfs {
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
   gf_vec_t<mesh::cyclat> _fourier_impl(mesh::cyclat const &r_mesh, gf_vec_cvt<mesh::brzone> gk) {
-    auto gr = __impl(FFTW_FORWARD, r_mesh, gk);
+    auto gr = fourier_lattice_impl(FFTW_FORWARD, r_mesh, gk);
     gr.data() /= gk.mesh().size();
     return gr;
   }
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<mesh::brzone> _fourier_impl(mesh::brzone const &k_mesh, gf_vec_cvt<mesh::cyclat> gr) { return __impl(FFTW_BACKWARD, k_mesh, gr); }
+  gf_vec_t<mesh::brzone> _fourier_impl(mesh::brzone const &k_mesh, gf_vec_cvt<mesh::cyclat> gr) {
+    return fourier_lattice_impl(FFTW_BACKWARD, k_mesh, gr);
+  }
 
 } // namespace triqs::gfs
