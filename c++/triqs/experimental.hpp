@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS experimental tools.
+ */
+
 #include "./experimental/lattice/gloc.hpp"
 #include "./experimental/lattice/bz_integrators.hpp"
 #include "./experimental/lattice/superlattice.hpp"

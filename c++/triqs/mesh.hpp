@@ -19,6 +19,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS mesh types.
+ */
+
 // for python code generator, we need to know what has to been included.
 #define TRIQS_INCLUDED_MESH
 

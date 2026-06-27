@@ -19,6 +19,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS statistical-analysis tools.
+ */
+
 #include <triqs/stat/histograms.hpp>
 #include <triqs/stat/jackknife.hpp>
 #include <triqs/stat/lin_binning.hpp>

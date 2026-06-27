@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS lattice / tight-binding tools.
+ */
+
 #include "./lattice/bravais_lattice.hpp"
 #include "./lattice/brillouin_zone.hpp"
 #include "./lattice/tight_binding.hpp"

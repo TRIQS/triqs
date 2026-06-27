@@ -17,6 +17,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS atomic-problem exact diagonalization.
+ */
+
 #include "./atom_diag/atom_diag.hpp"
 #include "./atom_diag/functions.hpp"
 #include "./atom_diag/gf.hpp"

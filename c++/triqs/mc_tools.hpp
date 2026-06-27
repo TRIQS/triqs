@@ -19,6 +19,11 @@
 #ifndef TRIQS_MC_TOOLS_ALL_H
 #define TRIQS_MC_TOOLS_ALL_H
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS Monte Carlo tools.
+ */
+
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
 

@@ -19,6 +19,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Backward-compatibility umbrella header pulling in the nda array library.
+ */
+
 // for python code generator, we need to know what to include...
 #define TRIQS_INCLUDED_ARRAYS
 

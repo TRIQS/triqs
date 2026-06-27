@@ -19,6 +19,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the c2py/cpp2py converters of TRIQS types.
+ */
+
 #include <cpp2py/converters/std_array.hpp>
 #include <nda_py/cpp2py_converters.hpp>
 

@@ -19,6 +19,11 @@
 #ifndef TRIQS_DETMANIP_ALL_H
 #define TRIQS_DETMANIP_ALL_H
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS fast determinant manipulations.
+ */
+
 #include <triqs/det_manip/det_manip.hpp>
 
 #endif

@@ -17,6 +17,11 @@
 
 #pragma once
 
+/**
+ * @file
+ * @brief Umbrella header for the TRIQS second-quantization operator algebra.
+ */
+
 #include <triqs/operators/many_body_operator.hpp>
 
 #ifdef C2PY_INCLUDED
