@@ -5,12 +5,9 @@ Table of contents
    :maxdepth: 2
  
    index
+   software_stack
    install
    documentation
    userguide
-   applications
-   versions
    ChangeLog.md
-   contributing
    about
-   faqs

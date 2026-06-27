@@ -283,3 +283,4 @@ Further reading
    installation/environment_vars
    installation/python_virtualenv
    installation/clang
+   versions

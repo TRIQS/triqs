@@ -6,7 +6,7 @@ Contributing
 .. note::
    Do not open an issue on github if you have questions regarding the usage of the code
    which are specific to your problem. Consult the :ref:`documentation` and the
-   :ref:`userguide` first. Should this not answer your questions, you can get in contact with
+   :ref:`User guide <triqs_userguide>` first. Should this not answer your questions, you can get in contact with
    other users and developers via our `slack workspace <https://triqs.github.io/slack>`_.
 
 

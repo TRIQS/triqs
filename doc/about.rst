@@ -74,3 +74,13 @@ Official version with all white colors to be used on colored background:
     :width: 40%
 
 Various other file formats for the logo (including high-resolution svg and pdf files), and files only for the spin icon can be found `here <https://github.com/TRIQS/triqs/tree/unstable/doc/_static/triqs_logo>`_.
+
+
+More
+====
+
+.. toctree::
+   :maxdepth: 1
+
+   contributing
+   faqs

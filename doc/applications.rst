@@ -5,7 +5,7 @@
 
 The TRIQS library provides all the necessary building blocks for the
 development of applications for the study of interacting quantum systems.
-These applications can be grouped into one of the following categories
+These applications can be grouped into one of the following categories:
 
 * **Official applications**
 
@@ -24,9 +24,6 @@ These applications can be grouped into one of the following categories
   TRIQS collaboration and the external developers.
 
 If you would like to have your application listed please contact us directly.
-
-.. contents:: Table of Contents
-   :depth: 2
 
 .. _impurity_solvers:
 
@@ -306,10 +303,3 @@ Most of the official TRIQS applications are continuously following this project 
 It can be easily adapted for your own application.
 
 *Homepage:* `<https://github.com/triqs/app4triqs>`_
-
-**Cpp2Py**
-----------
-
-Cpp2Py is the Python-C++ interfacing tool of the TRIQS project, provided here as a standalone project.
-
-*Homepage:* `<https://github.com/triqs/cpp2py>`_

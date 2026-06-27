@@ -22,7 +22,7 @@ The Major version number indicates a profound modification of the library.
 The changes can include major adjustments in the API.
 Most Applications will have to be ported to the new Major library versions.
 
-For a summary of changes in the TRIQS library refer to the `Changelog <https://triqs.github.io/triqs/master/changelog.html>`_
+For a summary of changes in the TRIQS library refer to the `Changelog <https://triqs.github.io/triqs/master/changelog.html>`_.
 
 TRIQS applications version numbering
 ------------------------------------

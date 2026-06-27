@@ -34,52 +34,8 @@ has been cited by more than 300 peer-reviewed publications.
 
 TRIQS is free software distributed under the GPL license.
 
-
-TRIQS applications
-------------------
-
-Within the broader TRIQS ecosystem we provide various :ref:`TRIQS applications<applications>`
-that assemble the TRIQS library components to provide full-fleged and cutting-edge implementations
-of different many-body algorithms. They allow for example to solve a generic quantum impurity model
-or to run a complete DFT+DMFT calculation.
-
-The TRIQS library and applications have enabled researchers to address topics as diverse as:
-
-* Spin-Orbit Coupling and Electronic Correlations in Sr2RuO4, `Phys. Rev. Lett. 120 126401 <https://doi.org/10.1103/PhysRevLett.120.126401>`_
-* Late transition metal oxides with infinite-layer structure: Nickelates versus cuprates, `Phys. Rev. B 101 081110 <https://doi.org/10.1103/PhysRevB.101.081110>`_
-* Many-Body Electronic Structure of NdNiO2 and CaCuO2 `Phys. Rev. X 10 021061 <https://doi.org/10.1103/PhysRevX.10.021061>`_
-* Tracking the Footprints of Spin Fluctuations: A MultiMethod, MultiMessenger Study of the Two-Dimensional Hubbard Model `Phys. Rev. X 11, 011058 <https://doi.org/10.1103/PhysRevX.11.011058>`_
-* Linear resistivity and Sachdev-Ye-Kitaev (SYK) spin liquid behavior in a quantum critical metal with spin-1/2 fermions `Proc. Natl. Acad. Sci. USA 117, 18341 <https://doi.org/10.1073/pnas.2003179117>`_
-
-Various other TRIQS related research publications can be found through a targeted `Google Scholar search <https://scholar.google.com/scholar?cites=11179891035589079889&as_sdt=5,33&sciodt=0,33&hl=en>`_.
-
-
-Core libraries
---------------
-
-The TRIQS library is built on a set of stand-alone core libraries providing important functionalities:
-
-* `TRIQS/h5 <https://github.com/triqs/h5>`_ : a high-level C++ interface to the hdf5 library
-* `TRIQS/mpi <https://github.com/triqs/mpi>`_ : a high-level C++ interface to the Message Passing Interface
-* `TRIQS/itertools <https://github.com/triqs/itertools>`_ : a C++ library to create and adapt C++ ranges
-* `TRIQS/nda <https://github.com/triqs/nda>`_ : a C++ library providing an efficient and flexible multi-dimensional array class
-
-
-.. _numerical_algorithms:
-Numerical Algorithms
---------------------
-
-TRIQS provides implementations of advanced numerical algorithms that are directly relevant to
-the study of interacting quantum systems, for example:
-
-* Orthogonal polynomial representation of imaginary-time Green’s functions `Phys. Rev. B 84 075145 <https://doi.org/10.1103/PhysRevB.84.075145>`_
-
-* Discrete Lehmann representation of imaginary time Green's functions `Phys. Rev. B 105 235115 <https://doi.org/10.1103/PhysRevB.105.235115>`_
-  through the cppdlr library `J. Open Source Softw. 9(100) 6297 <https://doi.org/10.21105/joss.06297>`_
-
-* Constrained residual minimization Dyson Solver `Phys. Rev. B 111 115155 <https://doi.org/10.1103/PhysRevB.111.115155>`_
-
-Please cite the relevant papers when using these algorithms in your research.
+The TRIQS library sits within a broader ecosystem of stand-alone core libraries, numerical
+algorithms and full-fledged applications — see the :ref:`TRIQS Software Stack <software_stack>`.
 
 
 TRIQS Community
@@ -104,6 +60,10 @@ To get an overview of the main TRIQS classes and their organizations, you can br
 :ref:`User guide <triqs_userguide>` section.
 
 After those steps, you will be familiar with the library and can use the complete :ref:`Documentation <documentation>` to answer your questions.
+
+To see how TRIQS fits into the wider ecosystem — the core libraries it builds on, the numerical
+algorithms it implements, and the applications built on top of it — have a look at the
+:ref:`TRIQS Software Stack <software_stack>`.
 
 If you experience any problem with the library, we have set up
 a platform for discussions with other users and developers through the `Github Discussions <https://github.com/TRIQS/triqs/discussions>`_ forum.

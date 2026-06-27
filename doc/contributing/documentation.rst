@@ -12,9 +12,8 @@ lines of codes to play with this container that could be very useful to future u
 
 If you are willing to contribute to this project, we however ask you to take the following steps:
 
-- Check the :ref:`Documentation <documentation>` and :ref:`User guide <userguide>` sections of the website
+- Check the :ref:`API Documentation <documentation>` and :ref:`User guide <triqs_userguide>` sections of the website
 - Check our `Tutorials on github <https://github.com/TRIQS/tutorials>`_
-- Respect our :ref:`documentation conventions <conventions>`
 
 As for code contribution, you are going to submit your changes as a pull request to the unstable branch 
 of the `triqs github <https://github.com/TRIQS/triqs>`_. If you are unsure on how to do it, you can follow instructions
