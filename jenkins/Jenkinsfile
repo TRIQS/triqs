@@ -165,7 +165,7 @@ catchError {
               def subdir = "$projectName/${env.BRANCH_NAME}"
               def ghp = scmGit(branches: [[name: 'refs/heads/master']],
                 userRemoteConfigs: [[credentialsId: 'github-jenkins', url: 'https://github.com/TRIQS/TRIQS.github.io.git']])
-              checkout scm: ghp, changelog: false
+              checkout scm: ghp, changelog: false, poll: false
               sh "rm -rf ${subdir}"
               def installDir = "$installBase/install/$JOB_NAME/$documentationPlatform"
               sh """#!/bin/bash -ex
@@ -184,7 +184,7 @@ catchError {
                 try {
                   def pkg = scmGit(branches: [[name: "refs/heads/${env.BRANCH_NAME}"]],
                     userRemoteConfigs: [[credentialsId: 'github-jenkins', url: 'https://github.com/TRIQS/packaging.git']])
-                  checkout scm: pkg, changelog: false
+                  checkout scm: pkg, changelog: false, poll: false
                   sh """#!/bin/bash -ex
                     dir="$projectName"
                     [[ -d triqs_\$dir ]] && dir=triqs_\$dir || [[ -d \$dir ]]
