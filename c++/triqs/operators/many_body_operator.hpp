@@ -360,7 +360,10 @@ namespace triqs::operators {
      * @return True if \f$ |a_i| < \epsilon \f$ for all coefficients \f$ a_i \f$, false otherwise.
      */
     [[nodiscard]] bool is_almost_zero(double precision = 1e-10) const {
-      auto term_is_zero = [precision](auto const &term) { return triqs::utility::is_zero(abs(term.coef), precision); };
+      auto term_is_zero = [precision](auto const &term) {
+        using std::abs;
+        return triqs::utility::is_zero(abs(term.coef), precision);
+      };
       return std::all_of(this->begin(), this->end(), term_is_zero);
     }
 
