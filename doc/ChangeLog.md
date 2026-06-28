@@ -8,14 +8,13 @@ This document describes the main changes in TRIQS.
 ## Version 4.0.0
 
 TRIQS Version 4.0.0 is a major release that
-* migrates all Python bindings from cpp2py to the new clair + c2py toolchain and removes the `triqs++` compiler wrapper
-* renames the `triqs.gf` Python module to `triqs.gfs` (a deprecation shim keeps `triqs.gf` working for now)
-* migrates the C++ API documentation from cpp2rst to Doxygen
-* bumps the minimum compiler requirements to clang 19 / gcc 14
-* removes long-deprecated headers and API (`triqs/h5.hpp`, `triqs/mpi/base.hpp`, `triqs/mpi/vector.hpp`, deprecated Matsubara domains, `triqs::AnyOf`)
 * adds new real-frequency (`refreq_pts`, `refreq_log`) and Chebyshev imaginary-time meshes
 * adds a new experimental `triqs.experimental` package with lattice tight-binding tools and numerical utilities
 * overhauls the `triqs/stat` and `triqs/mc_tools` modules
+* removes long-deprecated headers and API (`triqs/h5.hpp`, `triqs/mpi/base.hpp`, `triqs/mpi/vector.hpp`, deprecated Matsubara domains, `triqs::AnyOf`)
+* bumps the minimum compiler requirements to clang 19 / gcc 14
+* migrates the C++ API documentation from cpp2rst to Doxygen
+* migrates all Python bindings from cpp2py to the new clair + c2py toolchain and removes the `triqs++` compiler wrapper
 * fixes several library issues
 
 A guide with instructions on how to port your application can be found [here](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs4.md).
