@@ -772,7 +772,7 @@ namespace triqs::det_manip {
       // Sort indices to ensure proper insertion order
       auto argsort = [](auto const &vec) {
         std::vector<long> idx(vec.size());
-        std::ranges::iota(idx, 0L);
+        std::iota(idx.begin(), idx.end(), 0L);
         std::stable_sort(idx.begin(), idx.end(), [&vec](long lhs, long rhs) { return vec[lhs] < vec[rhs]; });
         return idx;
       };

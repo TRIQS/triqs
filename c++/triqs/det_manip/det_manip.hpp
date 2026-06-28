@@ -866,7 +866,7 @@ namespace triqs::det_manip {
 
       auto const argsort = [](auto const &vec) {
         std::vector<long> idx(vec.size());
-        std::ranges::iota(idx, static_cast<long>(0));
+        std::iota(idx.begin(), idx.end(), static_cast<long>(0));
         std::stable_sort(idx.begin(), idx.end(), [&vec](long const lhs, long const rhs) { return vec[lhs] < vec[rhs]; });
         return idx;
       };
@@ -1671,8 +1671,8 @@ namespace triqs::det_manip {
 
       row_num.resize(N, 0); // Zero Initialization avoids ASAN false positive
       col_num.resize(N, 0);
-      std::ranges::iota(row_num, 0);
-      std::ranges::iota(col_num, 0);
+      std::iota(row_num.begin(), row_num.end(), 0);
+      std::iota(col_num.begin(), col_num.end(), 0);
 
       range RN(N);
       mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
