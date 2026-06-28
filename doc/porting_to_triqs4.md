@@ -1,46 +1,113 @@
 # Porting your application to TRIQS 4.0
 
-The porting script handles the mechanical renamings; the rest is a short checklist of
-changes it cannot make. Work on a fresh branch off your TRIQS-3.3.x-compatible version and
-commit after each step.
+The porting script (section 1) applies the mechanical renamings automatically. Everything it
+cannot do is a short checklist of manual changes (section 2). Work on a fresh branch off your
+TRIQS-3.3.x-compatible version and commit after each step, so the script's automatic changes
+stay separate from your own edits.
 
 ## 1. Run the porting script
+
+Download the script and run it from the top level of your repository (it walks the whole
+source tree):
 
 ```bash
 wget https://raw.githubusercontent.com/TRIQS/triqs/unstable/porting_tools/port_to_triqs4
 chmod u+x port_to_triqs4 && ./port_to_triqs4
 ```
 
-It applies the regex-safe renamings: `triqs.gf` → `triqs.gfs` (Python module) and the
-`triqs.gf.{meshes,mesh_product,mesh_point}` → `triqs.mesh` relocations, the removed
-`triqs/h5.hpp` / `triqs/mpi/{base,vector}.hpp` / Matsubara-domain headers, the nda 2.0 linalg
-renames (`eigenelements`→`eigh`, `eigenvalues`→`eigvalsh`, `det_and_inverse.hpp`→`det.hpp`+`inv.hpp`),
-`function_arg_ret_type`→`callable_traits`, and the deprecated numpy aliases. Review the diff and commit.
+It rewrites the following throughout your sources. Review the diff and commit:
+
+- **Python module renames:** `triqs.gf` → `triqs.gfs`, and the mesh modules move to
+  `triqs.mesh` (`triqs.gf.meshes` → `triqs.mesh`,
+  `triqs.gf.mesh_product` → `triqs.mesh.mesh_product`,
+  `triqs.gf.mesh_point` → `triqs.mesh.mesh_point`).
+- **Relocated C++ headers:** `triqs/h5.hpp` → `h5/h5.hpp` (and the `triqs::h5` namespace →
+  `h5`); `triqs/mpi/{base,vector}.hpp` → `mpi/{mpi,vector}.hpp`;
+  `triqs/mesh/domains/matsubara.hpp` → `triqs/mesh/matsubara_freq.hpp`.
+- **nda 2.0 linalg renames:** `eigenelements` → `eigh` and `eigenvalues` → `eigvalsh` (their
+  header `eigenelements.hpp` → `eigh.hpp`); `det_and_inverse.hpp` splits into `det.hpp` +
+  `inv.hpp`.
+- **C++ trait rename:** `function_arg_ret_type` → `callable_traits`.
+- **Deprecated NumPy aliases:** `numpy.complex_`/`numpy.float_` → `complex128`/`float64`,
+  `numpy.trapz` → `numpy.trapezoid`.
 
 ## 2. Manual changes
 
-The actual porting work — most apps only hit the first few:
+These are the changes the script cannot make. Most applications only need one or two of them:
 
-- **Python bindings: cpp2py → clair + c2py** *(the big one, if your app builds its own C++
-  Python modules).* Replace each `*_desc.py` with a `python/<pkg>/*.toml` (`package_name`,
-  `namespaces`) plus a `*.cpp` (`namespace c2py_module` instantiation aliases, `extern template`
-  for free functions); annotate headers with `C2PY_IGNORE` / `C2PY_RENAME(...)` /
-  `C2PY_PROPERTY_GET(...)` as needed; build via `c2py_add_module` in CMake. Use a ported
-  TRIQS-core module (e.g. `python/triqs/gfs`) as a template; the generated `*.wrap.cxx/.hxx`
-  are not hand-edited. (The `triqs++` wrapper is gone — build through cmake.)
-- **`gf_struct` block names must be `str`** — integer labels no longer work: `[[0, 2]]` → `[["0", 2]]`.
-- **DLR meshes now symmetrize by default** (and `fit_gf_dlr`'s `symmetrize` default is `True`).
-  If you use DLR, review the results — a numerical change, not a build error.
-- **Removed API, if used:** `triqs.gf.map_block` (gone); `triqs::AnyOf`/`any_of`/`is_any_of`
-  → `nda::AnyOf`; `mesh::index_to_freq` and `make_mesh_range_prod`.
-- **CMake** — bump the project and require TRIQS 4.0 (which needs **clang ≥ 19 or gcc ≥ 14**):
+- **`gf_struct` block names must be `str`** — integer labels no longer work. Use the
+  tuple-like syntax, e.g. `[(0, 2)]` → `[("0", 2)]`.
+- **DLR meshes now symmetrize by default** (and the `symmetrize` argument of `fit_gf_dlr`
+  defaults to `True`). This is a numerical change, not a build error: your code still
+  compiles, so if you use DLR, rerun and check your results.
+- **CMake** — bump your project version and require TRIQS 4.0 (which needs **clang ≥ 19 or
+  gcc ≥ 14**):
   ```cmake
   project(APPNAME VERSION 4.0.0 LANGUAGES C CXX)
   find_package(TRIQS 4.0 REQUIRED)
   ```
-- **app4triqs skeleton** — if your app is based on it, [merge the skeleton update](https://github.com/triqs/app4triqs#merging-app4triqs-skeleton-updates).
+- **app4triqs skeleton** — if your app is based on it,
+  [merge the skeleton update](https://github.com/triqs/app4triqs#merging-app4triqs-skeleton-updates).
 
-## 3. Build and test
+## 3. (Optional) Migrate Python bindings to clair + c2py
 
-Rebuild and run your test suite — it is the only reliable check against the behavioral
-changes above (especially DLR). Use `-DPYTHON_EXECUTABLE=path_to_python3` to pick a Python.
+**This is not required.** TRIQS 4.0 still supports the old cpp2py bindings, so applications
+with `*_desc.py` descriptors keep working unchanged. The steps below are only for authors who
+want to move to the new clair + c2py generator. If you don't, skip to section 4.
+
+The new system is declarative: instead of a hand-written Python descriptor, each module is
+described by a small `.toml` config plus a thin `.cpp` file, from which clair generates the
+binding code. The minimal [app4triqs skeleton](https://github.com/triqs/app4triqs) is the
+reference example, and the clair documentation lives at
+<https://flatironinstitute.github.io/clair>.
+
+For each binding module, **replace `<module>_desc.py`** with three files in `python/<pkg>/`:
+
+1. **`<module>.toml`** — selects what to wrap:
+   ```toml
+   package_name = "my_app"
+   documentation = "The my_app solver"
+   namespaces    = "my_app"      # only elements declared in exactly these namespaces are wrapped
+
+   # Select what to wrap, either by name (LLVM regex on fully-qualified names) ...
+   match_names   = "my_app::(solver_core|constr_params_t|solve_params_t)"
+   # ... or by source file — often handier than enumerating every class (regex on the
+   # declaring file); here, everything declared in solver_core.hpp:
+   # match_files = ".*my_app/solver_core\.hpp"
+   ```
+2. **`<module>.cpp`** — a thin translation unit: include c2py, the headers you wrap, the
+   relevant TRIQS converters, then the generated `.wrap.cxx` **last**:
+   ```cpp
+   #include <c2py/c2py.hpp>
+   #include <triqs/gfs.hpp>
+   #include <triqs/c2py_converters/gf.hpp>   // a converter header per TRIQS type you expose
+   #include <my_app/solver_core.hpp>         // the C++ header(s) being wrapped
+   #include "solver_core.wrap.cxx"           // clair-generated; keep this include last
+   ```
+   If one module reuses types wrapped by another, include that module's
+   `<other>.wrap.hxx` (and add `DEPENDS_ON_BINDINGS <other>` in CMake, below).
+3. **`<module>.wrap.cxx` / `<module>.wrap.hxx`** — generated by clair, but committed to the
+   repo. Never hand-edit them. Regenerate with `cmake -DUpdate_Python_Bindings=ON` and rebuild.
+
+Other changes the migration entails:
+
+- **Header annotations** come from `#include <triqs/utility/macros.hpp>`: `C2PY_IGNORE` (skip
+  a method/constructor), `C2PY_PROPERTY_GET(py_name)` (expose a getter as a read-only
+  property), `C2PY_RENAME(PyName)`. Docstrings are now taken directly from the `///` and
+  `/** */` Doxygen comments — no more `doc=...` strings. The old `CPP2PY_ARG_AS_DICT` is gone
+  (parameter structs are passed as keyword arguments automatically); accessors returning a
+  `const &` should return by value so c2py can wrap them.
+- **CMake** — replace each `add_cpp2py_module(...)` with `c2py_add_module`, and drop the
+  `Cpp2Py` dependency / `find_package`:
+  ```cmake
+  c2py_add_module(solver_core LINK_LIBRARIES ${PROJECT_NAME}_c ${PROJECT_NAME}_warnings)
+  # c2py_add_module(solver_core ... DEPENDS_ON_BINDINGS configuration)  # if it reuses another module
+  ```
+- **`__init__.py`** — re-export any newly wrapped parameter/auxiliary classes. Generated
+  Python names are CamelCase of the C++ name (`constr_params_t` → `ConstrParamsT`).
+
+## 4. Build and test
+
+Rebuild and run your full test suite — it is the only reliable check against the behavioral
+changes above (DLR especially, since those produce no compile error). During cmake
+configuration, select a particular Python interpreter with `-DPYTHON_EXECUTABLE=path_to_python3`.
