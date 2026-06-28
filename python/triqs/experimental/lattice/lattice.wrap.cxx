@@ -471,6 +471,14 @@ stream output and HDF5 serialization.)DOC"
 static auto const _c2py_fun_4 =
    c2py::dispatcher_f_kw_t{c2py::cfun(
                               [](const double target_density, const triqs::experimental::lattice::tb_hk &H_k,
+                                 const triqs::gfs::block_gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &Sigma,
+                                 const triqs::experimental::lattice::bz_int_options &opt, std::string method, double precision, bool verbosity) {
+                                return triqs::experimental::lattice::find_chemical_potential<triqs::mesh::dlr_imfreq>(target_density, H_k, Sigma, opt,
+                                                                                                                      method, precision, verbosity);
+                              },
+                              "target_density", "H_k", "Sigma", "opt", "method"_a = "dichotomy", "precision"_a = 1.e-5, "verbosity"_a = false),
+                           c2py::cfun(
+                              [](const double target_density, const triqs::experimental::lattice::tb_hk &H_k,
                                  const triqs::gfs::block_gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &Sigma,
                                  const triqs::experimental::lattice::bz_int_options &opt, std::string method, double precision, bool verbosity) {
                                 return triqs::experimental::lattice::find_chemical_potential<triqs::mesh::imfreq>(target_density, H_k, Sigma, opt,
@@ -483,6 +491,14 @@ static auto const _c2py_fun_4 =
                                  const triqs::experimental::lattice::bz_int_options &opt, std::string method, double precision, bool verbosity) {
                                 return triqs::experimental::lattice::find_chemical_potential<triqs::mesh::refreq>(target_density, H_k, Sigma, opt,
                                                                                                                   method, precision, verbosity);
+                              },
+                              "target_density", "H_k", "Sigma", "opt", "method"_a = "dichotomy", "precision"_a = 1.e-5, "verbosity"_a = false),
+                           c2py::cfun(
+                              [](const double target_density, const triqs::experimental::lattice::tb_hk &H_k,
+                                 const triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &Sigma,
+                                 const triqs::experimental::lattice::bz_int_options &opt, std::string method, double precision, bool verbosity) {
+                                return triqs::experimental::lattice::find_chemical_potential<triqs::mesh::dlr_imfreq>(target_density, H_k, Sigma, opt,
+                                                                                                                      method, precision, verbosity);
                               },
                               "target_density", "H_k", "Sigma", "opt", "method"_a = "dichotomy", "precision"_a = 1.e-5, "verbosity"_a = false),
                            c2py::cfun(
@@ -529,6 +545,12 @@ static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{
       },
       "w_mesh", "H_k", "mu", "opt"),
    c2py::cfun(
+      [](const triqs::experimental::lattice::tb_hk &H_k, double mu, const triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &Sigma,
+         const triqs::experimental::lattice::bz_int_options &opt) {
+        return triqs::experimental::lattice::gloc<triqs::mesh::dlr_imfreq>(H_k, mu, Sigma, opt);
+      },
+      "H_k", "mu", "Sigma", "opt"),
+   c2py::cfun(
       [](const triqs::experimental::lattice::tb_hk &H_k, double mu, const triqs::gfs::gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &Sigma,
          const triqs::experimental::lattice::bz_int_options &opt) {
         return triqs::experimental::lattice::gloc<triqs::mesh::imfreq>(H_k, mu, Sigma, opt);
@@ -538,12 +560,6 @@ static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{
       [](const triqs::experimental::lattice::tb_hk &H_k, double mu, const triqs::gfs::gf<triqs::mesh::refreq, triqs::gfs::matrix_valued> &Sigma,
          const triqs::experimental::lattice::bz_int_options &opt) {
         return triqs::experimental::lattice::gloc<triqs::mesh::refreq>(H_k, mu, Sigma, opt);
-      },
-      "H_k", "mu", "Sigma", "opt"),
-   c2py::cfun(
-      [](const triqs::experimental::lattice::tb_hk &H_k, double mu, const triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &Sigma,
-         const triqs::experimental::lattice::bz_int_options &opt) {
-        return triqs::experimental::lattice::gloc<triqs::mesh::dlr_imfreq>(H_k, mu, Sigma, opt);
       },
       "H_k", "mu", "Sigma", "opt"),
    c2py::cfun(
@@ -588,14 +604,14 @@ static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{
 
 static const auto _c2py_doc_4 =
    _c2py_fun_4.doc(R"DOC(
-[1, 2] Find the chemical potential that yields a target density for a block self-energy.
+[1, 2, 3] Find the chemical potential that yields a target density for a block self-energy.
 
 This function adjusts the chemical potential :math:`\mu` with a root finder until the total density of the
 local block Green's function (summed over all blocks) matches the target density.
 
 ------
 
-[3, 4] Find the chemical potential that yields a target density for a single-block self-energy.
+[4, 5, 6] Find the chemical potential that yields a target density for a single-block self-energy.
 
 This function adjusts the chemical potential :math:`\mu` with a root finder until the density of the local
 Green's function matches the target density.
@@ -626,7 +642,8 @@ Returns
 )DOC",
                    {{c2py::python_typename<const double>()},
                     {c2py::python_typename<const triqs::experimental::lattice::tb_hk &>()},
-                    {c2py::python_typename<const triqs::gfs::block_gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>(),
+                    {c2py::python_typename<const triqs::gfs::block_gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &>(),
+                     c2py::python_typename<const triqs::gfs::block_gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>(),
                      c2py::python_typename<const triqs::gfs::block_gf<triqs::mesh::refreq, triqs::gfs::matrix_valued> &>()},
                     {c2py::python_typename<const triqs::experimental::lattice::bz_int_options &>()},
                     {c2py::python_typename<std::string>()},
@@ -722,15 +739,15 @@ Returns
                     {c2py::python_typename<const triqs::experimental::lattice::tb_hk &>()},
                     {c2py::python_typename<double>()},
                     {c2py::python_typename<const triqs::experimental::lattice::bz_int_options &>()},
-                    {c2py::python_typename<const triqs::gfs::gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>(),
-                     c2py::python_typename<const triqs::gfs::gf<triqs::mesh::refreq, triqs::gfs::matrix_valued> &>(),
-                     c2py::python_typename<const triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &>()}},
+                    {c2py::python_typename<const triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued> &>(),
+                     c2py::python_typename<const triqs::gfs::gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued> &>(),
+                     c2py::python_typename<const triqs::gfs::gf<triqs::mesh::refreq, triqs::gfs::matrix_valued> &>()}},
                    {c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::gf<triqs::mesh::refreq, triqs::gfs::matrix_valued>>(),
+                    c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::gf<triqs::mesh::refreq, triqs::gfs::matrix_valued>>(),
-                    c2py::python_typename<triqs::gfs::gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::dlr_imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::imfreq, triqs::gfs::matrix_valued>>(),
                     c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::refreq, triqs::gfs::matrix_valued>>()});

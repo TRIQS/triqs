@@ -10,10 +10,15 @@
 namespace triqs::experimental::lattice {
 
   // explicit mesh type instantiations of find_chemical_potential
+  template double find_chemical_potential(double const target_density, tb_hk const &H_k, gfs::gf<mesh::dlr_imfreq, gfs::matrix_valued> const &Sigma,
+                                          bz_int_options const &opt, std::string method, double precision, bool verbosity);
   template double find_chemical_potential(double const target_density, tb_hk const &H_k, gfs::gf<mesh::imfreq, gfs::matrix_valued> const &Sigma,
                                           bz_int_options const &opt, std::string method, double precision, bool verbosity);
   template double find_chemical_potential(double const target_density, tb_hk const &H_k, gfs::gf<mesh::refreq, gfs::matrix_valued> const &Sigma,
                                           bz_int_options const &opt, std::string method, double precision, bool verbosity);
+  template double find_chemical_potential(double const target_density, tb_hk const &H_k,
+                                          gfs::block_gf<mesh::dlr_imfreq, gfs::matrix_valued> const &Sigma, bz_int_options const &opt,
+                                          std::string method, double precision, bool verbosity);
   template double find_chemical_potential(double const target_density, tb_hk const &H_k, gfs::block_gf<mesh::imfreq, gfs::matrix_valued> const &Sigma,
                                           bz_int_options const &opt, std::string method, double precision, bool verbosity);
   template double find_chemical_potential(double const target_density, tb_hk const &H_k, gfs::block_gf<mesh::refreq, gfs::matrix_valued> const &Sigma,
