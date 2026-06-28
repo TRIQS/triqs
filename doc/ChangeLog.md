@@ -14,6 +14,7 @@ TRIQS Version 4.0.0 is a major release that
 * bumps the minimum compiler requirements to clang 19 / gcc 14
 * removes long-deprecated headers and API (`triqs/h5.hpp`, `triqs/mpi/base.hpp`, `triqs/mpi/vector.hpp`, deprecated Matsubara domains, `triqs::AnyOf`)
 * adds new real-frequency (`refreq_pts`, `refreq_log`) and Chebyshev imaginary-time meshes
+* adds a new experimental `triqs.experimental` package with lattice tight-binding tools and numerical utilities
 * overhauls the `triqs/stat` and `triqs/mc_tools` modules
 * fixes several library issues
 
@@ -52,10 +53,30 @@ in C++, and the `triqs.gf.map_block` submodule in Python.
 The [porting script](https://github.com/TRIQS/triqs/blob/unstable/porting_tools/port_to_triqs4) replaces
 the regex-safe cases; the remainder are described in the [porting guide](https://github.com/TRIQS/triqs/blob/unstable/doc/porting_to_triqs4.md).
 
+### Experimental package
+
+A new experimental component provides a staging area for functionality whose API is still unstable and may
+change or be removed without a deprecation cycle. It ships as a C++ library under the `triqs::experimental`
+namespace together with Python bindings under the `triqs.experimental` package, both organized into two
+submodules:
+* `lattice` — tight-binding Hamiltonians `H(k)` (`TbHk`), Brillouin-zone integration (`BzIntOptions`),
+  k-integrated local Green's functions (`gloc`) and the associated chemical-potential search
+  (`find_chemical_potential`), folding onto a `Superlattice`, and Wannier90 loaders (`read_wannier90_tb_data`,
+  `make_tb_hk_from_w90_tb_file`, `read_wannier90_hr_data`, `make_tb_hk_from_w90_hr_file`).
+* `utility` — generic one-dimensional numerical helpers: root finding (`root_finder`, with bisection/dichotomy
+  methods) and adaptive Gauss-Kronrod-Lobatto integration.
+
+The C++ headers are the primary interface; the Python bindings expose the subset that can be wrapped, and both
+sides ship matching tests. As the package is explicitly experimental, do not rely on its interface in
+production code.
+
 ### Documentation
 
-The C++ API documentation has been migrated from cpp2rst to Doxygen, with new and updated docstrings
-across the `gfs`, `mesh`, `operators`, `atom_diag`, `lattice`, `stat`, and `mc_tools` modules.
+The C++ API documentation has been migrated from cpp2rst to Doxygen and substantially overhauled, with new and
+updated docstrings across essentially all modules (`gfs`, `mesh`, `operators`, `atom_diag`, `hilbert_space`,
+`lattice`, `det_manip`, `mc_tools`, `stat`, `utility`, and `experimental`). Usage examples were added to both
+the Doxygen pages and the Python docstrings, the Sphinx user guide is now Python-only, and the top-level
+navigation was reorganized (the former "Documentation" page is now "API Documentation").
 
 ### Dependency Management
 
@@ -99,6 +120,7 @@ and packaging images updated to Ubuntu 26.04 / LLVM 21.
 * Add `target_value_t` trait as a replacement of `gf::target_t::value_t`
 * Allow `make_gf_from_fourier` with DLR mesh types
 * Change `fit_gf_dlr` symmetrize default to true for consistency with the DLR mesh default
+* Restore default arguments for `set_from_pade` (`n_points=100`, `freq_offset=0.0`)
 * Use numpy for adding/subtracting scalars and matrices from GFs, and for inverting GFs
 * Assert square `target_shape` when adding/subtracting a scalar to a matrix-valued Gf
 * Add a benchmark for Green's function evaluation
@@ -108,6 +130,7 @@ and packaging images updated to Ubuntu 26.04 / LLVM 21.
 * Add a Chebyshev imaginary-time mesh (precomputes 2/beta for faster barycentric evaluation)
 * Make 1D meshes random-access and add a generic `mesh_iterator` class (#990)
 * Add `mesh_hash()` to the Mesh concept and update all meshes accordingly
+* Stabilize DLR mesh hashing for reproducibility across BLAS backends (pinned with a regression test)
 * Add comparison operators and `__repr__` to `matsubara_freq` / `MatsubaraFreq`
 * Add `triqs::mesh::values` to obtain a vector of mesh values; expose to Python
 * Expose DLR frequencies for the DLR Python mesh types
