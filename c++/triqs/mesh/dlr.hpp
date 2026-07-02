@@ -41,6 +41,13 @@
 #include <string_view>
 #include <utility>
 
+// LRU cache for the DLR kernel evaluation (see Cache below).
+#include <list>
+#include <memory_resource>
+#include <tuple>
+#include <boost/functional/hash.hpp>
+#include <hash_table7.hpp>
+
 namespace triqs::mesh {
 
   namespace detail {
@@ -407,6 +414,64 @@ namespace triqs::mesh {
     std::shared_ptr<const detail::dlr_ops> dlr_ = {};
   };
 
+  // -------------------- evaluation -------------------
+  // A fixed-signature LRU cache for the DLR kernel evaluation.
+  // Template parameters:
+  //    R       - return type of the cached function
+  //    Args... - function argument types
+  template <typename R, typename... Args>
+  class Cache {
+    public:
+    // Function pointer type, is faster than std::function.
+    // But it can only store plain functions, not lambdas or functors.
+    using Function = R(*)(Args...);
+    using Key = std::tuple<std::decay_t<Args>...>;
+    // Each list node holds a key and its cached result.
+
+    static constexpr auto capacity = 1024;
+    // Optionally set capacity (default 1024)
+    constexpr explicit Cache(Function func)
+        : func(std::move(func)), cacheMap_(capacity) {
+    }
+
+    constexpr R operator()(const Args&... args) noexcept {
+      Key key = std::make_tuple(args...);
+      if (auto&& it = cacheMap_.find(key); it != cacheMap_.end()) {
+        // Move accessed item to the front (most recently used)
+        cacheList_.splice(cacheList_.begin(), cacheList_, it->second);
+        return cacheList_.begin()->second;
+      }
+      R result = func(args...);
+      put(key, result);
+      return result;
+    }
+
+    private:
+    constexpr void put(const Key& key, const R& result) noexcept {
+      if (cacheList_.size() >= capacity) {
+        // Evict the least recently used item (back of list)
+        cacheMap_.erase((--cacheList_.end())->first);
+        cacheList_.pop_back();
+      }
+      // Insert new item at the front.
+      cacheList_.emplace_front(key, result);
+      cacheMap_[key] = cacheList_.begin();
+    }
+
+    Function func;
+    // monotonic allocator for the list to avoid dynamic memory allocation
+    alignas(64) std::array<std::pair<Key, R>, capacity> buffer; // enough to fit in all nodes
+    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+    std::pmr::polymorphic_allocator<std::pair<Key, R>> pa{&mbr};
+    // Doubly-linked list to maintain LRU order.
+    std::pmr::list<std::pair<Key, R>> cacheList_{pa};
+    using ListIt = typename decltype(cacheList_)::iterator;
+    // Unordered map for O(1) key lookup; using Boost hash for std::tuple.
+    emhash7::HashMap<Key, ListIt, boost::hash<Key>> cacheMap_;
+  };
+
+  static inline Cache k_it_cache{static_cast<double(*)(double, double)>(cppdlr::k_it)};
+
   /**
    * @brief Evaluate the DLR approximation of a function \f$ f \f$ at a given imaginary time point \f$ \tau \in [0,
    * \beta] \f$.
@@ -429,7 +494,7 @@ namespace triqs::mesh {
   auto evaluate(dlr const &m, auto const &f, double tau) {
     EXPECTS(m.size() > 0);
     EXPECTS(tau >= 0 and tau <= m.beta());
-    return detail::sum_to_regular(nda::range(m.size()), [&](auto l) { return f(l) * cppdlr::k_it(tau / m.beta(), m.dlr_freq()[l]); });
+    return detail::sum_to_regular(nda::range(m.size()), [&](auto l) { return f(l) * k_it_cache(tau / m.beta(), m.dlr_freq()[l]); });
   }
 
   /**

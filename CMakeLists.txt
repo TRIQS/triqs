@@ -82,7 +82,6 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 # Python Support
 option(PythonSupport "Build with Python support" ON)
-
 # Documentation
 option(Build_Documentation "Build the documentation ?" OFF)
 if(Build_Documentation AND NOT PythonSupport)

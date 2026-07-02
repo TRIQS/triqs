@@ -84,6 +84,27 @@ target_link_libraries(triqs PUBLIC fmt::fmt-header-only)
 # cppdlr (discrete Lehmann representation library)
 target_link_libraries(triqs PUBLIC cppdlr::cppdlr_c)
 
+include(FetchContent)
+FetchContent_Declare(
+        emhash
+        GIT_REPOSITORY https://github.com/DiamonDinoia/emhash.git
+        GIT_TAG master
+        GIT_SHALLOW TRUE)
+
+cmake_policy(SET CMP0169 OLD)
+# Only populate emhash, don't build it
+FetchContent_GetProperties(emhash)
+if(NOT emhash_POPULATED)
+    FetchContent_Populate(emhash)
+endif()
+
+add_library(emhash INTERFACE)
+target_include_directories(emhash INTERFACE $<BUILD_INTERFACE:${emhash_SOURCE_DIR}>)
+target_include_directories(emhash SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+target_compile_features(emhash INTERFACE cxx_std_17)
+install(TARGETS emhash EXPORT triqs-dependencies)
+target_link_libraries(triqs PUBLIC emhash)
+
 # ---------------------------------
 # Boost
 # ---------------------------------
