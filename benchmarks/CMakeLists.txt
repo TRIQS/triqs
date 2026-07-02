@@ -3,6 +3,8 @@ file(GLOB_RECURSE all_benchs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
 include(FetchContent)
 
+# NB: google-benchmark (benchmark_main) is already provided by triqs itself
+# (deps/CMakeLists.txt, gated on Build_Benchs) — do not fetch it again here.
 
 set(BAOBZI_BUILD_STATIC ON)
 set(BAOBZI_CPU_DISPATCH OFF)
@@ -16,18 +18,19 @@ FetchContent_MakeAvailable(baobzi)
 unset(BAOBZI_BUILD_STATIC)
 unset(BAOBZI_CPU_DISPATCH)
 
+# Fetch treeweave (header-only; pulls polyfit/POET transitively) for comparison
 FetchContent_Declare(
-        cheb
-        GIT_REPOSITORY https://github.com/DiamonDinoia/Chebyshev.git
-        GIT_TAG main  # You can specify a specific commit, branch, or tag
+        treeweave
+        GIT_REPOSITORY https://github.com/DiamonDinoia/treeweave.git
+        GIT_TAG main
 )
-FetchContent_MakeAvailable(cheb)
+FetchContent_MakeAvailable(treeweave)
 
 foreach (bench ${all_benchs})
     get_filename_component(bench_name ${bench} NAME_WE)
     get_filename_component(bench_dir ${bench} DIRECTORY)
     add_executable(${bench_name} ${bench})
-    target_link_libraries(${bench_name} triqs triqs_warnings benchmark_main baobzi cheb)
+    target_link_libraries(${bench_name} triqs triqs_warnings benchmark_main baobzi treeweave::treeweave)
     set_property(TARGET ${bench_name} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${bench_dir})
     set_target_properties(${bench_name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
     #add_bench(NAME ${bench_name} COMMAND ${bench_name} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${bench_dir})

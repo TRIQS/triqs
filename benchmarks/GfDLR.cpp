@@ -19,7 +19,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 #include <baobzi_template.hpp>
-#include <fast_eval.hpp>
+#include <treeweave/treeweave.hpp>
 
 // ===== Interpolate DLR ImTime Green function
 
@@ -143,45 +143,44 @@ static void GfDLREvalFast(benchmark::State &state) {
 
 BENCHMARK(GfDLREvalFast)->RangeMultiplier(2)->Range(1024, 8192)->Iterations(250000);
 
-static void GfDLREvalMon(benchmark::State &state) {
-  constexpr double beta                     = 2.0;
-  constexpr double w_max                    = 5.0; // domain is -w_max * beta, w_max * beta
-  constexpr double eps                      = 1e-10;
-  constexpr double omega                    = 1.337;
-  constexpr size_t COMPILE_TIME_MAX_N       = 32;
-  constexpr size_t COMPILE_TIME_EVAL_POINTS = 200;
+static void GfDLREvalTreeWeave(benchmark::State &state) {
+  double beta  = 2.0;
+  double w_max = 5.0;
+  double eps   = 1e-10;
+  double omega = 1.337;
 
   auto mesh = dlr_imtime{beta, Fermion, w_max, eps};
   auto G    = gf<dlr_imtime, scalar_valued>{mesh};
   G[tau_] << onefermion(tau_, omega, beta);
   auto G_dlr_coeff = make_gf_dlr(G);
 
-  // use std ranges to iterate over mesh and append tau to samples
-  std::vector<double> samples(mesh.size());
-  std::ranges::transform(mesh, samples.begin(), [](auto tau) { return double(tau); });
+  // treeweave has no complex path: 1D scalar-input + array-output is a hard
+  // static_assert, so spell the input as std::array<double,1> and pack the
+  // complex value into a 2-vector output. tau lives in [0, beta].
+  const auto fit_funct = [&G_dlr_coeff](std::array<double, 1> x) -> std::array<double, 2> {
+    const auto eval = G_dlr_coeff(x[0]);
+    return {real(eval), imag(eval)};
+  };
 
-  const auto fast_dlr = poly_eval::make_func_eval<eps, COMPILE_TIME_MAX_N, COMPILE_TIME_EVAL_POINTS>(
-     [G_dlr_coeff](double x) {
-       const auto res = G_dlr_coeff(x);
-       return std::complex<double>(real(res), imag(res));
-     },
-     0, beta);
+  auto fn = treeweave::fit(fit_funct, std::array{0.0}, std::array{beta}, 1e-10);
+
+  const auto fast_dlr = [&fn](const double x) {
+    const auto res = fn(std::array{x});
+    return dcomplex(res[0], res[1]);
+  };
 
   for (auto tau : mesh) {
     // check relative error
     auto eval = G_dlr_coeff(double(tau));
     auto res  = fast_dlr(double(tau));
-    if (std::abs(1 - eval / res) > eps) { std::cerr << "Error: " << tau << " " << eval << " " << res << std::endl; }
+    if (std::abs(1 - eval / res) > 1e-10) { std::cerr << "Error: " << tau << " " << eval << " " << res << std::endl; }
   }
 
-  std::vector<std::complex<double>> res_vec(mesh.size());
-
   for (auto _ : state) {
-    fast_dlr(samples.data(), res_vec.data(), samples.size());
-    benchmark::DoNotOptimize(res_vec);
+    for (auto tau : mesh) { benchmark::DoNotOptimize(fast_dlr(double(tau))); }
   }
 }
 
-BENCHMARK(GfDLREvalMon)->RangeMultiplier(2)->Range(1024, 8192)->Iterations(250000);
+BENCHMARK(GfDLREvalTreeWeave)->RangeMultiplier(2)->Range(1024, 8192)->Iterations(250000);
 
 BENCHMARK_MAIN();
