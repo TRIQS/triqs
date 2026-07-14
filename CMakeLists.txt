@@ -101,6 +101,9 @@ endif()
 # Build shared libraries by default
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" ON)
 
+# Build a Debian package; also selects the dist-packages Python install layout
+option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
+
 #---------------------------------------------------------------------
 # Global Compilation Settings
 #---------------------------------------------------------------------
@@ -329,7 +332,6 @@ endif()
 #--------------------------------------------------------
 # Packaging
 #--------------------------------------------------------
-option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
 if(BUILD_DEBIAN_PACKAGE)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
