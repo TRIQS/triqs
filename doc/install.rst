@@ -42,12 +42,12 @@ Ubuntu Debian packages
 ----------------------
 
 We provide Debian packages for the Ubuntu LTS Version **24.04** (noble) and **26.04** (resolute).
-They are hosted in a **TRIQS 3 specific** repository that can be added with::
+They are hosted in a **TRIQS 4 specific** repository that can be added with::
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https gpg-agent curl
         source /etc/lsb-release
-        curl -L https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
-        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs3/$DISTRIB_CODENAME/ /"
+        curl -L https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
+        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/ /"
 
 To install the required runtime packages and triqs into the system tree at /usr run::
 
@@ -221,11 +221,11 @@ Using the provided Python script
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To install TRIQS together with several of its :ref:`applications<applications>` we provide a Python script that
-automatizes the clone, build, install and test process. It is located in the `packaging <https://github.com/TRIQS/triqs/tree/3.3.x/packaging>`_
+automatizes the clone, build, install and test process. It is located in the `packaging <https://github.com/TRIQS/triqs/tree/4.0.x/packaging>`_
 directory of the TRIQS repository and supports the installation of stable release branches as well as unstable
 development branches:
 
-* To get the Python script for the latest stable release, go to `<https://github.com/TRIQS/triqs/blob/3.3.x/packaging/clone_archive_and_install.py>`_
+* To get the Python script for the latest stable release, go to `<https://github.com/TRIQS/triqs/blob/4.0.x/packaging/clone_archive_and_install.py>`_
   and click on ``Download raw file``.
 
 * To get the Python script for the unstable development branch, go to `<https://github.com/TRIQS/triqs/blob/unstable/packaging/clone_archive_and_install.py>`_
