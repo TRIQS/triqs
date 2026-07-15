@@ -47,6 +47,19 @@ else()
   endif()
 endif()
 
+# -- c2py --
+# Must be resolved first: c2py runs find_package(Python) and exposes the Python
+# interpreter and install-layout variables (Python_EXECUTABLE, PYTHON_LIB_DEST_ROOT,
+# PYTHON_MODULE_EXT) that the rest of the build and the dependencies below rely on.
+if(PythonSupport AND NOT TARGET c2py)
+ external_dependency(c2py
+   GIT_REPO https://github.com/flatironinstitute/c2py
+   GIT_TAG unstable
+   BUILD_ALWAYS
+   EXCLUDE_FROM_ALL
+ )
+endif()
+
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)
  external_dependency(Cpp2Py
@@ -54,7 +67,7 @@ if(PythonSupport OR Build_Documentation)
    VERSION 3.3
    GIT_TAG main
  )
- execute_process(COMMAND ${CPP2PY_PYTHON_EXECUTABLE} -c "import mpi4py" RESULT_VARIABLE failed ERROR_QUIET)
+ execute_process(COMMAND ${Python_EXECUTABLE} -c "import mpi4py" RESULT_VARIABLE failed ERROR_QUIET)
  if(failed)
    message(FATAL_ERROR "Failed to import mpi4py Python module.")
  endif()

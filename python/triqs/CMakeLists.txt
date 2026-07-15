@@ -1,5 +1,5 @@
 # install directory for Python modules
-set(TRIQS_PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/triqs)
+set(TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/triqs)
 
 # copy Python files into the build dir to have a complete package for the tests
 file(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
@@ -24,16 +24,6 @@ install(DIRECTORY . DESTINATION include/triqs
         PATTERN "wrapped_aux" EXCLUDE)
 
 # ---------------------------------------------
-
-# fetch c2py (provides c2py_add_module)
-include(FetchContent)
-FetchContent_Declare(
-  c2py
-  GIT_REPOSITORY  https://github.com/flatironinstitute/c2py
-  GIT_TAG         unstable
-  EXCLUDE_FROM_ALL # exclude from all so that c2py is NOT installed.
-)
-FetchContent_MakeAvailable(c2py)
 
 # add an interface target for all Python modules
 add_library(${PROJECT_NAME}_python_modules INTERFACE)
