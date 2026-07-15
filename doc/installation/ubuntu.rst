@@ -7,7 +7,7 @@
 Installing required libraries on Ubuntu
 =======================================
 
-TRIQS 3.2 has been tested on the Ubuntu LTS version 24.04. Earlier versions are not supported.
+TRIQS 4.0 has been tested on the Ubuntu LTS version 24.04. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
