@@ -133,3 +133,9 @@ external_dependency(cppdlr
   VERSION 1.1
   GIT_TAG main
 )
+
+# -- treeweave (header-only adaptive polynomial approximator; pulls polyfit/POET) --
+external_dependency(treeweave
+  GIT_REPO https://github.com/DiamonDinoia/treeweave
+  GIT_TAG main
+)

@@ -18,13 +18,8 @@ FetchContent_MakeAvailable(baobzi)
 unset(BAOBZI_BUILD_STATIC)
 unset(BAOBZI_CPU_DISPATCH)
 
-# Fetch treeweave (header-only; pulls polyfit/POET transitively) for comparison
-FetchContent_Declare(
-        treeweave
-        GIT_REPOSITORY https://github.com/DiamonDinoia/treeweave.git
-        GIT_TAG main
-)
-FetchContent_MakeAvailable(treeweave)
+# NB: treeweave (treeweave::treeweave) is already provided by triqs itself
+# (deps/CMakeLists.txt) — do not fetch it again here or the target collides.
 
 foreach (bench ${all_benchs})
     get_filename_component(bench_name ${bench} NAME_WE)
