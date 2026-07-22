@@ -89,7 +89,7 @@ def assert_gfs_are_close(a, b, precision = 1.e-6):
 
     Parameters
     ----------
-    a, b : triqs.gf.Gf
+    a, b : triqs.gfs.Gf
         Green's functions with identical mesh and target shape.
     precision : float, optional
         Maximum allowed element-wise absolute difference on the data
@@ -115,7 +115,7 @@ def assert_block_gfs_are_close(a, b, precision = 1.e-6):
 
     Parameters
     ----------
-    a, b : triqs.gf.BlockGf
+    a, b : triqs.gfs.BlockGf
         Block Green's functions with the same number of blocks and the
         same block names.
     precision : float, optional
@@ -144,7 +144,7 @@ def assert_block2_gfs_are_close(a, b, precision = 1.e-6):
 
     Parameters
     ----------
-    a, b : triqs.gf.Block2Gf
+    a, b : triqs.gfs.Block2Gf
         Two-index block Green's functions.
     precision : float, optional
         Maximum allowed element-wise absolute difference. Default
