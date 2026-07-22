@@ -3,7 +3,7 @@ import unittest
 from triqs.experimental.lattice import BzIntOptions, make_tb_hk_from_w90_tb_file, find_chemical_potential, gloc
 import numpy as np
 from triqs.mesh import MeshImFreq, MeshDLRImFreq
-from triqs.gf import density, BlockGf, Gf
+from triqs.gfs import density, BlockGf, Gf
 
 class findMuTests(unittest.TestCase):
 
