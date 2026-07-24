@@ -5,6 +5,30 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 4.0.1
+
+TRIQS Version 4.0.1 is a patch-release that introduces
+minor fixes and improvements.
+
+We thank all contributors: Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### General
+* Replace remaining 'triqs.gf' imports with 'triqs.gfs'
+
+### cmake
+* Support an externally-provided fmt dependency
+* Declare BUILD_DEBIAN_PACKAGE before building dependencies
+
+### doc
+* Add a version switcher flyout to the sphinx docs
+* Update install docs for TRIQS 4
+
+### jenkins
+* Switch to the new jenkins setup exclusively, publishing the documentation from it and removing the obsolete top-level Jenkinsfile, Dockerfile.build and .dockerignore
+
+
 ## Version 4.0.0
 
 TRIQS Version 4.0.0 is a major release that
