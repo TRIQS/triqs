@@ -44,6 +44,9 @@ endif()
 project(TRIQS VERSION 3.3.3 LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# version displayed in the documentation
+set(BRANCH_FOR_DOC ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.x)
+
 ## C & C++ Headers
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
