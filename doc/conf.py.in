@@ -50,8 +50,9 @@ master_doc = 'contents'
 project = 'TRIQS'
 copyright = '2011-present, The TRIQS collaboration'
 
-# The short X.Y version.
-version = '@TRIQS_VERSION@'
+# The version displayed in the documentation, i.e. the branch this build
+# corresponds to (unstable / X.Y.x), set via BRANCH_FOR_DOC in CMakeLists.txt.
+version = '@BRANCH_FOR_DOC@'
 release = '@TRIQS_VERSION@'
 
 # List of directories, relative to source directory, that shouldn't be searched
@@ -61,6 +62,12 @@ exclude_patterns = ['sphinxext/*', 'doxygen', '_templates'] # For Sphinx 1.3 and
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# Point search engines at the evergreen "latest" build of each page via a
+# rel="canonical" link. Setting this in *every* version build (unstable, X.Y.x,
+# ...) consolidates ranking signals onto the latest/ docs so they are preferred
+# over older versions in search results.
+html_baseurl = 'https://triqs.github.io/triqs/latest/'
 
 # this requires the sphinx_rtd_theme to be installed via pip
 html_theme = 'sphinx_rtd_theme'
@@ -83,7 +90,16 @@ html_theme_options = {
 
 html_show_sphinx = False
 html_context = {'header_title': 'triqs',
-                'header_subtitle': 'A Toolbox for Research on Interacting Quantum Systems'}
+                'header_subtitle': 'A Toolbox for Research on Interacting Quantum Systems',
+                # Version switcher flyout (rendered by _templates/versions.html, which
+                # overrides the empty versions.html shipped by sphinx_rtd_theme 3.x). The
+                # list is static -- update it when a new release line is published.
+                'current_version': version,
+                'versions': [
+                    ['unstable', 'https://triqs.github.io/triqs/unstable/'],
+                    ['4.0.x',    'https://triqs.github.io/triqs/4.0.x/'],
+                    ['3.3.x',    'https://triqs.github.io/triqs/3.3.x/'],
+                ]}
 
 html_style = 'css/custom.css'
 html_favicon = '@CMAKE_CURRENT_SOURCE_DIR@/_static/triqs_logo/triqs_favicon.ico'
