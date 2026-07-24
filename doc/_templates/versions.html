@@ -1,0 +1,25 @@
+{# Version switcher flyout.
+
+   sphinx_rtd_theme 3.x ships an empty versions.html (the flyout is injected by
+   the ReadTheDocs addons when hosted there, and is absent on self-hosted
+   builds). layout.html still does `{% include "versions.html" %}`, so this
+   override revives the classic bottom-left "v: <version> ▾" widget. It is
+   styled by the theme's existing .rst-versions CSS and toggled by theme.js;
+   the entries come from html_context['versions'] in conf.py. #}
+{%- if versions %}
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="{{ _('Versions') }}">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> {{ _('Versions') }}</span>
+    v: {{ current_version }}
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>{{ _('Versions') }}</dt>
+      {%- for slug, url in versions %}
+      <dd><a href="{{ url }}">{{ slug }}</a></dd>
+      {%- endfor %}
+    </dl>
+  </div>
+</div>
+{%- endif %}
