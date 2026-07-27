@@ -1,9 +1,9 @@
 FROM ubuntu:26.04
 ENV LLVM=21
 
-# This platform does not regenerate Python bindings, but still installs clang /
-# libclang / libomp / libzstd so that the shared Dockerfile.build clair install
-# step succeeds (clair requires clang++-${LLVM}).
+# This platform does not regenerate Python bindings, but still installs the
+# clang / libclang / libomp / libzstd toolchain that the clair install step
+# requires (clang++-${LLVM}).
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
