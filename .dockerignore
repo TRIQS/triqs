@@ -1,8 +1,0 @@
-.travis.yml
-CITATIONS.bib
-ChangeLog.md
-Dockerfile.*
-Jenkinsfile
-TODO
-.git/objects/pack
-build*

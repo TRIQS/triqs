@@ -151,7 +151,7 @@ for (int i = 0; i < macosPlatforms.size(); i++) {
 catchError {
   parallel platforms
 
-  if (false && keepInstall) {
+  if (keepInstall) {
     /* Publish results */
     stage("publish") {
       timeout(time: 10, unit: 'MINUTES') {
