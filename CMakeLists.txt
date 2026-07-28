@@ -309,12 +309,6 @@ configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.c
 install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/triqs)
 
-#------------------------
-# Test macros
-#------------------------
-
-configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
-
 #--------------------------------------------------------
 #   Remind the user how to set up his/her variables
 #--------------------------------------------------------

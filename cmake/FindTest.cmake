@@ -25,7 +25,7 @@ function(add_cpp_test testname)
    -Dname=${testname_}${ARGN}
    "-Dcmd=${testcmd}"
    -Dreference=${testref}
-   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
+   -P ${PROJECT_SOURCE_DIR}/cmake/run_test.cmake
   )
   # Avoid mpi warning messages for ref-file based tests
   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT OMPI_MCA_btl_base_warn_component_unused=0)
