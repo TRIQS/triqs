@@ -133,32 +133,70 @@ macro(extract_flags)
 
 endmacro()
 
-# Extract all library directories from a target and its transitive dependencies
-# Result is a colon-separated path string suitable for LD_LIBRARY_PATH
-# Works with both imported targets (find_package) and build-tree targets (FetchContent/CPM)
-macro(extract_library_directories result_var target)
-  set(_lib_dirs "")
-  set(_processed_dirs "")
+# Output directories of all shared libraries built in dir and its subdirectories
+function(collect_shared_library_dirs result_var dir)
+  set(_dirs "")
+  get_property(_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
+  foreach(_target ${_targets})
+    get_target_property(_type ${_target} TYPE)
+    if(NOT _type STREQUAL "SHARED_LIBRARY")
+      continue()
+    endif()
 
-  # Get INTERFACE_LINK_DIRECTORIES from target and all dependencies
-  get_property_recursive(_lib_dirs TARGET ${target} PROPERTY INTERFACE_LINK_DIRECTORIES)
+    get_target_property(_libdir ${_target} LIBRARY_OUTPUT_DIRECTORY)
+    if(_libdir MATCHES "\\$<")
+      # Read at configure time, where a generator expression cannot be resolved
+      message(WARNING "Cannot determine the output directory of target ${_target} at configure time: ${_libdir}\n"
+                      "The tests may load a library of the same name from elsewhere.")
+      continue()
+    endif()
+    if(NOT _libdir)
+      get_target_property(_libdir ${_target} BINARY_DIR)
+    endif()
 
-  # Handle BUILD_INTERFACE generator expressions (extract the paths)
-  foreach(_dir IN LISTS _lib_dirs)
-    string(REGEX REPLACE "\\$<BUILD_INTERFACE:([^>]*)>" "\\1" _dir "${_dir}")
-    # Skip INSTALL_INTERFACE entries during build
-    if(NOT _dir MATCHES "\\$<INSTALL_INTERFACE:")
-      list(APPEND _processed_dirs "${_dir}")
+    list(APPEND _dirs ${_libdir})
+  endforeach()
+
+  get_property(_subdirs DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+  foreach(_subdir ${_subdirs})
+    collect_shared_library_dirs(_subdir_dirs ${_subdir})
+    list(APPEND _dirs ${_subdir_dirs})
+  endforeach()
+
+  set(${result_var} "${_dirs}" PARENT_SCOPE)
+endfunction()
+
+# Entries for the ENVIRONMENT_MODIFICATION test property that prepend the given
+# directories to the path list in var, in the order given. Empty directories are
+# dropped, as an empty entry in a search path denotes the current directory.
+function(triqs_path_list_prepend result_var var)
+  set(_mod "")
+  foreach(_dir IN LISTS ARGN)
+    # Every entry prepends to the result of the previous one, so emit them back to front
+    if(_dir)
+      list(PREPEND _mod "${var}=path_list_prepend:${_dir}")
     endif()
   endforeach()
-  set(_lib_dirs "${_processed_dirs}")
 
-  # Remove duplicates and system directories
-  if(_lib_dirs)
-    list(REMOVE_DUPLICATES _lib_dirs)
-    list(FILTER _lib_dirs EXCLUDE REGEX "^/usr/lib")
+  set(${result_var} "${_mod}" PARENT_SCOPE)
+endfunction()
+
+# Entries for the ENVIRONMENT_MODIFICATION test property that put every directory we
+# build a shared library into first on the runtime search path: the test executables and
+# the python extension modules load these libraries at runtime, and the loader search
+# path wins over the RUNPATH baked into them. What the environment already provides, for
+# the toolchain and for dependencies not built here, stays behind them.
+function(triqs_test_library_env_mod result_var)
+  # dyld reads DYLD_LIBRARY_PATH and ignores LD_LIBRARY_PATH
+  if(APPLE)
+    set(_var DYLD_LIBRARY_PATH)
+  else()
+    set(_var LD_LIBRARY_PATH)
   endif()
 
-  # Convert to colon-separated string
-  string(REPLACE ";" ":" ${result_var} "${_lib_dirs}")
-endmacro()
+  collect_shared_library_dirs(_dirs ${PROJECT_SOURCE_DIR})
+  list(REMOVE_DUPLICATES _dirs)
+  triqs_path_list_prepend(_mod ${_var} ${_dirs})
+
+  set(${result_var} "${_mod}" PARENT_SCOPE)
+endfunction()

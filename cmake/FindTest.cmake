@@ -1,5 +1,15 @@
 include(extract_flags)
 
+# Identical for every test, hence computed once here: find_package(Test) is used
+# only from test/c++ and test/python, both configured after the libraries exist.
+triqs_test_library_env_mod(TRIQS_TEST_LIBRARY_ENV_MOD)
+
+# Environment of every python test: the modules to import live in the build tree, and
+# their extension modules need the same library path as the c++ test executables.
+triqs_path_list_prepend(TRIQS_TEST_PYTHON_ENV_MOD PYTHONPATH
+                        ${CMAKE_BINARY_DIR}/python ${h5_MODULE_DIR} ${h5_BINARY_DIR}/python ./)
+list(APPEND TRIQS_TEST_PYTHON_ENV_MOD ${TRIQS_TEST_LIBRARY_ENV_MOD})
+
 # runs a c++ test
 # if there is a .ref file a comparison test is done
 # Example: add_cpp_test(my_code)
@@ -33,24 +43,7 @@ function(add_cpp_test testname)
   add_test(${testname_}${ARGN} ${testcmd})
  endif()
 
- # Set LD_LIBRARY_PATH to prioritize build-directory libraries
- extract_library_directories(_test_lib_path triqs)
-
- # Append existing LD_LIBRARY_PATH, filtering out install prefix
- if(DEFINED ENV{LD_LIBRARY_PATH})
-   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib64:" "" _filtered "$ENV{LD_LIBRARY_PATH}")
-   string(REPLACE "${CMAKE_INSTALL_PREFIX}/lib:" "" _filtered "${_filtered}")
-   if(_filtered)
-     set(_test_lib_path "${_test_lib_path}:${_filtered}")
-   endif()
- endif()
-
- set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${_test_lib_path}")
-
- # macOS support
- if(APPLE)
-   set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT "DYLD_LIBRARY_PATH=${_test_lib_path}")
- endif()
+ set_property(TEST ${testname_} APPEND PROPERTY ENVIRONMENT_MODIFICATION ${TRIQS_TEST_LIBRARY_ENV_MOD})
 
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
@@ -66,17 +59,15 @@ function(add_python_test)
 
   set(testfile ${ARGV0}.py)
   set(testname py_${ARGV0})
-  set(testenv PYTHONPATH=${CMAKE_BINARY_DIR}/python:${h5_MODULE_DIR}:${h5_BINARY_DIR}/python:./:$ENV{PYTHONPATH})
-  if(SANITIZER_RT_PRELOAD)
-    list(APPEND testenv ${SANITIZER_RT_PRELOAD})
-  endif()
 
   foreach(NP ${ARG_MPI_NUMPROC})
     add_test(${testname}_np${NP} ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ARG_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${TRIQS_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
-    set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT ${testenv})
+    set_property(TEST ${testname}_np${NP} PROPERTY ENVIRONMENT_MODIFICATION ${TRIQS_TEST_PYTHON_ENV_MOD})
+    set_property(TEST ${testname}_np${NP} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
   endforeach()
 
   add_test(${testname} ${TRIQS_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${testfile})
-  set_property(TEST ${testname} PROPERTY ENVIRONMENT ${testenv})
+  set_property(TEST ${testname} PROPERTY ENVIRONMENT_MODIFICATION ${TRIQS_TEST_PYTHON_ENV_MOD})
+  set_property(TEST ${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
 
 endfunction(add_python_test)

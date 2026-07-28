@@ -20,7 +20,7 @@ Let's assume that **TRIQS** has been installed to `path_to_install_dir`.
 Then linking your project to **TRIQS** with CMake is as easy as
 
 ```cmake
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 project(my_project CXX)
 
 # find TRIQS

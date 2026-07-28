@@ -31,7 +31,7 @@ and that the actual example code is in a file `main.cpp`, the following generic
 `CMakeLists.txt` should work for all examples (see also @ref integration):
 
 ```cmake
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 project(example CXX)
 
 # set required standard
