@@ -313,11 +313,7 @@ install(FILES ${PROJECT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION
 # Test macros
 #------------------------
 
-configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
 configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
-
-install(FILES ${PROJECT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
-install(FILES ${PROJECT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
 
 #--------------------------------------------------------
 #   Remind the user how to set up his/her variables
