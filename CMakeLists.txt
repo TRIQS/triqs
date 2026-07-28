@@ -231,11 +231,10 @@ add_subdirectory(deps)
 # Python variables (provided by the c2py dependency, resolved first in deps/)
 #---------------------------------------------------------------------
 # c2py runs find_package(Python) and promotes Python_EXECUTABLE together with the
-# PYTHON_LIB_DEST_ROOT / PYTHON_MODULE_EXT install-layout variables into the cache. Map
-# them onto the public TRIQS_PYTHON_* names exported from TRIQSConfig.cmake for downstream applications.
+# PYTHON_LIB_DEST_ROOT install-layout variable into the cache. Map them onto the public
+# TRIQS_PYTHON_* names exported from TRIQSConfig.cmake for downstream applications.
 if(PythonSupport)
   set(TRIQS_PYTHON_EXECUTABLE ${Python_EXECUTABLE} CACHE FILEPATH "Python executable")
-  set(TRIQS_PYTHON_MODULE_EXT ${PYTHON_MODULE_EXT} CACHE STRING "Python module extension")
   set(TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_LIB_DEST_ROOT} CACHE PATH "Python library destination")
   message(STATUS "Python modules install path: ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST_ROOT}")
 endif()
