@@ -77,9 +77,11 @@ namespace triqs::experimental::lattice {
 
   namespace detail {
     // helper to determine the return container dimension
-    int deduce_dim_from_expression(auto const &f_kw) {
+    template <typename T>
+    int deduce_dim_from_expression(auto const &f_kw, T const &w) {
       namespace ph  = placeholders;
-      auto f_w_temp = eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = 0);
+      // need to use w here and not 0, as this can result in the expression becoming 1/0
+      auto f_w_temp = eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w);
       static_assert(not nda::clef::is_lazy<decltype(f_w_temp)>, "Integration expects a proper expression with placeholders.");
       // check if this is a matrix or scalar type -- if scalar, return 1 for dim
       return [&]() {
@@ -119,7 +121,7 @@ namespace triqs::experimental::lattice {
     }
 
     namespace ph  = placeholders;
-    int block_dim = detail::deduce_dim_from_expression(f_kw);
+    int block_dim = detail::deduce_dim_from_expression(f_kw, omega_values[0]);
     auto result   = nda::zeros<dcomplex>(omega_values.size(), block_dim, block_dim); // container to return
 
     // Determine the longest direction and apply MPI chunk to this dimension, otherwise provide a simple iterator
@@ -191,13 +193,16 @@ namespace triqs::experimental::lattice {
    *
    * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
    * @param opt Adaptive integration options (currently only the absolute tolerance).
+   * @param w A frequency from the mesh which will be integrated, needed for type eval
    * @return Callable that maps a frequency \f$ \omega \f$ to the value of the Brillouin-zone integral.
    */
-  auto integrate_adaptive(auto const &f_kw, adaptive_options const &opt) {
+   template <typename T>
+  auto integrate_adaptive(auto const &f_kw, adaptive_options const &opt, T const &w) {
 
     // use the first mesh value, evaluated, to determine the return type of the data
     namespace ph      = placeholders;
-    auto f_value      = nda::make_regular(eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = 0));
+    // need to use w here and not 0, as this can result in the expression becoming 1/0
+    auto f_value      = nda::make_regular(eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w));
     auto int_1d_adapt = utility::integrate_1d_adapt<decltype(f_value)>{opt.tolerance};
 
     // OP : Beware the capture ! We need to move the expression.
@@ -225,11 +230,11 @@ namespace triqs::experimental::lattice {
    */
   template <typename Mesh> auto integrate_adaptive(auto const &f_kw, Mesh const &w_mesh, adaptive_options const &opt) {
 
-    int dim    = detail::deduce_dim_from_expression(f_kw);
+    int dim    = detail::deduce_dim_from_expression(f_kw, w_mesh[0]);
     auto g_out = gf{w_mesh, {dim, dim}};
     // OMP/MPI parallel evaluation over frequencies
     mpi::communicator comm = {};
-    auto calc              = integrate_adaptive(f_kw, opt);
+    auto calc              = integrate_adaptive(f_kw, opt, w_mesh[0]);
     for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
     return g_out;
   }
@@ -285,7 +290,7 @@ namespace triqs::experimental::lattice {
       }
     }
 
-    int dim    = detail::deduce_dim_from_expression(f_kw);
+    int dim    = detail::deduce_dim_from_expression(f_kw, w_mesh[0]);
     auto g_out = gf{w_mesh, {dim, dim}};
 
     // set up containers to check if ptr has converged for different points
@@ -332,7 +337,7 @@ namespace triqs::experimental::lattice {
     if (opt.run_adaptive) {
       adaptive_options adaptive_opt = {.tolerance = opt.tolerance};
       if (opt.verbose) std::cout << "Running adaptive integration on remaining points." << std::endl;
-      auto calc = integrate_adaptive(f_kw, adaptive_opt);
+      auto calc = integrate_adaptive(f_kw, adaptive_opt, w_mesh[0]);
       // adaptive evaluation at each frequency is MPI parallel;
       // possibly could be done better but this is ok for now
       for (auto &&[n, w] : itertools::enumerate(mpi::chunk(g_out.mesh(), comm))) {
