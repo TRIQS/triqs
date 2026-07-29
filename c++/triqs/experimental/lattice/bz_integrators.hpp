@@ -157,33 +157,6 @@ namespace triqs::experimental::lattice {
   }
 
   // -------------------------------------------
-
-  /**
-   * @brief Integrate an expression over the Brillouin zone on a fixed k-grid (PTR) for all points of a frequency mesh,
-   * using both MPI and OpenMP parallelism.
-   *
-   * @details This overload evaluates the integral at every point of the given frequency mesh and stores the result in a
-   * Green's function defined on that mesh.
-   *
-   * @tparam Mesh Frequency mesh type.
-   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
-   * @param w_mesh Frequency mesh on which the integration is performed.
-   * @param k_grid Number of grid points along each direction; e.g. `{2, 2, 2}` samples a total of 8 k-points.
-   * @param comm MPI communicator over which the k-grid is distributed.
-   * @return Green's function on `w_mesh` holding the integral, fully integrated over \f$ k_x, k_y, k_z \f$.
-   */
-  template <typename Mesh> auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid, mpi::communicator comm = {}) {
-
-    int dim    = detail::deduce_dim_from_expression(f_kw);
-    auto g_out = gf{w_mesh, {dim, dim}};
-    std::vector<typename Mesh::mesh_point_t> mesh_points(w_mesh.begin(), w_mesh.end());
-    auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid, comm);
-    // fill in the GF to return
-    for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
-    return g_out;
-  }
-
-  // -------------------------------------------
   /**
    * @brief Build a callable that adaptively integrates an expression over the Brillouin zone for a given frequency.
    *
@@ -266,7 +239,7 @@ namespace triqs::experimental::lattice {
     auto k_grid          = opt.k_grid;
     auto kgrid_above_max = [&](auto &k_grid) {
       for (auto ik : {0, 1, 2})
-        if (k_grid[ik] >= opt.k_grid_max[ik]) { return true; }
+        if (k_grid[ik] > opt.k_grid_max[ik]) { return true; }
       return false;
     };
 
@@ -284,9 +257,9 @@ namespace triqs::experimental::lattice {
       if (!std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k >= 0; })) {
         throw std::runtime_error("delta_k_grid cannot be negative.");
       }
-      // delta_k_grid = 0 is reasonable only if k_grid >= k_grid_max, otherwise this will run doing nothing
+      // delta_k_grid = 0 is reasonable only if k_grid > k_grid_max, otherwise this will run doing nothing
       if (std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k == 0; }) and !kgrid_above_max(k_grid)) {
-        throw std::runtime_error("delta_k_grid can only be zero if k_grid >= k_grid_max.");
+        throw std::runtime_error("delta_k_grid can only be zero if k_grid > k_grid_max.");
       }
     }
 
@@ -305,7 +278,7 @@ namespace triqs::experimental::lattice {
       do { // NOLINT (run loop at least once if PTR is chosen )
 
         if (opt.verbose) {
-          int remaining_ptr = static_cast<int>(ptr_converged.size()) - std::reduce(ptr_converged.begin(), ptr_converged.end());
+          int remaining_ptr = static_cast<int>(ptr_converged.size()) - std::reduce(ptr_converged.begin(), ptr_converged.end(), 0);
           std::cout << "Points remaining unconverged: " << remaining_ptr << ", now running with k-grid " << k_grid[0] << " " << k_grid[1] << " "
                     << k_grid[2] << std::endl;
         }
