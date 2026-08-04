@@ -156,7 +156,9 @@ namespace triqs::utility::nfft {
       }
 
       // Multiply by exp(i π Σ_r τ_r / β) so odd Matsubara modes become an integer FFT.
-      auto [sin_theta, cos_theta] = triqs::utility::math::sincos<TolDigits>(pi_over_beta_vec * tau_sum);
+      // Always use the full-precision bucket: this phase enters the data and would
+      // otherwise dominate the transform's error at low tolerances.
+      auto [sin_theta, cos_theta] = triqs::utility::math::sincos<12>(pi_over_beta_vec * tau_sum);
       cbatch phase(cos_theta, sin_theta);
       (cbatch::load_unaligned(fx_ptr + j) * phase).store_unaligned(fx_ptr + j);
     }
@@ -169,7 +171,7 @@ namespace triqs::utility::nfft {
         state.x_arr(r, j) = 2 * M_PI * (tau * inv_beta - 0.5);
       }
       // Scalar tail matches the SIMD path above.
-      state.fx_arr[j] *= cis<TolDigits>(M_PI * tau_sum * inv_beta);
+      state.fx_arr[j] *= cis<12>(M_PI * tau_sum * inv_beta);
     }
   }
 

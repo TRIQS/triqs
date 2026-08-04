@@ -175,8 +175,13 @@ template <int TolDigits, angle_arg Angle> [[gnu::flatten]] auto sincos_impl(Angl
 
 } // namespace detail
 
-/// Fast sincos with compile-time tolerance selection.
-/// TolDigits = number of accurate decimal digits (6, 8, 10, or 12).
+/// Fast sincos with compile-time accuracy selection.
+/// NOTE: the truncated buckets are lowest-order tails of the full-degree minimax
+/// fit, so they behave like Taylor truncations and fall short of their nominal
+/// labels: measured absolute errors are about 4e-4 (6), 4e-6 (8) and 3e-8 (10);
+/// bucket 12 is at double-precision machine accuracy. Accuracy-critical seed
+/// tables must use 12, since recurrence/ladder multiplies amplify the seed error
+/// by the exponent magnitude.
 template <int TolDigits = 12, detail::angle_arg Angle> auto sincos(Angle const &angle) {
   return detail::sincos_impl<TolDigits>(angle);
 }

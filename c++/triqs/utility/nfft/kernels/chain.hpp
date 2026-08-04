@@ -231,6 +231,22 @@ namespace triqs::utility::nfft {
         plan.ops.push_back(op);
       };
 
+      // Extend the plan to exponent x with a binary (double-and-add) ladder:
+      // ensure floor(x/2), add 2*floor(x/2) = half + half, and, for odd x, add
+      // x = 2*floor(x/2) + 1 using row 1 (always present). Costs at most
+      // 2*log2(x) rows per isolated exponent; used when no candidate row unlocks
+      // any missing required exponent, where pure greedy scoring would creep
+      // one exponent per step.
+      auto ensure_binary = [&](auto &&self, unsigned long x) -> void {
+        if (exp_to_row.contains(x)) return;
+        unsigned long const half = x / 2;
+        self(self, half);
+        int const half_row = exp_to_row.at(half);
+        if (!exp_to_row.contains(2 * half)) add_row(2 * half, op_t{half_row, half_row, false});
+        if (x % 2 == 1 && !exp_to_row.contains(x))
+          add_row(x, op_t{exp_to_row.at(2 * half), exp_to_row.at(1), false});
+      };
+
       while (true) {
         bool all_done = true;
         bool progress = false;
@@ -270,12 +286,19 @@ namespace triqs::utility::nfft {
           }
         }
 
+        bool any_unlock = false;
         for (auto const &[candidate, op] : candidates) {
           int64_t score = 0;
           // Prefer helpers that unlock many missing required exponents cheaply.
-          if (std::binary_search(required.begin(), required.end(), candidate)) score += 1'000'000;
+          if (std::binary_search(required.begin(), required.end(), candidate)) {
+            score += 1'000'000;
+            any_unlock = true;
+          }
           for (unsigned long exp : required)
-            if (!exp_to_row.contains(exp) && reachable_with_candidate(exp, candidate)) score += plan_score_weight;
+            if (!exp_to_row.contains(exp) && reachable_with_candidate(exp, candidate)) {
+              score += plan_score_weight;
+              any_unlock = true;
+            }
           score -= static_cast<int64_t>(candidate);
 
           if (score > best_score) {
@@ -283,6 +306,15 @@ namespace triqs::utility::nfft {
             best_candidate = candidate;
             best_op        = op;
           }
+        }
+
+        if (!any_unlock) {
+          // No candidate unlocks progress (isolated exponents): extend toward the
+          // smallest missing required exponent with a guaranteed binary chain.
+          auto const it = std::find_if(required.begin(), required.end(), [&](unsigned long exp) { return !exp_to_row.contains(exp); });
+          if (it == required.end()) NDA_RUNTIME_ERROR << "kernel_chain_t: unable to synthesize exponent plan\n";
+          ensure_binary(ensure_binary, *it);
+          continue;
         }
 
         if (!best_op) NDA_RUNTIME_ERROR << "kernel_chain_t: unable to synthesize exponent plan\n";
@@ -311,7 +343,9 @@ namespace triqs::utility::nfft {
         for (int j = 0; j < block_len; j += simd_size) {
           using rbatch            = xsimd::batch<double>;
           // Row 0 stores z^{1}; the rest of the rows are synthesized from the chain ops.
-          auto [sin_vec, cos_vec] = triqs::utility::math::sincos<TolDigits>(rbatch::load_unaligned(&state.x_arr(r, j_begin + j)) * pi_over_beta);
+          // Seed at full precision: the chain multiplies amplify the seed error by
+          // the exponent magnitude, so the low-digit buckets would poison the table.
+          auto [sin_vec, cos_vec] = triqs::utility::math::sincos<12>(rbatch::load_unaligned(&state.x_arr(r, j_begin + j)) * pi_over_beta);
           cbatch(cos_vec, sin_vec).store_unaligned(tbl + j);
         }
 
@@ -339,7 +373,7 @@ namespace triqs::utility::nfft {
       auto const *flat_row_idx = unique_row_idx.empty() ? nullptr : unique_row_idx.data();
       poet::static_for<Rank>([&](const auto r) {
         auto *rows        = simd_row_tbl_[r].data();
-        auto [sin_vec, cos_vec] = triqs::utility::math::sincos<TolDigits>(xsimd::batch<double>::load_unaligned(&state.x_arr(r, j_begin)) * pi_over_beta);
+        auto [sin_vec, cos_vec] = triqs::utility::math::sincos<12>(xsimd::batch<double>::load_unaligned(&state.x_arr(r, j_begin)) * pi_over_beta);
         rows[0]           = cbatch(cos_vec, sin_vec);
 
         auto const &plan = plans_[r];
@@ -416,7 +450,7 @@ namespace triqs::utility::nfft {
       auto const &plan = plans_[0];
       for (int j = static_cast<int>(buf_counter_simd); j < state.buf_counter; ++j) {
         double const theta = pi_over_beta * state.x_arr(0, j);
-        tbl[0]             = cis<TolDigits>(theta);
+        tbl[0]             = cis<12>(theta);
         for (std::size_t op_idx = 0; op_idx < plan.ops.size(); ++op_idx) {
           auto const &op                   = plan.ops[op_idx];
           dcomplex rhs                     = tbl[op.rhs];
@@ -450,7 +484,7 @@ namespace triqs::utility::nfft {
           dcomplex *uq     = uq_scalar_base[r];
 
           double const theta = pi_over_beta * state.x_arr(r, j);
-          tbl[0]             = cis<TolDigits>(theta);
+          tbl[0]             = cis<12>(theta);
           for (std::size_t op_idx = 0; op_idx < plan.ops.size(); ++op_idx) {
             auto const &op = plan.ops[op_idx];
             dcomplex rhs   = tbl[op.rhs];

@@ -122,7 +122,9 @@ namespace triqs::utility::nfft {
         auto &tbl = simd_pow2_tbl[r];
         using rbatch = xsimd::batch<double>;
         // Build z^(2^k) by repeated squaring, starting from z^1.
-        auto [sin_vec, cos_vec] = triqs::utility::math::sincos<TolDigits>(rbatch::load_unaligned(&state.x_arr(r, j_begin)) * pi_over_beta);
+        // Seed at full precision: the squaring ladder amplifies the seed error by
+        // the exponent magnitude, so the low-digit buckets would poison the table.
+        auto [sin_vec, cos_vec] = triqs::utility::math::sincos<12>(rbatch::load_unaligned(&state.x_arr(r, j_begin)) * pi_over_beta);
         tbl[0] = cbatch(cos_vec, sin_vec);
         for (int k = 1; k < num_pow2_levels[r]; ++k) tbl[k] = tbl[k - 1] * tbl[k - 1];
       });
@@ -227,7 +229,7 @@ namespace triqs::utility::nfft {
           auto &tbl       = scalar_pow2_tbl[r];
           double const theta = pi_over_beta * state.x_arr(r, j);
           // Scalar tail mirrors the SIMD phase table construction above.
-          tbl[0]             = cis<TolDigits>(theta);
+          tbl[0]             = cis<12>(theta);
           for (int k = 1; k < num_pow2_levels[r]; ++k) tbl[k] = tbl[k - 1] * tbl[k - 1];
 
           for (int u = 0; u < n_unique[r]; ++u) {

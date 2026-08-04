@@ -179,7 +179,9 @@ namespace triqs::utility::nfft {
       constexpr std::size_t S = cbatch::size;
       long const nr      = n_range_padded[r];
       double const theta1 = pi_over_beta * tau;
-      dcomplex const z1 = cis<TolDigits>(theta1);
+      // Seed at full precision: the geometric walk amplifies the seed error by
+      // the exponent magnitude, so the low-digit buckets would poison the table.
+      dcomplex const z1 = cis<12>(theta1);
       dcomplex const z_step = z1 * z1;
       dcomplex const z_base = unit_pow(z_step, n_min_arr[r]) * z1;
 
@@ -233,9 +235,9 @@ namespace triqs::utility::nfft {
         poet::static_for<Rank>([&](auto r) {
           double const tau = state.x_arr(r, j);
           // z_base already includes the smallest odd exponent 2 n_min + 1.
-          z_base[r]    = cis<TolDigits>(static_cast<double>(2 * n_min_arr[r] + 1) * pi_over_beta * tau);
+          z_base[r]    = cis<12>(static_cast<double>(2 * n_min_arr[r] + 1) * pi_over_beta * tau);
           // Multiplying by z_step advances n_r by one, i.e. by two in the odd exponent.
-          z_step[r]    = cis<TolDigits>(step_freq * tau);
+          z_step[r]    = cis<12>(step_freq * tau);
           simd_mult[r] = make_simd_multiplier(z_step[r]);
         });
         seq_accumulate<0>(fiw_ptr, state.fx_arr[j], z_base, z_step, simd_mult);
