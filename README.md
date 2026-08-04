@@ -1,5 +1,5 @@
 [![anaconda](https://anaconda.org/conda-forge/triqs/badges/version.svg)](https://anaconda.org/conda-forge/triqs)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21691719.svg)](https://doi.org/10.5281/zenodo.21691719)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21691719-blue.svg)](https://doi.org/10.5281/zenodo.21691719)
 
 Start to learn about TRIQS on our website at [triqs.github.io](https://triqs.github.io).
 
