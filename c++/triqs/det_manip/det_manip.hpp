@@ -161,35 +161,6 @@ namespace triqs::det_manip {
     value_type newdet{1};
     int newsign{1};
 
-    private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
-    void swap_but_f(det_manip &rhs) noexcept {
-      using std::swap;
-#define SW(a) swap(this->a, rhs.a)
-      SW(det);
-      SW(Nmax);
-      SW(N);
-      SW(last_try);
-      SW(row_num);
-      SW(col_num);
-      SW(x_values);
-      SW(y_values);
-      SW(sign);
-      SW(mat_inv);
-      SW(n_opts);
-      SW(n_opts_max_before_check);
-      SW(w1);
-      SW(wk);
-      SW(newdet);
-      SW(newsign);
-#undef SW
-    }
-
-    friend void swap(det_manip &lhs, det_manip &rhs) noexcept {
-      using std::swap;
-      swap(lhs.f, rhs.f);
-      lhs.swap_but_f(rhs);
-    }
-
     public:
     /**
      * @brief Reserve memory and resize the data storages.
@@ -338,19 +309,6 @@ namespace triqs::det_manip {
       range RN(N);
       det             = nda::linalg::det(mat_inv(RN, RN));
       mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
-    }
-
-    // Special member functions. All of them should be defaulted.
-    det_manip(det_manip const &) = default;
-    det_manip(det_manip &&rhs) noexcept : f(std::move(rhs.f)) {
-      this->swap_but_f(rhs);
-    } // f need not have a default constructor and we dont swap the temp data...
-    //det_manip& operator=(const det_manip&) = default;
-    det_manip &operator=(const det_manip &) = delete;
-    det_manip &operator=(det_manip &&rhs) noexcept {
-      assert((last_try == NoTry) && (rhs.last_try == NoTry));
-      swap(*this, rhs);
-      return *this;
     }
 
     /**

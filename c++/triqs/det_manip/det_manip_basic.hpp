@@ -274,11 +274,6 @@ namespace triqs::det_manip {
       compute_determinant();
     }
 
-    det_manip_basic(det_manip_basic const &)            = default;
-    det_manip_basic(det_manip_basic &&rhs) noexcept     = default;
-    det_manip_basic &operator=(const det_manip_basic &) = delete;
-    // det_manip_basic &operator                           = default;
-
     /**
      * @brief Clear the data storages and reset the matrix to size zero.
      */
