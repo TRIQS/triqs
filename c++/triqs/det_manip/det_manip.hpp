@@ -80,88 +80,53 @@ namespace triqs::det_manip {
     using value_type  = detail::get_result_t<F>;
     using matrix_type = nda::matrix<value_type>;
 
-    protected: // the data
-    F f;
-
-    value_type det{1};
-    long Nmax{0}, N{0};
-    long kmax_tried{1}, k_tried{0};
-    enum {
-      NoTry,
-      Insert,
-      Remove,
-      ChangeCol,
-      ChangeRow,
-      ChangeRowCol,
-      InsertK,
-      RemoveK,
-      Refill
-    } last_try = NoTry; // keep in memory the last operation not completed
-    std::vector<long> row_num, col_num;
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    int sign = 1;
-    matrix_type mat_inv;
-    uint64_t n_opts                  = 0;   // count the number of operation
-    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
-    double singular_threshold = -1;    // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
-    double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
-    double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
-
     /**
-     * @brief Write a triqs::det_manip::det_manip object to HDF5.
+     * @brief Construct a det_manip object with a callable `F` and an initial capacity for the data storages.
      *
-     * @param fg `h5::group` containing the subgroup to be written to.
-     * @param subgroup_name Name of the subgroup.
-     * @param g Manipulator object to be written.
+     * @details Like for `std::vector`, the capacity grows automatically (by a factor of 2) when needed, but this can
+     * yield a performance penalty if it happens too often.
+     *
+     * @param f Callable `F` object (a copy is stored in the class).
+     * @param init_size Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
-    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
-      auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "N", g.N);
-      h5_write(gr, "mat_inv", g.mat_inv);
-      h5_write(gr, "det", g.det);
-      h5_write(gr, "sign", g.sign);
-      h5_write(gr, "row_num", g.row_num);
-      h5_write(gr, "col_num", g.col_num);
-      h5_write(gr, "x_values", g.x_values);
-      h5_write(gr, "y_values", g.y_values);
-      h5_write(gr, "n_opts", g.n_opts);
-      h5_write(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_write(gr, "singular_threshold", g.singular_threshold);
+    det_manip(F f, long init_size) : f(std::move(f)) {
+      reserve(init_size);
+      mat_inv() = 0;
     }
 
     /**
-     * @brief Read a triqs::det_manip::det_manip object from HDF5.
+     * @brief Construct a det_manip object with a callable `F` and two containers holding the arguments for
+     * the matrix builder.
      *
-     * @param fg `h5::group` containing the subgroup to be read from.
-     * @param subgroup_name Name of the subgroup.
-     * @param g Manipulator object to be read into.
+     * @tparam ArgumentContainer1 Container type holding the first arguments.
+     * @tparam ArgumentContainer2 Container type holding the second arguments.
+     * @param f Callable `F` object (a copy is stored in the class).
+     * @param X Container holding the first arguments \f$ \mathbf{x} \f$.
+     * @param Y Container holding the second arguments \f$ \mathbf{y} \f$.
      */
-    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
-      auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "N", g.N);
-      h5_read(gr, "mat_inv", g.mat_inv);
-      g.Nmax     = first_dim(g.mat_inv); // restore Nmax
-      g.last_try = NoTry;
-      h5_read(gr, "det", g.det);
-      h5_read(gr, "sign", g.sign);
-      h5_read(gr, "row_num", g.row_num);
-      h5_read(gr, "col_num", g.col_num);
-      h5_read(gr, "x_values", g.x_values);
-      h5_read(gr, "y_values", g.y_values);
-      h5_read(gr, "n_opts", g.n_opts);
-      h5_read(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
-      h5_read(gr, "singular_threshold", g.singular_threshold);
+    template <typename ArgumentContainer1, typename ArgumentContainer2>
+    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(f)) {
+      if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
+      N = X.size();
+      if (N == 0) {
+        det = 1;
+        reserve(30);
+        return;
+      }
+      reserve(N);
+      std::copy(X.begin(), X.end(), std::back_inserter(x_values));
+      std::copy(Y.begin(), Y.end(), std::back_inserter(y_values));
+      mat_inv() = 0;
+      for (long i = 0; i < N; ++i) {
+        row_num.push_back(i);
+        col_num.push_back(i);
+        for (long j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
+      }
+      range RN(N);
+      det             = nda::linalg::det(mat_inv(RN, RN));
+      mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
     }
 
-    private:
-    detail::work_data_type1<x_type, y_type, value_type> w1;
-    detail::work_data_typek<x_type, y_type, value_type> wk;
-    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
-    value_type newdet{1};
-    int newsign{1};
-
-    public:
     /**
      * @brief Reserve memory and resize the data storages.
      *
@@ -194,6 +159,20 @@ namespace triqs::det_manip {
         w1.resize(Nmax);
         wk.resize(Nmax, kmax_tried);
       }
+    }
+
+    /**
+     * @brief Clear the data storages and reset the matrix to size zero.
+     */
+    void clear() {
+      N        = 0;
+      sign     = 1;
+      det      = 1;
+      last_try = NoTry;
+      row_num.clear();
+      col_num.clear();
+      x_values.clear();
+      y_values.clear();
     }
 
     /**
@@ -263,67 +242,6 @@ namespace triqs::det_manip {
      * @param threshold Threshold value.
      */
     void set_precision_error(double threshold) { precision_error = threshold; }
-
-    /**
-     * @brief Construct a det_manip object with a callable `F` and an initial capacity for the data storages.
-     *
-     * @details Like for `std::vector`, the capacity grows automatically (by a factor of 2) when needed, but this can
-     * yield a performance penalty if it happens too often.
-     *
-     * @param f Callable `F` object (a copy is stored in the class).
-     * @param init_size Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
-     */
-    det_manip(F f, long init_size) : f(std::move(f)) {
-      reserve(init_size);
-      mat_inv() = 0;
-    }
-
-    /**
-     * @brief Construct a det_manip object with a callable `F` and two containers holding the arguments for
-     * the matrix builder.
-     *
-     * @tparam ArgumentContainer1 Container type holding the first arguments.
-     * @tparam ArgumentContainer2 Container type holding the second arguments.
-     * @param f Callable `F` object (a copy is stored in the class).
-     * @param X Container holding the first arguments \f$ \mathbf{x} \f$.
-     * @param Y Container holding the second arguments \f$ \mathbf{y} \f$.
-     */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(f)) {
-      if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
-      N = X.size();
-      if (N == 0) {
-        det = 1;
-        reserve(30);
-        return;
-      }
-      reserve(N);
-      std::copy(X.begin(), X.end(), std::back_inserter(x_values));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(y_values));
-      mat_inv() = 0;
-      for (long i = 0; i < N; ++i) {
-        row_num.push_back(i);
-        col_num.push_back(i);
-        for (long j = 0; j < N; ++j) mat_inv(i, j) = f(x_values[i], y_values[j]);
-      }
-      range RN(N);
-      det             = nda::linalg::det(mat_inv(RN, RN));
-      mat_inv(RN, RN) = nda::linalg::inv(mat_inv(RN, RN));
-    }
-
-    /**
-     * @brief Clear the data storages and reset the matrix to size zero.
-     */
-    void clear() {
-      N        = 0;
-      sign     = 1;
-      det      = 1;
-      last_try = NoTry;
-      row_num.clear();
-      col_num.clear();
-      x_values.clear();
-      y_values.clear();
-    }
 
     //----------------------- READ ACCESS TO DATA ----------------------------------
 
@@ -516,6 +434,67 @@ namespace triqs::det_manip {
       if (i == j) return;
       std::swap(col_num[i], col_num[j]);
       sign = -sign;
+    }
+
+    /**
+     * @brief Direction of the roll_matrix() operation.
+     *
+     * @details It specifies the direction of the circular shift performed on either the rows or columns of the matrix
+     * \f$ F^{(n)} \f$. The following directions are supported:
+     *
+     * - `None`: No roll operation is performed.
+     * - `Up`: Roll the rows up (move the first row to the last, cyclically).
+     * - `Down`: Roll the rows down (move the last row to the first, cyclically).
+     * - `Left`: Roll the columns to the left (move the first column to the last, cyclically).
+     * - `Right`: Roll the columns to the right (move the last column to the first, cyclically).
+     */
+    enum RollDirection { None, Up, Down, Left, Right };
+
+    /**
+     * @brief Perform a circular shift permutation on the rows or columns of the matrix \f$ F^{(n)} \f$.
+     *
+     * @details See RollDirection for the supported directions. This routine is not a `try_*` operation: it does make
+     * the modification and does not need to be completed.
+     *
+     * A circular shift permutation of a finite set is equivalent to \f$ N \f$ transpositions, where \f$ N \f$ is the
+     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{N-1} \f$.
+     *
+     * @param roll Direction of the roll operation.
+     * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
+     */
+    int roll_matrix(RollDirection roll) {
+      long tmp      = 0;
+      const long NN = N;
+      switch (roll) {
+        case (None): return 1;
+        case (Down):
+          tmp = row_num[N - 1];
+          for (long i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
+          row_num[0] = tmp;
+          break;
+        case (Up):
+          tmp = row_num[0];
+          for (long i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
+          row_num[N - 1] = tmp;
+          break;
+        case (Right):
+          tmp = col_num[N - 1];
+          for (long i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
+          col_num[0] = tmp;
+          break;
+        case (Left):
+          tmp = col_num[0];
+          for (long i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
+          col_num[N - 1] = tmp;
+          break;
+        default: assert(0);
+      }
+      // signature of the cycle of order N : (-1)^(N-1)
+      if ((N - 1) % 2 == 1) {
+        sign *= -1;
+        return -1;
+      }
+      return 1;
     }
 
     /**
@@ -1538,87 +1517,6 @@ namespace triqs::det_manip {
       mat_inv(RN, RN) = nda::linalg::inv(w_refill.M(RN, RN));
     }
 
-    //------------------------------------------------------------------------------------------
-    private:
-    // Regenerate the inverse matrix, determinant and sign from the matrix builder, optionally checking the freshly
-    // computed values against the stored ones.
-    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
-      if (N == 0) {
-        det  = 1;
-        sign = 1;
-        return;
-      }
-
-      range RN(N);
-      matrix_type res(N, N);
-      for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
-      det = nda::linalg::det(res);
-
-      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = nda::linalg::inv(res);
-
-      if (do_check) { // check that mat_inv is close to res
-        const bool relative = true;
-        double r            = max_element(abs(res - mat_inv(RN, RN)));
-        double r2           = max_element(abs(res + mat_inv(RN, RN)));
-        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
-        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
-        if (err || war) {
-          std::cerr << "matrix  = " << matrix() << std::endl;
-          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-        }
-        if (war)
-          std::cerr << "Warning : det_manip deviation above warning threshold "
-                    << "check "
-                    << "N = " << N << "  "
-                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
-        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
-      }
-
-      // since we have the proper inverse, replace the matrix and the det
-      mat_inv(RN, RN) = res;
-      n_opts          = 0;
-
-      // find the sign (there must be a better way...)
-      double s = 1.0;
-      nda::matrix<double> m(N, N);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      m() = 0.0;
-      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
-      s *= nda::linalg::det(m);
-      sign = (s > 0 ? 1 : -1);
-    }
-
-    // Regenerate and check the consistency of the stored inverse matrix, determinant and sign.
-    void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
-
-    // Check whether the determinant is considered singular: (singular_threshold < 0 ? not
-    // std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)). See set_singular_threshold().
-    [[nodiscard]] bool is_singular() const {
-      return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold));
-    }
-
-    //------------------------------------------------------------------------------------------
-    public:
-    /**
-     * @brief Regenerate the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign
-     * \f$ s^{(n)} \f$ from scratch using the matrix builder.
-     *
-     * @details It uses the matrix builder to rebuild the matrix \f$ G^{(n)} \f$, then computes its inverse
-     * \f$ M^{(n)} \f$ and its determinant \f$ \det(G^{(n)}) \f$, and recomputes the sign \f$ s^{(n)} \f$ associated
-     * with the permutation matrices. This is used to counteract the accumulation of numerical errors after many
-     * `try`/`complete` operations.
-     *
-     * The consistency check against the stored values (see set_precision_warning(), set_precision_error() and
-     * set_singular_threshold()) is performed automatically in complete_operation() after a configurable number of
-     * operations (see set_n_operations_before_check()); this function itself does not perform that check.
-     */
-    void regenerate() { _regenerate_with_check(false, 0, 0); }
-
     public:
     /**
      * @brief Complete the last try-operation.
@@ -1796,64 +1694,162 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Direction of the roll_matrix() operation.
+     * @brief Regenerate the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign
+     * \f$ s^{(n)} \f$ from scratch using the matrix builder.
      *
-     * @details It specifies the direction of the circular shift performed on either the rows or columns of the matrix
-     * \f$ F^{(n)} \f$. The following directions are supported:
+     * @details It uses the matrix builder to rebuild the matrix \f$ G^{(n)} \f$, then computes its inverse
+     * \f$ M^{(n)} \f$ and its determinant \f$ \det(G^{(n)}) \f$, and recomputes the sign \f$ s^{(n)} \f$ associated
+     * with the permutation matrices. This is used to counteract the accumulation of numerical errors after many
+     * `try`/`complete` operations.
      *
-     * - `None`: No roll operation is performed.
-     * - `Up`: Roll the rows up (move the first row to the last, cyclically).
-     * - `Down`: Roll the rows down (move the last row to the first, cyclically).
-     * - `Left`: Roll the columns to the left (move the first column to the last, cyclically).
-     * - `Right`: Roll the columns to the right (move the last column to the first, cyclically).
+     * The consistency check against the stored values (see set_precision_warning(), set_precision_error() and
+     * set_singular_threshold()) is performed automatically in complete_operation() after a configurable number of
+     * operations (see set_n_operations_before_check()); this function itself does not perform that check.
      */
-    enum RollDirection { None, Up, Down, Left, Right };
+    void regenerate() { _regenerate_with_check(false, 0, 0); }
 
     /**
-     * @brief Perform a circular shift permutation on the rows or columns of the matrix \f$ F^{(n)} \f$.
+     * @brief Write a triqs::det_manip::det_manip object to HDF5.
      *
-     * @details See RollDirection for the supported directions. This routine is not a `try_*` operation: it does make
-     * the modification and does not need to be completed.
-     *
-     * A circular shift permutation of a finite set is equivalent to \f$ N \f$ transpositions, where \f$ N \f$ is the
-     * size of the set. The sign of the permutation is therefore given by \f$ (-1)^{N-1} \f$.
-     *
-     * @param roll Direction of the roll operation.
-     * @return -1 if the roll changes the sign of the determinant, 1 otherwise.
+     * @param fg `h5::group` containing the subgroup to be written to.
+     * @param subgroup_name Name of the subgroup.
+     * @param g Manipulator object to be written.
      */
-    int roll_matrix(RollDirection roll) {
-      long tmp      = 0;
-      const long NN = N;
-      switch (roll) {
-        case (None): return 1;
-        case (Down):
-          tmp = row_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) row_num[i + 1] = row_num[i];
-          row_num[0] = tmp;
-          break;
-        case (Up):
-          tmp = row_num[0];
-          for (long i = 0; i < N - 1; i++) row_num[i] = row_num[i + 1];
-          row_num[N - 1] = tmp;
-          break;
-        case (Right):
-          tmp = col_num[N - 1];
-          for (long i = NN - 2; i >= 0; i--) col_num[i + 1] = col_num[i];
-          col_num[0] = tmp;
-          break;
-        case (Left):
-          tmp = col_num[0];
-          for (long i = 0; i < N - 1; i++) col_num[i] = col_num[i + 1];
-          col_num[N - 1] = tmp;
-          break;
-        default: assert(0);
-      }
-      // signature of the cycle of order N : (-1)^(N-1)
-      if ((N - 1) % 2 == 1) {
-        sign *= -1;
-        return -1;
-      }
-      return 1;
+    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
+      auto gr = fg.create_group(subgroup_name);
+      h5_write(gr, "N", g.N);
+      h5_write(gr, "mat_inv", g.mat_inv);
+      h5_write(gr, "det", g.det);
+      h5_write(gr, "sign", g.sign);
+      h5_write(gr, "row_num", g.row_num);
+      h5_write(gr, "col_num", g.col_num);
+      h5_write(gr, "x_values", g.x_values);
+      h5_write(gr, "y_values", g.y_values);
+      h5_write(gr, "n_opts", g.n_opts);
+      h5_write(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
+      h5_write(gr, "singular_threshold", g.singular_threshold);
     }
+
+    /**
+     * @brief Read a triqs::det_manip::det_manip object from HDF5.
+     *
+     * @param fg `h5::group` containing the subgroup to be read from.
+     * @param subgroup_name Name of the subgroup.
+     * @param g Manipulator object to be read into.
+     */
+    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
+      auto gr = fg.open_group(subgroup_name);
+      h5_read(gr, "N", g.N);
+      h5_read(gr, "mat_inv", g.mat_inv);
+      g.Nmax     = first_dim(g.mat_inv); // restore Nmax
+      g.last_try = NoTry;
+      h5_read(gr, "det", g.det);
+      h5_read(gr, "sign", g.sign);
+      h5_read(gr, "row_num", g.row_num);
+      h5_read(gr, "col_num", g.col_num);
+      h5_read(gr, "x_values", g.x_values);
+      h5_read(gr, "y_values", g.y_values);
+      h5_read(gr, "n_opts", g.n_opts);
+      h5_read(gr, "n_opts_max_before_check", g.n_opts_max_before_check);
+      h5_read(gr, "singular_threshold", g.singular_threshold);
+    }
+
+    //------------------------------------------------------------------------------------------
+    private:
+    // Regenerate the inverse matrix, determinant and sign from the matrix builder, optionally checking the freshly
+    // computed values against the stored ones.
+    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
+      if (N == 0) {
+        det  = 1;
+        sign = 1;
+        return;
+      }
+
+      range RN(N);
+      matrix_type res(N, N);
+      for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
+      det = nda::linalg::det(res);
+
+      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
+      res = nda::linalg::inv(res);
+
+      if (do_check) { // check that mat_inv is close to res
+        const bool relative = true;
+        double r            = max_element(abs(res - mat_inv(RN, RN)));
+        double r2           = max_element(abs(res + mat_inv(RN, RN)));
+        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
+        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
+        if (err || war) {
+          std::cerr << "matrix  = " << matrix() << std::endl;
+          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
+        }
+        if (war)
+          std::cerr << "Warning : det_manip deviation above warning threshold "
+                    << "check "
+                    << "N = " << N << "  "
+                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
+                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
+        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+      }
+
+      // since we have the proper inverse, replace the matrix and the det
+      mat_inv(RN, RN) = res;
+      n_opts          = 0;
+
+      // find the sign (there must be a better way...)
+      double s = 1.0;
+      nda::matrix<double> m(N, N);
+      m() = 0.0;
+      for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
+      s *= nda::linalg::det(m);
+      m() = 0.0;
+      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
+      s *= nda::linalg::det(m);
+      sign = (s > 0 ? 1 : -1);
+    }
+
+    // Regenerate and check the consistency of the stored inverse matrix, determinant and sign.
+    void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
+
+    // Check whether the determinant is considered singular: (singular_threshold < 0 ? not
+    // std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)). See set_singular_threshold().
+    [[nodiscard]] bool is_singular() const {
+      return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold));
+    }
+
+    private:
+    F f;
+
+    value_type det{1};
+    long Nmax{0}, N{0};
+    long kmax_tried{1}, k_tried{0};
+    enum {
+      NoTry,
+      Insert,
+      Remove,
+      ChangeCol,
+      ChangeRow,
+      ChangeRowCol,
+      InsertK,
+      RemoveK,
+      Refill
+    } last_try = NoTry; // keep in memory the last operation not completed
+    std::vector<long> row_num, col_num;
+    std::vector<x_type> x_values;
+    std::vector<y_type> y_values;
+    int sign = 1;
+    matrix_type mat_inv;
+    uint64_t n_opts                  = 0;   // count the number of operation
+    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
+    double singular_threshold = -1;    // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+    double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
+    double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
+
+    detail::work_data_type1<x_type, y_type, value_type> w1;
+    detail::work_data_typek<x_type, y_type, value_type> wk;
+    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
+    value_type newdet{1};
+    int newsign{1};
   };
 } // namespace triqs::det_manip
