@@ -385,16 +385,10 @@ namespace triqs::det_manip {
     auto const &get_y_internal_order() const { return y_values; }
 
     /**
-     * @brief Get the callable `FunctionType` object \f$ f \f$ used as the matrix builder.
-     * @return Const reference to the stored callable.
-     */
-    FunctionType const &get_function() const { return f; }
-
-    /**
      * @brief Get the determinant of the matrix \f$ F^{(n)} \f$.
      * @return Determinant \f$ \det(F^{(n)}) \f$.
      */
-    auto determinant() { return det; }
+    [[nodiscard]] auto determinant() const { return det; }
 
     /**
      * @brief Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$.

@@ -178,13 +178,6 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get the threshold being used when testing for a singular matrix.
-     * @details See set_singular_threshold() for details.
-     * @return Threshold value.
-     */
-    [[nodiscard]] double get_singular_threshold() const { return singular_threshold_; }
-
-    /**
      * @brief Set the threshold being used when testing for a singular matrix (default: -1).
      *
      * @details The threshold \f$ \epsilon \f$ determines when a matrix \f$ M \f$ is considered singular. A matrix is
@@ -192,30 +185,16 @@ namespace triqs::det_manip {
      *
      * If \f$ \epsilon \f$ is negative, it simply checks if the determinant is not `std::isnormal`.
      *
-     * @param threshold Threshold value.
+     * @param eps Threshold value.
      */
-    void set_singular_threshold(double threshold) { singular_threshold_ = threshold; }
-
-    /**
-     * @brief Get the number of operations before a consistency check is performed.
-     * @details See set_n_operations_before_check() for details.
-     * @return Number of operations.
-     */
-    [[nodiscard]] double get_n_operations_before_check() const { return nops_before_check_; }
+    void set_singular_threshold(double eps) { singular_threshold_ = eps; }
 
     /**
      * @brief Set the number of operations before a consistency check is performed (default: 100).
      * @details See complete_operation(), which triggers the check once the counter exceeds this number.
-     * @param n Number of operations.
+     * @param nops Number of operations.
      */
-    void set_n_operations_before_check(uint64_t n) { nops_before_check_ = n; }
-
-    /**
-     * @brief Get the precision threshold that determines when to print a warning.
-     * @details See set_precision_warning() for details.
-     * @return Threshold value.
-     */
-    [[nodiscard]] double get_precision_warning() const { return precision_warning_; }
+    void set_n_operations_before_check(uint64_t nops) { nops_before_check_ = nops; }
 
     /**
      * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
@@ -227,31 +206,22 @@ namespace triqs::det_manip {
      * In case we compare two scalar values \f$ a \f$ and \f$ b \f$, a warning is printed when \f$ 2 |a - b| >= \epsilon
      * (|a| + |b|) \f$.
      *
-     * @param threshold Threshold value.
+     * @param eps Threshold value.
      */
-    void set_precision_warning(double threshold) { precision_warning_ = threshold; }
-
-    /**
-     * @brief Get the precision threshold that determines when to throw an exception.
-     * @details See set_precision_warning() for details.
-     * @return Threshold value.
-     */
-    [[nodiscard]] double get_precision_error() const { return precision_error_; }
+    void set_precision_warning(double eps) { precision_warning_ = eps; }
 
     /**
      * @brief Set the precision threshold that determines when to throw an exception (default: 1e-5).
      * @details See set_precision_warning() for details.
-     * @param threshold Threshold value.
+     * @param eps Threshold value.
      */
-    void set_precision_error(double threshold) { precision_error_ = threshold; }
-
-    //----------------------- READ ACCESS TO DATA ----------------------------------
+    void set_precision_error(double eps) { precision_error_ = eps; }
 
     /**
      * @brief Get the current size of the matrix.
      * @return Number of rows/columns of the matrix.
      */
-    [[nodiscard]] long size() const { return n_; }
+    [[nodiscard]] auto size() const { return n_; }
 
     /**
      * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
@@ -259,7 +229,10 @@ namespace triqs::det_manip {
      * @param i Argument index.
      * @return Argument value \f$ x_i \f$.
      */
-    x_type const &get_x(long i) const { return x_[row_perm_[i]]; }
+    [[nodiscard]] auto const &get_x(long i) const {
+      EXPECTS(0 <= i and i < size());
+      return x_[row_perm_[i]];
+    }
 
     /**
      * @brief Get the matrix builder argument \f$ y_j \f$ that determines the elements of the j<sup>th</sup> column in
@@ -267,17 +240,20 @@ namespace triqs::det_manip {
      * @param j Argument index.
      * @return Argument value \f$ y_j \f$.
      */
-    y_type const &get_y(long j) const { return y_[col_perm_[j]]; }
+    [[nodiscard]] auto const &get_y(long j) const {
+      EXPECTS(0 <= j and j < size());
+      return y_[col_perm_[j]];
+    }
 
     /**
      * @brief Get a vector with all matrix builder arguments \f$ \mathbf{x} \f$.
      * @details Warning: this is slow, since it creates a new copy and reorders the rows.
      * @return `std::vector` containing the arguments \f$ x_i \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
-    std::vector<x_type> get_x() const {
+    [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
       res.reserve(n_);
-      for (long i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
+      for (auto i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
@@ -286,10 +262,10 @@ namespace triqs::det_manip {
      * @details Warning: this is slow, since it creates a new copy and reorders the columns.
      * @return `std::vector` containing the arguments \f$ y_j \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
-    std::vector<y_type> get_y() const {
+    [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
       res.reserve(n_);
-      for (long i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
+      for (auto i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
@@ -302,29 +278,20 @@ namespace triqs::det_manip {
      *
      * @return `std::vector` containing the arguments \f$ x_i \f$.
      */
-    std::vector<x_type> const &get_x_internal_order() const { return x_; }
+    [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
 
     /**
      * @brief Get the matrix builder arguments \f$ \mathbf{y} \f$ in the order of the matrix \f$ G^{(n)} \f$.
      * @details See get_x_internal_order() for details.
      * @return `std::vector` containing the arguments \f$ y_j \f$.
      */
-    std::vector<y_type> const &get_y_internal_order() const { return y_; }
-
-    /**
-     * @brief Get the callable `F` object \f$ f \f$ used as the matrix builder.
-     * @return Const reference to the stored callable.
-     */
-    F const &get_function() const { return f_; }
+    [[nodiscard]] auto const &get_y_internal_order() const { return y_; }
 
     /**
      * @brief Get the determinant of the original matrix \f$ F^{(n)} \f$.
      * @return Determinant \f$ \det(F^{(n)}) = s^{(n)} \det(G^{(n)}) \f$.
      */
-    value_type determinant() {
-      if (is_singular()) regenerate();
-      return sign_ * det_;
-    }
+    [[nodiscard]] auto determinant() const { return sign_ * det_; }
 
     /**
      * @brief Get an element of the inverse matrix.
@@ -339,7 +306,11 @@ namespace triqs::det_manip {
      * @return The matrix element \f$ [F^{(n)}]^{-1}_{ij} \f$.
      */
     // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
-    value_type inverse_matrix(int i, int j) const { return M_(col_perm_[i], row_perm_[j]); }
+    [[nodiscard]] auto inverse_matrix(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(col_perm_[i], row_perm_[j]);
+    }
 
     /**
      * @brief Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$.
@@ -347,10 +318,9 @@ namespace triqs::det_manip {
      * reorders the rows/columns.
      * @return The inverse matrix \f$ [F^{(n)}]^{-1} \f$.
      */
-    matrix_type inverse_matrix() const {
-      matrix_type res(n_, n_);
-      for (long i = 0; i < n_; i++)
-        for (long j = 0; j < n_; j++) res(i, j) = inverse_matrix(i, j);
+    [[nodiscard]] auto inverse_matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = this->inverse_matrix(i, j); });
       return res;
     }
 
@@ -361,24 +331,29 @@ namespace triqs::det_manip {
      * @param j Column index.
      * @return The matrix element \f$ M^{(n)}_{ij} \f$.
      */
-    value_type inverse_matrix_internal_order(int i, int j) const { return M_(i, j); }
+    [[nodiscard]] auto inverse_matrix_internal_order(int i, int j) const {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
+      return M_(i, j);
+    }
 
     /**
      * @brief Get the full inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
      * @details Advanced: uses the internal storage order, see get_x_internal_order().
      * @return The inverse matrix \f$ M^{(n)} \f$.
      */
-    nda::matrix_const_view<value_type> inverse_matrix_internal_order() const { return M_(range(n_), range(n_)); }
+    [[nodiscard]] auto inverse_matrix_internal_order() const {
+      return nda::matrix_const_view<value_type>{M_(nda::range(size()), nda::range(size()))};
+    }
 
     /**
      * @brief Get the original matrix \f$ F^{(n)} \f$.
      * @details Warning: this is slow, since it creates a new matrix and re-evaluates the matrix builder.
      * @return The original matrix \f$ F^{(n)} \f$.
      */
-    matrix_type matrix() const {
-      matrix_type res(n_, n_);
-      for (long i = 0; i < n_; i++)
-        for (long j = 0; j < n_; j++) res(i, j) = f_(get_x(i), get_y(j));
+    [[nodiscard]] auto matrix() const {
+      matrix_type res(size(), size());
+      nda::for_each(res.shape(), [this, &res](auto i, auto j) { res(i, j) = f_(get_x(i), get_y(j)); });
       return res;
     }
 
@@ -389,12 +364,11 @@ namespace triqs::det_manip {
      * element together with the corresponding arguments \f$ x_i \f$ and \f$ y_j \f$. The order of iteration is not
      * fixed; it is optimised for memory traversal.
      *
-     * @tparam LambdaType Callable type.
-     * @param d triqs::det_manip::det_manip object.
+     * @param dm triqs::det_manip::det_manip object.
      * @param fn Callable object that takes three arguments: \f$ x_i \f$, \f$ y_j \f$, and \f$ M_{ji} \f$.
      */
-    template <typename LambdaType> friend void foreach (det_manip const &d, LambdaType const &fn) {
-      nda::for_each(std::array{d.n_, d.n_}, [&fn, &d](int i, int j) { return fn(d.x_[i], d.y_[j], d.M_(j, i)); });
+    friend void foreach (det_manip const &dm, auto const &fn) {
+      nda::for_each(std::array{dm.size(), dm.size()}, [&fn, &dm](auto i, auto j) { return fn(dm.x_[i], dm.y_[j], dm.M_(j, i)); });
     }
 
     // ------------------------- OPERATIONS -----------------------------------------------
