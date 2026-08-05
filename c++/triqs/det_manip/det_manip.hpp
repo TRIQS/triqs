@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "./utils.hpp"
 #include "./work_data.hpp"
 #include "../utility/callable_traits.hpp"
 #include "../utility/first_include.hpp"
@@ -69,28 +70,20 @@ namespace triqs::det_manip {
    * - Change one row and column (see try_change_col_row()).
    * - Build a completely new matrix (see try_refill()).
    *
-   * @tparam FunctionType Callable object \f$ f \f$ that takes two arguments and returns a real or complex value. It
+   * @tparam F Callable object \f$ f \f$ that takes two arguments and returns a real or complex value. It
    * determines the elements of the matrix via \f$ F^{(n)}_{ij} = f(x_i, y_j) \f$.
    */
-  template <typename FunctionType> class det_manip {
-    private:
-    using f_tr = utility::callable_traits<FunctionType>;
-    static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
-
+  template <MatrixBuilder F> class det_manip {
     public:
-    using x_type     = typename f_tr::template decay_arg_t<0>;
-    using y_type     = typename f_tr::template decay_arg_t<1>;
-    using value_type = typename f_tr::result_type;
-    using det_type   = value_type;
-    static_assert(std::is_floating_point_v<value_type> || nda::is_complex_v<value_type>,
-                  "det_manip : the function must return a floating number or a complex number");
-
+    using x_type      = detail::get_xarg_t<F>;
+    using y_type      = detail::get_yarg_t<F>;
+    using value_type  = detail::get_result_t<F>;
     using matrix_type = nda::matrix<value_type>;
 
     protected: // the data
-    FunctionType f;
+    F f;
 
-    det_type det{1};
+    value_type det{1};
     long Nmax{0}, N{0};
     long kmax_tried{1}, k_tried{0};
     enum {
@@ -165,7 +158,7 @@ namespace triqs::det_manip {
     detail::work_data_type1<x_type, y_type, value_type> w1;
     detail::work_data_typek<x_type, y_type, value_type> wk;
     detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
-    det_type newdet{1};
+    value_type newdet{1};
     int newsign{1};
 
     private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
@@ -301,31 +294,31 @@ namespace triqs::det_manip {
     void set_precision_error(double threshold) { precision_error = threshold; }
 
     /**
-     * @brief Construct a det_manip object with a callable `FunctionType` and an initial capacity for the data storages.
+     * @brief Construct a det_manip object with a callable `F` and an initial capacity for the data storages.
      *
      * @details Like for `std::vector`, the capacity grows automatically (by a factor of 2) when needed, but this can
      * yield a performance penalty if it happens too often.
      *
-     * @param F Callable `FunctionType` object (a copy is stored in the class).
+     * @param f Callable `F` object (a copy is stored in the class).
      * @param init_size Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
-    det_manip(FunctionType F, long init_size) : f(std::move(F)) {
+    det_manip(F f, long init_size) : f(std::move(f)) {
       reserve(init_size);
       mat_inv() = 0;
     }
 
     /**
-     * @brief Construct a det_manip object with a callable `FunctionType` and two containers holding the arguments for
+     * @brief Construct a det_manip object with a callable `F` and two containers holding the arguments for
      * the matrix builder.
      *
      * @tparam ArgumentContainer1 Container type holding the first arguments.
      * @tparam ArgumentContainer2 Container type holding the second arguments.
-     * @param F Callable `FunctionType` object (a copy is stored in the class).
+     * @param f Callable `F` object (a copy is stored in the class).
      * @param X Container holding the first arguments \f$ \mathbf{x} \f$.
      * @param Y Container holding the second arguments \f$ \mathbf{y} \f$.
      */
     template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)) {
+    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(f)) {
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
       N = X.size();
       if (N == 0) {
@@ -441,16 +434,16 @@ namespace triqs::det_manip {
     std::vector<y_type> const &get_y_internal_order() const { return y_values; }
 
     /**
-     * @brief Get the callable `FunctionType` object \f$ f \f$ used as the matrix builder.
+     * @brief Get the callable `F` object \f$ f \f$ used as the matrix builder.
      * @return Const reference to the stored callable.
      */
-    FunctionType const &get_function() const { return f; }
+    F const &get_function() const { return f; }
 
     /**
      * @brief Get the determinant of the original matrix \f$ F^{(n)} \f$.
      * @return Determinant \f$ \det(F^{(n)}) = s^{(n)} \det(G^{(n)}) \f$.
      */
-    det_type determinant() {
+    value_type determinant() {
       if (is_singular()) regenerate();
       return sign * det;
     }
