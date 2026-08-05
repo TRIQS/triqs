@@ -38,6 +38,7 @@
 #include <cstdint>
 #include <iterator>
 #include <numeric>
+#include <ranges>
 #include <vector>
 
 namespace triqs::det_manip {
@@ -87,44 +88,45 @@ namespace triqs::det_manip {
      * yield a performance penalty if it happens too often.
      *
      * @param f Callable `F` object (a copy is stored in the class).
-     * @param init_size Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     * @param ncap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     * @param kcap Initial capacity for the maximum number of rows and columns that can be added or removed in a single
+     * operation.
      */
-    det_manip(F f, long init_size) : f_(std::move(f)) {
-      reserve(init_size);
-      M_() = 0;
-    }
+    det_manip(F f, long ncap, long kcap = 1) : f_(std::move(f)) { reserve(ncap, kcap); }
 
     /**
-     * @brief Construct a det_manip object with a callable `F` and two containers holding the arguments for
+     * @brief Construct a det_manip object with a callable `F` and two ranges containing the arguments for
      * the matrix builder.
      *
-     * @tparam ArgumentContainer1 Container type holding the first arguments.
-     * @tparam ArgumentContainer2 Container type holding the second arguments.
+     * @tparam X triqs::det_manip::MatrixBuilderXRange.
+     * @tparam Y triqs::det_manip::MatrixBuilderYRange.
      * @param f Callable `F` object (a copy is stored in the class).
-     * @param X Container holding the first arguments \f$ \mathbf{x} \f$.
-     * @param Y Container holding the second arguments \f$ \mathbf{y} \f$.
+     * @param x_rg Range containing the first arguments \f$ \mathbf{x} \f$.
+     * @param y_rg Range containing the second arguments \f$ \mathbf{y} \f$.
      */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    det_manip(F f, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f_(std::move(f)) {
-      if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR << " X.size != Y.size";
-      n_ = X.size();
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    det_manip(F f, X &&x_rg, Y &&y_rg) // NOLINT (ranges need not be forwarded)
+       : f_(std::move(f)), n_(static_cast<long>(std::ranges::size(x_rg))) {
+      // check input sizes
+      if (n_ != static_cast<long>(std::ranges::size(y_rg)))
+        TRIQS_RUNTIME_ERROR << "Error in det_manip::det_manip: Argument ranges have different sizes";
+
+      // early return if the argument ranges are empty
       if (n_ == 0) {
-        det_ = 1;
         reserve(30);
         return;
       }
-      reserve(n_);
-      std::copy(X.begin(), X.end(), std::back_inserter(x_));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(y_));
-      M_() = 0;
-      for (long i = 0; i < n_; ++i) {
-        row_perm_.push_back(i);
-        col_perm_.push_back(i);
-        for (long j = 0; j < n_; ++j) M_(i, j) = f_(x_[i], y_[j]);
-      }
-      range RN(n_);
-      det_       = nda::linalg::det(M_(RN, RN));
-      M_(RN, RN) = nda::linalg::inv(M_(RN, RN));
+
+      // reserve memory and fill the data storages
+      reserve(n_ * 2);
+      set_xy(x_rg, y_rg);
+
+      // determinant and inverse matrix
+      auto M_v = M_(nda::range(size()), nda::range(size()));
+      nda::for_each(M_v.shape(), [this, &M_v](auto i, auto j) { M_v(i, j) = f_(x_[i], y_[j]); });
+      det_ = nda::linalg::det(M_v);
+      M_v  = nda::linalg::inv(M_v);
     }
 
     /**
@@ -134,22 +136,22 @@ namespace triqs::det_manip {
      * requested capacity is larger than the current one. It preserves the matrix \f$ M^{(n)} \f$ but not the temporary
      * working data, so it must NOT be called between a `try_*` function and the corresponding complete_operation().
      *
-     * @param new_N New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
-     * @param new_k Maximum number of rows and columns inserted or removed in a single operation. It sizes the working
-     * data used by the `try_*_k` functions.
+     * @param new_ncap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
+     * @param new_kcap New capacity for the maximum number of rows and columns that can be added or removed in a single
+     * operation. It sizes the working data used by the `try_*_k` functions.
      */
-    void reserve(long new_N, long new_k = 1) {
-      if (new_k > kmax_tried) {
-        kmax_tried = new_k;
-        if (new_N <= ncap_) wk_.resize(ncap_, kmax_tried);
+    void reserve(long new_ncap, long new_kcap = 1) {
+      if (new_kcap > kmax_tried) {
+        kmax_tried = new_kcap;
+        if (new_ncap <= ncap_) wk_.resize(ncap_, kmax_tried);
       }
-      if (new_N > ncap_) {
-        ncap_ = 2 * new_N;
+      if (new_ncap > ncap_) {
+        ncap_ = 2 * new_ncap;
 
-        matrix_type mcpy(M_);
+        matrix_type M_copy(M_);
         M_.resize(ncap_, ncap_);
-        auto Rcpy      = range(mcpy.extent(0));
-        M_(Rcpy, Rcpy) = mcpy;
+        auto rg    = nda::range(M_copy.extent(0));
+        M_(rg, rg) = M_copy;
 
         row_perm_.reserve(ncap_);
         col_perm_.reserve(ncap_);
@@ -1758,6 +1760,23 @@ namespace triqs::det_manip {
     private:
     // Enumerate the different operations supported by the det_manip class that have a try - complete step.
     enum class try_tag { NoTry, Insert, Remove, ChangeCol, ChangeRow, ChangeRowCol, InsertK, RemoveK, Refill };
+
+    // Set the matrix builder arguments to the given ranges and reset the permutation vectors.
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    void set_xy(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
+      x_.clear();
+      y_.clear();
+      row_perm_.clear();
+      col_perm_.clear();
+      for (long i = 0; auto const &[x, y] : std::views::zip(x_rg, y_rg)) {
+        x_.push_back(x);
+        y_.push_back(y);
+        row_perm_.push_back(i);
+        col_perm_.push_back(i);
+        ++i;
+      }
+    }
 
     // Regenerate the inverse matrix, determinant and sign from the matrix builder, optionally checking the freshly
     // computed values against the stored ones.
