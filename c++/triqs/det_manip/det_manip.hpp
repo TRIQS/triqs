@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "./work_data.hpp"
 #include "../utility/callable_traits.hpp"
 #include "../utility/first_include.hpp"
 #include "../arrays.hpp"
@@ -41,98 +42,6 @@
 namespace triqs::det_manip {
 
   namespace blas = nda::blas;
-
-  // ================ Work Data Types =====================
-
-  // Working data for single-row/column operations (insert, remove, change_col, change_row, change_col_row).
-  //
-  // - x and y: matrix builder arguments for the new/changed row and column.
-  // - i and j: positions of the row and column in the original matrix F^{(n)}.
-  // - ireal and jreal: positions of the row and column in the matrix G^{(n)}.
-  // - B and C: new column and row of the matrix G^{(n)} (also reused as scratch by the change operations).
-  // - MB and MC: products M^{(n)} B and C M^{(n)} of the current inverse matrix with the new column/row.
-  // - ksi: determinant-ratio factor det(G^{new}) / det(G^{(n)}) (= newdet / det).
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type1 {
-    x_type x;
-    y_type y;
-    long i, j, ireal, jreal;
-    nda::vector<value_type> MB, MC, B, C;
-    value_type ksi;
-
-    // Resize the working vectors for a matrix of size N.
-    void resize(long N) {
-      MB.resize(N);
-      MC.resize(N);
-      B.resize(N);
-      C.resize(N);
-    }
-  };
-
-  // Working data for multiple-row/column operations (insert_k, insert2, remove_k, remove2).
-  //
-  // - x and y: matrix builder arguments for the k new rows and columns.
-  // - i and j: positions of the rows and columns in the original matrix F^{(n)}.
-  // - ireal and jreal: positions of the rows and columns in the matrix G^{(n)}.
-  // - B and C: new columns and rows of the matrix G^{(n)}.
-  // - MB and MC: products M^{(n)} B and C M^{(n)} of the current inverse matrix with the new columns/rows.
-  // - ksi: k x k block used to form the determinant ratio (see det_ksi()).
-  template <typename x_type, typename y_type, typename value_type> struct work_data_typek {
-    std::vector<x_type> x;
-    std::vector<y_type> y;
-    std::vector<long> i, j, ireal, jreal;
-    nda::matrix<value_type> MB, MC, B, C, ksi;
-
-    // Resize the working data for a matrix of size N and up to k inserted/removed rows and columns.
-    void resize(long N, long k) {
-      if (k < 2) return;
-      x.resize(k);
-      y.resize(k);
-      i.resize(k);
-      j.resize(k);
-      ireal.resize(k);
-      jreal.resize(k);
-      MB.resize(N, k);
-      MC.resize(k, N);
-      B.resize(N, k);
-      C.resize(k, N);
-      ksi.resize(k, k);
-    }
-
-    // Determinant of the leading k x k block of ksi, with fast paths for k = 2 and the k = 3 rule of Sarrus.
-    value_type det_ksi(long k) const {
-      if (k == 2) {
-        return ksi(0, 0) * ksi(1, 1) - ksi(1, 0) * ksi(0, 1);
-      } else if (k == 3) {
-        return                                 // Rule of Sarrus
-           ksi(0, 0) * ksi(1, 1) * ksi(2, 2) + //
-           ksi(0, 1) * ksi(1, 2) * ksi(2, 0) + //
-           ksi(0, 2) * ksi(1, 0) * ksi(2, 1) - //
-           ksi(2, 0) * ksi(1, 1) * ksi(0, 2) - //
-           ksi(2, 1) * ksi(1, 2) * ksi(0, 0) - //
-           ksi(2, 2) * ksi(1, 0) * ksi(0, 1);  //
-      } else {
-        auto Rk = range(k);
-        return nda::linalg::det(ksi(Rk, Rk));
-      };
-    }
-  };
-
-  // Working data for the refill operation.
-  //
-  // - x_values and y_values: new matrix builder arguments.
-  // - M: new matrix G built from the new arguments (later inverted in place).
-  template <typename x_type, typename y_type, typename value_type> struct work_data_type_refill {
-    std::vector<x_type> x_values;
-    std::vector<y_type> y_values;
-    nda::matrix<value_type> M;
-
-    // Reserve memory and resize the data storages for a matrix of size N.
-    void reserve(long N) {
-      x_values.reserve(N);
-      y_values.reserve(N);
-      M.resize(N, N);
-    }
-  };
 
   // ================ det_manip implementation =====================
 
@@ -253,9 +162,9 @@ namespace triqs::det_manip {
     }
 
     private:
-    work_data_type1<x_type, y_type, value_type> w1;
-    work_data_typek<x_type, y_type, value_type> wk;
-    work_data_type_refill<x_type, y_type, value_type> w_refill;
+    detail::work_data_type1<x_type, y_type, value_type> w1;
+    detail::work_data_typek<x_type, y_type, value_type> wk;
+    detail::work_data_type_refill<x_type, y_type, value_type> w_refill;
     det_type newdet{1};
     int newsign{1};
 
