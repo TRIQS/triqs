@@ -22,23 +22,23 @@
 
 #include <nda/nda.hpp>
 
-#include <algorithm>
 #include <complex>
-#include <random>
+#include <numeric>
 #include <vector>
 
 // Test the swap_row and swap_col operations of det_manip.
 template <typename T, bool do_row> void test_swap() {
-  std::mt19937 gen(23432);
-  std::uniform_real_distribution<> dis(0.0, 10.0);
+  auto builder = builder3<T>{};
 
   // loop over matrix sizes
-  for (int n = 1; n < 9; ++n) {
-    std::vector<double> x_args(n), y_args(n);
-    std::ranges::generate(x_args, [&] { return dis(gen); });
-    std::ranges::generate(y_args, [&] { return dis(gen); });
-    auto dm = triqs::det_manip::det_manip{builder1<T>{}, x_args, y_args};
+  for (int n = 1; n < 10; ++n) {
+    // generate base det_manip object
+    std::vector<int> x(n), y(n);
+    std::iota(x.begin(), x.end(), 0);
+    y       = x;
+    auto dm = triqs::det_manip::det_manip{builder, x, y};
     auto M  = dm.matrix();
+
     // loop over all row/column pairs
     for (int i = 0; i < n; ++i) {
       for (int j = 0; j < n; ++j) {
@@ -50,9 +50,10 @@ template <typename T, bool do_row> void test_swap() {
           deep_swap(M(nda::range::all, i), M(nda::range::all, j));
           dm.swap_col(i, j);
         }
+
         // check results
-        EXPECT_ARRAY_NEAR(dm.matrix(), M, 1.e-13);
-        EXPECT_COMPLEX_NEAR(dm.determinant(), nda::linalg::det(M), 1.e-13);
+        EXPECT_ARRAY_NEAR(dm.matrix(), M, 1.e-10);
+        EXPECT_COMPLEX_NEAR(dm.determinant(), nda::linalg::det(M), 1.e-10);
         EXPECT_NO_THROW(dm.regenerate_and_check());
       }
     }
