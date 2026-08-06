@@ -215,10 +215,8 @@ namespace triqs::det_manip {
      * data, so it must NOT be called between a `try_*` function and the corresponding complete_operation().
      *
      * @param new_size New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
-     * @param new_k Unused, kept for API compatibility with triqs::det_manip::det_manip.
      */
-    void reserve(long new_size, long new_k = 1) {
-      (void)new_k; // unused, for API compatibility
+    void reserve(long new_size) {
       if (new_size <= Nmax) return;
       matrix_type Mcopy(mat);
       long N0 = Nmax;

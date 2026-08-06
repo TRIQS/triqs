@@ -96,11 +96,9 @@ namespace triqs::det_manip {
      * yield a performance penalty if it happens too often.
      *
      * @param f Callable `F` object (a copy is stored in the class).
-     * @param ncap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
-     * @param kcap Initial capacity for the maximum number of rows and columns that can be added or removed in a single
-     * operation.
+     * @param cap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
-    det_manip(F f, long ncap, long kcap = 1) : f_(std::move(f)) { reserve(ncap, kcap); }
+    det_manip(F f, long cap) : f_(std::move(f)) { reserve(cap); }
 
     /**
      * @brief Construct a det_manip object with a callable `F` and two ranges containing the arguments for
@@ -114,24 +112,24 @@ namespace triqs::det_manip {
      */
     template <typename X, typename Y>
       requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
-    det_manip(F f, X &&x_rg, Y &&y_rg) // NOLINT (ranges need not be forwarded)
-       : f_(std::move(f)), n_(static_cast<long>(std::ranges::size(x_rg))) {
+    det_manip(F f, X &&x_rg, Y &&y_rg) : f_(std::move(f)) { // NOLINT (ranges need not be forwarded)
       // check input sizes
-      if (n_ != static_cast<long>(std::ranges::size(y_rg)))
+      auto const sz = static_cast<long>(std::ranges::size(x_rg));
+      if (sz != static_cast<long>(std::ranges::size(y_rg)))
         TRIQS_RUNTIME_ERROR << "Error in det_manip::det_manip: Argument ranges have different sizes";
 
       // early return if the argument ranges are empty
-      if (n_ == 0) {
+      if (sz == 0) {
         reserve(30);
         return;
       }
 
       // reserve memory and fill the data storages
-      reserve(n_ * 2);
+      reserve(sz * 2);
       set_xy(x_rg, y_rg);
 
       // determinant and inverse matrix
-      auto M_v = M_(nda::range(size()), nda::range(size()));
+      auto M_v = M_(nda::range(sz), nda::range(sz));
       nda::for_each(M_v.shape(), [this, &M_v](auto i, auto j) { M_v(i, j) = f_(x_[i], y_[j]); });
       det_ = nda::linalg::det(M_v);
       M_v  = nda::linalg::inv(M_v);
@@ -141,33 +139,22 @@ namespace triqs::det_manip {
      * @brief Reserve memory and resize the data storages.
      *
      * @details Like for `std::vector`, this reserves memory for a bigger matrix size. It only reserves/resizes if the
-     * requested capacity is larger than the current one. It preserves the matrix \f$ M^{(n)} \f$ but not the temporary
-     * working data, so it must NOT be called between a `try_*` function and the corresponding complete_operation().
+     * requested capacity is larger than the current one. It preserves the matrix \f$ M^{(n)} \f$ but it does not
+     * reserve any memory for the temporary working data.
      *
-     * @param new_ncap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
-     * @param new_kcap New capacity for the maximum number of rows and columns that can be added or removed in a single
-     * operation. It sizes the working data used by the `try_*_k` functions.
+     * @param cap New capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
-    void reserve(long new_ncap, long new_kcap = 1) {
-      if (new_kcap > kmax_tried) {
-        kmax_tried = new_kcap;
-        if (new_ncap <= ncap_) wk_.resize(ncap_, kmax_tried);
-      }
-      if (new_ncap > ncap_) {
-        ncap_ = 2 * new_ncap;
-
+    void reserve(long cap) {
+      if (cap > capacity()) {
         matrix_type M_copy(M_);
-        M_.resize(ncap_, ncap_);
+        M_.resize(cap, cap);
         auto rg    = nda::range(M_copy.extent(0));
         M_(rg, rg) = M_copy;
 
-        row_perm_.reserve(ncap_);
-        col_perm_.reserve(ncap_);
-        x_.reserve(ncap_);
-        y_.reserve(ncap_);
-
-        w1_.resize(ncap_);
-        wk_.resize(ncap_, kmax_tried);
+        row_perm_.reserve(cap);
+        col_perm_.reserve(cap);
+        x_.reserve(cap);
+        y_.reserve(cap);
       }
     }
 
@@ -175,7 +162,6 @@ namespace triqs::det_manip {
      * @brief Clear the data storages and reset the matrix to size zero.
      */
     void clear() {
-      n_        = 0;
       sign_     = 1;
       det_      = 1;
       last_try_ = try_tag::NoTry;
@@ -229,7 +215,7 @@ namespace triqs::det_manip {
      * @brief Get the current size of the matrix.
      * @return Number of rows/columns of the matrix.
      */
-    [[nodiscard]] auto size() const { return n_; }
+    [[nodiscard]] auto size() const { return static_cast<long>(x_.size()); }
 
     /**
      * @brief Get the current capacity of the data storages.
@@ -267,8 +253,8 @@ namespace triqs::det_manip {
      */
     [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
-      res.reserve(n_);
-      for (auto i : range(n_)) res.emplace_back(x_[row_perm_[i]]);
+      res.reserve(size());
+      for (auto i : range(size())) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
@@ -279,8 +265,8 @@ namespace triqs::det_manip {
      */
     [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
-      res.reserve(n_);
-      for (auto i : range(n_)) res.emplace_back(y_[col_perm_[i]]);
+      res.reserve(size());
+      for (auto i : range(size())) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
@@ -502,31 +488,31 @@ namespace triqs::det_manip {
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i <= n_);
-      TRIQS_ASSERT(0 <= j and j <= n_);
+      TRIQS_ASSERT(0 <= i and i <= size());
+      TRIQS_ASSERT(0 <= j and j <= size());
       std::tie(wins_.i, wins_.j, wins_.x, wins_.y) = std::make_tuple(i, j, x, y);
 
       // set the try tag
       last_try_ = try_tag::Insert;
 
       // early return if the current matrix is empty
-      if (n_ == 0) {
+      if (size() == 0) {
         newdet_  = f_(x, y);
         newsign_ = 1;
         return newdet_;
       }
 
       // reserve memory for the working data
-      if (n_ + 1 > wins_.capacity()) wins_.reserve(2 * (n_ + 1));
+      if (size() + 1 > wins_.capacity()) wins_.reserve(2 * (size() + 1));
 
       // calculate the new column B and the new row C of the matrix G (except for the element D)
-      for (long l = 0; l < n_; ++l) {
+      for (long l = 0; l < size(); ++l) {
         wins_.B(l) = f_(x_[l], y);
         wins_.C(l) = f_(x, y_[l]);
       }
 
       // calculate S^{-1} = D - C M B
-      auto rg_n = nda::range(n_);
+      auto rg_n = nda::range(size());
       blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
       wins_.S_inv = f_(x, y) - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
 
@@ -559,8 +545,8 @@ namespace triqs::det_manip {
     template <typename Fx, typename Fy> value_type try_insert_from_function(long i, long j, Fx fx, Fy fy, value_type const ksi) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i <= n_);
-      TRIQS_ASSERT(0 <= j and j <= n_);
+      TRIQS_ASSERT(0 <= i and i <= size());
+      TRIQS_ASSERT(0 <= j and j <= size());
       wins_.i = i;
       wins_.j = j;
 
@@ -568,23 +554,23 @@ namespace triqs::det_manip {
       last_try_ = try_tag::Insert;
 
       // early return if the current matrix is empty
-      if (n_ == 0) {
+      if (size() == 0) {
         newdet_  = ksi;
         newsign_ = 1;
         return newdet_;
       }
 
       // reserve memory for the working data
-      if (n_ + 1 > wins_.capacity()) wins_.reserve(2 * (n_ + 1));
+      if (size() + 1 > wins_.capacity()) wins_.reserve(2 * (size() + 1));
 
       // calculate the new column B and the new row C of the matrix G (except for the element D)
-      for (long l = 0; l < n_; ++l) {
+      for (long l = 0; l < size(); ++l) {
         wins_.B(l) = fx(x_[l]);
         wins_.C(l) = fy(y_[l]);
       }
 
       // calculate S^{-1} = D - C M B
-      auto rg_n = nda::range(n_);
+      auto rg_n = nda::range(size());
       blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
       wins_.S_inv = ksi - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
 
@@ -599,9 +585,8 @@ namespace triqs::det_manip {
     private:
     // Complete the insert operation.
     void complete_insert() {
-      auto const old_size = n_;
-      auto const new_size = n_ + 1;
-      ++n_;
+      auto const old_size = size();
+      auto const new_size = old_size + 1;
 
       // reserve data storages
       if (new_size > capacity()) reserve(2 * new_size);
@@ -611,7 +596,7 @@ namespace triqs::det_manip {
       y_.push_back(wins_.y);
 
       // early return if the new matrix has size 1
-      if (n_ == 1) {
+      if (new_size == 1) {
         M_(0, 0) = 1 / newdet_;
         row_perm_.push_back(0);
         col_perm_.push_back(0);
@@ -683,12 +668,12 @@ namespace triqs::det_manip {
      */
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
       // check input argument sizes
-      k_tried = static_cast<long>(i.size());
+      auto const k = static_cast<long>(i.size());
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(k_tried > 0);
-      TRIQS_ASSERT(static_cast<long>(j.size()) == k_tried);
-      TRIQS_ASSERT(static_cast<long>(x.size()) == k_tried);
-      TRIQS_ASSERT(static_cast<long>(y.size()) == k_tried);
+      TRIQS_ASSERT(k > 0);
+      TRIQS_ASSERT(static_cast<long>(j.size()) == k);
+      TRIQS_ASSERT(static_cast<long>(x.size()) == k);
+      TRIQS_ASSERT(static_cast<long>(y.size()) == k);
 
       // move the input arguments to the working data
       winsk_.i = std::move(i);
@@ -701,41 +686,41 @@ namespace triqs::det_manip {
       std::ranges::sort(std::ranges::zip_view(winsk_.i, winsk_.x), comp);
       std::ranges::sort(std::ranges::zip_view(winsk_.j, winsk_.y), comp);
       TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.i) == winsk_.i.end());
-      TRIQS_ASSERT(winsk_.i.front() >= 0 and winsk_.i.back() < n_ + k_tried);
+      TRIQS_ASSERT(winsk_.i.front() >= 0 and winsk_.i.back() < size() + k);
       TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.j) == winsk_.j.end());
-      TRIQS_ASSERT(winsk_.j.front() >= 0 and winsk_.j.back() < n_ + k_tried);
+      TRIQS_ASSERT(winsk_.j.front() >= 0 and winsk_.j.back() < size() + k);
 
       // set the try tag
       last_try_ = try_tag::InsertK;
 
       // reserve memory for the working data
       auto const [n_cap, k_cap] = winsk_.capacity();
-      if (n_ + k_tried > n_cap || k_tried > k_cap) winsk_.reserve(2 * (n_ + k_tried), k_tried);
+      if (size() + k > n_cap || k > k_cap) winsk_.reserve(2 * (size() + k), k);
 
       // build the matrix D as part of S^{-1} = D - C M B
-      nda::for_each(std::array{k_tried, k_tried}, [this](auto l, auto m) { winsk_.S_inv(l, m) = f_(winsk_.x[l], winsk_.y[m]); });
+      nda::for_each(std::array{k, k}, [this](auto l, auto m) { winsk_.S_inv(l, m) = f_(winsk_.x[l], winsk_.y[m]); });
 
       // early return if the current matrix is empty
-      if (n_ == 0) {
-        newdet_  = detail::determinant(winsk_.S_inv, k_tried);
+      if (size() == 0) {
+        newdet_  = detail::determinant(winsk_.S_inv, k);
         newsign_ = 1;
         return newdet_;
       }
 
       // calculate the new columns B and the new rows C of the matrix G (except for the block matrix D)
-      for (long l = 0; l < n_; ++l) {
-        for (long m = 0; m < k_tried; ++m) {
+      for (long l = 0; l < size(); ++l) {
+        for (long m = 0; m < k; ++m) {
           winsk_.B(l, m) = f_(x_[l], winsk_.y[m]);
           winsk_.C(m, l) = f_(winsk_.x[m], y_[l]);
         }
       }
 
       // calculate S^{-1} = D - C M B and its determinant
-      auto rg_n = nda::range(n_);
-      auto rg_k = nda::range(k_tried);
+      auto rg_n = nda::range(size());
+      auto rg_k = nda::range(k);
       blas::gemm(1.0, M_(rg_n, rg_n), winsk_.B(rg_n, rg_k), 0.0, winsk_.MB(rg_n, rg_k));
       blas::gemm(-1.0, winsk_.C(rg_k, rg_n), winsk_.MB(rg_n, rg_k), 1.0, winsk_.S_inv(rg_k, rg_k));
-      auto const det_S_inv = detail::determinant(winsk_.S_inv, k_tried);
+      auto const det_S_inv = detail::determinant(winsk_.S_inv, k);
 
       // calculate the new determinant = det(G^{(n)}) det(S^{-1}) and sign = old sign * (-1)^{\sum_l i_l + j_l}
       newdet_      = det_ * det_S_inv;
@@ -801,8 +786,8 @@ namespace triqs::det_manip {
     auto insert_ratios(long i, long j, X const &xs, Y const &ys) const -> nda::array<value_type, nda::get_rank<X>> {
       constexpr int R = nda::get_rank<X>;
       TRIQS_ASSERT(xs.shape() == ys.shape());
-      TRIQS_ASSERT(0 <= i and i <= n_);
-      TRIQS_ASSERT(0 <= j and j <= n_);
+      TRIQS_ASSERT(0 <= i and i <= size());
+      TRIQS_ASSERT(0 <= j and j <= size());
 
       long nbatch         = xs.size();
       value_type sign_fac = ((i + j) % 2 == 0 ? 1 : -1);
@@ -814,19 +799,20 @@ namespace triqs::det_manip {
       auto xs_flat = flatten_array(xs);
       auto ys_flat = flatten_array(ys);
 
-      if (n_ == 0) {
+      auto const n = size();
+      if (n == 0) {
         for (long m = 0; m < nbatch; ++m) result.data()[m] = sign_fac * f_(xs_flat[m], ys_flat[m]);
         return result;
       }
 
-      range RN(n_);
+      range RN(n);
 
-      // Build B(n_, nbatch) and C(nbatch, n_) matrices
-      nda::matrix<value_type> B(n_, nbatch), C(nbatch, n_), MB(n_, nbatch);
-      for (long l = 0; l < n_; ++l)
+      // Build B(n, nbatch) and C(nbatch, n) matrices
+      nda::matrix<value_type> B(n, nbatch), C(nbatch, n), MB(n, nbatch);
+      for (long l = 0; l < n; ++l)
         for (long m = 0; m < nbatch; ++m) B(l, m) = f_(x_[l], ys_flat[m]);
       for (long m = 0; m < nbatch; ++m)
-        for (long l = 0; l < n_; ++l) C(m, l) = f_(xs_flat[m], y_[l]);
+        for (long l = 0; l < n; ++l) C(m, l) = f_(xs_flat[m], y_[l]);
 
       // MB = M_ * B -- single BLAS3 gemm
       blas::gemm(1.0, M_(RN, RN), B, 0.0, MB);
@@ -834,7 +820,7 @@ namespace triqs::det_manip {
       // Compute each ratio: ksi_m = f_(xs[m], ys[m]) - C[m,:] . MB[:,m]
       for (long m = 0; m < nbatch; ++m) {
         value_type dot = 0;
-        for (long l = 0; l < n_; ++l) dot += C(m, l) * MB(l, m);
+        for (long l = 0; l < n; ++l) dot += C(m, l) * MB(l, m);
         result.data()[m] = sign_fac * (f_(xs_flat[m], ys_flat[m]) - dot);
       }
 
@@ -845,8 +831,9 @@ namespace triqs::det_manip {
     private:
     // Complete the insert_k operation.
     void complete_insert_k() {
-      auto const old_size = n_;
-      auto const new_size = n_ + k_tried;
+      auto const k        = static_cast<long>(winsk_.i.size());
+      auto const old_size = size();
+      auto const new_size = old_size + k;
 
       // reserve data storages
       if (new_size > capacity()) reserve(2 * new_size);
@@ -858,18 +845,17 @@ namespace triqs::det_manip {
       std::ranges::copy(std::ranges::iota_view(old_size, new_size), std::back_inserter(col_perm_));
 
       // early return if the old matrix was empty (the sorted indices are then simply 0, 1, ..., k - 1)
-      auto rg_k = nda::range(k_tried);
+      auto rg_k = nda::range(k);
       if (old_size == 0) {
-        n_             = new_size;
         M_(rg_k, rg_k) = nda::linalg::inv(winsk_.S_inv(rg_k, rg_k));
         return;
       }
 
       // update the permutation vectors
-      for (auto l : rg_k) {
-        ++n_;
-        std::rotate(row_perm_.begin() + winsk_.i[l], row_perm_.begin() + n_ - 1, row_perm_.begin() + n_);
-        std::rotate(col_perm_.begin() + winsk_.j[l], col_perm_.begin() + n_ - 1, col_perm_.begin() + n_);
+      for (auto tmp_sz = old_size + 1; auto l : rg_k) {
+        std::rotate(row_perm_.begin() + winsk_.i[l], row_perm_.begin() + tmp_sz - 1, row_perm_.begin() + tmp_sz);
+        std::rotate(col_perm_.begin() + winsk_.j[l], col_perm_.begin() + tmp_sz - 1, col_perm_.begin() + tmp_sz);
+        ++tmp_sz;
       }
 
       // calculate the matrix product C M and the matrix S
@@ -909,16 +895,16 @@ namespace triqs::det_manip {
     value_type try_remove(long i, long j) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < n_);
-      TRIQS_ASSERT(0 <= j and j < n_);
+      TRIQS_ASSERT(0 <= i and i < size());
+      TRIQS_ASSERT(0 <= j and j < size());
       std::tie(wrem_.i, wrem_.j, wrem_.ip, wrem_.jp) = std::make_tuple(i, j, row_perm_[i], col_perm_[j]);
 
       // set the try tag
       last_try_ = try_tag::Remove;
 
       // calculate the signs associated with P1, P2, P3 and P4
-      int s_p1p2 = (wrem_.ip == n_ - 1 ? 1 : -1);
-      s_p1p2     = (wrem_.jp == n_ - 1 ? s_p1p2 : -s_p1p2);
+      int s_p1p2 = (wrem_.ip == size() - 1 ? 1 : -1);
+      s_p1p2     = (wrem_.jp == size() - 1 ? s_p1p2 : -s_p1p2);
       int s_p3p4 = ((i + j) % 2 == 0 ? 1 : -1);
 
       // set the diagonal element S
@@ -935,39 +921,40 @@ namespace triqs::det_manip {
     // Complete the remove operation.
     void complete_remove() {
       // early return if the resulting matrix is empty
-      if (n_ == 1) {
+      if (size() == 1) {
         clear();
         return;
       }
 
       // perform the P1 and P2 permutations by swapping the row and column to be removed with the last row and column
-      range rg_n(n_);
-      if (wrem_.ip != n_ - 1) {
+      auto const old_size = size();
+      auto const new_size = old_size - 1;
+      range rg_n(old_size);
+      if (wrem_.ip != new_size) {
         // for M, we have to apply P1^T to the columns
-        deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, n_ - 1));
+        deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, new_size));
         // update the x arguments and the row permutation vector
-        x_[wrem_.ip] = x_[n_ - 1];
+        x_[wrem_.ip] = x_[new_size];
         auto it1     = std::ranges::find(row_perm_, wrem_.ip);
-        auto it2     = std::ranges::find(row_perm_, n_ - 1);
+        auto it2     = std::ranges::find(row_perm_, new_size);
         std::swap(*it1, *it2);
       }
-      if (wrem_.jp != n_ - 1) {
+      if (wrem_.jp != new_size) {
         // for M, we have to apply P2^T to the rows
-        deep_swap(M_(wrem_.jp, rg_n), M_(n_ - 1, rg_n));
+        deep_swap(M_(wrem_.jp, rg_n), M_(new_size, rg_n));
         // update the y arguments and the column permutation vector
-        y_[wrem_.jp] = y_[n_ - 1];
+        y_[wrem_.jp] = y_[new_size];
         auto it1     = std::ranges::find(col_perm_, wrem_.jp);
-        auto it2     = std::ranges::find(col_perm_, n_ - 1);
+        auto it2     = std::ranges::find(col_perm_, new_size);
         std::swap(*it1, *it2);
       }
 
-      // update the size of the matrix
-      --n_;
-      rg_n = range(n_);
+      // restrict the range to the size of the resulting matrix
+      rg_n = range(new_size);
 
       // remove elements from the row and column permutation vectors and from the x and y arguments
-      std::ignore = std::ranges::remove(row_perm_, n_);
-      std::ignore = std::ranges::remove(col_perm_, n_);
+      std::ignore = std::ranges::remove(row_perm_, new_size);
+      std::ignore = std::ranges::remove(col_perm_, new_size);
       row_perm_.pop_back();
       col_perm_.pop_back();
       x_.pop_back();
@@ -979,7 +966,7 @@ namespace triqs::det_manip {
 
       // solve P = \widetilde{M}^{(n-1)} + \widetilde{M}^{(n-1)} B S C \widetilde{M}^{(n-1)} for \widetilde{M}^{(n-1)}
       // by using the fact that we know -\widetilde{M}^{(n-1)} B S, -S C \widetilde{M}^{(n-1)} and S^{-1}
-      blas::ger(mS_inv, M_(rg_n, n_), M_(n_, rg_n), M_(rg_n, rg_n));
+      blas::ger(mS_inv, M_(rg_n, new_size), M_(new_size, rg_n), M_(rg_n, rg_n));
     }
 
     public:
@@ -1054,27 +1041,27 @@ namespace triqs::det_manip {
      */
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
       // check input argument sizes
-      k_tried = static_cast<long>(i.size());
+      auto const k = static_cast<long>(i.size());
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(k_tried > 0 and k_tried <= n_);
-      TRIQS_ASSERT(static_cast<long>(j.size()) == k_tried);
+      TRIQS_ASSERT(k > 0 and k <= size());
+      TRIQS_ASSERT(static_cast<long>(j.size()) == k);
 
       // sort and check input arguments
       std::ranges::sort(i);
       std::ranges::sort(j);
-      TRIQS_ASSERT(std::ranges::adjacent_find(i) == i.end() and i.front() >= 0 and i.back() < n_);
-      TRIQS_ASSERT(std::ranges::adjacent_find(j) == j.end() and j.front() >= 0 and j.back() < n_);
+      TRIQS_ASSERT(std::ranges::adjacent_find(i) == i.end() and i.front() >= 0 and i.back() < size());
+      TRIQS_ASSERT(std::ranges::adjacent_find(j) == j.end() and j.front() >= 0 and j.back() < size());
 
       // set the try tag
       last_try_ = try_tag::RemoveK;
 
       // reserve memory for the working data
-      wremk_.reserve(k_tried);
+      wremk_.reserve(k);
 
       // move input arguments to the working data and get the corresponding row/column positions in the matrix G
       wremk_.i = std::move(i);
       wremk_.j = std::move(j);
-      for (long l = 0; l < k_tried; ++l) {
+      for (long l = 0; l < k; ++l) {
         wremk_.ip[l] = row_perm_[wremk_.i[l]];
         wremk_.jp[l] = col_perm_[wremk_.j[l]];
       }
@@ -1082,8 +1069,8 @@ namespace triqs::det_manip {
       // compute the signs of the permutations P1, P2, P3, P4 and set the matrix S
       int s_p1p2   = 1;
       long idx_sum = 0;
-      long target  = n_ - k_tried;
-      for (long l = 0; l < k_tried; ++l) {
+      long target  = size() - k;
+      for (long l = 0; l < k; ++l) {
         // the combined sign of P3 and P4 is simply (-1)^{\sum i_k + j_k}
         idx_sum += wremk_.i[l] + wremk_.j[l];
 
@@ -1092,8 +1079,8 @@ namespace triqs::det_manip {
           // if not, P1 has to swap it with the corresponding row
           s_p1p2 = -s_p1p2;
           // we have to take care of the case where the row is swapped with another row that we want to remove
-          auto it = std::find(wremk_.ip.begin() + l + 1, wremk_.ip.begin() + k_tried, target);
-          if (it != wremk_.ip.begin() + k_tried) {
+          auto it = std::find(wremk_.ip.begin() + l + 1, wremk_.ip.begin() + k, target);
+          if (it != wremk_.ip.begin() + k) {
             std::swap(wremk_.ip[l], *it);
           } else {
             wremk_.ip[l] = target;
@@ -1105,8 +1092,8 @@ namespace triqs::det_manip {
           // if not, P2 has to swap it with the corresponding column
           s_p1p2 = -s_p1p2;
           // we have to take care of the case where the column is swapped with another column that we want to remove
-          auto it = std::find(wremk_.jp.begin() + l + 1, wremk_.jp.begin() + k_tried, target);
-          if (it != wremk_.jp.begin() + k_tried) {
+          auto it = std::find(wremk_.jp.begin() + l + 1, wremk_.jp.begin() + k, target);
+          if (it != wremk_.jp.begin() + k) {
             std::swap(wremk_.jp[l], *it);
           } else {
             wremk_.jp[l] = target;
@@ -1115,12 +1102,12 @@ namespace triqs::det_manip {
         ++target;
 
         // set the elements of the matrix S
-        for (long m = 0; m < k_tried; ++m) { wremk_.S(l, m) = M_(col_perm_[wremk_.j[l]], row_perm_[wremk_.i[m]]); }
+        for (long m = 0; m < k; ++m) { wremk_.S(l, m) = M_(col_perm_[wremk_.j[l]], row_perm_[wremk_.i[m]]); }
       }
       int s_p3p4 = (idx_sum % 2 == 0 ? 1 : -1);
 
       // compute the new determinant and sign
-      auto det_S = detail::determinant(wremk_.S, k_tried);
+      auto det_S = detail::determinant(wremk_.S, k);
       newdet_    = det_ * det_S * s_p1p2;
       newsign_   = sign_ * s_p1p2 * s_p3p4;
 
@@ -1147,15 +1134,19 @@ namespace triqs::det_manip {
     private:
     // Complete the remove_k operation.
     void complete_remove_k() {
+      auto const k        = static_cast<long>(wremk_.i.size());
+      auto const old_size = size();
+      auto const new_size = old_size - k;
+
       // early return if the resulting matrix is empty
-      if (n_ == k_tried) {
+      if (new_size == 0) {
         clear();
         return;
       }
 
       // perform the P1 and P2 permutations by swapping the rows and columns accordingly
-      range rg_n(n_);
-      for (long m = 0, target = n_ - k_tried; m < k_tried; ++m, ++target) {
+      range rg_n(old_size);
+      for (long m = 0, target = new_size; m < k; ++m, ++target) {
         if (row_perm_[wremk_.i[m]] != target) {
           // for M, we have to apply P1^T to the columns
           deep_swap(M_(rg_n, row_perm_[wremk_.i[m]]), M_(rg_n, target));
@@ -1176,27 +1167,24 @@ namespace triqs::det_manip {
         }
       }
 
-      // update the size of the matrix
-      n_ -= k_tried;
-      rg_n = range(n_);
-
       // remove elements from the row and column permutation vectors and from the x and y arguments
-      auto ge_n   = [this](auto i) { return i >= n_; };
+      auto ge_n   = [new_size](auto i) { return i >= new_size; };
       std::ignore = std::ranges::remove_if(row_perm_, ge_n);
       std::ignore = std::ranges::remove_if(col_perm_, ge_n);
-      row_perm_.resize(n_);
-      col_perm_.resize(n_);
-      x_.resize(n_);
-      y_.resize(n_);
+      row_perm_.resize(new_size);
+      col_perm_.resize(new_size);
+      x_.resize(new_size);
+      y_.resize(new_size);
 
       // calculate S^{-1}
-      range rg_k(k_tried);
-      range rg_n_nk(n_, n_ + k_tried);
+      range rg_nk(new_size);
+      range rg_k(k);
+      range rg_nk_n(new_size, old_size);
       nda::linalg::inv_in_place(wremk_.S(rg_k, rg_k));
 
       // solve P = \widetilde{M}^{(n-k)} + \widetilde{M}^{(n-k)} B S C \widetilde{M}^{(n-k)} for \widetilde{M}^{(n-k)}
       // by using the fact that we know -\widetilde{M}^{(n-k)} B S, -S C \widetilde{M}^{(n-k)} and S^{-1}
-      blas::gemm(-1.0, M_(rg_n, rg_n_nk), wremk_.S(rg_k, rg_k) * M_(rg_n_nk, rg_n), 1.0, M_(rg_n, rg_n));
+      blas::gemm(-1.0, M_(rg_nk, rg_nk_n), wremk_.S(rg_k, rg_k) * M_(rg_nk_n, rg_nk), 1.0, M_(rg_nk, rg_nk));
     }
     // Complete the remove2 operation.
     void complete_remove2() { complete_remove_k(); }
@@ -1241,17 +1229,17 @@ namespace triqs::det_manip {
     value_type try_change_col(long j, y_type const &y) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= j and j < n_);
+      TRIQS_ASSERT(0 <= j and j < size());
       std::tie(wcol_.j, wcol_.jp, wcol_.y) = std::make_tuple(j, col_perm_[j], y);
 
       // set the try tag
       last_try_ = try_tag::ChangeCol;
 
       // reserve memory for the working data
-      if (n_ > wcol_.capacity()) wcol_.reserve(2 * n_);
+      if (size() > wcol_.capacity()) wcol_.reserve(2 * size());
 
       // calculate the vector u, the product M u and the factor xi = 1 + v^T M u = 1 + (M u)_{j_p}
-      auto rg_n = nda::range(n_);
+      auto rg_n = nda::range(size());
       for (auto i : rg_n) wcol_.u(i) = f_(x_[i], wcol_.y) - f_(x_[i], y_[wcol_.jp]);
       blas::gemv(1.0, M_(rg_n, rg_n), wcol_.u(rg_n), 0.0, wcol_.Mu(rg_n));
       wcol_.xi = 1 + wcol_.Mu(wcol_.jp);
@@ -1270,7 +1258,7 @@ namespace triqs::det_manip {
       y_[wcol_.jp] = wcol_.y;
 
       // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
-      auto rg_n       = nda::range(n_);
+      auto rg_n       = nda::range(size());
       wcol_.vTM(rg_n) = M_(wcol_.jp, rg_n);
       blas::ger(-1 / wcol_.xi, wcol_.Mu(rg_n), wcol_.vTM(rg_n), M_(rg_n, rg_n));
     }
@@ -1295,17 +1283,17 @@ namespace triqs::det_manip {
     value_type try_change_row(long i, x_type const &x) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < n_);
+      TRIQS_ASSERT(0 <= i and i < size());
       std::tie(wrow_.i, wrow_.ip, wrow_.x) = std::make_tuple(i, row_perm_[i], x);
 
       // set the try tag
       last_try_ = try_tag::ChangeRow;
 
       // reserve memory for the working data
-      if (n_ > wrow_.capacity()) wrow_.reserve(2 * n_);
+      if (size() > wrow_.capacity()) wrow_.reserve(2 * size());
 
       // calculate the vector v^T, the product v^T M and the factor xi = 1 + v^T M u = 1 + (v^T M)_{i_p}
-      auto rg_n = nda::range(n_);
+      auto rg_n = nda::range(size());
       for (auto j : rg_n) wrow_.vT(j) = f_(wrow_.x, y_[j]) - f_(x_[wrow_.ip], y_[j]);
       blas::gemv(1.0, transpose(M_(rg_n, rg_n)), wrow_.vT(rg_n), 0.0, wrow_.vTM(rg_n));
       wrow_.xi = 1 + wrow_.vTM(wrow_.ip);
@@ -1324,7 +1312,7 @@ namespace triqs::det_manip {
       x_[wrow_.ip] = wrow_.x;
 
       // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
-      auto rg_n      = nda::range(n_);
+      auto rg_n      = nda::range(size());
       wrow_.Mu(rg_n) = M_(rg_n, wrow_.ip);
       blas::ger(-1 / wrow_.xi, wrow_.Mu(rg_n), wrow_.vTM(rg_n), M_(rg_n, rg_n));
     }
@@ -1393,18 +1381,18 @@ namespace triqs::det_manip {
     value_type try_change_col_row(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < n_);
-      TRIQS_ASSERT(0 <= j and j < n_);
+      TRIQS_ASSERT(0 <= i and i < size());
+      TRIQS_ASSERT(0 <= j and j < size());
       std::tie(wrc_.i, wrc_.j, wrc_.ip, wrc_.jp, wrc_.x, wrc_.y) = std::make_tuple(i, j, row_perm_[i], col_perm_[j], x, y);
 
       // set the try tag
       last_try_ = try_tag::ChangeRowCol;
 
       // reserve memory for the working data
-      if (n_ > wrc_.capacity()) wrc_.reserve(2 * n_);
+      if (size() > wrc_.capacity()) wrc_.reserve(2 * size());
 
       // calculate the vectors s^T and u
-      auto rg_n = nda::range(n_);
+      auto rg_n = nda::range(size());
       for (auto k : rg_n) {
         wrc_.sT(k) = f_(wrc_.x, y_[k]) - f_(x_[wrc_.ip], y_[k]);
         wrc_.u(k)  = f_(x_[k], wrc_.y) - f_(x_[k], y_[wrc_.jp]);
@@ -1435,15 +1423,15 @@ namespace triqs::det_manip {
       y_[wrc_.jp] = wrc_.y;
 
       // set the elements of the new inverse matrix
-      auto rg_n            = nda::range(n_);
+      auto rg_n            = nda::range(size());
       auto const alpha_fac = (1 + wrc_.sTM(wrc_.ip)) / wrc_.xi;
       auto const beta_fac  = (1 + wrc_.Mu(wrc_.jp)) / wrc_.xi;
       auto const gamma_fac = wrc_.gamma / wrc_.xi;
       auto const M_fac     = M_(wrc_.jp, wrc_.ip) / wrc_.xi;
       wrc_.mT_jp(rg_n)     = M_(wrc_.jp, rg_n);
       wrc_.m_ip(rg_n)      = M_(rg_n, wrc_.ip);
-      for (long a = 0; a < n_; ++a) {
-        for (long b = 0; b < n_; ++b) {
+      for (long a = 0; a < size(); ++a) {
+        for (long b = 0; b < size(); ++b) {
           M_(a, b) = M_(a, b) - alpha_fac * wrc_.Mu(a) * wrc_.mT_jp(b) + M_fac * wrc_.Mu(a) * wrc_.sTM(b) + gamma_fac * wrc_.m_ip(a) * wrc_.mT_jp(b)
              - beta_fac * wrc_.sTM(b) * wrc_.m_ip(a);
         }
@@ -1519,12 +1507,11 @@ namespace triqs::det_manip {
       }
 
       // reserve memory and reset the matrix builder arguments and the permutation vectors
-      n_ = wref_.size();
-      if (n_ > capacity()) reserve(2 * n_);
+      if (wref_.size() > capacity()) reserve(2 * wref_.size());
       set_xy(wref_.x, wref_.y);
 
       // set the new inverse matrix M
-      auto rg    = nda::range(n_);
+      auto rg    = nda::range(size());
       M_(rg, rg) = nda::linalg::inv(wref_.G(rg, rg));
     }
 
@@ -1594,7 +1581,7 @@ namespace triqs::det_manip {
      * @param y Argument to the matrix builder that determines the elements of the new column.
      * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
      */
-    value_type insert_at_end(x_type const &x, y_type const &y) { return insert(n_, n_, x, y); }
+    value_type insert_at_end(x_type const &x, y_type const &y) { return insert(size(), size(), x, y); }
 
     /**
      * @brief Insert two rows and columns.
@@ -1619,7 +1606,7 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n+2)}) / \det(F^{(n)}) \f$.
      */
     value_type insert2_at_end(x_type const &x0, x_type const &x1, y_type const &y0, y_type const &y1) {
-      return insert2(n_, n_ + 1, n_, n_ + 1, x0, x1, y0, y1);
+      return insert2(size(), size() + 1, size(), size() + 1, x0, x1, y0, y1);
     }
 
     /**
@@ -1640,7 +1627,7 @@ namespace triqs::det_manip {
      * @details Same as remove() but with `i` and `j` set to size() - 1.
      * @return Determinant ratio \f$ \det(F^{(n-1)}) / \det(F^{(n)}) \f$.
      */
-    value_type remove_at_end() { return remove(n_ - 1, n_ - 1); }
+    value_type remove_at_end() { return remove(size() - 1, size() - 1); }
 
     /**
      * @brief Remove two rows and columns.
@@ -1660,7 +1647,7 @@ namespace triqs::det_manip {
      * @details Same as remove2() but with `i0` and `j0` set to size() - 1 and `i1` and `j1` set to size() - 2.
      * @return Determinant ratio \f$ \det(F^{(n-2)}) / \det(F^{(n)}) \f$.
      */
-    value_type remove2_at_end() { return remove2(n_ - 1, n_ - 2, n_ - 1, n_ - 2); }
+    value_type remove2_at_end() { return remove2(size() - 1, size() - 2, size() - 1, size() - 2); }
 
     /**
      * @brief Change one column.
@@ -1787,7 +1774,6 @@ namespace triqs::det_manip {
      */
     friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
       auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "N", g.n_);
       h5_write(gr, "mat_inv", g.M_);
       h5_write(gr, "det", g.det_);
       h5_write(gr, "sign", g.sign_);
@@ -1809,10 +1795,7 @@ namespace triqs::det_manip {
      */
     friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
       auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "N", g.n_);
       h5_read(gr, "mat_inv", g.M_);
-      g.ncap_     = first_dim(g.M_); // restore ncap_
-      g.last_try_ = try_tag::NoTry;
       h5_read(gr, "det", g.det_);
       h5_read(gr, "sign", g.sign_);
       h5_read(gr, "row_num", g.row_perm_);
@@ -1822,6 +1805,11 @@ namespace triqs::det_manip {
       h5_read(gr, "n_opts", g.nops_);
       h5_read(gr, "n_opts_max_before_check", g.nops_before_check_);
       h5_read(gr, "singular_threshold", g.singular_threshold_);
+      g.x_.reserve(g.capacity());
+      g.y_.reserve(g.capacity());
+      g.row_perm_.reserve(g.capacity());
+      g.col_perm_.reserve(g.capacity());
+      g.last_try_ = try_tag::NoTry;
     }
 
     //------------------------------------------------------------------------------------------
@@ -1891,11 +1879,5 @@ namespace triqs::det_manip {
     // tag and operation counter
     try_tag last_try_{try_tag::NoTry};
     std::uint64_t nops_{0};
-
-    // sizes of matrices and capacities of their data storages
-    long n_{0};
-    long ncap_{0};
-    long k_tried{0};
-    long kmax_tried{1};
   };
 } // namespace triqs::det_manip
