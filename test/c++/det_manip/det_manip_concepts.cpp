@@ -17,7 +17,7 @@
 //
 // Authors: Henri Menke, Olivier Parcollet, Nils Wentzell
 
-#include <triqs/det_manip/utils.hpp>
+#include <triqs/det_manip/concepts.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
 #include <complex>
