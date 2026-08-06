@@ -24,7 +24,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
-#include "./old_test_tool.hpp"
+#include "./det_manip_test_utils.hpp"
 
 struct fun {
   typedef double result_type;
@@ -88,7 +88,7 @@ struct test {
 
       // Shuffle and pick first k
       for (long l = 0; l < k; ++l) {
-        long idx    = RNG(static_cast<int>(i_pos.size()));
+        long idx = RNG(static_cast<int>(i_pos.size()));
         i_vec.push_back(i_pos[idx]);
         i_pos.erase(i_pos.begin() + idx);
 

@@ -23,7 +23,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
-#include "./old_test_tool.hpp"
+#include "./det_manip_test_utils.hpp"
 
 struct fun {
 
@@ -153,7 +153,7 @@ struct test {
           y  = RNG(10.0);
           i0 = RNG(s);
           j0 = RNG(s);
-          std::cerr << " try_change_col_row" << i0 << "  "<< j0 << std::endl;
+          std::cerr << " try_change_col_row" << i0 << "  " << j0 << std::endl;
           detratio = D.try_change_col_row(i0, j0, x, y);
           break;
         default: TRIQS_RUNTIME_ERROR << " TEST INTERNAL ERROR";

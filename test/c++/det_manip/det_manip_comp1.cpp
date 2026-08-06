@@ -23,7 +23,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
-#include "./old_test_tool.hpp"
+#include "./det_manip_test_utils.hpp"
 
 struct fun {
 
@@ -92,10 +92,10 @@ struct test {
     std::cerr << std::endl;
 
     // basic
-    triqs::arrays::assert_all_close(D_basic.matrix(), D.matrix(), PRECISION, true);
-    
+    nda::assert_all_close(D_basic.matrix(), D.matrix(), PRECISION, true);
+
     assert_close(D.determinant(), 1 / nda::linalg::det(D.inverse_matrix()), PRECISION);
-    triqs::arrays::assert_all_close(nda::linalg::inv(D.matrix()), D.inverse_matrix(), PRECISION, true);
+    nda::assert_all_close(nda::linalg::inv(D.matrix()), D.inverse_matrix(), PRECISION, true);
     assert_close(det_old * detratio, D.determinant(), PRECISION);
     assert_close(double(nda::linalg::det(D.matrix())), D.determinant(), PRECISION);
     assert_close(D.determinant(), 1 / nda::linalg::det(D.inverse_matrix()), PRECISION);
@@ -159,8 +159,14 @@ struct test {
             std::cerr << std::endl;
 
 #if 1
-	    if (i0>i1) { std::swap(i0,i1); std::swap(x,x1);}
-	    if (j0>j1) { std::swap(j0,j1); std::swap(y,y1);}
+            if (i0 > i1) {
+              std::swap(i0, i1);
+              std::swap(x, x1);
+            }
+            if (j0 > j1) {
+              std::swap(j0, j1);
+              std::swap(y, y1);
+            }
             Dcopy.try_insert(i0, j0, x, y);
             Dcopy.complete_operation();
             Dcopy.try_insert(i1, j1, x1, y1);

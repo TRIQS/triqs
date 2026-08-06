@@ -22,7 +22,7 @@
 #include <triqs/mc_tools/random_generator.hpp>
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
-#include "./old_test_tool.hpp"
+#include "./det_manip_test_utils.hpp"
 
 #include <iostream>
 

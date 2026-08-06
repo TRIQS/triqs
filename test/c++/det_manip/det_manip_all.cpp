@@ -24,7 +24,7 @@
 #include <nda/linalg/det.hpp>
 #include <nda/linalg/inv.hpp>
 #include <iostream>
-#include "./old_test_tool.hpp"
+#include "./det_manip_test_utils.hpp"
 
 struct fun {
 
