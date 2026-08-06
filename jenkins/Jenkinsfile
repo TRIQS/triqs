@@ -70,7 +70,7 @@ def runBuild = { String platform, String prefix, List<String> envs ->
          * Unset CPLUS_INCLUDE_PATH / CXXFLAGS below so that platform settings (e.g. -stdlib=libc++)
          * do not leak into the clair build and mix libc++ headers with libstdc++ linkage. */
         checkout scmGit(userRemoteConfigs: [[url: 'https://github.com/flatironinstitute/clair']],
-          branches: [[name: 'refs/heads/unstable']])
+          branches: [[name: 'refs/heads/0.9.x']])
       }
       dir("$WORKSPACE_TMP/clair") {
         sh """#!/bin/sh -ex
