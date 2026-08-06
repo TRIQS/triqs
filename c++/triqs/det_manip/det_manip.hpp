@@ -33,12 +33,18 @@
 
 #include <nda/nda.hpp>
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cmath>
+#include <complex>
+#include <concepts>
 #include <cstdint>
+#include <cstdio>
 #include <iterator>
 #include <numeric>
 #include <ranges>
+#include <utility>
 #include <vector>
 
 namespace triqs::det_manip {
@@ -901,68 +907,79 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n-1)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove(long i, long j) {
+      // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
       TRIQS_ASSERT(0 <= i and i < n_);
       TRIQS_ASSERT(0 <= j and j < n_);
-      w1_.i     = i;
-      w1_.j     = j;
+      std::tie(wrem_.i, wrem_.j, wrem_.ip, wrem_.jp) = std::make_tuple(i, j, row_perm_[i], col_perm_[j]);
+
+      // set the try tag
       last_try_ = try_tag::Remove;
-      w1_.jreal = col_perm_[w1_.j];
-      w1_.ireal = row_perm_[w1_.i];
-      // compute the newdet_
-      // first we resolve the w1_.ireal,w1_.jreal, with the permutation of the Minv, then we pick up what
-      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
-      w1_.ksi  = M_(w1_.jreal, w1_.ireal);
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
-      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
-      return ksi * (newsign_ * sign_); // sign_ is unity, hence 1/sign_ == sign_
+
+      // calculate the signs associated with P1, P2, P3 and P4
+      int s_p1p2 = (wrem_.ip == n_ - 1 ? 1 : -1);
+      s_p1p2     = (wrem_.jp == n_ - 1 ? s_p1p2 : -s_p1p2);
+      int s_p3p4 = ((i + j) % 2 == 0 ? 1 : -1);
+
+      // set the diagonal element S
+      wrem_.S = M_(wrem_.jp, wrem_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrem_.S * s_p1p2;
+      newsign_ = sign_ * s_p1p2 * s_p3p4;
+
+      return wrem_.S * s_p3p4;
     }
     //------------------------------------------------------------------------------------------
     private:
     // Complete the remove operation.
     void complete_remove() {
+      // early return if the resulting matrix is empty
       if (n_ == 1) {
         clear();
         return;
       }
 
-      // Move rows and cols to be removed to the end.
-      // Adjust the x_ and y_ vector accordingly and
-      // swap the associated row_perm_ and col_perm_ elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(n_);
-      if (w1_.ireal != n_ - 1) {
-        deep_swap(M_(RN, w1_.ireal), M_(RN, n_ - 1));
-        x_[w1_.ireal] = x_[n_ - 1];
-        auto iitr     = std::ranges::find(row_perm_, w1_.ireal);
-        auto titr     = std::ranges::find(row_perm_, n_ - 1);
-        std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the row and column to be removed with the last row and column
+      range rg_n(n_);
+      if (wrem_.ip != n_ - 1) {
+        // for M, we have to apply P1^T to the columns
+        deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, n_ - 1));
+        // update the x arguments and the row permutation vector
+        x_[wrem_.ip] = x_[n_ - 1];
+        auto it1     = std::ranges::find(row_perm_, wrem_.ip);
+        auto it2     = std::ranges::find(row_perm_, n_ - 1);
+        std::swap(*it1, *it2);
       }
-      if (w1_.jreal != n_ - 1) {
-        deep_swap(M_(w1_.jreal, RN), M_(n_ - 1, RN));
-        y_[w1_.jreal] = y_[n_ - 1];
-        auto jitr     = std::ranges::find(col_perm_, w1_.jreal);
-        auto titr     = std::ranges::find(col_perm_, n_ - 1);
-        std::swap(*jitr, *titr);
+      if (wrem_.jp != n_ - 1) {
+        // for M, we have to apply P2^T to the rows
+        deep_swap(M_(wrem_.jp, rg_n), M_(n_ - 1, rg_n));
+        // update the y arguments and the column permutation vector
+        y_[wrem_.jp] = y_[n_ - 1];
+        auto it1     = std::ranges::find(col_perm_, wrem_.jp);
+        auto it2     = std::ranges::find(col_perm_, n_ - 1);
+        std::swap(*it1, *it2);
       }
-      n_--;
-      RN = range(n_);
 
-      auto it1 [[maybe_unused]] = std::ranges::remove(row_perm_, n_);
-      auto it2 [[maybe_unused]] = std::ranges::remove(col_perm_, n_);
+      // update the size of the matrix
+      --n_;
+      rg_n = range(n_);
 
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      std::ignore = std::ranges::remove(row_perm_, n_);
+      std::ignore = std::ranges::remove(col_perm_, n_);
       row_perm_.pop_back();
       col_perm_.pop_back();
       x_.pop_back();
       y_.pop_back();
 
-      // M <- a - d^-1 b c with BLAS
-      w1_.ksi = -1 / M_(n_, n_);
-      ASSERT(std::isfinite(std::abs(w1_.ksi)));
+      // calculate -S^{-1}
+      auto mS_inv = -1 / wrem_.S;
+      ASSERT(std::isfinite(std::abs(mS_inv)));
 
-      //M_(RN,RN) += w1_.ksi, * M_(RN,n_) * M_(n_,RN);
-      blas::ger(w1_.ksi, M_(RN, n_), M_(n_, RN), M_(RN, RN));
+      // solve P = \widetilde{M}^{(n-1)} + \widetilde{M}^{(n-1)} B S C \widetilde{M}^{(n-1)} for \widetilde{M}^{(n-1)}
+      // by using the fact that we know -\widetilde{M}^{(n-1)} B S, -S C \widetilde{M}^{(n-1)} and S^{-1}
+      blas::ger(mS_inv, M_(rg_n, n_), M_(n_, rg_n), M_(rg_n, rg_n));
     }
 
     public:
@@ -1036,42 +1053,78 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n-k)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
+      // check input argument sizes
+      k_tried = static_cast<long>(i.size());
+      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
+      TRIQS_ASSERT(k_tried > 0 and k_tried <= n_);
+      TRIQS_ASSERT(static_cast<long>(j.size()) == k_tried);
 
+      // sort and check input arguments
       std::ranges::sort(i);
       std::ranges::sort(j);
+      TRIQS_ASSERT(std::ranges::adjacent_find(i) == i.end() and i.front() >= 0 and i.back() < n_);
+      TRIQS_ASSERT(std::ranges::adjacent_find(j) == j.end() and j.front() >= 0 and j.back() < n_);
 
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(n_ >= 2);
-      TRIQS_ASSERT(i.size() == j.size());
-
-      k_tried = static_cast<long>(i.size());
-      reserve(n_ - k_tried, k_tried);
+      // set the try tag
       last_try_ = try_tag::RemoveK;
 
-      // check inputs
-      for (int l = 0; l < k_tried - 1; ++l) {
-        TRIQS_ASSERT(i[l] != i[l + 1] and 0 <= i[l] and i[l] < n_);
-        TRIQS_ASSERT(j[l] != j[l + 1] and 0 <= j[l] and j[l] < n_);
-      }
+      // reserve memory for the working data
+      wremk_.reserve(k_tried);
 
+      // move input arguments to the working data and get the corresponding row/column positions in the matrix G
+      wremk_.i = std::move(i);
+      wremk_.j = std::move(j);
       for (long l = 0; l < k_tried; ++l) {
-        wk_.i[l]     = i[l];
-        wk_.j[l]     = j[l];
-        wk_.ireal[l] = row_perm_[wk_.i[l]];
-        wk_.jreal[l] = col_perm_[wk_.j[l]];
+        wremk_.ip[l] = row_perm_[wremk_.i[l]];
+        wremk_.jp[l] = col_perm_[wremk_.j[l]];
       }
 
-      // compute the newdet_
-      for (long l1 = 0; l1 < k_tried; ++l1) {
-        for (long l2 = 0; l2 < k_tried; ++l2) { wk_.ksi(l1, l2) = M_(wk_.jreal[l1], wk_.ireal[l2]); }
-      }
-      auto det_ksi = wk_.det_ksi(k_tried);
-      newdet_      = det_ * det_ksi;
+      // compute the signs of the permutations P1, P2, P3, P4 and set the matrix S
+      int s_p1p2   = 1;
       long idx_sum = 0;
-      for (long l = 0; l < k_tried; ++l) { idx_sum += wk_.i[l] + wk_.j[l]; }
-      newsign_ = (idx_sum % 2 == 0 ? sign_ : -sign_);
+      long target  = n_ - k_tried;
+      for (long l = 0; l < k_tried; ++l) {
+        // the combined sign of P3 and P4 is simply (-1)^{\sum i_k + j_k}
+        idx_sum += wremk_.i[l] + wremk_.j[l];
 
-      return det_ksi * (newsign_ * sign_); // sign_ is unity, hence 1/sign_ == sign_
+        // check if the current position of the row in G is where we want it
+        if (wremk_.ip[l] != target) {
+          // if not, P1 has to swap it with the corresponding row
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the row is swapped with another row that we want to remove
+          auto it = std::find(wremk_.ip.begin() + l + 1, wremk_.ip.begin() + k_tried, target);
+          if (it != wremk_.ip.begin() + k_tried) {
+            std::swap(wremk_.ip[l], *it);
+          } else {
+            wremk_.ip[l] = target;
+          }
+        }
+
+        // check if the current position of the column in G is where we want it
+        if (wremk_.jp[l] != target) {
+          // if not, P2 has to swap it with the corresponding column
+          s_p1p2 = -s_p1p2;
+          // we have to take care of the case where the column is swapped with another column that we want to remove
+          auto it = std::find(wremk_.jp.begin() + l + 1, wremk_.jp.begin() + k_tried, target);
+          if (it != wremk_.jp.begin() + k_tried) {
+            std::swap(wremk_.jp[l], *it);
+          } else {
+            wremk_.jp[l] = target;
+          }
+        }
+        ++target;
+
+        // set the elements of the matrix S
+        for (long m = 0; m < k_tried; ++m) { wremk_.S(l, m) = M_(col_perm_[wremk_.j[l]], row_perm_[wremk_.i[m]]); }
+      }
+      int s_p3p4 = (idx_sum % 2 == 0 ? 1 : -1);
+
+      // compute the new determinant and sign
+      auto det_S = detail::determinant(wremk_.S, k_tried);
+      newdet_    = det_ * det_S * s_p1p2;
+      newsign_   = sign_ * s_p1p2 * s_p3p4;
+
+      return det_S * s_p3p4;
     }
     /**
      * @brief Try to remove two rows and two columns.
@@ -1094,58 +1147,56 @@ namespace triqs::det_manip {
     private:
     // Complete the remove_k operation.
     void complete_remove_k() {
+      // early return if the resulting matrix is empty
       if (n_ == k_tried) {
         clear();
         return;
-      } // put the sign_ to 1 also .... Change complete_remove...
+      }
 
-      std::vector<long> ireal = wk_.ireal;
-      std::vector<long> jreal = wk_.jreal;
-      std::sort(ireal.begin(), ireal.begin() + k_tried);
-      std::sort(jreal.begin(), jreal.begin() + k_tried);
-
-      // Move rows and cols to be removed to the end, starting from the right.
-      // Adjust the x_ and y_ vector accordingly and
-      // swap the associated row_perm_ and col_perm_ elements
-      // Remember that for M row/col is interchanged by inversion, transposition.
-      range RN(n_);
-      for (long m = k_tried - 1, target = n_ - 1; m >= 0; --m, --target) {
-        if (ireal[m] != target) {
-          deep_swap(M_(RN, ireal[m]), M_(RN, target));
-          x_[ireal[m]] = x_[target];
-          auto iitr    = std::ranges::find(row_perm_, ireal[m]);
-          auto titr    = std::ranges::find(row_perm_, target);
-          std::swap(*iitr, *titr);
+      // perform the P1 and P2 permutations by swapping the rows and columns accordingly
+      range rg_n(n_);
+      for (long m = 0, target = n_ - k_tried; m < k_tried; ++m, ++target) {
+        if (row_perm_[wremk_.i[m]] != target) {
+          // for M, we have to apply P1^T to the columns
+          deep_swap(M_(rg_n, row_perm_[wremk_.i[m]]), M_(rg_n, target));
+          // update the x arguments and the row permutation vector
+          x_[row_perm_[wremk_.i[m]]] = x_[target];
+          auto it1                   = std::ranges::find(row_perm_, row_perm_[wremk_.i[m]]);
+          auto it2                   = std::ranges::find(row_perm_, target);
+          std::swap(*it1, *it2);
         }
-        if (jreal[m] != target) {
-          deep_swap(M_(jreal[m], RN), M_(target, RN));
-          y_[jreal[m]] = y_[target];
-          auto jitr    = std::ranges::find(col_perm_, jreal[m]);
-          auto titr    = std::ranges::find(col_perm_, target);
-          std::swap(*jitr, *titr);
+        if (col_perm_[wremk_.j[m]] != target) {
+          // for M, we have to apply P2^T to the rows
+          deep_swap(M_(col_perm_[wremk_.j[m]], rg_n), M_(target, rg_n));
+          // update the y arguments and the column permutation vector
+          y_[col_perm_[wremk_.j[m]]] = y_[target];
+          auto it1                   = std::ranges::find(col_perm_, col_perm_[wremk_.j[m]]);
+          auto it2                   = std::ranges::find(col_perm_, target);
+          std::swap(*it1, *it2);
         }
       }
+
+      // update the size of the matrix
       n_ -= k_tried;
-      RN = range(n_);
+      rg_n = range(n_);
 
-      // Clean up removed elements from row_perm_ and col_perm_
-      auto gtN = [&](auto i) { return i >= n_; };
-
-      auto it1 [[maybe_unused]] = std::remove_if(row_perm_.begin(), row_perm_.end(), gtN);
-      auto it2 [[maybe_unused]] = std::remove_if(col_perm_.begin(), col_perm_.end(), gtN);
-
+      // remove elements from the row and column permutation vectors and from the x and y arguments
+      auto ge_n   = [this](auto i) { return i >= n_; };
+      std::ignore = std::ranges::remove_if(row_perm_, ge_n);
+      std::ignore = std::ranges::remove_if(col_perm_, ge_n);
       row_perm_.resize(n_);
       col_perm_.resize(n_);
       x_.resize(n_);
       y_.resize(n_);
 
-      // M <- a - d^-1 b c with BLAS
-      range Rl(n_, n_ + k_tried), Rk(k_tried);
-      wk_.ksi(Rk, Rk) = nda::linalg::inv(M_(Rl, Rl));
+      // calculate S^{-1}
+      range rg_k(k_tried);
+      range rg_n_nk(n_, n_ + k_tried);
+      nda::linalg::inv_in_place(wremk_.S(rg_k, rg_k));
 
-      // write explicitely the second product on ksi for speed ?
-      //M_(RN,RN) -= M_(RN,Rl) * (wk_.ksi * M_(Rl,RN)); // OPTIMIZE BELOW
-      blas::gemm(-1.0, M_(RN, Rl), wk_.ksi(Rk, Rk) * M_(Rl, RN), 1.0, M_(RN, RN));
+      // solve P = \widetilde{M}^{(n-k)} + \widetilde{M}^{(n-k)} B S C \widetilde{M}^{(n-k)} for \widetilde{M}^{(n-k)}
+      // by using the fact that we know -\widetilde{M}^{(n-k)} B S, -S C \widetilde{M}^{(n-k)} and S^{-1}
+      blas::gemm(-1.0, M_(rg_n, rg_n_nk), wremk_.S(rg_k, rg_k) * M_(rg_n_nk, rg_n), 1.0, M_(rg_n, rg_n));
     }
     // Complete the remove2 operation.
     void complete_remove2() { complete_remove_k(); }
@@ -1524,7 +1575,7 @@ namespace triqs::det_manip {
       det_  = newdet_;
       sign_ = newsign_;
       ++nops_;
-      if (nops_ > nops_before_check_) check_mat_inv();
+      if (nops_ > nops_before_check_) regenerate_and_check();
       last_try_ = try_tag::NoTry;
     }
 
@@ -1671,18 +1722,77 @@ namespace triqs::det_manip {
 
     /**
      * @brief Regenerate the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign
-     * \f$ s^{(n)} \f$ from scratch using the matrix builder.
+     * \f$ s^{(n)} \f$ from scratch using the matrix builder and check the consistency of the stored values.
      *
      * @details It uses the matrix builder to rebuild the matrix \f$ G^{(n)} \f$, then computes its inverse
-     * \f$ M^{(n)} \f$ and its determinant \f$ \det(G^{(n)}) \f$, and recomputes the sign \f$ s^{(n)} \f$ associated
-     * with the permutation matrices. This is used to counteract the accumulation of numerical errors after many
-     * `try`/`complete` operations.
+     * \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with
+     * `nda::linalg::det`, and recomputes the sign \f$ s^{(n)} \f$ associated with the permutation matrices. This is
+     * used to counteract the accumulation of numerical errors after many `try`/`complete` operations.
      *
-     * The consistency check against the stored values (see set_precision_warning(), set_precision_error() and
-     * set_singular_threshold()) is performed automatically in complete_operation() after a configurable number of
-     * operations (see set_n_operations_before_check()); this function itself does not perform that check.
+     * The freshly computed objects are checked against the stored ones. If they are not consistent, a warning is
+     * emitted or an exception is thrown (see set_precision_warning(), set_precision_error() and
+     * set_singular_threshold()).
+     *
+     * It is called automatically in complete_operation() after a configurable number of operations (see
+     * set_n_operations_before_check()).
      */
-    void regenerate() { _regenerate_with_check(false, 0, 0); }
+    void regenerate_and_check() {
+      nops_ = 0;
+
+      // lambda to write a complex or real number to a string
+      auto str = [](auto x) {
+        if constexpr (std::same_as<std::decay_t<decltype(x)>, std::complex<double>>)
+          return fmt::format("({},{})", std::real(x), std::imag(x));
+        else
+          return fmt::format("{}", x);
+      };
+
+      // early return if the matrix is empty
+      if (size() == 0) {
+        // empty matrices always have their determinant and sign set to exactly 1
+        if (std::abs(det_ - 1.0) > 1e-14)
+          TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Determinant of empty matrix: {} != 1\n", str(det_));
+        if (sign_ != 1) TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Sign of empty matrix: {} != 1\n", sign_);
+        return;
+      }
+
+      // regenerate G and its determinant
+      auto mat = matrix_type{size(), size()};
+      nda::for_each(mat.shape(), [this, &mat](auto i, auto j) { mat(i, j) = f_(x_[i], y_[j]); });
+      auto const det_G = nda::linalg::det(mat);
+
+      // check G and compare determinants
+      if (is_singular(det_G))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Matrix G is singular: det(G) = {}\n", str(det_G));
+      auto const det_diff = detail::rel_diff(det_, det_G);
+      if (det_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      if (det_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent determinants: {} != {}\n", str(det_), str(det_G));
+      det_ = det_G;
+
+      // check the inverse matrix
+      nda::linalg::inv_in_place(mat);
+      auto M_v            = M_(nda::range(size()), nda::range(size()));
+      auto const mat_diff = detail::rel_diff(mat, M_v);
+      if (mat_diff >= precision_warning_)
+        fmt::print(stderr, "Warning in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      if (mat_diff >= precision_error_)
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent matrices: relative difference = {}\n", mat_diff);
+      M_v = mat;
+
+      // regenerate and check the sign of the permutation matrices
+      double exp_sign = 1.0;
+      auto P          = nda::matrix<double>::zeros(size(), size());
+      for (long i = 0; i < size(); ++i) P(i, row_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      P() = 0.0;
+      for (long i = 0; i < size(); ++i) P(i, col_perm_[i]) = 1;
+      exp_sign *= nda::linalg::det(P);
+      if ((exp_sign > 0) != (sign_ > 0))
+        TRIQS_RUNTIME_ERROR << fmt::format("Error in det_manip::regenerate_and_check: Inconsistent signs: {} != {}\n", sign_, exp_sign);
+      sign_ = (exp_sign > 0 ? 1 : -1);
+    }
 
     /**
      * @brief Write a triqs::det_manip::det_manip object to HDF5.
@@ -1752,66 +1862,10 @@ namespace triqs::det_manip {
       }
     }
 
-    // Regenerate the inverse matrix, determinant and sign from the matrix builder, optionally checking the freshly
-    // computed values against the stored ones.
-    void _regenerate_with_check(bool do_check, double prec_warning, double prec_error) {
-      if (n_ == 0) {
-        det_  = 1;
-        sign_ = 1;
-        return;
-      }
-
-      range RN(n_);
-      matrix_type res(n_, n_);
-      for (int i = 0; i < n_; i++)
-        for (int j = 0; j < n_; j++) res(i, j) = f_(x_[i], y_[j]);
-      det_ = nda::linalg::det(res);
-
-      if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
-      res = nda::linalg::inv(res);
-
-      if (do_check) { // check that M_ is close to res
-        const bool relative = true;
-        double r            = max_element(abs(res - M_(RN, RN)));
-        double r2           = max_element(abs(res + M_(RN, RN)));
-        bool err            = !(r < (relative ? prec_error * r2 : prec_error));
-        bool war            = !(r < (relative ? prec_warning * r2 : prec_warning));
-        if (err || war) {
-          std::cerr << "matrix  = " << matrix() << std::endl;
-          std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-        }
-        if (war)
-          std::cerr << "Warning : det_manip deviation above warning threshold "
-                    << "check "
-                    << "N = " << n_ << "  "
-                    << "\n   max(abs(M^-1 - M^-1_true)) = " << r
-                    << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? prec_warning * r2 : prec_warning) << " " << std::endl;
-        if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
-      }
-
-      // since we have the proper inverse, replace the matrix and the det
-      M_(RN, RN) = res;
-      nops_      = 0;
-
-      // find the sign (there must be a better way...)
-      double s = 1.0;
-      nda::matrix<double> m(n_, n_);
-      m() = 0.0;
-      for (int i = 0; i < n_; i++) m(i, row_perm_[i]) = 1;
-      s *= nda::linalg::det(m);
-      m() = 0.0;
-      for (int i = 0; i < n_; i++) m(i, col_perm_[i]) = 1;
-      s *= nda::linalg::det(m);
-      sign_ = (s > 0 ? 1 : -1);
-    }
-
-    // Regenerate and check the consistency of the stored inverse matrix, determinant and sign.
-    void check_mat_inv() { _regenerate_with_check(true, precision_warning_, precision_error_); }
-
-    // Check whether the determinant is considered singular: (singular_threshold_ < 0 ? not
-    // std::isnormal(std::abs(det_)) : (std::abs(det_) < singular_threshold_)). See set_singular_threshold().
-    [[nodiscard]] bool is_singular() const {
-      return (singular_threshold_ < 0 ? not std::isnormal(std::abs(det_)) : (std::abs(det_) < singular_threshold_));
+    // Check whether the given determinant is considered singular: (singular_threshold_ < 0 ? not
+    // std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold_)). See set_singular_threshold().
+    [[nodiscard]] bool is_singular(value_type det) const {
+      return (singular_threshold_ < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold_));
     }
 
     private:
@@ -1831,6 +1885,8 @@ namespace triqs::det_manip {
     int sign_{1};
 
     // working data for the try-complete operations
+    detail::work_data_remove<value_type> wrem_;
+    detail::work_data_remove_k<value_type> wremk_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;
     detail::work_data_type_refill<x_type, y_type, value_type> wref_;
