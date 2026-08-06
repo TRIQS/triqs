@@ -1477,37 +1477,43 @@ namespace triqs::det_manip {
      *
      * @warning This routine does not make any modification. It has to be completed with complete_operation().
      *
-     * @tparam ArgumentContainer1 Container type holding the first arguments.
-     * @tparam ArgumentContainer2 Container type holding the second arguments.
-     * @param X Container holding the first matrix builder arguments.
-     * @param Y Container holding the second matrix builder arguments.
+     * @tparam X triqs::det_manip::MatrixBuilderXRange.
+     * @tparam Y triqs::det_manip::MatrixBuilderYRange.
+     * @param x_rg Range containing the first matrix builder arguments.
+     * @param y_rg Range containing the second matrix builder arguments.
      * @return Determinant ratio \f$ \det(\widetilde{F}^{(\widetilde{n})}) / \det(F^{(n)}) \f$.
      */
-    template <typename ArgumentContainer1, typename ArgumentContainer2>
-    value_type try_refill(ArgumentContainer1 const &X, ArgumentContainer2 const &Y) {
+    template <typename X, typename Y>
+      requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
+    value_type try_refill(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
+      // check input arguments
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(X.size() == Y.size());
+      TRIQS_ASSERT(std::ranges::size(x_rg) == std::ranges::size(y_rg));
+      auto const sz = static_cast<long>(std::ranges::size(x_rg));
 
+      // set the try tag
       last_try_ = try_tag::Refill;
 
-      long s = X.size();
-      // treat empty matrix separately
-      if (s == 0) {
-        wref_.x_values.clear();
-        wref_.y_values.clear();
+      // reserve memory for and clear the working data
+      if (sz > wref_.capacity()) wref_.reserve(2 * sz);
+      wref_.x.clear();
+      wref_.y.clear();
+
+      // early return if the new matrix is empty
+      if (sz == 0) {
+        newdet_  = 1;
+        newsign_ = 1;
         return 1 / (sign_ * det_);
       }
 
-      wref_.reserve(s);
-      wref_.x_values.clear();
-      wref_.y_values.clear();
-      std::copy(X.begin(), X.end(), std::back_inserter(wref_.x_values));
-      std::copy(Y.begin(), Y.end(), std::back_inserter(wref_.y_values));
+      // copy the new matrix builder arguments to the working data
+      std::ranges::copy(x_rg, std::back_inserter(wref_.x));
+      std::ranges::copy(y_rg, std::back_inserter(wref_.y));
 
-      for (long i = 0; i < s; ++i)
-        for (long j = 0; j < s; ++j) wref_.M(i, j) = f_(wref_.x_values[i], wref_.y_values[j]);
-      range R(s);
-      newdet_  = nda::linalg::det(wref_.M(R, R));
+      // build the new matrix G and calculate its determinant
+      auto G_v = wref_.G(nda::range(sz), nda::range(sz));
+      nda::for_each(G_v.shape(), [this, &G_v](auto i, auto j) { G_v(i, j) = f_(wref_.x[i], wref_.y[j]); });
+      newdet_  = nda::linalg::det(G_v);
       newsign_ = 1;
 
       return newdet_ / (sign_ * det_);
@@ -1517,27 +1523,20 @@ namespace triqs::det_manip {
     private:
     // Complete the refill operation.
     void complete_refill() {
-      n_ = wref_.x_values.size();
-
-      // special empty case again
-      if (n_ == 0) {
+      // early return if the new matrix has size 0
+      if (wref_.size() == 0) {
         clear();
-        newdet_  = 1;
-        newsign_ = 1;
         return;
       }
 
-      reserve(n_);
-      std::swap(x_, wref_.x_values);
-      std::swap(y_, wref_.y_values);
+      // reserve memory and reset the matrix builder arguments and the permutation vectors
+      n_ = wref_.size();
+      if (n_ > capacity()) reserve(2 * n_);
+      set_xy(wref_.x, wref_.y);
 
-      row_perm_.resize(n_, 0); // Zero Initialization avoids ASAN false positive
-      col_perm_.resize(n_, 0);
-      std::iota(row_perm_.begin(), row_perm_.end(), 0);
-      std::iota(col_perm_.begin(), col_perm_.end(), 0);
-
-      range RN(n_);
-      M_(RN, RN) = nda::linalg::inv(wref_.M(RN, RN));
+      // set the new inverse matrix M
+      auto rg    = nda::range(n_);
+      M_(rg, rg) = nda::linalg::inv(wref_.G(rg, rg));
     }
 
     public:
@@ -1887,9 +1886,9 @@ namespace triqs::det_manip {
     detail::work_data_remove_k<value_type> wremk_;
     detail::work_data_change_col<y_type, value_type> wcol_;
     detail::work_data_change_row<x_type, value_type> wrow_;
+    detail::work_data_refill<x_type, y_type, value_type> wref_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;
-    detail::work_data_type_refill<x_type, y_type, value_type> wref_;
     value_type newdet_{1};
     int newsign_{1};
 
