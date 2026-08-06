@@ -56,8 +56,6 @@ namespace triqs::det_manip {
 
   namespace blas = nda::blas;
 
-  // ================ det_manip implementation =====================
-
   /**
    * @ingroup triqs-detmanip
    * @brief Manipulate determinants and ratios of determinants for CTQMC solvers.
@@ -87,9 +85,16 @@ namespace triqs::det_manip {
    */
   template <MatrixBuilder F> class det_manip {
     public:
-    using x_type      = detail::get_xarg_t<F>;
-    using y_type      = detail::get_yarg_t<F>;
-    using value_type  = detail::get_result_t<F>;
+    /// Type of the first argument that the triqs::det_manip::MatrixBuilder takes.
+    using x_type = detail::get_xarg_t<F>;
+
+    /// Type of the second argument that the triqs::det_manip::MatrixBuilder takes.
+    using y_type = detail::get_yarg_t<F>;
+
+    /// Value type of the matrix, i.e. the return type of the triqs::det_manip::MatrixBuilder.
+    using value_type = detail::get_result_t<F>;
+
+    /// Type of the matrix.
     using matrix_type = nda::matrix<value_type>;
 
     /**
@@ -231,6 +236,7 @@ namespace triqs::det_manip {
     /**
      * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ x_i \f$ that determines the elements of the
      * i<sup>th</sup> row in the original matrix \f$ F^{(n)} \f$.
+     *
      * @param i Argument index.
      * @return Argument value \f$ x_i \f$.
      */
@@ -252,7 +258,7 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$.
-     * @details Warning: this is slow, since it creates a new copy and reorders the rows.
+     * @warning This is slow, since it creates a new copy and reorders the rows.
      * @return `std::vector` containing the arguments \f$ x_i \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
     [[nodiscard]] auto get_x() const {
@@ -264,7 +270,7 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$.
-     * @details Warning: this is slow, since it creates a new copy and reorders the columns.
+     * @warning This is slow, since it creates a new copy and reorders the columns.
      * @return `std::vector` containing the arguments \f$ y_j \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
     [[nodiscard]] auto get_y() const {
@@ -278,10 +284,6 @@ namespace triqs::det_manip {
      * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ in the order of the matrix
      * \f$ G^{(n)} \f$.
      *
-     * @details Advanced: this is the internal storage order, which differs by some permutation from the order given by
-     * the user. Useful for some performance-critical loops, to be used together with the other `*_internal_order`
-     * functions.
-     *
      * @return `std::vector` containing the arguments \f$ x_i \f$.
      */
     [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
@@ -289,7 +291,7 @@ namespace triqs::det_manip {
     /**
      * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$ in the order of the matrix
      * \f$ G^{(n)} \f$.
-     * @details See get_x_internal_order() for details.
+     *
      * @return `std::vector` containing the arguments \f$ y_j \f$.
      */
     [[nodiscard]] auto const &get_y_internal_order() const { return y_; }
@@ -312,7 +314,6 @@ namespace triqs::det_manip {
      * @param j Column index.
      * @return The matrix element \f$ [F^{(n)}]^{-1}_{ij} \f$.
      */
-    // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
     [[nodiscard]] auto inverse_matrix(int i, int j) const {
       EXPECTS(0 <= i and i < size());
       EXPECTS(0 <= j and j < size());
@@ -321,8 +322,11 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get the full inverse matrix \f$ [F^{(n)}]^{-1} \f$.
-     * @details See inverse_matrix(int, int) for details. Warning: this is slow, since it creates a new copy and
-     * reorders the rows/columns.
+     * 
+     * @details See inverse_matrix(int, int) for details. 
+     * 
+     * @warning This is slow, since it creates a new copy and reorders the rows/columns.
+     * 
      * @return The inverse matrix \f$ [F^{(n)}]^{-1} \f$.
      */
     [[nodiscard]] auto inverse_matrix() const {
@@ -333,7 +337,7 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get an element of the matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
-     * @details Advanced: uses the internal storage order, see get_x_internal_order().
+     *
      * @param i Row index.
      * @param j Column index.
      * @return The matrix element \f$ M^{(n)}_{ij} \f$.
@@ -346,7 +350,6 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get the full inverse matrix \f$ M^{(n)} = [G^{(n)}]^{-1} \f$.
-     * @details Advanced: uses the internal storage order, see get_x_internal_order().
      * @return The inverse matrix \f$ M^{(n)} \f$.
      */
     [[nodiscard]] auto inverse_matrix_internal_order() const {
@@ -355,7 +358,7 @@ namespace triqs::det_manip {
 
     /**
      * @brief Get the original matrix \f$ F^{(n)} \f$.
-     * @details Warning: this is slow, since it creates a new matrix and re-evaluates the matrix builder.
+     * @warning This is slow, since it creates a new matrix and re-evaluates the matrix builder.
      * @return The original matrix \f$ F^{(n)} \f$.
      */
     [[nodiscard]] auto matrix() const {
@@ -377,8 +380,6 @@ namespace triqs::det_manip {
     friend void foreach (det_manip const &dm, auto const &fn) {
       nda::for_each(std::array{dm.size(), dm.size()}, [&fn, &dm](auto i, auto j) { return fn(dm.x_[i], dm.y_[j], dm.M_(j, i)); });
     }
-
-    // ------------------------- OPERATIONS -----------------------------------------------
 
     /**
      * @brief Swap two rows.
@@ -588,7 +589,6 @@ namespace triqs::det_manip {
       return wins_.S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
     }
 
-    //------------------------------------------------------------------------------------------
     private:
     // Complete the insert operation.
     void complete_insert() {
@@ -631,8 +631,6 @@ namespace triqs::det_manip {
     }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
      * @brief Try to insert \f$ k \f$ rows and columns.
      *
@@ -834,7 +832,6 @@ namespace triqs::det_manip {
       return result;
     }
 
-    //------------------------------------------------------------------------------------------
     private:
     // Complete the insert_k operation.
     void complete_insert_k() {
@@ -883,8 +880,6 @@ namespace triqs::det_manip {
     void complete_insert2() { complete_insert_k(); }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
      * @brief Try to remove one row and column.
      *
@@ -930,7 +925,7 @@ namespace triqs::det_manip {
 
       return wrem_.S * s_p3p4;
     }
-    //------------------------------------------------------------------------------------------
+
     private:
     // Complete the remove operation.
     void complete_remove() {
@@ -984,8 +979,6 @@ namespace triqs::det_manip {
     }
 
     public:
-    //------------------------------------------------------------------------------------------
-
     /**
      * @brief Try to remove \f$ k \f$ rows and columns.
      *
@@ -1134,6 +1127,7 @@ namespace triqs::det_manip {
 
       return det_S * s_p3p4;
     }
+
     /**
      * @brief Try to remove two rows and two columns.
      *
@@ -1142,8 +1136,6 @@ namespace triqs::det_manip {
      *
      * It simply calls the more general try_remove_k().
      *
-     * @warning This routine does not make any modification. It has to be completed with complete_operation().
-     *
      * @param i0 Position of the first row to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param i1 Position of the second row to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j0 Position of the first column to be removed in the original matrix \f$ F^{(n)} \f$.
@@ -1151,7 +1143,7 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n-2)}) / \det(F^{(n)}) \f$.
      */
     value_type try_remove2(long i0, long i1, long j0, long j1) { return try_remove_k({i0, i1}, {j0, j1}); }
-    //------------------------------------------------------------------------------------------
+
     private:
     // Complete the remove_k operation.
     void complete_remove_k() {
@@ -1207,10 +1199,10 @@ namespace triqs::det_manip {
       // by using the fact that we know -\widetilde{M}^{(n-k)} B S, -S C \widetilde{M}^{(n-k)} and S^{-1}
       blas::gemm(-1.0, M_(rg_nk, rg_nk_n), wremk_.S(rg_k, rg_k) * M_(rg_nk_n, rg_nk), 1.0, M_(rg_nk, rg_nk));
     }
+
     // Complete the remove2 operation.
     void complete_remove2() { complete_remove_k(); }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
      * @brief Try to change one column in the original matrix \f$ F^{(n)} \f$.
@@ -1271,7 +1263,7 @@ namespace triqs::det_manip {
 
       return wcol_.xi; // newsign_/sign_ is unity
     }
-    //------------------------------------------------------------------------------------------
+
     private:
     // Complete the change column operation.
     void complete_change_col() {
@@ -1284,7 +1276,6 @@ namespace triqs::det_manip {
       blas::ger(-1 / wcol_.xi, wcol_.Mu(rg_n), wcol_.vTM(rg_n), M_(rg_n, rg_n));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
      * @brief Try to change one row in the original matrix \f$ F^{(n)} \f$.
@@ -1325,7 +1316,7 @@ namespace triqs::det_manip {
 
       return wrow_.xi; // newsign_/sign_ is unity
     }
-    //------------------------------------------------------------------------------------------
+
     private:
     // Complete the change row operation.
     void complete_change_row() {
@@ -1338,7 +1329,6 @@ namespace triqs::det_manip {
       blas::ger(-1 / wrow_.xi, wrow_.Mu(rg_n), wrow_.vTM(rg_n), M_(rg_n, rg_n));
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
      * @brief Try to change one column and one row in the original matrix \f$ F^{(n)} \f$.
@@ -1435,7 +1425,7 @@ namespace triqs::det_manip {
 
       return wrc_.xi; // newsign_/sign_ is unity
     }
-    //------------------------------------------------------------------------------------------
+
     private:
     // Complete the change row and column operation.
     void complete_change_col_row() {
@@ -1459,7 +1449,6 @@ namespace triqs::det_manip {
       }
     }
 
-    //------------------------------------------------------------------------------------------
     public:
     /**
      * @brief Try to fill the original matrix \f$ F^{(n)} \f$ with new elements.
@@ -1517,7 +1506,6 @@ namespace triqs::det_manip {
       return newdet_ / (sign_ * det_);
     }
 
-    //------------------------------------------------------------------------------------------
     private:
     // Complete the refill operation.
     void complete_refill() {
@@ -1576,12 +1564,12 @@ namespace triqs::det_manip {
      */
     void reject_last_try() { last_try_ = try_tag::NoTry; }
 
-    // ----------------- A few short cuts   -----------------
-
     public:
     /**
      * @brief Insert one row and column.
+     * 
      * @details Wrapper for try_insert() followed by a complete_operation() call. See try_insert() for details.
+     * 
      * @param i Position of the row to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param j Position of the column to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the elements of the new row.
@@ -1596,7 +1584,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Insert one row and column at the end of the matrix.
+     * 
      * @details Same as insert() but with `i` and `j` set to size().
+     * 
      * @param x Argument to the matrix builder that determines the elements of the new row.
      * @param y Argument to the matrix builder that determines the elements of the new column.
      * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
@@ -1605,7 +1595,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Insert two rows and columns.
+     * 
      * @details Wrapper for try_insert2() followed by a complete_operation() call. See try_insert2() for details.
+     * 
      * @param i0,i1 Positions of the rows to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param j0,j1 Positions of the columns to be inserted in the original matrix \f$ F^{(n)} \f$.
      * @param x0,x1 Arguments to the matrix builder that determine the elements of the new rows.
@@ -1620,7 +1612,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Insert two rows and columns at the end of the matrix.
+     * 
      * @details Same as insert2() but with `i0` and `j0` set to size() and `i1` and `j1` set to size() + 1.
+     * 
      * @param x0,x1 Arguments to the matrix builder that determine the elements of the new rows.
      * @param y0,y1 Arguments to the matrix builder that determine the elements of the new columns.
      * @return Determinant ratio \f$ \det(F^{(n+2)}) / \det(F^{(n)}) \f$.
@@ -1631,7 +1625,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Remove one row and column.
+     * 
      * @details Wrapper for try_remove() followed by a complete_operation() call. See try_remove() for details.
+     * 
      * @param i Position of the row to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j Position of the column to be removed in the original matrix \f$ F^{(n)} \f$.
      * @return Determinant ratio \f$ \det(F^{(n-1)}) / \det(F^{(n)}) \f$.
@@ -1651,7 +1647,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Remove two rows and columns.
+     * 
      * @details Wrapper for try_remove2() followed by a complete_operation() call. See try_remove2() for details.
+     * 
      * @param i0,i1 Positions of the rows to be removed in the original matrix \f$ F^{(n)} \f$.
      * @param j0,j1 Positions of the columns to be removed in the original matrix \f$ F^{(n)} \f$.
      * @return Determinant ratio \f$ \det(F^{(n-2)}) / \det(F^{(n)}) \f$.
@@ -1671,7 +1669,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Change one column.
+     * 
      * @details Wrapper for try_change_col() followed by a complete_operation() call. See try_change_col() for details.
+     * 
      * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param y Argument to the matrix builder that determines the new elements of the column.
      * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
@@ -1684,7 +1684,9 @@ namespace triqs::det_manip {
 
     /**
      * @brief Change one row.
+     * 
      * @details Wrapper for try_change_row() followed by a complete_operation() call. See try_change_row() for details.
+     * 
      * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the new elements of the row.
      * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
@@ -1697,8 +1699,10 @@ namespace triqs::det_manip {
 
     /**
      * @brief Change one row and one column.
+     * 
      * @details Wrapper for try_change_col_row() followed by a complete_operation() call. See try_change_col_row() for
      * details.
+     * 
      * @param i Position of the row to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param j Position of the column to be changed in the original matrix \f$ F^{(n)} \f$.
      * @param x Argument to the matrix builder that determines the new elements of the row.
@@ -1837,7 +1841,6 @@ namespace triqs::det_manip {
       dm.last_try_ = try_tag::NoTry;
     }
 
-    //------------------------------------------------------------------------------------------
     private:
     // Enumerate the different operations supported by the det_manip class that have a try - complete step.
     enum class try_tag { NoTry, Insert, Remove, ChangeCol, ChangeRow, ChangeRowCol, InsertK, RemoveK, Refill };
@@ -1903,4 +1906,5 @@ namespace triqs::det_manip {
     try_tag last_try_{try_tag::NoTry};
     std::uint64_t nops_{0};
   };
+
 } // namespace triqs::det_manip
