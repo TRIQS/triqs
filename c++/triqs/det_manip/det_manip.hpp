@@ -20,7 +20,7 @@
 
 /**
  * @file
- * @brief Provides a class to manipulate determinants efficiently.
+ * @brief Provides the triqs::det_manip::det_manip class to manipulate determinants efficiently.
  */
 
 #pragma once
@@ -80,8 +80,8 @@ namespace triqs::det_manip {
    * - Change one row and column (see try_change_col_row()).
    * - Build a completely new matrix (see try_refill()).
    *
-   * @tparam F Callable object \f$ f \f$ that takes two arguments and returns a real or complex value. It
-   * determines the elements of the matrix via \f$ F^{(n)}_{ij} = f(x_i, y_j) \f$.
+   * @tparam F triqs::det_manip::MatrixBuilder, i.e. a callable object \f$ f \f$ that takes two arguments and returns
+   * a real or complex value. It determines the elements of the matrix via \f$ F^{(n)}_{ij} = f(x_i, y_j) \f$.
    */
   template <MatrixBuilder F> class det_manip {
     public:
@@ -91,23 +91,24 @@ namespace triqs::det_manip {
     using matrix_type = nda::matrix<value_type>;
 
     /**
-     * @brief Construct a det_manip object with a callable `F` and an initial capacity for the data storages.
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and an initial capacity for the data
+     * storages.
      *
      * @details Like for `std::vector`, the capacity grows automatically (by a factor of 2) when needed, but this can
      * yield a performance penalty if it happens too often.
      *
-     * @param f Callable `F` object (a copy is stored in the class).
+     * @param f triqs::det_manip::MatrixBuilder object (a copy is stored in the class).
      * @param cap Initial capacity for the size of the matrix, i.e. the maximum number of rows and columns.
      */
     det_manip(F f, long cap) : f_(std::move(f)) { reserve(cap); }
 
     /**
-     * @brief Construct a det_manip object with a callable `F` and two ranges containing the arguments for
-     * the matrix builder.
+     * @brief Construct a det_manip object with a triqs::det_manip::MatrixBuilder and two ranges containing the
+     * arguments for the matrix builder.
      *
      * @tparam X triqs::det_manip::MatrixBuilderXRange.
      * @tparam Y triqs::det_manip::MatrixBuilderYRange.
-     * @param f Callable `F` object (a copy is stored in the class).
+     * @param f triqs::det_manip::MatrixBuilder object (a copy is stored in the class).
      * @param x_rg Range containing the first arguments \f$ \mathbf{x} \f$.
      * @param y_rg Range containing the second arguments \f$ \mathbf{y} \f$.
      */
@@ -226,8 +227,8 @@ namespace triqs::det_manip {
     [[nodiscard]] auto capacity() const { return M_.shape()[0]; }
 
     /**
-     * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
-     * original matrix \f$ F^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ x_i \f$ that determines the elements of the
+     * i<sup>th</sup> row in the original matrix \f$ F^{(n)} \f$.
      * @param i Argument index.
      * @return Argument value \f$ x_i \f$.
      */
@@ -237,8 +238,8 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get the matrix builder argument \f$ y_j \f$ that determines the elements of the j<sup>th</sup> column in
-     * the original matrix \f$ F^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder argument \f$ y_j \f$ that determines the elements of the
+     * j<sup>th</sup> column in the original matrix \f$ F^{(n)} \f$.
      * @param j Argument index.
      * @return Argument value \f$ y_j \f$.
      */
@@ -248,7 +249,7 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get a vector with all matrix builder arguments \f$ \mathbf{x} \f$.
+     * @brief Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$.
      * @details Warning: this is slow, since it creates a new copy and reorders the rows.
      * @return `std::vector` containing the arguments \f$ x_i \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
@@ -260,7 +261,7 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get a vector with all matrix builder arguments \f$ \mathbf{y} \f$.
+     * @brief Get a vector with all triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$.
      * @details Warning: this is slow, since it creates a new copy and reorders the columns.
      * @return `std::vector` containing the arguments \f$ y_j \f$ in the order of the original matrix \f$ F^{(n)} \f$.
      */
@@ -272,7 +273,8 @@ namespace triqs::det_manip {
     }
 
     /**
-     * @brief Get the matrix builder arguments \f$ \mathbf{x} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{x} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
      *
      * @details Advanced: this is the internal storage order, which differs by some permutation from the order given by
      * the user. Useful for some performance-critical loops, to be used together with the other `*_internal_order`
@@ -283,7 +285,8 @@ namespace triqs::det_manip {
     [[nodiscard]] auto const &get_x_internal_order() const { return x_; }
 
     /**
-     * @brief Get the matrix builder arguments \f$ \mathbf{y} \f$ in the order of the matrix \f$ G^{(n)} \f$.
+     * @brief Get the triqs::det_manip::MatrixBuilder arguments \f$ \mathbf{y} \f$ in the order of the matrix
+     * \f$ G^{(n)} \f$.
      * @details See get_x_internal_order() for details.
      * @return `std::vector` containing the arguments \f$ y_j \f$.
      */
@@ -470,7 +473,8 @@ namespace triqs::det_manip {
      * @brief Try to insert one row and column.
      *
      * @details The row is inserted at position \f$ i \f$ and the column at position \f$ j \f$ in the original matrix
-     * \f$ F^{(n)} \f$. Their elements are determined by the given matrix builder arguments \f$ x \f$ and \f$ y \f$.
+     * \f$ F^{(n)} \f$. Their elements are determined by the given triqs::det_manip::MatrixBuilder arguments
+     * \f$ x \f$ and \f$ y \f$.
      *
      * The new column/row will be at column \f$ j \f$, row \f$ i \f$, with \f$ 0 \leq i, j \leq n \f$. The current
      * column \f$ j \f$ (resp. row \f$ i \f$) becomes column \f$ j + 1 \f$ (resp. row \f$ i + 1 \f$). Inserting at
@@ -1210,7 +1214,7 @@ namespace triqs::det_manip {
      * @brief Try to change one column in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The column to be changed is at position \f$ j \f$ in the original matrix \f$ F^{(n)} \f$. The new
-     * elements of the columns are determined by the given matrix builder argument \f$ y \f$.
+     * elements of the columns are determined by the given triqs::det_manip::MatrixBuilder argument \f$ y \f$.
      *
      * Let \f$ j_p \f$ be the position of the column in the matrix \f$ G^{(n)} \f$. We can write the new matrix as
      * \f[
@@ -1284,7 +1288,7 @@ namespace triqs::det_manip {
      * @brief Try to change one row in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The row to be changed is at position \f$ i \f$ in the original matrix \f$ F^{(n)} \f$. The new
-     * elements of the row are determined by the given matrix builder argument \f$ x \f$.
+     * elements of the row are determined by the given triqs::det_manip::MatrixBuilder argument \f$ x \f$.
      *
      * We follow the same procedure as in try_change_col(), except that we use \f$ v_i = f(x, y_j) - f(x_{i_p}, y_j) \f$
      * and \f$ \mathbf{u} = \mathbf{e}_{i_p} \f$ is a cartesian basis vector.
@@ -1338,8 +1342,8 @@ namespace triqs::det_manip {
      * @brief Try to change one column and one row in the original matrix \f$ F^{(n)} \f$.
      *
      * @details The row and column to be changed are at positions \f$ i \f$ and \f$ j \f$ in the original matrix
-     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given matrix builder
-     * arguments \f$ x \f$ and \f$ y \f$.
+     * \f$ F^{(n)} \f$, respectively. The new elements of the row and column are determined by the given
+     * triqs::det_manip::MatrixBuilder arguments \f$ x \f$ and \f$ y \f$.
      *
      * Let \f$ i_p \f$ and \f$ j_p \f$ be the positions of the row and the column in the matrix \f$ G^{(n)} \f$. We can
      * write the new matrix as
@@ -1707,10 +1711,11 @@ namespace triqs::det_manip {
 
     /**
      * @brief Regenerate the inverse matrix \f$ M^{(n)} \f$, the determinant \f$ \det(G^{(n)}) \f$ and the sign
-     * \f$ s^{(n)} \f$ from scratch using the matrix builder and check the consistency of the stored values.
+     * \f$ s^{(n)} \f$ from scratch using the triqs::det_manip::MatrixBuilder and check the consistency of the stored
+     * values.
      *
-     * @details It uses the matrix builder to rebuild the matrix \f$ G^{(n)} \f$, then computes its inverse
-     * \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with
+     * @details It uses the triqs::det_manip::MatrixBuilder to rebuild the matrix \f$ G^{(n)} \f$, then computes its
+     * inverse \f$ M^{(n)} \f$ with `nda::linalg::inv_in_place` and its determinant \f$ \det(G^{(n)}) \f$ with
      * `nda::linalg::det`, and recomputes the sign \f$ s^{(n)} \f$ associated with the permutation matrices. This is
      * used to counteract the accumulation of numerical errors after many `try`/`complete` operations.
      *
