@@ -402,6 +402,8 @@ namespace triqs::det_manip {
      * @param j Index of the second row to swap.
      */
     void swap_row(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       if (i == j) return;
       std::swap(row_perm_[i], row_perm_[j]);
       sign_ = -sign_;
@@ -422,6 +424,8 @@ namespace triqs::det_manip {
      * @param j Index of the second column to swap.
      */
     void swap_col(long i, long j) {
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       if (i == j) return;
       std::swap(col_perm_[i], col_perm_[j]);
       sign_ = -sign_;
