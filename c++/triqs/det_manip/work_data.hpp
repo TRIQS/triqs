@@ -27,6 +27,7 @@
 
 #include <nda/nda.hpp>
 
+#include <utility>
 #include <vector>
 
 namespace triqs::det_manip::detail {
@@ -103,6 +104,72 @@ namespace triqs::det_manip::detail {
         auto Rk = nda::range(k);
         return nda::linalg::det(ksi(Rk, Rk));
       };
+    }
+  };
+
+  // Working data used when inserting 1 row and column.
+  //
+  // - x and y: MatrixBuilder arguments for the new row and column.
+  // - i and j: Positions of the new row and column in the original matrix F^{(n)}.
+  // - S_inv: Inverse of the new diagonal element of the inverse matrix M, i.e. S^{-1} = D - C M^{(n)} B.
+  // - B and C: New column and row of the matrix G excluding the diagonal element D.
+  // - MB and CM: Products of the current inverse matrix M and the new column B and row C, respectively.
+  template <typename X, typename Y, typename T> struct work_data_insert {
+    X x;
+    Y y;
+    long i;
+    long j;
+    T S_inv;
+    nda::vector<T> B;
+    nda::vector<T> C;
+    nda::vector<T> MB;
+    nda::vector<T> CM;
+
+    // Get current capacity of the data storages.
+    [[nodiscard]] auto capacity() const { return B.size(); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap) {
+      if (cap > capacity()) {
+        B.resize(cap);
+        C.resize(cap);
+        MB.resize(cap);
+        CM.resize(cap);
+      }
+    }
+  };
+
+  // Working data used when inserting k rows and columns.
+  //
+  // - x and y: MatrixBuilder arguments for the new rows and columns.
+  // - i and j: Positions of the new rows and columns in the original matrix F^{(n)}.
+  // - S_inv: Inverse of the block matrix S, i.e. S^{-1} = D - C M^{(n)} B (= D for M^{(0)}).
+  // - B and C: New columns and rows of the matrix G excluding the block matrix D.
+  // - MB and CM: Products of the current inverse matrix M and B and C, respectively.
+  template <typename X, typename Y, typename T> struct work_data_insert_k {
+    std::vector<X> x;
+    std::vector<Y> y;
+    std::vector<long> i;
+    std::vector<long> j;
+    nda::matrix<T> S_inv;
+    nda::matrix<T> B;
+    nda::matrix<T> C;
+    nda::matrix<T> MB;
+    nda::matrix<T> CM;
+
+    // Get current capacity of the data storages.
+    [[nodiscard]] auto capacity() const { return std::make_pair(B.shape()[0], B.shape()[1]); }
+
+    // Reserve memory and resize the data storages if needed.
+    void reserve(long cap, long k) {
+      auto const [n_cap, k_cap] = capacity();
+      if (cap > n_cap || k > k_cap) {
+        S_inv.resize(k, k);
+        B.resize(cap, k);
+        C.resize(k, cap);
+        MB.resize(cap, k);
+        CM.resize(k, cap);
+      }
     }
   };
 

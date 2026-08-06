@@ -36,6 +36,7 @@
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <complex>
 #include <concepts>
@@ -44,6 +45,7 @@
 #include <iterator>
 #include <numeric>
 #include <ranges>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -228,6 +230,13 @@ namespace triqs::det_manip {
      * @return Number of rows/columns of the matrix.
      */
     [[nodiscard]] auto size() const { return n_; }
+
+    /**
+     * @brief Get the current capacity of the data storages.
+     * @details See reserve() for details.
+     * @return Maximum number of rows/columns that the data storages can currently hold.
+     */
+    [[nodiscard]] auto capacity() const { return M_.shape()[0]; }
 
     /**
      * @brief Get the matrix builder argument \f$ x_i \f$ that determines the elements of the i<sup>th</sup> row in the
@@ -500,38 +509,41 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
      */
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
-
-      // check input and store it for complete_operation
+      // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
       TRIQS_ASSERT(0 <= i and i <= n_);
       TRIQS_ASSERT(0 <= j and j <= n_);
-      reserve(n_ + 1);
-      last_try_ = try_tag::Insert;
-      w1_.i     = i;
-      w1_.j     = j;
-      w1_.x     = x;
-      w1_.y     = y;
+      std::tie(wins_.i, wins_.j, wins_.x, wins_.y) = std::make_tuple(i, j, x, y);
 
-      // treat empty matrix separately
+      // set the try tag
+      last_try_ = try_tag::Insert;
+
+      // early return if the current matrix is empty
       if (n_ == 0) {
         newdet_  = f_(x, y);
         newsign_ = 1;
-        return value_type(newdet_);
+        return newdet_;
       }
 
-      // I add the row and col and the end. If the move is rejected,
-      // no effect since n_ will not be changed : Minv(i,j) for i,j>=n_ has no meaning.
-      for (long l = 0; l < n_; l++) {
-        w1_.B(l) = f_(x_[l], y);
-        w1_.C(l) = f_(x, y_[l]);
+      // reserve memory for the working data
+      if (n_ + 1 > wins_.capacity()) wins_.reserve(2 * (n_ + 1));
+
+      // calculate the new column B and the new row C of the matrix G (except for the element D)
+      for (long l = 0; l < n_; ++l) {
+        wins_.B(l) = f_(x_[l], y);
+        wins_.C(l) = f_(x, y_[l]);
       }
-      range RN(n_);
-      //w1_.MB(R) = M_(R,R) * w1_.B(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, M_(RN, RN), w1_.B(RN), 0.0, w1_.MB(RN));
-      w1_.ksi  = f_(x, y) - nda::blas::dot(w1_.C(RN), w1_.MB(RN));
-      newdet_  = det_ * w1_.ksi;
-      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_); // since N-i0 + N-j0  = i0+j0 [2]
-      return w1_.ksi * (newsign_ * sign_);            // sign_ is unity, hence 1/sign_ == sign_
+
+      // calculate S^{-1} = D - C M B
+      auto rg_n = nda::range(n_);
+      blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
+      wins_.S_inv = f_(x, y) - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
+
+      // calculate the new determinant = det(G^{(n)}) S^{-1} and the new sign = old sign * (-1)^{i + j}
+      newdet_  = det_ * wins_.S_inv;
+      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
+
+      return wins_.S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
     }
 
     /**
@@ -554,82 +566,85 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
      */
     template <typename Fx, typename Fy> value_type try_insert_from_function(long i, long j, Fx fx, Fy fy, value_type const ksi) {
-
-      // check input and store it for complete_operation
+      // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
       TRIQS_ASSERT(0 <= i and i <= n_);
       TRIQS_ASSERT(0 <= j and j <= n_);
-      reserve(n_ + 1);
-      last_try_ = try_tag::Insert;
-      w1_.i     = i;
-      w1_.j     = j;
+      wins_.i = i;
+      wins_.j = j;
 
-      // treat empty matrix separately
+      // set the try tag
+      last_try_ = try_tag::Insert;
+
+      // early return if the current matrix is empty
       if (n_ == 0) {
         newdet_  = ksi;
         newsign_ = 1;
         return newdet_;
       }
 
-      // I add the row and col and the end. If the move is rejected,
-      // no effect since n_ will not be changed : Minv(i,j) for i,j>=n_ has no meaning.
-      for (long l = 0; l < n_; l++) {
-        w1_.B(l) = fx(x_[l]);
-        w1_.C(l) = fy(y_[l]);
+      // reserve memory for the working data
+      if (n_ + 1 > wins_.capacity()) wins_.reserve(2 * (n_ + 1));
+
+      // calculate the new column B and the new row C of the matrix G (except for the element D)
+      for (long l = 0; l < n_; ++l) {
+        wins_.B(l) = fx(x_[l]);
+        wins_.C(l) = fy(y_[l]);
       }
-      range RN(n_);
-      //w1_.MB(R) = M_(R,R) * w1_.B(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, M_(RN, RN), w1_.B(RN), 0.0, w1_.MB(RN));
-      w1_.ksi  = ksi - nda::blas::dot(w1_.C(RN), w1_.MB(RN));
-      newdet_  = det_ * w1_.ksi;
-      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_); // since N-i0 + N-j0  = i0+j0 [2]
-      return w1_.ksi * (newsign_ * sign_);            // sign_ is unity, hence 1/sign_ == sign_
+
+      // calculate S^{-1} = D - C M B
+      auto rg_n = nda::range(n_);
+      blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
+      wins_.S_inv = ksi - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
+
+      // calculate the new determinant = det(G^{(n)}) S^{-1} and the new sign = old sign * (-1)^{i + j}
+      newdet_  = det_ * wins_.S_inv;
+      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
+
+      return wins_.S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
     }
 
     //------------------------------------------------------------------------------------------
     private:
     // Complete the insert operation.
     void complete_insert() {
-      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-      x_.push_back(w1_.x);
-      y_.push_back(w1_.y);
-      row_perm_.push_back(0);
-      col_perm_.push_back(0);
+      auto const old_size = n_;
+      auto const new_size = n_ + 1;
+      ++n_;
 
-      // special empty case again
-      if (n_ == 0) {
-        n_       = 1;
-        M_(0, 0) = 1 / value_type(newdet_);
+      // reserve data storages
+      if (new_size > capacity()) reserve(2 * new_size);
+
+      // copy the matrix builder arguments
+      x_.push_back(wins_.x);
+      y_.push_back(wins_.y);
+
+      // early return if the new matrix has size 1
+      if (n_ == 1) {
+        M_(0, 0) = 1 / newdet_;
+        row_perm_.push_back(0);
+        col_perm_.push_back(0);
         return;
       }
 
-      range RN(n_);
-      //w1_.MC(R1) = transpose(M_(R1,R1)) * w1_.C(R1); //OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(M_(RN, RN)), w1_.C(RN), 0.0, w1_.MC(RN));
-      w1_.MC(n_) = -1;
-      w1_.MB(n_) = -1;
+      // update the permutation vectors: only rows and cols with k > i or l > j are affected
+      row_perm_.push_back(old_size);
+      std::rotate(row_perm_.begin() + wins_.i, row_perm_.begin() + old_size, row_perm_.begin() + new_size);
+      col_perm_.push_back(old_size);
+      std::rotate(col_perm_.begin() + wins_.j, col_perm_.begin() + old_size, col_perm_.begin() + new_size);
 
-      n_++;
-      RN = range(n_);
+      // calculate C M by computing its transpose, i.e. M^T C
+      auto rg_n = nda::range(old_size);
+      blas::gemv(1.0, transpose(M_(rg_n, rg_n)), wins_.C(rg_n), 0.0, wins_.CM(rg_n));
 
-      // keep the real position of the row/col
-      // since we insert a col/row, we have first to push the col at the right
-      // and then say that col w1_.i is stored in n_, the last col.
-      // same for rows
-      for (long i = n_ - 2; i >= w1_.i; i--) row_perm_[i + 1] = row_perm_[i];
-      row_perm_[w1_.i] = n_ - 1;
-      for (long i = n_ - 2; i >= w1_.j; i--) col_perm_[i + 1] = col_perm_[i];
-      col_perm_[w1_.j] = n_ - 1;
-
-      // Minv is ok, we need to complete
-      w1_.ksi = 1 / w1_.ksi;
-
-      // compute the change to the inverse
-      // M += w1_.ksi w1_.MB w1_.MC with BLAS. first put the 0
-      M_(RN, n_ - 1) = 0;
-      M_(n_ - 1, RN) = 0;
-      //M_(R,R) += w1_.ksi* w1_.MB(R) * w1_.MC(R)// OPTIMIZE BELOW
-      blas::ger(w1_.ksi, w1_.MB(RN), w1_.MC(RN), M_(RN, RN));
+      // calculate M^{(n+1)} using the update formula
+      auto rg_n1          = nda::range(new_size);
+      auto const S        = 1 / wins_.S_inv;
+      wins_.CM(old_size)  = -1;
+      wins_.MB(old_size)  = -1;
+      M_(rg_n1, old_size) = 0;
+      M_(old_size, rg_n1) = 0;
+      blas::ger(S, wins_.MB(rg_n1), wins_.CM(rg_n1), M_(rg_n1, rg_n1));
     }
 
     public:
@@ -676,70 +691,69 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(F^{(n+k)}) / \det(F^{(n)}) \f$.
      */
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(i.size() == j.size());
-      TRIQS_ASSERT(j.size() == x.size());
-      TRIQS_ASSERT(x.size() == y.size());
-
+      // check input argument sizes
       k_tried = static_cast<long>(i.size());
-      reserve(n_ + k_tried, k_tried);
+      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
+      TRIQS_ASSERT(k_tried > 0);
+      TRIQS_ASSERT(static_cast<long>(j.size()) == k_tried);
+      TRIQS_ASSERT(static_cast<long>(x.size()) == k_tried);
+      TRIQS_ASSERT(static_cast<long>(y.size()) == k_tried);
+
+      // move the input arguments to the working data
+      winsk_.i = std::move(i);
+      winsk_.j = std::move(j);
+      winsk_.x = std::move(x);
+      winsk_.y = std::move(y);
+
+      // sort input arguments and check for duplicates and out-of-bounds indices
+      auto comp = [](auto const &a, auto const &b) { return std::get<0>(a) < std::get<0>(b); };
+      std::ranges::sort(std::ranges::zip_view(winsk_.i, winsk_.x), comp);
+      std::ranges::sort(std::ranges::zip_view(winsk_.j, winsk_.y), comp);
+      TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.i) == winsk_.i.end());
+      TRIQS_ASSERT(winsk_.i.front() >= 0 and winsk_.i.back() < n_ + k_tried);
+      TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.j) == winsk_.j.end());
+      TRIQS_ASSERT(winsk_.j.front() >= 0 and winsk_.j.back() < n_ + k_tried);
+
+      // set the try tag
       last_try_ = try_tag::InsertK;
 
-      auto const argsort = [](auto const &vec) {
-        std::vector<long> idx(vec.size());
-        std::iota(idx.begin(), idx.end(), static_cast<long>(0));
-        std::stable_sort(idx.begin(), idx.end(), [&vec](long const lhs, long const rhs) { return vec[lhs] < vec[rhs]; });
-        return idx;
-      };
-      std::vector<long> idx = argsort(i);
-      std::vector<long> idy = argsort(j);
+      // reserve memory for the working data
+      auto const [n_cap, k_cap] = winsk_.capacity();
+      if (n_ + k_tried > n_cap || k_tried > k_cap) winsk_.reserve(2 * (n_ + k_tried), k_tried);
 
-      // store it for complete_operation
-      for (long l = 0; l < k_tried; ++l) {
-        wk_.i[l] = i[idx[l]];
-        wk_.x[l] = x[idx[l]];
-        wk_.j[l] = j[idy[l]];
-        wk_.y[l] = y[idy[l]];
-      };
+      // build the matrix D as part of S^{-1} = D - C M B
+      nda::for_each(std::array{k_tried, k_tried}, [this](auto l, auto m) { winsk_.S_inv(l, m) = f_(winsk_.x[l], winsk_.y[m]); });
 
-      // check consistency
-      for (int l = 0; l < k_tried - 1; ++l) {
-        TRIQS_ASSERT(wk_.i[l] != wk_.i[l + 1] and 0 <= wk_.i[l] and wk_.i[l] < n_ + k_tried);
-        TRIQS_ASSERT(wk_.j[l] != wk_.j[l + 1] and 0 <= wk_.j[l] and wk_.j[l] < n_ + k_tried);
-      }
-
-      // w1_.ksi = Delta(x_,y_) - Cw.MB using BLAS
-      for (long m = 0; m < k_tried; ++m) {
-        for (long n = 0; n < k_tried; ++n) { wk_.ksi(m, n) = f_(wk_.x[m], wk_.y[n]); }
-      }
-
-      // treat empty matrix separately
+      // early return if the current matrix is empty
       if (n_ == 0) {
-        newdet_  = wk_.det_ksi(k_tried);
+        newdet_  = detail::determinant(winsk_.S_inv, k_tried);
         newsign_ = 1;
-        return value_type(newdet_);
+        return newdet_;
       }
 
-      // I add the rows and cols and the end. If the move is rejected,
-      // no effect since n_ will not be changed : inv_mat(i,j) for i,j>=n_ has no meaning.
-      for (long n = 0; n < n_; n++) {
-        for (long l = 0; l < k_tried; ++l) {
-          wk_.B(n, l) = f_(x_[n], wk_.y[l]);
-          wk_.C(l, n) = f_(wk_.x[l], y_[n]);
+      // calculate the new columns B and the new rows C of the matrix G (except for the block matrix D)
+      for (long l = 0; l < n_; ++l) {
+        for (long m = 0; m < k_tried; ++m) {
+          winsk_.B(l, m) = f_(x_[l], winsk_.y[m]);
+          winsk_.C(m, l) = f_(winsk_.x[m], y_[l]);
         }
       }
-      range RN(n_), Rk(k_tried);
-      //wk_.MB(RN,Rk) = M_(RN,n_) * wk_.B(RN,Rk); // OPTIMIZE BELOW
-      blas::gemm(1.0, M_(RN, RN), wk_.B(RN, Rk), 0.0, wk_.MB(RN, Rk));
-      //ksi -= wk_.C (Rk, RN) * wk_.MB(RN, Rk); // OPTIMIZE BELOW
-      blas::gemm(-1.0, wk_.C(Rk, RN), wk_.MB(RN, Rk), 1.0, wk_.ksi(Rk, Rk));
-      auto ksi     = wk_.det_ksi(k_tried);
-      newdet_      = det_ * ksi;
-      long idx_sum = 0;
-      for (long l = 0; l < k_tried; ++l) { idx_sum += wk_.i[l] + wk_.j[l]; }
-      newsign_ = (idx_sum % 2 == 0 ? sign_ : -sign_); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
-      return ksi * (newsign_ * sign_);                // sign_ is unity, hence 1/sign_ == sign_
+
+      // calculate S^{-1} = D - C M B and its determinant
+      auto rg_n = nda::range(n_);
+      auto rg_k = nda::range(k_tried);
+      blas::gemm(1.0, M_(rg_n, rg_n), winsk_.B(rg_n, rg_k), 0.0, winsk_.MB(rg_n, rg_k));
+      blas::gemm(-1.0, winsk_.C(rg_k, rg_n), winsk_.MB(rg_n, rg_k), 1.0, winsk_.S_inv(rg_k, rg_k));
+      auto const det_S_inv = detail::determinant(winsk_.S_inv, k_tried);
+
+      // calculate the new determinant = det(G^{(n)}) det(S^{-1}) and sign = old sign * (-1)^{\sum_l i_l + j_l}
+      newdet_      = det_ * det_S_inv;
+      auto idx_sum = std::accumulate(winsk_.i.begin(), winsk_.i.end(), 0l) + std::accumulate(winsk_.j.begin(), winsk_.j.end(), 0l);
+      newsign_     = (idx_sum % 2 == 0 ? sign_ : -sign_);
+
+      return det_S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
     }
+
     /**
      * @brief Try to insert two rows and columns.
      *
@@ -840,51 +854,46 @@ namespace triqs::det_manip {
     private:
     // Complete the insert_k operation.
     void complete_insert_k() {
+      auto const old_size = n_;
+      auto const new_size = n_ + k_tried;
 
-      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-      for (int l = 0; l < k_tried; ++l) {
-        x_.push_back(wk_.x[l]);
-        y_.push_back(wk_.y[l]);
-        row_perm_.push_back(0);
-        col_perm_.push_back(0);
-      }
+      // reserve data storages
+      if (new_size > capacity()) reserve(2 * new_size);
 
-      range Rk(0, k_tried);
-      // treat empty matrix separately
-      if (n_ == 0) {
-        n_         = k_tried;
-        M_(Rk, Rk) = nda::linalg::inv(wk_.ksi(Rk, Rk));
-        for (long l = 0; l < k_tried; ++l) {
-          row_perm_[wk_.i[l]] = l;
-          col_perm_[wk_.j[l]] = l;
-        }
+      // append to matrix builder arguments and permutation vectors
+      std::ranges::copy(winsk_.x, std::back_inserter(x_));
+      std::ranges::copy(winsk_.y, std::back_inserter(y_));
+      std::ranges::copy(std::ranges::iota_view(old_size, new_size), std::back_inserter(row_perm_));
+      std::ranges::copy(std::ranges::iota_view(old_size, new_size), std::back_inserter(col_perm_));
+
+      // early return if the old matrix was empty (the sorted indices are then simply 0, 1, ..., k - 1)
+      auto rg_k = nda::range(k_tried);
+      if (old_size == 0) {
+        n_             = new_size;
+        M_(rg_k, rg_k) = nda::linalg::inv(winsk_.S_inv(rg_k, rg_k));
         return;
       }
 
-      range RN(n_);
-      //wk_.MC(Rk,RN) = wk_.C(Rk,RN) * M_(RN,RN);// OPTIMIZE BELOW
-      blas::gemm(1.0, wk_.C(Rk, RN), M_(RN, RN), 0.0, wk_.MC(Rk, RN));
-      wk_.MC(Rk, range(n_, n_ + k_tried)) = -1; // -identity matrix
-      wk_.MB(range(n_, n_ + k_tried), Rk) = -1; // -identity matrix !
-
-      // keep the real position of the row/col
-      // since we insert a col/row, we have first to push the col at the right
-      // and then say that col wk_.i[0] is stored in n_, the last col.
-      // same for rows
-      for (int l = 0; l < k_tried; ++l) {
-        n_++;
-        for (long i = n_ - 2; i >= wk_.i[l]; i--) row_perm_[i + 1] = row_perm_[i];
-        row_perm_[wk_.i[l]] = n_ - 1;
-        for (long i = n_ - 2; i >= wk_.j[l]; i--) col_perm_[i + 1] = col_perm_[i];
-        col_perm_[wk_.j[l]] = n_ - 1;
+      // update the permutation vectors
+      for (auto l : rg_k) {
+        ++n_;
+        std::rotate(row_perm_.begin() + winsk_.i[l], row_perm_.begin() + n_ - 1, row_perm_.begin() + n_);
+        std::rotate(col_perm_.begin() + winsk_.j[l], col_perm_.begin() + n_ - 1, col_perm_.begin() + n_);
       }
-      RN = range(n_);
 
-      wk_.ksi(Rk, Rk)                 = nda::linalg::inv(wk_.ksi(Rk, Rk));
-      M_(RN, range(n_ - k_tried, n_)) = 0;
-      M_(range(n_ - k_tried, n_), RN) = 0;
-      //M_(RN,RN) += wk_.MB(RN,Rk) * (wk_.ksi(Rk, Rk) * wk_.MC(Rk,RN)); // OPTIMIZE BELOW
-      blas::gemm(1.0, wk_.MB(RN, Rk), (wk_.ksi(Rk, Rk) * wk_.MC(Rk, RN)), 1.0, M_(RN, RN));
+      // calculate the matrix product C M and the matrix S
+      auto rg_n = nda::range(old_size);
+      blas::gemm(1.0, winsk_.C(rg_k, rg_n), M_(rg_n, rg_n), 0.0, winsk_.CM(rg_k, rg_n));
+      nda::linalg::inv_in_place(winsk_.S_inv(rg_k, rg_k)); // S_inv contains S now
+
+      // calculate M^{(n+k)} using the update formula
+      auto rg_nk               = nda::range(new_size);
+      auto rg_n_nk             = nda::range(old_size, new_size);
+      winsk_.CM(rg_k, rg_n_nk) = -1; // -identity matrix
+      winsk_.MB(rg_n_nk, rg_k) = -1; // -identity matrix
+      M_(rg_nk, rg_n_nk)       = 0;
+      M_(rg_n_nk, rg_nk)       = 0;
+      blas::gemm(1.0, winsk_.MB(rg_nk, rg_k), (winsk_.S_inv(rg_k, rg_k) * winsk_.CM(rg_k, rg_nk)), 1.0, M_(rg_nk, rg_nk));
     }
     // Complete the insert2 operation.
     void complete_insert2() { complete_insert_k(); }
@@ -1885,6 +1894,8 @@ namespace triqs::det_manip {
     int sign_{1};
 
     // working data for the try-complete operations
+    detail::work_data_insert<x_type, y_type, value_type> wins_;
+    detail::work_data_insert_k<x_type, y_type, value_type> winsk_;
     detail::work_data_remove<value_type> wrem_;
     detail::work_data_remove_k<value_type> wremk_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
