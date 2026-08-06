@@ -25,7 +25,6 @@
 #include "./concepts.hpp"
 #include "./mc_measure_set.hpp"
 
-#include <fmt/format.h>
 #include <mpi/communicator.hpp>
 
 #include <complex>

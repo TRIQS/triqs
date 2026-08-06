@@ -1,4 +1,4 @@
-#include <fmt/base.h>
+#include <fmt/format.h>
 #include <triqs/mesh.hpp>
 
 int main() {

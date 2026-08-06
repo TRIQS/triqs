@@ -22,7 +22,7 @@
 #include <triqs/mc_tools/random_generator.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <h5/h5.hpp>
 #include <mpi/mpi.hpp>
 

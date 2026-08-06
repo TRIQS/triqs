@@ -19,7 +19,6 @@
 #include <triqs/mesh/chebyshev.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/base.h>
 #include <h5/h5.hpp>
 
 // Mesh concept.

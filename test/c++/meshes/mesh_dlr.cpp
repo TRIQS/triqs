@@ -21,7 +21,6 @@
 #include <triqs/mesh/dlr_imtime.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/base.h>
 #include <h5/h5.hpp>
 
 #include <complex>

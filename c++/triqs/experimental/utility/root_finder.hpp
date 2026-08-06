@@ -7,7 +7,7 @@
 
 #include "../../utility/report_stream.hpp"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cmath>
 #include <functional>

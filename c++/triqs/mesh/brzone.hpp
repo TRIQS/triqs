@@ -31,7 +31,6 @@
 #include "../lattice/brillouin_zone.hpp"
 #include "../utility/macros.hpp"
 
-#include <fmt/ranges.h>
 #include <h5/h5.hpp>
 #include <nda/nda.hpp>
 

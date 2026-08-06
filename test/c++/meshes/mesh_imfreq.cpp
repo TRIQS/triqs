@@ -20,9 +20,6 @@
 #include <triqs/mesh/utils.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/ranges.h>
-#include <fmt/std.h>
-
 #include <algorithm>
 #include <complex>
 #include <iostream>

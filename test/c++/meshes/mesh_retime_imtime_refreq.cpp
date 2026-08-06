@@ -21,7 +21,6 @@
 #include <triqs/mesh/retime.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
-#include <fmt/ranges.h>
 #include <h5/h5.hpp>
 
 #include <algorithm>

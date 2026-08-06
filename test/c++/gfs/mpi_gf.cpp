@@ -26,8 +26,6 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 
-#include <fmt/ranges.h>
-
 using namespace triqs;
 using namespace nda;
 using namespace triqs::gfs;
