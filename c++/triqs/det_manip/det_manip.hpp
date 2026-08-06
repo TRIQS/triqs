@@ -492,9 +492,9 @@ namespace triqs::det_manip {
      */
     value_type try_insert(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i <= size());
-      TRIQS_ASSERT(0 <= j and j <= size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i <= size());
+      EXPECTS(0 <= j and j <= size());
       std::tie(wins_.i, wins_.j, wins_.x, wins_.y) = std::make_tuple(i, j, x, y);
 
       // set the try tag
@@ -549,9 +549,9 @@ namespace triqs::det_manip {
      */
     template <typename Fx, typename Fy> value_type try_insert_from_function(long i, long j, Fx fx, Fy fy, value_type const ksi) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i <= size());
-      TRIQS_ASSERT(0 <= j and j <= size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i <= size());
+      EXPECTS(0 <= j and j <= size());
       wins_.i = i;
       wins_.j = j;
 
@@ -674,11 +674,11 @@ namespace triqs::det_manip {
     value_type try_insert_k(std::vector<long> i, std::vector<long> j, std::vector<x_type> x, std::vector<y_type> y) {
       // check input argument sizes
       auto const k = static_cast<long>(i.size());
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(k > 0);
-      TRIQS_ASSERT(static_cast<long>(j.size()) == k);
-      TRIQS_ASSERT(static_cast<long>(x.size()) == k);
-      TRIQS_ASSERT(static_cast<long>(y.size()) == k);
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(k > 0);
+      EXPECTS(static_cast<long>(j.size()) == k);
+      EXPECTS(static_cast<long>(x.size()) == k);
+      EXPECTS(static_cast<long>(y.size()) == k);
 
       // move the input arguments to the working data
       winsk_.i = std::move(i);
@@ -690,10 +690,10 @@ namespace triqs::det_manip {
       auto comp = [](auto const &a, auto const &b) { return std::get<0>(a) < std::get<0>(b); };
       std::ranges::sort(std::ranges::zip_view(winsk_.i, winsk_.x), comp);
       std::ranges::sort(std::ranges::zip_view(winsk_.j, winsk_.y), comp);
-      TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.i) == winsk_.i.end());
-      TRIQS_ASSERT(winsk_.i.front() >= 0 and winsk_.i.back() < size() + k);
-      TRIQS_ASSERT(std::ranges::adjacent_find(winsk_.j) == winsk_.j.end());
-      TRIQS_ASSERT(winsk_.j.front() >= 0 and winsk_.j.back() < size() + k);
+      EXPECTS(std::ranges::adjacent_find(winsk_.i) == winsk_.i.end());
+      EXPECTS(winsk_.i.front() >= 0 and winsk_.i.back() < size() + k);
+      EXPECTS(std::ranges::adjacent_find(winsk_.j) == winsk_.j.end());
+      EXPECTS(winsk_.j.front() >= 0 and winsk_.j.back() < size() + k);
 
       // set the try tag
       last_try_ = try_tag::InsertK;
@@ -790,9 +790,9 @@ namespace triqs::det_manip {
       requires(nda::get_rank<X> == nda::get_rank<Y>)
     auto insert_ratios(long i, long j, X const &xs, Y const &ys) const -> nda::array<value_type, nda::get_rank<X>> {
       constexpr int R = nda::get_rank<X>;
-      TRIQS_ASSERT(xs.shape() == ys.shape());
-      TRIQS_ASSERT(0 <= i and i <= size());
-      TRIQS_ASSERT(0 <= j and j <= size());
+      EXPECTS(xs.shape() == ys.shape());
+      EXPECTS(0 <= i and i <= size());
+      EXPECTS(0 <= j and j <= size());
 
       long nbatch         = xs.size();
       value_type sign_fac = ((i + j) % 2 == 0 ? 1 : -1);
@@ -899,9 +899,9 @@ namespace triqs::det_manip {
      */
     value_type try_remove(long i, long j) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < size());
-      TRIQS_ASSERT(0 <= j and j < size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       std::tie(wrem_.i, wrem_.j, wrem_.ip, wrem_.jp) = std::make_tuple(i, j, row_perm_[i], col_perm_[j]);
 
       // set the try tag
@@ -1054,15 +1054,15 @@ namespace triqs::det_manip {
     value_type try_remove_k(std::vector<long> i, std::vector<long> j) {
       // check input argument sizes
       auto const k = static_cast<long>(i.size());
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(k > 0 and k <= size());
-      TRIQS_ASSERT(static_cast<long>(j.size()) == k);
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(k > 0 and k <= size());
+      EXPECTS(static_cast<long>(j.size()) == k);
 
       // sort and check input arguments
       std::ranges::sort(i);
       std::ranges::sort(j);
-      TRIQS_ASSERT(std::ranges::adjacent_find(i) == i.end() and i.front() >= 0 and i.back() < size());
-      TRIQS_ASSERT(std::ranges::adjacent_find(j) == j.end() and j.front() >= 0 and j.back() < size());
+      EXPECTS(std::ranges::adjacent_find(i) == i.end() and i.front() >= 0 and i.back() < size());
+      EXPECTS(std::ranges::adjacent_find(j) == j.end() and j.front() >= 0 and j.back() < size());
 
       // set the try tag
       last_try_ = try_tag::RemoveK;
@@ -1247,8 +1247,8 @@ namespace triqs::det_manip {
      */
     value_type try_change_col(long j, y_type const &y) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= j and j < size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= j and j < size());
       std::tie(wcol_.j, wcol_.jp, wcol_.y) = std::make_tuple(j, col_perm_[j], y);
 
       // set the try tag
@@ -1301,8 +1301,8 @@ namespace triqs::det_manip {
      */
     value_type try_change_row(long i, x_type const &x) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
       std::tie(wrow_.i, wrow_.ip, wrow_.x) = std::make_tuple(i, row_perm_[i], x);
 
       // set the try tag
@@ -1399,9 +1399,9 @@ namespace triqs::det_manip {
      */
     value_type try_change_col_row(long i, long j, x_type const &x, y_type const &y) {
       // check input arguments and copy them to the working data
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(0 <= i and i < size());
-      TRIQS_ASSERT(0 <= j and j < size());
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(0 <= i and i < size());
+      EXPECTS(0 <= j and j < size());
       std::tie(wrc_.i, wrc_.j, wrc_.ip, wrc_.jp, wrc_.x, wrc_.y) = std::make_tuple(i, j, row_perm_[i], col_perm_[j], x, y);
 
       // set the try tag
@@ -1483,8 +1483,8 @@ namespace triqs::det_manip {
       requires(MatrixBuilderXRange<X, F> && MatrixBuilderYRange<Y, F>)
     value_type try_refill(X &&x_rg, Y &&y_rg) { // NOLINT (ranges need not be forwarded)
       // check input arguments
-      TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(std::ranges::size(x_rg) == std::ranges::size(y_rg));
+      EXPECTS(last_try_ == try_tag::NoTry);
+      EXPECTS(std::ranges::size(x_rg) == std::ranges::size(y_rg));
       auto const sz = static_cast<long>(std::ranges::size(x_rg));
 
       // set the try tag
