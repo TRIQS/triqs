@@ -531,64 +531,6 @@ namespace triqs::det_manip {
       return wins_.S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
     }
 
-    /**
-     * @brief Try to insert one row and column, providing the new elements through callables instead of the matrix
-     * builder.
-     *
-     * @details Like try_insert(), but the elements of the new row and column are supplied directly: `fx` gives the new
-     * row coefficients \f$ f(x_l, y) \f$, `fy` gives the new column coefficients \f$ f(x, y_l) \f$, and `ksi` is the
-     * corner element \f$ f(x, y) \f$ at the intersection of the new row and column.
-     *
-     * @warning This routine does not make any modification. It has to be completed with complete_operation().
-     *
-     * @tparam Fx Callable type for the new row coefficients.
-     * @tparam Fy Callable type for the new column coefficients.
-     * @param i Position of the row to be inserted in the original matrix \f$ F^{(n)} \f$.
-     * @param j Position of the column to be inserted in the original matrix \f$ F^{(n)} \f$.
-     * @param fx Callable returning the new row coefficient for a given argument \f$ x_l \f$.
-     * @param fy Callable returning the new column coefficient for a given argument \f$ y_l \f$.
-     * @param ksi Corner element at the intersection of the new row and column.
-     * @return Determinant ratio \f$ \det(F^{(n+1)}) / \det(F^{(n)}) \f$.
-     */
-    template <typename Fx, typename Fy> value_type try_insert_from_function(long i, long j, Fx fx, Fy fy, value_type const ksi) {
-      // check input arguments and copy them to the working data
-      EXPECTS(last_try_ == try_tag::NoTry);
-      EXPECTS(0 <= i and i <= size());
-      EXPECTS(0 <= j and j <= size());
-      wins_.i = i;
-      wins_.j = j;
-
-      // set the try tag
-      last_try_ = try_tag::Insert;
-
-      // early return if the current matrix is empty
-      if (size() == 0) {
-        newdet_  = ksi;
-        newsign_ = 1;
-        return newdet_;
-      }
-
-      // reserve memory for the working data
-      if (size() + 1 > wins_.capacity()) wins_.reserve(2 * (size() + 1));
-
-      // calculate the new column B and the new row C of the matrix G (except for the element D)
-      for (long l = 0; l < size(); ++l) {
-        wins_.B(l) = fx(x_[l]);
-        wins_.C(l) = fy(y_[l]);
-      }
-
-      // calculate S^{-1} = D - C M B
-      auto rg_n = nda::range(size());
-      blas::gemv(1.0, M_(rg_n, rg_n), wins_.B(rg_n), 0.0, wins_.MB(rg_n));
-      wins_.S_inv = ksi - nda::blas::dot(wins_.C(rg_n), wins_.MB(rg_n));
-
-      // calculate the new determinant = det(G^{(n)}) S^{-1} and the new sign = old sign * (-1)^{i + j}
-      newdet_  = det_ * wins_.S_inv;
-      newsign_ = ((i + j) % 2 == 0 ? sign_ : -sign_);
-
-      return wins_.S_inv * newsign_ * sign_; // sign_ is unity, hence 1/sign_ == sign_
-    }
-
     private:
     // Complete the insert operation.
     void complete_insert() {
