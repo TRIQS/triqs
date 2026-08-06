@@ -28,13 +28,13 @@
 #include "./concepts.hpp"
 #include "./utils.hpp"
 #include "./work_data.hpp"
-#include "../utility/callable_traits.hpp"
-#include "../utility/first_include.hpp"
-#include "../arrays.hpp"
+#include "../utility/exceptions.hpp"
 
-#include <nda/nda.hpp>
-
+#include <fmt/base.h>
 #include <fmt/format.h>
+#include <h5/h5.hpp>
+#include <nda/h5.hpp>
+#include <nda/nda.hpp>
 
 #include <algorithm>
 #include <array>
@@ -46,7 +46,9 @@
 #include <iterator>
 #include <numeric>
 #include <ranges>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -190,7 +192,7 @@ namespace triqs::det_manip {
      * @details See complete_operation(), which triggers the check once the counter exceeds this number.
      * @param nops Number of operations.
      */
-    void set_n_operations_before_check(uint64_t nops) { nops_before_check_ = nops; }
+    void set_n_operations_before_check(std::uint64_t nops) { nops_before_check_ = nops; }
 
     /**
      * @brief Set the precision threshold that determines when to print a warning (default: 1e-8).
@@ -256,7 +258,7 @@ namespace triqs::det_manip {
     [[nodiscard]] auto get_x() const {
       std::vector<x_type> res;
       res.reserve(size());
-      for (auto i : range(size())) res.emplace_back(x_[row_perm_[i]]);
+      for (auto i : nda::range(size())) res.emplace_back(x_[row_perm_[i]]);
       return res;
     }
 
@@ -268,7 +270,7 @@ namespace triqs::det_manip {
     [[nodiscard]] auto get_y() const {
       std::vector<y_type> res;
       res.reserve(size());
-      for (auto i : range(size())) res.emplace_back(y_[col_perm_[i]]);
+      for (auto i : nda::range(size())) res.emplace_back(y_[col_perm_[i]]);
       return res;
     }
 
@@ -810,7 +812,7 @@ namespace triqs::det_manip {
         return result;
       }
 
-      range RN(n);
+      nda::range RN(n);
 
       // Build B(n, nbatch) and C(nbatch, n) matrices
       nda::matrix<value_type> B(n, nbatch), C(nbatch, n), MB(n, nbatch);
@@ -941,7 +943,7 @@ namespace triqs::det_manip {
       // perform the P1 and P2 permutations by swapping the row and column to be removed with the last row and column
       auto const old_size = size();
       auto const new_size = old_size - 1;
-      range rg_n(old_size);
+      nda::range rg_n(old_size);
       if (wrem_.ip != new_size) {
         // for M, we have to apply P1^T to the columns
         deep_swap(M_(rg_n, wrem_.ip), M_(rg_n, new_size));
@@ -962,7 +964,7 @@ namespace triqs::det_manip {
       }
 
       // restrict the range to the size of the resulting matrix
-      rg_n = range(new_size);
+      rg_n = nda::range(new_size);
 
       // remove elements from the row and column permutation vectors and from the x and y arguments
       std::ignore = std::ranges::remove(row_perm_, new_size);
@@ -1164,7 +1166,7 @@ namespace triqs::det_manip {
       }
 
       // perform the P1 and P2 permutations by swapping the rows and columns accordingly
-      range rg_n(old_size);
+      nda::range rg_n(old_size);
       for (long m = 0, target = new_size; m < k; ++m, ++target) {
         if (row_perm_[wremk_.i[m]] != target) {
           // for M, we have to apply P1^T to the columns
@@ -1196,9 +1198,9 @@ namespace triqs::det_manip {
       y_.resize(new_size);
 
       // calculate S^{-1}
-      range rg_nk(new_size);
-      range rg_k(k);
-      range rg_nk_n(new_size, old_size);
+      nda::range rg_nk(new_size);
+      nda::range rg_k(k);
+      nda::range rg_nk_n(new_size, old_size);
       nda::linalg::inv_in_place(wremk_.S(rg_k, rg_k));
 
       // solve P = \widetilde{M}^{(n-k)} + \widetilde{M}^{(n-k)} B S C \widetilde{M}^{(n-k)} for \widetilde{M}^{(n-k)}
