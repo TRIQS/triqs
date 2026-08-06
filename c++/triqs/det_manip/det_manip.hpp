@@ -1539,8 +1539,7 @@ namespace triqs::det_manip {
         case (try_tag::InsertK): complete_insert_k(); break;
         case (try_tag::RemoveK): complete_remove_k(); break;
         case (try_tag::Refill): complete_refill(); break;
-        case (try_tag::NoTry): return; break;
-        default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
+        default: return;
       }
 
       det_  = newdet_;
@@ -1768,48 +1767,52 @@ namespace triqs::det_manip {
     /**
      * @brief Write a triqs::det_manip::det_manip object to HDF5.
      *
-     * @param fg `h5::group` containing the subgroup to be written to.
-     * @param subgroup_name Name of the subgroup.
-     * @param g Manipulator object to be written.
+     * @param g `h5::group` containing the subgroup to be written to.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be written.
      */
-    friend void h5_write(h5::group fg, std::string subgroup_name, det_manip const &g) {
-      auto gr = fg.create_group(subgroup_name);
-      h5_write(gr, "mat_inv", g.M_);
-      h5_write(gr, "det", g.det_);
-      h5_write(gr, "sign", g.sign_);
-      h5_write(gr, "row_num", g.row_perm_);
-      h5_write(gr, "col_num", g.col_perm_);
-      h5_write(gr, "x_values", g.x_);
-      h5_write(gr, "y_values", g.y_);
-      h5_write(gr, "n_opts", g.nops_);
-      h5_write(gr, "n_opts_max_before_check", g.nops_before_check_);
-      h5_write(gr, "singular_threshold", g.singular_threshold_);
+    friend void h5_write(h5::group g, std::string name, det_manip const &dm) {
+      auto gr = g.create_group(name);
+      h5::write(gr, "x", dm.x_);
+      h5::write(gr, "y", dm.y_);
+      h5::write(gr, "M", dm.M_);
+      h5::write(gr, "det", dm.det_);
+      h5::write(gr, "row_perm", dm.row_perm_);
+      h5::write(gr, "col_perm", dm.col_perm_);
+      h5::write(gr, "sign", dm.sign_);
+      h5::write(gr, "nops_before_check", dm.nops_before_check_);
+      h5::write(gr, "singular_threshold", dm.singular_threshold_);
+      h5::write(gr, "precision_warning", dm.precision_warning_);
+      h5::write(gr, "precision_error", dm.precision_error_);
+      h5::write(gr, "nops", dm.nops_);
     }
 
     /**
      * @brief Read a triqs::det_manip::det_manip object from HDF5.
      *
-     * @param fg `h5::group` containing the subgroup to be read from.
-     * @param subgroup_name Name of the subgroup.
-     * @param g Manipulator object to be read into.
+     * @param g `h5::group` containing the subgroup to be read from.
+     * @param name Name of the subgroup.
+     * @param dm Manipulator object to be read into.
      */
-    friend void h5_read(h5::group fg, std::string subgroup_name, det_manip &g) {
-      auto gr = fg.open_group(subgroup_name);
-      h5_read(gr, "mat_inv", g.M_);
-      h5_read(gr, "det", g.det_);
-      h5_read(gr, "sign", g.sign_);
-      h5_read(gr, "row_num", g.row_perm_);
-      h5_read(gr, "col_num", g.col_perm_);
-      h5_read(gr, "x_values", g.x_);
-      h5_read(gr, "y_values", g.y_);
-      h5_read(gr, "n_opts", g.nops_);
-      h5_read(gr, "n_opts_max_before_check", g.nops_before_check_);
-      h5_read(gr, "singular_threshold", g.singular_threshold_);
-      g.x_.reserve(g.capacity());
-      g.y_.reserve(g.capacity());
-      g.row_perm_.reserve(g.capacity());
-      g.col_perm_.reserve(g.capacity());
-      g.last_try_ = try_tag::NoTry;
+    friend void h5_read(h5::group g, std::string name, det_manip &dm) {
+      auto gr = g.open_group(name);
+      h5::read(gr, "x", dm.x_);
+      h5::read(gr, "y", dm.y_);
+      h5::read(gr, "M", dm.M_);
+      h5::read(gr, "det", dm.det_);
+      h5::read(gr, "row_perm", dm.row_perm_);
+      h5::read(gr, "col_perm", dm.col_perm_);
+      h5::read(gr, "sign", dm.sign_);
+      h5::read(gr, "nops_before_check", dm.nops_before_check_);
+      h5::read(gr, "singular_threshold", dm.singular_threshold_);
+      h5::read(gr, "precision_warning", dm.precision_warning_);
+      h5::read(gr, "precision_error", dm.precision_error_);
+      h5::read(gr, "nops", dm.nops_);
+      dm.x_.reserve(dm.capacity());
+      dm.y_.reserve(dm.capacity());
+      dm.row_perm_.reserve(dm.capacity());
+      dm.col_perm_.reserve(dm.capacity());
+      dm.last_try_ = try_tag::NoTry;
     }
 
     //------------------------------------------------------------------------------------------
