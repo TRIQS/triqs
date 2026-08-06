@@ -1239,43 +1239,40 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
      */
     value_type try_change_col(long j, y_type const &y) {
+      // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
       TRIQS_ASSERT(0 <= j and j < n_);
-      w1_.j     = j;
+      std::tie(wcol_.j, wcol_.jp, wcol_.y) = std::make_tuple(j, col_perm_[j], y);
+
+      // set the try tag
       last_try_ = try_tag::ChangeCol;
-      w1_.jreal = col_perm_[j];
-      w1_.y     = y;
 
-      // Compute the col B.
-      for (long i = 0; i < n_; i++) w1_.MC(i) = f_(x_[i], w1_.y) - f_(x_[i], y_[w1_.jreal]);
-      range RN(n_);
-      //w1_.MB(R) = M_(R,R) * w1_.MC(R);// OPTIMIZE BELOW
-      blas::gemv(1.0, M_(RN, RN), w1_.MC(RN), 0.0, w1_.MB(RN));
+      // reserve memory for the working data
+      if (n_ > wcol_.capacity()) wcol_.reserve(2 * n_);
 
-      // compute the newdet_
-      w1_.ksi  = (1 + w1_.MB(w1_.jreal));
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
+      // calculate the vector u, the product M u and the factor xi = 1 + v^T M u = 1 + (M u)_{j_p}
+      auto rg_n = nda::range(n_);
+      for (auto i : rg_n) wcol_.u(i) = f_(x_[i], wcol_.y) - f_(x_[i], y_[wcol_.jp]);
+      blas::gemv(1.0, M_(rg_n, rg_n), wcol_.u(rg_n), 0.0, wcol_.Mu(rg_n));
+      wcol_.xi = 1 + wcol_.Mu(wcol_.jp);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wcol_.xi;
       newsign_ = sign_;
 
-      return ksi; // newsign_/sign_ is unity
+      return wcol_.xi; // newsign_/sign_ is unity
     }
     //------------------------------------------------------------------------------------------
     private:
     // Complete the change column operation.
     void complete_change_col() {
-      range RN(n_);
-      y_[w1_.jreal] = w1_.y;
+      // change the matrix builder argument
+      y_[wcol_.jp] = wcol_.y;
 
-      // modifying M : Mij += w1_.ksi Bi Mnj
-      // using Shermann Morrison formula.
-      // implemented in 2 times : first Bn=0 so that Mnj is not modified ! and then change Mnj
-      // Cf notes : simply multiply by -w1_.ksi
-      w1_.ksi           = -1 / w1_.ksi;
-      w1_.MB(w1_.jreal) = 0;
-      //M_(R,R) += w1_.ksi * w1_.MB(R) * M_(w1_.jreal,R)); // OPTIMIZE BELOW
-      blas::ger(w1_.ksi, w1_.MB(RN), M_(w1_.jreal, RN), M_(RN, RN));
-      M_(w1_.jreal, RN) *= -w1_.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg_n       = nda::range(n_);
+      wcol_.vTM(rg_n) = M_(wcol_.jp, rg_n);
+      blas::ger(-1 / wcol_.xi, wcol_.Mu(rg_n), wcol_.vTM(rg_n), M_(rg_n, rg_n));
     }
 
     //------------------------------------------------------------------------------------------
@@ -1296,41 +1293,40 @@ namespace triqs::det_manip {
      * @return Determinant ratio \f$ \det(\widetilde{F}^{(n)}) / \det(F^{(n)}) \f$.
      */
     value_type try_change_row(long i, x_type const &x) {
+      // check input arguments and copy them to the working data
       TRIQS_ASSERT(last_try_ == try_tag::NoTry);
-      TRIQS_ASSERT(i < n_);
-      w1_.i     = i;
+      TRIQS_ASSERT(0 <= i and i < n_);
+      std::tie(wrow_.i, wrow_.ip, wrow_.x) = std::make_tuple(i, row_perm_[i], x);
+
+      // set the try tag
       last_try_ = try_tag::ChangeRow;
-      w1_.ireal = row_perm_[i];
-      w1_.x     = x;
 
-      // Compute the col B.
-      for (long idx = 0; idx < n_; idx++) w1_.MB(idx) = f_(w1_.x, y_[idx]) - f_(x_[w1_.ireal], y_[idx]);
-      range RN(n_);
-      //w1_.MC(R) = transpose(M_(R,R)) * w1_.MB(R); // OPTIMIZE BELOW
-      blas::gemv(1.0, transpose(M_(RN, RN)), w1_.MB(RN), 0.0, w1_.MC(RN));
+      // reserve memory for the working data
+      if (n_ > wrow_.capacity()) wrow_.reserve(2 * n_);
 
-      // compute the newdet_
-      w1_.ksi  = (1 + w1_.MC(w1_.ireal));
-      auto ksi = w1_.ksi;
-      newdet_  = det_ * ksi;
+      // calculate the vector v^T, the product v^T M and the factor xi = 1 + v^T M u = 1 + (v^T M)_{i_p}
+      auto rg_n = nda::range(n_);
+      for (auto j : rg_n) wrow_.vT(j) = f_(wrow_.x, y_[j]) - f_(x_[wrow_.ip], y_[j]);
+      blas::gemv(1.0, transpose(M_(rg_n, rg_n)), wrow_.vT(rg_n), 0.0, wrow_.vTM(rg_n));
+      wrow_.xi = 1 + wrow_.vTM(wrow_.ip);
+
+      // calculate the new determinant and sign
+      newdet_  = det_ * wrow_.xi;
       newsign_ = sign_;
-      return ksi; // newsign_/sign_ is unity
+
+      return wrow_.xi; // newsign_/sign_ is unity
     }
     //------------------------------------------------------------------------------------------
     private:
     // Complete the change row operation.
     void complete_change_row() {
-      range RN(n_);
-      x_[w1_.ireal] = w1_.x;
+      // change the matrix builder argument
+      x_[wrow_.ip] = wrow_.x;
 
-      // modifying M : M ij += w1_.ksi Min Cj
-      // using Shermann Morrison formula.
-      // impl. Cf case 3
-      w1_.ksi           = -1 / w1_.ksi;
-      w1_.MC(w1_.ireal) = 0;
-      //M_(R,R) += w1_.ksi * M_(R,w1_.ireal) * w1_.MC(R);
-      blas::ger(w1_.ksi, M_(RN, w1_.ireal), w1_.MC(RN), M_(RN, RN));
-      M_(RN, w1_.ireal) *= -w1_.ksi;
+      // calculate the new inverse matrix M using the Sherman-Morrison formula: M - M u v^T M / (1 + v^T M u)
+      auto rg_n      = nda::range(n_);
+      wrow_.Mu(rg_n) = M_(rg_n, wrow_.ip);
+      blas::ger(-1 / wrow_.xi, wrow_.Mu(rg_n), wrow_.vTM(rg_n), M_(rg_n, rg_n));
     }
 
     //------------------------------------------------------------------------------------------
@@ -1889,6 +1885,8 @@ namespace triqs::det_manip {
     detail::work_data_insert_k<x_type, y_type, value_type> winsk_;
     detail::work_data_remove<value_type> wrem_;
     detail::work_data_remove_k<value_type> wremk_;
+    detail::work_data_change_col<y_type, value_type> wcol_;
+    detail::work_data_change_row<x_type, value_type> wrow_;
     detail::work_data_type1<x_type, y_type, value_type> w1_;
     detail::work_data_typek<x_type, y_type, value_type> wk_;
     detail::work_data_type_refill<x_type, y_type, value_type> wref_;
