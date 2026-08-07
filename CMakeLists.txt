@@ -38,7 +38,7 @@ message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 cmake_policy(VERSION ${CMAKE_VERSION})
 
-project(TRIQS VERSION 4.0.1 LANGUAGES CXX)
+project(TRIQS VERSION 4.0.2 LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # version displayed in the documentation
