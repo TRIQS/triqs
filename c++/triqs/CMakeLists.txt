@@ -31,6 +31,12 @@ target_compile_features(triqs PUBLIC cxx_std_23)
 # Link to the Interface target for compiler warnings
 target_link_libraries(triqs PRIVATE $<BUILD_INTERFACE:triqs_warnings>)
 
+# Our own definitions are never interposed at runtime, so let the compiler call
+# them directly instead of through the PLT. ELF only, Mach-O has no preemption.
+target_compile_options(triqs PRIVATE
+  $<$<AND:$<PLATFORM_ID:Linux>,$<CXX_COMPILER_ID:GNU,Clang,IntelLLVM>>:-fno-semantic-interposition>
+)
+
 # Compile Definitions
 option(CHECK_MEMORY "Turn on memory check" OFF)
 target_compile_definitions(triqs
