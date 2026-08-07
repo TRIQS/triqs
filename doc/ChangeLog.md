@@ -5,6 +5,27 @@
 
 This document describes the main changes in TRIQS.
 
+## Version 4.0.2
+
+TRIQS Version 4.0.2 is a patch-release that introduces
+minor fixes and improvements.
+
+We thank all contributors: Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### cmake
+* Pin the c2py dependency to the 0.9.x release branch, so that TRIQS and the applications built against it always share a compatible Python type registry
+
+### doc
+* Fix the apt repository setup instructions for current Ubuntu
+* Add triqs_ctseg to the list of conda packages
+* Add Zenodo DOI and conda-forge version badges to the README
+
+### jenkins
+* Build against the clair 0.9.x release branch
+
+
 ## Version 4.0.1
 
 TRIQS Version 4.0.1 is a patch-release that introduces
