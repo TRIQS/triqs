@@ -23,6 +23,7 @@
 #endif
 
 #include <triqs/test_tools/arrays.hpp>
+#include <tuple>
 #include <vector>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/operators/util/extractors.hpp>
@@ -67,15 +68,15 @@ TEST(Extractors, extract_h_dict) {
   EXPECT_ARRAY_NEAR(h_matrix_ref, (std::get<array<double, 2>>(dict_to_variant_matrix(h_dict, gf_struct))));
 
   auto nn = n("up", 0) * n("dn", 0);
-  EXPECT_THROW(extract_h_dict(nn), triqs::exception);
-  EXPECT_NO_THROW(extract_h_dict(nn, true));
+  EXPECT_THROW(std::ignore = extract_h_dict(nn), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_h_dict(nn, true));
 
   auto cc = c("up", 0) * c("dn", 1);
-  EXPECT_THROW(extract_h_dict(cc), triqs::exception);
-  EXPECT_NO_THROW(extract_h_dict(cc, true));
+  EXPECT_THROW(std::ignore = extract_h_dict(cc), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_h_dict(cc, true));
 
   auto wrong_index = n("up", 0) + n("dn", 5);
-  EXPECT_THROW(dict_to_matrix(extract_h_dict(wrong_index), gf_struct), triqs::exception);
+  EXPECT_THROW(std::ignore = dict_to_matrix(extract_h_dict(wrong_index), gf_struct), triqs::exception);
 }
 
 TEST(Extractors, extract_U_dict2) {
@@ -103,15 +104,15 @@ TEST(Extractors, extract_U_dict2) {
   EXPECT_ARRAY_NEAR(U_matrix2_ref, (std::get<array<double, 2>>(dict_to_variant_matrix(U_dict2, gf_struct))));
 
   auto quadratic = n("up", 0) + n("dn", 0);
-  EXPECT_THROW(extract_U_dict2(quadratic), triqs::exception);
-  EXPECT_NO_THROW(extract_U_dict2(quadratic, true));
+  EXPECT_THROW(std::ignore = extract_U_dict2(quadratic), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_U_dict2(quadratic, true));
 
   auto non_nn = c_dag("up", 0) * c_dag("dn", 0) * c("up", 2) * c("dn", 1);
-  EXPECT_THROW(extract_U_dict2(non_nn), triqs::exception);
-  EXPECT_NO_THROW(extract_U_dict2(non_nn, true));
+  EXPECT_THROW(std::ignore = extract_U_dict2(non_nn), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_U_dict2(non_nn, true));
 
   auto wrong_index = n("up", 4) * n("dn", 1);
-  EXPECT_THROW(dict_to_matrix(extract_U_dict2(wrong_index), gf_struct), triqs::exception);
+  EXPECT_THROW(std::ignore = dict_to_matrix(extract_U_dict2(wrong_index), gf_struct), triqs::exception);
 }
 
 TEST(Extractors, extract_U_dict4) {
@@ -149,15 +150,15 @@ TEST(Extractors, extract_U_dict4) {
   EXPECT_ARRAY_NEAR(U_matrix4_ref, (std::get<array<double, 4>>(dict_to_variant_matrix(U_dict4, gf_struct))));
 
   auto quadratic = n("up", 0) + n("dn", 0);
-  EXPECT_THROW(extract_U_dict4(quadratic), triqs::exception);
-  EXPECT_NO_THROW(extract_U_dict4(quadratic, true));
+  EXPECT_THROW(std::ignore = extract_U_dict4(quadratic), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_U_dict4(quadratic, true));
 
   auto non_conserving = c_dag("up", 0) * c_dag("dn", 0) * c_dag("up", 2) * c("dn", 1);
-  EXPECT_THROW(extract_U_dict4(non_conserving), triqs::exception);
-  EXPECT_NO_THROW(extract_U_dict4(non_conserving, true));
+  EXPECT_THROW(std::ignore = extract_U_dict4(non_conserving), triqs::exception);
+  EXPECT_NO_THROW(std::ignore = extract_U_dict4(non_conserving, true));
 
   auto wrong_index = n("up", 4) * n("dn", 1);
-  EXPECT_THROW(dict_to_matrix(extract_U_dict4(wrong_index), gf_struct), triqs::exception);
+  EXPECT_THROW(std::ignore = dict_to_matrix(extract_U_dict4(wrong_index), gf_struct), triqs::exception);
 }
 
 // Test filter_op
