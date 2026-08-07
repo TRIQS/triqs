@@ -44,10 +44,11 @@ Ubuntu Debian packages
 We provide Debian packages for the Ubuntu LTS Version **24.04** (noble) and **26.04** (resolute).
 They are hosted in a **TRIQS 4 specific** repository that can be added with::
 
-        sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https gpg-agent curl
+        sudo apt-get update && sudo apt-get install -y ca-certificates curl gpg
         source /etc/lsb-release
-        curl -L https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
-        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/ /"
+        sudo install -d -m 0755 /etc/apt/keyrings
+        curl -fsSL https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/public.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/triqs.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/triqs.gpg] https://users.flatironinstitute.org/~ccq/triqs4/$DISTRIB_CODENAME/ /" | sudo tee /etc/apt/sources.list.d/triqs.list
 
 To install the required runtime packages and triqs into the system tree at /usr run::
 
