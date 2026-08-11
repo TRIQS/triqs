@@ -191,7 +191,7 @@ def minimize_dyson(
 
     # vector > Gf / mat conversion
     def unflatten(vec):
-        return vec.view(complex).reshape(G_dlr.data.shape)
+        return vec.view(complex).reshape(g_iwaa.data.shape)
 
     # setup constraints
     if len(Sigma_moments) == 1:
