@@ -51,6 +51,16 @@ TEST(Gf, LocalChi2) {
   EXPECT_NEAR(real(chi(beta)), std::exp(-2 * beta), precision);
 }
 
+// A particle-particle bubble: the imtime mesh hash is statistic-blind, so the bosonic mesh points may index the fermionic g.
+TEST(Gf, LocalChiPP) {
+
+  for (auto tau : g.mesh()) g[tau] = std::exp(-2 * tau);
+
+  for (auto tau : chi.mesh()) chi[tau] = g[tau] * g[tau];
+
+  for (auto tau : chi.mesh()) EXPECT_NEAR(real(chi[tau]), std::exp(-4 * tau), precision);
+}
+
 TEST(Gf, GtauEvalBoundary) {
 
   for (auto tau : g.mesh()) g[tau] = std::exp(-2 * tau);

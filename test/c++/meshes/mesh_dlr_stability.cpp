@@ -23,7 +23,8 @@
  *
  * For each parameter set we rebuild the meshes and compare their characterizing quantities: the DLR
  * frequencies and imaginary-time nodes (floating point, compared with a tight relative tolerance, as
- * compilers/BLAS backends differ in the last ulps) and the integer Matsubara indices (compared exactly).
+ * compilers/BLAS backends differ in the last ulps) and the integer Matsubara and imaginary-time
+ * fine-grid indices (compared exactly).
  * The mesh hashes are intentionally not pinned: they depend on the standard-library hashing
  * implementation and so are not portable across toolchains. Failures report the parameter set via
  * SCOPED_TRACE.
@@ -100,6 +101,7 @@ namespace {
     h5::write(g, "dlr_freq", m_imfreq.dlr_freq());
     h5::write(g, "ifnodes", m_imfreq.dlr_if().get_ifnodes());
     h5::write(g, "itnodes", m_imtime.dlr_it().get_itnodes());
+    h5::write(g, "itnodes_idx", m_imtime.dlr_it().get_itnodes_idx());
   }
 
 } // namespace
@@ -136,6 +138,8 @@ TEST(MeshDLRRef, CompareAgainstReference) {
     // Matsubara index nodes (dlr_imfreq, exact) and imaginary-time nodes (dlr_imtime, up to rounding).
     EXPECT_EQ_ARRAY(m_imfreq.dlr_if().get_ifnodes(), h5::read<nda::vector<int>>(g, "ifnodes"));
     EXPECT_ARRAY_REL_NEAR(m_imtime.dlr_it().get_itnodes(), h5::read<nda::vector<double>>(g, "itnodes"), node_rtol);
+    // Fine-grid indices of the imaginary-time nodes (exact).
+    EXPECT_EQ_ARRAY(m_imtime.dlr_it().get_itnodes_idx(), h5::read<nda::vector<int>>(g, "itnodes_idx"));
     ++i;
   }
 }

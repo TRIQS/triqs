@@ -230,6 +230,26 @@ class test_dlr_mesh(unittest.TestCase):
 
         assert_gfs_are_close(make_gf_dlr_imtime(make_gf_dlr(giw)), gtau)
 
+    def test_dlr_pp_bubble(self):
+        # The dlr_imtime mesh hash is statistic-blind, so the bosonic mesh points may index the fermionic g.
+        beta, eps, w_max = 2.0, 1e-12, 5.
+        e = 1.5 # 2 * e < w_max, so the squared propagator is representable in the basis
+
+        g   = Gf(mesh = MeshDLRImTime(beta, 'Fermion', w_max, eps), target_shape = [])
+        chi = Gf(mesh = MeshDLRImTime(beta, 'Boson', w_max, eps), target_shape = [])
+
+        assert g.mesh.mesh_hash == chi.mesh.mesh_hash
+
+        for tau in g.mesh:
+            g[tau] = onefermion(tau, e, beta)
+        for tau in chi.mesh:
+            chi[tau] = g[tau] * g[tau]
+
+        chi_c = make_gf_dlr(chi)
+        taus = np.array([0.1, 0.3, 0.5, 0.7, 0.9]) * beta
+        ref = [onefermion(tau, e, beta)**2 for tau in taus]
+        assert np.allclose([chi_c(tau) for tau in taus], ref, atol = 1e-9)
+
     def test_dlr_l2_norm(self):
 
         beta, eps, w_max = 40.1, 1e-10, 5.

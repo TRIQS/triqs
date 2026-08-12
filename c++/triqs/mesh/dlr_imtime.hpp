@@ -71,6 +71,11 @@ namespace triqs::mesh {
    * time points \f$ \tau_l \f$, i.e. \f$ f_l = f(\tau_l) \f$. In contrast to DLR and imaginary-time meshes, the GF
    * container cannot evaluate the function at an arbitrary imaginary time \f$ \tau \in [0, \beta] \f$
    * (evaluation at arbitrary points is intentionally unsupported).
+   *
+   * The imaginary-time node layout does not depend on the particle statistic, so the mesh hash ignores it:
+   * mesh points of a fermionic and a bosonic mesh with otherwise identical parameters are interchangeable,
+   * e.g. to accumulate a bosonic susceptibility while iterating a fermionic mesh. Whole-mesh equality still
+   * compares the statistic.
    */
   class C2PY_RENAME(MeshDLRImTime) dlr_imtime {
     public:
@@ -145,7 +150,7 @@ namespace triqs::mesh {
          w_max_(w_max),
          eps_(eps),
          symmetrize_(symmetrize),
-         mesh_hash_(hash(beta, statistic, w_max, eps, symmetrize, hash_bytes(ops.imf.get_ifnodes()), std::string_view{"dlr_imtime"})),
+         mesh_hash_(hash(beta, w_max, eps, symmetrize, hash_bytes(ops.imt.get_itnodes_idx()), std::string_view{"dlr_imtime"})),
          dlr_{std::make_shared<detail::dlr_ops>(std::move(ops))} {}
 
     public:
@@ -182,10 +187,10 @@ namespace triqs::mesh {
          w_max_(m.w_max_),
          eps_(m.eps_),
          symmetrize_(m.symmetrize_),
-         mesh_hash_(hash(beta_, stat_, w_max_, eps_, symmetrize_, hash_bytes(m.dlr_->imf.get_ifnodes()), std::string_view{"dlr_imtime"})),
+         mesh_hash_(hash(beta_, w_max_, eps_, symmetrize_, hash_bytes(m.dlr_->imt.get_itnodes_idx()), std::string_view{"dlr_imtime"})),
          dlr_(m.dlr_) {}
 
-    /// Equal-to comparison operator compares the hash values
+    /// Equal-to comparison operator compares the hash value and the particle statistic
     bool operator==(dlr_imtime const &m) const { return mesh_hash_ == m.mesh_hash_ and stat_ == m.stat_; }
 
     /**
@@ -276,7 +281,7 @@ namespace triqs::mesh {
     /// Get the Matsubara frequency DLR operations object (see also `cppdlr::imfreq_ops`).
     [[nodiscard]] C2PY_IGNORE auto const &dlr_if() const { return dlr_->imf; }
 
-    /// Get the hash value of the mesh.
+    /// Get the hash value of the mesh. It identifies the node layout only and ignores the particle statistic.
     [[nodiscard]] C2PY_PROPERTY_GET(mesh_hash) uint64_t mesh_hash() const noexcept { return mesh_hash_; }
 
     /// Get the size \f$ N \f$ of the mesh, i.e. the DLR rank \f$ r \f$.
