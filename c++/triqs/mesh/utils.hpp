@@ -208,11 +208,39 @@ namespace triqs::mesh {
   namespace detail {
 
     // Apply a function to each element of a range and sum the results into a regular type.
-    [[nodiscard]] auto sum_to_regular(std::ranges::forward_range auto &&rg, auto f) {
+    [[nodiscard]] auto sum_to_regular_serial(std::ranges::forward_range auto &&rg, auto f) {
       auto it  = std::ranges::begin(rg);
       auto e   = std::ranges::end(rg);
       auto res = nda::make_regular(f(*it));
       for (++it; it != e; ++it) res += f(*it);
+      return res;
+    }
+
+    // Independent accumulators used by sum_to_regular. Eight covers the latency
+    // of one floating-point add times the number of add ports.
+    inline constexpr std::size_t sum_unroll = 8;
+
+    // Same sum as sum_to_regular_serial, split over sum_unroll accumulators so
+    // the additions do not form a single dependency chain.
+    [[nodiscard]] auto sum_to_regular(std::ranges::forward_range auto &&rg, auto f) {
+      auto it      = std::ranges::begin(rg);
+      auto const n = static_cast<std::size_t>(std::ranges::distance(rg));
+      if (n < sum_unroll) return sum_to_regular_serial(rg, std::move(f));
+
+      auto acc = [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+        return std::array{nda::make_regular(f(*std::next(it, Is)))...};
+      }(std::make_index_sequence<sum_unroll>{});
+      std::advance(it, sum_unroll);
+
+      auto const body = n - n % sum_unroll;
+      for (auto i = sum_unroll; i < body; i += sum_unroll) {
+        [&]<std::size_t... Is>(std::index_sequence<Is...>) { ((acc[Is] += f(*std::next(it, Is))), ...); }(std::make_index_sequence<sum_unroll>{});
+        std::advance(it, sum_unroll);
+      }
+
+      auto res = acc[0];
+      for (std::size_t i = 1; i < sum_unroll; ++i) res += acc[i];
+      for (auto i = body; i < n; ++i, ++it) res += f(*it);
       return res;
     }
 
