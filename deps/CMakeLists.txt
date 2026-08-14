@@ -149,7 +149,7 @@ if(TRIQS_WITH_NFFT)
   set(FINUFFT_ARCH_FLAGS "")
   external_dependency(finufft
     GIT_REPO https://github.com/diamondinoia/finufft
-    GIT_TAG experimental
+    GIT_TAG c108243016c851bdbb83207e628f5676d040713a
     BUILD_ALWAYS
     EXCLUDE_FROM_ALL
   )
@@ -159,8 +159,8 @@ if(TRIQS_WITH_NFFT)
   set(POET_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
   set(POET_BUILD_DEVEL OFF CACHE BOOL "" FORCE)
   external_dependency(poet
-    GIT_REPO https://github.com/DiamonDinoia/poet
-    GIT_TAG main
+    GIT_REPO https://github.com/flatironinstitute/poet
+    GIT_TAG v0.0.1
     BUILD_ALWAYS
     EXCLUDE_FROM_ALL
   )
