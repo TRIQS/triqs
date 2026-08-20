@@ -128,4 +128,23 @@ TEST(TRIQSMesh, DLRConversions) {
   EXPECT_EQ(m_dlr_imtime1, m_dlr_imtime4);
 }
 
+// The tau nodes are statistic-independent: fermionic and bosonic dlr_imtime meshes share the hash
+// and the mesh points, but compare unequal.
+TEST(TRIQSMesh, DLRImtimeStatisticBlindHash) {
+  auto m_f = triqs::mesh::dlr_imtime{10, triqs::mesh::Fermion, 1, 1e-6};
+  auto m_b = triqs::mesh::dlr_imtime{10, triqs::mesh::Boson, 1, 1e-6};
+
+  EXPECT_EQ(m_f.mesh_hash(), m_b.mesh_hash());
+  EXPECT_NE(m_f, m_b);
+
+  EXPECT_EQ(m_f.size(), m_b.size());
+  for (auto [mp_f, mp_b] : itertools::zip(m_f, m_b)) {
+    EXPECT_EQ(mp_f.index(), mp_b.index());
+    EXPECT_EQ(mp_f.value(), mp_b.value());
+  }
+
+  // The imaginary frequency grids genuinely differ between statistics
+  EXPECT_NE(triqs::mesh::dlr_imfreq(10, triqs::mesh::Fermion, 1, 1e-6), triqs::mesh::dlr_imfreq(10, triqs::mesh::Boson, 1, 1e-6));
+}
+
 MAKE_MAIN;

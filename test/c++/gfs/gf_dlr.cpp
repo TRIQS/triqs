@@ -339,6 +339,35 @@ TEST(Gf, DLR_imtime_interpolation) {
 
 // ----------------------------------------------------------------
 
+// A particle-particle bubble: the dlr_imtime mesh hash is statistic-blind, so the bosonic mesh points may index the fermionic g.
+TEST(Gf, dlr_pp_bubble) {
+
+  double beta     = 2.0;
+  double w_max    = 5.0;
+  double eps      = 1e-12;
+  bool symmetrize = true;
+
+  double e = 1.5; // 2 * e < w_max, so the squared propagator is representable in the basis
+
+  auto g   = gf<dlr_imtime, scalar_valued>{{beta, Fermion, w_max, eps, symmetrize}};
+  auto chi = gf<dlr_imtime, scalar_valued>{{beta, Boson, w_max, eps, symmetrize}};
+
+  EXPECT_EQ(g.mesh().mesh_hash(), chi.mesh().mesh_hash());
+
+  for (auto tau : g.mesh()) g[tau] = onefermion(tau, e, beta);
+  for (auto tau : chi.mesh()) chi[tau] = g[tau] * g[tau];
+
+  // evaluate(dlr_imtime, ...) is deleted, so compare through the coefficient mesh
+  auto chi_c = make_gf_dlr(chi);
+  for (auto x : {0.1, 0.3, 0.5, 0.7, 0.9}) {
+    double tau = x * beta;
+    auto g_tau = onefermion(tau, e, beta);
+    EXPECT_COMPLEX_NEAR(chi_c(tau), g_tau * g_tau, 1e-9);
+  }
+}
+
+// ----------------------------------------------------------------
+
 TEST(Gf, DLR_imfreq_interpolation) {
 
   double beta  = 2.0;

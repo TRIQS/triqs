@@ -64,6 +64,11 @@ namespace triqs::mesh {
    * Green's function containers that are based on an imaginary time mesh store the function values at the discrete time
    * points \f$ \tau(n) \f$, i.e. \f$ f_n = f(\tau(n)) \f$, and use linear interpolation to evaluate the function at an
    * arbitrary imaginary time \f$ \tau \in [0, \beta] \f$.
+   *
+   * The point layout depends only on \f$ N \f$ and \f$ \beta \f$, not on the particle statistic, so the mesh
+   * hash ignores it: mesh points of a fermionic and a bosonic mesh with matching \f$ N \f$ and \f$ \beta \f$
+   * are interchangeable, e.g. to accumulate a bosonic susceptibility while iterating a fermionic mesh.
+   * Whole-mesh equality still compares the statistic. triqs::mesh::dlr_imtime follows the same contract.
    */
   class C2PY_RENAME(MeshImTime) imtime : public detail::linear<imtime, double> {
     public:
