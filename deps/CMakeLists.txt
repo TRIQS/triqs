@@ -157,9 +157,9 @@ if(TRIQS_WITH_NFFT)
   # -- poet --
   # finufft vendors poet at the same version, so its target may already exist.
   if(NOT TARGET poet)
+    # poet defaults benchmarks, examples and devel to OFF, but its test suite
+    # follows BUILD_TESTING, so only the test suite needs a forced OFF here.
     set(POET_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(POET_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
-    set(POET_BUILD_DEVEL OFF CACHE BOOL "" FORCE)
     external_dependency(poet
       GIT_REPO https://github.com/flatironinstitute/poet
       GIT_TAG v0.0.1
