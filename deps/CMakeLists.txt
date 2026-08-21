@@ -155,13 +155,16 @@ if(TRIQS_WITH_NFFT)
   )
 
   # -- poet --
-  set(POET_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-  set(POET_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
-  set(POET_BUILD_DEVEL OFF CACHE BOOL "" FORCE)
-  external_dependency(poet
-    GIT_REPO https://github.com/flatironinstitute/poet
-    GIT_TAG v0.0.1
-    BUILD_ALWAYS
-    EXCLUDE_FROM_ALL
-  )
+  # finufft vendors poet at the same version, so its target may already exist.
+  if(NOT TARGET poet)
+    set(POET_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(POET_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+    set(POET_BUILD_DEVEL OFF CACHE BOOL "" FORCE)
+    external_dependency(poet
+      GIT_REPO https://github.com/flatironinstitute/poet
+      GIT_TAG v0.0.1
+      BUILD_ALWAYS
+      EXCLUDE_FROM_ALL
+    )
+  endif()
 endif()
