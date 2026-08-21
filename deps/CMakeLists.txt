@@ -149,7 +149,7 @@ if(TRIQS_WITH_NFFT)
   set(FINUFFT_ARCH_FLAGS "")
   external_dependency(finufft
     GIT_REPO https://github.com/diamondinoia/finufft
-    GIT_TAG c108243016c851bdbb83207e628f5676d040713a
+    GIT_TAG experimental
     BUILD_ALWAYS
     EXCLUDE_FROM_ALL
   )
