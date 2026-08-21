@@ -94,6 +94,12 @@ if(TRIQS_WITH_NFFT)
   install(TARGETS finufft xsimd poet EXPORT triqs-targets)
   # finufft privately links ducc0 and finufft_common static libraries; consumers need them at link time
   install(FILES $<TARGET_FILE:ducc0> $<TARGET_FILE:finufft_common> DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  # finufft's own install interface names finufft_common and finufft_fftlibs, which
+  # triqs does not export. Drop those entries and point at the archives above.
+  get_target_property(_finufft_link finufft INTERFACE_LINK_LIBRARIES)
+  list(REMOVE_ITEM _finufft_link
+    "$<INSTALL_INTERFACE:finufft_common>" "$<INSTALL_INTERFACE:finufft_fftlibs>")
+  set_property(TARGET finufft PROPERTY INTERFACE_LINK_LIBRARIES "${_finufft_link}")
   set_property(TARGET finufft APPEND PROPERTY
     INTERFACE_LINK_LIBRARIES $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_LIBDIR}/libducc0.a;${CMAKE_INSTALL_FULL_LIBDIR}/libfinufft_common.a>)
   # finufft's PUBLIC_HEADER only installs finufft*.h, missing subdirectories
