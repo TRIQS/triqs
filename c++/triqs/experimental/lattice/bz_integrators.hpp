@@ -79,10 +79,21 @@ namespace triqs::experimental::lattice {
     // helper to determine the return container dimension
     template <typename T>
     int deduce_dim_from_expression(auto const &f_kw, T const &w) {
+
       namespace ph  = placeholders;
-      // need to use w here and not 0, as this can result in the expression becoming 1/0
-      auto f_w_temp = eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w);
+
+      // check that there will not be an nda::linalg::inv error due to a div by zero at this k, w
+      auto f_w_temp = [&](){
+        try {
+            // need to use w here and not 0, as this can result in the expression becoming 1/0
+            return eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w);
+          } catch (std::exception const &e) {
+            throw std::runtime_error("Integration expression is undefined for k = [0,0,0] at the lowest index mesh frequency.");
+          }
+      }();
+
       static_assert(not nda::clef::is_lazy<decltype(f_w_temp)>, "Integration expects a proper expression with placeholders.");
+
       // check if this is a matrix or scalar type -- if scalar, return 1 for dim
       return [&]() {
         if constexpr (requires { f_w_temp.shape(); }) { // i.e. if this compiles ...
