@@ -77,10 +77,23 @@ namespace triqs::experimental::lattice {
 
   namespace detail {
     // helper to determine the return container dimension
-    int deduce_dim_from_expression(auto const &f_kw) {
+    template <typename T>
+    int deduce_dim_from_expression(auto const &f_kw, T const &w) {
+
       namespace ph  = placeholders;
-      auto f_w_temp = eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = 0);
+
+      // check that there will not be an nda::linalg::inv error due to a div by zero at this k, w
+      auto f_w_temp = [&](){
+        try {
+            // need to use w here and not 0, as this can result in the expression becoming 1/0
+            return eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w);
+          } catch (std::exception const &e) {
+            throw std::runtime_error("Integration expression is undefined for k = [0,0,0] at the lowest index mesh frequency.");
+          }
+      }();
+
       static_assert(not nda::clef::is_lazy<decltype(f_w_temp)>, "Integration expects a proper expression with placeholders.");
+
       // check if this is a matrix or scalar type -- if scalar, return 1 for dim
       return [&]() {
         if constexpr (requires { f_w_temp.shape(); }) { // i.e. if this compiles ...
@@ -119,7 +132,7 @@ namespace triqs::experimental::lattice {
     }
 
     namespace ph  = placeholders;
-    int block_dim = detail::deduce_dim_from_expression(f_kw);
+    int block_dim = detail::deduce_dim_from_expression(f_kw, omega_values[0]);
     auto result   = nda::zeros<dcomplex>(omega_values.size(), block_dim, block_dim); // container to return
 
     // Determine the longest direction and apply MPI chunk to this dimension, otherwise provide a simple iterator
@@ -155,33 +168,6 @@ namespace triqs::experimental::lattice {
   }
 
   // -------------------------------------------
-
-  /**
-   * @brief Integrate an expression over the Brillouin zone on a fixed k-grid (PTR) for all points of a frequency mesh,
-   * using both MPI and OpenMP parallelism.
-   *
-   * @details This overload evaluates the integral at every point of the given frequency mesh and stores the result in a
-   * Green's function defined on that mesh.
-   *
-   * @tparam Mesh Frequency mesh type.
-   * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
-   * @param w_mesh Frequency mesh on which the integration is performed.
-   * @param k_grid Number of grid points along each direction; e.g. `{2, 2, 2}` samples a total of 8 k-points.
-   * @param comm MPI communicator over which the k-grid is distributed.
-   * @return Green's function on `w_mesh` holding the integral, fully integrated over \f$ k_x, k_y, k_z \f$.
-   */
-  template <typename Mesh> auto integrate_ptr(auto const &f_kw, Mesh const &w_mesh, std::array<long, 3> const &k_grid, mpi::communicator comm = {}) {
-
-    int dim    = detail::deduce_dim_from_expression(f_kw);
-    auto g_out = gf{w_mesh, {dim, dim}};
-    std::vector<typename Mesh::mesh_point_t> mesh_points(w_mesh.begin(), w_mesh.end());
-    auto ptr_result = integrate_ptr(f_kw, mesh_points, k_grid, comm);
-    // fill in the GF to return
-    for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
-    return g_out;
-  }
-
-  // -------------------------------------------
   /**
    * @brief Build a callable that adaptively integrates an expression over the Brillouin zone for a given frequency.
    *
@@ -191,13 +177,16 @@ namespace triqs::experimental::lattice {
    *
    * @param f_kw CLEF expression to integrate, using the placeholders for \f$ k_x, k_y, k_z \f$ and \f$ \omega \f$.
    * @param opt Adaptive integration options (currently only the absolute tolerance).
+   * @param w A frequency from the mesh which will be integrated, needed for type eval
    * @return Callable that maps a frequency \f$ \omega \f$ to the value of the Brillouin-zone integral.
    */
-  auto integrate_adaptive(auto const &f_kw, adaptive_options const &opt) {
+   template <typename T>
+  auto integrate_adaptive(auto const &f_kw, adaptive_options const &opt, T const &w) {
 
     // use the first mesh value, evaluated, to determine the return type of the data
     namespace ph      = placeholders;
-    auto f_value      = nda::make_regular(eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = 0));
+    // need to use w here and not 0, as this can result in the expression becoming 1/0
+    auto f_value      = nda::make_regular(eval(f_kw, ph::kx = 0., ph::ky = 0., ph::kz = 0., ph::w = w));
     auto int_1d_adapt = utility::integrate_1d_adapt<decltype(f_value)>{opt.tolerance};
 
     // OP : Beware the capture ! We need to move the expression.
@@ -225,11 +214,11 @@ namespace triqs::experimental::lattice {
    */
   template <typename Mesh> auto integrate_adaptive(auto const &f_kw, Mesh const &w_mesh, adaptive_options const &opt) {
 
-    int dim    = detail::deduce_dim_from_expression(f_kw);
+    int dim    = detail::deduce_dim_from_expression(f_kw, w_mesh[0]);
     auto g_out = gf{w_mesh, {dim, dim}};
     // OMP/MPI parallel evaluation over frequencies
     mpi::communicator comm = {};
-    auto calc              = integrate_adaptive(f_kw, opt);
+    auto calc              = integrate_adaptive(f_kw, opt, w_mesh[0]);
     for (auto &&[n, w] : itertools::enumerate(mpi::chunk(w_mesh, comm))) { g_out[w] = calc(w); }
     return g_out;
   }
@@ -261,7 +250,7 @@ namespace triqs::experimental::lattice {
     auto k_grid          = opt.k_grid;
     auto kgrid_above_max = [&](auto &k_grid) {
       for (auto ik : {0, 1, 2})
-        if (k_grid[ik] >= opt.k_grid_max[ik]) { return true; }
+        if (k_grid[ik] > opt.k_grid_max[ik]) { return true; }
       return false;
     };
 
@@ -279,13 +268,13 @@ namespace triqs::experimental::lattice {
       if (!std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k >= 0; })) {
         throw std::runtime_error("delta_k_grid cannot be negative.");
       }
-      // delta_k_grid = 0 is reasonable only if k_grid >= k_grid_max, otherwise this will run doing nothing
+      // delta_k_grid = 0 is reasonable only if k_grid > k_grid_max, otherwise this will run doing nothing
       if (std::all_of(opt.delta_k_grid.begin(), opt.delta_k_grid.end(), [&](int k) { return k == 0; }) and !kgrid_above_max(k_grid)) {
-        throw std::runtime_error("delta_k_grid can only be zero if k_grid >= k_grid_max.");
+        throw std::runtime_error("delta_k_grid can only be zero if k_grid > k_grid_max.");
       }
     }
 
-    int dim    = detail::deduce_dim_from_expression(f_kw);
+    int dim    = detail::deduce_dim_from_expression(f_kw, w_mesh[0]);
     auto g_out = gf{w_mesh, {dim, dim}};
 
     // set up containers to check if ptr has converged for different points
@@ -300,7 +289,7 @@ namespace triqs::experimental::lattice {
       do { // NOLINT (run loop at least once if PTR is chosen )
 
         if (opt.verbose) {
-          int remaining_ptr = static_cast<int>(ptr_converged.size()) - std::reduce(ptr_converged.begin(), ptr_converged.end());
+          int remaining_ptr = static_cast<int>(ptr_converged.size()) - std::reduce(ptr_converged.begin(), ptr_converged.end(), 0);
           std::cout << "Points remaining unconverged: " << remaining_ptr << ", now running with k-grid " << k_grid[0] << " " << k_grid[1] << " "
                     << k_grid[2] << std::endl;
         }
@@ -332,7 +321,7 @@ namespace triqs::experimental::lattice {
     if (opt.run_adaptive) {
       adaptive_options adaptive_opt = {.tolerance = opt.tolerance};
       if (opt.verbose) std::cout << "Running adaptive integration on remaining points." << std::endl;
-      auto calc = integrate_adaptive(f_kw, adaptive_opt);
+      auto calc = integrate_adaptive(f_kw, adaptive_opt, w_mesh[0]);
       // adaptive evaluation at each frequency is MPI parallel;
       // possibly could be done better but this is ok for now
       for (auto &&[n, w] : itertools::enumerate(mpi::chunk(g_out.mesh(), comm))) {

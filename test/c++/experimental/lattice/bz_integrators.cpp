@@ -28,7 +28,7 @@ namespace triqs::experimental::lattice {
 
     // call the integration for this block -- this operates in place on g
     // returns a lambda that takes frequency -- feed it (iw)
-    auto result = integrate_adaptive(ex, options)(iw);
+    auto result = integrate_adaptive(ex, options, iw_mesh[0])(iw);
     // call the function which takes the mesh and evaluates the whole thing at once
     auto result_gf_iw_mesh = integrate_adaptive(ex, iw_mesh, options);
 
