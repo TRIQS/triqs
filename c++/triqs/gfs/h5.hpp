@@ -67,16 +67,11 @@ namespace triqs::gfs {
 
   // After reading from h5, is the function is for freq >0, unfold it to the full mesh
   template <typename T> struct gf_h5_after_read<mesh::imfreq, T> {
-    template <typename G> static void invoke(h5::group, G &g) {
-      if (g.mesh().positive_only()) g = make_gf_from_real_gf(make_const_view(g));
-    }
+    template <typename G> static void invoke(h5::group, G &) {}
   };
   // same, for python interface
   template <typename T> gf<mesh::imfreq, T> _gf_h5_after_read(gf_view<mesh::imfreq, T> g) {
-    if (g.mesh().positive_only())
-      return make_gf_from_real_gf(make_const_view(g));
-    else
-      return g;
+    return g;
   }
 
   // ---------------------------
