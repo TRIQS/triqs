@@ -5,6 +5,11 @@
 
 This document describes the main changes in TRIQS.
 
+## Unreleased
+
+### gfs
+* Preserve positive-only MeshImFreq through HDF5 for a standalone Gf, matching MeshProduct components
+
 ## Version 4.0.2
 
 TRIQS Version 4.0.2 is a patch-release that introduces
