@@ -176,14 +176,14 @@ namespace triqs::mc_tools {
     if (cycle_monitor) cycle_monitor->finalize_communications();
 
     // final reports
-    if (status == 1) report_ << fmt::format("[Rank {}] MC simulation stopped because stop_callback() returned true\n", rank);
-    if (status == 2) report_ << fmt::format("[Rank {}] MC simulation stopped because a signal has been received\n", rank);
+    if (status == 1) report_ << fmt::format("[Rank {}] MC simulation stopped because stop_callback() returned true\n", rank) << std::flush;
+    if (status == 2) report_ << fmt::format("[Rank {}] MC simulation stopped because a signal has been received\n", rank) << std::flush;
 
     return status;
   }
 
   template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::warmup(run_param_t const &params) {
-    report_(3) << fmt::format("[Rank {}] Performing warmup phase...\n", params.comm.rank());
+    report_(3) << fmt::format("[Rank {}] Performing warmup phase...\n", params.comm.rank()) << std::flush;
     auto p            = params;
     p.enable_measures = false;
     p.phase           = mc_phase::warmup;
@@ -191,7 +191,7 @@ namespace triqs::mc_tools {
   }
 
   template <DoubleOrComplex MCSignType> int mc_generic<MCSignType>::accumulate(run_param_t const &params) {
-    report_(3) << fmt::format("[Rank {}] Performing accumulation phase...\n", params.comm.rank());
+    report_(3) << fmt::format("[Rank {}] Performing accumulation phase...\n", params.comm.rank()) << std::flush;
     auto p               = params;
     p.enable_measures    = true;
     p.enable_calibration = false;
@@ -243,7 +243,7 @@ namespace triqs::mc_tools {
   }
 
   template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::collect_results(mpi::communicator const &c) {
-    report_(3) << fmt::format("[Rank {}] Collect results: Waiting for all MPI processes to finish accumulating...\n", c.rank());
+    report_(3) << fmt::format("[Rank {}] Collect results: Waiting for all MPI processes to finish accumulating...\n", c.rank()) << std::flush;
 
     // collect results from all MPI processes
     measures_.collect_results(c);
@@ -270,11 +270,11 @@ namespace triqs::mc_tools {
     // gather all output strings on rank 0 to print in order (collective; ranks with low verbosity contribute "")
     auto all_infos = mpi::gather(info, c);
     if (c.rank() == 0) {
-      report_(3) << all_infos;
+      report_(3) << all_infos << std::flush;
       std::string more_info{"\n"};
       more_info += fmt::format("Total number of measures: {}\n", tot_nmeasures);
       more_info += fmt::format("Total cycles (measures) / second: {:.2e}\n", tot_nmeasures / tot_duration);
-      report_(2) << more_info;
+      report_(2) << more_info << std::flush;
     }
   }
 
@@ -286,13 +286,15 @@ namespace triqs::mc_tools {
 
     // do the printing
     if (percentage_done_ < 0) {
-      report_(3) << fmt::format("[Rank {}] {} cycle {}, {:.2e} cycles/sec\n", rank, utility::timestamp(), cycle_counter, cycles_per_sec);
+      report_(3) << fmt::format("[Rank {}] {} cycle {}, {:.2e} cycles/sec\n", rank, utility::timestamp(), cycle_counter, cycles_per_sec)
+                 << std::flush;
     } else {
       report_(3) << fmt::format("[Rank {}] {} {:>6.2f}% done, ETA {}, cycle {} of {}, {:.2e} cycles/sec\n", rank, utility::timestamp(),
                                 percentage_done_, utility::estimate_time_left(params.ncycles, cycle_counter, run_timer_), cycle_counter,
-                                params.ncycles, cycles_per_sec);
+                                params.ncycles, cycles_per_sec)
+                 << std::flush;
     }
-    if (params.enable_measures) report_(3) << measures_.report();
+    if (params.enable_measures) report_(3) << measures_.report() << std::flush;
   }
 
   template <DoubleOrComplex MCSignType> void mc_generic<MCSignType>::metropolis_step() {
