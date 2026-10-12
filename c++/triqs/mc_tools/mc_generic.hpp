@@ -101,7 +101,7 @@ namespace triqs::mc_tools {
     public:
     /// User-provided MC simulation parameters for the run() method.
     struct run_param_t {
-      /// Number of MC cycles to run (< 1 to run indefinitely).
+      /// Number of MC cycles to run (< 0 to run until `stop_callback` returns true, 0 to do nothing).
       std::int64_t ncycles = -1;
 
       /// Number of MC steps/moves per cycle.
@@ -144,23 +144,27 @@ namespace triqs::mc_tools {
       mc_phase phase = mc_phase::accumulation;
 
       /**
-       * @brief Should we continue the simulation on the current rank after the given number of cycles is done and wait
-       * for all other ranks to finish as well or should we stop immediately?
+       * @brief Keep this rank running after its `ncycles` are done until all ranks in `comm` are done.
        *
-       * @details Defaults to true so that ranks which finish early keep doing useful work (e.g. accumulating
-       * measurements) instead of idling at the collect_results barrier. Only has an effect under an MPI environment
-       * (see mpi::has_env); set to false to recover the legacy behavior of stopping exactly at `ncycles`.
+       * @details Under MPI, ranks finish at different times. If true, a rank that has done its `ncycles` keeps
+       * doing moves and measurements (overtime cycles) instead of idling, and run() returns once every rank has
+       * finished or stopped. The other ranks are polled every `check_cycles_interval` seconds. If false, each rank
+       * returns as soon as its own `ncycles` are done. A rank stopped early by `stop_callback` or a signal still
+       * waits for the others before returning.
        *
-       * Overtime cycles perform moves and measurements only: `after_cycle_duty` and move calibration stop after
-       * `ncycles`, so per-cycle MPI communication (e.g. a collective move calibrate) stays in lockstep across
-       * ranks and cannot deadlock on the rank-dependent number of overtime cycles.
+       * Overtime cycles skip `after_cycle_duty` and move calibration, so these run exactly `ncycles` times on every
+       * rank and may contain MPI communication. This requires `ncycles` and `cycle_length` to be identical on all
+       * ranks, and run() throws under MPI if they differ, whether or not this flag is set. A `stop_callback` or signal
+       * that stops only some ranks early is therefore only safe if duties and calibration do not communicate.
+       *
+       * No effect without an MPI environment (see mpi::has_env).
        */
       bool continue_after_ncycles_done = true;
 
       /// Time interval (in seconds) after which the simulation checks for exceptions on other nodes.
       double check_exception_interval = 1;
 
-      /// Time interval (in seconds) after which the simulation checks if all other nodes have finished their cycles.
+      /// Polling interval (in seconds) for checking whether all other ranks have finished their cycles (see continue_after_ncycles_done).
       double check_cycles_interval = 1;
     };
 
@@ -226,6 +230,9 @@ namespace triqs::mc_tools {
 
     /**
      * @brief Run a generic MC simulation.
+     *
+     * @details Under MPI this is a collective call on `params.comm`: it throws if `ncycles` or `cycle_length` differ
+     * between ranks (see run_param_t::continue_after_ncycles_done).
      *
      * @param params User-provided MC simulation parameters (see run_param_t).
      * @return 0 if the simulation has done all requested cycles, 1 if it has been stopped due to `stop_callback()`
@@ -340,7 +347,7 @@ namespace triqs::mc_tools {
     random_generator &get_rng() { return rng_; }
 
     /// Get the number of cycles done.
-    [[nodiscard]] int get_current_cycle_number() const { return ncycles_done_; }
+    [[nodiscard]] std::int64_t get_current_cycle_number() const { return ncycles_done_; }
 
     /// Get the ID of the current MC configuration.
     [[nodiscard]] int get_config_id() const { return config_id_; }
@@ -349,7 +356,7 @@ namespace triqs::mc_tools {
     [[nodiscard]] double get_duration() const { return get_total_time(); }
 
     /// Get the number of measurements done.
-    [[nodiscard]] int get_nmeasures() const { return nmeasures_done_; }
+    [[nodiscard]] std::int64_t get_nmeasures() const { return nmeasures_done_; }
 
     /// Get the total time, i.e. the sum of the warmup and accumulation times, in seconds.
     [[nodiscard]] double get_total_time() const { return get_warmup_time() + get_accumulation_time(); }

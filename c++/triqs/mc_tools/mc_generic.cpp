@@ -30,12 +30,14 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <mpi/array.hpp>
 #include <mpi/mpi.hpp>
 #include <mpi/monitor.hpp>
 #include <mpi/vector.hpp>
 #include <nda/macros.hpp>
 
 #include <algorithm>
+#include <array>
 #include <complex>
 #include <cstdint>
 #include <functional>
@@ -49,6 +51,14 @@ namespace triqs::mc_tools {
     EXPECTS(params.cycle_length > 0);
     EXPECTS(params.stop_callback);
     EXPECTS(params.after_cycle_duty);
+
+    // see run_param_t::continue_after_ncycles_done
+    auto const rank = params.comm.rank();
+    auto const vals = std::array{params.ncycles, params.cycle_length};
+    if (not mpi::all_equal(vals, params.comm))
+      throw std::runtime_error(
+         fmt::format("[Rank {}] mc_generic::run: ncycles and cycle_length must be identical on all ranks (local {}, min {}, max {})", rank, vals,
+                     mpi::all_reduce(vals, params.comm, MPI_MIN), mpi::all_reduce(vals, params.comm, MPI_MAX)));
 
     // set the initial sign if specified
     if (params.initial_sign != default_initial_sign) sign_ = params.initial_sign;
@@ -70,12 +80,11 @@ namespace triqs::mc_tools {
     if (params.continue_after_ncycles_done and mpi::has_env) cycle_monitor = std::make_unique<mpi::monitor>(params.comm);
 
     // prepare the simulation parameters and statistics
-    auto const rank            = params.comm.rank();
     bool stop_flag             = params.ncycles == 0;
     std::int64_t cycle_counter = 1;
     double next_print_info     = 0.1;
-    double next_check_except   = params.check_exception_interval;
-    double next_check_cycles   = params.check_cycles_interval;
+    double next_check_except   = 0;
+    double next_check_cycles   = 0;
     percentage_done_           = stop_flag ? 100 : 0;
     nmeasures_done_            = 0;
 
@@ -102,6 +111,7 @@ namespace triqs::mc_tools {
         std::cerr << fmt::format("[Rank {}] Error int mc_generic::run: Exception occured:\n{}\n", rank, err.what());
         if (exception_monitor) {
           exception_monitor->report_local_event();
+          if (cycle_monitor) cycle_monitor->report_local_event();
           break;
         } else {
           params.comm.abort(2);
@@ -120,31 +130,26 @@ namespace triqs::mc_tools {
       }
 
       // is it time to check for exceptions on other ranks
-      if (exception_monitor && runtime > next_check_except) {
-        // increase time until next check and check other ranks
-        next_check_except += params.check_exception_interval;
+      if (exception_monitor && runtime >= next_check_except) {
+        next_check_except = runtime + params.check_exception_interval;
         stop_flag |= exception_monitor->event_on_any_rank();
       }
 
-      // have we done all requested cycles
-      if (percentage_done_ >= 100) {
-        if (cycle_monitor) {
-          // if continue_after_ncycles_done == true, report to other ranks
-          cycle_monitor->report_local_event();
-          // is it time to check if the other ranks are finished as well
-          if (runtime > next_check_cycles) {
-            // increase time until next check and check other ranks
-            next_check_cycles += params.check_cycles_interval;
-            stop_flag |= cycle_monitor->event_on_all_ranks();
-          }
-        } else {
-          // if continue_after_ncycles_done == false, stop the simulation
-          stop_flag = true;
+      stop_flag |= (params.stop_callback() || triqs::signal_handler::received());
+      bool const done = percentage_done_ >= 100;
+
+      if (not cycle_monitor) {
+        // stop as soon as all requested cycles are done
+        stop_flag |= done;
+      } else {
+        // report to the other ranks when done or stopping early
+        if (done or stop_flag) cycle_monitor->report_local_event();
+        // keep running until all ranks have reported
+        if (done and runtime >= next_check_cycles) {
+          next_check_cycles = runtime + params.check_cycles_interval;
+          stop_flag |= cycle_monitor->event_on_all_ranks();
         }
       }
-
-      // update stop flag
-      stop_flag |= (params.stop_callback() || triqs::signal_handler::received());
     }
 
     // stop timer
@@ -167,13 +172,13 @@ namespace triqs::mc_tools {
     int status = (percentage_done_ >= 100 ? 0 : (triqs::signal_handler::received() ? 2 : 1));
     triqs::signal_handler::stop();
 
-    // stop MPI monitors
+    // stop MPI monitors, the cycle monitor has to be finalized first
+    if (cycle_monitor) cycle_monitor->finalize_communications();
     if (exception_monitor) {
       exception_monitor->finalize_communications();
       if (exception_monitor->event_on_any_rank())
         throw std::runtime_error(fmt::format("[Rank {}] MC simulation stopped because an exception occurred on one of the MPI ranks", rank));
     }
-    if (cycle_monitor) cycle_monitor->finalize_communications();
 
     // final reports
     if (status == 1) report_ << fmt::format("[Rank {}] MC simulation stopped because stop_callback() returned true\n", rank);

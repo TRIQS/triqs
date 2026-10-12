@@ -168,18 +168,37 @@ TEST_F(TRIQSMCTools, MCGenericWarmuup) {
   EXPECT_EQ(mc.get_config_id(), params.ncycles * params.cycle_length);
 }
 
-TEST_F(TRIQSMCTools, MCGenericContinueAfterNCyclesDone) {
-  auto params                        = mc.get_run_params();
-  params.ncycles                     = static_cast<std::int64_t>(1000000) * (comm.rank() + 1);
-  params.continue_after_ncycles_done = true;
-  params.check_cycles_interval       = 0.01;
-  EXPECT_EQ(mc.accumulate(params), 0);
-  mc.collect_results(params.comm);
-  EXPECT_GE(mc.get_percent(), 100);
-  EXPECT_GE(mc.get_current_cycle_number(), params.ncycles);
-  EXPECT_GE(mc.get_nmeasures(), params.ncycles);
-  EXPECT_GE(mc.get_config_id(), params.ncycles * params.cycle_length);
-  EXPECT_DOUBLE_EQ(mc.get_acceptance_rates().at("move_x"), 1);
+TEST_F(TRIQSMCTools, MCGenericStopCallbackOnOneRank) {
+  // a rank that stops early must not keep the other ranks polling forever in overtime, whether it is the root rank or not
+  if (comm.size() == 1) GTEST_SKIP();
+  for (int stop_rank : {0, 1}) {
+    int ncycles_run              = 0;
+    auto params                  = mc.get_run_params();
+    params.ncycles               = 100;
+    params.check_cycles_interval = 0.01;
+    params.stop_callback         = [&]() { return ++ncycles_run == 10 and comm.rank() == stop_rank; };
+    auto const ncycles_before    = mc.get_current_cycle_number();
+    EXPECT_EQ(mc.accumulate(params), comm.rank() == stop_rank ? 1 : 0);
+    if (comm.rank() == stop_rank) {
+      EXPECT_EQ(mc.get_current_cycle_number() - ncycles_before, 10);
+      EXPECT_LT(mc.get_percent(), 100);
+    } else {
+      EXPECT_GE(mc.get_current_cycle_number() - ncycles_before, params.ncycles);
+      EXPECT_GE(mc.get_percent(), 100);
+    }
+    mc.collect_results(params.comm);
+  }
+}
+
+TEST_F(TRIQSMCTools, MCGenericMismatchedCycleParameters) {
+  if (comm.size() == 1) GTEST_SKIP();
+  auto params    = mc.get_run_params();
+  params.ncycles = 100 * (comm.rank() + 1);
+  EXPECT_THROW(mc.accumulate(params), std::runtime_error);
+  params.ncycles                     = 100;
+  params.cycle_length                = comm.rank() + 1;
+  params.continue_after_ncycles_done = false;
+  EXPECT_THROW(mc.accumulate(params), std::runtime_error);
 }
 
 TEST_F(TRIQSMCTools, MCGenericOvertimeDutyLockstep) {
@@ -201,6 +220,26 @@ TEST_F(TRIQSMCTools, MCGenericOvertimeDutyLockstep) {
   // ranks that finished early kept measuring during overtime
   if (mpi::has_env && comm.size() > 1 && comm.rank() != 0) EXPECT_GT(mc.get_nmeasures(), params.ncycles);
   mc.collect_results(params.comm);
+}
+
+TEST_F(TRIQSMCTools, MCGenericPropagateExceptionInOvertime) {
+  // rank 0 throws once every other rank has finished its cycles and polls in overtime
+  if (comm.size() == 1) GTEST_SKIP();
+  auto params                     = mc.get_run_params();
+  params.ncycles                  = 100;
+  params.check_cycles_interval    = 0.01;
+  params.check_exception_interval = 0.01;
+  int ncycles_run                 = 0;
+  params.after_cycle_duty         = [&]() {
+    if (comm.rank() == 0) {
+      comm.barrier();
+      throw std::runtime_error("Some exception on rank 0!");
+    } else if (++ncycles_run == params.ncycles) {
+      comm.barrier();
+    }
+  };
+  EXPECT_THROW(mc.accumulate(params), std::runtime_error);
+  if (comm.rank() != 0) EXPECT_GE(mc.get_percent(), 100);
 }
 
 TEST_F(TRIQSMCTools, MCGenericPropagateException) {
