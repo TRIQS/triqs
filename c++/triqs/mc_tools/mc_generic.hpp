@@ -157,7 +157,7 @@ namespace triqs::mc_tools {
        * ranks, and run() throws under MPI if they differ, whether or not this flag is set. A `stop_callback` or signal
        * that stops only some ranks early is therefore only safe if duties and calibration do not communicate.
        *
-       * No effect without an MPI environment (see mpi::has_env).
+       * No effect with a single rank.
        */
       bool continue_after_ncycles_done = true;
 

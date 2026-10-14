@@ -40,6 +40,7 @@
 #include <array>
 #include <complex>
 #include <cstdint>
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -73,11 +74,12 @@ namespace triqs::mc_tools {
     // start signal handler
     triqs::signal_handler::start();
 
-    // start MPI monitors
-    std::unique_ptr<mpi::monitor> exception_monitor;
-    if (params.propagate_exception and mpi::has_env) exception_monitor = std::make_unique<mpi::monitor>(params.comm);
+    // start MPI monitors, only needed with more than one rank
+    bool const multi_rank = params.comm.size() > 1;
     std::unique_ptr<mpi::monitor> cycle_monitor;
-    if (params.continue_after_ncycles_done and mpi::has_env) cycle_monitor = std::make_unique<mpi::monitor>(params.comm);
+    if (params.continue_after_ncycles_done and multi_rank) cycle_monitor = std::make_unique<mpi::monitor>(params.comm);
+    std::unique_ptr<mpi::monitor> exception_monitor;
+    if (params.propagate_exception and multi_rank) exception_monitor = std::make_unique<mpi::monitor>(params.comm);
 
     // prepare the simulation parameters and statistics
     bool stop_flag             = params.ncycles == 0;
@@ -87,6 +89,7 @@ namespace triqs::mc_tools {
     double next_check_cycles   = 0;
     percentage_done_           = stop_flag ? 100 : 0;
     nmeasures_done_            = 0;
+    std::exception_ptr rank_exception;
 
     // run simulation
     for (; !stop_flag; ++cycle_counter) {
@@ -107,15 +110,13 @@ namespace triqs::mc_tools {
         // current cycle is interrupted, simulation is stopped below
         std::cerr << fmt::format("[Rank {}] Signal caught in mc_generic::run: Stopping the simulation.\n", rank);
       } catch (std::exception const &err) {
-        // log the exception and node number, either abort or report to other nodes
+        // log the exception and node number, then abort or stop the simulation and rethrow below
         std::cerr << fmt::format("[Rank {}] Error int mc_generic::run: Exception occured:\n{}\n", rank, err.what());
-        if (exception_monitor) {
-          exception_monitor->report_local_event();
-          if (cycle_monitor) cycle_monitor->report_local_event();
-          break;
-        } else {
-          params.comm.abort(2);
-        }
+        if (not params.propagate_exception) params.comm.abort(2);
+        if (cycle_monitor) cycle_monitor->report_local_event();
+        if (exception_monitor) exception_monitor->report_local_event();
+        rank_exception = std::current_exception();
+        break;
       }
 
       // recompute fraction done and runtime so far
@@ -174,10 +175,12 @@ namespace triqs::mc_tools {
 
     // stop MPI monitors, the cycle monitor has to be finalized first
     if (cycle_monitor) cycle_monitor->finalize_communications();
-    if (exception_monitor) {
-      exception_monitor->finalize_communications();
-      if (exception_monitor->event_on_any_rank())
-        throw std::runtime_error(fmt::format("[Rank {}] MC simulation stopped because an exception occurred on one of the MPI ranks", rank));
+    if (exception_monitor) exception_monitor->finalize_communications();
+
+    // rethrow the exception on the rank where it occurred, the other ranks throw a generic one
+    if (rank_exception) std::rethrow_exception(rank_exception);
+    if (exception_monitor and exception_monitor->event_on_any_rank()) {
+      throw std::runtime_error(fmt::format("[Rank {}] MC simulation stopped because an exception occurred on one of the MPI ranks", rank));
     }
 
     // final reports

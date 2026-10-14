@@ -19,6 +19,7 @@
 
 #include <cstddef>
 #include <triqs/mc_tools/mc_generic.hpp>
+#include <gmock/gmock.h>
 #include <triqs/test_tools/arrays.hpp>
 
 #include <mpi/mpi.hpp>
@@ -242,24 +243,21 @@ TEST_F(TRIQSMCTools, MCGenericPropagateExceptionInOvertime) {
   if (comm.rank() != 0) EXPECT_GE(mc.get_percent(), 100);
 }
 
-TEST_F(TRIQSMCTools, MCGenericPropagateException) {
-  if (comm.size() != 1) {
-    auto params                     = mc.get_run_params();
-    params.ncycles                  = -1;
-    params.propagate_exception      = true;
-    params.check_exception_interval = 0.1;
-    params.after_cycle_duty         = [this]() {
-      if (comm.rank() == 0 && mc.get_config_id() == 10) throw std::runtime_error("Some exception on rank 0!");
-    };
-    bool exc_caught = false;
-    try {
-      mc.accumulate(params);
-    } catch (std::exception const &e) {
-      fmt::print("[Rank {}] Exception caught: {}\n", comm.rank(), e.what());
-      exc_caught = true;
-    }
-    EXPECT_TRUE(exc_caught);
-  }
+TEST_F(TRIQSMCTools, MCGenericRethrowException) {
+  // the original exception is rethrown on the rank where it occurred, the other ranks throw a generic one
+  auto params                     = mc.get_run_params();
+  params.ncycles                  = -1;
+  params.check_exception_interval = 0.01;
+  bool const throwing_rank        = comm.rank() == comm.size() - 1;
+  params.after_cycle_duty         = [&]() {
+    if (throwing_rank and mc.get_config_id() == 10) throw std::runtime_error("Some exception on this rank!");
+  };
+  auto const expected_msg = throwing_rank ? "Some exception on this rank!" : "an exception occurred on one of the MPI ranks";
+  EXPECT_THAT([&]() { mc.accumulate(params); }, testing::ThrowsMessage<std::runtime_error>(testing::HasSubstr(expected_msg)));
+  // the simulation is cleanly stopped and can be run again
+  params.ncycles          = 10;
+  params.after_cycle_duty = []() {};
+  EXPECT_EQ(mc.accumulate(params), 0);
 }
 
 MAKE_MAIN;
