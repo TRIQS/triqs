@@ -266,6 +266,7 @@ namespace triqs::det_manip {
       SW(det);
       SW(Nmax);
       SW(N);
+      SW(kmax_tried);
       SW(last_try);
       SW(row_num);
       SW(col_num);
@@ -275,6 +276,9 @@ namespace triqs::det_manip {
       SW(mat_inv);
       SW(n_opts);
       SW(n_opts_max_before_check);
+      SW(singular_threshold);
+      SW(precision_warning);
+      SW(precision_error);
       SW(w1);
       SW(wk);
       SW(newdet);
